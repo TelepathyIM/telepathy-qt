@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
 namespace Tp
@@ -42,6 +43,20 @@ public:
     bool isValid() const { return mPriv.constData() != 0; }
 
     RequestableChannelClassSpec &operator=(const RequestableChannelClassSpec &other);
+
+    bool hasChannelType() const;
+    QString channelType() const;
+
+    bool hasTargetHandleType() const;
+    HandleType targetHandleType() const;
+
+    bool hasFixedProperty(const char *name) const;
+    bool hasFixedProperty(const QString &name) const;
+    QVariant fixedProperty(const char *name) const;
+    QVariant fixedProperty(const QString &name) const;
+
+    bool hasAllowedProperty(const char *name) const;
+    bool hasAllowedProperty(const QString &name) const;
 
     RequestableChannelClass requestableChannelClass() const;
 

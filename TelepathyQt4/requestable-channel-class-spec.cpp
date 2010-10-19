@@ -56,6 +56,81 @@ RequestableChannelClassSpec &RequestableChannelClassSpec::operator=(const Reques
     return *this;
 }
 
+bool RequestableChannelClassSpec::hasChannelType() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return mPriv->rcc.fixedProperties.contains(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"));
+}
+
+QString RequestableChannelClassSpec::channelType() const
+{
+    if (!hasChannelType()) {
+        return QString();
+    }
+    return qdbus_cast<QString>(mPriv->rcc.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+}
+
+bool RequestableChannelClassSpec::hasTargetHandleType() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return mPriv->rcc.fixedProperties.contains(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"));
+}
+
+HandleType RequestableChannelClassSpec::targetHandleType() const
+{
+    if (!hasTargetHandleType()) {
+        return (HandleType) -1;
+    }
+    return (HandleType) qdbus_cast<uint>(mPriv->rcc.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
+}
+
+bool RequestableChannelClassSpec::hasFixedProperty(const char *name) const
+{
+    return hasFixedProperty(QLatin1String(name));
+}
+
+bool RequestableChannelClassSpec::hasFixedProperty(const QString &name) const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return mPriv->rcc.fixedProperties.contains(name);
+}
+
+QVariant RequestableChannelClassSpec::fixedProperty(const char *name) const
+{
+    return fixedProperty(QLatin1String(name));
+}
+
+QVariant RequestableChannelClassSpec::fixedProperty(const QString &name) const
+{
+    if (!isValid()) {
+        return QVariant();
+    }
+    return mPriv->rcc.fixedProperties.value(name);
+}
+
+bool RequestableChannelClassSpec::hasAllowedProperty(const char *name) const
+{
+    return hasAllowedProperty(QLatin1String(name));
+}
+
+bool RequestableChannelClassSpec::hasAllowedProperty(const QString &name) const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return mPriv->rcc.allowedProperties.contains(name);
+}
+
 RequestableChannelClass RequestableChannelClassSpec::requestableChannelClass() const
 {
     return isValid() ? mPriv->rcc : RequestableChannelClass();
