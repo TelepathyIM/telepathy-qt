@@ -38,8 +38,8 @@ public:
     virtual ~ContactCapabilities();
 
     // later:
-    // QStringList supportedStreamTubeServices() const;
-    // QStringList supportedDBusTubeServices() const;
+    // QStringList streamTubeServices() const;
+    // QStringList dbusTubeServices() const;
 
 private:
     friend class Contact;
