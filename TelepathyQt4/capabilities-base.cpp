@@ -98,7 +98,7 @@ CapabilitiesBase::~CapabilitiesBase()
  * complex request would succeed. See the Telepathy D-Bus API Specification
  * for details of how to interpret the returned list of QVariantMap objects.
  *
- * The higher-level methods like supportsTextChats() are likely to be more
+ * The higher-level methods like textChats() are likely to be more
  * useful to the majority of clients.
  *
  * \return A RequestableChannelClassList indicating the parameters to
@@ -128,7 +128,7 @@ void CapabilitiesBase::updateRequestableChannelClasses(
  *
  * In protocols like SIP where contacts' capabilities are not known,
  * Contact::capabilities() will return an object where this method returns
- * false, whose methods supportsTextChats() etc. are based on what the
+ * false, whose methods textChats() etc. are based on what the
  * underlying connection supports.
  *
  * This reflects the fact that the best assumption an application can make is
@@ -155,7 +155,7 @@ bool CapabilitiesBase::isSpecificToContact() const
  * \return \c true if Account::ensureTextChat() can be expected to work,
  *         \c false otherwise.
  */
-bool CapabilitiesBase::supportsTextChats() const
+bool CapabilitiesBase::textChats() const
 {
     QString channelType;
     uint targetHandleType;
@@ -186,9 +186,9 @@ bool CapabilitiesBase::supportsTextChats() const
  *
  * \return \c true if Account::ensureMediaCall() can be expected to work,
  *         \c false otherwise.
- * \sa supportsAudioCalls(), supportsVideoCalls()
+ * \sa audioCalls(), videoCalls()
  */
-bool CapabilitiesBase::supportsMediaCalls() const
+bool CapabilitiesBase::mediaCalls() const
 {
     QString channelType;
     uint targetHandleType;
@@ -213,25 +213,24 @@ bool CapabilitiesBase::supportsMediaCalls() const
  * Return whether private audio calls can be established by providing a
  * contact identifier.
  *
- * Call supportsUpgradingCalls() to determine whether such calls are
+ * Call UpgradingCalls() to determine whether such calls are
  * likely to be upgradable to have a video stream later.
  *
  * If the protocol is such that these calls can be established, but only via
  * a more elaborate D-Bus API than normal (because more information is needed),
  * then this method will return false.
  *
- * In some older connection managers, supportsAudioCalls() and
- * supportsVideoCalls() might both return false, even though
- * supportsMediaCalls() returns true. This indicates that only an older
+ * In some older connection managers, audioCalls() and videoCalls() might both return
+ * false, even though mediaCalls() returns true. This indicates that only an older
  * API is supported - clients of these connection managers must call
  * Account::ensureMediaCall() to get an empty call, then add audio and/or
  * video streams to it.
  *
  * \return \c true if Account::ensureAudioCall() can be expected to work,
  *         \c false otherwise.
- * \sa supportsMediaCalls(), supportsVideoCalls()
+ * \sa mediaCalls(), videoCalls()
  */
-bool CapabilitiesBase::supportsAudioCalls() const
+bool CapabilitiesBase::audioCalls() const
 {
     QString channelType;
     uint targetHandleType;
@@ -258,16 +257,16 @@ bool CapabilitiesBase::supportsAudioCalls() const
  * Return whether private video calls can be established by providing a
  * contact identifier.
  *
- * The same comments as for supportsAudioCalls() apply to this method.
+ * The same comments as for audioCalls() apply to this method.
  *
  * \param withAudio If true (the default), check for the ability to make calls
  *                  with both audio and video; if false, do not require the
  *                  ability to include an audio stream.
  * \return \c true if Account::ensureVideoCall() can be expected to work,
  *         if given the same \a withAudio parameter, \c false otherwise
- * \sa supportsMediaCalls(), supportsAudioCalls()
+ * \sa mediaCalls(), audioCalls()
  */
-bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
+bool CapabilitiesBase::videoCalls(bool withAudio) const
 {
     QString channelType;
     uint targetHandleType;
@@ -317,7 +316,7 @@ bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
  * \return \c true if audio calls can be upgraded to audio + video,
  *         \c false otherwise.
  */
-bool CapabilitiesBase::supportsUpgradingCalls() const
+bool CapabilitiesBase::upgradingCalls() const
 {
     QString channelType;
     foreach (const RequestableChannelClass &cls, mPriv->classes) {
@@ -332,6 +331,46 @@ bool CapabilitiesBase::supportsUpgradingCalls() const
         }
     }
     return false;
+}
+
+/**
+ * \deprecated Use textChats instead.
+ */
+bool CapabilitiesBase::supportsTextChats() const
+{
+    return textChats();
+}
+
+/**
+ * \deprecated Use mediaCalls instead.
+ */
+bool CapabilitiesBase::supportsMediaCalls() const
+{
+    return mediaCalls();
+}
+
+/**
+ * \deprecated Use audioCalls instead.
+ */
+bool CapabilitiesBase::supportsAudioCalls() const
+{
+    return audioCalls();
+}
+
+/**
+ * \deprecated Use videoCalls() instead.
+ */
+bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
+{
+    return videoCalls(withAudio);
+}
+
+/**
+ * \deprecated Use upgradingCalls() instead.
+ */
+bool CapabilitiesBase::supportsUpgradingCalls() const
+{
+    return upgradingCalls();
 }
 
 } // Tp

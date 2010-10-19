@@ -41,20 +41,26 @@ public:
 
     bool isSpecificToContact() const;
 
-    // FIXME: (API/ABI break) Rename all supportsXXX methods to just XXX
-    bool supportsTextChats() const;
+    bool textChats() const;
 
-    bool supportsMediaCalls() const;
-    bool supportsAudioCalls() const;
-    bool supportsVideoCalls(bool withAudio = true) const;
-    bool supportsUpgradingCalls() const;
+    bool mediaCalls() const;
+    bool audioCalls() const;
+    bool videoCalls(bool withAudio = true) const;
+    bool upgradingCalls() const;
+
+    TELEPATHY_QT4_DEPRECATED bool supportsTextChats() const;
+
+    TELEPATHY_QT4_DEPRECATED bool supportsMediaCalls() const;
+    TELEPATHY_QT4_DEPRECATED bool supportsAudioCalls() const;
+    TELEPATHY_QT4_DEPRECATED bool supportsVideoCalls(bool withAudio = true) const;
+    TELEPATHY_QT4_DEPRECATED bool supportsUpgradingCalls() const;
 
     // later: FIXME TODO why not now‽
-    // bool supportsFileTransfers() const;
+    // bool fileTransfers() const;
     // QList<FileHashType> fileTransfersRequireHash() const;
     //
-    // bool supportsStreamTubes() const;
-    // bool supportsDBusTubes() const;
+    // bool streamTubes() const;
+    // bool dBusTubes() const;
 
 protected:
     CapabilitiesBase(bool specificToContact);
