@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/RequestableChannelClassSpec>
 #include <TelepathyQt4/Types>
 
 namespace Tp
@@ -36,8 +37,9 @@ class TELEPATHY_QT4_EXPORT CapabilitiesBase
 public:
     virtual ~CapabilitiesBase();
 
-    // FIXME: (API/ABI break) Use high-level class for requestableChannelClass
-    RequestableChannelClassList requestableChannelClasses() const;
+    RequestableChannelClassSpecList requestableChannelClassSpecList() const;
+
+    TELEPATHY_QT4_DEPRECATED RequestableChannelClassList requestableChannelClasses() const;
 
     bool isSpecificToContact() const;
 
