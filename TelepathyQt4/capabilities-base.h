@@ -36,10 +36,12 @@ class TELEPATHY_QT4_EXPORT CapabilitiesBase
 public:
     virtual ~CapabilitiesBase();
 
+    // FIXME: (API/ABI break) Use high-level class for requestableChannelClass
     RequestableChannelClassList requestableChannelClasses() const;
 
     bool isSpecificToContact() const;
 
+    // FIXME: (API/ABI break) Rename all supportsXXX methods to just XXX
     bool supportsTextChats() const;
 
     bool supportsMediaCalls() const;

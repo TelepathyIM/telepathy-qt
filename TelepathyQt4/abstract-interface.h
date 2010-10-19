@@ -42,17 +42,23 @@ class TELEPATHY_QT4_EXPORT AbstractInterface : public QDBusAbstractInterface
 public:
     virtual ~AbstractInterface();
 
+    // TODO: use DBusProxy *proxy for the implementation of isValid, invalidationReason/Message
     bool isValid() const;
     QString invalidationReason() const;
     QString invalidationMessage() const;
 
 protected Q_SLOTS:
+#ifndef Q_MOC_RUN
+    TELEPATHY_QT4_DEPRECATED virtual void invalidate(Tp::DBusProxy *proxy,
+            const QString &error, const QString &message);
+#else
     virtual void invalidate(Tp::DBusProxy *proxy,
             const QString &error, const QString &message);
+#endif
 
 protected:
-    AbstractInterface(DBusProxy *parent, const char *interface);
-    AbstractInterface(const QString &busName, const QString &path,
+    AbstractInterface(DBusProxy *proxy, const char *interface);
+    TELEPATHY_QT4_DEPRECATED AbstractInterface(const QString &busName, const QString &path,
             const char *interface, const QDBusConnection &connection,
             QObject *parent);
 

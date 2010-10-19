@@ -1,0 +1,22 @@
+telepathy-qt4:
+General:
+- Create high-level classes for basic types where we expose keys as strings.
+  Note that probably all wrapper classes should have a way to be created using the
+  the original type (ChannelClass, QVariantMap, ..) directly
+- We should probably add a high-level class to represent immutable properties also.
+- Connection::capabilities should not return 0 if FeatureCore is enabled but not
+  connected.
+- Discuss about whether to merge cmake support
+- Be more Qt like (using Q_D, Q_Q, etc)
+- Change all examples to use handler/approver/observer/etc.
+- Remove all xxxInterface methods
+- Make Contact a RefCounted and make its features use Tp::Feature
+- Add missing fancy headers
+- Remove all accessors that return object path where appropriate as in most PendingOperation classes
+  that have it.
+- Make sure signals have the Tp:: namespace.
+- Make ManagerFile and KeyFile internal to the library and probably RefCounted.
+- Manager::getParameter should have a const qualifier.
+- Discuss class hierarchy of DBusProxy. Whether DBusProxy should inherit ReadyObject/RefCounted.
+- Make all tp-qt4 inherited QObjects support property notify as done by Account. Probably adding a
+  new Tp::Object.

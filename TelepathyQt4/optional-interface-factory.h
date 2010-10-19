@@ -80,11 +80,13 @@ public:
 
     inline QStringList interfaces() const { return mInterfaces; }
 
+    // TODO make it const
     inline bool hasInterface(const char *name)
     {
         return mInterfaces.contains(QLatin1String(name));
     }
 
+    // TODO make it const
     inline bool hasInterface(const QString &name)
     {
         return mInterfaces.contains(name);

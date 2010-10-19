@@ -82,10 +82,11 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(ConnectionCapabilities* capabilities READ capabilities NOTIFY capabilitiesChanged)
     Q_PROPERTY(bool hasBeenOnline READ hasBeenOnline)
     Q_PROPERTY(bool connectsAutomatically READ connectsAutomatically NOTIFY connectsAutomaticallyPropertyChanged)
+    // FIXME: (API/ABI break) Use Connection::Status
     Q_PROPERTY(ConnectionStatus connectionStatus READ connectionStatus)
     Q_PROPERTY(ConnectionStatusReason connectionStatusReason READ connectionStatusReason)
     Q_PROPERTY(QString connectionError READ connectionError)
-    // TODO: in API/ABI break make this be a Connection::ErrorDetails
+    // FIXME: (API/ABI break) Use Connection::ErrorDetails
     Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
     Q_PROPERTY(bool haveConnection READ haveConnection NOTIFY haveConnectionChanged)
     Q_PROPERTY(ConnectionPtr connection READ connection)
@@ -95,6 +96,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(SimplePresence requestedPresence READ requestedPresence NOTIFY requestedPresenceChanged)
     Q_PROPERTY(bool online READ isOnline NOTIFY onlinenessChanged)
     Q_PROPERTY(QString uniqueIdentifier READ uniqueIdentifier)
+    // FIXME: (API/ABI break) Remove connectionObjectPath
     Q_PROPERTY(QString connectionObjectPath READ connectionObjectPath)
     Q_PROPERTY(QString normalizedName READ normalizedName NOTIFY normalizedNameChanged)
 
@@ -107,18 +109,19 @@ public:
 
     static AccountPtr create(const QString &busName,
             const QString &objectPath);
-    static AccountPtr create(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
 
-    // API/ABI break: collapse these with the above variants and have all factories be default
-    // params for the non-bus version
+    // FIXME: (API/ABI break) collapse these with the above variants and have all factories be
+    //        default params for the non-bus version
     static AccountPtr create(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory =
                 ChannelFactory::create(QDBusConnection::sessionBus()),
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
-
+    // The bus-taking variant should never have default factories unless the bus is the last param
+    // which would be illogical?
     static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
@@ -158,6 +161,9 @@ public:
     QString nickname() const;
     PendingOperation *setNickname(const QString &value);
 
+    // TODO: We probably want to expose the avatar file name once we have the avatar token and MC
+    //       starts sharing the cache used by tp-qt4 and tp-glib and use Tp::AvatarData to represent
+    //       it as used in Tp::Contact
     const Avatar &avatar() const;
     PendingOperation *setAvatar(const Avatar &avatar);
 
@@ -165,9 +171,10 @@ public:
     PendingStringList *updateParameters(const QVariantMap &set,
             const QStringList &unset);
 
-    // comes from the ConnectionManager
+    // FIXME: (API/ABI break) Use ProtocolInfoPtr
     ProtocolInfo *protocolInfo() const;
 
+    // FIXME: (API/ABI break) Use ConnectionCapabilitiesPtr
     ConnectionCapabilities *capabilities() const;
 
     bool connectsAutomatically() const;
@@ -175,9 +182,11 @@ public:
 
     bool hasBeenOnline() const;
 
+    // FIXME: (API/ABI break) Use Connection::Status
     ConnectionStatus connectionStatus() const;
     ConnectionStatusReason connectionStatusReason() const;
     QString connectionError() const;
+    // FIXME: (API/ABI break) Use Connection::ErrorDetails
     QVariantMap connectionErrorDetails() const;
     bool haveConnection() const;
     ConnectionPtr connection() const;
@@ -198,8 +207,7 @@ public:
 
     QString uniqueIdentifier() const;
 
-    // doc as for advanced users
-    QString connectionObjectPath() const;
+    TELEPATHY_QT4_DEPRECATED QString connectionObjectPath() const;
 
     QString normalizedName() const;
 
@@ -312,12 +320,12 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
-    inline Client::AccountInterfaceAvatarInterface *avatarInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::AccountInterfaceAvatarInterface *avatarInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::AccountInterfaceAvatarInterface>(check);
@@ -337,25 +345,35 @@ Q_SIGNALS:
     void capabilitiesChanged(Tp::ConnectionCapabilities *capabilities);
     void connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
     void firstOnline();
+    // FIXME: (API/ABI break) Use high-level class for parameters
     void parametersChanged(const QVariantMap &parameters);
     void changingPresence(bool value);
+    // FIXME: (API/ABI break) Remove const
     void automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
+    // FIXME: (API/ABI break) Remove const
     void currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
+    // FIXME: (API/ABI break) Remove const
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
     void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
     TELEPATHY_QT4_DEPRECATED void connectionStatusChanged(Tp::ConnectionStatus status,
             Tp::ConnectionStatusReason statusReason);
+    // FIXME: (API/ABI break) Rename to connectionStatusChanged and use
+    //        Connection::Status and Connection::ErrorDetails. Actually it should have being named
+    //        connectionStatusChanged in the first place
     void statusChanged(Tp::ConnectionStatus status,
             Tp::ConnectionStatusReason statusReason,
             const QString &error, const QVariantMap &errorDetails);
+    // FIXME: (API/ABI break) Remove haveConnectionChanged and add a new
+    //        connectionChanged(connection) instead
     void haveConnectionChanged(bool haveConnection);
 
+    // TODO: (API/ABI break) Move this to Tp::Object probably
     void propertyChanged(const QString &propertyName);
 
 protected:
-    Account(const QString &busName, const QString &objectPath);
-    Account(const QDBusConnection &bus,
+    TELEPATHY_QT4_EXPORT Account(const QString &busName, const QString &objectPath);
+    TELEPATHY_QT4_EXPORT Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
@@ -363,7 +381,7 @@ protected:
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
-    Client::AccountInterface *baseInterface() const;
+    TELEPATHY_QT4_EXPORT Client::AccountInterface *baseInterface() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
@@ -379,6 +397,7 @@ private:
     struct Private;
     friend struct Private;
 
+    // TODO: (API/ABI break) Move this to Tp::Object probably
     void notify(const char *propertyName);
 
     Private *mPriv;
