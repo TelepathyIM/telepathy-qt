@@ -125,7 +125,6 @@ public:
 
     AccountSetPtr filterAccounts(const AccountFilterConstPtr &filter) const;
     AccountSetPtr filterAccounts(const QList<AccountFilterConstPtr> &filters) const;
-    // FIXME: (API/ABI break) Rename to filterAccountsByProperties
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
     AccountPtr accountForPath(const QString &path);
