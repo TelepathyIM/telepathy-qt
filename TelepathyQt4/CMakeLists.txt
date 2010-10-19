@@ -76,6 +76,7 @@ set(telepathy_qt4_SRCS
     profile-manager.cpp
     properties.cpp
     readiness-helper.cpp
+    requestable-channel-class-spec.cpp
     ready-object.cpp
     referenced-handles.cpp
     room-list-channel.cpp
@@ -287,6 +288,8 @@ set(telepathy_qt4_HEADERS
     ReferencedHandles
     referenced-handles.h
     ReferencedHandlesIterator
+    requestable-channel-class-spec.h
+    RequestableChannelClassSpec
     RoomListChannel
     room-list-channel.h
     SharedPtr
