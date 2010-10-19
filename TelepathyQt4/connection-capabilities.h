@@ -37,6 +37,7 @@ class TELEPATHY_QT4_EXPORT ConnectionCapabilities : public CapabilitiesBase
 public:
     virtual ~ConnectionCapabilities();
 
+    // FIXME: (API/ABI break) Rename all supportsXXX methods to just XXX
     bool supportsTextChatrooms() const;
 
     bool supportsConferenceMediaCalls(bool withInitialInvitees = true) const;

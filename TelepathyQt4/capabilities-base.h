@@ -41,6 +41,7 @@ public:
 
     bool isSpecificToContact() const;
 
+    // FIXME: (API/ABI break) Rename all supportsXXX methods to just XXX
     bool supportsTextChats() const;
 
     bool supportsMediaCalls() const;
