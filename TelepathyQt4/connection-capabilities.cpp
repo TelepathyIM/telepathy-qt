@@ -76,20 +76,14 @@ ConnectionCapabilities::~ConnectionCapabilities()
  */
 bool ConnectionCapabilities::textChatrooms() const
 {
-    QString channelType;
-    uint targetHandleType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        if (!cls.fixedProperties.size() == 2) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (!rccSpec.fixedPropertiesCount() == 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
-            targetHandleType == HandleTypeRoom) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            rccSpec.hasTargetHandleType(HandleTypeRoom)) {
             return true;
         }
     }
@@ -103,14 +97,11 @@ bool ConnectionCapabilities::textChatrooms() const
  */
 bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
 {
-    QString channelType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
             return true;
         }
     }
@@ -131,16 +122,13 @@ bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
  */
 bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
 {
-    QString channelType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) && 
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles"))) {
             return true;
         }
     }
@@ -154,14 +142,11 @@ bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
  */
 bool ConnectionCapabilities::conferenceTextChats() const
 {
-    QString channelType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
             return true;
         }
     }
@@ -182,16 +167,13 @@ bool ConnectionCapabilities::conferenceTextChats() const
  */
 bool ConnectionCapabilities::conferenceTextChatsWithInvitees() const
 {
-    QString channelType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) &&
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles"))) {
             return true;
         }
     }
@@ -205,18 +187,12 @@ bool ConnectionCapabilities::conferenceTextChatsWithInvitees() const
  */
 bool ConnectionCapabilities::conferenceTextChatrooms() const
 {
-    QString channelType;
-    uint targetHandleType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
-            targetHandleType == HandleTypeRoom &&
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            rccSpec.hasTargetHandleType(HandleTypeRoom) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
             return true;
         }
     }
@@ -237,20 +213,14 @@ bool ConnectionCapabilities::conferenceTextChatrooms() const
  */
 bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
 {
-    QString channelType;
-    uint targetHandleType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
-            targetHandleType == HandleTypeRoom &&
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) &&
-            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
-             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            rccSpec.hasTargetHandleType(HandleTypeRoom) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) &&
+            (rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles") ||
+             rccSpec.hasAllowedProperty(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles"))) {
             return true;
         }
     }
@@ -264,12 +234,9 @@ bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
  */
 bool ConnectionCapabilities::contactSearch()
 {
-    QString channelType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH)) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH)) {
             return true;
         }
     }
@@ -283,13 +250,10 @@ bool ConnectionCapabilities::contactSearch()
  */
 bool ConnectionCapabilities::contactSearchWithSpecificServer() const
 {
-    QString channelType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH) &&
-            cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server"))) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH) &&
+            rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server")) {
             return true;
         }
     }
@@ -303,13 +267,10 @@ bool ConnectionCapabilities::contactSearchWithSpecificServer() const
  */
 bool ConnectionCapabilities::contactSearchWithLimit() const
 {
-    QString channelType;
-    RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &cls, classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH) &&
-            cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"))) {
+    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH) &&
+            rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit")) {
             return true;
         }
     }
