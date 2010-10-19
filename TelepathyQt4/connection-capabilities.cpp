@@ -74,7 +74,7 @@ ConnectionCapabilities::~ConnectionCapabilities()
  *
  * \return \c true if Account::ensureTextChatroom() can be expected to work.
  */
-bool ConnectionCapabilities::supportsTextChatrooms() const
+bool ConnectionCapabilities::textChatrooms() const
 {
     QString channelType;
     uint targetHandleType;
@@ -109,7 +109,7 @@ bool ConnectionCapabilities::supportsTextChatrooms() const
  *                            check.
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsConferenceMediaCalls(
+bool ConnectionCapabilities::conferenceMediaCalls(
             bool withInitialInvitees) const
 {
     QString channelType;
@@ -143,7 +143,7 @@ bool ConnectionCapabilities::supportsConferenceMediaCalls(
  *                            check.
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsConferenceTextChats(
+bool ConnectionCapabilities::conferenceTextChats(
             bool withInitialInvitees) const
 {
     QString channelType;
@@ -177,7 +177,7 @@ bool ConnectionCapabilities::supportsConferenceTextChats(
  *                            this check.
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsConferenceTextChatrooms(
+bool ConnectionCapabilities::conferenceTextChatrooms(
             bool withInitialInvitees) const
 {
     QString channelType;
@@ -207,7 +207,7 @@ bool ConnectionCapabilities::supportsConferenceTextChatrooms(
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsContactSearch()
+bool ConnectionCapabilities::contactSearch()
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -226,7 +226,7 @@ bool ConnectionCapabilities::supportsContactSearch()
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsContactSearchWithSpecificServer() const
+bool ConnectionCapabilities::contactSearchWithSpecificServer() const
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -246,7 +246,7 @@ bool ConnectionCapabilities::supportsContactSearchWithSpecificServer() const
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsContactSearchWithLimit() const
+bool ConnectionCapabilities::contactSearchWithLimit() const
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -259,6 +259,62 @@ bool ConnectionCapabilities::supportsContactSearchWithLimit() const
         }
     }
     return false;
+}
+
+/**
+ * \deprecated Use textChatrooms() instead.
+ */
+bool ConnectionCapabilities::supportsTextChatrooms() const
+{
+    return textChatrooms();
+}
+
+/**
+ * \deprecated Use conferenceMediaCalls() instead.
+ */
+bool ConnectionCapabilities::supportsConferenceMediaCalls(bool withInitialInvitees) const
+{
+    return conferenceMediaCalls(withInitialInvitees);
+}
+
+/**
+ * \deprecated Use conferenceTextChats() instead.
+ */
+bool ConnectionCapabilities::supportsConferenceTextChats(bool withInitialInvitees) const
+{
+    return conferenceTextChats(withInitialInvitees);
+}
+
+/**
+ * \deprecated Use conferenceTextChatrooms() instead.
+ */
+bool ConnectionCapabilities::supportsConferenceTextChatrooms(bool withInitialInvitees) const
+{
+    return conferenceTextChatrooms(withInitialInvitees);
+}
+
+/**
+ * \deprecated Use contactSearch() instead.
+ */
+bool ConnectionCapabilities::supportsContactSearch()
+{
+    return contactSearch();
+}
+
+/**
+ * \deprecated Use contactSearchWithSpecificServer() instead.
+ */
+bool ConnectionCapabilities::supportsContactSearchWithSpecificServer() const
+{
+    return contactSearchWithSpecificServer();
+}
+
+/**
+ * \deprecated Use contactSearchWithLimit() instead.
+ */
+bool ConnectionCapabilities::supportsContactSearchWithLimit() const
+{
+    return contactSearchWithLimit();
 }
 
 } // Tp
