@@ -65,6 +65,16 @@ bool RequestableChannelClassSpec::hasChannelType() const
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"));
 }
 
+bool RequestableChannelClassSpec::hasChannelType(const char *name) const
+{
+    return hasChannelType(QLatin1String(name));
+}
+
+bool RequestableChannelClassSpec::hasChannelType(const QString &name) const
+{
+    return channelType() == name;
+}
+
 QString RequestableChannelClassSpec::channelType() const
 {
     if (!hasChannelType()) {
@@ -81,6 +91,16 @@ bool RequestableChannelClassSpec::hasTargetHandleType() const
     }
     return mPriv->rcc.fixedProperties.contains(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"));
+}
+
+bool RequestableChannelClassSpec::hasTargetHandleType(uint type) const
+{
+    return hasTargetHandleType((HandleType) type);
+}
+
+bool RequestableChannelClassSpec::hasTargetHandleType(HandleType type) const
+{
+    return targetHandleType() == type;
 }
 
 HandleType RequestableChannelClassSpec::targetHandleType() const
@@ -118,6 +138,22 @@ QVariant RequestableChannelClassSpec::fixedProperty(const QString &name) const
     return mPriv->rcc.fixedProperties.value(name);
 }
 
+QVariantMap RequestableChannelClassSpec::fixedProperties() const
+{
+    if (!isValid()) {
+        return QVariantMap();
+    }
+    return mPriv->rcc.fixedProperties;
+}
+
+int RequestableChannelClassSpec::fixedPropertiesCount() const
+{
+    if (!isValid()) {
+        return 0;
+    }
+    return mPriv->rcc.fixedProperties.size();
+}
+
 bool RequestableChannelClassSpec::hasAllowedProperty(const char *name) const
 {
     return hasAllowedProperty(QLatin1String(name));
@@ -129,6 +165,22 @@ bool RequestableChannelClassSpec::hasAllowedProperty(const QString &name) const
         return false;
     }
     return mPriv->rcc.allowedProperties.contains(name);
+}
+
+QStringList RequestableChannelClassSpec::allowedProperties() const
+{
+    if (!isValid()) {
+        return QStringList();
+    }
+    return mPriv->rcc.allowedProperties;
+}
+
+int RequestableChannelClassSpec::allowedPropertiesCount() const
+{
+    if (!isValid()) {
+        return -1;
+    }
+    return mPriv->rcc.allowedProperties.size();
 }
 
 RequestableChannelClass RequestableChannelClassSpec::requestableChannelClass() const
