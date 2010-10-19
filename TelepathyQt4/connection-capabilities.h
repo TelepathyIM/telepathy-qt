@@ -39,9 +39,12 @@ public:
 
     bool textChatrooms() const;
 
-    bool conferenceMediaCalls(bool withInitialInvitees = true) const;
-    bool conferenceTextChats(bool withInitialInvitees = true) const;
-    bool conferenceTextChatrooms(bool withInitialInvitees = true) const;
+    bool conferenceMediaCalls() const;
+    bool conferenceMediaCallsWithInvitees() const;
+    bool conferenceTextChats() const;
+    bool conferenceTextChatsWithInvitees() const;
+    bool conferenceTextChatrooms() const;
+    bool conferenceTextChatroomsWithInvitees() const;
 
     bool contactSearch();
     bool contactSearchWithSpecificServer() const;
