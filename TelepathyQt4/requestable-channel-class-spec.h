@@ -66,6 +66,31 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
+class TELEPATHY_QT4_EXPORT RequestableChannelClassSpecList :
+                public QList<RequestableChannelClassSpec>
+{
+public:
+    RequestableChannelClassSpecList() { }
+    RequestableChannelClassSpecList(const RequestableChannelClass &rcc)
+    {
+        append(RequestableChannelClassSpec(rcc));
+    }
+    RequestableChannelClassSpecList(const RequestableChannelClassList &rccs)
+    {
+        Q_FOREACH (const RequestableChannelClass &rcc, rccs) {
+            append(RequestableChannelClassSpec(rcc));
+        }
+    }
+    RequestableChannelClassSpecList(const RequestableChannelClassSpec &rccSpec)
+    {
+        append(rccSpec);
+    }
+    RequestableChannelClassSpecList(const QList<RequestableChannelClassSpec> &other)
+        : QList<RequestableChannelClassSpec>(other)
+    {
+    }
+};
+
 } // Tp
 
 #endif
