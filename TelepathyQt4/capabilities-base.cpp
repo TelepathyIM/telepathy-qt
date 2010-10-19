@@ -247,7 +247,7 @@ bool CapabilitiesBase::audioCalls() const
             targetHandleType == HandleTypeContact &&
             cls.allowedProperties.contains(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"))) {
-                return true;
+            return true;
         }
     }
     return false;
@@ -259,14 +259,44 @@ bool CapabilitiesBase::audioCalls() const
  *
  * The same comments as for audioCalls() apply to this method.
  *
- * \param withAudio If true (the default), check for the ability to make calls
- *                  with both audio and video; if false, do not require the
- *                  ability to include an audio stream.
  * \return \c true if Account::ensureVideoCall() can be expected to work,
- *         if given the same \a withAudio parameter, \c false otherwise
+ *         if given \c false as \a withAudio parameter, \c false otherwise.
  * \sa mediaCalls(), audioCalls()
  */
-bool CapabilitiesBase::videoCalls(bool withAudio) const
+bool CapabilitiesBase::videoCalls() const
+{
+    QString channelType;
+    uint targetHandleType;
+    foreach (const RequestableChannelClass &cls, mPriv->classes) {
+        if (!cls.fixedProperties.size() == 2) {
+            continue;
+        }
+
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
+            targetHandleType == HandleTypeContact &&
+            cls.allowedProperties.contains(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return whether private video calls with audio can be established by providing a
+ * contact identifier.
+ *
+ * The same comments as for audioCalls() apply to this method.
+ *
+ * \return \c true if Account::ensureVideoCall() can be expected to work,
+ *         if given \c true as \a withAudio parameter, \c false otherwise.
+ * \sa mediaCalls(), audioCalls()
+ */
+bool CapabilitiesBase::videoCallsWithAudio() const
 {
     QString channelType;
     uint targetHandleType;
@@ -283,9 +313,9 @@ bool CapabilitiesBase::videoCalls(bool withAudio) const
             targetHandleType == HandleTypeContact &&
             cls.allowedProperties.contains(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo")) &&
-            (!withAudio || cls.allowedProperties.contains(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio")))) {
-                return true;
+            cls.allowedProperties.contains(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"))) {
+            return true;
         }
     }
     return false;
@@ -358,11 +388,14 @@ bool CapabilitiesBase::supportsAudioCalls() const
 }
 
 /**
- * \deprecated Use videoCalls() instead.
+ * \deprecated Use videoCalls() or videoCallsWithAudio() instead.
  */
 bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
 {
-    return videoCalls(withAudio);
+    if (withAudio) {
+        return videoCallsWithAudio();
+    }
+    return videoCalls();
 }
 
 /**
