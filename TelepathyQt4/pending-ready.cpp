@@ -117,6 +117,9 @@ PendingReady::~PendingReady()
  * This is only applicable for PendingReady objects from ReadyObject::becomeReady(). For others,
  * \c NULL is returned.
  *
+ * \todo API/ABI break TODO: after shuffling the object hierarchy around, drop this and have just
+ * ReadyObjectPtr PendingReady::object() const for all PendingReadys no matter the source
+ *
  * \return The object through which the request was made.
  */
 QObject *PendingReady::object() const
@@ -129,6 +132,9 @@ QObject *PendingReady::object() const
  *
  * This is only applicable for PendingReady objects from a DBusProxyFactory subclass. For others,
  * a \c NULL SharedPtr is returned.
+ *
+ * \todo API/ABI break TODO: after shuffling the object hierarchy around, drop this and have just
+ * ReadyObjectPtr PendingReady::object() const for all PendingReadys no matter the source
  *
  * \return The proxy which is being made ready.
  */
