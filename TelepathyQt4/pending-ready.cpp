@@ -76,16 +76,22 @@ PendingReady::PendingReady(const SharedPtr<const DBusProxyFactory> &factory,
     : PendingOperation(parent),
       mPriv(new Private(factory, requestedFeatures, 0, proxy))
 {
-    /* TODO: this should actually be factory->getInitialPrepareOpIfApplicable(proxy) or something */
-    PendingOperation *finishFirst = 0;
+    Q_ASSERT(!proxy.isNull());
 
-    if (!finishFirst || finishFirst->isFinished()) {
-        onFirstFinished(finishFirst);
-    } else {
-        connect(finishFirst,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onFirstFinished(Tp::PendingOperation*)));
+    if (requestedFeatures.isEmpty()) {
+        setFinished();
+        return;
     }
+
+    // API/ABI break TODO: Make some refcounted baseclass exist which is both a QObject and a
+    // ReadyObject so we can avoid this dynamic_cast mess...
+
+    ReadyObject *readyObj = dynamic_cast<ReadyObject *>(proxy.data());
+    Q_ASSERT(readyObj != NULL);
+
+    connect(readyObj->becomeReady(requestedFeatures),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onNestedFinished(Tp::PendingOperation*)));
 }
 
 /**
@@ -101,6 +107,8 @@ PendingReady::PendingReady(const Features &requestedFeatures,
       mPriv(new Private(SharedPtr<DBusProxyFactory>(), requestedFeatures, object,
                   SharedPtr<RefCounted>()))
 {
+    // This is a PendingReady created by ReadinessHelper, and will be set ready by it - so should
+    // not do anything ourselves here.
 }
 
 /**
@@ -152,30 +160,6 @@ SharedPtr<RefCounted> PendingReady::proxy() const
 Features PendingReady::requestedFeatures() const
 {
     return mPriv->requestedFeatures;
-}
-
-void PendingReady::onFirstFinished(Tp::PendingOperation *first)
-{
-    if (first) {
-        Q_ASSERT(first->isFinished());
-
-        if (first->isError()) {
-            warning() << "Prepare operation for" << object() << "failed with" <<
-                first->errorName() << ":" << first->errorMessage();
-            setFinishedWithError(first->errorName(), first->errorMessage());
-            return;
-        }
-    }
-
-    if (requestedFeatures().isEmpty()) {
-        setFinished();
-        return;
-    }
-
-    // API/ABI break TODO: Make some baseclass exist which is both a QObject and a ReadyObject...
-    connect(dynamic_cast<ReadyObject *>(proxy().data())->becomeReady(requestedFeatures()),
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onNestedFinished(Tp::PendingOperation*)));
 }
 
 void PendingReady::onNestedFinished(Tp::PendingOperation *nested)

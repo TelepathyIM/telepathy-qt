@@ -57,7 +57,6 @@ public:
     Features requestedFeatures() const;
 
 private Q_SLOTS:
-    void onFirstFinished(Tp::PendingOperation *);
     void onNestedFinished(Tp::PendingOperation *);
 
 private:
