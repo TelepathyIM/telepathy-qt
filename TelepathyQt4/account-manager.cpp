@@ -200,7 +200,11 @@ QSet<QString> AccountManager::Private::getAccountPathsFromProps(
 
 void AccountManager::Private::addAccountForPath(const QString &path)
 {
-    if (accounts.contains(path)) {
+    // Also check incompleteAccounts, because otherwise we end up introspecting an account twice
+    // when getting an AccountValidityChanged signal for a new account before we get the initial
+    // introspection accounts list from the GetAll return (the GetAll return function
+    // unconditionally calls addAccountForPath
+    if (accounts.contains(path) || incompleteAccounts.contains(path)) {
         return;
     }
 
@@ -1212,6 +1216,10 @@ void AccountManager::onAccountReady(Tp::PendingOperation *op)
     }
 
     mPriv->incompleteAccounts.remove(path);
+
+    // We shouldn't end up here twice for the same account - that would also mean newAccount being
+    // emitted twice for an account, and AccountSets getting confused as a result
+    Q_ASSERT(!mPriv->accounts.contains(path));
     mPriv->accounts.insert(path, account);
 
     if (isReady(FeatureCore)) {
