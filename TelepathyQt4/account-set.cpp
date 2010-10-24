@@ -109,8 +109,10 @@ void AccountSet::Private::removeAccount(const Tp::AccountPtr &account)
     QString accountPath = account->objectPath();
     Q_ASSERT(wrappers.contains(accountPath));
     accounts.remove(accountPath);
-    AccountWrapper *wrapper = wrappers[accountPath];
-    delete wrapper;
+
+    AccountWrapper *wrapper = wrappers.take(accountPath);
+    wrapper->deleteLater();
+
     emit parent->accountRemoved(account);
 }
 
