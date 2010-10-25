@@ -11,6 +11,9 @@ Fixes:
   - The tp-glib version requirement in 0.3.12 was too old
   - Compile error in the tp-glib based test library
 * Properly document ContactSearchChannel signals.
+* AccountManager and AccountSet getting confused and hitting asserts with
+  certain sequences of introspecting and adding/removing accounts, most
+  prominently when removing and readding an account
 
 telepathy-qt4 0.3.12 (2010-10-15)
 =================================
