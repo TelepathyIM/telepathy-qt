@@ -156,17 +156,17 @@ public:
     QVariantMap allProperties() const;
     ChannelClass bareClass() const;
 
-    static ChannelClassSpec text(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec textChat(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec textChatroom(const QVariantMap &additionalProperties = QVariantMap());
-    static ChannelClassSpec media(const QVariantMap &additionalProperties = QVariantMap());
-    static ChannelClassSpec mediaWithInitialAudio(const QVariantMap &additionalProperties =
+    static ChannelClassSpec mediaCall(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec mediaCallWithInitialAudio(const QVariantMap &additionalProperties =
             QVariantMap());
-    static ChannelClassSpec mediaWithInitialVideo(const QVariantMap &additionalProperties =
+    static ChannelClassSpec mediaCallWithInitialVideo(const QVariantMap &additionalProperties =
             QVariantMap());
     // TODO: add Call when it's undrafted
     static ChannelClassSpec roomList(const QVariantMap &additionalProperties = QVariantMap());
-    static ChannelClassSpec sendFile(const QVariantMap &additionalProperties = QVariantMap());
-    static ChannelClassSpec receiveFile(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec outgoingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec incomingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
     // TODO: add dbus tubes, stream tubes when they're implemented
 
 private:

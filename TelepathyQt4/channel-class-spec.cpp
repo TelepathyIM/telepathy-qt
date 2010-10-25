@@ -102,8 +102,6 @@ bool ChannelClassSpec::isSubsetOf(const ChannelClassSpec &other) const
         return false;
     }
 
-    Q_ASSERT(QVariant::fromValue(ushort(5)) == QVariant::fromValue(int(5)));
-
     foreach (QString propName, mPriv->props.keys()) {
         if (!other.hasProperty(propName)) {
             return false;
@@ -215,7 +213,7 @@ ChannelClass ChannelClassSpec::bareClass() const
     return cc;
 }
 
-ChannelClassSpec ChannelClassSpec::text(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::textChat(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
@@ -247,7 +245,7 @@ ChannelClassSpec ChannelClassSpec::textChatroom(const QVariantMap &additionalPro
     }
 }
 
-ChannelClassSpec ChannelClassSpec::media(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::mediaCall(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
@@ -263,7 +261,7 @@ ChannelClassSpec ChannelClassSpec::media(const QVariantMap &additionalProperties
     }
 }
 
-ChannelClassSpec ChannelClassSpec::mediaWithInitialAudio(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::mediaCallWithInitialAudio(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
@@ -280,7 +278,7 @@ ChannelClassSpec ChannelClassSpec::mediaWithInitialAudio(const QVariantMap &addi
     }
 }
 
-ChannelClassSpec ChannelClassSpec::mediaWithInitialVideo(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::mediaCallWithInitialVideo(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
@@ -313,7 +311,7 @@ ChannelClassSpec ChannelClassSpec::roomList(const QVariantMap &additionalPropert
     }
 }
 
-ChannelClassSpec ChannelClassSpec::sendFile(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::outgoingFileTransfer(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
@@ -330,7 +328,7 @@ ChannelClassSpec ChannelClassSpec::sendFile(const QVariantMap &additionalPropert
     }
 }
 
-ChannelClassSpec ChannelClassSpec::receiveFile(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::incomingFileTransfer(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
