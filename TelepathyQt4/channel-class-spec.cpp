@@ -95,7 +95,7 @@ ChannelClassSpec &ChannelClassSpec::operator=(const ChannelClassSpec &other)
     return *this;
 }
 
-bool ChannelClassSpec::operator<(const ChannelClassSpec &other) const
+bool ChannelClassSpec::isSubsetOf(const ChannelClassSpec &other) const
 {
     if (!isValid() || !other.isValid()) {
         warning() << "ChannelClassSpec comparison attempted for an invalid ChannelClassSpec";
@@ -125,7 +125,7 @@ bool ChannelClassSpec::matches(const QVariantMap &immutableProperties) const
     foreach (QString propName, immutableProperties.keys()) {
         other.setProperty(propName, immutableProperties.value(propName));
     }
-    return *this <= other;
+    return this->isSubsetOf(other);
 }
 
 bool ChannelClassSpec::hasProperty(const QString &qualifiedName) const

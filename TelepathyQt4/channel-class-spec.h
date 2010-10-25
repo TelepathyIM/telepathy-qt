@@ -53,28 +53,13 @@ public:
 
     ChannelClassSpec &operator=(const ChannelClassSpec &other);
 
-    bool operator<(const ChannelClassSpec &other) const;
-
-    bool operator<=(const ChannelClassSpec &other) const
-    {
-        return !(other < *this);
-    }
-
     bool operator==(const ChannelClassSpec &other) const
     {
-        return !(other < *this) && !(*this < other);
+        return this->isSubsetOf(other) && this->allProperties().size() ==
+            other.allProperties().size();
     }
 
-    bool operator>=(const ChannelClassSpec &other) const
-    {
-        return !(*this < other);
-    }
-
-    bool operator>(const ChannelClassSpec &other) const
-    {
-        return (other < *this);
-    }
-
+    bool isSubsetOf(const ChannelClassSpec &other) const;
     bool matches(const QVariantMap &immutableProperties) const;
 
     QString channelType() const
