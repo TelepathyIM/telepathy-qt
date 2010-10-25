@@ -19,6 +19,7 @@ set(telepathy_qt4_SRCS
     account-set-internal.h
     capabilities-base.cpp
     channel.cpp
+    channel-class-spec.cpp
     channel-factory.cpp
     channel-factory.h
     channel-request.cpp
@@ -113,6 +114,8 @@ set(telepathy_qt4_HEADERS
     CapabilitiesBase
     capabilities-base.h
     Channel
+    ChannelClassSpec
+    ChannelClassSpecList
     ChannelDispatcher
     channel-dispatcher.h
     ChannelDispatcherInterface
@@ -120,6 +123,7 @@ set(telepathy_qt4_HEADERS
     channel-dispatch-operation.h
     ChannelDispatchOperationInterface
     ChannelFactory
+    channel-class-spec.h
     channel-factory.h
     channel.h
     ChannelInterface
