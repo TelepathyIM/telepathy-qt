@@ -205,7 +205,9 @@ function(tpqt4_client_generator spec group pretty_include namespace)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
+
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
+                ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
     add_custom_target(generate_cli-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp)
 
     if (client_generator_depends)
@@ -239,7 +241,9 @@ function(tpqt4_future_client_generator spec namespace)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
+
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
+                ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
     add_custom_target(generate_future-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp)
 
     if (future_client_generator_depends)
@@ -307,7 +311,8 @@ function(tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
                                --specxml=${_SPEC_XML}
                                > ${_OUTFILE}
 
-                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
+                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
+                               ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
                                ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE})
 
@@ -332,7 +337,8 @@ function(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAM
                             ${types_gen_args}
                             --specxml=${_SPEC_XML}
 
-                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
+                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
+                               ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
                                ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE_IMPL})
 
