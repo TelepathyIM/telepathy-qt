@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -207,7 +207,7 @@ bool CapabilitiesBase::textChats() const
             continue;
         }
 
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
             rccSpec.targetHandleType() == HandleTypeContact) {
             return true;
         }
@@ -235,7 +235,7 @@ bool CapabilitiesBase::streamedMediaCalls() const
             continue;
         }
 
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             rccSpec.targetHandleType() == HandleTypeContact) {
             return true;
         }
@@ -271,9 +271,9 @@ bool CapabilitiesBase::streamedMediaAudioCalls() const
             continue;
         }
 
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             rccSpec.targetHandleType() == HandleTypeContact &&
-            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".InitialAudio"))) {
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"))) {
             return true;
         }
     }
@@ -297,9 +297,9 @@ bool CapabilitiesBase::streamedMediaVideoCalls() const
             continue;
         }
 
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             rccSpec.targetHandleType() == HandleTypeContact &&
-            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".InitialVideo"))) {
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"))) {
             return true;
         }
     }
@@ -323,10 +323,10 @@ bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
             continue;
         }
 
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             rccSpec.targetHandleType() == HandleTypeContact &&
-            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".InitialVideo")) &&
-            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".InitialAudio"))) {
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo")) &&
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"))) {
             return true;
         }
     }
@@ -361,8 +361,8 @@ bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
 bool CapabilitiesBase::upgradingStreamedMediaCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            !rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".ImmutableStreams"))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            !rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".ImmutableStreams"))) {
             // TODO should we test all classes that have channelType
             //      StreamedMedia or just one is fine?
             return true;
