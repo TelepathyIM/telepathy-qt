@@ -35,6 +35,10 @@ class Generator(object):
         except KeyError, k:
             assert False, 'Missing required parameter %s' % k.args[0]
 
+        self.old_prefix = None
+        if '--str-constant-old-prefix' in opts:
+            self.old_prefix = opts['--str-constant-old-prefix']
+
         self.spec = get_by_path(dom, "spec")[0]
         self.out = codecs.getwriter('utf-8')(stdout)
 
@@ -123,7 +127,8 @@ namespace %s
 
         # Interface names
         for iface in self.spec.getElementsByTagName('interface'):
-            self.h("""\
+            if self.old_prefix:
+                self.h("""\
 /**
  * \\ingroup ifacestrconsts
  *
@@ -132,12 +137,50 @@ namespace %s
 #define %(DEFINE)s "%(name)s"
 
 """ % {'name' : iface.getAttribute('name'),
-       'DEFINE' : self.prefix + 'INTERFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
+       'DEFINE' : self.old_prefix + 'INTERFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
+
+            self.h("""\
+/**
+ * \\ingroup ifacestrconsts
+ *
+ * The interface name "%(name)s".
+ */
+#define %(DEFINE)s QLatin1String("%(name)s")
+
+""" % {'name' : iface.getAttribute('name'),
+       'DEFINE' : self.prefix + 'IFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
+
+            self.h("""\
+/**
+ * \\ingroup ifacestrconsts
+ *
+ * The interface name "%(name)s".
+ */
+#define %(DEFINE)s_ASCII "%(name)s"
+
+""" % {'name' : iface.getAttribute('name'),
+       'DEFINE' : self.prefix + 'IFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
 
         # Error names
         for error in get_by_path(self.spec, 'errors/error'):
             name = error.getAttribute('name')
             fullname = get_by_path(error, '../@namespace') + '.' + name.replace(' ', '')
+
+            if self.old_prefix:
+                define = self.old_prefix + 'ERROR_' + name.replace(' ', '_').replace('.', '_').upper()
+                self.h("""\
+/**
+ * \\ingroup errorstrconsts
+ *
+ * The error name "%(fullname)s".
+%(docstring)s\
+ */
+#define %(DEFINE)s "%(fullname)s"
+
+""" % {'fullname' : fullname,
+       'docstring': format_docstring(error),
+       'DEFINE' : define})
+
             define = self.prefix + 'ERROR_' + name.replace(' ', '_').replace('.', '_').upper()
             self.h("""\
 /**
@@ -146,7 +189,20 @@ namespace %s
  * The error name "%(fullname)s".
 %(docstring)s\
  */
-#define %(DEFINE)s "%(fullname)s"
+#define %(DEFINE)s QLatin1String("%(fullname)s")
+
+""" % {'fullname' : fullname,
+       'docstring': format_docstring(error),
+       'DEFINE' : define})
+
+            self.h("""\
+/**
+ * \\ingroup errorstrconsts
+ *
+ * The error name "%(fullname)s".
+%(docstring)s\
+ */
+#define %(DEFINE)s_ASCII "%(fullname)s"
 
 """ % {'fullname' : fullname,
        'docstring': format_docstring(error),
@@ -244,6 +300,7 @@ if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
             ['namespace=',
              'str-constant-prefix=',
+             'str-constant-old-prefix=',
              'must-define=',
              'specxml='])
 
