@@ -27,6 +27,7 @@
 namespace Tp
 {
 
+// FIXME: (API/ABI break) Make Private a QSharedData
 struct TELEPATHY_QT4_NO_EXPORT CapabilitiesBase::Private
 {
     Private(bool specificToContact);
@@ -96,12 +97,31 @@ CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassSpecList &rccSpe
 {
 }
 
+CapabilitiesBase::CapabilitiesBase(const CapabilitiesBase &other)
+    // FIXME (API/ABI break) Uncomment the line below and remove the "new Private" when Private is a
+    //                       QSharedData
+    // : mPriv(other.mPriv)
+    : mPriv(new Private(other.mPriv->rccSpecs, other.mPriv->specificToContact))
+{
+}
+
 /**
  * Class destructor.
  */
 CapabilitiesBase::~CapabilitiesBase()
 {
+    // FIXME (API/ABI break) Remove the line below when Private is a QSharedData
     delete mPriv;
+}
+
+CapabilitiesBase &CapabilitiesBase::operator=(const CapabilitiesBase &other)
+{
+    // FIXME (API/ABI break) Uncomment the line below and remove the assigments when Private is a
+    //                       QSharedData
+    // this->mPriv = other.mPriv
+    this->mPriv->rccSpecs = other.mPriv->rccSpecs;
+    this->mPriv->specificToContact = other.mPriv->specificToContact;
+    return *this;
 }
 
 /**

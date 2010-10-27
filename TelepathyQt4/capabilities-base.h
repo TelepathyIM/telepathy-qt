@@ -35,7 +35,10 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT CapabilitiesBase
 {
 public:
+    CapabilitiesBase(const CapabilitiesBase &other);
     virtual ~CapabilitiesBase();
+
+    CapabilitiesBase &operator=(const CapabilitiesBase &other);
 
     RequestableChannelClassSpecList allClassSpecs() const;
 
@@ -81,6 +84,7 @@ private:
 
     struct Private;
     friend struct Private;
+    // FIXME (API/ABI break) Make mPriv a QSharedDataPointer
     Private *mPriv;
 };
 
