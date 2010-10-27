@@ -117,7 +117,7 @@ RequestableChannelClassList CapabilitiesBase::requestableChannelClasses() const
 {
     RequestableChannelClassList ret;
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        ret << rccSpec.requestableChannelClass();
+        ret << rccSpec.bareClass();
     }
     return ret;
 }
@@ -169,12 +169,12 @@ bool CapabilitiesBase::isSpecificToContact() const
 bool CapabilitiesBase::textChats() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedPropertiesCount() == 2) {
+        if (!rccSpec.fixedProperties().size() == 2) {
             continue;
         }
 
-        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
-            rccSpec.hasTargetHandleType(HandleTypeContact)) {
+        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
+            rccSpec.targetHandleType() == HandleTypeContact) {
             return true;
         }
     }
@@ -197,12 +197,12 @@ bool CapabilitiesBase::textChats() const
 bool CapabilitiesBase::streamedMediaCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedPropertiesCount() == 2) {
+        if (!rccSpec.fixedProperties().size() == 2) {
             continue;
         }
 
-        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            rccSpec.hasTargetHandleType(HandleTypeContact)) {
+        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact) {
             return true;
         }
     }
@@ -233,13 +233,13 @@ bool CapabilitiesBase::streamedMediaCalls() const
 bool CapabilitiesBase::streamedMediaAudioCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedPropertiesCount() == 2) {
+        if (!rccSpec.fixedProperties().size() == 2) {
             continue;
         }
 
-        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            rccSpec.hasTargetHandleType(HandleTypeContact) &&
-            rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio")) {
+        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".InitialAudio"))) {
             return true;
         }
     }
@@ -259,13 +259,13 @@ bool CapabilitiesBase::streamedMediaAudioCalls() const
 bool CapabilitiesBase::streamedMediaVideoCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedPropertiesCount() == 2) {
+        if (!rccSpec.fixedProperties().size() == 2) {
             continue;
         }
 
-        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            rccSpec.hasTargetHandleType(HandleTypeContact) &&
-            rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo")) {
+        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".InitialVideo"))) {
             return true;
         }
     }
@@ -285,14 +285,14 @@ bool CapabilitiesBase::streamedMediaVideoCalls() const
 bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedPropertiesCount() == 2) {
+        if (!rccSpec.fixedProperties().size() == 2) {
             continue;
         }
 
-        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            rccSpec.hasTargetHandleType(HandleTypeContact) &&
-            rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo") &&
-            rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio")) {
+        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".InitialVideo")) &&
+            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".InitialAudio"))) {
             return true;
         }
     }
@@ -327,8 +327,8 @@ bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
 bool CapabilitiesBase::upgradingStreamedMediaCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.hasChannelType(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            !rccSpec.hasAllowedProperty(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".ImmutableStreams")) {
+        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            !rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA_ASCII ".ImmutableStreams"))) {
             // TODO should we test all classes that have channelType
             //      StreamedMedia or just one is fine?
             return true;

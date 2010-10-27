@@ -56,28 +56,9 @@ RequestableChannelClassSpec &RequestableChannelClassSpec::operator=(const Reques
     return *this;
 }
 
-bool RequestableChannelClassSpec::hasChannelType() const
-{
-    if (!isValid()) {
-        return false;
-    }
-    return mPriv->rcc.fixedProperties.contains(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"));
-}
-
-bool RequestableChannelClassSpec::hasChannelType(const char *name) const
-{
-    return hasChannelType(QLatin1String(name));
-}
-
-bool RequestableChannelClassSpec::hasChannelType(const QString &name) const
-{
-    return channelType() == name;
-}
-
 QString RequestableChannelClassSpec::channelType() const
 {
-    if (!hasChannelType()) {
+    if (!isValid()) {
         return QString();
     }
     return qdbus_cast<QString>(mPriv->rcc.fixedProperties.value(
@@ -93,28 +74,13 @@ bool RequestableChannelClassSpec::hasTargetHandleType() const
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"));
 }
 
-bool RequestableChannelClassSpec::hasTargetHandleType(uint type) const
-{
-    return hasTargetHandleType((HandleType) type);
-}
-
-bool RequestableChannelClassSpec::hasTargetHandleType(HandleType type) const
-{
-    return targetHandleType() == type;
-}
-
-HandleType RequestableChannelClassSpec::targetHandleType() const
+uint RequestableChannelClassSpec::targetHandleType() const
 {
     if (!hasTargetHandleType()) {
-        return (HandleType) -1;
+        return (uint) -1;
     }
-    return (HandleType) qdbus_cast<uint>(mPriv->rcc.fixedProperties.value(
+    return qdbus_cast<uint>(mPriv->rcc.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-}
-
-bool RequestableChannelClassSpec::hasFixedProperty(const char *name) const
-{
-    return hasFixedProperty(QLatin1String(name));
 }
 
 bool RequestableChannelClassSpec::hasFixedProperty(const QString &name) const
@@ -123,11 +89,6 @@ bool RequestableChannelClassSpec::hasFixedProperty(const QString &name) const
         return false;
     }
     return mPriv->rcc.fixedProperties.contains(name);
-}
-
-QVariant RequestableChannelClassSpec::fixedProperty(const char *name) const
-{
-    return fixedProperty(QLatin1String(name));
 }
 
 QVariant RequestableChannelClassSpec::fixedProperty(const QString &name) const
@@ -146,20 +107,7 @@ QVariantMap RequestableChannelClassSpec::fixedProperties() const
     return mPriv->rcc.fixedProperties;
 }
 
-int RequestableChannelClassSpec::fixedPropertiesCount() const
-{
-    if (!isValid()) {
-        return 0;
-    }
-    return mPriv->rcc.fixedProperties.size();
-}
-
-bool RequestableChannelClassSpec::hasAllowedProperty(const char *name) const
-{
-    return hasAllowedProperty(QLatin1String(name));
-}
-
-bool RequestableChannelClassSpec::hasAllowedProperty(const QString &name) const
+bool RequestableChannelClassSpec::allowsProperty(const QString &name) const
 {
     if (!isValid()) {
         return false;
@@ -175,15 +123,7 @@ QStringList RequestableChannelClassSpec::allowedProperties() const
     return mPriv->rcc.allowedProperties;
 }
 
-int RequestableChannelClassSpec::allowedPropertiesCount() const
-{
-    if (!isValid()) {
-        return -1;
-    }
-    return mPriv->rcc.allowedProperties.size();
-}
-
-RequestableChannelClass RequestableChannelClassSpec::requestableChannelClass() const
+RequestableChannelClass RequestableChannelClassSpec::bareClass() const
 {
     return isValid() ? mPriv->rcc : RequestableChannelClass();
 }

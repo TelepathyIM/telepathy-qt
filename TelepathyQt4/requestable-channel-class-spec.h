@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-class RequestableChannelClassSpec
+class TELEPATHY_QT4_EXPORT RequestableChannelClassSpec
 {
 public:
     RequestableChannelClassSpec();
@@ -44,29 +44,19 @@ public:
 
     RequestableChannelClassSpec &operator=(const RequestableChannelClassSpec &other);
 
-    bool hasChannelType() const;
-    bool hasChannelType(const char *name) const;
-    bool hasChannelType(const QString &name) const;
     QString channelType() const;
 
     bool hasTargetHandleType() const;
-    bool hasTargetHandleType(uint type) const;
-    bool hasTargetHandleType(HandleType type) const;
-    HandleType targetHandleType() const;
+    uint targetHandleType() const;
 
-    bool hasFixedProperty(const char *name) const;
     bool hasFixedProperty(const QString &name) const;
-    QVariant fixedProperty(const char *name) const;
     QVariant fixedProperty(const QString &name) const;
     QVariantMap fixedProperties() const;
-    int fixedPropertiesCount() const;
 
-    bool hasAllowedProperty(const char *name) const;
-    bool hasAllowedProperty(const QString &name) const;
+    bool allowsProperty(const QString &name) const;
     QStringList allowedProperties() const;
-    int allowedPropertiesCount() const;
 
-    RequestableChannelClass requestableChannelClass() const;
+    RequestableChannelClass bareClass() const;
 
 private:
     struct Private;
