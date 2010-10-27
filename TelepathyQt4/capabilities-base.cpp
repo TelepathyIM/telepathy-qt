@@ -213,7 +213,7 @@ bool CapabilitiesBase::mediaCalls() const
  * Return whether private audio calls can be established by providing a
  * contact identifier.
  *
- * Call UpgradingCalls() to determine whether such calls are
+ * Call upgradingCalls() to determine whether such calls are
  * likely to be upgradable to have a video stream later.
  *
  * If the protocol is such that these calls can be established, but only via
