@@ -204,7 +204,8 @@ function(tpqt4_client_generator spec group pretty_include namespace)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
     add_custom_target(generate_cli-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp)
 
     if (client_generator_depends)
@@ -237,7 +238,8 @@ function(tpqt4_future_client_generator spec namespace)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
     add_custom_target(generate_future-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp)
 
     if (future_client_generator_depends)
@@ -260,7 +262,9 @@ function(tpqt4_generate_manager_file MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAM
 
                        ARGS    ${CMAKE_SOURCE_DIR}/tools/manager-file.py
                                ${MANAGER_FILE}
-                               _gen)
+                               _gen
+
+                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/manager-file.py)
 
     set_source_files_properties(${DEPEND_FILENAME}
                                 PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h)
@@ -280,7 +284,8 @@ function(tpqt4_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
                             ${xincludator_gen_args}
                             > ${_OUTPUT_FILE}
 
-                       DEPENDS ${_INPUT_FILE} ${depends_xml_files})
+                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/xincludator.py
+                               ${_INPUT_FILE} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTPUT_FILE})
 
     if (xincludator_gen_depends)
@@ -302,7 +307,8 @@ function(tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
                                --specxml=${_SPEC_XML}
                                > ${_OUTFILE}
 
-                       DEPENDS ${_SPEC_XML} ${depends_xml_files})
+                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
+                               ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE})
 
     if (constants_gen_depends)
@@ -325,7 +331,9 @@ function(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAM
                             --prettyinclude=${_PRETTYINCLUDE}
                             ${types_gen_args}
                             --specxml=${_SPEC_XML}
-                       DEPENDS ${_SPEC_XML} ${depends_xml_files})
+
+                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
+                               ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE_IMPL})
 
     if (types_gen_depends)
