@@ -44,15 +44,26 @@ ContactCapabilities::ContactCapabilities(bool specificToContact)
 }
 
 /**
- * Construct a new ContactCapabilities object using the give \a classes.
+ * Construct a new ContactCapabilities object using the give \a rccs.
  *
- * \param classes RequestableChannelClassList representing the capabilities of a
- *                contact.
+ * \param rccs RequestableChannelClassList representing the capabilities of a
+ *             contact.
  */
-ContactCapabilities::ContactCapabilities(
-        const RequestableChannelClassList &classes,
+ContactCapabilities::ContactCapabilities(const RequestableChannelClassList &rccs,
         bool specificToContact)
-    : CapabilitiesBase(classes, specificToContact)
+    : CapabilitiesBase(rccs, specificToContact)
+{
+}
+
+/**
+ * Construct a new ContactCapabilities object using the give \a rccSpecs.
+ *
+ * \param rccSpecs RequestableChannelClassList representing the capabilities of a
+ *                 contact.
+ */
+ContactCapabilities::ContactCapabilities(const RequestableChannelClassSpecList &rccSpecs,
+        bool specificToContact)
+    : CapabilitiesBase(rccSpecs, specificToContact)
 {
 }
 

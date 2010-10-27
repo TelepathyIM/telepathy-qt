@@ -83,6 +83,20 @@ CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassList &rccs,
 }
 
 /**
+ * Construct a new CapabilitiesBase object using the given \a rccSpecs.
+ *
+ * \param rccSpecs RequestableChannelClassSpecList representing the capabilities of a
+ *                 connection or contact.
+ * \param specificToContact Whether this object describes the capabilities of a
+ *                          particular contact.
+ */
+CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassSpecList &rccSpecs,
+        bool specificToContact)
+    : mPriv(new Private(rccSpecs, specificToContact))
+{
+}
+
+/**
  * Class destructor.
  */
 CapabilitiesBase::~CapabilitiesBase()

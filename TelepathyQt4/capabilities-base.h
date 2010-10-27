@@ -67,11 +67,13 @@ public:
 
 protected:
     CapabilitiesBase(bool specificToContact);
-    CapabilitiesBase(const RequestableChannelClassList &classes,
+    CapabilitiesBase(const RequestableChannelClassList &rccs,
+            bool specificToContact);
+    CapabilitiesBase(const RequestableChannelClassSpecList &rccSpecs,
             bool specificToContact);
 
     virtual void updateRequestableChannelClasses(
-            const RequestableChannelClassList &classes);
+            const RequestableChannelClassList &rccs);
 
 private:
     friend class Connection;

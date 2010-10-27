@@ -47,13 +47,24 @@ ConnectionCapabilities::ConnectionCapabilities()
 }
 
 /**
- * Construct a new ConnectionCapabilities object using the give \a classes.
+ * Construct a new ConnectionCapabilities object using the give \a rccs.
  *
- * \param classes RequestableChannelClassList representing the capabilities of a
- *                Connection.
+ * \param rccs RequestableChannelClassList representing the capabilities of a
+ *             Connection.
  */
-ConnectionCapabilities::ConnectionCapabilities(const RequestableChannelClassList &classes)
-    : CapabilitiesBase(classes, false)
+ConnectionCapabilities::ConnectionCapabilities(const RequestableChannelClassList &rccs)
+    : CapabilitiesBase(rccs, false)
+{
+}
+
+/**
+ * Construct a new ConnectionCapabilities object using the give \a rccSpecs.
+ *
+ * \param rccSpecs RequestableChannelClassSpecList representing the capabilities of a
+ *                 Connection.
+ */
+ConnectionCapabilities::ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs)
+    : CapabilitiesBase(rccSpecs, false)
 {
 }
 
