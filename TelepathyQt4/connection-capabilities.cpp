@@ -93,7 +93,7 @@ bool ConnectionCapabilities::textChatrooms() const
             continue;
         }
 
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
             rccSpec.targetHandleType() == HandleTypeRoom) {
             return true;
         }
@@ -110,9 +110,9 @@ bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")))) {
             return true;
         }
     }
@@ -135,11 +135,11 @@ bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels"))) &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialInviteeHandles")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialInviteeHandles")))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) &&
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")))) {
             return true;
         }
     }
@@ -155,9 +155,9 @@ bool ConnectionCapabilities::conferenceTextChats() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")))) {
             return true;
         }
     }
@@ -180,11 +180,11 @@ bool ConnectionCapabilities::conferenceTextChatsWithInvitees() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels"))) &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialInviteeHandles")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialInviteeHandles")))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) &&
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")))) {
             return true;
         }
     }
@@ -200,10 +200,10 @@ bool ConnectionCapabilities::conferenceTextChatrooms() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
             rccSpec.targetHandleType() == HandleTypeRoom &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")))) {
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")))) {
             return true;
         }
     }
@@ -226,12 +226,12 @@ bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
             rccSpec.targetHandleType() == HandleTypeRoom &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels"))) &&
-            (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialInviteeHandles")) ||
-             rccSpec.allowsProperty(QLatin1String(TPQT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialInviteeHandles")))) {
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) &&
+            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")) ||
+             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")))) {
             return true;
         }
     }
@@ -247,7 +247,7 @@ bool ConnectionCapabilities::contactSearch()
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH) {
             return true;
         }
     }
@@ -263,8 +263,8 @@ bool ConnectionCapabilities::contactSearchWithSpecificServer() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH &&
-            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH_ASCII ".Server"))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH &&
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server"))) {
             return true;
         }
     }
@@ -280,8 +280,8 @@ bool ConnectionCapabilities::contactSearchWithLimit() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH &&
-            rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH_ASCII ".Limit"))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH &&
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit"))) {
             return true;
         }
     }
