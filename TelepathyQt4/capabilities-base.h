@@ -37,7 +37,7 @@ class TELEPATHY_QT4_EXPORT CapabilitiesBase
 public:
     virtual ~CapabilitiesBase();
 
-    RequestableChannelClassSpecList requestableChannelClassSpecList() const;
+    RequestableChannelClassSpecList allClassSpecs() const;
 
     TELEPATHY_QT4_DEPRECATED RequestableChannelClassList requestableChannelClasses() const;
 

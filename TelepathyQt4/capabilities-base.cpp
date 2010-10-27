@@ -105,13 +105,13 @@ CapabilitiesBase::~CapabilitiesBase()
  *         Connection::createChannel and Connection::ensureChannel
  *         that can be expected to work.
  */
-RequestableChannelClassSpecList CapabilitiesBase::requestableChannelClassSpecList() const
+RequestableChannelClassSpecList CapabilitiesBase::allClassSpecs() const
 {
     return mPriv->rccSpecs;
 }
 
 /**
- * \deprecated Use requestableChannelClassSpecList() instead.
+ * \deprecated Use allClassSpecs() instead.
  */
 RequestableChannelClassList CapabilitiesBase::requestableChannelClasses() const
 {

@@ -76,7 +76,7 @@ ConnectionCapabilities::~ConnectionCapabilities()
  */
 bool ConnectionCapabilities::textChatrooms() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (!rccSpec.fixedProperties().size() == 2) {
             continue;
@@ -97,7 +97,7 @@ bool ConnectionCapabilities::textChatrooms() const
  */
 bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
@@ -122,7 +122,7 @@ bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
  */
 bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
@@ -142,7 +142,7 @@ bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
  */
 bool ConnectionCapabilities::conferenceTextChats() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
             (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
@@ -167,7 +167,7 @@ bool ConnectionCapabilities::conferenceTextChats() const
  */
 bool ConnectionCapabilities::conferenceTextChatsWithInvitees() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
             (rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_INTERFACE_CONFERENCE_ASCII ".InitialChannels")) ||
@@ -187,7 +187,7 @@ bool ConnectionCapabilities::conferenceTextChatsWithInvitees() const
  */
 bool ConnectionCapabilities::conferenceTextChatrooms() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
             rccSpec.targetHandleType() == HandleTypeRoom &&
@@ -213,7 +213,7 @@ bool ConnectionCapabilities::conferenceTextChatrooms() const
  */
 bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_TEXT &&
             rccSpec.targetHandleType() == HandleTypeRoom &&
@@ -234,7 +234,7 @@ bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
  */
 bool ConnectionCapabilities::contactSearch()
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH) {
             return true;
@@ -250,7 +250,7 @@ bool ConnectionCapabilities::contactSearch()
  */
 bool ConnectionCapabilities::contactSearchWithSpecificServer() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH &&
             rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH_ASCII ".Server"))) {
@@ -267,7 +267,7 @@ bool ConnectionCapabilities::contactSearchWithSpecificServer() const
  */
 bool ConnectionCapabilities::contactSearchWithLimit() const
 {
-    RequestableChannelClassSpecList rccSpecs = requestableChannelClassSpecList();
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH &&
             rccSpec.allowsProperty(QLatin1String(TPQT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH_ASCII ".Limit"))) {
