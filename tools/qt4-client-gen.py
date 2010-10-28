@@ -346,11 +346,12 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
             settername = 'set' + name
 
         self.h("""
+public:
     /**
      * Represents property "%(name)s" on the remote object.
 %(docstring)s\
      */
-    Q_PROPERTY(%(val)s %(name)s READ %(gettername)s%(maybesettername)s)
+    Q_PROPERTY(%(val)s %(name)s READ __%(gettername)s%(maybesettername)s)
 
     /**
      * Getter for the remote object property "%(name)s".
@@ -360,7 +361,13 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
      * \\return The value of the property, or a default-constructed value
      *          if the property is not readable.
      */
-    inline %(val)s %(gettername)s() const TELEPATHY_GNUC_DEPRECATED
+    inline TELEPATHY_QT4_DEPRECATED %(val)s %(gettername)s() const
+    {
+        return __%(gettername)s();
+    }
+
+private:
+    inline %(val)s __%(gettername)s() const
     {
         return %(getter-return)s;
     }
@@ -370,11 +377,12 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
        'val' : binding.val,
        'name' : name,
        'gettername' : gettername,
-       'maybesettername' : settername and (' WRITE ' + settername) or '',
+       'maybesettername' : settername and (' WRITE __' + settername) or '',
        'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, name)) or binding.val + '()'})
 
         if settername:
             self.h("""
+public:
     /**
      * Setter for the remote object property "%s".
      *
@@ -382,11 +390,17 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
      *
      * \\param newValue The value to set the property to.
      */
-    inline void %s(%s newValue) TELEPATHY_GNUC_DEPRECATED
+    inline TELEPATHY_QT4_DEPRECATED void %s(%s newValue)
+    {
+        return __%s(newValue);
+    }
+
+private:
+    inline void __%s(%s newValue)
     {
         internalPropSet("%s", QVariant::fromValue(newValue));
     }
-""" % (name, settername, binding.inarg, name))
+""" % (name, settername, binding.inarg, settername, settername, binding.inarg, name))
 
     def do_method(self, method):
         name = method.getAttribute('name')
