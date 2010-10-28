@@ -42,9 +42,10 @@ class TELEPATHY_QT4_EXPORT AccountSet : public QObject,
     Q_OBJECT
     Q_DISABLE_COPY(AccountSet)
     Q_PROPERTY(AccountManagerPtr accountManager READ accountManager)
-    Q_PROPERTY(bool filterValid READ isFilterValid)
-    // deprecated
-    Q_PROPERTY(QVariantMap filter READ filter)
+    // FIXME: (API/ABI break) Remove filterValid
+    Q_PROPERTY(bool filterValid READ __isFilterValid)
+    // FIXME: (API/ABI break) Remove filter
+    Q_PROPERTY(QVariantMap filter READ __filter)
     Q_PROPERTY(QList<AccountFilterConstPtr> filters READ filters)
     Q_PROPERTY(QList<AccountPtr> accounts READ accounts)
 
@@ -76,6 +77,10 @@ private Q_SLOTS:
 private:
     struct Private;
     friend struct Private;
+
+    bool __isFilterValid() const;
+    QVariantMap __filter() const;
+
     Private *mPriv;
 };
 

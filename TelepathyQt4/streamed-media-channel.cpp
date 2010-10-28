@@ -525,9 +525,16 @@ StreamedMediaChannelPtr MediaStream::channel() const
 /**
  * Return the id of this media stream.
  *
+ * \deprecated
+ *
  * \return An integer representing the media stream id.
  */
 uint MediaStream::id() const
+{
+    return __id();
+}
+
+uint MediaStream::__id() const
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return mPriv->SMId;
@@ -538,6 +545,8 @@ uint MediaStream::id() const
 
 /**
  * Return the contact who this media stream is with.
+ *
+ * \deprecated Use members() instead.
  *
  * \return The contact who this media stream is with.
  */
@@ -566,9 +575,16 @@ ContactPtr MediaStream::contact() const
 /**
  * Return the state of this media stream.
  *
+ * \deprecated
+ *
  * \return The state of this media stream.
  */
 MediaStreamState MediaStream::state() const
+{
+    return __state();
+}
+
+MediaStreamState MediaStream::__state() const
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return (MediaStreamState) mPriv->SMState;
@@ -579,6 +595,8 @@ MediaStreamState MediaStream::state() const
 
 /**
  * Return the type of this media stream.
+ *
+ * \deprecated
  *
  * \return The type of this media stream.
  */
@@ -618,11 +636,18 @@ bool MediaStream::sending() const
 /**
  * Return whether media is being received on this media stream.
  *
+ * \deprecated Use remoteSendingState() instead.
+ *
  * \return \c true if media is being received on this media stream, \c false
  *         otherwise.
  * \sa remoteSendingStateChanged()
  */
 bool MediaStream::receiving() const
+{
+    return __receiving();
+}
+
+bool MediaStream::__receiving() const
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return mPriv->SMDirection & MediaStreamDirectionReceive;
@@ -679,11 +704,18 @@ bool MediaStream::localSendingRequested() const
  * Return whether the remote user has been asked to send media by the local
  * user on this media stream.
  *
+ * \deprecated Use remoteSendingState() instead.
+ *
  * \return \c true if the remote user has been asked to send media by the
  *         local user on this media stream, \c false otherwise.
  * \sa remoteSendingStateChanged()
  */
 bool MediaStream::remoteSendingRequested() const
+{
+    return __remoteSendingRequested();
+}
+
+bool MediaStream::__remoteSendingRequested() const
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return mPriv->SMPendingSend & MediaStreamPendingRemoteSend;
@@ -709,10 +741,17 @@ bool MediaStream::remoteSendingRequested() const
 /**
  * Return the direction of this media stream.
  *
+ * \deprecated Use localSendingState(), remoteSendingState() instead.
+ *
  * \return The direction of this media stream.
  * \sa localSendingStateChanged(), remoteSendingStateChanged()
  */
 MediaStreamDirection MediaStream::direction() const
+{
+    return __direction();
+}
+
+MediaStreamDirection MediaStream::__direction() const
 {
    if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
        return (MediaStreamDirection) mPriv->SMDirection;
@@ -721,7 +760,7 @@ MediaStreamDirection MediaStream::direction() const
        if (sending()) {
            dir |= MediaStreamDirectionSend;
        }
-       if (receiving()) {
+       if (__receiving()) {
            dir |= MediaStreamDirectionReceive;
        }
        return (MediaStreamDirection) dir;
@@ -731,10 +770,17 @@ MediaStreamDirection MediaStream::direction() const
 /**
  * Return the pending send flags of this media stream.
  *
+ * \deprecated Use localSendingState(), remoteSendingState() instead.
+ *
  * \return The pending send flags of this media stream.
  * \sa localSendingStateChanged()
  */
 MediaStreamPendingSend MediaStream::pendingSend() const
+{
+    return __pendingSend();
+}
+
+MediaStreamPendingSend MediaStream::__pendingSend() const
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return (MediaStreamPendingSend) mPriv->SMPendingSend;
@@ -744,7 +790,7 @@ MediaStreamPendingSend MediaStream::pendingSend() const
         if (localSendingRequested()) {
             pending |= MediaStreamPendingLocalSend;
         }
-        if (remoteSendingRequested()) {
+        if (__remoteSendingRequested()) {
             pending |= MediaStreamPendingRemoteSend;
         }
         return (MediaStreamPendingSend) pending;
@@ -756,12 +802,20 @@ MediaStreamPendingSend MediaStream::pendingSend() const
  * might be useful to stop sending media of a particular type, or inform the
  * peer that you are no longer using media that is being sent to you.
  *
+ * \deprecated Use requestSending(), requestReceiving() instead.
+ *
  * \param direction The new direction.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa localSendingStateChanged(), remoteSendingStateChanged()
  */
 PendingOperation *MediaStream::requestDirection(
+        MediaStreamDirection direction)
+{
+    return __requestDirection(direction);
+}
+
+PendingOperation *MediaStream::__requestDirection(
         MediaStreamDirection direction)
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
@@ -888,7 +942,7 @@ PendingOperation *MediaStream::requestDirection(bool send, bool receive)
         dir |= MediaStreamDirectionReceive;
     }
 
-    return requestDirection((MediaStreamDirection) dir);
+    return __requestDirection((MediaStreamDirection) dir);
 }
 
 /**
@@ -2007,6 +2061,8 @@ StreamedMediaChannel::~StreamedMediaChannel()
  *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
+ * \deprecated Use MediaContent::streams() instead.
+ *
  * \return The media streams in this channel.
  * \sa streamAdded(), streamRemoved(), streamsForType(), requestStreams()
  */
@@ -2023,6 +2079,8 @@ MediaStreams StreamedMediaChannel::streams() const
  * Return a list of media streams in this channel for the given type \a type.
  *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ *
+ * \deprecated Use MediaContent::streams() instead.
  *
  * \param type The interested type.
  * \return A list of media streams in this channel for the given type \a type.
@@ -2084,6 +2142,8 @@ PendingOperation *StreamedMediaChannel::acceptCall()
  *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
+ * \deprecated Use removeContent() instead.
+ *
  * \param stream Media stream to remove.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -2101,7 +2161,7 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
         // that will proper remove the content
         return new PendingVoid(
                 streamedMediaInterface()->RemoveStreams(
-                    UIntList() << stream->id()),
+                    UIntList() << stream->__id()),
                 this);
     } else {
         return stream->content()->callRemove();
@@ -2116,6 +2176,8 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
  *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
+ * \deprecated Use removeContent() instead.
+ *
  * \param streams List of media streams to remove.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -2129,7 +2191,7 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
             if (!stream) {
                 continue;
             }
-            ids << stream->id();
+            ids << stream->__id();
         }
 
         if (ids.isEmpty()) {
@@ -2164,6 +2226,8 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
  *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
+ * \deprecated Use requestContent() instead.
+ *
  * \return A PendingMediaStreams which will emit PendingMediaStreams::finished
  *         when the call has finished.
  * \sa streamAdded(), streams(), streamsForType()
@@ -2187,6 +2251,8 @@ PendingMediaStreams *StreamedMediaChannel::requestStream(
  * types of media with the given contact \a contact.
  *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ *
+ * \deprecated Use requestContent() instead.
  *
  * \return A PendingMediaStreams which will emit PendingMediaStreams::finished
  *         when the call has finished.
@@ -2317,7 +2383,7 @@ PendingOperation *StreamedMediaChannel::removeContent(const MediaContentPtr &con
         MediaStreamPtr stream = content->SMStream();
         return new PendingVoid(
                 streamedMediaInterface()->RemoveStreams(
-                    UIntList() << stream->id()),
+                    UIntList() << stream->__id()),
             this);
     } else {
         return content->callRemove();
@@ -2640,8 +2706,8 @@ void StreamedMediaChannel::onSMStreamDirectionChanged(uint streamId,
 
     MediaStreamPtr stream = content->SMStream();
 
-    uint oldDirection = stream->direction();
-    uint oldPendingFlags = stream->pendingSend();
+    uint oldDirection = stream->__direction();
+    uint oldPendingFlags = stream->__pendingSend();
 
     stream->gotSMDirection(streamDirection, streamPendingFlags);
 
@@ -2666,7 +2732,7 @@ void StreamedMediaChannel::onSMStreamStateChanged(uint streamId,
 
     MediaStreamPtr stream = content->SMStream();
 
-    uint oldState = stream->state();
+    uint oldState = stream->__state();
 
     stream->gotSMStreamState(streamState);
 
@@ -2844,12 +2910,12 @@ MediaContentPtr StreamedMediaChannel::addContentForSMStream(
 MediaContentPtr StreamedMediaChannel::lookupContentBySMStreamId(uint streamId)
 {
     foreach (const MediaContentPtr &content, mPriv->contents) {
-        if (content->SMStream()->id() == streamId) {
+        if (content->SMStream()->__id() == streamId) {
             return content;
         }
     }
     foreach (const MediaContentPtr &content, mPriv->incompleteContents) {
-        if (content->SMStream() && content->SMStream()->id() == streamId) {
+        if (content->SMStream() && content->SMStream()->__id() == streamId) {
             return content;
         }
     }

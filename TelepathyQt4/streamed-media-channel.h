@@ -33,6 +33,8 @@
 namespace Tp
 {
 
+// TODO: (API/ABI break) split StreamedMediaChannel in CallChannel and StreamedMediaChannel
+
 class StreamedMediaChannel;
 
 typedef QList<MediaContentPtr> MediaContents;
@@ -151,6 +153,15 @@ private:
     void gotSMStreamState(uint state);
 
     QDBusObjectPath callObjectPath() const;
+
+    // FIXME: (API/ABI break) Remove all methods starting with __.
+    uint __id() const;
+    MediaStreamState __state() const;
+    bool __receiving() const;
+    MediaStreamDirection __direction() const;
+    MediaStreamPendingSend __pendingSend() const;
+    bool __remoteSendingRequested() const;
+    PendingOperation *__requestDirection(MediaStreamDirection direction);
 
     struct Private;
     friend struct Private;

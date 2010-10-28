@@ -65,6 +65,7 @@ class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
+    // FIXME: (API/ABI break) Remove both constructors that don't take factories as params.
     static AccountManagerPtr create();
     TELEPATHY_QT4_DEPRECATED static AccountManagerPtr create(const QDBusConnection &bus);
 
@@ -130,9 +131,7 @@ public:
     AccountPtr accountForPath(const QString &path);
     QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
-    // FIXME: (API/ABI break) Use a high-level class to represent supported account properties
     QStringList supportedAccountProperties() const;
-    // FIXME: (API/ABI break) Use a high-level class to represent account parameters and properties
     PendingAccount *createAccount(const QString &connectionManager,
             const QString &protocol, const QString &displayName,
             const QVariantMap &parameters,
@@ -144,9 +143,12 @@ public:
     }
 
 Q_SIGNALS:
-    TELEPATHY_QT4_DEPRECATED void accountCreated(const QString &path);
-    TELEPATHY_QT4_DEPRECATED void accountRemoved(const QString &path);
-    TELEPATHY_QT4_DEPRECATED void accountValidityChanged(const QString &path,
+    // FIXME: (API/ABI break) Remove accountCreated in favor of newAccount
+    void accountCreated(const QString &path);
+    // FIXME: (API/ABI break) Remove accountRemoved in favor of Account::removed
+    void accountRemoved(const QString &path);
+    // FIXME: (API/ABI break) Remove accountValidityChanged in favor of Account::validityChanged
+    void accountValidityChanged(const QString &path,
             bool valid);
 
     // FIXME: (API/ABI break) Rename to accountCreated. Actually it should have being named
@@ -162,7 +164,7 @@ protected:
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
-    TELEPATHY_QT4_DEPRECATED Client::AccountManagerInterface *baseInterface() const;
+    Client::AccountManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);

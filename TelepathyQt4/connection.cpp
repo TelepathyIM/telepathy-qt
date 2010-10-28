@@ -191,8 +191,7 @@ Connection::Private::Private(Connection *parent,
     : parent(parent),
       chanFactory(chanFactory),
       contactFactory(contactFactory),
-      baseInterface(new Client::ConnectionInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent)),
+      baseInterface(new Client::ConnectionInterface(parent)),
       properties(parent->propertiesInterface()),
       simplePresence(0),
       readinessHelper(parent->readinessHelper()),
@@ -870,7 +869,9 @@ const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connecti
  *
  * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
  * as appropriate, with no features ready.
-
+ *
+ * \deprecated Use other create() methods instead.
+ *
  * \param busName The connection well-known bus name (sometimes called a
  *                "service name").
  * \param objectPath The connection object path.
@@ -879,7 +880,9 @@ const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connecti
 ConnectionPtr Connection::create(const QString &busName,
         const QString &objectPath)
 {
-    return ConnectionPtr(new Connection(busName, objectPath));
+    QDBusConnection bus = QDBusConnection::sessionBus();
+    return ConnectionPtr(new Connection(bus, busName, objectPath,
+                ChannelFactory::create(bus), ContactFactory::create()));
 }
 
 /**
@@ -887,6 +890,8 @@ ConnectionPtr Connection::create(const QString &busName,
  *
  * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
  * as appropriate, with no features ready.
+ *
+ * \deprecated Use other create() methods instead.
  *
  * \param bus QDBusConnection to use.
  * \param busName The connection well-known bus name (sometimes called a
@@ -897,7 +902,8 @@ ConnectionPtr Connection::create(const QString &busName,
 ConnectionPtr Connection::create(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath)
 {
-    return ConnectionPtr(new Connection(bus, busName, objectPath));
+    return ConnectionPtr(new Connection(bus, busName, objectPath,
+                ChannelFactory::create(bus), ContactFactory::create()));
 }
 
 /**
@@ -948,6 +954,8 @@ ConnectionPtr Connection::create(const QDBusConnection &bus,
  * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
  * as appropriate, with no features ready.
  *
+ * \deprecated
+ *
  * \param busName The connection's well-known bus name (sometimes called a
  *                "service name").
  * \param objectPath The connection object path.
@@ -969,6 +977,8 @@ Connection::Connection(const QString &busName,
  *
  * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
  * as appropriate, with no features ready.
+ *
+ * \deprecated
  *
  * \param bus QDBusConnection to use.
  * \param busName The connection's well-known bus name (sometimes called a

@@ -396,10 +396,17 @@ AccountManagerPtr AccountSet::accountManager() const
  * This method is deprecated and should not be used in newly written code. Use
  * Filter::isValid() instead.
  *
+ * \deprecated Use Filter::isValid() instead.
+ *
  * \return \c true if the filter returned by filter()/filters() is valid, otherwise \c
  *         false.
  */
 bool AccountSet::isFilterValid() const
+{
+    return __isFilterValid();
+}
+
+bool AccountSet::__isFilterValid() const
 {
     foreach (const AccountFilterConstPtr &filter, filters()) {
         if (!filter->isValid()) {
@@ -418,9 +425,16 @@ bool AccountSet::isFilterValid() const
  * This method is deprecated and should not be used in newly written code. Use
  * filters() instead.
  *
+ * \deprecated Use filters() instead.
+ *
  * \return A QVariantMap representing the filter used to filter accounts.
  */
 QVariantMap AccountSet::filter() const
+{
+    return __filter();
+}
+
+QVariantMap AccountSet::__filter() const
 {
     QVariantMap result;
     foreach (const AccountFilterConstPtr &filter, mPriv->filters) {

@@ -65,6 +65,9 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     // Instance of generated interface class
     Client::AccountManagerInterface *baseInterface;
 
+    // Mandatory properties interface proxy
+    Client::DBus::PropertiesInterface *properties;
+
     ReadinessHelper *readinessHelper;
 
     AccountFactoryConstPtr accFactory;
@@ -82,8 +85,9 @@ AccountManager::Private::Private(AccountManager *parent,
         const AccountFactoryConstPtr &accFactory, const ConnectionFactoryConstPtr &connFactory,
         const ChannelFactoryConstPtr &chanFactory, const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
-      baseInterface(new Client::AccountManagerInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent)),
+      baseInterface(new Client::AccountManagerInterface(parent)),
+      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
+                  BypassInterfaceCheck)),
       readinessHelper(parent->readinessHelper()),
       accFactory(accFactory),
       connFactory(connFactory),
@@ -142,12 +146,9 @@ void AccountManager::Private::init()
 
 void AccountManager::Private::introspectMain(AccountManager::Private *self)
 {
-    Client::DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
-    Q_ASSERT(properties != 0);
-
     debug() << "Calling Properties::GetAll(AccountManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(
+            self->properties->GetAll(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER)),
             self->parent);
     self->parent->connect(watcher,
@@ -342,7 +343,11 @@ const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager
  */
 AccountManagerPtr AccountManager::create()
 {
-    return AccountManagerPtr(new AccountManager());
+    return AccountManagerPtr(new AccountManager(QDBusConnection::sessionBus(),
+                AccountFactory::create(QDBusConnection::sessionBus()),
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
+                ChannelFactory::create(QDBusConnection::sessionBus()),
+                ContactFactory::create()));
 }
 
 /**
@@ -358,7 +363,11 @@ AccountManagerPtr AccountManager::create()
  */
 AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
 {
-    return AccountManagerPtr(new AccountManager(bus));
+    return AccountManagerPtr(new AccountManager(bus,
+                AccountFactory::create(QDBusConnection::sessionBus()),
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
+                ChannelFactory::create(QDBusConnection::sessionBus()),
+                ContactFactory::create()));
 }
 
 /**
@@ -416,6 +425,8 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
  * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
  * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
  * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
+ *
+ * \deprecated
  */
 AccountManager::AccountManager()
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
@@ -438,6 +449,8 @@ AccountManager::AccountManager()
  * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
  * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
  * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
+ *
+ * \deprecated
  *
  * \param bus QDBusConnection to use.
  */
@@ -552,6 +565,8 @@ ContactFactoryConstPtr AccountManager::contactFactory() const
 /**
  * Return a list of object paths for all valid accounts.
  *
+ * \deprecated Use validAccountsSet() instead.
+ *
  * \return A list of object paths.
  */
 QStringList AccountManager::validAccountPaths() const
@@ -567,6 +582,8 @@ QStringList AccountManager::validAccountPaths() const
 
 /**
  * Return a list of object paths for all invalid accounts.
+ *
+ * \deprecated Use invalidAccountsSet() instead.
  *
  * \return A list of object paths.
  */
@@ -584,6 +601,8 @@ QStringList AccountManager::invalidAccountPaths() const
 /**
  * Return a list of object paths for all accounts.
  *
+ * \deprecated Use allAccounts() instead.
+ *
  * \return A list of object paths.
  */
 QStringList AccountManager::allAccountPaths() const
@@ -597,6 +616,8 @@ QStringList AccountManager::allAccountPaths() const
 
 /**
  * Return a list of AccountPtr objects for all valid accounts.
+ *
+ * \deprecated Use validAccountsSet() instead.
  *
  * \return A list of AccountPtr objects.
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
@@ -614,6 +635,8 @@ QList<AccountPtr> AccountManager::validAccounts()
 
 /**
  * Return a list of AccountPtr objects for all invalid accounts.
+ *
+ * \deprecated Use invalidAccountsSet() instead.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), allAccounts(), accountsForPaths()
@@ -1149,6 +1172,8 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
  * Convenience function for getting a PropertiesInterface interface proxy object
  * for this account manager. The AccountManager interface relies on properties,
  * so this interface is always assumed to be present.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \return A pointer to the existing Client::DBus::PropertiesInterface object
  *         for this AccountManager object.

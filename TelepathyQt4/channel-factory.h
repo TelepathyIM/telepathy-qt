@@ -63,7 +63,7 @@ private:
     friend class ClientObserverAdaptor;
     friend class PendingChannel;
 
-    static TELEPATHY_QT4_DEPRECATED ChannelPtr create(const ConnectionPtr &connection,
+    static ChannelPtr create(const ConnectionPtr &connection,
             const QString &channelPath, const QVariantMap &immutableProperties);
 
     struct Private;

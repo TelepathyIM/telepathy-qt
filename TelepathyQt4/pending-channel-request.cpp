@@ -28,8 +28,12 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/ChannelDispatcher>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ChannelRequest>
+#include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 
@@ -38,7 +42,8 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
 {
-    TELEPATHY_QT4_DEPRECATED Private(const QDBusConnection &dbusConnection)
+    // FIXME: (API/ABI break) Remove once the deprecated constructor using it is removed
+    Private(const QDBusConnection &dbusConnection)
         : dbusConnection(dbusConnection),
           cancelOperation(0)
     {
@@ -69,6 +74,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
 
 /**
  * Construct a new PendingChannelRequest object.
+ *
+ * \deprecated
  *
  * \param dbusConnection QDBusConnection to use.
  * \param accountObjectPath Account object path.
@@ -243,7 +250,9 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
                     objectPath.path(), QVariantMap());
         } else {
             mPriv->channelRequest = ChannelRequest::create(mPriv->dbusConnection,
-                    objectPath.path(), QVariantMap());
+                    objectPath.path(), QVariantMap(),
+                    AccountFactoryPtr(), ConnectionFactoryPtr(),
+                    ChannelFactoryPtr(), ContactFactoryPtr());
         }
 
         if (mPriv->cancelOperation) {

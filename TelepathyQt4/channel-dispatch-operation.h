@@ -105,7 +105,7 @@ protected:
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
-    TELEPATHY_QT4_DEPRECATED Client::ChannelDispatchOperationInterface *baseInterface() const;
+    Client::ChannelDispatchOperationInterface *baseInterface() const;
 
 private Q_SLOTS:
     void onFinished();

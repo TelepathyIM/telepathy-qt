@@ -62,16 +62,25 @@ AbstractInterface::~AbstractInterface()
     delete mPriv;
 }
 
+/**
+ * \deprecated Use DBusProxy::isValid() instead.
+ */
 bool AbstractInterface::isValid() const
 {
     return QDBusAbstractInterface::isValid() && mPriv->mError.isEmpty();
 }
 
+/**
+ * \deprecated Use DBusProxy::invalidationReason() instead.
+ */
 QString AbstractInterface::invalidationReason() const
 {
     return mPriv->mError;
 }
 
+/**
+ * \deprecated Use DBusProxy::invalidationMessage() instead.
+ */
 QString AbstractInterface::invalidationMessage() const
 {
     return mPriv->mMessage;
