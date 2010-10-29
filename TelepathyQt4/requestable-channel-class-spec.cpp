@@ -56,6 +56,24 @@ RequestableChannelClassSpec &RequestableChannelClassSpec::operator=(const Reques
     return *this;
 }
 
+bool RequestableChannelClassSpec::operator==(const RequestableChannelClassSpec &other) const
+{
+    return mPriv->rcc == other.mPriv->rcc;
+}
+
+bool RequestableChannelClassSpec::supports(const RequestableChannelClassSpec &other) const
+{
+    if (mPriv->rcc.fixedProperties == other.mPriv->rcc.fixedProperties) {
+        foreach (const QString &prop, other.mPriv->rcc.allowedProperties) {
+            if (!mPriv->rcc.allowedProperties.contains(prop)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 QString RequestableChannelClassSpec::channelType() const
 {
     if (!isValid()) {

@@ -43,6 +43,9 @@ public:
     bool isValid() const { return mPriv.constData() != 0; }
 
     RequestableChannelClassSpec &operator=(const RequestableChannelClassSpec &other);
+    bool operator==(const RequestableChannelClassSpec &other) const;
+
+    bool supports(const RequestableChannelClassSpec &spec) const;
 
     QString channelType() const;
 
