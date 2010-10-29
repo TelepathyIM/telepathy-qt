@@ -29,11 +29,18 @@ class Generator(object):
     def __init__(self, opts):
         try:
             self.namespace = opts['--namespace']
-            self.prefix = opts['--str-constant-prefix']
             self.must_define = opts.get('--must-define', None)
             dom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
             assert False, 'Missing required parameter %s' % k.args[0]
+
+        self.define_prefix = None
+        if '--define-prefix' in opts:
+            self.define_prefix = opts['--define-prefix']
+
+        self.old_prefix = None
+        if '--str-constant-prefix' in opts:
+            self.old_prefix = opts['--str-constant-prefix']
 
         self.spec = get_by_path(dom, "spec")[0]
         self.out = codecs.getwriter('utf-8')(stdout)
@@ -123,7 +130,8 @@ namespace %s
 
         # Interface names
         for iface in self.spec.getElementsByTagName('interface'):
-            self.h("""\
+            if self.old_prefix:
+                self.h("""\
 /**
  * \\ingroup ifacestrconsts
  *
@@ -132,14 +140,29 @@ namespace %s
 #define %(DEFINE)s "%(name)s"
 
 """ % {'name' : iface.getAttribute('name'),
-       'DEFINE' : self.prefix + 'INTERFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
+       'DEFINE' : self.old_prefix + 'INTERFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
+
+            if self.define_prefix:
+                self.h("""\
+/**
+ * \\ingroup ifacestrconsts
+ *
+ * The interface name "%(name)s" as a QLatin1String, usable in QString requiring contexts even when
+ * building with Q_NO_CAST_FROM_ASCII defined.
+ */
+#define %(DEFINE)s QLatin1String("%(name)s")
+
+""" % {'name' : iface.getAttribute('name'),
+       'DEFINE' : self.define_prefix + 'IFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
 
         # Error names
         for error in get_by_path(self.spec, 'errors/error'):
             name = error.getAttribute('name')
             fullname = get_by_path(error, '../@namespace') + '.' + name.replace(' ', '')
-            define = self.prefix + 'ERROR_' + name.replace(' ', '_').replace('.', '_').upper()
-            self.h("""\
+
+            if self.old_prefix:
+                define = self.old_prefix + 'ERROR_' + name.replace(' ', '_').replace('.', '_').upper()
+                self.h("""\
 /**
  * \\ingroup errorstrconsts
  *
@@ -147,6 +170,22 @@ namespace %s
 %(docstring)s\
  */
 #define %(DEFINE)s "%(fullname)s"
+
+""" % {'fullname' : fullname,
+       'docstring': format_docstring(error),
+       'DEFINE' : define})
+
+            if self.define_prefix:
+                define = self.define_prefix + 'ERROR_' + name.replace(' ', '_').replace('.', '_').upper()
+                self.h("""\
+/**
+ * \\ingroup errorstrconsts
+ *
+ * The error name "%(fullname)s" as a QLatin1String, usable in QString requiring contexts even when
+ * building with Q_NO_CAST_FROM_ASCII defined.
+%(docstring)s\
+ */
+#define %(DEFINE)s QLatin1String("%(fullname)s")
 
 """ % {'fullname' : fullname,
        'docstring': format_docstring(error),
@@ -244,6 +283,7 @@ if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
             ['namespace=',
              'str-constant-prefix=',
+             'define-prefix=',
              'must-define=',
              'specxml='])
 
