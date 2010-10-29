@@ -147,7 +147,8 @@ namespace %s
 /**
  * \\ingroup ifacestrconsts
  *
- * The interface name "%(name)s".
+ * The interface name "%(name)s" as a QLatin1String, usable in QString requiring contexts even when
+ * building with Q_NO_CAST_FROM_ASCII defined.
  */
 #define %(DEFINE)s QLatin1String("%(name)s")
 
@@ -180,7 +181,8 @@ namespace %s
 /**
  * \\ingroup errorstrconsts
  *
- * The error name "%(fullname)s".
+ * The error name "%(fullname)s" as a QLatin1String, usable in QString requiring contexts even when
+ * building with Q_NO_CAST_FROM_ASCII defined.
 %(docstring)s\
  */
 #define %(DEFINE)s QLatin1String("%(fullname)s")
