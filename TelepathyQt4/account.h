@@ -97,7 +97,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(bool online READ isOnline NOTIFY onlinenessChanged)
     Q_PROPERTY(QString uniqueIdentifier READ uniqueIdentifier)
     // FIXME: (API/ABI break) Remove connectionObjectPath
-    Q_PROPERTY(QString connectionObjectPath READ __connectionObjectPath)
+    Q_PROPERTY(QString connectionObjectPath READ __deprecated_connectionObjectPath)
     Q_PROPERTY(QString normalizedName READ normalizedName NOTIFY normalizedNameChanged)
 
 public:
@@ -403,7 +403,7 @@ private:
     // TODO: (API/ABI break) Move this to Tp::Object probably
     void notify(const char *propertyName);
 
-    QString __connectionObjectPath() const;
+    QString __deprecated_connectionObjectPath() const;
 
     Private *mPriv;
 };
