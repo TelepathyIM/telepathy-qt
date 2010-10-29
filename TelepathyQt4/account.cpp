@@ -3369,4 +3369,17 @@ void Account::notify(const char *propertyName)
     emit propertyChanged(QLatin1String(propertyName));
 }
 
+void Account::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(iconChanged(QString))) == 0) {
+        warning() << "Connecting to deprecated signal iconChanged(QString)";
+    } else if (qstrcmp(signalName, SIGNAL(connectionStatusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason))) == 0) {
+        warning() << "Connecting to deprecated signal connectionStatusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason)";
+    } else if (qstrcmp(signalName, SIGNAL(statusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason,QString,QVariantMap))) == 0) {
+        warning() << "Connecting to deprecated signal statusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason,QString,QVariantMap)";
+    } else if (qstrcmp(signalName, SIGNAL(haveConnectionChanged(bool))) == 0) {
+        warning() << "Connecting to deprecated signal haveConnectionChanged(bool)";
+    }
+}
+
 } // Tp

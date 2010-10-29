@@ -418,6 +418,9 @@ protected:
 
     Client::AccountInterface *baseInterface() const;
 
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
     void gotAvatar(QDBusPendingCallWatcher *);
