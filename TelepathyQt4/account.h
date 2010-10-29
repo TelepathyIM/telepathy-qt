@@ -387,17 +387,20 @@ Q_SIGNALS:
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
     void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
-    // FIXME: (API/ABI break) Remove connectionStatusChanged in favor of statusChanged
+    void connectionStatusChanged(Tp::Connection::Status status,
+            Tp::ConnectionStatusReason statusReason,
+            const QString &error, const Tp::Connection::ErrorDetails &errorDetails);
+    // FIXME: (API/ABI break) Remove connectionStatusChanged in favor of connectionStatusChanged
+    //        taking error and errorDetails as params.
     void connectionStatusChanged(Tp::ConnectionStatus status,
             Tp::ConnectionStatusReason statusReason);
-    // FIXME: (API/ABI break) Rename to connectionStatusChanged and use
-    //        Connection::Status and Connection::ErrorDetails. Actually it should have being named
-    //        connectionStatusChanged in the first place
+    // FIXME: (API/ABI break) Remove statusChanged in favor of connectionStatusChanged
+    //        taking error and errorDetails as params.
     void statusChanged(Tp::ConnectionStatus status,
             Tp::ConnectionStatusReason statusReason,
             const QString &error, const QVariantMap &errorDetails);
-    // FIXME: (API/ABI break) Remove haveConnectionChanged and add a new
-    //        connectionChanged(connection) instead
+    void connectionChanged(const Tp::ConnectionPtr &connection);
+    // FIXME: (API/ABI break) Remove haveConnectionChanged in favor of connectionChanged
     void haveConnectionChanged(bool haveConnection);
 
     // TODO: (API/ABI break) Move this to Tp::Object probably
