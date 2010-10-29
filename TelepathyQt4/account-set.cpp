@@ -403,10 +403,10 @@ AccountManagerPtr AccountSet::accountManager() const
  */
 bool AccountSet::isFilterValid() const
 {
-    return __isFilterValid();
+    return __deprecated_isFilterValid();
 }
 
-bool AccountSet::__isFilterValid() const
+bool AccountSet::__deprecated_isFilterValid() const
 {
     foreach (const AccountFilterConstPtr &filter, filters()) {
         if (!filter->isValid()) {
@@ -431,10 +431,10 @@ bool AccountSet::__isFilterValid() const
  */
 QVariantMap AccountSet::filter() const
 {
-    return __filter();
+    return __deprecated_filter();
 }
 
-QVariantMap AccountSet::__filter() const
+QVariantMap AccountSet::__deprecated_filter() const
 {
     QVariantMap result;
     foreach (const AccountFilterConstPtr &filter, mPriv->filters) {
