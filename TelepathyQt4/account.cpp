@@ -1277,23 +1277,38 @@ ConnectionCapabilities *Account::capabilities() const
         return mPriv->customCaps;
     }
 
-    RequestableChannelClassList piRccs = pi->capabilities()->requestableChannelClasses();
-    RequestableChannelClassList prUnsuportedRccs = pr->unsupportedChannelClasses();
-    RequestableChannelClassList rccs;
+    RequestableChannelClassSpecList piClassSpecs = pi->capabilities()->allClassSpecs();
+    RequestableChannelClassSpecList prUnsuportedClassSpecs = pr->unsupportedClassSpecs();
+    RequestableChannelClassSpecList classSpecs;
     bool unsupported;
-    foreach (const RequestableChannelClass &piRcc, piRccs) {
+    foreach (const RequestableChannelClassSpec &piClassSpec, piClassSpecs) {
         unsupported = false;
-        foreach (const RequestableChannelClass &prUnsuportedRcc, prUnsuportedRccs) {
-            if (piRcc.fixedProperties == prUnsuportedRcc.fixedProperties) {
-                unsupported = true;
-                break;
+        foreach (const RequestableChannelClassSpec &prUnsuportedClassSpec, prUnsuportedClassSpecs) {
+            // Here we check the following:
+            // - If the unsupported spec has no allowed property it means it does not support any
+            // class whose fixed properties match.
+            //   E.g: Doesn't support any media calls, be it audio or video.
+            // - If the unsupported spec has allowed properties it means it does not support a
+            // specific class whose fixed properties and allowed properties should match.
+            //   E.g: Doesn't support video calls but does support audio calls.
+            if (prUnsuportedClassSpec.allowedProperties().isEmpty()) {
+                if (piClassSpec.fixedProperties() == prUnsuportedClassSpec.fixedProperties()) {
+                    unsupported = true;
+                    break;
+                }
+            } else {
+                if (piClassSpec == prUnsuportedClassSpec) {
+                    unsupported = true;
+                    break;
+                }
             }
         }
         if (!unsupported) {
-            rccs.append(piRcc);
+            classSpecs.append(piClassSpec);
+        } else {
         }
     }
-    mPriv->customCaps = new ConnectionCapabilities(rccs);
+    mPriv->customCaps = new ConnectionCapabilities(classSpecs);
     return mPriv->customCaps;
 }
 
