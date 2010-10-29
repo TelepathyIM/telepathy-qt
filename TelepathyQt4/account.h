@@ -387,9 +387,7 @@ Q_SIGNALS:
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
     void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
-    void connectionStatusChanged(Tp::Connection::Status status,
-            Tp::ConnectionStatusReason statusReason,
-            const QString &error, const Tp::Connection::ErrorDetails &errorDetails);
+    void connectionStatusChanged(Tp::Connection::Status status);
     // FIXME: (API/ABI break) Remove connectionStatusChanged in favor of connectionStatusChanged
     //        taking error and errorDetails as params.
     void connectionStatusChanged(Tp::ConnectionStatus status,

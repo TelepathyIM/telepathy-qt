@@ -2675,10 +2675,7 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
- * \fn void Account::connectionStatusChanged(Tp::Connection::Status status,
- *                                           Tp::ConnectionStatusReason statusReason,
- *                                           const QString &errorName,
- *                                           const Tp::Connection::ErrorDetails &errorDetails);
+ * \fn void Account::connectionStatusChanged(Tp::Connection::Status status);
  *
  * This signal is emitted when the connection status of this account changes.
  *
@@ -2690,15 +2687,14 @@ PendingChannelRequest *Account::ensureChannel(
  * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails(),
  *     Connection::ErrorDetails
  */
+
 /**
  * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status, Tp::ConnectionStatusReason statusReason);
  *
  * This signal is emitted when the value of connectionStatus() of this
  * account changes.
  *
- * \deprecated Use connectionStatusChanged(Tp::Connection::Status status,
- *     Tp::ConnectionStatusReason statusReason, const QString &error,
- *     const Tp::Connection::ErrorDetails &errorDetails) instead.
+ * \deprecated Use connectionStatusChanged(Tp::Connection::Status status) instead.
  *
  * \param status The new status of this account connection.
  * \param statusReason The new status reason of this account connection.
@@ -2713,10 +2709,8 @@ PendingChannelRequest *Account::ensureChannel(
  *
  * This signal is emitted when the connection status of this account changes.
  *
- * \deprecated Use connectionStatusChanged(Tp::Connection::Status status,
- *     Tp::ConnectionStatusReason statusReason, const QString &error,
- *     const Tp::Connection::ErrorDetails &errorDetails) instead.
-
+ * \deprecated Use connectionStatusChanged(Tp::Connection::Status status) instead.
+ *
  * \param status The new status of this account connection.
  * \param statusReason The new status reason of this account connection.
  * \param errorName The D-Bus error name for the last disconnection or
@@ -3131,8 +3125,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
                 emit parent->statusChanged(connectionStatus, connectionStatusReason,
                         connectionError, connectionErrorDetails);
-                emit parent->connectionStatusChanged((Connection::Status) connectionStatus, connectionStatusReason,
-                        connectionError, Connection::ErrorDetails(connectionErrorDetails));
+                emit parent->connectionStatusChanged((Connection::Status) connectionStatus);
                 parent->notify("connectionError");
                 parent->notify("connectionErrorDetails");
             } else {
