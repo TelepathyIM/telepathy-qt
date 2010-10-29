@@ -203,7 +203,7 @@ bool CapabilitiesBase::isSpecificToContact() const
 bool CapabilitiesBase::textChats() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedProperties().size() == 2) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
@@ -231,7 +231,7 @@ bool CapabilitiesBase::textChats() const
 bool CapabilitiesBase::streamedMediaCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedProperties().size() == 2) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
@@ -267,7 +267,7 @@ bool CapabilitiesBase::streamedMediaCalls() const
 bool CapabilitiesBase::streamedMediaAudioCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedProperties().size() == 2) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
@@ -293,7 +293,7 @@ bool CapabilitiesBase::streamedMediaAudioCalls() const
 bool CapabilitiesBase::streamedMediaVideoCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedProperties().size() == 2) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
@@ -319,7 +319,7 @@ bool CapabilitiesBase::streamedMediaVideoCalls() const
 bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (!rccSpec.fixedProperties().size() == 2) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
