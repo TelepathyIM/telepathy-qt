@@ -67,7 +67,7 @@ public:
 
     // FIXME: (API/ABI break) Remove both constructors that don't take factories as params.
     static AccountManagerPtr create();
-    TELEPATHY_QT4_DEPRECATED static AccountManagerPtr create(const QDBusConnection &bus);
+    static AccountManagerPtr create(const QDBusConnection &bus);
 
     // FIXME: (API/ABI break) Add a default parameter to accountFactory once the create methods
     //        above are removed
