@@ -30,15 +30,9 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractInterface::Private
 {
-    Private();
     QString mError;
     QString mMessage;
 };
-
-AbstractInterface::Private::Private()
-    : mError(), mMessage()
-{
-}
 
 AbstractInterface::AbstractInterface(const QString &busName,
         const QString &path, const char *interface,
@@ -51,7 +45,7 @@ AbstractInterface::AbstractInterface(const QString &busName,
 AbstractInterface::AbstractInterface(DBusProxy *parent, const char *interface)
     : QDBusAbstractInterface(parent->busName(), parent->objectPath(),
             interface, parent->dbusConnection(), parent),
-      mPriv(new Private())
+      mPriv(new Private)
 {
     connect(parent, SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             this, SLOT(invalidate(Tp::DBusProxy*,QString,QString)));
@@ -62,25 +56,16 @@ AbstractInterface::~AbstractInterface()
     delete mPriv;
 }
 
-/**
- * \deprecated Use DBusProxy::isValid() instead.
- */
 bool AbstractInterface::isValid() const
 {
     return QDBusAbstractInterface::isValid() && mPriv->mError.isEmpty();
 }
 
-/**
- * \deprecated Use DBusProxy::invalidationReason() instead.
- */
 QString AbstractInterface::invalidationReason() const
 {
     return mPriv->mError;
 }
 
-/**
- * \deprecated Use DBusProxy::invalidationMessage() instead.
- */
 QString AbstractInterface::invalidationMessage() const
 {
     return mPriv->mMessage;

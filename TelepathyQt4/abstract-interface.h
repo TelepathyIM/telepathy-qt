@@ -42,12 +42,11 @@ class TELEPATHY_QT4_EXPORT AbstractInterface : public QDBusAbstractInterface
 public:
     virtual ~AbstractInterface();
 
-    TELEPATHY_QT4_DEPRECATED bool isValid() const;
-    TELEPATHY_QT4_DEPRECATED QString invalidationReason() const;
-    TELEPATHY_QT4_DEPRECATED QString invalidationMessage() const;
+    bool isValid() const;
+    QString invalidationReason() const;
+    QString invalidationMessage() const;
 
 protected Q_SLOTS:
-    // FIXME: (API/ABI break) Remove invalidate
     virtual void invalidate(Tp::DBusProxy *proxy,
             const QString &error, const QString &message);
 
