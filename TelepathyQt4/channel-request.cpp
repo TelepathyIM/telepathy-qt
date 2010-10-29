@@ -127,8 +127,8 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
         if (key.startsWith(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST "."))
                 && key.count(QLatin1Char('.')) ==
                     QString::fromAscii(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".").count(QLatin1Char('.'))) {
-            mainProps.insert(key.remove(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".")),
-                    immutableProperties.value(key));
+            QVariant value = immutableProperties.value(key);
+            mainProps.insert(key.remove(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".")), value);
         }
     }
     extractMainProps(mainProps, false);
