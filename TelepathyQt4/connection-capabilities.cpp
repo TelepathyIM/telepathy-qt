@@ -111,6 +111,7 @@ bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
             (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
              rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")))) {
             return true;
@@ -136,6 +137,7 @@ bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
             (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
              rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) &&
             (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")) ||
@@ -156,6 +158,7 @@ bool ConnectionCapabilities::conferenceTextChats() const
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
             (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
              rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")))) {
             return true;
@@ -181,6 +184,7 @@ bool ConnectionCapabilities::conferenceTextChatsWithInvitees() const
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
             (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
              rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) &&
             (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")) ||
