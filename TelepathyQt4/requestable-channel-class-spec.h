@@ -40,6 +40,26 @@ public:
     RequestableChannelClassSpec(const RequestableChannelClassSpec &other);
     ~RequestableChannelClassSpec();
 
+    static RequestableChannelClassSpec textChat();
+    static RequestableChannelClassSpec textChatroom();
+
+    static RequestableChannelClassSpec mediaCall();
+    static RequestableChannelClassSpec audioCall();
+    static RequestableChannelClassSpec videoCall();
+    static RequestableChannelClassSpec videoCallWithAudio();
+
+    static RequestableChannelClassSpec conferenceTextChat();
+    static RequestableChannelClassSpec conferenceTextChatWithInvitees();
+    static RequestableChannelClassSpec conferenceTextChatroom();
+    static RequestableChannelClassSpec conferenceTextChatroomWithInvitees();
+    static RequestableChannelClassSpec conferenceMediaCall();
+    static RequestableChannelClassSpec conferenceMediaCallWithInvitees();
+
+    static RequestableChannelClassSpec contactSearch();
+    static RequestableChannelClassSpec contactSearchWithSpecificServer();
+    static RequestableChannelClassSpec contactSearchWithLimit();
+    static RequestableChannelClassSpec contactSearchWithSpecificServerAndLimit();
+
     bool isValid() const { return mPriv.constData() != 0; }
 
     RequestableChannelClassSpec &operator=(const RequestableChannelClassSpec &other);

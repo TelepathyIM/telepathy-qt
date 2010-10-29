@@ -50,6 +50,198 @@ RequestableChannelClassSpec::~RequestableChannelClassSpec()
 {
 }
 
+RequestableChannelClassSpec RequestableChannelClassSpec::textChat()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::textChatroom()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeRoom);
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::mediaCall()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::audioCall()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::videoCall()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::videoCallWithAudio()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChat()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    // TODO: what to do with Conference.DRAFT, just ignore it?
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatWithInvitees()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    // TODO: what to do with Conference.DRAFT, just ignore it?
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatroom()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeRoom);
+    // TODO: what to do with Conference.DRAFT, just ignore it?
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatroomWithInvitees()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeRoom);
+    // TODO: what to do with Conference.DRAFT, just ignore it?
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::conferenceMediaCall()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    // TODO: what to do with Conference.DRAFT, just ignore it?
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::conferenceMediaCallWithInvitees()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+            (uint) HandleTypeContact);
+    // TODO: what to do with Conference.DRAFT, just ignore it?
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::contactSearch()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::contactSearchWithSpecificServer()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::contactSearchWithLimit()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit"));
+    return RequestableChannelClassSpec(rcc);
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::contactSearchWithSpecificServerAndLimit()
+{
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server"));
+    rcc.allowedProperties.append(
+            TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit"));
+    return RequestableChannelClassSpec(rcc);
+}
+
 RequestableChannelClassSpec &RequestableChannelClassSpec::operator=(const RequestableChannelClassSpec &other)
 {
     this->mPriv = other.mPriv;
