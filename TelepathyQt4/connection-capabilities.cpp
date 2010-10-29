@@ -89,7 +89,7 @@ bool ConnectionCapabilities::textChatrooms() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (!rccSpec.fixedProperties().size() == 2) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
