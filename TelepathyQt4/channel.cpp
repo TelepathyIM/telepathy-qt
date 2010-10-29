@@ -2322,7 +2322,7 @@ Contacts Channel::conferenceInitialInviteeContacts() const
  * Note that this method will always return false if the Channel supports the Conference interface,
  * even if Conference.DRAFT is also supported.
  *
- * \deprecated Use ConnectionCapabilties conference methods instead.
+ * \deprecated Use ConnectionCapabilities conference methods instead.
  *
  * \return Whether the channels supports non merges.
  */
