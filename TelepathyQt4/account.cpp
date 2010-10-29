@@ -945,7 +945,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  *  - Profile::presences() will return an empty list and
  *    Profile::allowOtherPresences() will return \c true, meaning that CM
  *    presences should be used
- *  - Profile::unsupportedChannelClasses() will return an empty list
+ *  - Profile::unsupportedClassSpecs() will return an empty list
  *
  * This method requires Account::FeatureProfile to be enabled.
  *

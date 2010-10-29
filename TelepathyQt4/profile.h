@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/RequestableChannelClassSpec>
 #include <TelepathyQt4/Types>
 
 #include <QDBusSignature>
@@ -143,7 +144,8 @@ public:
     bool hasPresence(const QString &id) const;
     Presence presence(const QString &id) const;
 
-    RequestableChannelClassList unsupportedChannelClasses() const;
+    TELEPATHY_QT4_DEPRECATED RequestableChannelClassList unsupportedChannelClasses() const;
+    RequestableChannelClassSpecList unsupportedClassSpecs() const;
 
 private:
     friend class Account;
