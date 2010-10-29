@@ -42,7 +42,7 @@ public:
 
 private Q_SLOTS:
     void onAMReady(Tp::PendingOperation *);
-    void onAccountCreated(const QString &);
+    void onNewAccount(const Tp::AccountPtr &);
 
 private:
     void setupGui();
