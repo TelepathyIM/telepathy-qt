@@ -13,6 +13,7 @@
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/AbstractClientObserver>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/ChannelDispatchOperation>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ChannelRequest>
@@ -27,6 +28,7 @@
 #include <TelepathyQt4/MethodInvocationContext>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Types>
 
 #include <telepathy-glib/debug.h>
@@ -419,9 +421,23 @@ void TestClientFactories::initTestCase()
 
     QDBusConnection bus = QDBusConnection::sessionBus();
 
+    ChannelFactoryPtr chanFact = ChannelFactory::create(bus);
+
+    chanFact->addFeaturesForTextChats(TextChannel::FeatureChatState |
+            TextChannel::FeatureMessageQueue);
+    chanFact->addCommonFeatures(Channel::FeatureCore);
+
+    QCOMPARE(chanFact->commonFeatures().size(), 1);
+
+    QCOMPARE(chanFact->featuresForTextChats().size(), 3);
+    QVERIFY(chanFact->featuresForTextChats().contains(TextChannel::FeatureMessageQueue));
+    QVERIFY(chanFact->featuresForTextChats().contains(Channel::FeatureCore));
+    QVERIFY(!chanFact->featuresForTextChats().contains(TextChannel::FeatureMessageSentSignal));
+
     mAM = AccountManager::create(AccountFactory::create(bus, Account::FeatureCore),
             ConnectionFactory::create(bus,
-                Connection::FeatureCore | Connection::FeatureSimplePresence));
+                Connection::FeatureCore | Connection::FeatureSimplePresence),
+            chanFact);
     PendingReady *amReadyOp = mAM->becomeReady();
     QVERIFY(amReadyOp != NULL);
     QVERIFY(connect(amReadyOp,
@@ -536,7 +552,8 @@ void TestClientFactories::initTestCase()
     mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
 
     ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+        ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
 
     mCDO = new ChannelDispatchOperationAdaptor(QDBusObjectPath(mAccount->objectPath()),
@@ -722,7 +739,8 @@ void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &cli
             SIGNAL(observeChannelsFinished()),
             SLOT(expectSignalEmission()));
     ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+        ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
@@ -823,7 +841,8 @@ void TestClientFactories::testHandleChannels()
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
     ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+        ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
     handler1Iface->HandleChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
@@ -843,6 +862,15 @@ void TestClientFactories::testHandleChannels()
                 Connection::FeatureCore | Connection::FeatureSimplePresence));
 
     QCOMPARE(client1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
+
+    TextChannelPtr textChan = TextChannelPtr::qObjectCast(client1->mHandleChannelsChannels.first());
+
+    QVERIFY(!textChan.isNull());
+
+    QVERIFY(textChan->isReady());
+    QVERIFY(textChan->isReady(Channel::FeatureCore));
+    QVERIFY(textChan->isReady(TextChannel::FeatureMessageQueue));
+    QVERIFY(textChan->isReady(TextChannel::FeatureChatState));
 
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QVERIFY(client1->mHandleChannelsRequestsSatisfied.first()->isReady());
