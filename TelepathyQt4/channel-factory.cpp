@@ -99,6 +99,71 @@ ChannelFactory::~ChannelFactory()
     delete mPriv;
 }
 
+Features ChannelFactory::featuresForTextChats(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::textChat(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForTextChats(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::textChat(additionalProps), features);
+}
+
+Features ChannelFactory::featuresForTextChatrooms(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::textChatroom(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForTextChatrooms(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::textChatroom(additionalProps), features);
+}
+
+Features ChannelFactory::featuresForMediaCalls(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::mediaCall(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForMediaCalls(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::mediaCall(additionalProps), features);
+}
+
+Features ChannelFactory::featuresForIncomingFileTransfers(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::incomingFileTransfer(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForIncomingFileTransfers(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::incomingFileTransfer(additionalProps), features);
+}
+
+Features ChannelFactory::featuresForOutgoingFileTransfers(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::outgoingFileTransfer(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForOutgoingFileTransfers(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::outgoingFileTransfer(additionalProps), features);
+}
+
+Features ChannelFactory::commonFeatures() const
+{
+    return featuresFor(ChannelClassSpec());
+}
+
+void ChannelFactory::addCommonFeatures(const Features &features)
+{
+    addFeaturesFor(ChannelClassSpec(), features);
+}
+
 Features ChannelFactory::featuresFor(const ChannelClassSpec &channelClass) const
 {
     Features features;
@@ -141,8 +206,7 @@ void ChannelFactory::addFeaturesFor(const ChannelClassSpec &channelClass, const 
  *
  * The proxy can be accessed immediately after this function returns using PendingReady::proxy().
  *
- * \todo Make it configurable which subclass is constructed and which features, if any, are made
- * ready on it.
+ * \todo Make it configurable which subclass is constructed.
  *
  * \param connection Proxy for the owning connection of the channel.
  * \param channelPath The object path of the channel.

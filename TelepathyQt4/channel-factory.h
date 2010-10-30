@@ -48,19 +48,24 @@ public:
     virtual ~ChannelFactory();
 
     Features featuresForTextChats(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForTextChats(const QVariantMap &additionalProps = QVariantMap());
+    void addFeaturesForTextChats(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
 
     Features featuresForTextChatrooms(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForTextChatrooms(const QVariantMap &additionalProps = QVariantMap());
+    void addFeaturesForTextChatrooms(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
 
     Features featuresForMediaCalls(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForMediaCalls(const QVariantMap &additionalProps = QVariantMap());
+    void addFeaturesForMediaCalls(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
 
     Features featuresForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap());
+    void addFeaturesForIncomingFileTransfers(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
 
     Features featuresForOutgoingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForOutgoingFileTransfers(const QVariantMap &additionalProps = QVariantMap());
+    void addFeaturesForOutgoingFileTransfers(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
 
     // When merged, Tube channels should have export/import variants too like FT has for send/receive
 
