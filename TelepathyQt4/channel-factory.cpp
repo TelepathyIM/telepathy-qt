@@ -129,7 +129,15 @@ Features ChannelFactory::featuresForMediaCalls(const QVariantMap &additionalProp
 void ChannelFactory::addFeaturesForMediaCalls(const Features &features,
         const QVariantMap &additionalProps)
 {
-    addFeaturesFor(ChannelClassSpec::mediaCall(additionalProps), features);
+    // Set for both StreamedMedia and Call.DRAFT
+
+    ChannelClassSpec smSpec = ChannelClassSpec::mediaCall(additionalProps);
+
+    ChannelClassSpec callDraftSpec = smSpec;
+    callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
+
+    addFeaturesFor(smSpec, features);
+    addFeaturesFor(callDraftSpec, features);
 }
 
 Features ChannelFactory::featuresForIncomingFileTransfers(const QVariantMap &additionalProps) const
