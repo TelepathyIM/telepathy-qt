@@ -28,9 +28,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ChannelClassSpec::Private : public QSharedData
 {
-    Private(const QVariantMap &props = QVariantMap())
-        : props(props) {}
-
     QVariantMap props;
 };
 
@@ -48,19 +45,25 @@ ChannelClassSpec::ChannelClassSpec(const ChannelClass &cc)
 
 ChannelClassSpec::ChannelClassSpec(const QString &channelType, uint targetHandleType,
         const QVariantMap &otherProperties)
-    : mPriv(new Private(otherProperties))
+    : mPriv(new Private)
 {
     setChannelType(channelType);
     setTargetHandleType(targetHandleType);
+    foreach (QString key, otherProperties.keys()) {
+        setProperty(key, otherProperties.value(key));
+    }
 }
 
 ChannelClassSpec::ChannelClassSpec(const QString &channelType, uint targetHandleType, bool requested,
         const QVariantMap &otherProperties)
-    : mPriv(new Private(otherProperties))
+    : mPriv(new Private)
 {
     setChannelType(channelType);
     setTargetHandleType(targetHandleType);
     setRequested(requested);
+    foreach (QString key, otherProperties.keys()) {
+        setProperty(key, otherProperties.value(key));
+    }
 }
 
 ChannelClassSpec::ChannelClassSpec(const ChannelClassSpec &other,
