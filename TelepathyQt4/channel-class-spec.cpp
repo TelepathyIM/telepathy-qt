@@ -113,9 +113,9 @@ ChannelClassSpec &ChannelClassSpec::operator=(const ChannelClassSpec &other)
 
 bool ChannelClassSpec::isSubsetOf(const ChannelClassSpec &other) const
 {
-    if (!isValid() || !other.isValid()) {
-        warning() << "ChannelClassSpec comparison attempted for an invalid ChannelClassSpec";
-        return false;
+    if (!mPriv) {
+        // Invalid instances have no properties - hence they're subset of anything
+        return true;
     }
 
     foreach (QString propName, mPriv->props.keys()) {
