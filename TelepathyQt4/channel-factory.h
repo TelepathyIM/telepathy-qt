@@ -22,7 +22,6 @@
 #ifndef _TelepathyQt4_channel_factory_h_HEADER_GUARD_
 #define _TelepathyQt4_channel_factory_h_HEADER_GUARD_
 
-#include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/DBusProxyFactory>
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
@@ -36,6 +35,8 @@ class QDBusConnection;
 
 namespace Tp
 {
+
+class ChannelClassSpec;
 
 class TELEPATHY_QT4_EXPORT ChannelFactory : public DBusProxyFactory
 {

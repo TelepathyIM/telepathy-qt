@@ -26,6 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactSearchChannel>
