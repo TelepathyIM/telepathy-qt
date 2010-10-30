@@ -43,7 +43,7 @@ struct ChannelFactory::Private
 {
     Private();
 
-    typedef QPair<QVariantMap, Features> FeaturePair;
+    typedef QPair<ChannelClassSpec, Features> FeaturePair;
     QList<FeaturePair> features;
 };
 
@@ -98,22 +98,12 @@ ChannelFactory::~ChannelFactory()
     delete mPriv;
 }
 
-Features ChannelFactory::featuresFor(const QVariantMap &channelClass) const
+Features ChannelFactory::featuresFor(const ChannelClassSpec &channelClass) const
 {
     Features features;
 
     foreach (const Private::FeaturePair &pair, mPriv->features) {
-        const QVariantMap &filterProps = pair.first;
-
-        bool matches = true;
-        foreach (const QString &key, filterProps.keys()) {
-            if (!channelClass.contains(key) || channelClass.value(key) != filterProps.value(key)) {
-                matches = false;
-                break;
-            }
-        }
-
-        if (matches) {
+        if (pair.first.isSubsetOf(channelClass)) {
             features.unite(pair.second);
         }
     }
@@ -121,25 +111,15 @@ Features ChannelFactory::featuresFor(const QVariantMap &channelClass) const
     return features;
 }
 
-void ChannelFactory::addFeaturesFor(const QVariantMap &channelClass, const Features &features)
+void ChannelFactory::addFeaturesFor(const ChannelClassSpec &channelClass, const Features &features)
 {
     QList<Private::FeaturePair>::iterator i;
     for (i = mPriv->features.begin(); i != mPriv->features.end(); ++i) {
-        const QVariantMap &filterProps = i->first;
-
-        if (channelClass.size() > filterProps.size()) {
+        if (channelClass.allProperties().size() > i->first.allProperties().size()) {
             break;
         }
 
-        bool matches = true;
-        foreach (const QString &key, filterProps.keys()) {
-            if (!channelClass.contains(key) || channelClass.value(key) != filterProps.value(key)) {
-                matches = false;
-                break;
-            }
-        }
-
-        if (matches) {
+        if (i->first == channelClass) {
             i->second.unite(features);
             return;
         }
@@ -151,7 +131,7 @@ void ChannelFactory::addFeaturesFor(const QVariantMap &channelClass, const Featu
 }
 
 /**
- * Constructs a Channel proxy (and someday begins making it ready.)
+ * Constructs a Channel proxy and begins making it ready.
  *
  * If a valid proxy already exists in the factory cache for the given combination of \a busName and
  * \a objectPath, it is returned instead. All newly created proxies are automatically cached until
@@ -245,7 +225,7 @@ Features ChannelFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
     ChannelPtr chan = ChannelPtr::dynamicCast(proxy);
     Q_ASSERT(!chan.isNull());
 
-    return featuresFor(chan->immutableProperties());
+    return featuresFor(ChannelClassSpec(chan->immutableProperties()));
 }
 
 } // Tp

@@ -22,6 +22,7 @@
 #ifndef _TelepathyQt4_channel_factory_h_HEADER_GUARD_
 #define _TelepathyQt4_channel_factory_h_HEADER_GUARD_
 
+#include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/DBusProxyFactory>
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
@@ -45,34 +46,28 @@ public:
 
     virtual ~ChannelFactory();
 
-    Features featuresForTextChannels(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForTextChannels(const QVariantMap &additionalProps = QVariantMap());
+    Features featuresForTextChats(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForTextChats(const QVariantMap &additionalProps = QVariantMap());
 
-    Features featuresForChatroomTextChannels(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForChatroomTextChannels(const QVariantMap &additionalProps = QVariantMap());
+    Features featuresForTextChatrooms(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForTextChatrooms(const QVariantMap &additionalProps = QVariantMap());
 
-    Features featuresForMediaChannels(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForMediaChannels(const QVariantMap &additionalProps = QVariantMap());
+    Features featuresForMediaCalls(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForMediaCalls(const QVariantMap &additionalProps = QVariantMap());
 
-    Features featuresForRoomListChannels(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForRoomListChannels(const QVariantMap &additionalProps = QVariantMap());
+    Features featuresForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap());
 
-    Features featuresForSendFileChannels(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForSendFileChannels(const QVariantMap &additionalProps = QVariantMap());
-
-    Features featuresForReceiveFileChannels(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForReceiveFileChannels(const QVariantMap &additionalProps = QVariantMap());
+    Features featuresForOutgoingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForOutgoingFileTransfers(const QVariantMap &additionalProps = QVariantMap());
 
     // When merged, Tube channels should have export/import variants too like FT has for send/receive
 
     Features commonFeatures() const;
     void addCommonFeatures(const Features &features);
 
-    // advanced
-    // API/ABI break TODO: high-level class for channel classes? This is advanced API, however, so
-    // dunno...
-    Features featuresFor(const QVariantMap &channelClass) const;
-    void addFeaturesFor(const QVariantMap &channelClass, const Features &features);
+    Features featuresFor(const ChannelClassSpec &channelClass) const;
+    void addFeaturesFor(const ChannelClassSpec &channelClass, const Features &features);
 
     PendingReady *proxy(const ConnectionPtr &connection, const QString &channelPath,
             const QVariantMap &immutableProperties) const;
