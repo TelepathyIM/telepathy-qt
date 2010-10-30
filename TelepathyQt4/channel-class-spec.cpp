@@ -43,6 +43,19 @@ ChannelClassSpec::ChannelClassSpec(const ChannelClass &cc)
     }
 }
 
+ChannelClassSpec::ChannelClassSpec(const QVariantMap &props)
+    : mPriv(new Private)
+{
+    setChannelType(qdbus_cast<QString>(
+                props.value(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"))));
+    setTargetHandleType(qdbus_cast<uint>(
+                props.value(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"))));
+
+    foreach (QString propName, props.keys()) {
+        setProperty(propName, props.value(propName));
+    }
+}
+
 ChannelClassSpec::ChannelClassSpec(const QString &channelType, uint targetHandleType,
         const QVariantMap &otherProperties)
     : mPriv(new Private)
@@ -122,11 +135,7 @@ bool ChannelClassSpec::matches(const QVariantMap &immutableProperties) const
 {
     // We construct a ChannelClassSpec for comparison so the StreamedMedia props are normalized
     // consistently etc
-    ChannelClassSpec other;
-    foreach (QString propName, immutableProperties.keys()) {
-        other.setProperty(propName, immutableProperties.value(propName));
-    }
-    return this->isSubsetOf(other);
+    return this->isSubsetOf(ChannelClassSpec(immutableProperties));
 }
 
 bool ChannelClassSpec::hasProperty(const QString &qualifiedName) const

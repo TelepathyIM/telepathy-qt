@@ -41,6 +41,7 @@ class TELEPATHY_QT4_EXPORT ChannelClassSpec
 public:
     ChannelClassSpec();
     ChannelClassSpec(const ChannelClass &cc);
+    ChannelClassSpec(const QVariantMap &props);
     ChannelClassSpec(const QString &channelType, uint targetHandleType,
             const QVariantMap &otherProperties = QVariantMap());
     ChannelClassSpec(const QString &channelType, uint targetHandleType, bool requested,
