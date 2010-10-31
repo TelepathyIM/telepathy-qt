@@ -29,6 +29,7 @@
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/PendingReady>
 
 namespace Tp
 {
@@ -45,7 +46,6 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
     QString channelType;
     uint handleType;
     uint handle;
-    QDBusObjectPath objectPath;
     QVariantMap immutableProperties;
     ChannelPtr channel;
 };
@@ -261,13 +261,6 @@ ChannelPtr PendingChannel::channel() const
         return ChannelPtr();
     }
 
-    if (mPriv->channel) {
-        return mPriv->channel;
-    }
-
-    SharedPtr<Connection> conn(mPriv->connection);
-    mPriv->channel = ChannelFactory::create(conn,
-            mPriv->objectPath.path(), immutableProperties());
     return mPriv->channel;
 }
 
@@ -288,7 +281,7 @@ QString PendingChannel::objectPath() const
         warning() << "PendingChannel::channel called when not valid";
     }
 
-    return mPriv->objectPath.path();
+    return mPriv->channel->objectPath();
 }
 
 void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher)
@@ -296,17 +289,23 @@ void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watche
     QDBusPendingReply<QDBusObjectPath, QVariantMap> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->objectPath = reply.argumentAt<0>();
-        debug() << "Got reply to Connection.CreateChannel - object path:" <<
-            mPriv->objectPath.path();
-
+        QString objectPath = reply.argumentAt<0>().path();
         QVariantMap map = reply.argumentAt<1>();
+
+        debug() << "Got reply to Connection.CreateChannel - object path:" << objectPath;
+
+        PendingReady *channelReady =
+            mPriv->connection->channelFactory()->proxy(mPriv->connection, objectPath, map);
+        mPriv->channel = ChannelPtr::dynamicCast(channelReady->proxy());
+
         mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
         mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
 
-        setFinished();
+        connect(channelReady,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onChannelReady(Tp::PendingOperation*)));
     } else {
         debug().nospace() << "CreateChannel failed:" <<
             reply.error().name() << ": " << reply.error().message();
@@ -322,18 +321,23 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watche
 
     if (!reply.isError()) {
         mPriv->yours = reply.argumentAt<0>();
-
-        mPriv->objectPath = reply.argumentAt<1>();
-        debug() << "Got reply to Connection.EnsureChannel - object path:" <<
-            mPriv->objectPath.path();
-
+        QString objectPath = reply.argumentAt<1>().path();
         QVariantMap map = reply.argumentAt<2>();
+
+        debug() << "Got reply to Connection.EnsureChannel - object path:" << objectPath;
+
+        PendingReady *channelReady =
+            mPriv->connection->channelFactory()->proxy(mPriv->connection, objectPath, map);
+        mPriv->channel = ChannelPtr::dynamicCast(channelReady->proxy());
+
         mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
         mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
 
-        setFinished();
+        connect(channelReady,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onChannelReady(Tp::PendingOperation*)));
     } else {
         debug().nospace() << "EnsureChannel failed:" <<
             reply.error().name() << ": " << reply.error().message();
@@ -341,6 +345,17 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watche
     }
 
     watcher->deleteLater();
+}
+
+void PendingChannel::onChannelReady(PendingOperation *op)
+{
+    if (!op->isError()) {
+        setFinished();
+    } else {
+        debug() << "Making the channel ready for" << this << "failed with" << op->errorName()
+            << ":" << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    }
 }
 
 } // Tp
