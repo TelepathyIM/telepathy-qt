@@ -105,20 +105,20 @@ public:
     void setConstructorForMediaCalls(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
-    Features featuresForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
-    void addFeaturesForIncomingFileTransfers(const Features &features,
+    Features featuresForRoomLists(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForRoomLists(const Features &features,
             const QVariantMap &additionalProps = QVariantMap());
 
-    ConstructorConstPtr constructorForIncomingFileTransfers(
+    ConstructorConstPtr constructorForRoomLists(
             const QVariantMap &additionalProps = QVariantMap()) const;
 
     template<typename Subclass>
-    void setSubclassForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap())
+    void setSubclassForRoomLists(const QVariantMap &additionalProps = QVariantMap())
     {
-        setConstructorForIncomingFileTransfers(SubclassCtor<Subclass>::create(), additionalProps);
+        setConstructorForRoomLists(SubclassCtor<Subclass>::create(), additionalProps);
     }
 
-    void setConstructorForIncomingFileTransfers(const ConstructorConstPtr &ctor,
+    void setConstructorForRoomLists(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
     Features featuresForOutgoingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
@@ -135,6 +135,38 @@ public:
     }
 
     void setConstructorForOutgoingFileTransfers(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForIncomingFileTransfers(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForIncomingFileTransfers(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForIncomingFileTransfers(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForIncomingFileTransfers(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForContactSearches(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForContactSearches(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForContactSearches(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForContactSearches(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForContactSearches(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForContactSearches(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
     // When merged, Tube channels should have export/import variants too like FT has for send/receive

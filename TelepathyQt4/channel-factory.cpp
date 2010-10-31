@@ -95,8 +95,10 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
     setSubclassForTextChats<TextChannel>();
     setSubclassForTextChatrooms<TextChannel>();
     setSubclassForMediaCalls<StreamedMediaChannel>();
+    setSubclassForRoomLists<RoomListChannel>();
     setSubclassForIncomingFileTransfers<IncomingFileTransferChannel>();
     setSubclassForOutgoingFileTransfers<OutgoingFileTransferChannel>();
+    setSubclassForContactSearches<ContactSearchChannel>();
     setFallbackSubclass<Channel>();
 }
 
@@ -193,27 +195,27 @@ void ChannelFactory::setConstructorForMediaCalls(const ConstructorConstPtr &ctor
     setConstructorFor(callDraftSpec, ctor);
 }
 
-Features ChannelFactory::featuresForIncomingFileTransfers(const QVariantMap &additionalProps) const
+Features ChannelFactory::featuresForRoomLists(const QVariantMap &additionalProps) const
 {
-    return featuresFor(ChannelClassSpec::incomingFileTransfer(additionalProps));
+    return featuresFor(ChannelClassSpec::roomList(additionalProps));
 }
 
-void ChannelFactory::addFeaturesForIncomingFileTransfers(const Features &features,
+void ChannelFactory::addFeaturesForRoomLists(const Features &features,
         const QVariantMap &additionalProps)
 {
-    addFeaturesFor(ChannelClassSpec::incomingFileTransfer(additionalProps), features);
+    addFeaturesFor(ChannelClassSpec::roomList(additionalProps), features);
 }
 
-ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingFileTransfers(
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForRoomLists(
         const QVariantMap &additionalProps) const
 {
-    return constructorFor(ChannelClassSpec::incomingFileTransfer(additionalProps));
+    return constructorFor(ChannelClassSpec::roomList(additionalProps));
 }
 
-void ChannelFactory::setConstructorForIncomingFileTransfers(const ConstructorConstPtr &ctor,
+void ChannelFactory::setConstructorForRoomLists(const ConstructorConstPtr &ctor,
         const QVariantMap &additionalProps)
 {
-    setConstructorFor(ChannelClassSpec::incomingFileTransfer(additionalProps), ctor);
+    setConstructorFor(ChannelClassSpec::roomList(additionalProps), ctor);
 }
 
 Features ChannelFactory::featuresForOutgoingFileTransfers(const QVariantMap &additionalProps) const
@@ -237,6 +239,52 @@ void ChannelFactory::setConstructorForOutgoingFileTransfers(const ConstructorCon
         const QVariantMap &additionalProps)
 {
     setConstructorFor(ChannelClassSpec::outgoingFileTransfer(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForIncomingFileTransfers(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::incomingFileTransfer(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForIncomingFileTransfers(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::incomingFileTransfer(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingFileTransfers(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::incomingFileTransfer(additionalProps));
+}
+
+void ChannelFactory::setConstructorForIncomingFileTransfers(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::incomingFileTransfer(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForContactSearches(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::contactSearch(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForContactSearches(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::contactSearch(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForContactSearches(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::contactSearch(additionalProps));
+}
+
+void ChannelFactory::setConstructorForContactSearches(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::contactSearch(additionalProps), ctor);
 }
 
 Features ChannelFactory::commonFeatures() const
