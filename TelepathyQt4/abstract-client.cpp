@@ -293,6 +293,35 @@ ChannelClassList AbstractClientObserver::observerChannelFilter() const
 }
 
 /**
+ * Return the property containing a specification of the channels that this
+ * channel observer is interested. The observeChannels() method should be called
+ * by the channel dispatcher whenever any of the newly created channels match
+ * this description.
+ *
+ * See <a
+ * href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.Observer.html#org.freedesktop.Telepathy.Client.Observer.ObserverChannelFilter">
+ * the Telepathy D-Bus API Specification</a> for documentation about the allowed
+ * types and how to define filters.
+ *
+ * This property never changes while the observer process owns its client bus
+ * name. If an observer wants to add extra channels to its list of interests at
+ * runtime, it can register an additional client bus name using
+ * ClientRegistrar::registerClient().
+ * To remove those filters, it can release the bus name using
+ * ClientRegistrar::unregisterClient().
+ *
+ * The same principle is applied to approvers and handlers.
+ *
+ * \return A specification of the channels that this channel observer is
+ *         interested.
+ * \sa observeChannels()
+ */
+ChannelClassSpecList AbstractClientObserver::observerFilter() const
+{
+    return ChannelClassSpecList(mPriv->channelFilter);
+}
+
+/**
  * Return whether upon the startup of this observer, observeChannels()
  * will be called for every already existing channel matching its
  * observerChannelFilter().
@@ -536,6 +565,30 @@ ChannelClassList AbstractClientApprover::approverChannelFilter() const
 }
 
 /**
+ * Return the property containing a specification of the channels that this
+ * channel approver is interested. The addDispatchOperation() method should be
+ * called by the channel dispatcher whenever at least one of the channels in
+ * a channel dispatch operation matches this description.
+ *
+ * This method works in exactly the same way as the
+ * AbstractClientObserver::observerChannelFilter() method. In particular, the
+ * returned value cannot change while the handler process continues to own the
+ * corresponding client bus name.
+ *
+ * In the .client file, represented in the same way as observer channel
+ * filter, the group is #TELEPATHY_INTERFACE_CLIENT_APPROVER followed by
+ * ApproverChannelFilter instead.
+ *
+ * \return A specification of the channels that this channel approver is
+ *         interested.
+ * \sa addDispatchOperation()
+ */
+ChannelClassSpecList AbstractClientApprover::approverFilter() const
+{
+    return ChannelClassSpecList(mPriv->channelFilter);
+}
+
+/**
  * \fn void AbstractClientApprover::addDispatchOperation(
  *                  const MethodInvocationContextPtr<> &context,
  *                  const QList<ChannelPtr> &channels,
@@ -774,6 +827,29 @@ AbstractClientHandler::~AbstractClientHandler()
 ChannelClassList AbstractClientHandler::handlerChannelFilter() const
 {
     return mPriv->channelFilter;
+}
+
+/**
+ * Return the property containing a specification of the channels that this
+ * channel handler can deal with. It will be offered to approvers as a potential
+ * channel handler for bundles that contain only suitable channels, or for
+ * suitable channels that must be handled separately.
+ *
+ * This method works in exactly the same way as the
+ * AbstractClientObserver::observerChannelFilter() method. In particular, the
+ * returned value cannot change while the handler process continues to own the
+ * corresponding client bus name.
+ *
+ * In the .client file, represented in the same way as observer channel
+ * filter, the group is #TELEPATHY_INTERFACE_CLIENT_HANDLER suffixed
+ * by HandlerChannelFilter instead.
+ *
+ * \return A specification of the channels that this channel handler can deal
+ *         with.
+ */
+ChannelClassSpecList AbstractClientHandler::handlerFilter() const
+{
+    return ChannelClassSpecList(mPriv->channelFilter);
 }
 
 /**

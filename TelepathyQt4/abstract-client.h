@@ -55,8 +55,8 @@ class TELEPATHY_QT4_EXPORT AbstractClientObserver : public virtual AbstractClien
 public:
     virtual ~AbstractClientObserver();
 
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass
-    ChannelClassList observerChannelFilter() const;
+    TELEPATHY_QT4_DEPRECATED ChannelClassList observerChannelFilter() const;
+    ChannelClassSpecList observerFilter() const;
 
     bool shouldRecover() const;
 
@@ -89,8 +89,8 @@ class TELEPATHY_QT4_EXPORT AbstractClientApprover : public virtual AbstractClien
 public:
     virtual ~AbstractClientApprover();
 
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass
-    ChannelClassList approverChannelFilter() const;
+    TELEPATHY_QT4_DEPRECATED ChannelClassList approverChannelFilter() const;
+    ChannelClassSpecList approverFilter() const;
 
     virtual void addDispatchOperation(const MethodInvocationContextPtr<> &context,
             const QList<ChannelPtr> &channels,
@@ -120,8 +120,8 @@ class TELEPATHY_QT4_EXPORT AbstractClientHandler : public virtual AbstractClient
 public:
     virtual ~AbstractClientHandler();
 
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass
-    ChannelClassList handlerChannelFilter() const;
+    TELEPATHY_QT4_DEPRECATED ChannelClassList handlerChannelFilter() const;
+    ChannelClassSpecList handlerFilter() const;
 
     // FIXME: (API/ABI break) Use high-level class for capabilities
     QStringList capabilities() const;

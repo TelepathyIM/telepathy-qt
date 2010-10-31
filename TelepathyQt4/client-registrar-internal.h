@@ -101,7 +101,7 @@ public:
 public: // Properties
     inline Tp::ChannelClassList ObserverChannelFilter() const
     {
-        return mClient->observerChannelFilter();
+        return mClient->observerFilter().bareClasses();
     }
 
     inline bool Recover() const
@@ -175,7 +175,7 @@ public:
 public: // Properties
     inline Tp::ChannelClassList ApproverChannelFilter() const
     {
-        return mClient->approverChannelFilter();
+        return mClient->approverFilter().bareClasses();
     }
 
 public Q_SLOTS: // Methods
@@ -247,7 +247,7 @@ public:
 public: // Properties
     inline Tp::ChannelClassList HandlerChannelFilter() const
     {
-        return mClient->handlerChannelFilter();
+        return mClient->handlerFilter().bareClasses();
     }
 
     inline bool BypassApproval() const
