@@ -200,6 +200,15 @@ public:
             append(cc);
         }
     }
+
+    ChannelClassList bareClasses() const
+    {
+        ChannelClassList list;
+        Q_FOREACH (const ChannelClassSpec &spec, *this) {
+            list.append(spec.bareClass());
+        }
+        return list;
+    }
 };
 
 } // Tp
