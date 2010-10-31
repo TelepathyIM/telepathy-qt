@@ -329,8 +329,7 @@ ChannelClassSpec ChannelClassSpec::outgoingFileTransfer(const QVariantMap &addit
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER),
-                static_cast<uint>(HandleTypeContact));
-        spec.setRequested(true);
+                static_cast<uint>(HandleTypeContact), true);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -346,8 +345,7 @@ ChannelClassSpec ChannelClassSpec::incomingFileTransfer(const QVariantMap &addit
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER),
-                static_cast<uint>(HandleTypeContact));
-        spec.setRequested(false);
+                static_cast<uint>(HandleTypeContact), false);
     }
 
     if (additionalProperties.isEmpty()) {
