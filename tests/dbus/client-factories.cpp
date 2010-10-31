@@ -14,6 +14,7 @@
 #include <TelepathyQt4/AbstractClientObserver>
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelClassSpec>
+#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ChannelDispatchOperation>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ChannelRequest>
@@ -210,7 +211,7 @@ class MyClient : public QObject,
     Q_OBJECT
 
 public:
-    static AbstractClientPtr create(const ChannelClassList &channelFilter,
+    static AbstractClientPtr create(const ChannelClassSpecList &channelFilter,
             const QStringList &capabilities,
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
@@ -220,7 +221,7 @@ public:
                         bypassApproval, wantsRequestNotification)));
     }
 
-    MyClient(const ChannelClassList &channelFilter,
+    MyClient(const ChannelClassSpecList &channelFilter,
              const QStringList &capabilities,
              bool bypassApproval = false,
              bool wantsRequestNotification = false)
@@ -600,13 +601,9 @@ void TestClientFactories::testRegister()
     mClientCapabilities.append(
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/audio/speex=true"));
 
-    ChannelClassList filters;
-    QMap<QString, QDBusVariant> filter;
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                  QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)));
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                  QDBusVariant((uint) Tp::HandleTypeContact));
-    filters.append(filter);
+    ChannelClassSpecList filters;
+    filters.append(ChannelClassSpec::textChat());
+
     mClientObject1 = MyClient::create(filters, mClientCapabilities, false, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
@@ -615,12 +612,7 @@ void TestClientFactories::testRegister()
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
 
     filters.clear();
-    filter.clear();
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                  QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA)));
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                  QDBusVariant((uint) Tp::HandleTypeContact));
-    filters.append(filter);
+    filters.append(ChannelClassSpec::mediaCall());
     mClientObject2 = MyClient::create(filters, mClientCapabilities, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, QLatin1String("foo"), true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));

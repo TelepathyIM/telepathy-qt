@@ -37,6 +37,8 @@
 namespace Tp
 {
 
+class ChannelClassSpecList;
+
 class TELEPATHY_QT4_EXPORT AbstractClient : public RefCounted
 {
     Q_DISABLE_COPY(AbstractClient)
@@ -68,12 +70,11 @@ public:
             const QVariantMap &observerInfo) = 0;
 
 protected:
-    AbstractClientObserver(const ChannelClassList &channelFilter);
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass and have a
-    //        default parameter for shouldRecover once the other constructor is
-    //        removed
-    AbstractClientObserver(const ChannelClassList &channelFilter,
+    TELEPATHY_QT4_DEPRECATED AbstractClientObserver(const ChannelClassList &channelFilter);
+    TELEPATHY_QT4_DEPRECATED AbstractClientObserver(const ChannelClassList &channelFilter,
             bool shouldRecover);
+
+    AbstractClientObserver(const ChannelClassSpecList &channelFilter, bool shouldRecover = false);
 
 private:
     struct Private;
@@ -96,8 +97,8 @@ public:
             const ChannelDispatchOperationPtr &dispatchOperation) = 0;
 
 protected:
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass
-    AbstractClientApprover(const ChannelClassList &channelFilter);
+    TELEPATHY_QT4_DEPRECATED AbstractClientApprover(const ChannelClassList &channelFilter);
+    AbstractClientApprover(const ChannelClassSpecList &channelFilter);
 
 private:
     struct Private;
@@ -142,14 +143,15 @@ public:
             const QString &errorName, const QString &errorMessage);
 
 protected:
-    AbstractClientHandler(const ChannelClassList &channelFilter,
+    TELEPATHY_QT4_DEPRECATED AbstractClientHandler(const ChannelClassList &channelFilter,
             bool wantsRequestNotification = false);
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass and
-    //        capabilities and have a default parameter for capabilities that
-    //        indicates no aditional capability once the other constructor is
-    //        removed
-    AbstractClientHandler(const ChannelClassList &channelFilter,
+    TELEPATHY_QT4_DEPRECATED AbstractClientHandler(const ChannelClassList &channelFilter,
             const QStringList &capabilities,
+            bool wantsRequestNotification = false);
+
+    // XXX FIXME: change capabilities to a higher-level class
+    AbstractClientHandler(const ChannelClassSpecList &channelFilter,
+            const QStringList &capabilities = QStringList(),
             bool wantsRequestNotification = false);
 
 private:

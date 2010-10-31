@@ -23,6 +23,8 @@
 
 #include <QString>
 
+#include <TelepathyQt4/ChannelClassSpecList>
+
 namespace Tp
 {
 
@@ -231,6 +233,25 @@ AbstractClientObserver::AbstractClientObserver(
     : mPriv(new Private(channelFilter, shouldRecover))
 {
 }
+
+/**
+ * Construct a new AbstractClientObserver object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param shouldRecover Whether upon the startup of this observer,
+ *                      observeChannels() will be called for every already
+ *                      existing channel matching its observerChannelFilter().
+ */
+AbstractClientObserver::AbstractClientObserver(
+        const ChannelClassSpecList &channelFilter,
+        bool shouldRecover)
+    : mPriv(new Private(channelFilter.bareClasses(), shouldRecover))
+      // The channel filter is converted here to the low-level class so that any warnings are
+      // emitted immediately rather than only when the CD introspects this Client
+{
+}
+
 /**
  * Class destructor.
  */
@@ -470,6 +491,19 @@ AbstractClientApprover::AbstractClientApprover(
 }
 
 /**
+ * Construct a new AbstractClientApprover object.
+ *
+ * \param channelFilter A specification of the channels in which this approver
+ *                      is interested.
+ */
+AbstractClientApprover::AbstractClientApprover(
+        const ChannelClassSpecList &channelFilter)
+    : mPriv(new Private)
+{
+    mPriv->channelFilter = channelFilter.bareClasses();
+}
+
+/**
  * Class destructor.
  */
 AbstractClientApprover::~AbstractClientApprover()
@@ -686,6 +720,27 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilt
     : mPriv(new Private)
 {
     mPriv->channelFilter = channelFilter;
+    mPriv->capabilities = capabilities;
+    mPriv->wantsRequestNotification = wantsRequestNotification;
+}
+
+/**
+ * Construct a new AbstractClientHandler object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param wantsRequestNotification Whether this handler wants to receive channel
+ *                                 requests notification via addRequest() and
+ *                                 removeRequest().
+ * \param capabilities The set of additional capabilities supported by this
+ *                     handler.
+ */
+AbstractClientHandler::AbstractClientHandler(const ChannelClassSpecList &channelFilter,
+        const QStringList &capabilities,
+        bool wantsRequestNotification)
+    : mPriv(new Private)
+{
+    mPriv->channelFilter = channelFilter.bareClasses();
     mPriv->capabilities = capabilities;
     mPriv->wantsRequestNotification = wantsRequestNotification;
 }
