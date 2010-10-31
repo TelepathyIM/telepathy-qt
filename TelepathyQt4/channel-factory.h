@@ -218,16 +218,6 @@ protected:
     virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
 
 private:
-    // TODO: remove
-
-    friend class ChannelDispatchOperation;
-    friend class ClientHandlerAdaptor;
-    friend class ClientObserverAdaptor;
-    friend class PendingChannel;
-
-    static ChannelPtr create(const ConnectionPtr &connection,
-            const QString &channelPath, const QVariantMap &immutableProperties);
-
     struct Private;
     Private *mPriv;
 };

@@ -409,46 +409,6 @@ PendingReady *ChannelFactory::proxy(const ConnectionPtr &connection, const QStri
     return nowHaveProxy(proxy);
 }
 
-ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
-        const QString &channelPath, const QVariantMap &immutableProperties)
-{
-    QString channelType = immutableProperties.value(QLatin1String(
-                TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-    if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)) {
-        return TextChannel::create(connection, channelPath, immutableProperties);
-    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) ||
-             channelType == QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL)) {
-        return StreamedMediaChannel::create(connection, channelPath, immutableProperties);
-    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST)) {
-        return RoomListChannel::create(connection, channelPath, immutableProperties);
-    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER)) {
-        if (immutableProperties.contains(QLatin1String(
-                        TELEPATHY_INTERFACE_CHANNEL ".Requested"))) {
-            bool requested = immutableProperties.value(QLatin1String(
-                        TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
-            if (requested) {
-                return OutgoingFileTransferChannel::create(connection, channelPath,
-                        immutableProperties);
-            } else {
-                return IncomingFileTransferChannel::create(connection, channelPath,
-                        immutableProperties);
-            }
-        } else {
-            warning() << "Trying to create a channel of type FileTransfer "
-                "without the " TELEPATHY_INTERFACE_CHANNEL ".Requested "
-                "property set in immutableProperties, returning a "
-                "FileTransferChannel instance";
-            return FileTransferChannel::create(connection, channelPath,
-                    immutableProperties);
-        }
-    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH)) {
-        return ContactSearchChannel::create(connection, channelPath, immutableProperties);
-    }
-
-    // ContactList, old-style Tubes, or a future channel type
-    return Channel::create(connection, channelPath, immutableProperties);
-}
-
 /**
  * Transforms well-known names to the corresponding unique names, as is appropriate for Channel
  *
