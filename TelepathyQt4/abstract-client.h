@@ -26,11 +26,13 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
 #include <QList>
 #include <QObject>
+#include <QSharedDataPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -118,6 +120,135 @@ class TELEPATHY_QT4_EXPORT AbstractClientHandler : public virtual AbstractClient
     Q_DISABLE_COPY(AbstractClientHandler)
 
 public:
+    class Capabilities
+    {
+        public:
+            Capabilities(const QStringList &tokens = QStringList());
+            Capabilities(const Capabilities &other);
+            ~Capabilities();
+
+            Capabilities &operator=(const Capabilities &other);
+
+            bool hasGTalkP2PNATTraversal() const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/gtalk-p2p"));
+            }
+
+            void setGTalkP2PNATTraversal()
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/gtalk-p2p"));
+            }
+
+            void unsetGTalkP2PNATTraversal()
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/gtalk-p2p"));
+            }
+
+            bool hasICEUDPNATTraversal() const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/ice-udp"));
+            }
+
+            void setICEUDPNATTraversal()
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/ice-udp"));
+            }
+
+            void unsetICEUDPNATTraversal()
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/ice-udp"));
+            }
+
+            bool hasWLM85NATTraversal() const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-8.5"));
+            }
+
+            void setWLM85NATTraversal()
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-8.5"));
+            }
+
+            void unsetWLM85NATTraversal()
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-8.5"));
+            }
+
+            bool hasWLM2009NATTraversal() const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-2009"));
+            }
+
+            void setWLM2009NATTraversal()
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-2009"));
+            }
+
+            void unsetWLM2009NATTraversal()
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-2009"));
+            }
+
+            bool hasAudioCodec(const QString &mimeSubType) const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/audio/") + mimeSubType.toLower());
+            }
+
+            void setAudioCodec(const QString &mimeSubType)
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/audio/") + mimeSubType.toLower());
+            }
+
+            void unsetAudioCodec(const QString &mimeSubType)
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/audio/") + mimeSubType.toLower());
+            }
+
+            bool hasVideoCodec(const QString &mimeSubType) const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/video/") + mimeSubType.toLower());
+            }
+
+            void setVideoCodec(const QString &mimeSubType)
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/video/") + mimeSubType.toLower());
+            }
+
+            void unsetVideoCodec(const QString &mimeSubType)
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/video/") + mimeSubType.toLower());
+            }
+
+            bool hasToken(const QString &token) const;
+            void setToken(const QString &token);
+            void unsetToken(const QString &token);
+
+            QStringList allTokens() const;
+
+        private:
+
+            struct Private;
+            QSharedDataPointer<Private> mPriv;
+    };
+
     virtual ~AbstractClientHandler();
 
     TELEPATHY_QT4_DEPRECATED ChannelClassList handlerChannelFilter() const;
@@ -149,9 +280,8 @@ protected:
             const QStringList &capabilities,
             bool wantsRequestNotification = false);
 
-    // XXX FIXME: change capabilities to a higher-level class
     AbstractClientHandler(const ChannelClassSpecList &channelFilter,
-            const QStringList &capabilities = QStringList(),
+            const Capabilities &capabilities = Capabilities(),
             bool wantsRequestNotification = false);
 
 private:

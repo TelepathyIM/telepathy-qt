@@ -212,7 +212,7 @@ class MyClient : public QObject,
 
 public:
     static AbstractClientPtr create(const ChannelClassSpecList &channelFilter,
-            const QStringList &capabilities,
+            const AbstractClientHandler::Capabilities &capabilities,
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
     {
@@ -222,7 +222,7 @@ public:
     }
 
     MyClient(const ChannelClassSpecList &channelFilter,
-             const QStringList &capabilities,
+             const AbstractClientHandler::Capabilities &capabilities,
              bool bypassApproval = false,
              bool wantsRequestNotification = false)
         : AbstractClientObserver(channelFilter),
@@ -396,7 +396,7 @@ private:
     QString mChannelRequestPath;
     ChannelDispatchOperationAdaptor *mCDO;
     QString mCDOPath;
-    QStringList mClientCapabilities;
+    AbstractClientHandler::Capabilities mClientCapabilities;
     AbstractClientPtr mClientObject1;
     QString mClientObject1BusName;
     QString mClientObject1Path;
@@ -596,10 +596,8 @@ void TestClientFactories::testRegister()
     // invalid client
     QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), QLatin1String("foo")));
 
-    mClientCapabilities.append(
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/ice-udp=true"));
-    mClientCapabilities.append(
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/audio/speex=true"));
+    mClientCapabilities.setICEUDPNATTraversal();
+    mClientCapabilities.setAudioCodec(QLatin1String("speex"));
 
     ChannelClassSpecList filters;
     filters.append(ChannelClassSpec::textChat());
@@ -639,16 +637,22 @@ void TestClientFactories::testRegister()
 void TestClientFactories::testCapabilities()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
+    QStringList normalizedHandlerCaps, normalizedClientCaps = mClientCapabilities.allTokens();
+    normalizedClientCaps.sort();
 
     // object 1
     ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
-    QCOMPARE(handler1Iface->Capabilities(), mClientCapabilities);
+    normalizedHandlerCaps = handler1Iface->Capabilities();
+    normalizedHandlerCaps.sort();
+    QCOMPARE(normalizedHandlerCaps, normalizedClientCaps);
 
     // object 2
     ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
             mClientObject2BusName, mClientObject2Path, this);
-    QCOMPARE(handler2Iface->Capabilities(), mClientCapabilities);
+    normalizedHandlerCaps = handler2Iface->Capabilities();
+    normalizedHandlerCaps.sort();
+    QCOMPARE(normalizedHandlerCaps, normalizedClientCaps);
 }
 
 void TestClientFactories::testRequests()

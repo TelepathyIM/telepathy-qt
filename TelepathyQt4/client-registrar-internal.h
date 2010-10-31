@@ -27,6 +27,7 @@
 
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/Types>
 
 namespace Tp

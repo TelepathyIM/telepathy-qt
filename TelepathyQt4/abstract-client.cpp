@@ -21,6 +21,7 @@
 
 #include <TelepathyQt4/AbstractClient>
 
+#include <QSharedData>
 #include <QString>
 
 #include <TelepathyQt4/ChannelClassSpecList>
@@ -628,7 +629,7 @@ ChannelClassSpecList AbstractClientApprover::approverFilter() const
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
 {
     ChannelClassList channelFilter;
-    QStringList capabilities;
+    Capabilities capabilities;
     bool wantsRequestNotification;
 };
 
@@ -738,6 +739,58 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  * \sa AbstractClient
  */
 
+struct AbstractClientHandler::Capabilities::Private : public QSharedData
+{
+    Private(const QStringList &tokens)
+        : tokens(QSet<QString>::fromList(tokens)) {}
+
+    QSet<QString> tokens;
+};
+
+AbstractClientHandler::Capabilities::Capabilities(const QStringList &tokens)
+    : mPriv(new Private(tokens))
+{
+}
+
+AbstractClientHandler::Capabilities::Capabilities(const Capabilities &other)
+    : mPriv(other.mPriv)
+{
+}
+
+AbstractClientHandler::Capabilities::~Capabilities()
+{
+}
+
+AbstractClientHandler::Capabilities &AbstractClientHandler::Capabilities::operator=(
+        const Capabilities &other) {
+    if (this == &other) {
+        return *this;
+    }
+
+    mPriv = other.mPriv;
+    return *this;
+}
+
+bool AbstractClientHandler::Capabilities::hasToken(const QString &token) const
+{
+    return mPriv->tokens.contains(token);
+}
+
+void AbstractClientHandler::Capabilities::setToken(const QString &token)
+{
+    mPriv->tokens.insert(token);
+}
+
+void AbstractClientHandler::Capabilities::unsetToken(const QString &token)
+{
+    mPriv->tokens.remove(token);
+}
+
+QStringList AbstractClientHandler::Capabilities::allTokens() const
+{
+    return mPriv->tokens.toList();
+}
+
 /**
  * Construct a new AbstractClientHandler object.
  *
@@ -773,7 +826,7 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilt
     : mPriv(new Private)
 {
     mPriv->channelFilter = channelFilter;
-    mPriv->capabilities = capabilities;
+    mPriv->capabilities = Capabilities(capabilities);
     mPriv->wantsRequestNotification = wantsRequestNotification;
 }
 
@@ -789,7 +842,7 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilt
  *                     handler.
  */
 AbstractClientHandler::AbstractClientHandler(const ChannelClassSpecList &channelFilter,
-        const QStringList &capabilities,
+        const Capabilities &capabilities,
         bool wantsRequestNotification)
     : mPriv(new Private)
 {
@@ -864,7 +917,7 @@ ChannelClassSpecList AbstractClientHandler::handlerFilter() const
  */
 QStringList AbstractClientHandler::capabilities() const
 {
-    return mPriv->capabilities;
+    return mPriv->capabilities.allTokens();
 }
 
 /**
