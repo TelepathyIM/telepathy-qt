@@ -255,7 +255,8 @@ public:
     ChannelClassSpecList handlerFilter() const;
 
     // FIXME: (API/ABI break) Use high-level class for capabilities
-    QStringList capabilities() const;
+    TELEPATHY_QT4_DEPRECATED QStringList capabilities() const;
+    Capabilities handlerCapabilities() const;
 
     virtual bool bypassApproval() const = 0;
 

@@ -913,11 +913,24 @@ ChannelClassSpecList AbstractClientHandler::handlerFilter() const
  * See <a href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.Handler.html#org.freedesktop.Telepathy.Client.Handler.Capabilities">
  * the Telepathy D-Bus API Specification</a> for more details.
  *
+ * \deprecated Use handlerCapabilities() instead, it offers a high-level interface to the capability
+ * set.
+ *
  * \return The set of additional capabilities supported by this handler.
  */
 QStringList AbstractClientHandler::capabilities() const
 {
     return mPriv->capabilities.allTokens();
+}
+
+/**
+ * Return the set of additional capabilities supported by this handler.
+ *
+ * \return The set of additional capabilities supported by this handler.
+ */
+AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities() const
+{
+    return mPriv->capabilities;
 }
 
 /**

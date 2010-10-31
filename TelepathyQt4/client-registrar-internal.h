@@ -258,7 +258,7 @@ public: // Properties
 
     inline QStringList Capabilities() const
     {
-        return mClient->capabilities();
+        return mClient->handlerCapabilities().allTokens();
     }
 
     inline Tp::ObjectPathList HandledChannels() const
