@@ -1594,7 +1594,7 @@ QString Account::connectionObjectPath() const
     return mPriv->connectionObjectPath();
 }
 
-QString Account::__deprecated_connectionObjectPath() const
+QString Account::_deprecated_connectionObjectPath() const
 {
     return mPriv->connectionObjectPath();
 }
