@@ -13,6 +13,8 @@ Fixes:
   - Compile error in the tp-glib based test library
 * fd.o #31087 - ChannelRequest immutable property extraction relying on
   undefined method argument evaluation order -> failing on some toolchains
+* TextChannel never finishing introspection of FeatureMessageQueue with some
+  older services
 * Properly document ContactSearchChannel signals.
 * AccountManager and AccountSet getting confused and hitting asserts with
   certain sequences of introspecting and adding/removing accounts, most
