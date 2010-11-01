@@ -43,6 +43,13 @@ public:
         return SharedPtr<GenericCapabilityFilter<T> >(new GenericCapabilityFilter<T>(rccs));
     }
 
+    static SharedPtr<GenericCapabilityFilter<T> > create(
+            const RequestableChannelClassSpecList &rccSpecs)
+    {
+        return SharedPtr<GenericCapabilityFilter<T> >(new GenericCapabilityFilter<T>(
+                    rccSpecs.bareClasses()));
+    }
+
     inline virtual ~GenericCapabilityFilter() { }
 
     inline virtual bool isValid() const { return true; }
@@ -51,7 +58,7 @@ public:
     {
         bool supportedRcc;
         RequestableChannelClassList objectRccs = t->capabilities() ?
-            t->capabilities()->requestableChannelClasses() :
+            t->capabilities()->allClassSpecs().bareClasses() :
             RequestableChannelClassList();
         Q_FOREACH (const RequestableChannelClass &filterRcc, mFilter) {
             supportedRcc = false;
@@ -90,6 +97,7 @@ public:
         return true;
     }
 
+    // FIXME: (API/ABI break) Return a RCCSpecList instead
     inline RequestableChannelClassList filter() const { return mFilter; }
 
     inline void addRequestableChannelClassSubset(const RequestableChannelClass &rcc)
@@ -97,14 +105,25 @@ public:
         mFilter.append(rcc);
     }
 
+    inline void addRequestableChannelClassSubset(const RequestableChannelClassSpec &rccSpec)
+    {
+        mFilter.append(rccSpec.bareClass());
+    }
+
     inline void setRequestableChannelClassesSubset(const RequestableChannelClassList &rccs)
     {
         mFilter = rccs;
     }
 
+    inline void setRequestableChannelClassesSubset(const RequestableChannelClassSpecList &rccSpecs)
+    {
+        mFilter = rccSpecs.bareClasses();
+    }
+
 private:
     GenericCapabilityFilter(const RequestableChannelClassList &rccs) : Filter<T>(), mFilter(rccs) { }
 
+    // FIXME: (API/ABI break) Use RCCSpecList instead
     RequestableChannelClassList mFilter;
 };
 
