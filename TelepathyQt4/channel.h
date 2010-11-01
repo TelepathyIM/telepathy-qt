@@ -317,7 +317,7 @@ Q_SIGNALS:
     void groupSelfContactChanged();
 
     void conferenceChannelMerged(const Tp::ChannelPtr &channel);
-    // TODO remove once Conference.DRAFT support is removed
+    // FIXME: (API/ABI break) Remove conferenceChannelRemoved that does not take details as param.
     void conferenceChannelRemoved(const Tp::ChannelPtr &channel);
     void conferenceChannelRemoved(const Tp::ChannelPtr &channel,
             const Tp::Channel::GroupMemberChangeDetails &details);
@@ -335,6 +335,9 @@ protected:
     }
 
     bool groupSelfHandleIsLocalPending() const;
+
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
 
 protected Q_SLOTS:
     PendingOperation *groupAddSelfHandle();
