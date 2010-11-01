@@ -583,6 +583,7 @@ void TestAccountBasics::testBasics()
     /* using protocol info */
     ConnectionCapabilities *caps = acc->capabilities();
     QVERIFY(caps != NULL);
+    QCOMPARE(caps->textChats(), true);
     QCOMPARE(caps->supportsTextChats(), true);
 
     mServiceNameChanged = false;
@@ -615,6 +616,7 @@ void TestAccountBasics::testBasics()
     /* using merged protocol info caps and profile caps */
     caps = acc->capabilities();
     QVERIFY(caps != NULL);
+    QCOMPARE(caps->textChats(), false);
     QCOMPARE(caps->supportsTextChats(), false);
 
     // simulate that the account has a connection
@@ -654,6 +656,13 @@ void TestAccountBasics::testBasics()
 
     // using connection caps now
     caps = acc->capabilities();
+    QCOMPARE(caps->textChats(), true);
+    QCOMPARE(caps->textChatrooms(), false);
+    QCOMPARE(caps->mediaCalls(), false);
+    QCOMPARE(caps->audioCalls(), false);
+    QCOMPARE(caps->videoCalls(), false);
+    QCOMPARE(caps->videoCallsWithAudio(), false);
+    QCOMPARE(caps->upgradingCalls(), false);
     QCOMPARE(caps->supportsTextChats(), true);
     QCOMPARE(caps->supportsTextChatrooms(), false);
     QCOMPARE(caps->supportsMediaCalls(), false);
@@ -687,6 +696,7 @@ void TestAccountBasics::testBasics()
     /* back to using merged protocol info caps and profile caps */
     caps = acc->capabilities();
     QVERIFY(caps != NULL);
+    QCOMPARE(caps->textChats(), false);
     QCOMPARE(caps->supportsTextChats(), false);
 }
 

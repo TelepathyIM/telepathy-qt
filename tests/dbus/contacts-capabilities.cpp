@@ -208,6 +208,12 @@ void TestContactsCapabilities::testCapabilities()
                  QSet<Contact::Feature>() << Contact::FeatureCapabilities);
 
         QVERIFY(contact->capabilities() != 0);
+        QCOMPARE(contact->capabilities()->textChats(), supportTextChat[i]);
+        QCOMPARE(contact->capabilities()->mediaCalls(), false);
+        QCOMPARE(contact->capabilities()->audioCalls(), false);
+        QCOMPARE(contact->capabilities()->videoCalls(), false);
+        QCOMPARE(contact->capabilities()->videoCallsWithAudio(), false);
+        QCOMPARE(contact->capabilities()->upgradingCalls(), false);
         QCOMPARE(contact->capabilities()->supportsTextChats(), supportTextChat[i]);
         QCOMPARE(contact->capabilities()->supportsMediaCalls(), false);
         QCOMPARE(contact->capabilities()->supportsAudioCalls(), false);

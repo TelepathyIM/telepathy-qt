@@ -124,6 +124,13 @@ void TestCmBasics::testBasics()
     QCOMPARE(info->canRegister(), false);
 
     QCOMPARE(info->capabilities()->isSpecificToContact(), false);
+    QCOMPARE(info->capabilities()->textChatrooms(), false);
+    QCOMPARE(info->capabilities()->textChats(), true);
+    QCOMPARE(info->capabilities()->mediaCalls(), false);
+    QCOMPARE(info->capabilities()->audioCalls(), false);
+    QCOMPARE(info->capabilities()->videoCalls(), false);
+    QCOMPARE(info->capabilities()->videoCallsWithAudio(), false);
+    QCOMPARE(info->capabilities()->upgradingCalls(), false);
     QCOMPARE(info->capabilities()->supportsTextChatrooms(), false);
     QCOMPARE(info->capabilities()->supportsTextChats(), true);
     QCOMPARE(info->capabilities()->supportsMediaCalls(), false);
@@ -188,6 +195,13 @@ void TestCmBasics::testLegacy()
     // assumed to be possible at this point
     QVERIFY(info->capabilities() != 0);
     QCOMPARE(info->capabilities()->isSpecificToContact(), false);
+    QCOMPARE(info->capabilities()->textChatrooms(), true);
+    QCOMPARE(info->capabilities()->textChats(), true);
+    QCOMPARE(info->capabilities()->mediaCalls(), true);
+    QCOMPARE(info->capabilities()->audioCalls(), true);
+    QCOMPARE(info->capabilities()->videoCalls(), true);
+    QCOMPARE(info->capabilities()->videoCallsWithAudio(), true);
+    QCOMPARE(info->capabilities()->upgradingCalls(), true);
     QCOMPARE(info->capabilities()->supportsTextChatrooms(), true);
     QCOMPARE(info->capabilities()->supportsTextChats(), true);
     QCOMPARE(info->capabilities()->supportsMediaCalls(), true);

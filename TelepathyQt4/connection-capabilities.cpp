@@ -74,7 +74,7 @@ ConnectionCapabilities::~ConnectionCapabilities()
  *
  * \return \c true if Account::ensureTextChatroom() can be expected to work.
  */
-bool ConnectionCapabilities::supportsTextChatrooms() const
+bool ConnectionCapabilities::textChatrooms() const
 {
     QString channelType;
     uint targetHandleType;
@@ -99,18 +99,9 @@ bool ConnectionCapabilities::supportsTextChatrooms() const
 /**
  * Return whether creating conference media calls is supported.
  *
- * \param withInitialInvitees If \c true (the default), check if it is possible to invite new
- *                            contacts when creating a conference media call channel by providing
- *                            additional members to initial invitees (as opposed to merging
- *                            several channels into one new conference channel).
- *                            If providing additional members is supported, it is also
- *                            possible to request conference media calls with fewer than two
- *                            (even zero) already established media calls; if \c false, skip this
- *                            check.
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsConferenceMediaCalls(
-            bool withInitialInvitees) const
+bool ConnectionCapabilities::conferenceMediaCalls() const
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -120,11 +111,37 @@ bool ConnectionCapabilities::supportsConferenceMediaCalls(
         if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
             (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
              cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
-            if (!withInitialInvitees ||
-                (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
-                 cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
-                return true;
-            }
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return whether creating conference media calls is supported.
+ *
+ * This method will also check whether inviting new contacts when creating a conference media call
+ * channel by providing additional members to initial invitees (as opposed to merging several
+ * channels into one new conference channel) is supported.
+ *
+ * If providing additional members is supported, it is also possible to request conference media
+ * calls with fewer than two (even zero) already established media calls.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::conferenceMediaCallsWithInvitees() const
+{
+    QString channelType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) && 
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+            return true;
         }
     }
     return false;
@@ -133,18 +150,9 @@ bool ConnectionCapabilities::supportsConferenceMediaCalls(
 /**
  * Return whether creating conference text chats is supported.
  *
- * \param withInitialInvitees If \c true (the default), check if it is possible to invite new
- *                            contacts when creating a conference text chat channel by providing
- *                            additional members to initial invitees (as opposed to merging
- *                            several channels into one new conference channel).
- *                            If providing additional members is supported, it is also
- *                            possible to request conference text chats with fewer than two
- *                            (even zero) already established text chats; if \c false, skip this
- *                            check.
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsConferenceTextChats(
-            bool withInitialInvitees) const
+bool ConnectionCapabilities::conferenceTextChats() const
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -154,11 +162,37 @@ bool ConnectionCapabilities::supportsConferenceTextChats(
         if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
             (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
              cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
-            if (!withInitialInvitees ||
-                (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
-                 cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
-                return true;
-            }
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return whether creating conference text chats is supported.
+ *
+ * This method will also check whether inviting new contacts when creating a conference text chat
+ * channel by providing additional members to initial invitees (as opposed to merging several
+ * channels into one new conference channel) is supported.
+ *
+ * If providing additional members is supported, it is also possible to request conference text
+ * chats with fewer than two (even zero) already established text chats.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::conferenceTextChatsWithInvitees() const
+{
+    QString channelType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) &&
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+            return true;
         }
     }
     return false;
@@ -167,18 +201,9 @@ bool ConnectionCapabilities::supportsConferenceTextChats(
 /**
  * Return whether creating conference text chat rooms is supported.
  *
- * \param withInitialInvitees If \c true (the default), check if it is possible to invite new
- *                            contacts when creating a conference text chat room channel by
- *                            providing additional members to initial invitees (as opposed to
- *                            merging several channels into one new conference channel).
- *                            If providing additional members is supported, it is also
- *                            possible to request conferences text chat rooms with fewer than two
- *                            (even zero) already established text chat rooms; if \c false, skip
- *                            this check.
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsConferenceTextChatrooms(
-            bool withInitialInvitees) const
+bool ConnectionCapabilities::conferenceTextChatrooms() const
 {
     QString channelType;
     uint targetHandleType;
@@ -192,11 +217,41 @@ bool ConnectionCapabilities::supportsConferenceTextChatrooms(
             targetHandleType == HandleTypeRoom &&
             (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
              cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
-            if (!withInitialInvitees ||
-                (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
-                 cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
-                return true;
-            }
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return whether creating conference text chat rooms is supported.
+ *
+ * This method will also check whether inviting new contacts when creating a conference text chat
+ * room channel by providing additional members to initial invitees (as opposed to merging several
+ * channels into one new conference channel) is supported.
+ *
+ * If providing additional members is supported, it is also possible to request conference text
+ * chat rooms with fewer than two (even zero) already established text chat rooms.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
+{
+    QString channelType;
+    uint targetHandleType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            targetHandleType == HandleTypeRoom &&
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) &&
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+            return true;
         }
     }
     return false;
@@ -207,7 +262,7 @@ bool ConnectionCapabilities::supportsConferenceTextChatrooms(
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsContactSearch()
+bool ConnectionCapabilities::contactSearch()
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -226,7 +281,7 @@ bool ConnectionCapabilities::supportsContactSearch()
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsContactSearchWithSpecificServer() const
+bool ConnectionCapabilities::contactSearchWithSpecificServer() const
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -246,7 +301,7 @@ bool ConnectionCapabilities::supportsContactSearchWithSpecificServer() const
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::supportsContactSearchWithLimit() const
+bool ConnectionCapabilities::contactSearchWithLimit() const
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -259,6 +314,71 @@ bool ConnectionCapabilities::supportsContactSearchWithLimit() const
         }
     }
     return false;
+}
+
+/**
+ * \deprecated Use textChatrooms() instead.
+ */
+bool ConnectionCapabilities::supportsTextChatrooms() const
+{
+    return textChatrooms();
+}
+
+/**
+ * \deprecated Use conferenceMediaCalls() instead.
+ */
+bool ConnectionCapabilities::supportsConferenceMediaCalls(bool withInitialInvitees) const
+{
+    if (withInitialInvitees) {
+        return conferenceMediaCallsWithInvitees();
+    }
+    return conferenceMediaCalls();
+}
+
+/**
+ * \deprecated Use conferenceTextChats() instead.
+ */
+bool ConnectionCapabilities::supportsConferenceTextChats(bool withInitialInvitees) const
+{
+    if (withInitialInvitees) {
+        return conferenceTextChatsWithInvitees();
+    }
+    return conferenceTextChats();
+}
+
+/**
+ * \deprecated Use conferenceTextChatrooms() instead.
+ */
+bool ConnectionCapabilities::supportsConferenceTextChatrooms(bool withInitialInvitees) const
+{
+    if (withInitialInvitees) {
+        return conferenceTextChatroomsWithInvitees();
+    }
+    return conferenceTextChatrooms();
+}
+
+/**
+ * \deprecated Use contactSearch() instead.
+ */
+bool ConnectionCapabilities::supportsContactSearch()
+{
+    return contactSearch();
+}
+
+/**
+ * \deprecated Use contactSearchWithSpecificServer() instead.
+ */
+bool ConnectionCapabilities::supportsContactSearchWithSpecificServer() const
+{
+    return contactSearchWithSpecificServer();
+}
+
+/**
+ * \deprecated Use contactSearchWithLimit() instead.
+ */
+bool ConnectionCapabilities::supportsContactSearchWithLimit() const
+{
+    return contactSearchWithLimit();
 }
 
 } // Tp
