@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008-2009 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -109,36 +109,35 @@ public:
     void requestContactAvatar(Contact *contact);
 
 Q_SIGNALS:
-    void presencePublicationRequested(const Tp::Contacts &contacts); // API/ABI break: remove
+    // FIXME: (API/ABI break) Remove presencePublicationRequested that does not take details as
+    //                        param
+    void presencePublicationRequested(const Tp::Contacts &contacts);
     void presencePublicationRequested(const Tp::Contacts &contacts,
         const Tp::Channel::GroupMemberChangeDetails &details);
+
     void groupAdded(const QString &group);
     void groupRemoved(const QString &group);
+    // FIXME: (API/ABI break) Remove groupMembersChanged that does not take details as
+    //                        param
     void groupMembersChanged(const QString &group,
             const Tp::Contacts &groupMembersAdded,
-            const Tp::Contacts &groupMembersRemoved); // API/ABI break: remove
+            const Tp::Contacts &groupMembersRemoved);
     void groupMembersChanged(const QString &group,
             const Tp::Contacts &groupMembersAdded,
             const Tp::Contacts &groupMembersRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
-    /**
-     * This signal is emitted whenever some contacts got removed or added from
-     * ContactManager's known contact list. It is useful for monitoring which contacts
-     * are currently known by ContactManager.
-     *
-     * \param contactsAdded A set of contacts which were added to the known contact list
-     * \param contactsRemoved A set of contacts which were removed from the known contact list
-     *
-     * \note Please note that, in some protocols, this signal could stream newly added contacts
-     *       with both presence subscription and publication state set to No. Be sure to watch
-     *       over publication and/or subscription state changes if that is the case.
-     */
-    void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
-            const Tp::Contacts &contactsRemoved); // API/ABI break: remove
 
+    // FIXME: (API/ABI break) Remove allKnownContactsChanged that does not take details as
+    //                        param
+    void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
+            const Tp::Contacts &contactsRemoved);
     void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
             const Tp::Contacts &contactsRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
+
+protected:
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);

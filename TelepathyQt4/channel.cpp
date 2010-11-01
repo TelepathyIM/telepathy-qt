@@ -2543,7 +2543,7 @@ PendingOperation *Channel::splitChannel()
 //@}
 
 /**
- * \fn void Channel::conferenceChannelMerged(const Tp::ChannelPtr &channel)
+ * \fn void Channel::conferenceChannelMerged(const Tp::ChannelPtr &channel);
  *
  * Emitted when a new channel is added to the value of conferenceChannels().
  *
@@ -2551,11 +2551,21 @@ PendingOperation *Channel::splitChannel()
  */
 
 /**
- * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel)
+ * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel);
+ *
+ * \deprecated Use conferenceChannelRemoved(const Tp::ChannelPtr &channel,
+ *                                          const Tp::Channel::GroupMemberChangeDetails &details)
+ *             instead.
+ */
+
+/**
+ * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel,
+            const Tp::Channel::GroupMemberChangeDetails &details);
  *
  * Emitted when a new channel is removed from the value of conferenceChannels().
  *
  * \param channel The channel that was removed from conferenceChannels().
+ * \param details The change details.
  */
 
 /**
@@ -3470,5 +3480,12 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
  *
  * \return The message as a string.
  */
+
+void Channel::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(conferenceChannelRemoved(Tp::ChannelPtr))) == 0) {
+        warning() << "Connecting to deprecated signal conferenceChannelRemoved(Tp::ChannelPtr)";
+    }
+}
 
 } // Tp

@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008-2009 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1561,5 +1561,89 @@ void PendingContactManagerRemoveContactListGroup::onChannelClosed(PendingOperati
         setFinishedWithError(op->errorName(), op->errorMessage());
     }
 }
+
+void ContactManager::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts))) == 0) {
+        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts)";
+    } else if (qstrcmp(signalName, SIGNAL(groupMembersChanged(QString,Tp::Contacts,Tp::Contacts))) == 0) {
+        warning() << "Connecting to deprecated signal groupMembersChanged(QString,Tp::Contacts,Tp::Contacts)";
+    } else if (qstrcmp(signalName, SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts))) == 0) {
+        warning() << "Connecting to deprecated signal allKnownContactsChanged(Tp::Contacts,Tp::Contacts)";
+    }
+}
+
+/**
+ * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts);
+ *
+ * \deprecated Use presencePublicationRequested(const Tp::Contacts &contacts,
+ *                                              const Tp::Channel::GroupMemberChangeDetails &details)
+ *             instead.
+ */
+
+/**
+ * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts);
+ *          const Tp::Channel::GroupMemberChangeDetails &details);
+ *
+ * This signal is emitted whenever some contacts request for presence publication.
+ *
+ * \param contacts A set of contacts which requested presence publication.
+ * \param details The request details.
+ */
+
+/**
+ * \fn void ContactManager::groupMembersChanged(const QString &group,
+ *          const Tp::Contacts &groupMembersAdded,
+ *          const Tp::Contacts &groupMembersRemoved);
+ *
+ * \deprecated Use groupMembersChanged(const QString &group,
+ *                                     const Tp::Contacts &groupMembersAdded,
+ *                                     const Tp::Contacts &groupMembersRemoved,
+ *                                     const Tp::Channel::GroupMemberChangeDetails &details)
+ *             instead.
+ */
+
+/**
+ * \fn void ContactManager::groupMembersChanged(const QString &group,
+ *          const Tp::Contacts &groupMembersAdded,
+ *          const Tp::Contacts &groupMembersRemoved,
+ *          const Tp::Channel::GroupMemberChangeDetails &details);
+ *
+ * This signal is emitted whenever some contacts got removed or added from
+ * a group.
+ *
+ * \param group The name of the group that changed.
+ * \param groupMembersAdded A set of contacts which were added to the group \a group.
+ * \param groupMembersRemoved A set of contacts which were removed from the group \a group.
+ * \param details The change details.
+ */
+
+/**
+ * \fn void ContactManager::allKnownContactsChanged(const Tp::Contacts &contactsAdded,
+ *          const Tp::Contacts &contactsRemoved);
+ *
+ * \deprecated Use allKnownContactsChanged(const Tp::Contacts &contactsAdded,
+ *                                         const Tp::Contacts &contactsRemoved,
+ *                                         const Tp::Channel::GroupMemberChangeDetails &details)
+ *             instead.
+ */
+
+/**
+ * \fn void ContactManager::allKnownContactsChanged(const Tp::Contacts &contactsAdded,
+ *          const Tp::Contacts &contactsRemoved,
+ *          const Tp::Channel::GroupMemberChangeDetails &details);
+ *
+ * This signal is emitted whenever some contacts got removed or added from
+ * ContactManager's known contact list. It is useful for monitoring which contacts
+ * are currently known by ContactManager.
+ *
+ * \param contactsAdded A set of contacts which were added to the known contact list.
+ * \param contactsRemoved A set of contacts which were removed from the known contact list.
+ * \param details The change details.
+ *
+ * \note Please note that, in some protocols, this signal could stream newly added contacts
+ *       with both presence subscription and publication state set to No. Be sure to watch
+ *       over publication and/or subscription state changes if that is the case.
+ */
 
 } // Tp

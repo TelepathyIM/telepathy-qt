@@ -1244,4 +1244,15 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
     }
 }
 
+void AccountManager::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(accountCreated(QString))) == 0) {
+        warning() << "Connecting to deprecated signal AccountManager::accountCreated(QString)";
+    } else if (qstrcmp(signalName, SIGNAL(accountRemoved(QString))) == 0) {
+        warning() << "Connecting to deprecated signal AccountManager::accountRemoved(QString)";
+    } else if (qstrcmp(signalName, SIGNAL(accountValidityChanged(QString, bool))) == 0) {
+        warning() << "Connecting to deprecated signal AccountManager::accountValidityChanged(QString,bool)";
+    }
+}
+
 } // Tp

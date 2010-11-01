@@ -1437,7 +1437,7 @@ QVariantMap Account::connectionErrorDetails() const
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return \c true if a connection object can be retrieved, \c false otherwise.
- * \sa connection(), haveConnectionChanged()
+ * \sa connection(), connectionChanged()
  */
 bool Account::haveConnection() const
 {
@@ -1458,7 +1458,7 @@ bool Account::haveConnection() const
  * \return A ConnectionPtr object pointing to the Connection object of this
  *         account, or a null ConnectionPtr if this account does not currently
  *         have a connection or if an error occurred.
- * \sa haveConnection(), haveConnectionChanged()
+ * \sa haveConnection(), connectionChanged()
  */
 ConnectionPtr Account::connection() const
 {
@@ -1596,7 +1596,7 @@ QString Account::uniqueIdentifier() const
  * \deprecated Use Connection::objectPath() instead.
  *
  * \return The connection object path of this account.
- * \sa haveConnectionChanged(), haveConnection(), connection()
+ * \sa connectionChanged(), haveConnection(), connection()
  */
 QString Account::connectionObjectPath() const
 {
@@ -2684,10 +2684,26 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
+ * \fn void Account::connectionStatusChanged(Tp::Connection::Status status);
+ *
+ * This signal is emitted when the connection status of this account changes.
+ *
+ * \param status The new status of this account connection.
+ * \param statusReason The new status reason of this account connection.
+ * \param errorName The D-Bus error name for the last disconnection or
+ *                  connection failure,
+ * \param errorDetails The error details related to errorName.
+ * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails(),
+ *     Connection::ErrorDetails
+ */
+
+/**
  * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status, Tp::ConnectionStatusReason statusReason);
  *
  * This signal is emitted when the value of connectionStatus() of this
  * account changes.
+ *
+ * \deprecated Use connectionStatusChanged(Tp::Connection::Status status) instead.
  *
  * \param status The new status of this account connection.
  * \param statusReason The new status reason of this account connection.
@@ -2702,17 +2718,27 @@ PendingChannelRequest *Account::ensureChannel(
  *
  * This signal is emitted when the connection status of this account changes.
  *
- * Connection::ErrorDetails can be used to wrap the errorDetails map for more convenient access. In
- * a future API/ABI incompatible version we'll change this signal to already include one.
+ * \deprecated Use connectionStatusChanged(Tp::Connection::Status status) instead.
  *
  * \param status The new status of this account connection.
  * \param statusReason The new status reason of this account connection.
  * \param errorName The D-Bus error name for the last disconnection or
- *                   connection failure,
+ *                  connection failure,
  * \param errorDetails A map containing extensible error details related to
  *                     errorName.
  * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails(),
- * Connection::ErrorDetails
+ *     Connection::ErrorDetails
+ */
+
+/**
+ * \fn void Account::connectionChanged(const Tp::ConnectionPtr &connection);
+ *
+ * This signal is emitted when the value of connection() of this
+ * account changes.
+ *
+ * \param connection A ConnectionPtr pointing to the new Connection object or a null ConnectionPtr
+ *                   if there is no connection.
+ * \sa haveConnection(), connection()
  */
 
 /**
@@ -2720,6 +2746,8 @@ PendingChannelRequest *Account::ensureChannel(
  *
  * This signal is emitted when the value of haveConnection() of this
  * account changes.
+ *
+ * \deprecated Use connectionChanged() instead.
  *
  * \param haveConnection Whether this account have a connection.
  * \sa haveConnection(), connection()
@@ -3106,6 +3134,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
                 emit parent->statusChanged(connectionStatus, connectionStatusReason,
                         connectionError, connectionErrorDetails);
+                emit parent->connectionStatusChanged((Connection::Status) connectionStatus);
                 parent->notify("connectionError");
                 parent->notify("connectionErrorDetails");
             } else {
@@ -3140,6 +3169,7 @@ bool Account::Private::processConnQueue()
 
                 connection.reset();
                 emit parent->haveConnectionChanged(false);
+                emit parent->connectionChanged(connection);
                 parent->notify("haveConnection");
                 parent->notify("connection");
                 parent->notify("connectionObjectPath");
@@ -3297,6 +3327,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
         if (!mPriv->connection.isNull()) {
             mPriv->connection.reset();
             emit haveConnectionChanged(false);
+            emit connectionChanged(mPriv->connection);
             notify("haveConnection");
             notify("connection");
             notify("connectionObjectPath");
@@ -3311,9 +3342,6 @@ void Account::onConnectionBuilt(PendingOperation *op)
 
         debug() << "Connection" << mPriv->connectionObjectPath() << "built for" << objectPath();
 
-        // TODO: could we, in fact, do with just a connectionChanged(connection) signal and not need
-        // haveConnectionChanged(bool) now that we always have a proxy object to include in the
-        // signal?
         if (!hadConnection) {
             emit haveConnectionChanged(true);
             notify("haveConnection");
@@ -3321,6 +3349,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 
         if (prevConn != mPriv->connection) {
             notify("connection");
+            emit connectionChanged(mPriv->connection);
         }
 
         if (prevConnPath != mPriv->connectionObjectPath()) {
@@ -3340,6 +3369,19 @@ void Account::onConnectionBuilt(PendingOperation *op)
 void Account::notify(const char *propertyName)
 {
     emit propertyChanged(QLatin1String(propertyName));
+}
+
+void Account::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(iconChanged(QString))) == 0) {
+        warning() << "Connecting to deprecated signal iconChanged(QString)";
+    } else if (qstrcmp(signalName, SIGNAL(connectionStatusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason))) == 0) {
+        warning() << "Connecting to deprecated signal connectionStatusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason)";
+    } else if (qstrcmp(signalName, SIGNAL(statusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason,QString,QVariantMap))) == 0) {
+        warning() << "Connecting to deprecated signal statusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason,QString,QVariantMap)";
+    } else if (qstrcmp(signalName, SIGNAL(haveConnectionChanged(bool))) == 0) {
+        warning() << "Connecting to deprecated signal haveConnectionChanged(bool)";
+    }
 }
 
 } // Tp

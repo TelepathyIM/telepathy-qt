@@ -170,6 +170,9 @@ protected:
 
     Client::AccountManagerInterface *baseInterface() const;
 
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
     void onAccountReady(Tp::PendingOperation *);
