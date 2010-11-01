@@ -101,7 +101,7 @@ bool ConnectionCapabilities::textChatrooms() const
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::conferenceMediaCalls() const
+bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -129,7 +129,7 @@ bool ConnectionCapabilities::conferenceMediaCalls() const
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::conferenceMediaCallsWithInvitees() const
+bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
 {
     QString channelType;
     RequestableChannelClassList classes = requestableChannelClasses();
@@ -325,14 +325,15 @@ bool ConnectionCapabilities::supportsTextChatrooms() const
 }
 
 /**
- * \deprecated Use conferenceMediaCalls() instead.
+ * \deprecated Use conferenceStreamedMediaCalls() or conferenceStreamedMediaCallsWithInvitees()
+ * instead.
  */
 bool ConnectionCapabilities::supportsConferenceMediaCalls(bool withInitialInvitees) const
 {
     if (withInitialInvitees) {
-        return conferenceMediaCallsWithInvitees();
+        return conferenceStreamedMediaCallsWithInvitees();
     }
-    return conferenceMediaCalls();
+    return conferenceStreamedMediaCalls();
 }
 
 /**
