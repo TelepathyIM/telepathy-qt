@@ -2411,6 +2411,13 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
     return QLatin1String(errorName);
 }
 
+void Connection::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(statusChanged(Tp::Connection::Status,Tp::ConnectionStatusReason))) == 0) {
+        warning() << "Connecting to deprecated signal statusChanged(Tp::Connection::Status,Tp::ConnectionStatusReason)";
+    }
+}
+
 /**
  * \fn void Connection::statusChanged(Tp::Connection::Status newStatus)
  *

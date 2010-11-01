@@ -320,6 +320,9 @@ protected:
 
     Client::ConnectionInterface *baseInterface() const;
 
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private Q_SLOTS:
     void onStatusReady(uint status);
     void onStatusChanged(uint status, uint reason);
