@@ -28,27 +28,27 @@ void TestRCCSpec::testRCCSpec()
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().isEmpty(), true);
 
-    spec = RequestableChannelClassSpec::mediaCall();
+    spec = RequestableChannelClassSpec::streamedMediaCall();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().isEmpty(), true);
 
-    spec = RequestableChannelClassSpec::audioCall();
+    spec = RequestableChannelClassSpec::streamedMediaAudioCall();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio")), true);
 
-    spec = RequestableChannelClassSpec::videoCall();
+    spec = RequestableChannelClassSpec::streamedMediaVideoCall();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo")), true);
 
-    spec = RequestableChannelClassSpec::videoCallWithAudio();
+    spec = RequestableChannelClassSpec::streamedMediaVideoCallWithAudio();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
     QCOMPARE(spec.fixedProperties().size(), 2);
@@ -86,14 +86,14 @@ void TestRCCSpec::testRCCSpec()
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")), true);
 
-    spec = RequestableChannelClassSpec::conferenceMediaCall();
+    spec = RequestableChannelClassSpec::conferenceStreamedMediaCall();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
 
-    spec = RequestableChannelClassSpec::conferenceMediaCallWithInvitees();
+    spec = RequestableChannelClassSpec::conferenceStreamedMediaCallWithInvitees();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
     QCOMPARE(spec.fixedProperties().size(), 2);
@@ -125,9 +125,12 @@ void TestRCCSpec::testRCCSpec()
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server")), true);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit")), true);
 
-    QCOMPARE(RequestableChannelClassSpec::videoCallWithAudio().supports(RequestableChannelClassSpec::videoCall()), true);
-    QCOMPARE(RequestableChannelClassSpec::videoCallWithAudio().supports(RequestableChannelClassSpec::audioCall()), true);
-    QCOMPARE(RequestableChannelClassSpec::videoCallWithAudio().supports(RequestableChannelClassSpec::mediaCall()), true);
+    QCOMPARE(RequestableChannelClassSpec::streamedMediaVideoCallWithAudio().supports(
+                RequestableChannelClassSpec::streamedMediaVideoCall()), true);
+    QCOMPARE(RequestableChannelClassSpec::streamedMediaVideoCallWithAudio().supports(
+                RequestableChannelClassSpec::streamedMediaAudioCall()), true);
+    QCOMPARE(RequestableChannelClassSpec::streamedMediaVideoCallWithAudio().supports(
+                RequestableChannelClassSpec::streamedMediaCall()), true);
 
     QCOMPARE(RequestableChannelClassSpec::textChat() == RequestableChannelClassSpec::textChatroom(), false);
 

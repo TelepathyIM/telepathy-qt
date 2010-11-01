@@ -70,7 +70,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::textChatroom()
     return RequestableChannelClassSpec(rcc);
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::mediaCall()
+RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaCall()
 {
     RequestableChannelClass rcc;
     rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
@@ -80,7 +80,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::mediaCall()
     return RequestableChannelClassSpec(rcc);
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::audioCall()
+RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaAudioCall()
 {
     RequestableChannelClass rcc;
     rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
@@ -92,7 +92,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::audioCall()
     return RequestableChannelClassSpec(rcc);
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::videoCall()
+RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaVideoCall()
 {
     RequestableChannelClass rcc;
     rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
@@ -104,7 +104,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::videoCall()
     return RequestableChannelClassSpec(rcc);
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::videoCallWithAudio()
+RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaVideoCallWithAudio()
 {
     RequestableChannelClass rcc;
     rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
@@ -174,7 +174,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatroomW
     return RequestableChannelClassSpec(rcc);
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::conferenceMediaCall()
+RequestableChannelClassSpec RequestableChannelClassSpec::conferenceStreamedMediaCall()
 {
     RequestableChannelClass rcc;
     rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
@@ -187,7 +187,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceMediaCall()
     return RequestableChannelClassSpec(rcc);
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::conferenceMediaCallWithInvitees()
+RequestableChannelClassSpec RequestableChannelClassSpec::conferenceStreamedMediaCallWithInvitees()
 {
     RequestableChannelClass rcc;
     rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),

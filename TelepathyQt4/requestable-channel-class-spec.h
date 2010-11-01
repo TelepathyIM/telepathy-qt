@@ -43,17 +43,17 @@ public:
     static RequestableChannelClassSpec textChat();
     static RequestableChannelClassSpec textChatroom();
 
-    static RequestableChannelClassSpec mediaCall();
-    static RequestableChannelClassSpec audioCall();
-    static RequestableChannelClassSpec videoCall();
-    static RequestableChannelClassSpec videoCallWithAudio();
+    static RequestableChannelClassSpec streamedMediaCall();
+    static RequestableChannelClassSpec streamedMediaAudioCall();
+    static RequestableChannelClassSpec streamedMediaVideoCall();
+    static RequestableChannelClassSpec streamedMediaVideoCallWithAudio();
 
     static RequestableChannelClassSpec conferenceTextChat();
     static RequestableChannelClassSpec conferenceTextChatWithInvitees();
     static RequestableChannelClassSpec conferenceTextChatroom();
     static RequestableChannelClassSpec conferenceTextChatroomWithInvitees();
-    static RequestableChannelClassSpec conferenceMediaCall();
-    static RequestableChannelClassSpec conferenceMediaCallWithInvitees();
+    static RequestableChannelClassSpec conferenceStreamedMediaCall();
+    static RequestableChannelClassSpec conferenceStreamedMediaCallWithInvitees();
 
     static RequestableChannelClassSpec contactSearch();
     static RequestableChannelClassSpec contactSearchWithSpecificServer();
