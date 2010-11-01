@@ -28,17 +28,13 @@
 #include <QComboBox>
 #include <QTableWidget>
 
-AccountItem::AccountItem(Tp::AccountManagerPtr am,
-        const QString &objectPath, QTableWidget *table, int row, QObject *parent)
+AccountItem::AccountItem(Tp::AccountPtr acc, QTableWidget *table, int row, QObject *parent)
     : QObject(parent),
-      mAcc(Tp::Account::create(am->dbusConnection(),
-                  am->busName(), objectPath)),
+      mAcc(acc),
       mTable(table),
       mRow(row)
 {
-    connect(mAcc->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onReady(Tp::PendingOperation *)));
+    init();
 }
 
 AccountItem::~AccountItem()
@@ -63,10 +59,11 @@ void AccountItem::setupGui()
     mTable->setItem(mRow, ColumnChangingPresence, new QTableWidgetItem(mAcc->isChangingPresence() ?
                 QLatin1String("true") : QLatin1String("false")));
     mTable->setItem(mRow, ColumnConnectionStatus, new QTableWidgetItem(QString::number(mAcc->connectionStatus())));
-    mTable->setItem(mRow, ColumnConnection, new QTableWidgetItem(mAcc->connectionObjectPath()));
+    mTable->setItem(mRow, ColumnConnection, new QTableWidgetItem(
+                mAcc->connection().isNull() ? QLatin1String("") : mAcc->connection()->objectPath()));
 }
 
-void AccountItem::onReady(Tp::PendingOperation *op)
+void AccountItem::init()
 {
     setupGui();
 
@@ -173,5 +170,6 @@ void AccountItem::onStatusChanged(Tp::ConnectionStatus status,
 void AccountItem::onHaveConnectionChanged(bool haveConnection)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnConnection);
-    item->setText(mAcc->connectionObjectPath());
+    item->setText(mAcc->connection().isNull() ?
+            QLatin1String("") : mAcc->connection()->objectPath());
 }

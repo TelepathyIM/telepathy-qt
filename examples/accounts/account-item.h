@@ -57,14 +57,12 @@ public:
     };
     Q_ENUMS(Columns)
 
-    AccountItem(Tp::AccountManagerPtr am, const QString &objectPath,
-                QTableWidget *table, int row, QObject *parent = 0);
+    AccountItem(Tp::AccountPtr acc, QTableWidget *table, int row, QObject *parent = 0);
     virtual ~AccountItem();
 
     int row() const { return mRow; }
 
 private Q_SLOTS:
-    void onReady(Tp::PendingOperation *);
     void onValidityChanged(bool);
     void onStateChanged(bool);
     void onDisplayNameChanged(const QString &);
@@ -79,6 +77,7 @@ private Q_SLOTS:
     void onHaveConnectionChanged(bool);
 
 private:
+    void init();
     void setupGui();
 
     Tp::AccountPtr mAcc;

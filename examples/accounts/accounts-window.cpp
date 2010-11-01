@@ -25,6 +25,7 @@
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
@@ -41,13 +42,14 @@ AccountsWindow::AccountsWindow(QWidget *parent)
 {
     setupGui();
 
-    mAM = Tp::AccountManager::create();
+    mAM = Tp::AccountManager::create(Tp::AccountFactory::create(QDBusConnection::sessionBus(),
+                Tp::Account::FeatureCore));
     connect(mAM->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onAMReady(Tp::PendingOperation *)));
     connect(mAM.data(),
-            SIGNAL(accountCreated(const QString &)),
-            SLOT(onAccountCreated(const QString &)));
+            SIGNAL(newAccount(const Tp::AccountPtr &)),
+            SLOT(onNewAccount(const Tp::AccountPtr &)));
 }
 
 AccountsWindow::~AccountsWindow()
@@ -81,17 +83,17 @@ void AccountsWindow::setupGui()
 
 void AccountsWindow::onAMReady(Tp::PendingOperation *op)
 {
-    mTable->setRowCount(mAM->validAccountPaths().count());
+    mTable->setRowCount(mAM->allAccounts().count());
 
     int row = 0;
-    foreach (const QString &path, mAM->allAccountPaths()) {
-        (void) new AccountItem(mAM, path, mTable, row++, this);
+    foreach (const Tp::AccountPtr &acc, mAM->allAccounts()) {
+        (void) new AccountItem(acc, mTable, row++, this);
     }
 }
 
-void AccountsWindow::onAccountCreated(const QString &path)
+void AccountsWindow::onNewAccount(const Tp::AccountPtr &acc)
 {
     int row = mTable->rowCount();
     mTable->insertRow(row);
-    (void) new AccountItem(mAM, path, mTable, row, this);
+    (void) new AccountItem(acc, mTable, row, this);
 }
