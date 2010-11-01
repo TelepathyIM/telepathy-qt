@@ -4,6 +4,11 @@ telepathy-qt4 0.3.13 (UNRELEASED)
 Enhancements:
 * Added TP_QT4_ prefixed versions of all generated string constants marked as
   QLatin1String for less verbose usage with Q_NO_CAST_FROM_ASCII
+* fd.o #29451 - Make it possible to specify subclasses to use and features to make ready on
+  them in ChannelFactory
+* fd.o #29486 - Add a ChannelClassSpec class for easily specifying Client
+  channel filters (and building Channel requests and ChannelFactory filters for
+  advanced usage)
 
 Fixes:
 * fd.o #30223 - telepathy-qt4's codegen doesn't deal with tp:external-type
