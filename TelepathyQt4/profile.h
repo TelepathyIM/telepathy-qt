@@ -145,7 +145,7 @@ public:
     Presence presence(const QString &id) const;
 
     TELEPATHY_QT4_DEPRECATED RequestableChannelClassList unsupportedChannelClasses() const;
-    RequestableChannelClassSpecList unsupportedClassSpecs() const;
+    RequestableChannelClassSpecList unsupportedChannelClassSpecs() const;
 
 private:
     friend class Account;

@@ -945,7 +945,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  *  - Profile::presences() will return an empty list and
  *    Profile::allowOtherPresences() will return \c true, meaning that CM
  *    presences should be used
- *  - Profile::unsupportedClassSpecs() will return an empty list
+ *  - Profile::unsupportedChannelClassSpecs() will return an empty list
  *
  * This method requires Account::FeatureProfile to be enabled.
  *
@@ -1278,12 +1278,12 @@ ConnectionCapabilities *Account::capabilities() const
     }
 
     RequestableChannelClassSpecList piClassSpecs = pi->capabilities()->allClassSpecs();
-    RequestableChannelClassSpecList prUnsuportedClassSpecs = pr->unsupportedClassSpecs();
+    RequestableChannelClassSpecList prUnsupportedClassSpecs = pr->unsupportedChannelClassSpecs();
     RequestableChannelClassSpecList classSpecs;
     bool unsupported;
     foreach (const RequestableChannelClassSpec &piClassSpec, piClassSpecs) {
         unsupported = false;
-        foreach (const RequestableChannelClassSpec &prUnsuportedClassSpec, prUnsuportedClassSpecs) {
+        foreach (const RequestableChannelClassSpec &prUnsuportedClassSpec, prUnsupportedClassSpecs) {
             // Here we check the following:
             // - If the unsupported spec has no allowed property it means it does not support any
             // class whose fixed properties match.

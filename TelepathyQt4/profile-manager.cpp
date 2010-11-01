@@ -170,7 +170,7 @@ const Feature ProfileManager::FeatureCore = Feature(QLatin1String(ProfileManager
  *  - Profile::presences() will return an empty list and
  *    Profile::allowOtherPresences() will return \c true, meaning that CM
  *    presences should be used
- *  - Profile::unsupportedClassSpecs() will return an empty list
+ *  - Profile::unsupportedChannelClassSpecs() will return an empty list
  *
  * Where cmName and protocolName are the name of the connection manager and the name of the protocol
  * for which this fake Profile is created, respectively.

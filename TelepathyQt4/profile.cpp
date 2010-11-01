@@ -66,7 +66,7 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Private
         Profile::ParameterList parameters;
         bool allowOtherPresences;
         Profile::PresenceList presences;
-        RequestableChannelClassSpecList unsupportedClassSpecs;
+        RequestableChannelClassSpecList unsupportedChannelClassSpecs;
     };
 
     class XmlHandler;
@@ -93,7 +93,7 @@ void Profile::Private::Data::clear()
     parameters = Profile::ParameterList();
     allowOtherPresences = false;
     presences = Profile::PresenceList();
-    unsupportedClassSpecs = RequestableChannelClassSpecList();
+    unsupportedChannelClassSpecs = RequestableChannelClassSpecList();
 }
 
 
@@ -366,7 +366,7 @@ bool Profile::Private::XmlHandler::endElement(const QString &namespaceURI,
                     mCurrentParameter.dbusSignature().signature()));
         mData->parameters.append(Profile::Parameter(mCurrentParameter));
     } else if (qName == elemCC) {
-        mData->unsupportedClassSpecs.append(RequestableChannelClassSpec(mCurrentCC));
+        mData->unsupportedChannelClassSpecs.append(RequestableChannelClassSpec(mCurrentCC));
         mCurrentCC.fixedProperties.clear();
     } else if (qName == elemProperty) {
         mCurrentCC.fixedProperties[mCurrentPropertyName] =
@@ -556,7 +556,7 @@ Profile::Profile()
  *  - parameters() will return a list matching CM default parameters
  *  - presences() will return an empty list and allowOtherPresences will return
  *    \c true, meaning that CM presences should be used
- *  - unsupportedClassSpecs() will return an empty list
+ *  - unsupportedChannelClassSpecs() will return an empty list
  *
  * \param serviceName The service name.
  * \param cmName The connection manager name.
@@ -802,14 +802,14 @@ Profile::Presence Profile::presence(const QString &id) const
  * A list of channel classes not supported by the service to which this profile
  * applies.
  *
- * \deprecated Use unsupportedClassSpecs() instead.
+ * \deprecated Use unsupportedChannelClassSpecs() instead.
  *
  * \return A list of RequestableChannelClass.
  */
 RequestableChannelClassList Profile::unsupportedChannelClasses() const
 {
     RequestableChannelClassList ret;
-    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->data.unsupportedClassSpecs) {
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->data.unsupportedChannelClassSpecs) {
         ret << rccSpec.bareClass();
     }
     return ret;
@@ -819,13 +819,11 @@ RequestableChannelClassList Profile::unsupportedChannelClasses() const
  * A list of channel classes not supported by the service to which this profile
  * applies.
  *
- * \deprecated Use unsupportedClassSpecs() instead.
- *
  * \return A list of RequestableChannelClassSpec.
  */
-RequestableChannelClassSpecList Profile::unsupportedClassSpecs() const
+RequestableChannelClassSpecList Profile::unsupportedChannelClassSpecs() const
 {
-    return mPriv->data.unsupportedClassSpecs;
+    return mPriv->data.unsupportedChannelClassSpecs;
 }
 
 void Profile::setServiceName(const QString &serviceName)
