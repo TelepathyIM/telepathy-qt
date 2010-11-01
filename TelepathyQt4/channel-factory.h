@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,14 +36,159 @@ class QDBusConnection;
 namespace Tp
 {
 
+class ChannelClassSpec;
+
 class TELEPATHY_QT4_EXPORT ChannelFactory : public DBusProxyFactory
 {
     Q_DISABLE_COPY(ChannelFactory)
 
 public:
+    struct TELEPATHY_QT4_EXPORT Constructor : public RefCounted
+    {
+        virtual ~Constructor() {}
+
+        virtual ChannelPtr construct(const ConnectionPtr &conn, const QString &objectPath,
+                const QVariantMap &immutableProperties) const = 0;
+    };
+    typedef SharedPtr<Constructor> ConstructorPtr;
+    typedef SharedPtr<const Constructor> ConstructorConstPtr;
+
     static ChannelFactoryPtr create(const QDBusConnection &bus);
 
     virtual ~ChannelFactory();
+
+    Features featuresForTextChats(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForTextChats(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForTextChats(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForTextChats(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForTextChats(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForTextChats(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForTextChatrooms(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForTextChatrooms(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForTextChatrooms(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForTextChatrooms(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForTextChatrooms(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForTextChatrooms(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForStreamedMediaCalls(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForStreamedMediaCalls(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForStreamedMediaCalls(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForStreamedMediaCalls(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForStreamedMediaCalls(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForStreamedMediaCalls(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForRoomLists(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForRoomLists(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForRoomLists(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForRoomLists(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForRoomLists(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForRoomLists(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForOutgoingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForOutgoingFileTransfers(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForOutgoingFileTransfers(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForOutgoingFileTransfers(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForOutgoingFileTransfers(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForOutgoingFileTransfers(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForIncomingFileTransfers(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForIncomingFileTransfers(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForIncomingFileTransfers(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForIncomingFileTransfers(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForIncomingFileTransfers(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForContactSearches(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForContactSearches(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForContactSearches(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForContactSearches(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForContactSearches(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForContactSearches(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    // When merged, Tube channels should have export/import variants too like FT has for send/receive
+
+    Features commonFeatures() const;
+    void addCommonFeatures(const Features &features);
+
+    ConstructorConstPtr fallbackConstructor() const;
+
+    template <typename Subclass>
+    void setFallbackSubclass()
+    {
+        setFallbackConstructor(SubclassCtor<Subclass>::create());
+    }
+
+    void setFallbackConstructor(const ConstructorConstPtr &ctor);
+
+    Features featuresFor(const ChannelClassSpec &channelClass) const;
+    void addFeaturesFor(const ChannelClassSpec &channelClass, const Features &features);
+
+    ConstructorConstPtr constructorFor(const ChannelClassSpec &channelClass) const;
+    void setConstructorFor(const ChannelClassSpec &channelClass, const ConstructorConstPtr &ctor);
 
     PendingReady *proxy(const ConnectionPtr &connection, const QString &channelPath,
             const QVariantMap &immutableProperties) const;
@@ -51,21 +196,28 @@ public:
 protected:
     ChannelFactory(const QDBusConnection &bus);
 
+    template <typename Subclass>
+    struct SubclassCtor : public Constructor
+    {
+        static ConstructorPtr create()
+        {
+            return ConstructorPtr(new SubclassCtor<Subclass>());
+        }
+
+        virtual ~SubclassCtor() {}
+
+        ChannelPtr construct(const ConnectionPtr &conn, const QString &objectPath,
+                const QVariantMap &immutableProperties) const
+        {
+            return Subclass::create(conn, objectPath, immutableProperties);
+        }
+    };
+
     virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
     // Nothing we'd like to prepare()
     virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
 
 private:
-    // TODO: remove
-
-    friend class ChannelDispatchOperation;
-    friend class ClientHandlerAdaptor;
-    friend class ClientObserverAdaptor;
-    friend class PendingChannel;
-
-    static ChannelPtr create(const ConnectionPtr &connection,
-            const QString &channelPath, const QVariantMap &immutableProperties);
-
     struct Private;
     Private *mPriv;
 };

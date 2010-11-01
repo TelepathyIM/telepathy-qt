@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,7 @@
 
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/Types>
 
 namespace Tp
@@ -101,7 +102,7 @@ public:
 public: // Properties
     inline Tp::ChannelClassList ObserverChannelFilter() const
     {
-        return mClient->observerChannelFilter();
+        return mClient->observerFilter().bareClasses();
     }
 
     inline bool Recover() const
@@ -175,7 +176,7 @@ public:
 public: // Properties
     inline Tp::ChannelClassList ApproverChannelFilter() const
     {
-        return mClient->approverChannelFilter();
+        return mClient->approverFilter().bareClasses();
     }
 
 public Q_SLOTS: // Methods
@@ -247,7 +248,7 @@ public:
 public: // Properties
     inline Tp::ChannelClassList HandlerChannelFilter() const
     {
-        return mClient->handlerChannelFilter();
+        return mClient->handlerFilter().bareClasses();
     }
 
     inline bool BypassApproval() const
@@ -257,7 +258,7 @@ public: // Properties
 
     inline QStringList Capabilities() const
     {
-        return mClient->capabilities();
+        return mClient->handlerCapabilities().allTokens();
     }
 
     inline Tp::ObjectPathList HandledChannels() const

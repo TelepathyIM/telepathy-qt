@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,10 @@
 
 #include <TelepathyQt4/AbstractClient>
 
+#include <QSharedData>
 #include <QString>
+
+#include <TelepathyQt4/ChannelClassSpecList>
 
 namespace Tp
 {
@@ -231,6 +234,25 @@ AbstractClientObserver::AbstractClientObserver(
     : mPriv(new Private(channelFilter, shouldRecover))
 {
 }
+
+/**
+ * Construct a new AbstractClientObserver object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param shouldRecover Whether upon the startup of this observer,
+ *                      observeChannels() will be called for every already
+ *                      existing channel matching its observerChannelFilter().
+ */
+AbstractClientObserver::AbstractClientObserver(
+        const ChannelClassSpecList &channelFilter,
+        bool shouldRecover)
+    : mPriv(new Private(channelFilter.bareClasses(), shouldRecover))
+      // The channel filter is converted here to the low-level class so that any warnings are
+      // emitted immediately rather than only when the CD introspects this Client
+{
+}
+
 /**
  * Class destructor.
  */
@@ -269,6 +291,35 @@ AbstractClientObserver::~AbstractClientObserver()
 ChannelClassList AbstractClientObserver::observerChannelFilter() const
 {
     return mPriv->channelFilter;
+}
+
+/**
+ * Return the property containing a specification of the channels that this
+ * channel observer is interested. The observeChannels() method should be called
+ * by the channel dispatcher whenever any of the newly created channels match
+ * this description.
+ *
+ * See <a
+ * href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.Observer.html#org.freedesktop.Telepathy.Client.Observer.ObserverChannelFilter">
+ * the Telepathy D-Bus API Specification</a> for documentation about the allowed
+ * types and how to define filters.
+ *
+ * This property never changes while the observer process owns its client bus
+ * name. If an observer wants to add extra channels to its list of interests at
+ * runtime, it can register an additional client bus name using
+ * ClientRegistrar::registerClient().
+ * To remove those filters, it can release the bus name using
+ * ClientRegistrar::unregisterClient().
+ *
+ * The same principle is applied to approvers and handlers.
+ *
+ * \return A specification of the channels that this channel observer is
+ *         interested.
+ * \sa observeChannels()
+ */
+ChannelClassSpecList AbstractClientObserver::observerFilter() const
+{
+    return ChannelClassSpecList(mPriv->channelFilter);
 }
 
 /**
@@ -470,6 +521,19 @@ AbstractClientApprover::AbstractClientApprover(
 }
 
 /**
+ * Construct a new AbstractClientApprover object.
+ *
+ * \param channelFilter A specification of the channels in which this approver
+ *                      is interested.
+ */
+AbstractClientApprover::AbstractClientApprover(
+        const ChannelClassSpecList &channelFilter)
+    : mPriv(new Private)
+{
+    mPriv->channelFilter = channelFilter.bareClasses();
+}
+
+/**
  * Class destructor.
  */
 AbstractClientApprover::~AbstractClientApprover()
@@ -499,6 +563,30 @@ AbstractClientApprover::~AbstractClientApprover()
 ChannelClassList AbstractClientApprover::approverChannelFilter() const
 {
     return mPriv->channelFilter;
+}
+
+/**
+ * Return the property containing a specification of the channels that this
+ * channel approver is interested. The addDispatchOperation() method should be
+ * called by the channel dispatcher whenever at least one of the channels in
+ * a channel dispatch operation matches this description.
+ *
+ * This method works in exactly the same way as the
+ * AbstractClientObserver::observerChannelFilter() method. In particular, the
+ * returned value cannot change while the handler process continues to own the
+ * corresponding client bus name.
+ *
+ * In the .client file, represented in the same way as observer channel
+ * filter, the group is #TELEPATHY_INTERFACE_CLIENT_APPROVER followed by
+ * ApproverChannelFilter instead.
+ *
+ * \return A specification of the channels that this channel approver is
+ *         interested.
+ * \sa addDispatchOperation()
+ */
+ChannelClassSpecList AbstractClientApprover::approverFilter() const
+{
+    return ChannelClassSpecList(mPriv->channelFilter);
 }
 
 /**
@@ -541,7 +629,7 @@ ChannelClassList AbstractClientApprover::approverChannelFilter() const
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
 {
     ChannelClassList channelFilter;
-    QStringList capabilities;
+    Capabilities capabilities;
     bool wantsRequestNotification;
 };
 
@@ -651,6 +739,58 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  * \sa AbstractClient
  */
 
+struct AbstractClientHandler::Capabilities::Private : public QSharedData
+{
+    Private(const QStringList &tokens)
+        : tokens(QSet<QString>::fromList(tokens)) {}
+
+    QSet<QString> tokens;
+};
+
+AbstractClientHandler::Capabilities::Capabilities(const QStringList &tokens)
+    : mPriv(new Private(tokens))
+{
+}
+
+AbstractClientHandler::Capabilities::Capabilities(const Capabilities &other)
+    : mPriv(other.mPriv)
+{
+}
+
+AbstractClientHandler::Capabilities::~Capabilities()
+{
+}
+
+AbstractClientHandler::Capabilities &AbstractClientHandler::Capabilities::operator=(
+        const Capabilities &other) {
+    if (this == &other) {
+        return *this;
+    }
+
+    mPriv = other.mPriv;
+    return *this;
+}
+
+bool AbstractClientHandler::Capabilities::hasToken(const QString &token) const
+{
+    return mPriv->tokens.contains(token);
+}
+
+void AbstractClientHandler::Capabilities::setToken(const QString &token)
+{
+    mPriv->tokens.insert(token);
+}
+
+void AbstractClientHandler::Capabilities::unsetToken(const QString &token)
+{
+    mPriv->tokens.remove(token);
+}
+
+QStringList AbstractClientHandler::Capabilities::allTokens() const
+{
+    return mPriv->tokens.toList();
+}
+
 /**
  * Construct a new AbstractClientHandler object.
  *
@@ -686,6 +826,27 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilt
     : mPriv(new Private)
 {
     mPriv->channelFilter = channelFilter;
+    mPriv->capabilities = Capabilities(capabilities);
+    mPriv->wantsRequestNotification = wantsRequestNotification;
+}
+
+/**
+ * Construct a new AbstractClientHandler object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param wantsRequestNotification Whether this handler wants to receive channel
+ *                                 requests notification via addRequest() and
+ *                                 removeRequest().
+ * \param capabilities The set of additional capabilities supported by this
+ *                     handler.
+ */
+AbstractClientHandler::AbstractClientHandler(const ChannelClassSpecList &channelFilter,
+        const Capabilities &capabilities,
+        bool wantsRequestNotification)
+    : mPriv(new Private)
+{
+    mPriv->channelFilter = channelFilter.bareClasses();
     mPriv->capabilities = capabilities;
     mPriv->wantsRequestNotification = wantsRequestNotification;
 }
@@ -722,6 +883,29 @@ ChannelClassList AbstractClientHandler::handlerChannelFilter() const
 }
 
 /**
+ * Return the property containing a specification of the channels that this
+ * channel handler can deal with. It will be offered to approvers as a potential
+ * channel handler for bundles that contain only suitable channels, or for
+ * suitable channels that must be handled separately.
+ *
+ * This method works in exactly the same way as the
+ * AbstractClientObserver::observerChannelFilter() method. In particular, the
+ * returned value cannot change while the handler process continues to own the
+ * corresponding client bus name.
+ *
+ * In the .client file, represented in the same way as observer channel
+ * filter, the group is #TELEPATHY_INTERFACE_CLIENT_HANDLER suffixed
+ * by HandlerChannelFilter instead.
+ *
+ * \return A specification of the channels that this channel handler can deal
+ *         with.
+ */
+ChannelClassSpecList AbstractClientHandler::handlerFilter() const
+{
+    return ChannelClassSpecList(mPriv->channelFilter);
+}
+
+/**
  * Return the set of additional capabilities supported by this handler. This
  * describes things like support for streamed media codecs and NAT traversal
  * mechanisms.
@@ -729,9 +913,22 @@ ChannelClassList AbstractClientHandler::handlerChannelFilter() const
  * See <a href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.Handler.html#org.freedesktop.Telepathy.Client.Handler.Capabilities">
  * the Telepathy D-Bus API Specification</a> for more details.
  *
+ * \deprecated Use handlerCapabilities() instead, it offers a high-level interface to the capability
+ * set.
+ *
  * \return The set of additional capabilities supported by this handler.
  */
 QStringList AbstractClientHandler::capabilities() const
+{
+    return mPriv->capabilities.allTokens();
+}
+
+/**
+ * Return the set of additional capabilities supported by this handler.
+ *
+ * \return The set of additional capabilities supported by this handler.
+ */
+AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities() const
 {
     return mPriv->capabilities;
 }

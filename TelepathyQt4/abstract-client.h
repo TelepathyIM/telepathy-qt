@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,16 +26,20 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
 #include <QList>
 #include <QObject>
+#include <QSharedDataPointer>
 #include <QString>
 #include <QVariantMap>
 
 namespace Tp
 {
+
+class ChannelClassSpecList;
 
 class TELEPATHY_QT4_EXPORT AbstractClient : public RefCounted
 {
@@ -53,8 +57,8 @@ class TELEPATHY_QT4_EXPORT AbstractClientObserver : public virtual AbstractClien
 public:
     virtual ~AbstractClientObserver();
 
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass
-    ChannelClassList observerChannelFilter() const;
+    TELEPATHY_QT4_DEPRECATED ChannelClassList observerChannelFilter() const;
+    ChannelClassSpecList observerFilter() const;
 
     bool shouldRecover() const;
 
@@ -68,12 +72,11 @@ public:
             const QVariantMap &observerInfo) = 0;
 
 protected:
-    AbstractClientObserver(const ChannelClassList &channelFilter);
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass and have a
-    //        default parameter for shouldRecover once the other constructor is
-    //        removed
-    AbstractClientObserver(const ChannelClassList &channelFilter,
+    TELEPATHY_QT4_DEPRECATED AbstractClientObserver(const ChannelClassList &channelFilter);
+    TELEPATHY_QT4_DEPRECATED AbstractClientObserver(const ChannelClassList &channelFilter,
             bool shouldRecover);
+
+    AbstractClientObserver(const ChannelClassSpecList &channelFilter, bool shouldRecover = false);
 
 private:
     struct Private;
@@ -88,16 +91,16 @@ class TELEPATHY_QT4_EXPORT AbstractClientApprover : public virtual AbstractClien
 public:
     virtual ~AbstractClientApprover();
 
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass
-    ChannelClassList approverChannelFilter() const;
+    TELEPATHY_QT4_DEPRECATED ChannelClassList approverChannelFilter() const;
+    ChannelClassSpecList approverFilter() const;
 
     virtual void addDispatchOperation(const MethodInvocationContextPtr<> &context,
             const QList<ChannelPtr> &channels,
             const ChannelDispatchOperationPtr &dispatchOperation) = 0;
 
 protected:
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass
-    AbstractClientApprover(const ChannelClassList &channelFilter);
+    TELEPATHY_QT4_DEPRECATED AbstractClientApprover(const ChannelClassList &channelFilter);
+    AbstractClientApprover(const ChannelClassSpecList &channelFilter);
 
 private:
     struct Private;
@@ -117,13 +120,143 @@ class TELEPATHY_QT4_EXPORT AbstractClientHandler : public virtual AbstractClient
     Q_DISABLE_COPY(AbstractClientHandler)
 
 public:
+    class Capabilities
+    {
+        public:
+            Capabilities(const QStringList &tokens = QStringList());
+            Capabilities(const Capabilities &other);
+            ~Capabilities();
+
+            Capabilities &operator=(const Capabilities &other);
+
+            bool hasGTalkP2PNATTraversalToken() const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/gtalk-p2p"));
+            }
+
+            void setGTalkP2PNATTraversalToken()
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/gtalk-p2p"));
+            }
+
+            void unsetGTalkP2PNATTraversalToken()
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/gtalk-p2p"));
+            }
+
+            bool hasICEUDPNATTraversalToken() const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/ice-udp"));
+            }
+
+            void setICEUDPNATTraversalToken()
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/ice-udp"));
+            }
+
+            void unsetICEUDPNATTraversalToken()
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/ice-udp"));
+            }
+
+            bool hasWLM85NATTraversalToken() const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-8.5"));
+            }
+
+            void setWLM85NATTraversalToken()
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-8.5"));
+            }
+
+            void unsetWLM85NATTraversalToken()
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-8.5"));
+            }
+
+            bool hasWLM2009NATTraversalToken() const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-2009"));
+            }
+
+            void setWLM2009NATTraversalToken()
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-2009"));
+            }
+
+            void unsetWLM2009NATTraversalToken()
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/wlm-2009"));
+            }
+
+            bool hasAudioCodecToken(const QString &mimeSubType) const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/audio/") + mimeSubType.toLower());
+            }
+
+            void setAudioCodecToken(const QString &mimeSubType)
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/audio/") + mimeSubType.toLower());
+            }
+
+            void unsetAudioCodecToken(const QString &mimeSubType)
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/audio/") + mimeSubType.toLower());
+            }
+
+            bool hasVideoCodecToken(const QString &mimeSubType) const
+            {
+                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/video/") + mimeSubType.toLower());
+            }
+
+            void setVideoCodecToken(const QString &mimeSubType)
+            {
+                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/video/") + mimeSubType.toLower());
+            }
+
+            void unsetVideoCodecToken(const QString &mimeSubType)
+            {
+                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                    QLatin1String("/video/") + mimeSubType.toLower());
+            }
+
+            bool hasToken(const QString &token) const;
+            void setToken(const QString &token);
+            void unsetToken(const QString &token);
+
+            QStringList allTokens() const;
+
+        private:
+
+            struct Private;
+            QSharedDataPointer<Private> mPriv;
+    };
+
     virtual ~AbstractClientHandler();
 
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass
-    ChannelClassList handlerChannelFilter() const;
+    TELEPATHY_QT4_DEPRECATED ChannelClassList handlerChannelFilter() const;
+    ChannelClassSpecList handlerFilter() const;
 
     // FIXME: (API/ABI break) Use high-level class for capabilities
-    QStringList capabilities() const;
+    TELEPATHY_QT4_DEPRECATED QStringList capabilities() const;
+    Capabilities handlerCapabilities() const;
 
     virtual bool bypassApproval() const = 0;
 
@@ -142,14 +275,14 @@ public:
             const QString &errorName, const QString &errorMessage);
 
 protected:
-    AbstractClientHandler(const ChannelClassList &channelFilter,
+    TELEPATHY_QT4_DEPRECATED AbstractClientHandler(const ChannelClassList &channelFilter,
             bool wantsRequestNotification = false);
-    // FIXME: (API/ABI break) Use high-level class for ChannelClass and
-    //        capabilities and have a default parameter for capabilities that
-    //        indicates no aditional capability once the other constructor is
-    //        removed
-    AbstractClientHandler(const ChannelClassList &channelFilter,
+    TELEPATHY_QT4_DEPRECATED AbstractClientHandler(const ChannelClassList &channelFilter,
             const QStringList &capabilities,
+            bool wantsRequestNotification = false);
+
+    AbstractClientHandler(const ChannelClassSpecList &channelFilter,
+            const Capabilities &capabilities = Capabilities(),
             bool wantsRequestNotification = false);
 
 private:

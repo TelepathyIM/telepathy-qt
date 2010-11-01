@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactSearchChannel>
@@ -38,6 +39,21 @@
 
 namespace Tp
 {
+
+struct ChannelFactory::Private
+{
+    Private();
+
+    typedef QPair<ChannelClassSpec, Features> FeaturePair;
+    QList<FeaturePair> features;
+
+    typedef QPair<ChannelClassSpec, ConstructorConstPtr> CtorPair;
+    QList<CtorPair> ctors;
+};
+
+ChannelFactory::Private::Private()
+{
+}
 
 /**
  * \class ChannelFactory
@@ -74,8 +90,16 @@ ChannelFactoryPtr ChannelFactory::create(const QDBusConnection &bus)
  * \param bus The QDBusConnection the proxies constructed using this factory should use.
  */
 ChannelFactory::ChannelFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus)
+    : DBusProxyFactory(bus), mPriv(new Private)
 {
+    setSubclassForTextChats<TextChannel>();
+    setSubclassForTextChatrooms<TextChannel>();
+    setSubclassForStreamedMediaCalls<StreamedMediaChannel>();
+    setSubclassForRoomLists<RoomListChannel>();
+    setSubclassForIncomingFileTransfers<IncomingFileTransferChannel>();
+    setSubclassForOutgoingFileTransfers<OutgoingFileTransferChannel>();
+    setSubclassForContactSearches<ContactSearchChannel>();
+    setFallbackSubclass<Channel>();
 }
 
 /**
@@ -83,10 +107,283 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
  */
 ChannelFactory::~ChannelFactory()
 {
+    delete mPriv;
+}
+
+Features ChannelFactory::featuresForTextChats(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::textChat(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForTextChats(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::textChat(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForTextChats(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::textChat(additionalProps));
+}
+
+void ChannelFactory::setConstructorForTextChats(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::textChat(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForTextChatrooms(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::textChatroom(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForTextChatrooms(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::textChatroom(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForTextChatrooms(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::textChatroom(additionalProps));
+}
+
+void ChannelFactory::setConstructorForTextChatrooms(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::textChatroom(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForStreamedMediaCalls(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::streamedMediaCall(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForStreamedMediaCalls(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    // Set for both StreamedMedia and Call.DRAFT - remove once SMChannel drops its Call.DRAFT
+    // support hacks
+
+    ChannelClassSpec smSpec = ChannelClassSpec::streamedMediaCall(additionalProps);
+
+    ChannelClassSpec callDraftSpec = smSpec;
+    callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
+
+    addFeaturesFor(smSpec, features);
+    addFeaturesFor(callDraftSpec, features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForStreamedMediaCalls(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::streamedMediaCall(additionalProps));
+}
+
+void ChannelFactory::setConstructorForStreamedMediaCalls(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    // Set for both StreamedMedia and Call.DRAFT - remove once SMChannel drops its Call.DRAFT
+    // support hacks
+
+    ChannelClassSpec smSpec = ChannelClassSpec::streamedMediaCall(additionalProps);
+
+    ChannelClassSpec callDraftSpec = smSpec;
+    callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
+
+    setConstructorFor(smSpec, ctor);
+    setConstructorFor(callDraftSpec, ctor);
+}
+
+Features ChannelFactory::featuresForRoomLists(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::roomList(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForRoomLists(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::roomList(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForRoomLists(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::roomList(additionalProps));
+}
+
+void ChannelFactory::setConstructorForRoomLists(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::roomList(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForOutgoingFileTransfers(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::outgoingFileTransfer(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForOutgoingFileTransfers(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::outgoingFileTransfer(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForOutgoingFileTransfers(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::outgoingFileTransfer(additionalProps));
+}
+
+void ChannelFactory::setConstructorForOutgoingFileTransfers(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::outgoingFileTransfer(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForIncomingFileTransfers(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::incomingFileTransfer(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForIncomingFileTransfers(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::incomingFileTransfer(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingFileTransfers(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::incomingFileTransfer(additionalProps));
+}
+
+void ChannelFactory::setConstructorForIncomingFileTransfers(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::incomingFileTransfer(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForContactSearches(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::contactSearch(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForContactSearches(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::contactSearch(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForContactSearches(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::contactSearch(additionalProps));
+}
+
+void ChannelFactory::setConstructorForContactSearches(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::contactSearch(additionalProps), ctor);
+}
+
+Features ChannelFactory::commonFeatures() const
+{
+    return featuresFor(ChannelClassSpec());
+}
+
+void ChannelFactory::addCommonFeatures(const Features &features)
+{
+    addFeaturesFor(ChannelClassSpec(), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::fallbackConstructor() const
+{
+    return constructorFor(ChannelClassSpec());
+}
+
+void ChannelFactory::setFallbackConstructor(const ConstructorConstPtr &ctor)
+{
+    setConstructorFor(ChannelClassSpec(), ctor);
+}
+
+Features ChannelFactory::featuresFor(const ChannelClassSpec &channelClass) const
+{
+    Features features;
+
+    foreach (const Private::FeaturePair &pair, mPriv->features) {
+        if (pair.first.isSubsetOf(channelClass)) {
+            features.unite(pair.second);
+        }
+    }
+
+    return features;
+}
+
+void ChannelFactory::addFeaturesFor(const ChannelClassSpec &channelClass, const Features &features)
+{
+    QList<Private::FeaturePair>::iterator i;
+    for (i = mPriv->features.begin(); i != mPriv->features.end(); ++i) {
+        if (channelClass.allProperties().size() > i->first.allProperties().size()) {
+            break;
+        }
+
+        if (i->first == channelClass) {
+            i->second.unite(features);
+            return;
+        }
+    }
+
+    // We ran out of feature specifications (for the given size/specificity of a channel class)
+    // before finding a matching one, so let's create a new entry
+    mPriv->features.insert(i, qMakePair(channelClass, features));
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorFor(const ChannelClassSpec &cc) const
+{
+    QList<Private::CtorPair>::iterator i;
+    for (i = mPriv->ctors.begin(); i != mPriv->ctors.end(); ++i) {
+        if (i->first.isSubsetOf(cc)) {
+            return i->second;
+        }
+    }
+
+    // If this is reached, we didn't have a proper fallback constructor
+    Q_ASSERT(false);
+    return ConstructorConstPtr();
+}
+
+void ChannelFactory::setConstructorFor(const ChannelClassSpec &channelClass,
+        const ConstructorConstPtr &ctor)
+{
+    if (ctor.isNull()) {
+        warning().nospace() << "Tried to set a NULL ctor for ChannelClass("
+            << channelClass.channelType() << ", " << channelClass.targetHandleType() << ", "
+            << channelClass.allProperties().size() << "props in total)";
+        return;
+    }
+
+    QList<Private::CtorPair>::iterator i;
+    for (i = mPriv->ctors.begin(); i != mPriv->ctors.end(); ++i) {
+        if (channelClass.allProperties().size() > i->first.allProperties().size()) {
+            break;
+        }
+
+        if (i->first == channelClass) {
+            i->second = ctor;
+            return;
+        }
+    }
+
+    // We ran out of constructors (for the given size/specificity of a channel class)
+    // before finding a matching one, so let's create a new entry
+    mPriv->ctors.insert(i, qMakePair(channelClass, ctor));
 }
 
 /**
- * Constructs a Channel proxy (and someday begins making it ready.)
+ * Constructs a Channel proxy and begins making it ready.
  *
  * If a valid proxy already exists in the factory cache for the given combination of \a busName and
  * \a objectPath, it is returned instead. All newly created proxies are automatically cached until
@@ -95,8 +392,7 @@ ChannelFactory::~ChannelFactory()
  *
  * The proxy can be accessed immediately after this function returns using PendingReady::proxy().
  *
- * \todo Make it configurable which subclass is constructed and which features, if any, are made
- * ready on it.
+ * \todo Make it configurable which subclass is constructed.
  *
  * \param connection Proxy for the owning connection of the channel.
  * \param channelPath The object path of the channel.
@@ -108,50 +404,11 @@ PendingReady *ChannelFactory::proxy(const ConnectionPtr &connection, const QStri
 {
     SharedPtr<RefCounted> proxy = cachedProxy(connection->busName(), channelPath);
     if (!proxy) {
-        proxy = create(connection, channelPath, immutableProperties);
+        proxy = constructorFor(ChannelClassSpec(immutableProperties))->construct(connection,
+                channelPath, immutableProperties);
     }
 
     return nowHaveProxy(proxy);
-}
-
-ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
-        const QString &channelPath, const QVariantMap &immutableProperties)
-{
-    QString channelType = immutableProperties.value(QLatin1String(
-                TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-    if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)) {
-        return TextChannel::create(connection, channelPath, immutableProperties);
-    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) ||
-             channelType == QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL)) {
-        return StreamedMediaChannel::create(connection, channelPath, immutableProperties);
-    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST)) {
-        return RoomListChannel::create(connection, channelPath, immutableProperties);
-    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER)) {
-        if (immutableProperties.contains(QLatin1String(
-                        TELEPATHY_INTERFACE_CHANNEL ".Requested"))) {
-            bool requested = immutableProperties.value(QLatin1String(
-                        TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
-            if (requested) {
-                return OutgoingFileTransferChannel::create(connection, channelPath,
-                        immutableProperties);
-            } else {
-                return IncomingFileTransferChannel::create(connection, channelPath,
-                        immutableProperties);
-            }
-        } else {
-            warning() << "Trying to create a channel of type FileTransfer "
-                "without the " TELEPATHY_INTERFACE_CHANNEL ".Requested "
-                "property set in immutableProperties, returning a "
-                "FileTransferChannel instance";
-            return FileTransferChannel::create(connection, channelPath,
-                    immutableProperties);
-        }
-    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH)) {
-        return ContactSearchChannel::create(connection, channelPath, immutableProperties);
-    }
-
-    // ContactList, old-style Tubes, or a future channel type
-    return Channel::create(connection, channelPath, immutableProperties);
 }
 
 /**
@@ -176,8 +433,11 @@ QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
  */
 Features ChannelFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
 {
-    // TODO return whatever the user / defaults has specified
-    return Features();
+    // API/ABI break TODO: change to qobjectCast once we have a saner object hierarchy
+    ChannelPtr chan = ChannelPtr::dynamicCast(proxy);
+    Q_ASSERT(!chan.isNull());
+
+    return featuresFor(ChannelClassSpec(chan->immutableProperties()));
 }
 
 } // Tp

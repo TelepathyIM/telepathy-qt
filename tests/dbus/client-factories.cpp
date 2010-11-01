@@ -13,6 +13,8 @@
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/AbstractClientObserver>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpec>
+#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ChannelDispatchOperation>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ChannelRequest>
@@ -27,6 +29,7 @@
 #include <TelepathyQt4/MethodInvocationContext>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Types>
 
 #include <telepathy-glib/debug.h>
@@ -208,8 +211,8 @@ class MyClient : public QObject,
     Q_OBJECT
 
 public:
-    static AbstractClientPtr create(const ChannelClassList &channelFilter,
-            const QStringList &capabilities,
+    static AbstractClientPtr create(const ChannelClassSpecList &channelFilter,
+            const AbstractClientHandler::Capabilities &capabilities,
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
     {
@@ -218,8 +221,8 @@ public:
                         bypassApproval, wantsRequestNotification)));
     }
 
-    MyClient(const ChannelClassList &channelFilter,
-             const QStringList &capabilities,
+    MyClient(const ChannelClassSpecList &channelFilter,
+             const AbstractClientHandler::Capabilities &capabilities,
              bool bypassApproval = false,
              bool wantsRequestNotification = false)
         : AbstractClientObserver(channelFilter),
@@ -393,7 +396,7 @@ private:
     QString mChannelRequestPath;
     ChannelDispatchOperationAdaptor *mCDO;
     QString mCDOPath;
-    QStringList mClientCapabilities;
+    AbstractClientHandler::Capabilities mClientCapabilities;
     AbstractClientPtr mClientObject1;
     QString mClientObject1BusName;
     QString mClientObject1Path;
@@ -419,9 +422,23 @@ void TestClientFactories::initTestCase()
 
     QDBusConnection bus = QDBusConnection::sessionBus();
 
+    ChannelFactoryPtr chanFact = ChannelFactory::create(bus);
+
+    chanFact->addFeaturesForTextChats(TextChannel::FeatureChatState |
+            TextChannel::FeatureMessageQueue);
+    chanFact->addCommonFeatures(Channel::FeatureCore);
+
+    QCOMPARE(chanFact->commonFeatures().size(), 1);
+
+    QCOMPARE(chanFact->featuresForTextChats().size(), 3);
+    QVERIFY(chanFact->featuresForTextChats().contains(TextChannel::FeatureMessageQueue));
+    QVERIFY(chanFact->featuresForTextChats().contains(Channel::FeatureCore));
+    QVERIFY(!chanFact->featuresForTextChats().contains(TextChannel::FeatureMessageSentSignal));
+
     mAM = AccountManager::create(AccountFactory::create(bus, Account::FeatureCore),
             ConnectionFactory::create(bus,
-                Connection::FeatureCore | Connection::FeatureSimplePresence));
+                Connection::FeatureCore | Connection::FeatureSimplePresence),
+            chanFact);
     PendingReady *amReadyOp = mAM->becomeReady();
     QVERIFY(amReadyOp != NULL);
     QVERIFY(connect(amReadyOp,
@@ -536,7 +553,8 @@ void TestClientFactories::initTestCase()
     mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
 
     ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+        ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
 
     mCDO = new ChannelDispatchOperationAdaptor(QDBusObjectPath(mAccount->objectPath()),
@@ -578,18 +596,12 @@ void TestClientFactories::testRegister()
     // invalid client
     QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), QLatin1String("foo")));
 
-    mClientCapabilities.append(
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/ice-udp=true"));
-    mClientCapabilities.append(
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/audio/speex=true"));
+    mClientCapabilities.setICEUDPNATTraversalToken();
+    mClientCapabilities.setAudioCodecToken(QLatin1String("speex"));
 
-    ChannelClassList filters;
-    QMap<QString, QDBusVariant> filter;
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                  QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)));
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                  QDBusVariant((uint) Tp::HandleTypeContact));
-    filters.append(filter);
+    ChannelClassSpecList filters;
+    filters.append(ChannelClassSpec::textChat());
+
     mClientObject1 = MyClient::create(filters, mClientCapabilities, false, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
@@ -598,12 +610,7 @@ void TestClientFactories::testRegister()
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
 
     filters.clear();
-    filter.clear();
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                  QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA)));
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                  QDBusVariant((uint) Tp::HandleTypeContact));
-    filters.append(filter);
+    filters.append(ChannelClassSpec::streamedMediaCall());
     mClientObject2 = MyClient::create(filters, mClientCapabilities, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, QLatin1String("foo"), true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
@@ -630,16 +637,22 @@ void TestClientFactories::testRegister()
 void TestClientFactories::testCapabilities()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
+    QStringList normalizedHandlerCaps, normalizedClientCaps = mClientCapabilities.allTokens();
+    normalizedClientCaps.sort();
 
     // object 1
     ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
-    QCOMPARE(handler1Iface->Capabilities(), mClientCapabilities);
+    normalizedHandlerCaps = handler1Iface->Capabilities();
+    normalizedHandlerCaps.sort();
+    QCOMPARE(normalizedHandlerCaps, normalizedClientCaps);
 
     // object 2
     ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
             mClientObject2BusName, mClientObject2Path, this);
-    QCOMPARE(handler2Iface->Capabilities(), mClientCapabilities);
+    normalizedHandlerCaps = handler2Iface->Capabilities();
+    normalizedHandlerCaps.sort();
+    QCOMPARE(normalizedHandlerCaps, normalizedClientCaps);
 }
 
 void TestClientFactories::testRequests()
@@ -722,7 +735,8 @@ void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &cli
             SIGNAL(observeChannelsFinished()),
             SLOT(expectSignalEmission()));
     ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+        ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
@@ -823,7 +837,8 @@ void TestClientFactories::testHandleChannels()
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
     ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+        ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
     handler1Iface->HandleChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
@@ -843,6 +858,15 @@ void TestClientFactories::testHandleChannels()
                 Connection::FeatureCore | Connection::FeatureSimplePresence));
 
     QCOMPARE(client1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
+
+    TextChannelPtr textChan = TextChannelPtr::qObjectCast(client1->mHandleChannelsChannels.first());
+
+    QVERIFY(!textChan.isNull());
+
+    QVERIFY(textChan->isReady());
+    QVERIFY(textChan->isReady(Channel::FeatureCore));
+    QVERIFY(textChan->isReady(TextChannel::FeatureMessageQueue));
+    QVERIFY(textChan->isReady(TextChannel::FeatureChatState));
 
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QVERIFY(client1->mHandleChannelsRequestsSatisfied.first()->isReady());
