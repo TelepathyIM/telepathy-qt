@@ -37,6 +37,8 @@ template <class T>
 class GenericCapabilityFilter : public Filter<T>
 {
 public:
+    // FIXME (API/ABI break) Remove the create method taking a RCCList and make the method taking
+    //                       a RCCSpecList have a default param.
     static SharedPtr<GenericCapabilityFilter<T> > create(const RequestableChannelClassList &rccs
             = RequestableChannelClassList())
     {
@@ -100,7 +102,7 @@ public:
     // FIXME: (API/ABI break) Return a RCCSpecList instead
     inline RequestableChannelClassList filter() const { return mFilter; }
 
-    inline void addRequestableChannelClassSubset(const RequestableChannelClass &rcc)
+    TELEPATHY_QT4_DEPRECATED inline void addRequestableChannelClassSubset(const RequestableChannelClass &rcc)
     {
         mFilter.append(rcc);
     }
@@ -110,7 +112,7 @@ public:
         mFilter.append(rccSpec.bareClass());
     }
 
-    inline void setRequestableChannelClassesSubset(const RequestableChannelClassList &rccs)
+    TELEPATHY_QT4_DEPRECATED inline void setRequestableChannelClassesSubset(const RequestableChannelClassList &rccs)
     {
         mFilter = rccs;
     }
