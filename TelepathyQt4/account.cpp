@@ -297,27 +297,21 @@ bool Account::Private::useConferenceDRAFT(const char *channelType,
         return false;
     }
 
-    RequestableChannelClassList rccs = caps->requestableChannelClasses();
-    QString rccChannelType;
-    uint rccTargetHandleType;
-    foreach (const RequestableChannelClass &rcc, rccs) {
-        rccChannelType = qdbus_cast<QString>(rcc.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (rccChannelType == QLatin1String(channelType)) {
+    RequestableChannelClassSpecList rccSpecs = caps->allClassSpecs();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.channelType() == QLatin1String(channelType)) {
             if (targetHandleType != HandleTypeNone) {
-                rccTargetHandleType = qdbus_cast<uint>(rcc.fixedProperties.value(
-                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-                if (rccTargetHandleType != targetHandleType) {
+                if (rccSpec.targetHandleType() != targetHandleType) {
                     continue;
                 }
             }
 
-            if (rcc.allowedProperties.contains(QLatin1String(
-                            TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
+            if (rccSpec.allowsProperty(
+                        TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) {
                 return false;
             }
-            if (rcc.allowedProperties.contains(QLatin1String(
-                            TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
+            if (rccSpec.allowsProperty(
+                        TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) {
                 return true;
             }
         }
@@ -945,7 +939,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  *  - Profile::presences() will return an empty list and
  *    Profile::allowOtherPresences() will return \c true, meaning that CM
  *    presences should be used
- *  - Profile::unsupportedChannelClasses() will return an empty list
+ *  - Profile::unsupportedChannelClassSpecs() will return an empty list
  *
  * This method requires Account::FeatureProfile to be enabled.
  *
@@ -1277,23 +1271,38 @@ ConnectionCapabilities *Account::capabilities() const
         return mPriv->customCaps;
     }
 
-    RequestableChannelClassList piRccs = pi->capabilities()->requestableChannelClasses();
-    RequestableChannelClassList prUnsuportedRccs = pr->unsupportedChannelClasses();
-    RequestableChannelClassList rccs;
+    RequestableChannelClassSpecList piClassSpecs = pi->capabilities()->allClassSpecs();
+    RequestableChannelClassSpecList prUnsupportedClassSpecs = pr->unsupportedChannelClassSpecs();
+    RequestableChannelClassSpecList classSpecs;
     bool unsupported;
-    foreach (const RequestableChannelClass &piRcc, piRccs) {
+    foreach (const RequestableChannelClassSpec &piClassSpec, piClassSpecs) {
         unsupported = false;
-        foreach (const RequestableChannelClass &prUnsuportedRcc, prUnsuportedRccs) {
-            if (piRcc.fixedProperties == prUnsuportedRcc.fixedProperties) {
-                unsupported = true;
-                break;
+        foreach (const RequestableChannelClassSpec &prUnsuportedClassSpec, prUnsupportedClassSpecs) {
+            // Here we check the following:
+            // - If the unsupported spec has no allowed property it means it does not support any
+            // class whose fixed properties match.
+            //   E.g: Doesn't support any media calls, be it audio or video.
+            // - If the unsupported spec has allowed properties it means it does not support a
+            // specific class whose fixed properties and allowed properties should match.
+            //   E.g: Doesn't support video calls but does support audio calls.
+            if (prUnsuportedClassSpec.allowedProperties().isEmpty()) {
+                if (piClassSpec.fixedProperties() == prUnsuportedClassSpec.fixedProperties()) {
+                    unsupported = true;
+                    break;
+                }
+            } else {
+                if (piClassSpec == prUnsuportedClassSpec) {
+                    unsupported = true;
+                    break;
+                }
             }
         }
         if (!unsupported) {
-            rccs.append(piRcc);
+            classSpecs.append(piClassSpec);
+        } else {
         }
     }
-    mPriv->customCaps = new ConnectionCapabilities(rccs);
+    mPriv->customCaps = new ConnectionCapabilities(classSpecs);
     return mPriv->customCaps;
 }
 

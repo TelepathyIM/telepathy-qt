@@ -116,9 +116,13 @@ public:
 
     AccountSetPtr textChatAccountsSet() const;
     AccountSetPtr textChatRoomAccountsSet() const;
+
+    // FIXME: (API/ABI break) Rename SM related methods to contain SM in the name, like
+    //                        streamedMediaAudioCallAccounts(), etc.
     AccountSetPtr mediaCallAccountsSet() const;
     AccountSetPtr audioCallAccountsSet() const;
     AccountSetPtr videoCallAccountsSet(bool withAudio = true) const;
+
     AccountSetPtr fileTransferAccountsSet() const;
 
     AccountSetPtr accountsByProtocol(

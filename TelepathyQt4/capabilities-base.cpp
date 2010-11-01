@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,12 +27,13 @@
 namespace Tp
 {
 
+// FIXME: (API/ABI break) Make Private a QSharedData
 struct TELEPATHY_QT4_NO_EXPORT CapabilitiesBase::Private
 {
     Private(bool specificToContact);
-    Private(const RequestableChannelClassList &classes, bool specificToContact);
+    Private(const RequestableChannelClassSpecList &rccSpecs, bool specificToContact);
 
-    RequestableChannelClassList classes;
+    RequestableChannelClassSpecList rccSpecs;
     bool specificToContact;
 };
 
@@ -41,9 +42,9 @@ CapabilitiesBase::Private::Private(bool specificToContact)
 {
 }
 
-CapabilitiesBase::Private::Private(const RequestableChannelClassList &classes,
+CapabilitiesBase::Private::Private(const RequestableChannelClassSpecList &rccSpecs,
         bool specificToContact)
-    : classes(classes),
+    : rccSpecs(rccSpecs),
       specificToContact(specificToContact)
 {
 }
@@ -69,16 +70,38 @@ CapabilitiesBase::CapabilitiesBase(bool specificToContact)
 }
 
 /**
- * Construct a new CapabilitiesBase object using the given \a classes.
+ * Construct a new CapabilitiesBase object using the given \a rccs.
  *
- * \param classes RequestableChannelClassList representing the capabilities of a
- *                connection or contact.
+ * \param rccs RequestableChannelClassList representing the capabilities of a
+ *             connection or contact.
  * \param specificToContact Whether this object describes the capabilities of a
  *                          particular contact.
  */
-CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassList &classes,
+CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassList &rccs,
         bool specificToContact)
-    : mPriv(new Private(classes, specificToContact))
+    : mPriv(new Private(RequestableChannelClassSpecList(rccs), specificToContact))
+{
+}
+
+/**
+ * Construct a new CapabilitiesBase object using the given \a rccSpecs.
+ *
+ * \param rccSpecs RequestableChannelClassSpecList representing the capabilities of a
+ *                 connection or contact.
+ * \param specificToContact Whether this object describes the capabilities of a
+ *                          particular contact.
+ */
+CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassSpecList &rccSpecs,
+        bool specificToContact)
+    : mPriv(new Private(rccSpecs, specificToContact))
+{
+}
+
+CapabilitiesBase::CapabilitiesBase(const CapabilitiesBase &other)
+    // FIXME (API/ABI break) Uncomment the line below and remove the "new Private" when Private is a
+    //                       QSharedData
+    // : mPriv(other.mPriv)
+    : mPriv(new Private(other.mPriv->rccSpecs, other.mPriv->specificToContact))
 {
 }
 
@@ -87,34 +110,56 @@ CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassList &classes,
  */
 CapabilitiesBase::~CapabilitiesBase()
 {
+    // FIXME (API/ABI break) Remove the line below when Private is a QSharedData
     delete mPriv;
 }
 
+CapabilitiesBase &CapabilitiesBase::operator=(const CapabilitiesBase &other)
+{
+    // FIXME (API/ABI break) Uncomment the line below and remove the assigments when Private is a
+    //                       QSharedData
+    // this->mPriv = other.mPriv
+    this->mPriv->rccSpecs = other.mPriv->rccSpecs;
+    this->mPriv->specificToContact = other.mPriv->specificToContact;
+    return *this;
+}
+
 /**
- * Return the underlying data structure used by Telepathy to represent
- * the requests that can succeed.
+ * Return the list of requestable channel class spec representing the requests that can succeed.
  *
  * This can be used by advanced clients to determine whether an unusually
  * complex request would succeed. See the Telepathy D-Bus API Specification
- * for details of how to interpret the returned list of QVariantMap objects.
+ * for details of how to interpret the returned list.
  *
  * The higher-level methods like textChats() are likely to be more
  * useful to the majority of clients.
  *
- * \return A RequestableChannelClassList indicating the parameters to
+ * \return A RequestableChannelClassSpecList indicating the parameters to
  *         Account::createChannel, Account::ensureChannel,
  *         Connection::createChannel and Connection::ensureChannel
  *         that can be expected to work.
  */
+RequestableChannelClassSpecList CapabilitiesBase::allClassSpecs() const
+{
+    return mPriv->rccSpecs;
+}
+
+/**
+ * \deprecated Use allClassSpecs() instead.
+ */
 RequestableChannelClassList CapabilitiesBase::requestableChannelClasses() const
 {
-    return mPriv->classes;
+    RequestableChannelClassList ret;
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        ret << rccSpec.bareClass();
+    }
+    return ret;
 }
 
 void CapabilitiesBase::updateRequestableChannelClasses(
-        const RequestableChannelClassList &classes)
+        const RequestableChannelClassList &rccs)
 {
-    mPriv->classes = classes;
+    mPriv->rccSpecs = RequestableChannelClassSpecList(rccs);
 }
 
 /**
@@ -157,19 +202,13 @@ bool CapabilitiesBase::isSpecificToContact() const
  */
 bool CapabilitiesBase::textChats() const
 {
-    QString channelType;
-    uint targetHandleType;
-    foreach (const RequestableChannelClass &cls, mPriv->classes) {
-        if (!cls.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
-            targetHandleType == HandleTypeContact) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
+            rccSpec.targetHandleType() == HandleTypeContact) {
             return true;
         }
     }
@@ -191,19 +230,13 @@ bool CapabilitiesBase::textChats() const
  */
 bool CapabilitiesBase::streamedMediaCalls() const
 {
-    QString channelType;
-    uint targetHandleType;
-    foreach (const RequestableChannelClass &cls, mPriv->classes) {
-        if (!cls.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            targetHandleType == HandleTypeContact) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact) {
             return true;
         }
     }
@@ -233,21 +266,14 @@ bool CapabilitiesBase::streamedMediaCalls() const
  */
 bool CapabilitiesBase::streamedMediaAudioCalls() const
 {
-    QString channelType;
-    uint targetHandleType;
-    foreach (const RequestableChannelClass &cls, mPriv->classes) {
-        if (!cls.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            targetHandleType == HandleTypeContact &&
-            cls.allowedProperties.contains(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"))) {
             return true;
         }
     }
@@ -266,21 +292,14 @@ bool CapabilitiesBase::streamedMediaAudioCalls() const
  */
 bool CapabilitiesBase::streamedMediaVideoCalls() const
 {
-    QString channelType;
-    uint targetHandleType;
-    foreach (const RequestableChannelClass &cls, mPriv->classes) {
-        if (!cls.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            targetHandleType == HandleTypeContact &&
-            cls.allowedProperties.contains(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"))) {
             return true;
         }
     }
@@ -299,23 +318,15 @@ bool CapabilitiesBase::streamedMediaVideoCalls() const
  */
 bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
 {
-    QString channelType;
-    uint targetHandleType;
-    foreach (const RequestableChannelClass &cls, mPriv->classes) {
-        if (!cls.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.fixedProperties().size() != 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            targetHandleType == HandleTypeContact &&
-            cls.allowedProperties.contains(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo")) &&
-            cls.allowedProperties.contains(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"))) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo")) &&
+            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"))) {
             return true;
         }
     }
@@ -349,16 +360,12 @@ bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
  */
 bool CapabilitiesBase::upgradingStreamedMediaCalls() const
 {
-    QString channelType;
-    foreach (const RequestableChannelClass &cls, mPriv->classes) {
-        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
-            !cls.allowedProperties.contains(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".ImmutableStreams"))) {
-                // TODO should we test all classes that have channelType
-                //      StreamedMedia or just one is fine?
-                return true;
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            !rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".ImmutableStreams"))) {
+            // TODO should we test all classes that have channelType
+            //      StreamedMedia or just one is fine?
+            return true;
         }
     }
     return false;

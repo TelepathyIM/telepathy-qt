@@ -764,18 +764,8 @@ AccountSetPtr AccountManager::textChatAccountsSet() const
         return filterAccounts(QList<AccountFilterConstPtr>());
     }
 
-    RequestableChannelClassList rccs;
-    RequestableChannelClass rcc;
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-            (uint) HandleTypeContact);
-    rccs.append(rcc);
-
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
-    filter->setRequestableChannelClassesSubset(rccs);
+    filter->addRequestableChannelClassSubset(RequestableChannelClassSpec::textChat());
     return filterAccounts(filter);
 }
 
@@ -796,18 +786,8 @@ AccountSetPtr AccountManager::textChatRoomAccountsSet() const
         return filterAccounts(QList<AccountFilterConstPtr>());
     }
 
-    RequestableChannelClassList rccs;
-    RequestableChannelClass rcc;
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-            (uint) HandleTypeRoom);
-    rccs.append(rcc);
-
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
-    filter->setRequestableChannelClassesSubset(rccs);
+    filter->addRequestableChannelClassSubset(RequestableChannelClassSpec::textChatroom());
     return filterAccounts(filter);
 }
 
@@ -829,18 +809,8 @@ AccountSetPtr AccountManager::mediaCallAccountsSet() const
         return filterAccounts(QList<AccountFilterConstPtr>());
     }
 
-    RequestableChannelClassList rccs;
-    RequestableChannelClass rcc;
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-            (uint) HandleTypeContact);
-    rccs.append(rcc);
-
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
-    filter->setRequestableChannelClassesSubset(rccs);
+    filter->addRequestableChannelClassSubset(RequestableChannelClassSpec::streamedMediaCall());
     return filterAccounts(filter);
 }
 
@@ -862,20 +832,8 @@ AccountSetPtr AccountManager::audioCallAccountsSet() const
         return filterAccounts(QList<AccountFilterConstPtr>());
     }
 
-    RequestableChannelClassList rccs;
-    RequestableChannelClass rcc;
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-            (uint) HandleTypeContact);
-    rcc.allowedProperties.append(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
-    rccs.append(rcc);
-
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
-    filter->setRequestableChannelClassesSubset(rccs);
+    filter->addRequestableChannelClassSubset(RequestableChannelClassSpec::streamedMediaAudioCall());
     return filterAccounts(filter);
 }
 
@@ -897,23 +855,15 @@ AccountSetPtr AccountManager::videoCallAccountsSet(bool withAudio) const
         return filterAccounts(QList<AccountFilterConstPtr>());
     }
 
-    RequestableChannelClassList rccs;
-    RequestableChannelClass rcc;
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-            (uint) HandleTypeContact);
-    rcc.allowedProperties.append(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"));
+    RequestableChannelClassSpec rccSpec;
     if (withAudio) {
-        rcc.allowedProperties.append(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+        rccSpec = RequestableChannelClassSpec::streamedMediaVideoCallWithAudio();
+    } else {
+        rccSpec = RequestableChannelClassSpec::streamedMediaVideoCall();
     }
-    rccs.append(rcc);
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
-    filter->setRequestableChannelClassesSubset(rccs);
+    filter->addRequestableChannelClassSubset(rccSpec);
     return filterAccounts(filter);
 }
 
@@ -935,18 +885,8 @@ AccountSetPtr AccountManager::fileTransferAccountsSet() const
         return filterAccounts(QList<AccountFilterConstPtr>());
     }
 
-    RequestableChannelClassList rccs;
-    RequestableChannelClass rcc;
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
-    rcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-            (uint) HandleTypeContact);
-    rccs.append(rcc);
-
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
-    filter->setRequestableChannelClassesSubset(rccs);
+    filter->addRequestableChannelClassSubset(RequestableChannelClassSpec::fileTransfer());
     return filterAccounts(filter);
 }
 

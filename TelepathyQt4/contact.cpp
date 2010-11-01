@@ -54,7 +54,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
         } else {
             // use the connection capabilities
             caps = new ContactCapabilities(
-                    manager->connection()->capabilities()->requestableChannelClasses(),
+                    manager->connection()->capabilities()->allClassSpecs(),
                     false);
         }
 
@@ -731,7 +731,7 @@ void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
 
     mPriv->actualFeatures.insert(FeatureCapabilities);
 
-    if (mPriv->caps->requestableChannelClasses() != caps) {
+    if (mPriv->caps->allClassSpecs().bareClasses() != caps) {
         mPriv->caps->updateRequestableChannelClasses(caps);
         emit capabilitiesChanged(mPriv->caps);
     }

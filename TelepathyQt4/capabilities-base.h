@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/RequestableChannelClassSpec>
 #include <TelepathyQt4/Types>
 
 namespace Tp
@@ -34,10 +35,14 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT CapabilitiesBase
 {
 public:
+    CapabilitiesBase(const CapabilitiesBase &other);
     virtual ~CapabilitiesBase();
 
-    // FIXME: (API/ABI break) Use high-level class for requestableChannelClass
-    RequestableChannelClassList requestableChannelClasses() const;
+    CapabilitiesBase &operator=(const CapabilitiesBase &other);
+
+    RequestableChannelClassSpecList allClassSpecs() const;
+
+    TELEPATHY_QT4_DEPRECATED RequestableChannelClassList requestableChannelClasses() const;
 
     bool isSpecificToContact() const;
 
@@ -65,11 +70,13 @@ public:
 
 protected:
     CapabilitiesBase(bool specificToContact);
-    CapabilitiesBase(const RequestableChannelClassList &classes,
+    CapabilitiesBase(const RequestableChannelClassList &rccs,
+            bool specificToContact);
+    CapabilitiesBase(const RequestableChannelClassSpecList &rccSpecs,
             bool specificToContact);
 
     virtual void updateRequestableChannelClasses(
-            const RequestableChannelClassList &classes);
+            const RequestableChannelClassList &rccs);
 
 private:
     friend class Connection;
@@ -77,6 +84,7 @@ private:
 
     struct Private;
     friend struct Private;
+    // FIXME (API/ABI break) Make mPriv a QSharedDataPointer
     Private *mPriv;
 };
 
