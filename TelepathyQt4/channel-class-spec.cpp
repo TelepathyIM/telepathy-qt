@@ -258,7 +258,7 @@ ChannelClassSpec ChannelClassSpec::textChatroom(const QVariantMap &additionalPro
     }
 }
 
-ChannelClassSpec ChannelClassSpec::mediaCall(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::streamedMediaCall(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
@@ -274,14 +274,14 @@ ChannelClassSpec ChannelClassSpec::mediaCall(const QVariantMap &additionalProper
     }
 }
 
-ChannelClassSpec ChannelClassSpec::mediaCallWithInitialAudio(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::streamedMediaAudioCall(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
                 static_cast<uint>(HandleTypeContact));
-        spec.setInitialAudio();
+        spec.setStreamedMediaInitialAudioFlag();
     }
 
     if (additionalProperties.isEmpty()) {
@@ -291,14 +291,32 @@ ChannelClassSpec ChannelClassSpec::mediaCallWithInitialAudio(const QVariantMap &
     }
 }
 
-ChannelClassSpec ChannelClassSpec::mediaCallWithInitialVideo(const QVariantMap &additionalProperties)
+ChannelClassSpec ChannelClassSpec::streamedMediaVideoCall(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
                 static_cast<uint>(HandleTypeContact));
-        spec.setInitialVideo();
+        spec.setStreamedMediaInitialVideoFlag();
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::streamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+                static_cast<uint>(HandleTypeContact));
+        spec.setStreamedMediaInitialAudioFlag();
+        spec.setStreamedMediaInitialVideoFlag();
     }
 
     if (additionalProperties.isEmpty()) {

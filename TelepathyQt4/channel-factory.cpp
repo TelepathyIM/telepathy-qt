@@ -94,7 +94,7 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
 {
     setSubclassForTextChats<TextChannel>();
     setSubclassForTextChatrooms<TextChannel>();
-    setSubclassForMediaCalls<StreamedMediaChannel>();
+    setSubclassForStreamedMediaCalls<StreamedMediaChannel>();
     setSubclassForRoomLists<RoomListChannel>();
     setSubclassForIncomingFileTransfers<IncomingFileTransferChannel>();
     setSubclassForOutgoingFileTransfers<OutgoingFileTransferChannel>();
@@ -156,17 +156,18 @@ void ChannelFactory::setConstructorForTextChatrooms(const ConstructorConstPtr &c
     setConstructorFor(ChannelClassSpec::textChatroom(additionalProps), ctor);
 }
 
-Features ChannelFactory::featuresForMediaCalls(const QVariantMap &additionalProps) const
+Features ChannelFactory::featuresForStreamedMediaCalls(const QVariantMap &additionalProps) const
 {
-    return featuresFor(ChannelClassSpec::mediaCall(additionalProps));
+    return featuresFor(ChannelClassSpec::streamedMediaCall(additionalProps));
 }
 
-void ChannelFactory::addFeaturesForMediaCalls(const Features &features,
+void ChannelFactory::addFeaturesForStreamedMediaCalls(const Features &features,
         const QVariantMap &additionalProps)
 {
-    // Set for both StreamedMedia and Call.DRAFT
+    // Set for both StreamedMedia and Call.DRAFT - remove once SMChannel drops its Call.DRAFT
+    // support hacks
 
-    ChannelClassSpec smSpec = ChannelClassSpec::mediaCall(additionalProps);
+    ChannelClassSpec smSpec = ChannelClassSpec::streamedMediaCall(additionalProps);
 
     ChannelClassSpec callDraftSpec = smSpec;
     callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
@@ -175,18 +176,19 @@ void ChannelFactory::addFeaturesForMediaCalls(const Features &features,
     addFeaturesFor(callDraftSpec, features);
 }
 
-ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForMediaCalls(
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForStreamedMediaCalls(
         const QVariantMap &additionalProps) const
 {
-    return constructorFor(ChannelClassSpec::mediaCall(additionalProps));
+    return constructorFor(ChannelClassSpec::streamedMediaCall(additionalProps));
 }
 
-void ChannelFactory::setConstructorForMediaCalls(const ConstructorConstPtr &ctor,
+void ChannelFactory::setConstructorForStreamedMediaCalls(const ConstructorConstPtr &ctor,
         const QVariantMap &additionalProps)
 {
-    // Set for both StreamedMedia and Call.DRAFT
+    // Set for both StreamedMedia and Call.DRAFT - remove once SMChannel drops its Call.DRAFT
+    // support hacks
 
-    ChannelClassSpec smSpec = ChannelClassSpec::mediaCall(additionalProps);
+    ChannelClassSpec smSpec = ChannelClassSpec::streamedMediaCall(additionalProps);
 
     ChannelClassSpec callDraftSpec = smSpec;
     callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);

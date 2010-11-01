@@ -610,7 +610,7 @@ void TestClientFactories::testRegister()
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
 
     filters.clear();
-    filters.append(ChannelClassSpec::mediaCall());
+    filters.append(ChannelClassSpec::streamedMediaCall());
     mClientObject2 = MyClient::create(filters, mClientCapabilities, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, QLatin1String("foo"), true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));

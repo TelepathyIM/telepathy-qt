@@ -110,39 +110,39 @@ public:
         unsetProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"));
     }
 
-    bool hasInitialAudio() const
+    bool hasStreamedMediaInitialAudioFlag() const
     {
         return qdbus_cast<bool>(
                 property(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA
                         ".InitialAudio")));
     }
 
-    void setInitialAudio()
+    void setStreamedMediaInitialAudioFlag()
     {
         setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"),
                 QVariant::fromValue(true));
     }
 
-    void unsetInitialAudio()
+    void unsetStreamedMediaInitialAudioFlag()
     {
         unsetProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA
                     ".InitialAudio"));
     }
 
-    bool hasInitialVideo() const
+    bool hasStreamedMediaInitialVideoFlag() const
     {
         return qdbus_cast<bool>(
                 property(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA
                         ".InitialVideo")));
     }
 
-    void setInitialVideo()
+    void setStreamedMediaInitialVideoFlag()
     {
         setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"),
                 QVariant::fromValue(true));
     }
 
-    void unsetInitialVideo()
+    void unsetStreamedMediaInitialVideoFlag()
     {
         unsetProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA
                     ".InitialVideo"));
@@ -159,10 +159,12 @@ public:
 
     static ChannelClassSpec textChat(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec textChatroom(const QVariantMap &additionalProperties = QVariantMap());
-    static ChannelClassSpec mediaCall(const QVariantMap &additionalProperties = QVariantMap());
-    static ChannelClassSpec mediaCallWithInitialAudio(const QVariantMap &additionalProperties =
+    static ChannelClassSpec streamedMediaCall(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec streamedMediaAudioCall(const QVariantMap &additionalProperties =
             QVariantMap());
-    static ChannelClassSpec mediaCallWithInitialVideo(const QVariantMap &additionalProperties =
+    static ChannelClassSpec streamedMediaVideoCall(const QVariantMap &additionalProperties =
+            QVariantMap());
+    static ChannelClassSpec streamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
             QVariantMap());
     // TODO: add Call when it's undrafted
     static ChannelClassSpec roomList(const QVariantMap &additionalProperties = QVariantMap());
