@@ -25,8 +25,10 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ContactFactory>
 
 #include <QDBusObjectPath>
 #include <QDBusPendingCallWatcher>
@@ -113,8 +115,13 @@ ConnectionPtr PendingConnection::connection() const
 
     if (!mPriv->connection) {
         ConnectionManagerPtr manager(mPriv->manager);
+        // TODO (API/ABI break): If we are going to keep ConnectionManager::requestConnection we
+        //                       probably want to pass factories to ConnectionManager and use them
+        //                       here.
         mPriv->connection = Connection::create(manager->dbusConnection(),
-                mPriv->busName, mPriv->objectPath.path());
+                mPriv->busName, mPriv->objectPath.path(),
+                  ChannelFactory::create(manager->dbusConnection()),
+                  ContactFactory::create());
     }
 
     return mPriv->connection;

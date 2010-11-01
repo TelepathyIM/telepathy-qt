@@ -66,7 +66,7 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::Private
     // Instance of generated interface class
     Client::ChannelDispatchOperationInterface *baseInterface;
 
-    // Optional interface proxies
+    // Mandatory properties interface proxy
     Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
@@ -82,10 +82,9 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::Private
 
 ChannelDispatchOperation::Private::Private(ChannelDispatchOperation *parent)
     : parent(parent),
-      baseInterface(new Client::ChannelDispatchOperationInterface(
-                    parent->dbusConnection(), parent->busName(),
-                    parent->objectPath(), parent)),
-      properties(0),
+      baseInterface(new Client::ChannelDispatchOperationInterface(parent)),
+      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
+                  BypassInterfaceCheck)),
       readinessHelper(parent->readinessHelper()),
       gotPossibleHandlers(false)
 {
@@ -119,11 +118,6 @@ ChannelDispatchOperation::Private::~Private()
 
 void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation::Private *self)
 {
-    if (!self->properties) {
-        self->properties = self->parent->propertiesInterface();
-        Q_ASSERT(self->properties != 0);
-    }
-
     QVariantMap mainProps;
     foreach (QString key, self->immutableProperties.keys()) {
         if (key.startsWith(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION "."))) {
@@ -288,6 +282,8 @@ const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(Chan
  * Create a new channel dispatch operation object using
  * QDBusConnection::sessionBus().
  *
+ * \deprecated Use other create() methods.
+ *
  * \param objectPath The channel dispatch operation object path.
  * \param immutableProperties The immutable properties of the channel dispatch
  *        operation.
@@ -297,13 +293,21 @@ const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(Chan
 ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QString &objectPath,
         const QVariantMap &immutableProperties)
 {
+    QDBusConnection bus = QDBusConnection::sessionBus();
     return ChannelDispatchOperationPtr(new ChannelDispatchOperation(
-                QDBusConnection::sessionBus(), objectPath,
-                immutableProperties));
+                bus, objectPath,
+                immutableProperties,
+                QList<ChannelPtr>(),
+                AccountFactory::create(bus, Account::FeatureCore),
+                ConnectionFactory::create(bus, Connection::FeatureCore),
+                ChannelFactory::create(bus),
+                ContactFactory::create()));
 }
 
 /**
  * Create a new channel dispatch operation object using the given \a bus.
+ *
+ * \deprecated Use other create() methods.
  *
  * \param bus QDBusConnection to use.
  * \param objectPath The channel dispatch operation object path.
@@ -316,7 +320,12 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return ChannelDispatchOperationPtr(new ChannelDispatchOperation(
-                bus, objectPath, immutableProperties));
+                bus, objectPath, immutableProperties,
+                QList<ChannelPtr>(),
+                AccountFactory::create(bus, Account::FeatureCore),
+                ConnectionFactory::create(bus, Connection::FeatureCore),
+                ChannelFactory::create(bus),
+                ContactFactory::create()));
 }
 
 /**
@@ -350,6 +359,8 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
 
 /**
  * Construct a new channel dispatch operation object using the given \a bus.
+ *
+ * \deprecated
  *
  * \param bus QDBusConnection to use
  * \param objectPath The channel dispatch operation object path.
@@ -597,6 +608,8 @@ Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterfa
  * Convenience function for getting a PropertiesInterface interface proxy object
  * for this account. The ChannelDispatchOperation interface relies on
  * properties, so this interface is always assumed to be present.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \return A pointer to the existing Client::DBus::PropertiesInterface object
  *         for this ChannelDispatchOperation object.

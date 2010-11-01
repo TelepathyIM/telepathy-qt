@@ -794,6 +794,8 @@ ClientRegistrarPtr ClientRegistrar::create(const AccountManagerPtr &manager)
  * The resulting registrar will use factories constructing stock TpQt4 classes with no features
  * prepared. This is equivalent to the old pre-factory behavior of ClientRegistrar.
  *
+ * \deprecated
+ *
  * \param bus QDBusConnection to use.
  */
 ClientRegistrar::ClientRegistrar(const QDBusConnection &bus)

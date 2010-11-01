@@ -262,8 +262,7 @@ const QString Channel::Private::GroupMembersChangedInfo::keyMessage(QLatin1Strin
 Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         const QVariantMap &immutableProperties)
     : parent(parent),
-      baseInterface(new Client::ChannelInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent)),
+      baseInterface(new Client::ChannelInterface(parent)),
       connection(connection),
       immutableProperties(immutableProperties),
       group(0),
@@ -2322,6 +2321,8 @@ Contacts Channel::conferenceInitialInviteeContacts() const
  *
  * Note that this method will always return false if the Channel supports the Conference interface,
  * even if Conference.DRAFT is also supported.
+ *
+ * \deprecated Use ConnectionCapabilities conference methods instead.
  *
  * \return Whether the channels supports non merges.
  */

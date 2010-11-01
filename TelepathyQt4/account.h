@@ -97,7 +97,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(bool online READ isOnline NOTIFY onlinenessChanged)
     Q_PROPERTY(QString uniqueIdentifier READ uniqueIdentifier)
     // FIXME: (API/ABI break) Remove connectionObjectPath
-    Q_PROPERTY(QString connectionObjectPath READ connectionObjectPath)
+    Q_PROPERTY(QString connectionObjectPath READ _deprecated_connectionObjectPath)
     Q_PROPERTY(QString normalizedName READ normalizedName NOTIFY normalizedNameChanged)
 
 public:
@@ -107,6 +107,7 @@ public:
     static const Feature FeatureCapabilities;
     static const Feature FeatureProfile;
 
+    // FIXME: (API/ABI break) Remove both constructors that don't take factories as params.
     static AccountPtr create(const QString &busName,
             const QString &objectPath);
     TELEPATHY_QT4_DEPRECATED static AccountPtr create(const QDBusConnection &bus,
@@ -336,7 +337,8 @@ Q_SIGNALS:
     void serviceNameChanged(const QString &serviceName);
     void profileChanged(const Tp::ProfilePtr &profile);
     void displayNameChanged(const QString &displayName);
-    TELEPATHY_QT4_DEPRECATED void iconChanged(const QString &iconName);
+    // FIXME: (API/ABI break) Remove iconChanged in favor of iconNameChanged
+    void iconChanged(const QString &iconName);
     void iconNameChanged(const QString &iconName);
     void nicknameChanged(const QString &nickname);
     void normalizedNameChanged(const QString &normalizedName);
@@ -356,7 +358,8 @@ Q_SIGNALS:
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
     void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
-    TELEPATHY_QT4_DEPRECATED void connectionStatusChanged(Tp::ConnectionStatus status,
+    // FIXME: (API/ABI break) Remove connectionStatusChanged in favor of statusChanged
+    void connectionStatusChanged(Tp::ConnectionStatus status,
             Tp::ConnectionStatusReason statusReason);
     // FIXME: (API/ABI break) Rename to connectionStatusChanged and use
     //        Connection::Status and Connection::ErrorDetails. Actually it should have being named
@@ -372,8 +375,8 @@ Q_SIGNALS:
     void propertyChanged(const QString &propertyName);
 
 protected:
-    TELEPATHY_QT4_EXPORT Account(const QString &busName, const QString &objectPath);
-    TELEPATHY_QT4_EXPORT Account(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED Account(const QString &busName, const QString &objectPath);
+    TELEPATHY_QT4_DEPRECATED Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
@@ -381,7 +384,7 @@ protected:
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
-    TELEPATHY_QT4_EXPORT Client::AccountInterface *baseInterface() const;
+    Client::AccountInterface *baseInterface() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
@@ -399,6 +402,8 @@ private:
 
     // TODO: (API/ABI break) Move this to Tp::Object probably
     void notify(const char *propertyName);
+
+    QString _deprecated_connectionObjectPath() const;
 
     Private *mPriv;
 };

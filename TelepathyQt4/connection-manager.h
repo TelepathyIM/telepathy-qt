@@ -134,6 +134,8 @@ class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
+    // TODO (API/ABI break): Should we keep ConnectionManager::requestConnection. If so we
+    //                       probably want to pass factories here and use them in requestConnection.
     static ConnectionManagerPtr create(const QString &name);
     static ConnectionManagerPtr create(const QDBusConnection &bus,
             const QString &name);
@@ -147,6 +149,7 @@ public:
     bool hasProtocol(const QString &protocolName) const;
     ProtocolInfo *protocol(const QString &protocolName) const;
 
+    // TODO (API/ABI break): Do we want to keep requestConnection as public API?
     PendingConnection *requestConnection(const QString &protocolName,
             const QVariantMap &parameters);
 

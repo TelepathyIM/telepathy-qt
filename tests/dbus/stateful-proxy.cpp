@@ -224,11 +224,6 @@ void TestStatefulProxy::testBasics()
     QCOMPARE(mSignalledInvalidationMessage,
             QLatin1String("Because I said so"));
 
-    // the low-level proxy made from the high-level proxy now returns an
-    // error, synchronously
-    reply = ifaceFromProxy.Introspect();
-    QVERIFY(reply.isError());
-
     // low-level proxies with no knowledge of the high-level DBusProxy are
     // unaffected
 

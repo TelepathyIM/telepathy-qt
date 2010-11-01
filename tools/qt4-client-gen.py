@@ -89,6 +89,7 @@ class Generator(object):
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/Global>
 
+// FIXME: (API/ABI break) Remove definition of TELEPATHY_GNUC_DEPRECATED
 // basically the same as GLib's G_GNUC_DEPRECATED
 #ifndef TELEPATHY_GNUC_DEPRECATED
 #   if defined(Q_CC_GNUC) && __GNUC__ >= 4
@@ -346,11 +347,12 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
             settername = 'set' + name
 
         self.h("""
+public:
     /**
      * Represents property "%(name)s" on the remote object.
 %(docstring)s\
      */
-    Q_PROPERTY(%(val)s %(name)s READ %(gettername)s%(maybesettername)s)
+    Q_PROPERTY(%(val)s %(name)s READ _deprecated_%(gettername)s%(maybesettername)s)
 
     /**
      * Getter for the remote object property "%(name)s".
@@ -360,7 +362,13 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
      * \\return The value of the property, or a default-constructed value
      *          if the property is not readable.
      */
-    inline %(val)s %(gettername)s() const TELEPATHY_GNUC_DEPRECATED
+    inline TELEPATHY_QT4_DEPRECATED %(val)s %(gettername)s() const
+    {
+        return _deprecated_%(gettername)s();
+    }
+
+private:
+    inline %(val)s _deprecated_%(gettername)s() const
     {
         return %(getter-return)s;
     }
@@ -370,11 +378,12 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
        'val' : binding.val,
        'name' : name,
        'gettername' : gettername,
-       'maybesettername' : settername and (' WRITE ' + settername) or '',
+       'maybesettername' : settername and (' WRITE _deprecated_' + settername) or '',
        'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, name)) or binding.val + '()'})
 
         if settername:
             self.h("""
+public:
     /**
      * Setter for the remote object property "%s".
      *
@@ -382,11 +391,17 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
      *
      * \\param newValue The value to set the property to.
      */
-    inline void %s(%s newValue) TELEPATHY_GNUC_DEPRECATED
+    inline TELEPATHY_QT4_DEPRECATED void %s(%s newValue)
+    {
+        return _deprecated_%s(newValue);
+    }
+
+private:
+    inline void _deprecated_%s(%s newValue)
     {
         internalPropSet("%s", QVariant::fromValue(newValue));
     }
-""" % (name, settername, binding.inarg, name))
+""" % (name, settername, binding.inarg, settername, settername, binding.inarg, name))
 
     def do_method(self, method):
         name = method.getAttribute('name')

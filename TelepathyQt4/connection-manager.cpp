@@ -606,8 +606,7 @@ bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVaria
 ConnectionManager::Private::Private(ConnectionManager *parent, const QString &name)
     : parent(parent),
       name(name),
-      baseInterface(new Client::ConnectionManagerInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent)),
+      baseInterface(new Client::ConnectionManagerInterface(parent)),
       readinessHelper(parent->readinessHelper())
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();

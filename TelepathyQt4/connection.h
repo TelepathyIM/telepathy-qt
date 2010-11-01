@@ -299,8 +299,9 @@ public:
 
 Q_SIGNALS:
     void statusChanged(Tp::Connection::Status newStatus);
-    TELEPATHY_QT4_DEPRECATED void statusChanged(Tp::Connection::Status newStatus,
-            Tp::ConnectionStatusReason newStatusReason);
+    // FIXME: (API/ABI break) Remove statusChanged(status, reason) in favor of statusChanged(status)
+    void statusChanged(Tp::Connection::Status newStatus, Tp::ConnectionStatusReason newStatusReason);
+
     void selfHandleChanged(uint newHandle);
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts
     void selfContactChanged();
@@ -308,9 +309,8 @@ Q_SIGNALS:
     void accountBalanceChanged(const Tp::CurrencyAmount &accountBalance);
 
 protected:
-    // FIXME: (API/ABI break) Remove constructors not taking factories as parameters
-    Connection(const QString &busName, const QString &objectPath);
-    Connection(const QDBusConnection &bus, const QString &busName,
+    TELEPATHY_QT4_DEPRECATED Connection(const QString &busName, const QString &objectPath);
+    TELEPATHY_QT4_DEPRECATED Connection(const QDBusConnection &bus, const QString &busName,
             const QString &objectPath);
 
     Connection(const QDBusConnection &bus, const QString &busName,

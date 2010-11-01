@@ -94,6 +94,8 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
             const QList<ContactPtr> &initialInviteeContacts,
             QVariantMap &request);
 
+    QString connectionObjectPath() const;
+
     // Public object
     Account *parent;
 
@@ -104,6 +106,9 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 
     // Instance of generated interface class
     Client::AccountInterface *baseInterface;
+
+    // Mandatory properties interface proxy
+    Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
 
@@ -145,8 +150,9 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       connFactory(connFactory),
       chanFactory(chanFactory),
       contactFactory(contactFactory),
-      baseInterface(new Client::AccountInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent)),
+      baseInterface(new Client::AccountInterface(parent)),
+      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
+                  BypassInterfaceCheck)),
       readinessHelper(parent->readinessHelper()),
       valid(false),
       enabled(false),
@@ -398,6 +404,11 @@ void Account::Private::addConferenceRequestParameters(
     }
 }
 
+QString Account::Private::connectionObjectPath() const
+{
+    return !connection.isNull() ? connection->objectPath() : QString();
+}
+
 /**
  * \class Account
  * \ingroup clientaccount
@@ -578,7 +589,11 @@ const Feature Account::FeatureProfile = FeatureProtocolInfo;
 AccountPtr Account::create(const QString &busName,
         const QString &objectPath)
 {
-    return AccountPtr(new Account(busName, objectPath));
+    QDBusConnection bus = QDBusConnection::sessionBus();
+    return AccountPtr(new Account(bus, busName, objectPath,
+                ConnectionFactory::create(bus),
+                ChannelFactory::create(bus),
+                ContactFactory::create()));
 }
 
 /**
@@ -587,6 +602,8 @@ AccountPtr Account::create(const QString &busName,
  * The instance will use a connection factory creating Tp::Connection objects with no features
  * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
  * with no features ready.
+ *
+ * \deprecated Use other create() methods.
  *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
@@ -598,7 +615,10 @@ AccountPtr Account::create(const QString &busName,
 AccountPtr Account::create(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath)
 {
-    return AccountPtr(new Account(bus, busName, objectPath));
+    return AccountPtr(new Account(bus, busName, objectPath,
+                ConnectionFactory::create(bus),
+                ChannelFactory::create(bus),
+                ContactFactory::create()));
 }
 
 /**
@@ -656,6 +676,8 @@ AccountPtr Account::create(const QDBusConnection &bus,
  * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
  * with no features ready.
  *
+ * \deprecated
+ *
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
  *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
@@ -679,6 +701,8 @@ Account::Account(const QString &busName, const QString &objectPath)
  * The instance will use a connection factory creating Tp::Connection objects with no features
  * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
  * with no features ready.
+ *
+ * \deprecated
  *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
@@ -821,7 +845,7 @@ bool Account::isEnabled() const
 PendingOperation *Account::setEnabled(bool value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Enabled"),
                 QDBusVariant(value)),
@@ -844,6 +868,8 @@ QString Account::cmName() const
  * Return the protocol name of this account.
  *
  * This method requires Account::FeatureCore to be enabled.
+ *
+ * \deprecated Use protocolName() methods.
  *
  * \return The protocol name of this account.
  */
@@ -894,7 +920,7 @@ QString Account::serviceName() const
 PendingOperation *Account::setServiceName(const QString &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Service"),
                 QDBusVariant(value)),
@@ -974,7 +1000,7 @@ QString Account::displayName() const
 PendingOperation *Account::setDisplayName(const QString &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("DisplayName"),
                 QDBusVariant(value)),
@@ -985,6 +1011,8 @@ PendingOperation *Account::setDisplayName(const QString &value)
  * Return the icon name of this account.
  *
  * This method requires Account::FeatureCore to be enabled.
+ *
+ * \deprecated Use iconName() instead.
  *
  * \return The icon name of this account.
  * \sa iconChanged()
@@ -1035,6 +1063,8 @@ QString Account::iconName() const
 /**
  * Set the icon name of this account.
  *
+ * \deprecated Use setIconName() instead.
+ *
  * \param value The icon name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -1043,7 +1073,7 @@ QString Account::iconName() const
 PendingOperation *Account::setIcon(const QString &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Icon"),
                 QDBusVariant(value)),
@@ -1061,7 +1091,7 @@ PendingOperation *Account::setIcon(const QString &value)
 PendingOperation *Account::setIconName(const QString &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Icon"),
                 QDBusVariant(value)),
@@ -1092,7 +1122,7 @@ QString Account::nickname() const
 PendingOperation *Account::setNickname(const QString &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Nickname"),
                 QDBusVariant(value)),
@@ -1135,7 +1165,7 @@ PendingOperation *Account::setAvatar(const Avatar &avatar)
     }
 
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR),
                 QLatin1String("Avatar"),
                 QDBusVariant(QVariant::fromValue(avatar))),
@@ -1295,7 +1325,7 @@ bool Account::connectsAutomatically() const
 PendingOperation *Account::setConnectsAutomatically(bool value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("ConnectAutomatically"),
                 QDBusVariant(value)),
@@ -1468,7 +1498,7 @@ PendingOperation *Account::setAutomaticPresence(
         const SimplePresence &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("AutomaticPresence"),
                 QDBusVariant(QVariant::fromValue(value))),
@@ -1517,7 +1547,7 @@ PendingOperation *Account::setRequestedPresence(
         const SimplePresence &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(
+            mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("RequestedPresence"),
                 QDBusVariant(QVariant::fromValue(value))),
@@ -1554,12 +1584,19 @@ QString Account::uniqueIdentifier() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
+ * \deprecated Use Connection::objectPath() instead.
+ *
  * \return The connection object path of this account.
  * \sa haveConnectionChanged(), haveConnection(), connection()
  */
 QString Account::connectionObjectPath() const
 {
-    return !mPriv->connection.isNull() ? mPriv->connection->objectPath() : QString();
+    return mPriv->connectionObjectPath();
+}
+
+QString Account::_deprecated_connectionObjectPath() const
+{
+    return mPriv->connectionObjectPath();
 }
 
 /**
@@ -2618,6 +2655,8 @@ PendingChannelRequest *Account::ensureChannel(
  * for this account. The Account interface relies on properties, so this
  * interface is always assumed to be present.
  *
+ * \deprecated Use optionalInterface() instead.
+ *
  * \return A pointer to the existing Client::DBus::PropertiesInterface object
  *         for this Account object.
  */
@@ -2628,6 +2667,8 @@ PendingChannelRequest *Account::ensureChannel(
  *
  * Convenience function for getting a AvatarInterface interface proxy object for
  * this account.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \return A pointer to the existing Client::AccountInterfaceAvatarInterface
  *         object for this Account object.
@@ -2664,12 +2705,9 @@ void Account::Private::init()
 
 void Account::Private::introspectMain(Account::Private *self)
 {
-    Client::DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
-    Q_ASSERT(properties != 0);
-
     debug() << "Calling Properties::GetAll(Account)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(
+            self->properties->GetAll(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT)), self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -2682,7 +2720,8 @@ void Account::Private::introspectAvatar(Account::Private *self)
     // we already checked if avatar interface exists, so bypass avatar interface
     // checking
     Client::AccountInterfaceAvatarInterface *iface =
-        self->parent->avatarInterface(BypassInterfaceCheck);
+        self->parent->optionalInterface<Client::AccountInterfaceAvatarInterface>(
+                BypassInterfaceCheck);
 
     // If we are here it means the user cares about avatar, so
     // connect to avatar changed signal, so we update the avatar
@@ -3006,7 +3045,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
 void Account::Private::retrieveAvatar()
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            parent->propertiesInterface()->Get(
+            parent->mPriv->properties->Get(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR),
                 QLatin1String("Avatar")), parent);
     parent->connect(watcher,
@@ -3188,12 +3227,12 @@ void Account::onConnectionBuilt(PendingOperation *op)
     } else {
         bool hadConnection = !mPriv->connection.isNull();
         ConnectionPtr prevConn = mPriv->connection;
-        QString prevConnPath = connectionObjectPath();
+        QString prevConnPath = mPriv->connectionObjectPath();
 
         mPriv->connection = ConnectionPtr::dynamicCast(readyOp->proxy());
         Q_ASSERT(mPriv->connection);
 
-        debug() << "Connection" << connectionObjectPath() << "built for" << objectPath();
+        debug() << "Connection" << mPriv->connectionObjectPath() << "built for" << objectPath();
 
         // TODO: could we, in fact, do with just a connectionChanged(connection) signal and not need
         // haveConnectionChanged(bool) now that we always have a proxy object to include in the
@@ -3207,7 +3246,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
             notify("connection");
         }
 
-        if (prevConnPath != connectionObjectPath()) {
+        if (prevConnPath != mPriv->connectionObjectPath()) {
             notify("connectionObjectPath");
         }
     }
