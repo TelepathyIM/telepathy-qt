@@ -59,14 +59,14 @@ void registerTypes()
     TpFuture::_registerTypes();
 }
 
-TELEPATHY_QT4_EXPORT bool operator==(const SUSocketAddress& v1, const SUSocketAddress& v2)
+bool operator==(const SUSocketAddress& v1, const SUSocketAddress& v2)
 {
     return ((v1.address == v2.address)
             && (v1.port == v2.port)
             );
 }
 
-TELEPATHY_QT4_EXPORT QDBusArgument& operator<<(QDBusArgument& arg, const SUSocketAddress& val)
+QDBusArgument& operator<<(QDBusArgument& arg, const SUSocketAddress& val)
 {
     arg.beginStructure();
     arg << val.address << val.port;
@@ -74,7 +74,7 @@ TELEPATHY_QT4_EXPORT QDBusArgument& operator<<(QDBusArgument& arg, const SUSocke
     return arg;
 }
 
-TELEPATHY_QT4_EXPORT const QDBusArgument& operator>>(const QDBusArgument& arg, SUSocketAddress& val)
+const QDBusArgument& operator>>(const QDBusArgument& arg, SUSocketAddress& val)
 {
     arg.beginStructure();
     arg >> val.address >> val.port;
