@@ -209,11 +209,11 @@ void TestContactsCapabilities::testCapabilities()
 
         QVERIFY(contact->capabilities() != 0);
         QCOMPARE(contact->capabilities()->textChats(), supportTextChat[i]);
-        QCOMPARE(contact->capabilities()->mediaCalls(), false);
-        QCOMPARE(contact->capabilities()->audioCalls(), false);
-        QCOMPARE(contact->capabilities()->videoCalls(), false);
-        QCOMPARE(contact->capabilities()->videoCallsWithAudio(), false);
-        QCOMPARE(contact->capabilities()->upgradingCalls(), false);
+        QCOMPARE(contact->capabilities()->streamedMediaCalls(), false);
+        QCOMPARE(contact->capabilities()->streamedMediaAudioCalls(), false);
+        QCOMPARE(contact->capabilities()->streamedMediaVideoCalls(), false);
+        QCOMPARE(contact->capabilities()->streamedMediaVideoCallsWithAudio(), false);
+        QCOMPARE(contact->capabilities()->upgradingStreamedMediaCalls(), false);
         QCOMPARE(contact->capabilities()->supportsTextChats(), supportTextChat[i]);
         QCOMPARE(contact->capabilities()->supportsMediaCalls(), false);
         QCOMPARE(contact->capabilities()->supportsAudioCalls(), false);

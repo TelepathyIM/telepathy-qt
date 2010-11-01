@@ -230,30 +230,59 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
-    PendingChannelRequest *ensureMediaCall(
+    PendingChannelRequest *ensureStreamedMediaCall(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureMediaCall(
+    PendingChannelRequest *ensureStreamedMediaCall(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
-    PendingChannelRequest *ensureAudioCall(
+    PendingChannelRequest *ensureStreamedMediaAudioCall(
             const QString &contactIdentifier,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureAudioCall(
+    PendingChannelRequest *ensureStreamedMediaAudioCall(
             const ContactPtr &contact,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
-    PendingChannelRequest *ensureVideoCall(
+    PendingChannelRequest *ensureStreamedMediaVideoCall(
             const QString &contactIdentifier,
             bool withAudio = true,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureVideoCall(
+    PendingChannelRequest *ensureStreamedMediaVideoCall(
+            const ContactPtr &contact,
+            bool withAudio = true,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureMediaCall(
+            const QString &contactIdentifier,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureMediaCall(
+            const ContactPtr &contact,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureAudioCall(
+            const QString &contactIdentifier,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureAudioCall(
+            const ContactPtr &contact,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureVideoCall(
+            const QString &contactIdentifier,
+            bool withAudio = true,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureVideoCall(
             const ContactPtr &contact,
             bool withAudio = true,
             QDateTime userActionTime = QDateTime::currentDateTime(),

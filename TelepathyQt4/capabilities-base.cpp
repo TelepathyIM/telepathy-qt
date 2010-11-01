@@ -184,11 +184,12 @@ bool CapabilitiesBase::textChats() const
  * a more elaborate D-Bus API than normal (because more information is needed),
  * then this method will return false.
  *
- * \return \c true if Account::ensureMediaCall() can be expected to work,
+ * \return \c true if Account::ensureStreamedMediaCall() can be expected to work,
  *         \c false otherwise.
- * \sa audioCalls(), videoCalls()
+ * \sa streamedMediaAudioCalls(), streamedMediaVideoCalls(),
+ *     streamedMediaVideoCallsWithAudio()
  */
-bool CapabilitiesBase::mediaCalls() const
+bool CapabilitiesBase::streamedMediaCalls() const
 {
     QString channelType;
     uint targetHandleType;
@@ -220,17 +221,17 @@ bool CapabilitiesBase::mediaCalls() const
  * a more elaborate D-Bus API than normal (because more information is needed),
  * then this method will return false.
  *
- * In some older connection managers, audioCalls() and videoCalls() might both return
- * false, even though mediaCalls() returns true. This indicates that only an older
- * API is supported - clients of these connection managers must call
- * Account::ensureMediaCall() to get an empty call, then add audio and/or
+ * In some older connection managers, streamedMediaAudioCalls() and
+ * streamedMediaVideoCalls() might both return false, even though streamedMediaCalls() returns
+ * true. This indicates that only an older API is supported - clients of these connection managers
+ * must call Account::ensureStreamedMediaCall() to get an empty call, then add audio and/or
  * video streams to it.
  *
- * \return \c true if Account::ensureAudioCall() can be expected to work,
+ * \return \c true if Account::ensureStreamedMediaAudioCall() can be expected to work,
  *         \c false otherwise.
- * \sa mediaCalls(), videoCalls()
+ * \sa streamedMediaCalls(), streamedMediaVideoCalls(), streamedMediaVideoCallsWithAudio()
  */
-bool CapabilitiesBase::audioCalls() const
+bool CapabilitiesBase::streamedMediaAudioCalls() const
 {
     QString channelType;
     uint targetHandleType;
@@ -257,13 +258,13 @@ bool CapabilitiesBase::audioCalls() const
  * Return whether private video calls can be established by providing a
  * contact identifier.
  *
- * The same comments as for audioCalls() apply to this method.
+ * The same comments as for streamedMediaAudioCalls() apply to this method.
  *
- * \return \c true if Account::ensureVideoCall() can be expected to work,
+ * \return \c true if Account::ensureStreamedMediaVideoCall() can be expected to work,
  *         if given \c false as \a withAudio parameter, \c false otherwise.
- * \sa mediaCalls(), audioCalls()
+ * \sa streamedMediaCalls(), streamedMediaAudioCalls(), streamedMediaVideoCallsWithAudio()
  */
-bool CapabilitiesBase::videoCalls() const
+bool CapabilitiesBase::streamedMediaVideoCalls() const
 {
     QString channelType;
     uint targetHandleType;
@@ -290,13 +291,13 @@ bool CapabilitiesBase::videoCalls() const
  * Return whether private video calls with audio can be established by providing a
  * contact identifier.
  *
- * The same comments as for audioCalls() apply to this method.
+ * The same comments as for streamedMediaAudioCalls() apply to this method.
  *
- * \return \c true if Account::ensureVideoCall() can be expected to work,
+ * \return \c true if Account::ensureStreamedMediaVideoCall() can be expected to work,
  *         if given \c true as \a withAudio parameter, \c false otherwise.
- * \sa mediaCalls(), audioCalls()
+ * \sa streamedMediaCalls(), streamedMediaAudioCalls(), streamedMediaVideoCalls()
  */
-bool CapabilitiesBase::videoCallsWithAudio() const
+bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
 {
     QString channelType;
     uint targetHandleType;
@@ -331,7 +332,7 @@ bool CapabilitiesBase::videoCallsWithAudio() const
  * In other protocols and clients (such as MSN, and the variant of XMPP Jingle
  * used by Google clients), the streams are fixed at the time the call is
  * started, so if you will ever want video, you have to ask for it at the
- * beginning, for instance with ensureVideoCall(). This is indicated by
+ * beginning, for instance with ensureStreamedMediaVideoCall(). This is indicated by
  * returning false.
  *
  * User interfaces can use this method as a UI hint. If it returns false,
@@ -346,7 +347,7 @@ bool CapabilitiesBase::videoCallsWithAudio() const
  * \return \c true if audio calls can be upgraded to audio + video,
  *         \c false otherwise.
  */
-bool CapabilitiesBase::upgradingCalls() const
+bool CapabilitiesBase::upgradingStreamedMediaCalls() const
 {
     QString channelType;
     foreach (const RequestableChannelClass &cls, mPriv->classes) {
@@ -372,38 +373,38 @@ bool CapabilitiesBase::supportsTextChats() const
 }
 
 /**
- * \deprecated Use mediaCalls instead.
+ * \deprecated Use streamedMediaCalls instead.
  */
 bool CapabilitiesBase::supportsMediaCalls() const
 {
-    return mediaCalls();
+    return streamedMediaCalls();
 }
 
 /**
- * \deprecated Use audioCalls instead.
+ * \deprecated Use streamedMediaAudioCalls instead.
  */
 bool CapabilitiesBase::supportsAudioCalls() const
 {
-    return audioCalls();
+    return streamedMediaAudioCalls();
 }
 
 /**
- * \deprecated Use videoCalls() or videoCallsWithAudio() instead.
+ * \deprecated Use streamedMediaVideoCalls() or streamedMediaVideoCallsWithAudio() instead.
  */
 bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
 {
     if (withAudio) {
-        return videoCallsWithAudio();
+        return streamedMediaVideoCallsWithAudio();
     }
-    return videoCalls();
+    return streamedMediaVideoCalls();
 }
 
 /**
- * \deprecated Use upgradingCalls() instead.
+ * \deprecated Use upgradingStreamedMediaCalls() instead.
  */
 bool CapabilitiesBase::supportsUpgradingCalls() const
 {
-    return upgradingCalls();
+    return upgradingStreamedMediaCalls();
 }
 
 } // Tp

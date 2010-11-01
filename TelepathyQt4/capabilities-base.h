@@ -43,11 +43,11 @@ public:
 
     bool textChats() const;
 
-    bool mediaCalls() const;
-    bool audioCalls() const;
-    bool videoCalls() const;
-    bool videoCallsWithAudio() const;
-    bool upgradingCalls() const;
+    bool streamedMediaCalls() const;
+    bool streamedMediaAudioCalls() const;
+    bool streamedMediaVideoCalls() const;
+    bool streamedMediaVideoCallsWithAudio() const;
+    bool upgradingStreamedMediaCalls() const;
 
     TELEPATHY_QT4_DEPRECATED bool supportsTextChats() const;
 

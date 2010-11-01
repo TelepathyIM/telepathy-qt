@@ -39,8 +39,8 @@ public:
 
     bool textChatrooms() const;
 
-    bool conferenceMediaCalls() const;
-    bool conferenceMediaCallsWithInvitees() const;
+    bool conferenceStreamedMediaCalls() const;
+    bool conferenceStreamedMediaCallsWithInvitees() const;
     bool conferenceTextChats() const;
     bool conferenceTextChatsWithInvitees() const;
     bool conferenceTextChatrooms() const;
