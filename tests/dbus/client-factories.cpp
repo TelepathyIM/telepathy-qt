@@ -596,8 +596,8 @@ void TestClientFactories::testRegister()
     // invalid client
     QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), QLatin1String("foo")));
 
-    mClientCapabilities.setICEUDPNATTraversal();
-    mClientCapabilities.setAudioCodec(QLatin1String("speex"));
+    mClientCapabilities.setICEUDPNATTraversalToken();
+    mClientCapabilities.setAudioCodecToken(QLatin1String("speex"));
 
     ChannelClassSpecList filters;
     filters.append(ChannelClassSpec::textChat());
