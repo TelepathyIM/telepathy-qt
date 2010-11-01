@@ -21,6 +21,7 @@
 
 #include <TelepathyQt4/ChannelClassSpec>
 
+#include "TelepathyQt4/_gen/future-constants.h"
 #include "TelepathyQt4/debug-internal.h"
 
 namespace Tp
@@ -160,14 +161,13 @@ void ChannelClassSpec::setProperty(const QString &qualifiedName, const QVariant 
 
     QString propName = qualifiedName;
 
-    if (propName ==
-            QLatin1String("org.freedesktop.Telepathy.Channel.Type.Call.DRAFT.InitialAudio")) {
-        propName.replace(QLatin1String("Call.DRAFT"), QLatin1String("StreamedMedia"));
-    } else if (propName ==
-            QLatin1String("org.freedesktop.Telepathy.Channel.Type.Call.DRAFT.InitialVideo")) {
-        propName.replace(QLatin1String("Call.DRAFT"), QLatin1String("StreamedMedia"));
+    // API/ABI break TODO: remove this hack when the Call.DRAFT support hack is removed from
+    // StreamedMediaChannel
+    if (propName == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")
+            || propName == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")) {
+        propName.replace(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL,
+                TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     }
-    // TODO add the corresponding non-draft Call properties when the interface is undrafted
 
     mPriv->props.insert(propName, value);
 }
@@ -181,14 +181,13 @@ void ChannelClassSpec::unsetProperty(const QString &qualifiedName)
 
     QString propName = qualifiedName;
 
-    if (propName ==
-            QLatin1String("org.freedesktop.Telepathy.Channel.Type.Call.DRAFT.InitialAudio")) {
-        propName.replace(QLatin1String("Call.DRAFT"), QLatin1String("StreamedMedia"));
-    } else if (propName ==
-            QLatin1String("org.freedesktop.Telepathy.Channel.Type.Call.DRAFT.InitialVideo")) {
-        propName.replace(QLatin1String("Call.DRAFT"), QLatin1String("StreamedMedia"));
+    // API/ABI break TODO: remove this hack when the Call.DRAFT support hack is removed from
+    // StreamedMediaChannel
+    if (propName == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")
+            || propName == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")) {
+        propName.replace(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL,
+                TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     }
-    // TODO add the corresponding non-draft Call properties when the interface is undrafted
 
     mPriv->props.remove(propName);
 }
@@ -211,13 +210,15 @@ ChannelClass ChannelClassSpec::bareClass() const
     foreach (QString propName, props.keys()) {
         QVariant value = props.value(propName);
 
-        if (channelType() == QLatin1String("org.freedesktop.Telepathy.Channel.Type.Call.DRAFT")) {
+        // API/ABI break TODO: remove this hack when the Call.DRAFT support hack is removed from
+        // StreamedMediaChannel
+        if (channelType() == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL) {
             if (propName.endsWith(QLatin1String(".InitialAudio"))
                     || propName.endsWith(QLatin1String(".InitialVideo"))) {
-                propName.replace(QLatin1String("StreamedMedia"), QLatin1String("Call.DRAFT"));
+                propName.replace(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+                        TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
             }
         }
-        // TODO add the corresponding non-draft Call properties when the interface is undrafted
 
         cc.insert(propName, QDBusVariant(value));
     }
