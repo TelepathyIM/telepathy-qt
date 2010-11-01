@@ -1202,10 +1202,17 @@ void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
 
     debug() << "Text::ListPendingMessages returned";
     PendingTextMessageList list = reply.value();
-    foreach (const PendingTextMessage &message, list) {
-        onTextReceived(message.identifier, message.unixTimestamp,
-                message.sender, message.messageType, message.flags,
-                message.text);
+
+    if (!list.isEmpty()) {
+        foreach (const PendingTextMessage &message, list) {
+            onTextReceived(message.identifier, message.unixTimestamp,
+                    message.sender, message.messageType, message.flags,
+                    message.text);
+        }
+        // processMessageQueue sets FeatureMessageQueue ready when the queue is empty for the first
+        // time
+    } else {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
     }
 
     watcher->deleteLater();
