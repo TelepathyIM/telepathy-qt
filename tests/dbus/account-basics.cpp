@@ -658,11 +658,11 @@ void TestAccountBasics::testBasics()
     caps = acc->capabilities();
     QCOMPARE(caps->textChats(), true);
     QCOMPARE(caps->textChatrooms(), false);
-    QCOMPARE(caps->mediaCalls(), false);
-    QCOMPARE(caps->audioCalls(), false);
-    QCOMPARE(caps->videoCalls(), false);
-    QCOMPARE(caps->videoCallsWithAudio(), false);
-    QCOMPARE(caps->upgradingCalls(), false);
+    QCOMPARE(caps->streamedMediaCalls(), false);
+    QCOMPARE(caps->streamedMediaAudioCalls(), false);
+    QCOMPARE(caps->streamedMediaVideoCalls(), false);
+    QCOMPARE(caps->streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(caps->upgradingStreamedMediaCalls(), false);
     QCOMPARE(caps->supportsTextChats(), true);
     QCOMPARE(caps->supportsTextChatrooms(), false);
     QCOMPARE(caps->supportsMediaCalls(), false);

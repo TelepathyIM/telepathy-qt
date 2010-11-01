@@ -95,11 +95,11 @@ void TestConnCapabilities::testCapabilities()
     QVERIFY(mConn->capabilities() != 0);
     QCOMPARE(mConn->capabilities()->textChats(), false);
     QCOMPARE(mConn->capabilities()->textChatrooms(), false);
-    QCOMPARE(mConn->capabilities()->mediaCalls(), false);
-    QCOMPARE(mConn->capabilities()->audioCalls(), false);
-    QCOMPARE(mConn->capabilities()->videoCalls(), false);
-    QCOMPARE(mConn->capabilities()->videoCallsWithAudio(), false);
-    QCOMPARE(mConn->capabilities()->upgradingCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaAudioCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaVideoCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(mConn->capabilities()->upgradingStreamedMediaCalls(), false);
     QCOMPARE(mConn->capabilities()->supportsTextChats(), false);
     QCOMPARE(mConn->capabilities()->supportsTextChatrooms(), false);
     QCOMPARE(mConn->capabilities()->supportsMediaCalls(), false);
@@ -121,11 +121,11 @@ void TestConnCapabilities::testCapabilities()
     // Now we should have the real information on what the connection supports
     QCOMPARE(mConn->capabilities()->textChats(), true);
     QCOMPARE(mConn->capabilities()->textChatrooms(), false);
-    QCOMPARE(mConn->capabilities()->mediaCalls(), false);
-    QCOMPARE(mConn->capabilities()->audioCalls(), false);
-    QCOMPARE(mConn->capabilities()->videoCalls(), false);
-    QCOMPARE(mConn->capabilities()->videoCallsWithAudio(), false);
-    QCOMPARE(mConn->capabilities()->upgradingCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaAudioCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaVideoCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(mConn->capabilities()->upgradingStreamedMediaCalls(), false);
     QCOMPARE(mConn->capabilities()->supportsTextChats(), true);
     QCOMPARE(mConn->capabilities()->supportsTextChatrooms(), false);
     QCOMPARE(mConn->capabilities()->supportsMediaCalls(), false);
@@ -153,11 +153,11 @@ void TestConnCapabilities::testCapabilities()
     // Check that no support for anything is again reported
     QCOMPARE(mConn->capabilities()->textChats(), false);
     QCOMPARE(mConn->capabilities()->textChatrooms(), false);
-    QCOMPARE(mConn->capabilities()->mediaCalls(), false);
-    QCOMPARE(mConn->capabilities()->audioCalls(), false);
-    QCOMPARE(mConn->capabilities()->videoCalls(), false);
-    QCOMPARE(mConn->capabilities()->videoCallsWithAudio(), false);
-    QCOMPARE(mConn->capabilities()->upgradingCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaAudioCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaVideoCalls(), false);
+    QCOMPARE(mConn->capabilities()->streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(mConn->capabilities()->upgradingStreamedMediaCalls(), false);
     QCOMPARE(mConn->capabilities()->supportsTextChats(), false);
     QCOMPARE(mConn->capabilities()->supportsTextChatrooms(), false);
     QCOMPARE(mConn->capabilities()->supportsMediaCalls(), false);

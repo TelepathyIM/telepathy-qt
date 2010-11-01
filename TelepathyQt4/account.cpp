@@ -1768,7 +1768,7 @@ PendingChannelRequest *Account::ensureTextChatroom(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::ensureMediaCall(
+PendingChannelRequest *Account::ensureStreamedMediaCall(
         const QString &contactIdentifier,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
@@ -1782,6 +1782,17 @@ PendingChannelRequest *Account::ensureMediaCall(
                    contactIdentifier);
     return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
             AccountPtr(this));
+}
+
+/**
+ * \deprecated Use ensureStreamedMediaCall() instead.
+ */
+PendingChannelRequest *Account::ensureMediaCall(
+        const QString &contactIdentifier,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler);
 }
 
 /**
@@ -1802,7 +1813,7 @@ PendingChannelRequest *Account::ensureMediaCall(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::ensureMediaCall(
+PendingChannelRequest *Account::ensureStreamedMediaCall(
         const ContactPtr &contact,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
@@ -1819,6 +1830,17 @@ PendingChannelRequest *Account::ensureMediaCall(
 }
 
 /**
+ * \deprecated Use ensureStreamedMediaCall() instead.
+ */
+PendingChannelRequest *Account::ensureMediaCall(
+        const ContactPtr &contact,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaCall(contact, userActionTime, preferredHandler);
+}
+
+/**
  * Start a request to ensure that an audio call with the given
  * contact \a contactIdentifier exists, creating it if necessary.
  *
@@ -1839,7 +1861,7 @@ PendingChannelRequest *Account::ensureMediaCall(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::ensureAudioCall(
+PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const QString &contactIdentifier,
         QDateTime userActionTime,
         const QString &preferredHandler)
@@ -1855,6 +1877,17 @@ PendingChannelRequest *Account::ensureAudioCall(
                    contactIdentifier);
     return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
             AccountPtr(this));
+}
+
+/**
+ * \deprecated Use ensureStreamedMediaAudioCall() instead.
+ */
+PendingChannelRequest *Account::ensureAudioCall(
+        const QString &contactIdentifier,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler);
 }
 
 /**
@@ -1878,7 +1911,7 @@ PendingChannelRequest *Account::ensureAudioCall(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::ensureAudioCall(
+PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const ContactPtr &contact,
         QDateTime userActionTime,
         const QString &preferredHandler)
@@ -1894,6 +1927,17 @@ PendingChannelRequest *Account::ensureAudioCall(
                    contact ? contact->handle().at(0) : (uint) 0);
     return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
             AccountPtr(this));
+}
+
+/**
+ * Use ensureStreamedMediaAudioCall() instead.
+ */
+PendingChannelRequest *Account::ensureAudioCall(
+        const ContactPtr &contact,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler);
 }
 
 /**
@@ -1919,7 +1963,7 @@ PendingChannelRequest *Account::ensureAudioCall(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::ensureVideoCall(
+PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         const QString &contactIdentifier,
         bool withAudio,
         QDateTime userActionTime,
@@ -1945,6 +1989,18 @@ PendingChannelRequest *Account::ensureVideoCall(
 }
 
 /**
+ * \deprecated ensureStreamedMediaVideoCall() instead.
+ */
+PendingChannelRequest *Account::ensureVideoCall(
+        const QString &contactIdentifier,
+        bool withAudio,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler);
+}
+
+/**
  * Start a request to ensure that a video call with the given
  * contact \a contact exists, creating it if necessary.
  *
@@ -1967,7 +2023,7 @@ PendingChannelRequest *Account::ensureVideoCall(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::ensureVideoCall(
+PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         const ContactPtr &contact,
         bool withAudio,
         QDateTime userActionTime,
@@ -1990,6 +2046,18 @@ PendingChannelRequest *Account::ensureVideoCall(
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
             AccountPtr(this));
+}
+
+/**
+ * \deprecated Use ensureStreamedMediaVideoCall() instead.
+ */
+PendingChannelRequest *Account::ensureVideoCall(
+        const ContactPtr &contact,
+        bool withAudio,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler);
 }
 
 /**
