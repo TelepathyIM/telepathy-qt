@@ -110,6 +110,15 @@ public:
         : QList<RequestableChannelClassSpec>(other)
     {
     }
+
+    RequestableChannelClassList bareClasses() const
+    {
+        RequestableChannelClassList list;
+        Q_FOREACH (const RequestableChannelClassSpec &rccSpec, *this) {
+            list.append(rccSpec.bareClass());
+        }
+        return list;
+    }
 };
 
 } // Tp
