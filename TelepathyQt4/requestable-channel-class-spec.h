@@ -48,6 +48,8 @@ public:
     static RequestableChannelClassSpec streamedMediaVideoCall();
     static RequestableChannelClassSpec streamedMediaVideoCallWithAudio();
 
+    static RequestableChannelClassSpec fileTransfer();
+
     static RequestableChannelClassSpec conferenceTextChat();
     static RequestableChannelClassSpec conferenceTextChatWithInvitees();
     static RequestableChannelClassSpec conferenceTextChatroom();

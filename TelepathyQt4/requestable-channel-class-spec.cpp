@@ -154,6 +154,22 @@ RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaVideoCallW
     return spec;
 }
 
+RequestableChannelClassSpec RequestableChannelClassSpec::fileTransfer()
+{
+    static RequestableChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        RequestableChannelClass rcc;
+        rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+        rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                (uint) HandleTypeContact);
+        spec = RequestableChannelClassSpec(rcc);
+    }
+
+    return spec;
+}
+
 RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChat()
 {
     static RequestableChannelClassSpec spec;
