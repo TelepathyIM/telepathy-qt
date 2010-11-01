@@ -297,27 +297,21 @@ bool Account::Private::useConferenceDRAFT(const char *channelType,
         return false;
     }
 
-    RequestableChannelClassList rccs = caps->requestableChannelClasses();
-    QString rccChannelType;
-    uint rccTargetHandleType;
-    foreach (const RequestableChannelClass &rcc, rccs) {
-        rccChannelType = qdbus_cast<QString>(rcc.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        if (rccChannelType == QLatin1String(channelType)) {
+    RequestableChannelClassSpecList rccSpecs = caps->allClassSpecs();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.channelType() == QLatin1String(channelType)) {
             if (targetHandleType != HandleTypeNone) {
-                rccTargetHandleType = qdbus_cast<uint>(rcc.fixedProperties.value(
-                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-                if (rccTargetHandleType != targetHandleType) {
+                if (rccSpec.targetHandleType() != targetHandleType) {
                     continue;
                 }
             }
 
-            if (rcc.allowedProperties.contains(QLatin1String(
-                            TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
+            if (rccSpec.allowsProperty(
+                        TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) {
                 return false;
             }
-            if (rcc.allowedProperties.contains(QLatin1String(
-                            TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
+            if (rccSpec.allowsProperty(
+                        TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) {
                 return true;
             }
         }
