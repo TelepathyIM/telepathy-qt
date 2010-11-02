@@ -825,10 +825,27 @@ void Contact::setRemovedFromGroup(const QString &group)
  * \sa presence()
  */
 
+/**
+ * \fn void Contact::infoChanged(const Tp::ContactInfoFieldList &info)
+ *
+ * \deprecated Use infoFieldsChanged() instead.
+ */
+
+/**
+ * \fn void Contact::infoFieldsChanged(const Tp::Contact::InfoFields &infoFields)
+ *
+ * This signal is emitted when the value of infoFields() of this contact changes.
+ *
+ * \param InfoFields The new info.
+ * \sa infoFields()
+ */
+
 void Contact::connectNotify(const char *signalName)
 {
     if (qstrcmp(signalName, SIGNAL(simplePresenceChanged(QString,uint,QString))) == 0) {
         warning() << "Connecting to deprecated signal simplePresenceChanged(QString,uint,QString)";
+    } else if (qstrcmp(signalName, SIGNAL(infoChanged(Tp::ContactInfoFieldList))) == 0) {
+        warning() << "Connecting to deprecated signal infoChanged(Tp::ContactInfoFieldList)";
     }
 }
 
