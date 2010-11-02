@@ -66,7 +66,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(undesired
         missing-field-initializers
         unused-parameter)
-    compiler_warnings(CMAKE_CXX_FLAGS cxx ${NOT_RELEASE} "${desired}" "${undesired}")
+    compiler_warnings(CMAKE_CXX_FLAGS_WARNINGS cxx ${NOT_RELEASE} "${desired}" "${undesired}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_WARNINGS}")
 
     set(desired_c
         all
@@ -83,7 +84,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(undesired_c
         missing-field-initializers
         unused-parameter)
-    compiler_warnings(CMAKE_C_FLAGS c ${NOT_RELEASE} "${desired_c}" "${undesired_c}")
+    compiler_warnings(CMAKE_C_FLAGS_WARNINGS c ${NOT_RELEASE} "${desired_c}" "${undesired_c}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_WARNINGS}")
 
     if(CMAKE_SYSTEM_NAME MATCHES Linux)
         add_definitions(-D_BSD_SOURCE)
