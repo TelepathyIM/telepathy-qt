@@ -79,6 +79,7 @@ private:
 
     struct Private;
     friend struct Private;
+    // FIXME: (API/ABI break) Use QSharedDataPointer
     Private *mPriv;
 };
 
