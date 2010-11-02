@@ -184,6 +184,10 @@ Q_SIGNALS:
     // with that contact getting the same features requested as the current one. Or would we rather
     // want to signal that change right away with a handle?
 
+protected:
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private:
     Contact(ContactManager *manager, const ReferencedHandles &handle,
             const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);

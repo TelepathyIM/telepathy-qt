@@ -825,4 +825,11 @@ void Contact::setRemovedFromGroup(const QString &group)
  * \sa presence()
  */
 
+void Contact::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(simplePresenceChanged(QString,uint,QString))) == 0) {
+        warning() << "Connecting to deprecated signal simplePresenceChanged(QString,uint,QString)";
+    }
+}
+
 } // Tp
