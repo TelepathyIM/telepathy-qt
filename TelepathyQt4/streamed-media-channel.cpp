@@ -73,9 +73,14 @@ PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
     foreach (MediaStreamType type, types) {
         l << type;
     }
+
+
+    Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
+        channel->typeInterface<Client::ChannelTypeStreamedMediaInterface>(
+                OptionalInterfaceFactory<Channel>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-            channel->streamedMediaInterface()->RequestStreams(
+            streamedMediaInterface->RequestStreams(
                 contact->handle()[0], l), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -344,9 +349,12 @@ PendingOperation *MediaStream::Private::updateSMDirection(
         newSMDirection |= MediaStreamDirectionReceive;
     }
 
-    StreamedMediaChannelPtr chan(MediaContentPtr(content)->channel());
+    StreamedMediaChannelPtr channel(MediaContentPtr(content)->channel());
+    Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
+        channel->typeInterface<Client::ChannelTypeStreamedMediaInterface>(
+                OptionalInterfaceFactory<Channel>::BypassInterfaceCheck);
     return new PendingVoid(
-            chan->streamedMediaInterface()->RequestStreamDirection(
+            streamedMediaInterface->RequestStreamDirection(
                 SMId, newSMDirection),
             parent);
 }
@@ -765,8 +773,11 @@ PendingOperation *MediaStream::requestDirection(
         MediaStreamDirection direction)
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
+        Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
+            channel()->typeInterface<Client::ChannelTypeStreamedMediaInterface>(
+                    OptionalInterfaceFactory<Channel>::BypassInterfaceCheck);
         return new PendingVoid(
-                channel()->streamedMediaInterface()->RequestStreamDirection(
+                streamedMediaInterface->RequestStreamDirection(
                     mPriv->SMId, direction),
                 this);
     } else {
@@ -827,8 +838,12 @@ PendingOperation *MediaStream::startDTMFTone(DTMFEvent event)
                 QLatin1String("StreamedMediaChannel does not support dtmf interface"),
                 this);
     }
+
+    Client::ChannelInterfaceDTMFInterface *dtmfInterface =
+        chan->optionalInterface<Client::ChannelInterfaceDTMFInterface>(
+                OptionalInterfaceFactory<Channel>::BypassInterfaceCheck);
     return new PendingVoid(
-            chan->DTMFInterface()->StartTone(mPriv->SMId, event),
+            dtmfInterface->StartTone(mPriv->SMId, event),
             this);
 }
 
@@ -863,8 +878,12 @@ PendingOperation *MediaStream::stopDTMFTone()
                 QLatin1String("StreamedMediaChannel does not support dtmf interface"),
                 this);
     }
+
+    Client::ChannelInterfaceDTMFInterface *dtmfInterface =
+        chan->optionalInterface<Client::ChannelInterfaceDTMFInterface>(
+                OptionalInterfaceFactory<Channel>::BypassInterfaceCheck);
     return new PendingVoid(
-            chan->DTMFInterface()->StopTone(mPriv->SMId),
+            dtmfInterface->StopTone(mPriv->SMId),
             this);
 }
 
@@ -1254,9 +1273,12 @@ PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
     : PendingOperation(0),
       mPriv(new Private(this, channel))
 {
+    Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
+        channel->typeInterface<Client::ChannelTypeStreamedMediaInterface>(
+                OptionalInterfaceFactory<Channel>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-            channel->streamedMediaInterface()->RequestStreams(
+            streamedMediaInterface->RequestStreams(
                 contact->handle()[0], UIntList() << type), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -1817,6 +1839,8 @@ PendingOperation *MediaContent::callRemove()
 /* ====== StreamedMediaChannel ====== */
 StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
     : parent(parent),
+      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
+                  BypassInterfaceCheck)),
       readinessHelper(parent->readinessHelper()),
       localHoldState(LocalHoldStateUnheld),
       localHoldStateReason(LocalHoldStateReasonNone),
@@ -1869,7 +1893,7 @@ void StreamedMediaChannel::Private::introspectContents(StreamedMediaChannel::Pri
 void StreamedMediaChannel::Private::introspectSMStreams()
 {
     Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
-        parent->streamedMediaInterface();
+        parent->typeInterface<Client::ChannelTypeStreamedMediaInterface>(BypassInterfaceCheck);
 
     parent->connect(streamedMediaInterface,
             SIGNAL(StreamAdded(uint,uint,uint)),
@@ -1905,7 +1929,7 @@ void StreamedMediaChannel::Private::introspectCallContents()
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                parent->propertiesInterface()->GetAll(
+                properties->GetAll(
                     QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL)),
                 parent);
     parent->connect(watcher,
@@ -1917,7 +1941,7 @@ void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChanne
 {
     StreamedMediaChannel *parent = self->parent;
     Client::ChannelInterfaceHoldInterface *holdInterface =
-        parent->holdInterface();
+        parent->optionalInterface<Client::ChannelInterfaceHoldInterface>(BypassInterfaceCheck);
 
     parent->connect(holdInterface,
             SIGNAL(HoldStateChanged(uint,uint)),
@@ -2099,8 +2123,10 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         // StreamedMedia.RemoveStreams will trigger StreamedMedia.StreamRemoved
         // that will proper remove the content
+        Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
+            typeInterface<Client::ChannelTypeStreamedMediaInterface>(BypassInterfaceCheck);
         return new PendingVoid(
-                streamedMediaInterface()->RemoveStreams(
+                streamedMediaInterface->RemoveStreams(
                     UIntList() << stream->id()),
                 this);
     } else {
@@ -2137,8 +2163,10 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
                     QLatin1String("Unable to remove invalid streams"), this);
         }
 
+        Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
+            typeInterface<Client::ChannelTypeStreamedMediaInterface>(BypassInterfaceCheck);
         return new PendingVoid(
-                streamedMediaInterface()->RemoveStreams(ids),
+                streamedMediaInterface->RemoveStreams(ids),
                 this);
     } else {
         // make sure we don't call remove on the same content
@@ -2314,9 +2342,11 @@ PendingOperation *StreamedMediaChannel::removeContent(const MediaContentPtr &con
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         // StreamedMedia.RemoveStreams will trigger StreamedMedia.StreamRemoved
         // that will proper remove the content
+        Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
+            typeInterface<Client::ChannelTypeStreamedMediaInterface>(BypassInterfaceCheck);
         MediaStreamPtr stream = content->SMStream();
         return new PendingVoid(
-                streamedMediaInterface()->RemoveStreams(
+                streamedMediaInterface->RemoveStreams(
                     UIntList() << stream->id()),
             this);
     } else {
@@ -2422,7 +2452,10 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
                 QLatin1String("StreamedMediaChannel does not support hold interface"),
                 this);
     }
-    return new PendingVoid(holdInterface()->RequestHold(hold), this);
+
+    Client::ChannelInterfaceHoldInterface *holdInterface =
+        optionalInterface<Client::ChannelInterfaceHoldInterface>(BypassInterfaceCheck);
+    return new PendingVoid(holdInterface->RequestHold(hold), this);
 }
 
 /**
