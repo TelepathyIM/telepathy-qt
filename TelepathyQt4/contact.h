@@ -117,9 +117,11 @@ public:
     Presence presence() const;
 
     // TODO filter: the same as Account filtering by caps
+    // FIXME: (API/ABI break) Return ContactCapabilities
     ContactCapabilities *capabilities() const;
 
     // TODO filter: is it available, how accurate, are they near me
+    // FIXME: (API/ABI break) Return ContactLocation
     ContactLocation *location() const;
 
     // TODO filter: having a specific field, having ANY field,
@@ -159,15 +161,21 @@ public:
 
 Q_SIGNALS:
     void aliasChanged(const QString &alias);
+
     void avatarTokenChanged(const QString &avatarToken);
-    void avatarDataChanged(const Tp::AvatarData &);
+    void avatarDataChanged(const Tp::AvatarData &avatarData);
 
     // FIXME: (API/ABI break) Remove simplePresenceChanged in favor of presenceChanged
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
     void presenceChanged(const Tp::Presence &presence);
 
+    // FIXME: (API/ABI break) Use Tp::ContactCapabilities
     void capabilitiesChanged(Tp::ContactCapabilities *caps);
+
+    // FIXME: (API/ABI break) Use Tp::ContactLocation
     void locationUpdated(Tp::ContactLocation *location);
+
+    // FIXME: (API/ABI break) Remove infoChanged in favor of infoFieldsChanged
     void infoChanged(const Tp::ContactInfoFieldList &info);
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
@@ -218,6 +226,7 @@ private:
 
 typedef QSet<ContactPtr> Contacts;
 
+// FIXME: (API/ABI break) Remove once Contact is a SharedPtr and add a new qHash(SharedPtr<T>)
 inline uint qHash(const ContactPtr &contact)
 {
     return qHash(contact.data());
