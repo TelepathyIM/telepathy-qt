@@ -82,6 +82,8 @@ public:
 
         bool isMandatory() const;
 
+        // TODO Add matches(Tp::Presence) method
+
         Parameter &operator=(const Parameter &other);
 
     private:
