@@ -194,6 +194,7 @@ public:
 
     bool isChangingPresence() const;
 
+    // FIXME: (API/ABI break) Use Presence instead of SimplePresence everywhere
     SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(
             const SimplePresence &value);
