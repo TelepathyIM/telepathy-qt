@@ -105,11 +105,6 @@ Presence &Presence::operator=(const Presence &other)
     return *this;
 }
 
-bool Presence::operator==(const Presence &other) const
-{
-    return mPriv->sp == other.mPriv->sp;
-}
-
 ConnectionPresenceType Presence::type() const
 {
     if (!isValid()) {
