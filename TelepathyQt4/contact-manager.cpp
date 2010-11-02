@@ -902,8 +902,11 @@ void ContactManager::doRequestAvatars()
 {
     debug() << "Request" << mPriv->requestAvatarsQueue.size() << "avatar(s)";
 
+    Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
+        mPriv->connection->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-        mPriv->connection->avatarsInterface()->RequestAvatars(mPriv->requestAvatarsQueue),
+        avatarsInterface->RequestAvatars(mPriv->requestAvatarsQueue),
         this);
     connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)), watcher,
         SLOT(deleteLater()));
@@ -1324,10 +1327,30 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
     }
 
     ConnectionPtr conn(connection);
+
+    Client::ConnectionInterfaceAliasingInterface *aliasingInterface =
+        conn->optionalInterface<Client::ConnectionInterfaceAliasingInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
+        conn->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface =
+        conn->optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
+        conn->optionalInterface<Client::ConnectionInterfaceContactInfoInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    Client::ConnectionInterfaceLocationInterface *locationInterface =
+        conn->optionalInterface<Client::ConnectionInterfaceLocationInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
+        conn->optionalInterface<Client::ConnectionInterfaceSimplePresenceInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+
     switch (feature) {
         case Contact::FeatureAlias:
             QObject::connect(
-                    conn->aliasingInterface(),
+                    aliasingInterface,
                     SIGNAL(AliasesChanged(Tp::AliasPairList)),
                     conn->contactManager(),
                     SLOT(onAliasesChanged(Tp::AliasPairList)));
@@ -1335,7 +1358,7 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 
         case Contact::FeatureAvatarToken:
             QObject::connect(
-                    conn->avatarsInterface(),
+                    avatarsInterface,
                     SIGNAL(AvatarUpdated(uint,QString)),
                     conn->contactManager(),
                     SLOT(onAvatarUpdated(uint,QString)));
@@ -1343,7 +1366,7 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 
         case Contact::FeatureAvatarData:
             QObject::connect(
-                    conn->avatarsInterface(),
+                    avatarsInterface,
                     SIGNAL(AvatarRetrieved(uint,QString,QByteArray,QString)),
                     conn->contactManager(),
                     SLOT(onAvatarRetrieved(uint,QString,QByteArray,QString)));
@@ -1351,7 +1374,7 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 
         case Contact::FeatureSimplePresence:
             QObject::connect(
-                    conn->simplePresenceInterface(),
+                    simplePresenceInterface,
                     SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
                     conn->contactManager(),
                     SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
@@ -1359,7 +1382,7 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 
         case Contact::FeatureCapabilities:
             QObject::connect(
-                    conn->contactCapabilitiesInterface(),
+                    contactCapabilitiesInterface,
                     SIGNAL(ContactCapabilitiesChanged(Tp::ContactCapabilitiesMap)),
                     conn->contactManager(),
                     SLOT(onCapabilitiesChanged(Tp::ContactCapabilitiesMap)));
@@ -1367,7 +1390,7 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 
         case Contact::FeatureLocation:
             QObject::connect(
-                    conn->locationInterface(),
+                    locationInterface,
                     SIGNAL(LocationUpdated(uint,QVariantMap)),
                     conn->contactManager(),
                     SLOT(onLocationUpdated(uint,QVariantMap)));
@@ -1375,7 +1398,7 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 
         case Contact::FeatureInfo:
             QObject::connect(
-                    conn->contactInfoInterface(),
+                    contactInfoInterface,
                     SIGNAL(ContactInfoChanged(uint,Tp::ContactInfoFieldList)),
                     conn->contactManager(),
                     SLOT(onContactInfoChanged(uint,Tp::ContactInfoFieldList)));
