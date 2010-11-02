@@ -519,7 +519,8 @@ MediaStream::~MediaStream()
  */
 StreamedMediaChannelPtr MediaStream::channel() const
 {
-    return content()->channel();
+    MediaContentPtr content(mPriv->content);
+    return content->channel();
 }
 
 /**
@@ -584,7 +585,8 @@ MediaStreamState MediaStream::state() const
  */
 MediaStreamType MediaStream::type() const
 {
-    return content()->type();
+    MediaContentPtr content(mPriv->content);
+    return content->type();
 }
 
 /**
@@ -894,15 +896,24 @@ PendingOperation *MediaStream::requestDirection(bool send, bool receive)
 /**
  * Return the content owning this media stream.
  *
+ * \deprecated
+ *
  * \return The content owning this media stream.
  */
 MediaContentPtr MediaStream::content() const
+{
+    return _deprecated_content();
+}
+
+MediaContentPtr MediaStream::_deprecated_content() const
 {
     return MediaContentPtr(mPriv->content);
 }
 
 /**
  * Return the contacts whose the media stream is with.
+ *
+ * \deprecated Use contact() instead.
  *
  * \return The contacts whose the media stream is with.
  * \sa membersRemoved()
@@ -947,6 +958,8 @@ MediaStream::SendingState MediaStream::localSendingState() const
 /**
  * Return the media stream remote sending state for a given \a contact.
  *
+ * \deprecated Use remoteSendingState() instead.
+ *
  * \return The media stream remote sending state for a contact.
  * \sa remoteSendingStateChanged()
  */
@@ -979,6 +992,34 @@ MediaStream::SendingState MediaStream::remoteSendingState(
 }
 
 /**
+ * Return the media stream remote sending state.
+ *
+ * \return The media stream remote sending state.
+ * \sa remoteSendingStateChanged()
+ */
+MediaStream::SendingState MediaStream::remoteSendingState() const
+{
+    if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
+        return mPriv->remoteSendingStateFromSMDirection();
+    } else {
+        uint chanSelfHandle = channel()->groupSelfContact()->handle()[0];
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
+            uint handle = i.key();
+            SendingState sendingState = (SendingState) i.value();
+
+            if (handle != chanSelfHandle) {
+                return sendingState;
+            }
+        }
+    }
+
+    return SendingStateNone;
+}
+
+/**
  * Request that media starts or stops being sent on this media stream.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
@@ -991,8 +1032,7 @@ PendingOperation *MediaStream::requestSending(bool send)
         return mPriv->updateSMDirection(
                 send,
                 mPriv->SMDirection & MediaStreamDirectionReceive);
-    }
-    else {
+    } else {
         return new PendingVoid(
                 mPriv->callBaseInterface->SetSending(send),
                 this);
@@ -1001,6 +1041,8 @@ PendingOperation *MediaStream::requestSending(bool send)
 
 /**
  * Request that a remote \a contact stops or starts sending on this media stream.
+ *
+ * \deprecated Use requestReceiving(bool receive) instead.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -1032,6 +1074,39 @@ PendingOperation *MediaStream::requestReceiving(const ContactPtr &contact,
 }
 
 /**
+ * Request that the remote contact stops or starts sending on this media stream.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa remoteSendingStateChanged()
+ */
+PendingOperation *MediaStream::requestReceiving(bool receive)
+{
+    if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
+        return mPriv->updateSMDirection(
+                mPriv->SMDirection & MediaStreamDirectionSend,
+                receive);
+    }
+    else {
+        uint chanSelfHandle = channel()->groupSelfContact()->handle()[0];
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
+            uint handle = i.key();
+
+            if (handle != chanSelfHandle) {
+                return new PendingVoid(mPriv->callBaseInterface->RequestReceiving(
+                        handle, receive), this);
+            }
+        }
+
+        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("No remote contact"), this);
+    }
+}
+
+/**
  * \fn void MediaStream::localSendingStateChanged(Tp::MediaStream::SendingState localSendingState);
  *
  * This signal is emitted when the local sending state of this media stream
@@ -1047,6 +1122,8 @@ PendingOperation *MediaStream::requestReceiving(const ContactPtr &contact,
  * This signal is emitted when any remote sending state of this media stream
  * changes.
  *
+ * \deprecated Use remoteSendingStateChanged(Tp::MediaStream::SendingState) instead.
+ *
  * \param remoteSendingStates The new remote sending states of this media stream.
  * \sa remoteSendingState()
  */
@@ -1055,6 +1132,8 @@ PendingOperation *MediaStream::requestReceiving(const ContactPtr &contact,
  * \fn void MediaStream::membersRemoved(const Tp::Contacts &members);
  *
  * This signal is emitted when one or more members of this stream are removed.
+ *
+ * \deprecated
  *
  * \param members The members that were removed from this media stream.
  * \sa members()
@@ -1116,6 +1195,7 @@ void MediaStream::gotSMDirection(uint direction, uint pendingSend)
     QHash<ContactPtr, SendingState> remoteSendingStates;
     remoteSendingStates.insert(mPriv->SMContact, remoteSendingState);
     emit remoteSendingStateChanged(remoteSendingStates);
+    emit remoteSendingStateChanged(remoteSendingState);
 }
 
 void MediaStream::gotSMStreamState(uint state)
@@ -1231,6 +1311,7 @@ void MediaStream::gotCallSendersContacts(PendingOperation *op)
 
         if (!remoteSendingStates.isEmpty()) {
             emit remoteSendingStateChanged(remoteSendingStates);
+            emit remoteSendingStateChanged(remoteSendingStates.constBegin().value());
         }
 
         if (!removed.isEmpty()) {
@@ -2104,7 +2185,7 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
                     UIntList() << stream->id()),
                 this);
     } else {
-        return stream->content()->callRemove();
+        return stream->_deprecated_content()->callRemove();
     }
 }
 
@@ -2144,8 +2225,8 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
         // make sure we don't call remove on the same content
         MediaContents contents;
         foreach (const MediaStreamPtr &stream, streams) {
-            if (!contents.contains(stream->content())) {
-                contents.append(stream->content());
+            if (!contents.contains(stream->_deprecated_content())) {
+                contents.append(stream->_deprecated_content());
             }
         }
 
@@ -2430,6 +2511,8 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
  *
  * This signal is emitted when a media content is added to this channel.
  *
+ * \deprecated Use streamAdded() instead.
+ *
  * \param content The media content that was added.
  * \sa contents(), contentsForType()
  */
@@ -2438,6 +2521,8 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
  * \fn void StreamedMediaChannel::contentRemoved(const Tp::MediaContentPtr &content);
  *
  * This signal is emitted when a media content is removed from this channel.
+ *
+ * \deprecated Use streamRemoved() instead.
  *
  * \param content The media content that was removed.
  * \sa contents(), contentsForType()
@@ -2894,6 +2979,24 @@ MediaContentPtr StreamedMediaChannel::lookupContentByCallObjectPath(
         }
     }
     return MediaContentPtr();
+}
+
+void MediaStream::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(remoteSendingStateChanged(QHash<Tp::ContactPtr,Tp::MediaStream::SendingState>))) == 0) {
+        warning() << "Connecting to deprecated signal remoteSendingStateChanged(QHash<Tp::ContactPtr,Tp::MediaStream::SendingState>)";
+    } else if (qstrcmp(signalName, SIGNAL(membersRemoved(Tp::Contacts))) == 0) {
+        warning() << "Connecting to deprecated signal membersRemoved(Tp::Contacts)";
+    }
+}
+
+void StreamedMediaChannel::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(contentAdded(Tp::MediaContentPtr))) == 0) {
+        warning() << "Connecting to deprecated signal contentAdded(Tp::MediaContentPtr)";
+    } else if (qstrcmp(signalName, SIGNAL(contentRemoved(Tp::MediaContentPtr))) == 0) {
+        warning() << "Connecting to deprecated signal contentRemoved(Tp::MediaContentPtr)";
+    }
 }
 
 } // Tp

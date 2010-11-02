@@ -40,6 +40,7 @@ class StreamedMediaChannel;
 typedef QList<MediaContentPtr> MediaContents;
 typedef QList<MediaStreamPtr> MediaStreams;
 
+// FIXME: (API/ABI break) Rename PendingMediaStreams to PendingStreamedMediaStreams
 class TELEPATHY_QT4_EXPORT PendingMediaStreams : public PendingOperation
 {
     Q_OBJECT
@@ -72,6 +73,7 @@ private:
     Private *mPriv;
 };
 
+// FIXME: (API/ABI break) Rename MediaStream to StreamedMediaStream
 class TELEPATHY_QT4_EXPORT MediaStream : public QObject,
                     private ReadyObject,
                     public RefCounted
@@ -88,13 +90,13 @@ public:
 
     ~MediaStream();
 
-    MediaContentPtr content() const;
+    TELEPATHY_QT4_DEPRECATED MediaContentPtr content() const;
 
     StreamedMediaChannelPtr channel() const;
 
     uint id() const;
 
-    Contacts members() const;
+    TELEPATHY_QT4_DEPRECATED Contacts members() const;
 
     ContactPtr contact() const;
 
@@ -102,7 +104,8 @@ public:
     MediaStreamType type() const;
 
     SendingState localSendingState() const;
-    SendingState remoteSendingState(const ContactPtr &contact) const;
+    SendingState remoteSendingState() const;
+    TELEPATHY_QT4_DEPRECATED SendingState remoteSendingState(const ContactPtr &contact) const;
 
     bool sending() const;
     bool receiving() const;
@@ -114,7 +117,8 @@ public:
     MediaStreamPendingSend pendingSend() const;
 
     PendingOperation *requestSending(bool send);
-    PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
+    PendingOperation *requestReceiving(bool receive);
+    TELEPATHY_QT4_DEPRECATED PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
 
     PendingOperation *requestDirection(
             MediaStreamDirection direction);
@@ -127,10 +131,17 @@ public:
 Q_SIGNALS:
     void localSendingStateChanged(
             Tp::MediaStream::SendingState localSendingState);
+    // FIXME: (API/ABI break) Remove remoteSendingStateChanged taking a QHash<Contact,SendingState>
     void remoteSendingStateChanged(
             const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &remoteSendingStates);
+    void remoteSendingStateChanged(Tp::MediaStream::SendingState remoteSendingState);
 
+    // FIXME: (API/ABI break) Remove membersRemoved
     void membersRemoved(const Tp::Contacts &members);
+
+protected:
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
 
 private Q_SLOTS:
     void gotSMContact(Tp::PendingOperation *op);
@@ -154,11 +165,14 @@ private:
 
     QDBusObjectPath callObjectPath() const;
 
+    MediaContentPtr _deprecated_content() const;
+
     struct Private;
     friend struct Private;
     Private *mPriv;
 };
 
+// FIXME: (API/ABI break) Remove PendingMediaContent
 class TELEPATHY_QT4_EXPORT PendingMediaContent : public PendingOperation
 {
     Q_OBJECT
@@ -196,6 +210,7 @@ private:
     Private *mPriv;
 };
 
+// FIXME: (API/ABI break) Remove MediaContent
 class TELEPATHY_QT4_EXPORT MediaContent : public QObject,
                     private ReadyObject,
                     public RefCounted
@@ -279,14 +294,14 @@ public:
     PendingOperation *hangupCall(StateChangeReason reason,
             const QString &detailedReason, const QString &message);
 
-    MediaContents contents() const;
-    MediaContents contentsForType(MediaStreamType type) const;
+    TELEPATHY_QT4_DEPRECATED MediaContents contents() const;
+    TELEPATHY_QT4_DEPRECATED MediaContents contentsForType(MediaStreamType type) const;
 
     MediaStreams streams() const;
     MediaStreams streamsForType(
             MediaStreamType type) const;
 
-    PendingMediaContent *requestContent(const QString &name,
+    TELEPATHY_QT4_DEPRECATED PendingMediaContent *requestContent(const QString &name,
             MediaStreamType type);
 
     PendingMediaStreams *requestStream(
@@ -296,7 +311,7 @@ public:
             const ContactPtr &contact,
             QList<MediaStreamType> types);
 
-    PendingOperation *removeContent(const MediaContentPtr &content);
+    TELEPATHY_QT4_DEPRECATED PendingOperation *removeContent(const MediaContentPtr &content);
 
     PendingOperation *removeStream(
             const MediaStreamPtr &stream);
@@ -310,6 +325,7 @@ public:
     PendingOperation *requestHold(bool hold);
 
 Q_SIGNALS:
+    // FIXME: (API/ABI break) Remove contentAdded/Removed signals
     void contentAdded(const Tp::MediaContentPtr &content);
     void contentRemoved(const Tp::MediaContentPtr &content);
 
@@ -330,6 +346,9 @@ Q_SIGNALS:
 protected:
     StreamedMediaChannel(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
+
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
 
 private Q_SLOTS:
     void onContentReady(Tp::PendingOperation *op);
