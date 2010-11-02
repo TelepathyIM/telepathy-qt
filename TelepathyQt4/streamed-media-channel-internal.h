@@ -225,6 +225,9 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
     // Public object
     StreamedMediaChannel *parent;
 
+    // Mandatory properties interface proxy
+    Client::DBus::PropertiesInterface *properties;
+
     ReadinessHelper *readinessHelper;
 
     IfaceType ifaceType;

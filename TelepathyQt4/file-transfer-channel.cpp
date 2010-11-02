@@ -70,8 +70,8 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannel::Private
 
 FileTransferChannel::Private::Private(FileTransferChannel *parent)
     : parent(parent),
-      fileTransferInterface(parent->fileTransferInterface(BypassInterfaceCheck)),
-      properties(0),
+      fileTransferInterface(parent->interface<Client::ChannelTypeFileTransferInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       pendingState(FileTransferStateNone),
       pendingStateReason(FileTransferStateChangeReasonNone),
@@ -114,11 +114,6 @@ FileTransferChannel::Private::~Private()
 void FileTransferChannel::Private::introspectProperties(
         FileTransferChannel::Private *self)
 {
-    if (!self->properties) {
-        self->properties = self->parent->propertiesInterface();
-        Q_ASSERT(self->properties != 0);
-    }
-
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 self->properties->GetAll(

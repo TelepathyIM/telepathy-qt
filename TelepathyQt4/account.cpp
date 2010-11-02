@@ -151,8 +151,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       chanFactory(chanFactory),
       contactFactory(contactFactory),
       baseInterface(new Client::AccountInterface(parent)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       valid(false),
       enabled(false),
@@ -2825,8 +2824,7 @@ void Account::Private::introspectAvatar(Account::Private *self)
     // we already checked if avatar interface exists, so bypass avatar interface
     // checking
     Client::AccountInterfaceAvatarInterface *iface =
-        self->parent->optionalInterface<Client::AccountInterfaceAvatarInterface>(
-                BypassInterfaceCheck);
+        self->parent->interface<Client::AccountInterfaceAvatarInterface>();
 
     // If we are here it means the user cares about avatar, so
     // connect to avatar changed signal, so we update the avatar

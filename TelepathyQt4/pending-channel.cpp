@@ -96,16 +96,18 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
     mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
     mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
 
+    Client::ConnectionInterfaceRequestsInterface *requestsInterface =
+        connection->interface<Client::ConnectionInterfaceRequestsInterface>();
     if (create) {
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                connection->requestsInterface()->CreateChannel(request), this);
+                requestsInterface->CreateChannel(request), this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(onCallCreateChannelFinished(QDBusPendingCallWatcher*)));
     }
     else {
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                connection->requestsInterface()->EnsureChannel(request), this);
+                requestsInterface->EnsureChannel(request), this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(onCallEnsureChannelFinished(QDBusPendingCallWatcher*)));

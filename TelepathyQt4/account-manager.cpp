@@ -86,8 +86,7 @@ AccountManager::Private::Private(AccountManager *parent,
         const ChannelFactoryConstPtr &chanFactory, const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
       baseInterface(new Client::AccountManagerInterface(parent)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       accFactory(accFactory),
       connFactory(connFactory),

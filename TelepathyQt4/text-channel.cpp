@@ -117,6 +117,9 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
     // Public object
     TextChannel *parent;
 
+    Client::ChannelTypeTextInterface *textInterface;
+    Client::DBus::PropertiesInterface *properties;
+
     ReadinessHelper *readinessHelper;
 
     // FeatureMessageCapabilities and FeatureMessageQueue
@@ -168,6 +171,8 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
 
 TextChannel::Private::Private(TextChannel *parent)
     : parent(parent),
+      textInterface(parent->interface<Client::ChannelTypeTextInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       getAllInFlight(false),
       gotProperties(false),
@@ -229,19 +234,22 @@ void TextChannel::Private::introspectMessageQueue(
     TextChannel *parent = self->parent;
 
     if (parent->hasMessagesInterface()) {
+        Client::ChannelInterfaceMessagesInterface *messagesInterface =
+            parent->interface<Client::ChannelInterfaceMessagesInterface>();
+
         // FeatureMessageQueue needs signal connections + Get (but we
         // might as well do GetAll and reduce the number of code paths)
-        parent->connect(parent->messagesInterface(),
+        parent->connect(messagesInterface,
                 SIGNAL(MessageReceived(Tp::MessagePartList)),
                 SLOT(onMessageReceived(Tp::MessagePartList)));
-        parent->connect(parent->messagesInterface(),
+        parent->connect(messagesInterface,
                 SIGNAL(PendingMessagesRemoved(Tp::UIntList)),
                 SLOT(onPendingMessagesRemoved(Tp::UIntList)));
 
         if (!self->gotProperties && !self->getAllInFlight) {
             self->getAllInFlight = true;
             QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                    parent->propertiesInterface()->GetAll(
+                    self->properties->GetAll(
                         QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
                         parent);
             parent->connect(watcher,
@@ -252,18 +260,18 @@ void TextChannel::Private::introspectMessageQueue(
         }
     } else {
         // FeatureMessageQueue needs signal connections + ListPendingMessages
-        parent->connect(parent->textInterface(),
+        parent->connect(self->textInterface,
                 SIGNAL(Received(uint,uint,uint,uint,uint,QString)),
                 SLOT(onTextReceived(uint,uint,uint,uint,uint,const QString)));
 
         // we present SendError signals as if they were incoming
         // messages, to be consistent with Messages
-        parent->connect(parent->textInterface(),
+        parent->connect(self->textInterface,
                 SIGNAL(SendError(uint,uint,uint,QString)),
                 SLOT(onTextSendError(uint,uint,uint,QString)));
 
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                parent->textInterface()->ListPendingMessages(false), parent);
+                self->textInterface->ListPendingMessages(false), parent);
         parent->connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(gotPendingMessages(QDBusPendingCallWatcher*)));
@@ -279,7 +287,7 @@ void TextChannel::Private::introspectMessageCapabilities(
         if (!self->gotProperties && !self->getAllInFlight) {
             self->getAllInFlight = true;
             QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                    parent->propertiesInterface()->GetAll(
+                    self->properties->GetAll(
                         QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
                         parent);
             parent->connect(watcher,
@@ -302,11 +310,14 @@ void TextChannel::Private::introspectMessageSentSignal(
     TextChannel *parent = self->parent;
 
     if (parent->hasMessagesInterface()) {
-        parent->connect(parent->messagesInterface(),
+        Client::ChannelInterfaceMessagesInterface *messagesInterface =
+            parent->interface<Client::ChannelInterfaceMessagesInterface>();
+
+        parent->connect(messagesInterface,
                 SIGNAL(MessageSent(Tp::MessagePartList,uint,QString)),
                 SLOT(onMessageSent(Tp::MessagePartList,uint,QString)));
     } else {
-        parent->connect(parent->textInterface(),
+        parent->connect(self->textInterface,
                 SIGNAL(Sent(uint,uint,QString)),
                 SLOT(onTextSent(uint,uint,QString)));
     }
@@ -319,7 +330,7 @@ void TextChannel::Private::enableChatStateNotifications(
 {
     TextChannel *parent = self->parent;
     Client::ChannelInterfaceChatStateInterface *chatStateInterface =
-        parent->chatStateInterface();
+        parent->interface<Client::ChannelInterfaceChatStateInterface>();
 
     parent->connect(chatStateInterface,
             SIGNAL(ChatStateChanged(uint,uint)),
@@ -824,7 +835,7 @@ void TextChannel::onAcknowledgePendingMessagesReply(
         debug() << "Recovering from AcknowledgePendingMessages failure for: "
             << ids;
         foreach (uint id, ids) {
-            textInterface()->AcknowledgePendingMessages(UIntList() << id);
+            mPriv->textInterface->AcknowledgePendingMessages(UIntList() << id);
         }
     }
 
@@ -870,7 +881,7 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
     forget(messages);
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            textInterface()->AcknowledgePendingMessages(ids));
+            mPriv->textInterface->AcknowledgePendingMessages(ids));
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher*)));
@@ -908,14 +919,17 @@ PendingSendMessage *TextChannel::send(const QString &text,
     PendingSendMessage *op = new PendingSendMessage(m, this);
 
     if (hasMessagesInterface()) {
+        Client::ChannelInterfaceMessagesInterface *messagesInterface =
+            interface<Client::ChannelInterfaceMessagesInterface>();
+
         connect(new QDBusPendingCallWatcher(
-                    messagesInterface()->SendMessage(m.parts(),
+                    messagesInterface->SendMessage(m.parts(),
                         (uint) flags)),
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 op,
                 SLOT(onMessageSent(QDBusPendingCallWatcher*)));
     } else {
-        connect(new QDBusPendingCallWatcher(textInterface()->Send(type, text)),
+        connect(new QDBusPendingCallWatcher(mPriv->textInterface->Send(type, text)),
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 op,
                 SLOT(onTextSent(QDBusPendingCallWatcher*)));
@@ -930,14 +944,17 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
     PendingSendMessage *op = new PendingSendMessage(m, this);
 
     if (hasMessagesInterface()) {
+        Client::ChannelInterfaceMessagesInterface *messagesInterface =
+            interface<Client::ChannelInterfaceMessagesInterface>();
+
         connect(new QDBusPendingCallWatcher(
-                    messagesInterface()->SendMessage(m.parts(),
+                    messagesInterface->SendMessage(m.parts(),
                         (uint) flags)),
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 op,
                 SLOT(onMessageSent(QDBusPendingCallWatcher*)));
     } else {
-        connect(new QDBusPendingCallWatcher(textInterface()->Send(
+        connect(new QDBusPendingCallWatcher(mPriv->textInterface->Send(
                         m.messageType(), m.text())),
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 op,
@@ -965,7 +982,10 @@ PendingOperation *TextChannel::requestChatState(ChannelChatState state)
                 QLatin1String("TextChannel does not support chat state interface"),
                 this);
     }
-    return new PendingVoid(chatStateInterface()->SetChatState(
+
+    Client::ChannelInterfaceChatStateInterface *chatStateInterface =
+        interface<Client::ChannelInterfaceChatStateInterface>();
+    return new PendingVoid(chatStateInterface->SetChatState(
                 (uint) state), this);
 }
 

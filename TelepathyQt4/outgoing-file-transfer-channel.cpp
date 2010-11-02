@@ -47,6 +47,8 @@ struct TELEPATHY_QT4_NO_EXPORT OutgoingFileTransferChannel::Private
     // Public object
     OutgoingFileTransferChannel *parent;
 
+    Client::ChannelTypeFileTransferInterface *fileTransferInterface;
+
     // Introspection
     QIODevice *input;
     QTcpSocket *socket;
@@ -57,6 +59,7 @@ struct TELEPATHY_QT4_NO_EXPORT OutgoingFileTransferChannel::Private
 
 OutgoingFileTransferChannel::Private::Private(OutgoingFileTransferChannel *parent)
     : parent(parent),
+      fileTransferInterface(parent->interface<Client::ChannelTypeFileTransferInterface>()),
       input(0),
       socket(0),
       pos(0)
@@ -180,7 +183,7 @@ PendingOperation *OutgoingFileTransferChannel::provideFile(QIODevice *input)
             SLOT(onInputAboutToClose()));
 
     PendingVariant *pv = new PendingVariant(
-            fileTransferInterface(BypassInterfaceCheck)->ProvideFile(
+            mPriv->fileTransferInterface->ProvideFile(
                 SocketAddressTypeIPv4,
                 SocketAccessControlLocalhost,
                 QDBusVariant(QVariant(QString()))),

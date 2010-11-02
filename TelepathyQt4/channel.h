@@ -165,77 +165,78 @@ public:
     bool hasSplittableInterface() const;
     PendingOperation *splitChannel();
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
-    inline Client::ChannelInterfaceAnonymityInterface *anonymityInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceAnonymityInterface *anonymityInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceAnonymityInterface>(check);
     }
 
-    inline Client::ChannelInterfaceCallStateInterface *callStateInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceCallStateInterface *callStateInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceCallStateInterface>(check);
     }
 
-    inline Client::ChannelInterfaceChatStateInterface *chatStateInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceChatStateInterface *chatStateInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceChatStateInterface>(check);
     }
 
-    inline Client::ChannelInterfaceConferenceInterface *conferenceInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceConferenceInterface *conferenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceConferenceInterface>(check);
     }
 
-    inline Client::ChannelInterfaceDTMFInterface *DTMFInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceDTMFInterface *DTMFInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceDTMFInterface>(check);
     }
 
-    inline Client::ChannelInterfaceHoldInterface *holdInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceHoldInterface *holdInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceHoldInterface>(check);
     }
 
-    inline Client::ChannelInterfaceMediaSignallingInterface *mediaSignallingInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceMediaSignallingInterface *mediaSignallingInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceMediaSignallingInterface>(check);
     }
 
-    inline Client::ChannelInterfaceMessagesInterface *messagesInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceMessagesInterface *messagesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceMessagesInterface>(check);
     }
 
-    inline Client::ChannelInterfacePasswordInterface *passwordInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfacePasswordInterface *passwordInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfacePasswordInterface>(check);
     }
 
-    inline Client::ChannelInterfaceServicePointInterface *servicePointInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceServicePointInterface *servicePointInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceServicePointInterface>(check);
     }
 
-    inline Client::ChannelInterfaceTubeInterface *tubeInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceTubeInterface *tubeInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceTubeInterface>(check);
     }
 
+    // FIXME: (API/ABI break) Remove once all deprecated methods using it are removed.
     template <class Interface>
     inline Interface *typeInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -249,49 +250,49 @@ public:
         return OptionalInterfaceFactory<Channel>::interface<Interface>();
     }
 
-    inline Client::ChannelTypeContactSearchInterface *contactSearchInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelTypeContactSearchInterface *contactSearchInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeContactSearchInterface>(check);
     }
 
-    inline Client::ChannelTypeRoomListInterface *roomListInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelTypeRoomListInterface *roomListInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeRoomListInterface>(check);
     }
 
-    inline Client::ChannelTypeServerTLSConnectionInterface *serverTLSConnectionInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelTypeServerTLSConnectionInterface *serverTLSConnectionInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeServerTLSConnectionInterface>(check);
     }
 
-    inline Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeStreamedMediaInterface>(check);
     }
 
-    inline Client::ChannelTypeTextInterface *textInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelTypeTextInterface *textInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeTextInterface>(check);
     }
 
-    inline Client::ChannelTypeFileTransferInterface *fileTransferInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelTypeFileTransferInterface *fileTransferInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeFileTransferInterface>(check);
     }
 
-    inline Client::ChannelTypeTubesInterface *tubesInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelTypeTubesInterface *tubesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeTubesInterface>(check);
     }
 
-    inline Client::ChannelTypeStreamTubeInterface *streamTubeInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelTypeStreamTubeInterface *streamTubeInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeStreamTubeInterface>(check);
@@ -328,7 +329,7 @@ protected:
 
     Client::ChannelInterface *baseInterface() const;
 
-    inline Client::ChannelInterfaceGroupInterface *groupInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ChannelInterfaceGroupInterface *groupInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceGroupInterface>(check);

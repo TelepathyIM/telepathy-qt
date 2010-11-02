@@ -89,8 +89,8 @@ ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
         const QVariantMap &immutableProperties)
     : parent(parent),
       immutableProperties(immutableProperties),
-      contactSearchInterface(parent->contactSearchInterface(BypassInterfaceCheck)),
-      properties(0),
+      contactSearchInterface(parent->interface<Client::ChannelTypeContactSearchInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       processingSignalsQueue(false)
 {
@@ -113,11 +113,6 @@ ContactSearchChannel::Private::~Private()
 
 void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private *self)
 {
-    if (!self->properties) {
-        self->properties = self->parent->propertiesInterface();
-        Q_ASSERT(self->properties != 0);
-    }
-
     /* we need to at least introspect SearchState here as it's not immutable */
     self->parent->connect(self->contactSearchInterface,
             SIGNAL(SearchStateChanged(uint,QString,QVariantMap)),

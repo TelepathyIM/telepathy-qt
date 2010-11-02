@@ -190,108 +190,108 @@ public:
     QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
-    inline Client::ConnectionInterfaceAliasingInterface *aliasingInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceAliasingInterface *aliasingInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceAliasingInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceAnonymityInterface *anonymityInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceAnonymityInterface *anonymityInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceAnonymityInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceAvatarsInterface *avatarsInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceAvatarsInterface *avatarsInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceAvatarsInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceCapabilitiesInterface *capabilitiesInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceCapabilitiesInterface *capabilitiesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceCapabilitiesInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceClientTypesInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface(
              InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceContactGroupsInterface *contactGroupsInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceContactGroupsInterface *contactGroupsInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceContactGroupsInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceContactInfoInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceContactListInterface *contactListInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceContactListInterface *contactListInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceContactListInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceLocationInterface *locationInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceLocationInterface *locationInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceLocationInterface>(check);
     }
 
-    inline Client::ConnectionInterfacePresenceInterface *presenceInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfacePresenceInterface *presenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfacePresenceInterface>(check);
     }
 
-    inline Client::ConnectionInterfacePowerSavingInterface *powerSavingInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfacePowerSavingInterface *powerSavingInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfacePowerSavingInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceServicePointInterface *servicePointInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceServicePointInterface *servicePointInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceServicePointInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceSimplePresenceInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceRequestsInterface *requestsInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceRequestsInterface *requestsInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceRequestsInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceBalanceInterface *balanceInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceBalanceInterface *balanceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceBalanceInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceCellularInterface *cellularInterface(
+    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceCellularInterface *cellularInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceCellularInterface>(check);

@@ -63,6 +63,9 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
     // Instance of generated interface class
     Client::ConnectionManagerInterface *baseInterface;
 
+    // Mandatory properties interface proxy
+    Client::DBus::PropertiesInterface *properties;
+
     ReadinessHelper *readinessHelper;
 
     // Introspection

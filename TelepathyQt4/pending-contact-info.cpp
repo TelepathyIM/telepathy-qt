@@ -68,8 +68,10 @@ PendingContactInfo::PendingContactInfo(const ContactPtr &contact)
       mPriv(new Private(contact))
 {
     ConnectionPtr connection = contact->manager()->connection();
+    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
+        connection->interface<Client::ConnectionInterfaceContactInfoInterface>();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            connection->contactInfoInterface()->RequestContactInfo(
+            contactInfoInterface->RequestContactInfo(
                 contact->handle()[0]), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),

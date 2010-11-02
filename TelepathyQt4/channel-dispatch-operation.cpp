@@ -83,8 +83,7 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::Private
 ChannelDispatchOperation::Private::Private(ChannelDispatchOperation *parent)
     : parent(parent),
       baseInterface(new Client::ChannelDispatchOperationInterface(parent)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       gotPossibleHandlers(false)
 {

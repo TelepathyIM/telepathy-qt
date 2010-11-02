@@ -607,6 +607,7 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
     : parent(parent),
       name(name),
       baseInterface(new Client::ConnectionManagerInterface(parent)),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper())
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();
@@ -689,12 +690,9 @@ void ConnectionManager::Private::introspectMain(ConnectionManager::Private *self
     warning() << "Error parsing config file for connection manager"
         << self->name << "- introspecting";
 
-    Client::DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
-    Q_ASSERT(properties != 0);
-
     debug() << "Calling Properties::GetAll(ConnectionManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(
+            self->properties->GetAll(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_MANAGER)),
             self->parent);
     self->parent->connect(watcher,
