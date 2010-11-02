@@ -124,6 +124,7 @@ Q_SIGNALS:
             const Tp::ReceivedMessage &message);
 
     // FeatureChatState
+    // FIXME: (API/ABI break) Use full-qualified namespace for state param.
     void chatStateChanged(const Tp::ContactPtr &contact,
             ChannelChatState state);
 
