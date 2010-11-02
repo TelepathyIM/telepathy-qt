@@ -26,12 +26,13 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Presence>
+#include <TelepathyQt4/Types>
+
 #include <QObject>
 #include <QSet>
 #include <QSharedPointer>
 #include <QVariantMap>
-
-#include <TelepathyQt4/Types>
 
 namespace Tp
 {
@@ -108,11 +109,12 @@ public:
      *  - ANY 1 of a number of presenceTypes/Statuses
      *  - presenceType greater or less than a set value
      */
-    QString presenceStatus() const;
-    uint presenceType() const;
-
+    TELEPATHY_QT4_DEPRECATED QString presenceStatus() const;
+    TELEPATHY_QT4_DEPRECATED uint presenceType() const;
     // TODO filter: have/don't have message AND exact/prefix/substring
-    QString presenceMessage() const; 
+    TELEPATHY_QT4_DEPRECATED QString presenceMessage() const;
+
+    Presence presence() const;
 
     // TODO filter: the same as Account filtering by caps
     ContactCapabilities *capabilities() const;
@@ -159,7 +161,11 @@ Q_SIGNALS:
     void aliasChanged(const QString &alias);
     void avatarTokenChanged(const QString &avatarToken);
     void avatarDataChanged(const Tp::AvatarData &);
+
+    // FIXME: (API/ABI break) Remove simplePresenceChanged in favor of presenceChanged
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
+    void presenceChanged(const Tp::Presence &presence);
+
     void capabilitiesChanged(Tp::ContactCapabilities *caps);
     void locationUpdated(Tp::ContactLocation *location);
     void infoChanged(const Tp::ContactInfoFieldList &info);

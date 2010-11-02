@@ -77,7 +77,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     QSet<Feature> actualFeatures;
 
     QString alias;
-    SimplePresence simplePresence;
+    Presence presence;
     ContactCapabilities *caps;
     ContactLocation *location;
     InfoFields info;
@@ -227,7 +227,7 @@ QString Contact::presenceStatus() const
         return QLatin1String("unknown");
     }
 
-    return mPriv->simplePresence.status;
+    return mPriv->presence.status();
 }
 
 uint Contact::presenceType() const
@@ -238,7 +238,7 @@ uint Contact::presenceType() const
         return ConnectionPresenceTypeUnknown;
     }
 
-    return mPriv->simplePresence.type;
+    return mPriv->presence.type();
 }
 
 QString Contact::presenceMessage() const
@@ -249,7 +249,7 @@ QString Contact::presenceMessage() const
         return QString();
     }
 
-    return mPriv->simplePresence.statusMessage;
+    return mPriv->presence.statusMessage();
 }
 
 /**
@@ -579,9 +579,8 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                 if (!maybePresence.status.isEmpty()) {
                     receiveSimplePresence(maybePresence);
                 } else {
-                    mPriv->simplePresence.type = ConnectionPresenceTypeUnknown;
-                    mPriv->simplePresence.status = QLatin1String("unknown");
-                    mPriv->simplePresence.statusMessage = QLatin1String("");
+                    mPriv->presence.setStatus(ConnectionPresenceTypeUnknown,
+                            QLatin1String("unknown"), QLatin1String(""));
                 }
                 break;
 
@@ -716,10 +715,12 @@ void Contact::receiveSimplePresence(const SimplePresence &presence)
 
     mPriv->actualFeatures.insert(FeatureSimplePresence);
 
-    if (mPriv->simplePresence.status != presence.status
-            || mPriv->simplePresence.statusMessage != presence.statusMessage) {
-        mPriv->simplePresence = presence;
-        emit simplePresenceChanged(presenceStatus(), presenceType(), presenceMessage());
+    if (mPriv->presence.status() != presence.status ||
+        mPriv->presence.statusMessage() != presence.statusMessage) {
+        mPriv->presence.setStatus(presence);
+        emit simplePresenceChanged(mPriv->presence.status(),
+                mPriv->presence.type(), mPriv->presence.statusMessage());
+        emit presenceChanged(mPriv->presence);
     }
 }
 
@@ -807,5 +808,21 @@ void Contact::setRemovedFromGroup(const QString &group)
         emit removedFromGroup(group);
     }
 }
+
+/**
+ * \fn void Contact::simplePresenceChanged(const QString &status, uint type,
+ *          const QString &presenceMessage)
+ *
+ * \deprecated Use presenceChanged instead.
+ */
+
+/**
+ * \fn void Contact::presenceChanged(const Tp::Presence &presence)
+ *
+ * This signal is emitted when the value of presence() of this contact changes.
+ *
+ * \param presence The new presence.
+ * \sa presence()
+ */
 
 } // Tp
