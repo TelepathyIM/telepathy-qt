@@ -195,6 +195,7 @@ public:
     bool isChangingPresence() const;
 
     // FIXME: (API/ABI break) Use Presence instead of SimplePresence everywhere
+    // TODO: Add overload methods to set presence from a Profile::Presence
     SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(
             const SimplePresence &value);
