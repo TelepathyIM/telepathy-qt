@@ -84,7 +84,7 @@ public:
 
     PendingOperation *cancel();
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
     }

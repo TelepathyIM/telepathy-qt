@@ -63,10 +63,10 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
     // Instance of generated interface class
     Client::ChannelRequestInterface *baseInterface;
 
-    QVariantMap immutableProperties;
-
-    // Optional interface proxies
+    // Mandatory properties interface proxy
     Client::DBus::PropertiesInterface *properties;
+
+    QVariantMap immutableProperties;
 
     ReadinessHelper *readinessHelper;
 
@@ -90,8 +90,9 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
       chanFact(chanFact),
       contactFact(contactFact),
       baseInterface(new Client::ChannelRequestInterface(parent)),
+      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
+                  BypassInterfaceCheck)),
       immutableProperties(immutableProperties),
-      properties(0),
       readinessHelper(parent->readinessHelper()),
       propertiesDone(false)
 {
@@ -138,11 +139,6 @@ ChannelRequest::Private::~Private()
 
 void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
 {
-    if (!self->properties) {
-        self->properties = self->parent->propertiesInterface();
-        Q_ASSERT(self->properties != 0);
-    }
-
     QVariantMap props;
     QString key;
     bool needIntrospectMainProps = false;
