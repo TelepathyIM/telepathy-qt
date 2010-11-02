@@ -377,8 +377,17 @@ PendingOperation *Contact::refreshInfo()
     }
 
     ConnectionPtr connection = mPriv->manager->connection();
+    if (!connection->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Connection does not support ContactInfo interface"),
+                this);
+    }
+
+    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
+        connection->optionalInterface<Client::ConnectionInterfaceContactInfoInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
     return new PendingVoid(
-            connection->contactInfoInterface()->RefreshContactInfo(
+            contactInfoInterface->RefreshContactInfo(
                 UIntList() << mPriv->handle[0]), this);
 }
 
