@@ -1578,12 +1578,12 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
                 &Private::introspectMainFallbackSelfHandle);
     }
 
-    if (hasInterface(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+    if (hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
         mPriv->introspectMainQueue.enqueue(
                 &Private::introspectCapabilities);
     }
 
-    if (hasInterface(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+    if (hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
         mPriv->introspectMainQueue.enqueue(
                 &Private::introspectContactAttributeInterfaces);
     }
