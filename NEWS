@@ -1,7 +1,12 @@
 telepathy-qt4 0.3.14 (UNRELEASED)
 =================================
 
-...
+Enhancements:
+* Added high-level class for SimplePresence and changed Contact to use it,
+  deprecating the old methods using SimplePresence directly.
+* Added signals deprecation support to Contact.
+* Deprecated StreamedMediaChannel methods that only make sense.
+* Deprecated all optional interface convenience methods.
 
 telepathy-qt4 0.3.13 (2010-11-01)
 =================================
