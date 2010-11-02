@@ -236,6 +236,7 @@ public:
         return optionalInterface<Client::ChannelInterfaceTubeInterface>(check);
     }
 
+    // FIXME: (API/ABI break) Remove once all deprecated methods using it are removed.
     template <class Interface>
     inline Interface *typeInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const

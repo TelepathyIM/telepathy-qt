@@ -265,8 +265,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         const QVariantMap &immutableProperties)
     : parent(parent),
       baseInterface(new Client::ChannelInterface(parent)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       connection(connection),
       immutableProperties(immutableProperties),
       group(0),
@@ -450,8 +449,7 @@ void Channel::Private::introspectGroup()
     Q_ASSERT(properties != 0);
 
     if (!group) {
-        group = parent->optionalInterface<Client::ChannelInterfaceGroupInterface>(
-                BypassInterfaceCheck);
+        group = parent->interface<Client::ChannelInterfaceGroupInterface>();
         Q_ASSERT(group != 0);
     }
 
@@ -557,8 +555,7 @@ void Channel::Private::introspectConference()
     if (parent->hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
         debug() << "Introspecting Conference interface";
 
-        conference = parent->optionalInterface<Client::ChannelInterfaceConferenceInterface>(
-                BypassInterfaceCheck);
+        conference = parent->interface<Client::ChannelInterfaceConferenceInterface>();
         Q_ASSERT(conference != 0);
 
         introspectingConference = true;
@@ -2726,7 +2723,7 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a TypeRoomList interface proxy.
  *
- * \deprecated Use typeInterface() instead.
+ * \deprecated Use interface() instead.
  *
  * \param check Passed to typeInterface()
  * \return <code>typeInterface<ChannelTypeRoomListInterface>(check)</code>
@@ -2737,7 +2734,7 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a TypeStreamedMedia interface proxy.
  *
- * \deprecated Use typeInterface() instead.
+ * \deprecated Use interface() instead.
  *
  * \param check Passed to typeInterface()
  * \return <code>typeInterface<ChannelTypeStreamedMediaInterface>(check)</code>
@@ -2748,7 +2745,7 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a TypeText interface proxy.
  *
- * \deprecated Use typeInterface() instead.
+ * \deprecated Use interface() instead.
  *
  * \param check Passed to typeInterface()
  * \return <code>typeInterface<ChannelTypeTextInterface>(check)</code>
@@ -2759,7 +2756,7 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a TypeTubes interface proxy.
  *
- * \deprecated Use typeInterface() instead.
+ * \deprecated Use interface() instead.
  *
  * \param check Passed to typeInterface()
  * \return <code>typeInterface<ChannelTypeTubesInterface>(check)</code>

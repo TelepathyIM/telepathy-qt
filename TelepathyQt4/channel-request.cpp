@@ -90,8 +90,7 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
       chanFact(chanFact),
       contactFact(contactFact),
       baseInterface(new Client::ChannelRequestInterface(parent)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       immutableProperties(immutableProperties),
       readinessHelper(parent->readinessHelper()),
       propertiesDone(false)

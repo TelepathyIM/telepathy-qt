@@ -192,8 +192,7 @@ Connection::Private::Private(Connection *parent,
       chanFactory(chanFactory),
       contactFactory(contactFactory),
       baseInterface(new Client::ConnectionInterface(parent)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       simplePresence(0),
       readinessHelper(parent->readinessHelper()),
       introspectingMain(false),
@@ -508,8 +507,7 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
     // we already checked if requests interface exists, so bypass requests
     // interface checking
     Client::ConnectionInterfaceRequestsInterface *iface =
-        self->parent->optionalInterface<Client::ConnectionInterfaceRequestsInterface>(
-                BypassInterfaceCheck);
+        self->parent->interface<Client::ConnectionInterfaceRequestsInterface>();
 
     debug() << "Connecting to Requests.NewChannels";
     self->parent->connect(iface,
@@ -533,8 +531,7 @@ void Connection::Private::introspectBalance(Connection::Private *self)
     // we already checked if balance interface exists, so bypass requests
     // interface checking
     Client::ConnectionInterfaceBalanceInterface *iface =
-        self->parent->optionalInterface<Client::ConnectionInterfaceBalanceInterface>(
-                BypassInterfaceCheck);
+        self->parent->interface<Client::ConnectionInterfaceBalanceInterface>();
 
     debug() << "Connecting to Balance.BalanceChanged";
     self->parent->connect(iface,
@@ -1309,8 +1306,7 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
     }
 
     Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
-        optionalInterface<Client::ConnectionInterfaceSimplePresenceInterface>(
-                BypassInterfaceCheck);
+        interface<Client::ConnectionInterfaceSimplePresenceInterface>();
     return new PendingVoid(
             simplePresenceInterface->SetPresence(status, statusMessage),
             this);
@@ -2222,7 +2218,7 @@ PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
     }
 
     Client::ConnectionInterfaceContactsInterface *contactsInterface =
-        optionalInterface<Client::ConnectionInterfaceContactsInterface>();
+        interface<Client::ConnectionInterfaceContactsInterface>();
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(contactsInterface->GetContactAttributes(handles, interfaces,
                     reference));

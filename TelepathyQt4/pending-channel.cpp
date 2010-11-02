@@ -97,8 +97,7 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
     mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
 
     Client::ConnectionInterfaceRequestsInterface *requestsInterface =
-        connection->optionalInterface<Client::ConnectionInterfaceRequestsInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        connection->interface<Client::ConnectionInterfaceRequestsInterface>();
     if (create) {
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                 requestsInterface->CreateChannel(request), this);

@@ -57,8 +57,7 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingFileTransferChannel::Private
 
 IncomingFileTransferChannel::Private::Private(IncomingFileTransferChannel *parent)
     : parent(parent),
-      fileTransferInterface(parent->typeInterface<Client::ChannelTypeFileTransferInterface>(
-                  BypassInterfaceCheck)),
+      fileTransferInterface(parent->interface<Client::ChannelTypeFileTransferInterface>()),
       output(0),
       socket(0),
       requestedOffset(0),

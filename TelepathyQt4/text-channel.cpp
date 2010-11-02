@@ -171,10 +171,8 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
 
 TextChannel::Private::Private(TextChannel *parent)
     : parent(parent),
-      textInterface(parent->typeInterface<Client::ChannelTypeTextInterface>(
-                  BypassInterfaceCheck)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      textInterface(parent->interface<Client::ChannelTypeTextInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       getAllInFlight(false),
       gotProperties(false),
@@ -237,7 +235,7 @@ void TextChannel::Private::introspectMessageQueue(
 
     if (parent->hasMessagesInterface()) {
         Client::ChannelInterfaceMessagesInterface *messagesInterface =
-            parent->optionalInterface<Client::ChannelInterfaceMessagesInterface>(BypassInterfaceCheck);
+            parent->interface<Client::ChannelInterfaceMessagesInterface>();
 
         // FeatureMessageQueue needs signal connections + Get (but we
         // might as well do GetAll and reduce the number of code paths)
@@ -313,7 +311,7 @@ void TextChannel::Private::introspectMessageSentSignal(
 
     if (parent->hasMessagesInterface()) {
         Client::ChannelInterfaceMessagesInterface *messagesInterface =
-            parent->optionalInterface<Client::ChannelInterfaceMessagesInterface>(BypassInterfaceCheck);
+            parent->interface<Client::ChannelInterfaceMessagesInterface>();
 
         parent->connect(messagesInterface,
                 SIGNAL(MessageSent(Tp::MessagePartList,uint,QString)),
@@ -332,7 +330,7 @@ void TextChannel::Private::enableChatStateNotifications(
 {
     TextChannel *parent = self->parent;
     Client::ChannelInterfaceChatStateInterface *chatStateInterface =
-        parent->optionalInterface<Client::ChannelInterfaceChatStateInterface>(BypassInterfaceCheck);
+        parent->interface<Client::ChannelInterfaceChatStateInterface>();
 
     parent->connect(chatStateInterface,
             SIGNAL(ChatStateChanged(uint,uint)),
@@ -922,7 +920,7 @@ PendingSendMessage *TextChannel::send(const QString &text,
 
     if (hasMessagesInterface()) {
         Client::ChannelInterfaceMessagesInterface *messagesInterface =
-            optionalInterface<Client::ChannelInterfaceMessagesInterface>(BypassInterfaceCheck);
+            interface<Client::ChannelInterfaceMessagesInterface>();
 
         connect(new QDBusPendingCallWatcher(
                     messagesInterface->SendMessage(m.parts(),
@@ -947,7 +945,7 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
 
     if (hasMessagesInterface()) {
         Client::ChannelInterfaceMessagesInterface *messagesInterface =
-            optionalInterface<Client::ChannelInterfaceMessagesInterface>(BypassInterfaceCheck);
+            interface<Client::ChannelInterfaceMessagesInterface>();
 
         connect(new QDBusPendingCallWatcher(
                     messagesInterface->SendMessage(m.parts(),
@@ -986,7 +984,7 @@ PendingOperation *TextChannel::requestChatState(ChannelChatState state)
     }
 
     Client::ChannelInterfaceChatStateInterface *chatStateInterface =
-        optionalInterface<Client::ChannelInterfaceChatStateInterface>(BypassInterfaceCheck);
+        interface<Client::ChannelInterfaceChatStateInterface>();
     return new PendingVoid(chatStateInterface->SetChatState(
                 (uint) state), this);
 }

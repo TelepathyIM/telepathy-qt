@@ -607,8 +607,7 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
     : parent(parent),
       name(name),
       baseInterface(new Client::ConnectionManagerInterface(parent)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper())
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();

@@ -384,8 +384,7 @@ PendingOperation *Contact::refreshInfo()
     }
 
     Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
-        connection->optionalInterface<Client::ConnectionInterfaceContactInfoInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        connection->interface<Client::ConnectionInterfaceContactInfoInterface>();
     return new PendingVoid(
             contactInfoInterface->RefreshContactInfo(
                 UIntList() << mPriv->handle[0]), this);

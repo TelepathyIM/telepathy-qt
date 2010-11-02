@@ -89,10 +89,8 @@ ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
         const QVariantMap &immutableProperties)
     : parent(parent),
       immutableProperties(immutableProperties),
-      contactSearchInterface(parent->typeInterface<Client::ChannelTypeContactSearchInterface>(
-                  BypassInterfaceCheck)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      contactSearchInterface(parent->interface<Client::ChannelTypeContactSearchInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       processingSignalsQueue(false)
 {

@@ -903,8 +903,7 @@ void ContactManager::doRequestAvatars()
     debug() << "Request" << mPriv->requestAvatarsQueue.size() << "avatar(s)";
 
     Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
-        mPriv->connection->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        mPriv->connection->interface<Client::ConnectionInterfaceAvatarsInterface>();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
         avatarsInterface->RequestAvatars(mPriv->requestAvatarsQueue),
         this);
@@ -1329,23 +1328,17 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
     ConnectionPtr conn(connection);
 
     Client::ConnectionInterfaceAliasingInterface *aliasingInterface =
-        conn->optionalInterface<Client::ConnectionInterfaceAliasingInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        conn->interface<Client::ConnectionInterfaceAliasingInterface>();
     Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
-        conn->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        conn->interface<Client::ConnectionInterfaceAvatarsInterface>();
     Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface =
-        conn->optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        conn->interface<Client::ConnectionInterfaceContactCapabilitiesInterface>();
     Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
-        conn->optionalInterface<Client::ConnectionInterfaceContactInfoInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        conn->interface<Client::ConnectionInterfaceContactInfoInterface>();
     Client::ConnectionInterfaceLocationInterface *locationInterface =
-        conn->optionalInterface<Client::ConnectionInterfaceLocationInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        conn->interface<Client::ConnectionInterfaceLocationInterface>();
     Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
-        conn->optionalInterface<Client::ConnectionInterfaceSimplePresenceInterface>(
-                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+        conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
 
     switch (feature) {
         case Contact::FeatureAlias:

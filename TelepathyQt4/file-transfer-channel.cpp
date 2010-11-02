@@ -70,10 +70,8 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannel::Private
 
 FileTransferChannel::Private::Private(FileTransferChannel *parent)
     : parent(parent),
-      fileTransferInterface(parent->typeInterface<Client::ChannelTypeFileTransferInterface>(
-                  BypassInterfaceCheck)),
-      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
-                  BypassInterfaceCheck)),
+      fileTransferInterface(parent->interface<Client::ChannelTypeFileTransferInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       pendingState(FileTransferStateNone),
       pendingStateReason(FileTransferStateChangeReasonNone),
