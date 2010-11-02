@@ -156,7 +156,7 @@ public:
     static PendingStringList *listNames(
             const QDBusConnection &bus = QDBusConnection::sessionBus());
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return OptionalInterfaceFactory<ConnectionManager>::interface<Client::DBus::PropertiesInterface>();
     }
