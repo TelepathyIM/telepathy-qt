@@ -125,6 +125,9 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     // Instance of generated interface class
     Client::ChannelInterface *baseInterface;
 
+    // Mandatory properties interface proxy
+    Client::DBus::PropertiesInterface *properties;
+
     // Owning connection - it can be a SharedPtr as Connection does not cache
     // channels
     ConnectionPtr connection;
@@ -135,7 +138,6 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     Client::ChannelInterfaceGroupInterface *group;
     Client::ChannelInterfaceConferenceInterface *conference;
     TpFuture::Client::ChannelInterfaceConferenceInterface *conferenceDRAFT;
-    Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
 
@@ -263,12 +265,13 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         const QVariantMap &immutableProperties)
     : parent(parent),
       baseInterface(new Client::ChannelInterface(parent)),
+      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
+                  BypassInterfaceCheck)),
       connection(connection),
       immutableProperties(immutableProperties),
       group(0),
       conference(0),
       conferenceDRAFT(0),
-      properties(0),
       readinessHelper(parent->readinessHelper()),
       targetHandleType(0),
       targetHandle(0),
@@ -363,11 +366,6 @@ void Channel::Private::introspectMain(Channel::Private *self)
 
 void Channel::Private::introspectMainProperties()
 {
-    if (!properties) {
-        properties = parent->propertiesInterface();
-        Q_ASSERT(properties != 0);
-    }
-
     QVariantMap props;
     QString key;
     bool needIntrospectMainProps = false;
@@ -452,7 +450,8 @@ void Channel::Private::introspectGroup()
     Q_ASSERT(properties != 0);
 
     if (!group) {
-        group = parent->groupInterface();
+        group = parent->optionalInterface<Client::ChannelInterfaceGroupInterface>(
+                BypassInterfaceCheck);
         Q_ASSERT(group != 0);
     }
 
@@ -558,7 +557,8 @@ void Channel::Private::introspectConference()
     if (parent->hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
         debug() << "Introspecting Conference interface";
 
-        conference = parent->conferenceInterface();
+        conference = parent->optionalInterface<Client::ChannelInterfaceConferenceInterface>(
+                BypassInterfaceCheck);
         Q_ASSERT(conference != 0);
 
         introspectingConference = true;
@@ -2609,6 +2609,8 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a CallState interface proxy.
  *
+ * \deprecated Use optionalInterface() instead.
+ *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ChannelInterfaceCallStateInterface>(check)</code>
  */
@@ -2617,6 +2619,8 @@ PendingOperation *Channel::splitChannel()
  * \fn ChannelInterfaceChatStateInterface *Channel::chatStateInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a ChatState interface proxy.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ChannelInterfaceChatStateInterface>(check)</code>
@@ -2627,6 +2631,8 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a DTMF interface proxy.
  *
+ * \deprecated Use optionalInterface() instead.
+ *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ChannelInterfaceDTMFInterface>(check)</code>
  */
@@ -2635,6 +2641,8 @@ PendingOperation *Channel::splitChannel()
  * \fn ChannelInterfaceGroupInterface *Channel::groupInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Group interface proxy.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ChannelInterfaceGroupInterface>(check)</code>
@@ -2645,6 +2653,8 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a Hold interface proxy.
  *
+ * \deprecated Use optionalInterface() instead.
+ *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ChannelInterfaceHoldInterface>(check)</code>
  */
@@ -2654,6 +2664,8 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a MediaSignalling interface proxy.
  *
+ * \deprecated Use optionalInterface() instead.
+ *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ChannelInterfaceMediaSignallingInterface>(check)</code>
  */
@@ -2662,6 +2674,8 @@ PendingOperation *Channel::splitChannel()
  * \fn ChannelInterfacePasswordInterface *Channel::passwordInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Password interface proxy.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ChannelInterfacePasswordInterface>(check)</code>
@@ -2674,6 +2688,8 @@ PendingOperation *Channel::splitChannel()
  * Properties interface is not necessarily reported by the services, so a
  * <code>check</code> parameter is not provided, and the interface is always
  * assumed to be present.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \return
  * <code>optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck)</code>
@@ -2710,6 +2726,8 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a TypeRoomList interface proxy.
  *
+ * \deprecated Use typeInterface() instead.
+ *
  * \param check Passed to typeInterface()
  * \return <code>typeInterface<ChannelTypeRoomListInterface>(check)</code>
  */
@@ -2718,6 +2736,8 @@ PendingOperation *Channel::splitChannel()
  * \fn ChannelTypeStreamedMediaInterface *Channel::streamedMediaInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeStreamedMedia interface proxy.
+ *
+ * \deprecated Use typeInterface() instead.
  *
  * \param check Passed to typeInterface()
  * \return <code>typeInterface<ChannelTypeStreamedMediaInterface>(check)</code>
@@ -2728,6 +2748,8 @@ PendingOperation *Channel::splitChannel()
  *
  * Convenience function for getting a TypeText interface proxy.
  *
+ * \deprecated Use typeInterface() instead.
+ *
  * \param check Passed to typeInterface()
  * \return <code>typeInterface<ChannelTypeTextInterface>(check)</code>
  */
@@ -2736,6 +2758,8 @@ PendingOperation *Channel::splitChannel()
  * \fn ChannelTypeTubesInterface *Channel::tubesInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeTubes interface proxy.
+ *
+ * \deprecated Use typeInterface() instead.
  *
  * \param check Passed to typeInterface()
  * \return <code>typeInterface<ChannelTypeTubesInterface>(check)</code>
