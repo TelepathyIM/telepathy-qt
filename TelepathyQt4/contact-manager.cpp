@@ -718,6 +718,59 @@ PendingOperation *ContactManager::removePresencePublication(
 }
 
 /**
+ * Remove completely contacts from the server. It has the same effect than
+ * calling removePresencePublication() and removePresenceSubscription(),
+ * but also remove from 'stored' list if it exists.
+ *
+ * \param contacts Contacts who should be removed
+ * \message A message from the user which is either transmitted to the
+ *          contacts, or ignored, depending on the protocol
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove any publication of the user's presence to the contacts
+ */
+PendingOperation *ContactManager::removeContacts(
+        const QList<ContactPtr> &contacts, const QString &message)
+{
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRoster)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRoster is not ready"), this);
+    }
+
+    /* If the CM implements stored channel correctly, it should have the
+     * wanted behaviour. Otherwise we have to fallback to remove from publish
+     * and subscribe channels.
+     */
+
+    if (mPriv->storedChannel &&
+        mPriv->storedChannel->groupCanRemoveContacts()) {
+        debug() << "Remove contacts from stored list";
+        return mPriv->storedChannel->groupRemoveContacts(contacts, message);
+    }
+
+    QList<PendingOperation*> operations;
+
+    if (canRemovePresenceSubscription()) {
+        debug() << "Remove contacts from subscribe list";
+        operations << removePresenceSubscription(contacts, message);
+    }
+
+    if (canRemovePresencePublication()) {
+        debug() << "Remove contacts from publish list";
+        operations << removePresencePublication(contacts, message);
+    }
+
+    if (operations.isEmpty()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Cannot remove contacts on this protocol"), this);
+    }
+
+    return new PendingComposite(operations, this);
+}
+
+/**
  * Return whether this protocol has a list of blocked contacts.
  *
  * \return Whether blockContacts is likely to succeed

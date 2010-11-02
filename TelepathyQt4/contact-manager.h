@@ -88,6 +88,9 @@ public:
     PendingOperation *removePresencePublication(
             const QList<ContactPtr> &contacts,
             const QString &message = QString());
+    PendingOperation *removeContacts(
+            const QList<ContactPtr> &contacts,
+            const QString &message = QString());
 
     bool canBlockContacts() const;
     PendingOperation *blockContacts(
