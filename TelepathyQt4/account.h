@@ -194,6 +194,10 @@ public:
 
     bool isChangingPresence() const;
 
+    // FIXME: (API/ABI break) Use Presence instead of SimplePresence everywhere
+    // TODO: Add overload methods to set presence from a Profile::Presence
+    // TODO: Add usablePresences() that would return a list of presences that could be set on the
+    //       account
     SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(
             const SimplePresence &value);

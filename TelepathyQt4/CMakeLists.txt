@@ -73,6 +73,7 @@ set(telepathy_qt4_SRCS
     pending-ready.cpp
     pending-string-list.cpp
     pending-variant.cpp
+    presence.cpp
     profile.cpp
     profile-manager.cpp
     properties.cpp
@@ -273,6 +274,8 @@ set(telepathy_qt4_HEADERS
     PendingVariant
     pending-variant.h
     PendingVoid
+    Presence
+    presence.h
     ProtocolParameter
     Profile
     profile.h
