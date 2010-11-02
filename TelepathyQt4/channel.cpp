@@ -555,7 +555,7 @@ void Channel::Private::introspectConference()
 
     // if we got here it means we either have Conference or Conference.DRAFT support, let's try to
     // use Conference first and if not found, use Conference.DRAFT
-    if (parent->hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+    if (parent->hasInterface(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
         debug() << "Introspecting Conference interface";
 
         conference = parent->conferenceInterface();
@@ -606,8 +606,8 @@ void Channel::Private::introspectConferenceInitialInviteeContacts(Private *self)
 {
     // TODO remove this check once Conference.DRAFT is removed and make
     //      FeatureConferenceInitialInviteeContacts depend on interface Conference.
-    if (!self->parent->hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE) ||
-        !self->parent->hasInterface(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+    if (!self->parent->hasInterface(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE) ||
+        !self->parent->hasInterface(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
         self->readinessHelper->setIntrospectCompleted(FeatureConferenceInitialInviteeContacts,
                 false,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
@@ -2334,11 +2334,11 @@ bool Channel::conferenceSupportsNonMerges() const
     }
 
     // FIXME: cannot use hasInterface here as hasInterface is not const
-    // if (hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-    if (interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
+    // if (hasInterface(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+    if (interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
         return false;
-    // } else if (hasInterface(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-    } else if (interfaces().contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
+    // } else if (hasInterface(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+    } else if (interfaces().contains(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
         return mPriv->conferenceSupportsNonMerges;
     }
     return false;
@@ -3294,7 +3294,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         mPriv->conferenceInvitationMessage =
             qdbus_cast<QString>(props[QLatin1String("InvitationMessage")]);
 
-        if (hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+        if (hasInterface(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
             ChannelOriginatorMap originalChannels = qdbus_cast<ChannelOriginatorMap>(
                     props[QLatin1String("OriginalChannels")]);
             for (ChannelOriginatorMap::const_iterator i = originalChannels.constBegin();
