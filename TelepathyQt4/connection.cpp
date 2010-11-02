@@ -192,7 +192,8 @@ Connection::Private::Private(Connection *parent,
       chanFactory(chanFactory),
       contactFactory(contactFactory),
       baseInterface(new Client::ConnectionInterface(parent)),
-      properties(parent->propertiesInterface()),
+      properties(parent->optionalInterface<Client::DBus::PropertiesInterface>(
+                  BypassInterfaceCheck)),
       simplePresence(0),
       readinessHelper(parent->readinessHelper()),
       introspectingMain(false),
@@ -507,7 +508,8 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
     // we already checked if requests interface exists, so bypass requests
     // interface checking
     Client::ConnectionInterfaceRequestsInterface *iface =
-        self->parent->requestsInterface(BypassInterfaceCheck);
+        self->parent->optionalInterface<Client::ConnectionInterfaceRequestsInterface>(
+                BypassInterfaceCheck);
 
     debug() << "Connecting to Requests.NewChannels";
     self->parent->connect(iface,
@@ -516,7 +518,7 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
 
     debug() << "Retrieving channels";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            self->parent->propertiesInterface()->Get(
+            self->properties->Get(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),
                 QLatin1String("Channels")), self->parent);
     self->parent->connect(watcher,
@@ -531,7 +533,8 @@ void Connection::Private::introspectBalance(Connection::Private *self)
     // we already checked if balance interface exists, so bypass requests
     // interface checking
     Client::ConnectionInterfaceBalanceInterface *iface =
-        self->parent->balanceInterface(BypassInterfaceCheck);
+        self->parent->optionalInterface<Client::ConnectionInterfaceBalanceInterface>(
+                BypassInterfaceCheck);
 
     debug() << "Connecting to Balance.BalanceChanged";
     self->parent->connect(iface,
@@ -540,7 +543,7 @@ void Connection::Private::introspectBalance(Connection::Private *self)
 
     debug() << "Retrieving balance";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            self->parent->propertiesInterface()->Get(
+            self->properties->Get(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_BALANCE),
                 QLatin1String("AccountBalance")), self->parent);
     self->parent->connect(watcher,
@@ -1304,8 +1307,12 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Connection does not support SimplePresence"), this);
     }
+
+    Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
+        optionalInterface<Client::ConnectionInterfaceSimplePresenceInterface>(
+                BypassInterfaceCheck);
     return new PendingVoid(
-            simplePresenceInterface()->SetPresence(status, statusMessage),
+            simplePresenceInterface->SetPresence(status, statusMessage),
             this);
 }
 
@@ -1401,6 +1408,8 @@ ConnectionCapabilities *Connection::capabilities() const
  *
  * Convenience function for getting an Aliasing interface proxy.
  *
+ * \deprecated Use optionalInterface() instead.
+ *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ConnectionInterfaceAliasingInterface>(check)</code>
  */
@@ -1409,6 +1418,8 @@ ConnectionCapabilities *Connection::capabilities() const
  * \fn ConnectionInterfaceAvatarsInterface *Connection::avatarsInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting an Avatars interface proxy.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ConnectionInterfaceAvatarsInterface>(check)</code>
@@ -1419,6 +1430,8 @@ ConnectionCapabilities *Connection::capabilities() const
  *
  * Convenience function for getting a Capabilities interface proxy.
  *
+ * \deprecated Use optionalInterface() instead.
+ *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ConnectionInterfaceCapabilitiesInterface>(check)</code>
  */
@@ -1428,6 +1441,8 @@ ConnectionCapabilities *Connection::capabilities() const
  *
  * Convenience function for getting a Presence interface proxy.
  *
+ * \deprecated Use optionalInterface() instead.
+ *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ConnectionInterfacePresenceInterface>(check)</code>
  */
@@ -1436,6 +1451,8 @@ ConnectionCapabilities *Connection::capabilities() const
  * \fn ConnectionInterfaceSimplePresenceInterface *Connection::simplePresenceInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a SimplePresence interface proxy.
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \param check Passed to optionalInterface()
  * \return <code>optionalInterface<ConnectionInterfaceSimplePresenceInterface>(check)</code>
@@ -1450,6 +1467,8 @@ ConnectionCapabilities *Connection::capabilities() const
  * always assumed to be present.
  *
  * \sa optionalInterface()
+ *
+ * \deprecated Use optionalInterface() instead.
  *
  * \return <code>optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck)</code>
  */
