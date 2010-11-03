@@ -219,10 +219,10 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mAM->interfaces(), QStringList());
 
     QStringList paths;
-    QCOMPARE(pathsForAccountSet(mAM->validAccountsSet()),
+    QCOMPARE(pathsForAccountSet(mAM->validAccounts()),
             QStringList() <<
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
-    QCOMPARE(pathsForAccountSet(mAM->invalidAccountsSet()),
+    QCOMPARE(pathsForAccountSet(mAM->invalidAccounts()),
             QStringList());
     QCOMPARE(pathsForAccountList(mAM->allAccounts()),
             QStringList() <<
@@ -435,36 +435,36 @@ void TestAccountBasics::testBasics()
     QCOMPARE(filteredAccountSet->isFilterValid(), false);
     QVERIFY(filteredAccountSet->accounts().isEmpty());
 
-    QCOMPARE(mAM->validAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->validAccountsSet()->accounts().isEmpty(), false);
-    QCOMPARE(mAM->invalidAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->invalidAccountsSet()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->enabledAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->enabledAccountsSet()->accounts().isEmpty(), false);
-    QCOMPARE(mAM->disabledAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->disabledAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->validAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->validAccounts()->accounts().isEmpty(), false);
+    QCOMPARE(mAM->invalidAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->invalidAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->enabledAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->enabledAccounts()->accounts().isEmpty(), false);
+    QCOMPARE(mAM->disabledAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->disabledAccounts()->accounts().isEmpty(), true);
 
     filter.clear();
     filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
     AccountSetPtr spuriousAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
     QCOMPARE(spuriousAccountSet->isFilterValid(), true);
 
-    filteredAccountSet = mAM->textChatAccountsSet();
+    filteredAccountSet = mAM->textChatAccounts();
     QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
-    QCOMPARE(mAM->textChatAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->textChatRoomAccountsSet()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->mediaCallAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->mediaCallAccountsSet()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->audioCallAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->audioCallAccountsSet()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->videoCallAccountsSet(false)->isFilterValid(), true);
-    QCOMPARE(mAM->videoCallAccountsSet(false)->accounts().isEmpty(), true);
-    QCOMPARE(mAM->videoCallAccountsSet(true)->isFilterValid(), true);
-    QCOMPARE(mAM->videoCallAccountsSet(true)->accounts().isEmpty(), true);
-    QCOMPARE(mAM->fileTransferAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->fileTransferAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->textChatAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->textChatroomAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->streamedMediaCallAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->streamedMediaCallAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->streamedMediaAudioCallAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->streamedMediaAudioCallAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->streamedMediaVideoCallAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->streamedMediaVideoCallAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->streamedMediaVideoCallWithAudioAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->streamedMediaVideoCallWithAudioAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->fileTransferAccounts()->isFilterValid(), true);
+    QCOMPARE(mAM->fileTransferAccounts()->accounts().isEmpty(), true);
 
     QList<AccountFilterConstPtr> filterChain;
 

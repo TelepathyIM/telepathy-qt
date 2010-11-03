@@ -29,10 +29,11 @@
 
 #include <TelepathyQt4/AccountCapabilityFilter>
 #include <TelepathyQt4/AccountSet>
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Constants>
+#include <TelepathyQt4/ReadinessHelper>
 
 #include <QQueue>
 #include <QSet>
@@ -228,29 +229,19 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  * \brief The AccountManager class provides an object representing a Telepathy
  * account manager.
  *
- * AccountManager adds the following features compared to using
- * Client::AccountManagerInterface directly:
- * <ul>
- *  <li>Account status tracking</li>
- *  <li>Getting the list of supported interfaces automatically</li>
- *  <li>Cache Account objects when they are requested the first time</li>
- * </ul>
- *
- * The remote object accessor functions on this object (allAccountPaths(),
- * allAccounts(), and so on) don't make any D-Bus calls; instead, they return/use
+ * The remote object accessor functions on this object (allAccounts(),
+ * validAccounts(), and so on) don't make any D-Bus calls; instead, they return/use
  * values cached from a previous introspection run. The introspection process
  * populates their values in the most efficient way possible based on what the
  * service implements. Their return value is mostly undefined until the
  * introspection process is completed, i.e. isReady() returns true. See the
  * individual accessor descriptions for more details.
  *
- * Signals are emitted to indicate that accounts are added/removed and when
- * accounts validity changes. See accountCreated(), accountRemoved(),
- * accountValidityChanged().
+ * A signal is emitted to indicate that accounts are added. See newCreated() for more details.
  *
  * \section am_usage_sec Usage
  *
- * \subsection am_create_sec Creating an account manager object
+ * \subsection am_create_sec Creating an AccountManager object
  *
  * One way to create an AccountManager object is to just call the create method.
  * For example:
@@ -264,7 +255,7 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  *
  * \code AccountManagerPtr am = AccountManager::create(QDBusConnection::sessionBus()); \endcode
  *
- * \subsection am_ready_sec Making account manager ready to use
+ * \subsection am_ready_sec Making AccountManager ready to use
  *
  * An AccountManager object needs to become ready before usage, meaning that the
  * introspection process finished and the object accessors can be used.
@@ -286,14 +277,14 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  *     void onAccountManagerReady(Tp::PendingOperation*);
  *
  * private:
- *     AccountManagerPtr am;
+ *     AccountManagerPtr mAM;
  * };
  *
  * MyClass::MyClass(QObject *parent)
  *     : QObject(parent)
- *       am(AccountManager::create())
+ *       mAM(AccountManager::create())
  * {
- *     connect(am->becomeReady(),
+ *     connect(mAM->becomeReady(),
  *             SIGNAL(finished(Tp::PendingOperation*)),
  *             SLOT(onAccountManagerReady(Tp::PendingOperation*)));
  * }
@@ -307,9 +298,9 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  *     }
  *
  *     // AccountManager is now ready
- *     qDebug() << "Valid accounts:";
- *     foreach (const QString &path, am->validAccountPaths()) {
- *         qDebug() << " path:" << path;
+ *     qDebug() << "All accounts:";
+ *     foreach (const Tp::AccountPtr &acc, mAM->allAccounts()) {
+ *         qDebug() << " path:" << acc->objectPath();
  *     }
  * }
  *
@@ -331,25 +322,6 @@ void AccountManager::Private::addAccountForPath(const QString &path)
 const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager::staticMetaObject.className()), 0, true);
 
 /**
- * Create a new AccountManager object using QDBusConnection::sessionBus().
- *
- * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
- * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
- * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
- *
- * \return An AccountManagerPtr object pointing to the newly created
- *         AccountManager object.
- */
-AccountManagerPtr AccountManager::create()
-{
-    return AccountManagerPtr(new AccountManager(QDBusConnection::sessionBus(),
-                AccountFactory::create(QDBusConnection::sessionBus()),
-                ConnectionFactory::create(QDBusConnection::sessionBus()),
-                ChannelFactory::create(QDBusConnection::sessionBus()),
-                ContactFactory::create()));
-}
-
-/**
  * Create a new AccountManager object using the given \a bus.
  *
  * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
@@ -363,10 +335,8 @@ AccountManagerPtr AccountManager::create()
 AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
 {
     return AccountManagerPtr(new AccountManager(bus,
-                AccountFactory::create(bus),
-                ConnectionFactory::create(bus),
-                ChannelFactory::create(bus),
-                ContactFactory::create()));
+                AccountFactory::create(bus), ConnectionFactory::create(bus),
+                ChannelFactory::create(bus), ContactFactory::create()));
 }
 
 /**
@@ -394,7 +364,7 @@ AccountManagerPtr AccountManager::create(const AccountFactoryConstPtr &accountFa
 }
 
 /**
- * Create a new AccountManager using the given bus and the given factories.
+ * Create a new AccountManager using the given \a bus and the given factories.
  *
  * The connection and channel factories are passed to any Account objects created by this manager
  * object. In fact, they're not used directly by AccountManager at all.
@@ -405,6 +375,7 @@ AccountManagerPtr AccountManager::create(const AccountFactoryConstPtr &accountFa
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
  * \return An AccountManagerPtr object pointing to the newly created
  *         AccountManager object.
  */
@@ -416,56 +387,6 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
 {
     return AccountManagerPtr(new AccountManager(bus,
                 accountFactory, connectionFactory, channelFactory, contactFactory));
-}
-
-/**
- * Construct a new AccountManager object using QDBusConnection::sessionBus().
- *
- * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
- * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
- * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
- *
- * \deprecated
- */
-AccountManager::AccountManager()
-    : StatelessDBusProxy(QDBusConnection::sessionBus(),
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
-      OptionalInterfaceFactory<AccountManager>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(
-                  this,
-                  AccountFactory::create(QDBusConnection::sessionBus()),
-                  ConnectionFactory::create(QDBusConnection::sessionBus()),
-                  ChannelFactory::create(QDBusConnection::sessionBus()),
-                  ContactFactory::create()))
-{
-}
-
-/**
- * Construct a new AccountManager object using the given \a bus.
- *
- * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
- * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
- * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
- *
- * \deprecated
- *
- * \param bus QDBusConnection to use.
- */
-AccountManager::AccountManager(const QDBusConnection& bus)
-    : StatelessDBusProxy(bus,
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
-      OptionalInterfaceFactory<AccountManager>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(
-                  this,
-                  AccountFactory::create(bus),
-                  ConnectionFactory::create(bus),
-                  ChannelFactory::create(bus),
-                  ContactFactory::create()))
-{
 }
 
 /**
@@ -502,14 +423,14 @@ AccountManager::~AccountManager()
 }
 
 /**
- * Get the account factory used by this manager.
+ * Return the account factory used by this manager.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return Read-only pointer to the account factory.
  */
 AccountFactoryConstPtr AccountManager::accountFactory() const
 {
@@ -517,14 +438,14 @@ AccountFactoryConstPtr AccountManager::accountFactory() const
 }
 
 /**
- * Get the connection factory used by this manager.
+ * Return the connection factory used by this manager.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return Read-only pointer to the connection factory.
  */
 ConnectionFactoryConstPtr AccountManager::connectionFactory() const
 {
@@ -532,14 +453,14 @@ ConnectionFactoryConstPtr AccountManager::connectionFactory() const
 }
 
 /**
- * Get the channel factory used by this manager.
+ * Return the channel factory used by this manager.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return Read-only pointer to the channel factory.
  */
 ChannelFactoryConstPtr AccountManager::channelFactory() const
 {
@@ -547,14 +468,14 @@ ChannelFactoryConstPtr AccountManager::channelFactory() const
 }
 
 /**
- * Get the contact factory used by this manager.
+ * Return the contact factory used by this manager.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return Read-only pointer to the contact factory.
  */
 ContactFactoryConstPtr AccountManager::contactFactory() const
 {
@@ -562,103 +483,13 @@ ContactFactoryConstPtr AccountManager::contactFactory() const
 }
 
 /**
- * Return a list of object paths for all valid accounts.
+ * Return a list containing all accounts.
  *
- * \deprecated Use validAccountsSet() instead.
+ * This method requires AccountManager::FeatureCore to be enabled.
  *
- * \return A list of object paths.
+ * \return A list containing all accounts.
  */
-QStringList AccountManager::validAccountPaths() const
-{
-    QStringList ret;
-    foreach (const AccountPtr &account, mPriv->accounts) {
-        if (account->isValid()) {
-            ret << account->objectPath();
-        }
-    }
-    return ret;
-}
-
-/**
- * Return a list of object paths for all invalid accounts.
- *
- * \deprecated Use invalidAccountsSet() instead.
- *
- * \return A list of object paths.
- */
-QStringList AccountManager::invalidAccountPaths() const
-{
-    QStringList ret;
-    foreach (const AccountPtr &account, mPriv->accounts) {
-        if (!account->isValid()) {
-            ret << account->objectPath();
-        }
-    }
-    return ret;
-}
-
-/**
- * Return a list of object paths for all accounts.
- *
- * \deprecated Use allAccounts() instead.
- *
- * \return A list of object paths.
- */
-QStringList AccountManager::allAccountPaths() const
-{
-    QStringList ret;
-    foreach (const AccountPtr &account, mPriv->accounts) {
-        ret << account->objectPath();
-    }
-    return ret;
-}
-
-/**
- * Return a list of AccountPtr objects for all valid accounts.
- *
- * \deprecated Use validAccountsSet() instead.
- *
- * \return A list of AccountPtr objects.
- * \sa invalidAccounts(), allAccounts(), accountsForPaths()
- */
-QList<AccountPtr> AccountManager::validAccounts()
-{
-    QList<AccountPtr> ret;
-    foreach (const AccountPtr &account, mPriv->accounts) {
-        if (account->isValid()) {
-            ret << account;
-        }
-    }
-    return ret;
-}
-
-/**
- * Return a list of AccountPtr objects for all invalid accounts.
- *
- * \deprecated Use invalidAccountsSet() instead.
- *
- * \return A list of AccountPtr objects.
- * \sa validAccounts(), allAccounts(), accountsForPaths()
- */
-QList<AccountPtr> AccountManager::invalidAccounts()
-{
-    QList<AccountPtr> ret;
-    foreach (const AccountPtr &account, mPriv->accounts) {
-        if (!account->isValid()) {
-            ret << account;
-        }
-    }
-    return ret;
-}
-
-/**
- * Return a list of AccountPtr objects for all accounts.
- *
- * \return A list of AccountPtr objects.
- * \sa validAccounts(), invalidAccounts(), accountsForPaths()
- */
-/* FIXME (API-BREAK) Add const qualifier */
-QList<AccountPtr> AccountManager::allAccounts()
+QList<AccountPtr> AccountManager::allAccounts() const
 {
     QList<AccountPtr> ret;
     foreach (const AccountPtr &account, mPriv->accounts) {
@@ -670,9 +501,11 @@ QList<AccountPtr> AccountManager::allAccounts()
 /**
  * Return a set of accounts containing all valid accounts.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all valid accounts.
  */
-AccountSetPtr AccountManager::validAccountsSet() const
+AccountSetPtr AccountManager::validAccounts() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("valid"), true);
@@ -682,9 +515,11 @@ AccountSetPtr AccountManager::validAccountsSet() const
 /**
  * Return a set of accounts containing all invalid accounts.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all invalid accounts.
  */
-AccountSetPtr AccountManager::invalidAccountsSet() const
+AccountSetPtr AccountManager::invalidAccounts() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("valid"), false);
@@ -694,9 +529,11 @@ AccountSetPtr AccountManager::invalidAccountsSet() const
 /**
  * Return a set of accounts containing all enabled accounts.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all enabled accounts.
  */
-AccountSetPtr AccountManager::enabledAccountsSet() const
+AccountSetPtr AccountManager::enabledAccounts() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("enabled"), true);
@@ -706,9 +543,11 @@ AccountSetPtr AccountManager::enabledAccountsSet() const
 /**
  * Return a set of accounts containing all disabled accounts.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all disabled accounts.
  */
-AccountSetPtr AccountManager::disabledAccountsSet() const
+AccountSetPtr AccountManager::disabledAccounts() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("enabled"), false);
@@ -718,9 +557,11 @@ AccountSetPtr AccountManager::disabledAccountsSet() const
 /**
  * Return a set of accounts containing all online accounts.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all online accounts.
  */
-AccountSetPtr AccountManager::onlineAccountsSet() const
+AccountSetPtr AccountManager::onlineAccounts() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("online"), true);
@@ -730,9 +571,11 @@ AccountSetPtr AccountManager::onlineAccountsSet() const
 /**
  * Return a set of accounts containing all offline accounts.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all offline accounts.
  */
-AccountSetPtr AccountManager::offlineAccountsSet() const
+AccountSetPtr AccountManager::offlineAccounts() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("online"), false);
@@ -746,10 +589,12 @@ AccountSetPtr AccountManager::offlineAccountsSet() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all accounts that support text chats by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::textChatAccountsSet() const
+AccountSetPtr AccountManager::textChatAccounts() const
 {
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
@@ -769,9 +614,11 @@ AccountSetPtr AccountManager::textChatAccountsSet() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all accounts that support text chat rooms.
  */
-AccountSetPtr AccountManager::textChatRoomAccountsSet() const
+AccountSetPtr AccountManager::textChatroomAccounts() const
 {
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
@@ -785,16 +632,18 @@ AccountSetPtr AccountManager::textChatRoomAccountsSet() const
 }
 
 /**
- * Return a set of accounts containing all accounts that support media calls by
- * providing a contact identifier.
+ * Return a set of accounts containing all accounts that support media calls (using the
+ * StreamedMedia interface) by providing a contact identifier.
  *
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * \return A set of accounts containing all accounts that support media calls by
- *         providing a contact identifier.
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
+ * \return A set of accounts containing all accounts that support media calls (using the
+ *         StreamedMedia interface) by providing a contact identifier.
  */
-AccountSetPtr AccountManager::mediaCallAccountsSet() const
+AccountSetPtr AccountManager::streamedMediaCallAccounts() const
 {
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
@@ -808,16 +657,18 @@ AccountSetPtr AccountManager::mediaCallAccountsSet() const
 }
 
 /**
- * Return a set of accounts containing all accounts that support audio calls by
- * providing a contact identifier.
+ * Return a set of accounts containing all accounts that support audio calls (using the
+ * StreamedMedia interface) by providing a contact identifier.
  *
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * \return A set of accounts containing all accounts that support audio calls by
- *         providing a contact identifier.
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
+ * \return A set of accounts containing all accounts that support audio calls (using the
+ *         StreamedMedia interface) by providing a contact identifier.
  */
-AccountSetPtr AccountManager::audioCallAccountsSet() const
+AccountSetPtr AccountManager::streamedMediaAudioCallAccounts() const
 {
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
@@ -831,16 +682,18 @@ AccountSetPtr AccountManager::audioCallAccountsSet() const
 }
 
 /**
- * Return a set of accounts containing all accounts that support video calls by
- * providing a contact identifier.
+ * Return a set of accounts containing all accounts that support video calls (using the
+ * StreamedMedia interface) by providing a contact identifier.
  *
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * \return A set of accounts containing all accounts that support video calls by
- *         providing a contact identifier.
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
+ * \return A set of accounts containing all accounts that support video calls (using the
+ *         StreamedMedia interface) by providing a contact identifier.
  */
-AccountSetPtr AccountManager::videoCallAccountsSet(bool withAudio) const
+AccountSetPtr AccountManager::streamedMediaVideoCallAccounts() const
 {
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
@@ -848,15 +701,34 @@ AccountSetPtr AccountManager::videoCallAccountsSet(bool withAudio) const
         return filterAccounts(QList<AccountFilterConstPtr>());
     }
 
-    RequestableChannelClassSpec rccSpec;
-    if (withAudio) {
-        rccSpec = RequestableChannelClassSpec::streamedMediaVideoCallWithAudio();
-    } else {
-        rccSpec = RequestableChannelClassSpec::streamedMediaVideoCall();
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->addRequestableChannelClassSubset(RequestableChannelClassSpec::streamedMediaVideoCall());
+    return filterAccounts(filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that support video calls with audio (using the
+ * StreamedMedia interface) by providing a contact identifier.
+ *
+ * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
+ * ready.
+ *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
+ * \return A set of accounts containing all accounts that support video calls with audio (using the
+ *         StreamedMedia interface) by providing a contact identifier.
+ */
+AccountSetPtr AccountManager::streamedMediaVideoCallWithAudioAccounts() const
+{
+    if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
+        warning() << "Account filtering by capabilities can only be used with an AccountFactory"
+            << "which makes Account::FeatureCapabilities ready";
+        return filterAccounts(QList<AccountFilterConstPtr>());
     }
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
-    filter->addRequestableChannelClassSubset(rccSpec);
+    filter->addRequestableChannelClassSubset(
+            RequestableChannelClassSpec::streamedMediaVideoCallWithAudio());
     return filterAccounts(filter);
 }
 
@@ -867,10 +739,12 @@ AccountSetPtr AccountManager::videoCallAccountsSet(bool withAudio) const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \return A set of accounts containing all accounts that support file transfers by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::fileTransferAccountsSet() const
+AccountSetPtr AccountManager::fileTransferAccounts() const
 {
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
@@ -886,6 +760,8 @@ AccountSetPtr AccountManager::fileTransferAccountsSet() const
 /**
  * Return a set of accounts containing all accounts for the given \a
  * protocolName.
+ *
+ * This method requires AccountManager::FeatureCore to be enabled.
  *
  * \param protocolName The name of the protocol used to filter accounts.
  * \return A set of accounts containing all accounts for the given \a
@@ -913,7 +789,9 @@ AccountSetPtr AccountManager::accountsByProtocol(
  *
  * See AccountSet documentation for more details.
  *
- * \param filter The desired filter
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
+ * \param filter The desired filter.
  * \return A set of accounts containing all accounts that match the given \a
  *         filter criteria.
  */
@@ -926,9 +804,14 @@ AccountSetPtr AccountManager::filterAccounts(const AccountFilterConstPtr &filter
  * Return a set of accounts containing all accounts that match the given \a
  * filters criteria.
  *
+ * For AccountCapabilityFilter filtering, an AccountFactory which makes
+ * Account::FeatureCapabilities ready must be used.
+ *
  * See AccountSet documentation for more details.
  *
- * \param filters The desired filters
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
+ * \param filters The desired filters.
  * \return A set of accounts containing all accounts that match the given \a
  *         filters criteria.
  */
@@ -956,8 +839,8 @@ AccountSetPtr AccountManager::filterAccounts(const QList<AccountFilterConstPtr> 
  *
  * void MyClass::init()
  * {
- *     am = AccountManager::create();
- *     connect(am->becomeReady(),
+ *     mAM = AccountManager::create();
+ *     connect(mAM->becomeReady(),
  *             SIGNAL(finished(Tp::PendingOperation*)),
  *             SLOT(onAccountManagerReady(Tp::PendingOperation*)));
  * }
@@ -973,7 +856,7 @@ AccountSetPtr AccountManager::filterAccounts(const QList<AccountFilterConstPtr> 
  *     QVariantMap filter;
  *     filter.insert(QLatin1String("protocolName"), QLatin1String("jabber"));
  *     filter.insert(QLatin1String("enabled"), true);
- *     filteredAccountSet = am->filterAccounts(filter);
+ *     filteredAccountSet = mAM->filterAccounts(filter);
  *     // connect to AccountSet::accountAdded/accountRemoved signals
  *     QList<AccountPtr> accounts = filteredAccountSet->accounts();
  *     // do something with accounts
@@ -983,7 +866,9 @@ AccountSetPtr AccountManager::filterAccounts(const QList<AccountFilterConstPtr> 
  *
  * See AccountSet documentation for more details.
  *
- * \param filter The desired filter
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
+ * \param filter The desired filter.
  * \return A set of accounts containing all accounts that match the given \a
  *         filter criteria.
  */
@@ -1000,16 +885,16 @@ AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
 }
 
 /**
- * Return an AccountPtr object for the given \a path.
+ * Return the account for the given \a path.
  *
  * This method requires AccountManager::FeatureCore to be enabled.
  *
  * \param path The account object path.
  * \return An AccountPtr object pointing to the Account object for the given
- *         \a path, or a null AccountPtr if \a path is invalid.
- * \sa validAccounts(), invalidAccounts(), accountsForPaths()
+ *         \a path, or a null AccountPtr object if \a path is invalid.
+ * \sa allAccounts(), accountsForPaths()
  */
-AccountPtr AccountManager::accountForPath(const QString &path)
+AccountPtr AccountManager::accountForPath(const QString &path) const
 {
     if (!isReady(FeatureCore)) {
         return AccountPtr();
@@ -1019,7 +904,7 @@ AccountPtr AccountManager::accountForPath(const QString &path)
 }
 
 /**
- * Return a list of AccountPtr objects for the given \a paths.
+ * Return a list of accounts for the given \a paths.
  *
  * The returned list will have one AccountPtr object for each given path. If
  * a given path is invalid the returned AccountPtr object will point to 0.
@@ -1028,10 +913,11 @@ AccountPtr AccountManager::accountForPath(const QString &path)
  * This method requires AccountManager::FeatureCore to be enabled.
  *
  * \param paths List of accounts object paths.
- * \return A list of AccountPtr objects.
- * \sa validAccounts(), invalidAccounts(), allAccounts(), accountForPath()
+ * \return A list of AccountPtr objects pointing to the Account objects for the given
+ *         \a paths. Null AccountPtr objects will be used as list elements for each invalid path.
+ * \sa allAccounts(), accountForPath()
  */
-QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
+QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths) const
 {
     if (!isReady(FeatureCore)) {
         return QList<AccountPtr>();
@@ -1049,7 +935,7 @@ QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
  * when calling createAccount().
  *
  * \return A list of fully qualified D-Bus property names,
- *         such as "org.freedesktop.Telepathy.Account.Enabled"
+ *         such as "org.freedesktop.Telepathy.Account.Enabled".
  * \sa createAccount()
  */
 QStringList AccountManager::supportedAccountProperties() const
@@ -1060,12 +946,12 @@ QStringList AccountManager::supportedAccountProperties() const
 /**
  * Create an account with the given parameters.
  *
- * The optional properties argument can be used to set any property listed in
+ * The optional \a properties argument can be used to set any property listed in
  * supportedAccountProperties() at the time the account is created.
  *
- * \param connectionManager Name of the connection manager to create the account
+ * \param connectionManager The name of the connection manager to create the account
  *                          for.
- * \param protocol Name of the protocol to create the account for.
+ * \param protocol The name of the protocol to create the account for.
  * \param displayName The account display name.
  * \param parameters The account parameters.
  * \param properties An optional map from fully qualified D-Bus property
@@ -1084,53 +970,6 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
 }
 
 /**
- * \fn void AccountManager::accountCreated(const QString &path)
- *
- * This signal is emitted when a new account is created.
- *
- * \deprecated Use newAccount() instead.
- *
- * \param path The object path of the newly created account.
- * \sa accountForPath()
- */
-
-/**
- * \fn void AccountManager::accountRemoved(const QString &path)
- *
- * This signal is emitted when an account gets removed.
- *
- * \deprecated Use Account::removed() instead.
- *
- * \param path The object path of the removed account.
- * \sa accountForPath()
- */
-
-/**
- * \fn void AccountManager::accountValidityChanged(const QString &path, bool valid)
- *
- * This signal is emitted when an account validity changes.
- *
- * \deprecated Use Account::validityChanged() instead.
- *
- * \param path The object path of the account in which the validity changed.
- * \param valid Whether the account is valid or not.
- * \sa accountForPath()
- */
-
-/**
- * \fn Client::DBus::PropertiesInterface *AccountManager::propertiesInterface() const
- *
- * Convenience function for getting a PropertiesInterface interface proxy object
- * for this account manager. The AccountManager interface relies on properties,
- * so this interface is always assumed to be present.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \return A pointer to the existing Client::DBus::PropertiesInterface object
- *         for this AccountManager object.
- */
-
-/**
  * Return the Client::AccountManagerInterface interface proxy object for this
  * account manager. This method is protected since the convenience methods
  * provided by this class should generally be used instead of calling D-Bus
@@ -1144,7 +983,6 @@ Client::AccountManagerInterface *AccountManager::baseInterface() const
     return mPriv->baseInterface;
 }
 
-/**** Private ****/
 void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -1199,8 +1037,6 @@ void AccountManager::onAccountReady(Tp::PendingOperation *op)
     mPriv->accounts.insert(path, account);
 
     if (isReady(FeatureCore)) {
-        /* FIXME (API-BREAK) Remove accountCreated signal */
-        emit accountCreated(path);
         emit newAccount(account);
     }
 
@@ -1211,23 +1047,11 @@ void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
         bool valid)
 {
     QString path = objectPath.path();
-    bool newAccount = false;
 
     if (!mPriv->incompleteAccounts.contains(path) &&
         !mPriv->accounts.contains(path)) {
-        newAccount = true;
-    }
-
-    if (newAccount) {
         debug() << "New account" << path;
         mPriv->addAccountForPath(path);
-    } else {
-        /* Only emit accountValidityChanged if both the AM and the account
-         * are ready */
-        if (isReady(FeatureCore) && mPriv->accounts.contains(path)) {
-            /* FIXME (API-BREAK) Remove accountValidityChanged signal */
-            emit accountValidityChanged(path, valid);
-        }
     }
 }
 
@@ -1239,15 +1063,11 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
     if (mPriv->accounts.contains(path)) {
         mPriv->accounts.remove(path);
 
-        /* Only emit accountRemoved if both the AM and the account are ready */
         if (isReady(FeatureCore)) {
-            /* FIXME (API-BREAK) Remove accountRemoved signal */
-            emit accountRemoved(path);
             debug() << "Account" << path << "removed";
         } else {
             debug() << "Account" << path << "removed while the AM "
-                "or the account itself were not completely introspected, "
-                "ignoring";
+                "was not completely introspected";
         }
     } else if (mPriv->incompleteAccounts.contains(path)) {
         mPriv->incompleteAccounts.remove(path);
@@ -1258,15 +1078,12 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
     }
 }
 
-void AccountManager::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(accountCreated(QString))) == 0) {
-        warning() << "Connecting to deprecated signal AccountManager::accountCreated(QString)";
-    } else if (qstrcmp(signalName, SIGNAL(accountRemoved(QString))) == 0) {
-        warning() << "Connecting to deprecated signal AccountManager::accountRemoved(QString)";
-    } else if (qstrcmp(signalName, SIGNAL(accountValidityChanged(QString, bool))) == 0) {
-        warning() << "Connecting to deprecated signal AccountManager::accountValidityChanged(QString,bool)";
-    }
-}
+/**
+ * \fn void AccountManager::newAccount(const Tp::AccountPtr &account)
+ *
+ * This signal is emitted when a new account is created.
+ *
+ * \param account The newly created account.
+ */
 
 } // Tp
