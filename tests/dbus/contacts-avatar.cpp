@@ -1,3 +1,4 @@
+#include <TelepathyQt4/AvatarData>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Contact>

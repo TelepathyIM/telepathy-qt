@@ -36,6 +36,7 @@
 namespace Tp
 {
 
+struct AvatarData;
 class ContactCapabilities;
 class ContactLocation;
 class ContactManager;

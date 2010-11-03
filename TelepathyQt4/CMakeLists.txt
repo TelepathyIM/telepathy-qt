@@ -119,6 +119,8 @@ set(telepathy_qt4_HEADERS
     AccountPropertyFilter
     AccountSet
     account-set.h
+    AvatarData
+    avatar-data.h
     CapabilitiesBase
     capabilities-base.h
     Channel

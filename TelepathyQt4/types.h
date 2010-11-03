@@ -128,16 +128,6 @@ public:
         : SharedPtr<MethodInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8> >(o) { }
 };
 
-class AvatarData
-{
-public:
-    inline AvatarData(const QString &fileName, const QString &mimeType):
-        fileName(fileName), mimeType(mimeType) {}
-    inline AvatarData() {}
-    QString fileName;
-    QString mimeType;
-};
-
 } // Tp
 
 #endif
