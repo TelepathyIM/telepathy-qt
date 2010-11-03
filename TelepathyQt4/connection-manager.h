@@ -49,7 +49,7 @@ class PendingStringList;
 class ProtocolParameter;
 class ProtocolInfo;
 
-typedef QList<ProtocolParameter*> ProtocolParameterList;
+typedef QList<ProtocolParameter> ProtocolParameterList;
 typedef QList<ProtocolInfo*> ProtocolInfoList;
 
 class TELEPATHY_QT4_EXPORT ProtocolParameter
@@ -59,7 +59,10 @@ public:
                       const QDBusSignature &dbusSignature,
                       QVariant defaultValue,
                       ConnMgrParamFlag flags);
+    ProtocolParameter(const ProtocolParameter &other);
     ~ProtocolParameter();
+
+    ProtocolParameter &operator=(const ProtocolParameter &other);
 
     QString name() const;
     QDBusSignature dbusSignature() const;
@@ -74,11 +77,9 @@ public:
     bool operator==(const QString &name) const;
 
 private:
-    Q_DISABLE_COPY(ProtocolParameter);
-
     struct Private;
     friend struct Private;
-    Private *mPriv;
+    QSharedDataPointer<Private> mPriv;
 };
 
 class TELEPATHY_QT4_EXPORT ProtocolInfo
@@ -90,7 +91,7 @@ public:
 
     QString name() const;
 
-    const ProtocolParameterList &parameters() const;
+    ProtocolParameterList parameters() const;
     bool hasParameter(const QString &name) const;
 
     bool canRegister() const;

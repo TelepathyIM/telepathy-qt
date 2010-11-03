@@ -110,16 +110,16 @@ void TestCmBasics::testBasics()
 
     QCOMPARE(info->parameters().size(), 1);
 
-    ProtocolParameter *param = info->parameters().at(0);
-    QCOMPARE(param->name(), QLatin1String("account"));
-    QCOMPARE(static_cast<uint>(param->type()), static_cast<uint>(QVariant::String));
-    QCOMPARE(param->defaultValue().isNull(), true);
-    QCOMPARE(param->dbusSignature().signature(), QLatin1String("s"));
-    QCOMPARE(param->isRequired(), true);
-    QCOMPARE(param->isRequiredForRegistration(), true); // though it can't register!
-    QCOMPARE(param->isSecret(), false);
+    ProtocolParameter param = info->parameters().at(0);
+    QCOMPARE(param.name(), QLatin1String("account"));
+    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(param.defaultValue().isNull(), true);
+    QCOMPARE(param.dbusSignature().signature(), QLatin1String("s"));
+    QCOMPARE(param.isRequired(), true);
+    QCOMPARE(param.isRequiredForRegistration(), true); // though it can't register!
+    QCOMPARE(param.isSecret(), false);
 
-    QVERIFY(*param == QLatin1String("account"));
+    QVERIFY(param == QLatin1String("account"));
 
     QCOMPARE(info->canRegister(), false);
 
@@ -168,16 +168,16 @@ void TestCmBasics::testLegacy()
 
     QCOMPARE(info->parameters().size(), 1);
 
-    ProtocolParameter *param = info->parameters().at(0);
-    QCOMPARE(param->name(), QLatin1String("account"));
-    QCOMPARE(static_cast<uint>(param->type()), static_cast<uint>(QVariant::String));
-    QCOMPARE(param->defaultValue().isNull(), true);
-    QCOMPARE(param->dbusSignature().signature(), QLatin1String("s"));
-    QCOMPARE(param->isRequired(), true);
-    QCOMPARE(param->isRequiredForRegistration(), true);
-    QCOMPARE(param->isSecret(), false);
+    ProtocolParameter param = info->parameters().at(0);
+    QCOMPARE(param.name(), QLatin1String("account"));
+    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(param.defaultValue().isNull(), true);
+    QCOMPARE(param.dbusSignature().signature(), QLatin1String("s"));
+    QCOMPARE(param.isRequired(), true);
+    QCOMPARE(param.isRequiredForRegistration(), true);
+    QCOMPARE(param.isSecret(), false);
 
-    QVERIFY(*param == QLatin1String("account"));
+    QVERIFY(param == QLatin1String("account"));
 
     QCOMPARE(info->canRegister(), false);
 

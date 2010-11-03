@@ -45,7 +45,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ProtocolParameter::Private
+struct TELEPATHY_QT4_NO_EXPORT ProtocolParameter::Private : public QSharedData
 {
     Private(const QString &name, const QDBusSignature &dbusSignature, QVariant::Type type,
             const QVariant &defaultValue, ConnMgrParamFlag flags)
@@ -69,9 +69,19 @@ ProtocolParameter::ProtocolParameter(const QString &name,
 {
 }
 
+ProtocolParameter::ProtocolParameter(const ProtocolParameter &other)
+    : mPriv(other.mPriv)
+{
+}
+
 ProtocolParameter::~ProtocolParameter()
 {
-    delete mPriv;
+}
+
+ProtocolParameter &ProtocolParameter::operator=(const ProtocolParameter &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
 }
 
 QString ProtocolParameter::name() const
@@ -161,10 +171,6 @@ ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
  */
 ProtocolInfo::~ProtocolInfo()
 {
-    foreach (ProtocolParameter *param, mPriv->params) {
-        delete param;
-    }
-
     delete mPriv;
 }
 
@@ -200,8 +206,12 @@ QString ProtocolInfo::name() const
  *
  * \return A list of parameters.
  */
-const ProtocolParameterList &ProtocolInfo::parameters() const
+ProtocolParameterList ProtocolInfo::parameters() const
 {
+    if (!isValid()) {
+        return ProtocolParameterList();
+    }
+
     return mPriv->params;
 }
 
@@ -214,8 +224,8 @@ const ProtocolParameterList &ProtocolInfo::parameters() const
  */
 bool ProtocolInfo::hasParameter(const QString &name) const
 {
-    foreach (ProtocolParameter *param, mPriv->params) {
-        if (param->name() == name) {
+    foreach (const ProtocolParameter &param, mPriv->params) {
+        if (param.name() == name) {
             return true;
         }
     }
@@ -314,11 +324,10 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
         flags |= ConnMgrParamFlagSecret;
     }
 
-    ProtocolParameter *param = new ProtocolParameter(spec.name,
+    ProtocolParameter param(spec.name,
             QDBusSignature(spec.signature),
             defaultValue,
             (ConnMgrParamFlag) flags);
-
     mPriv->params.append(param);
 }
 
@@ -657,19 +666,6 @@ bool ConnectionManager::Private::parseConfigFile()
         info->setEnglishName(f.englishName(protocol));
         info->setIconName(f.iconName(protocol));
     }
-
-#if 0
-    foreach (ProtocolInfo *info, protocols) {
-        qDebug() << "protocol name   :" << info->name();
-        qDebug() << "protocol cn name:" << info->cmName();
-        foreach (ProtocolParameter *param, info->parameters()) {
-            qDebug() << "\tparam name:       " << param->name();
-            qDebug() << "\tparam is required:" << param->isRequired();
-            qDebug() << "\tparam is secret:  " << param->isSecret();
-            qDebug() << "\tparam value:      " << param->defaultValue();
-        }
-    }
-#endif
 
     return true;
 }
@@ -1074,19 +1070,6 @@ void ConnectionManager::gotParametersLegacy(QDBusPendingCallWatcher *watcher)
             // we could not retrieve the params for any protocol, fail core.
             mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
         }
-
-#if 0
-        foreach (ProtocolInfo *info, mPriv->protocols) {
-            qDebug() << "protocol name   :" << info->name();
-            qDebug() << "protocol cn name:" << info->cmName();
-            foreach (ProtocolParameter *param, info->parameters()) {
-                qDebug() << "\tparam name:       " << param->name();
-                qDebug() << "\tparam is required:" << param->isRequired();
-                qDebug() << "\tparam is secret:  " << param->isSecret();
-                qDebug() << "\tparam value:      " << param->defaultValue();
-            }
-        }
-#endif
     }
 
     watcher->deleteLater();

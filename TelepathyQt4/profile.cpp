@@ -576,12 +576,12 @@ Profile::Profile(const QString &serviceName, const QString &cmName,
     mPriv->data.cmName = cmName;
     mPriv->data.protocolName = protocolName;
 
-    foreach (const ProtocolParameter *protocolParam, protocolInfo->parameters()) {
-        if (!protocolParam->defaultValue().isNull()) {
+    foreach (const ProtocolParameter &protocolParam, protocolInfo->parameters()) {
+        if (!protocolParam.defaultValue().isNull()) {
             mPriv->data.parameters.append(Profile::Parameter(
-                        protocolParam->name(),
-                        protocolParam->dbusSignature(),
-                        protocolParam->defaultValue(),
+                        protocolParam.name(),
+                        protocolParam.dbusSignature(),
+                        protocolParam.defaultValue(),
                         QString(), // label
                         false));    // mandatory
         }
