@@ -150,10 +150,10 @@ void Sender::onContactPresenceChanged()
         return;
     }
 
-    if (mContact->presenceType() != ConnectionPresenceTypeUnset &&
-        mContact->presenceType() != ConnectionPresenceTypeOffline &&
-        mContact->presenceType() != ConnectionPresenceTypeUnknown &&
-        mContact->presenceType() != ConnectionPresenceTypeError) {
+    if (mContact->presence().type() != ConnectionPresenceTypeUnset &&
+        mContact->presence().type() != ConnectionPresenceTypeOffline &&
+        mContact->presence().type() != ConnectionPresenceTypeUnknown &&
+        mContact->presence().type() != ConnectionPresenceTypeError) {
         qDebug() << "Contact online!";
 
         // FIXME this is a workaround as we don't support contact capabilities yet

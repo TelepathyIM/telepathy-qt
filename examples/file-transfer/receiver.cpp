@@ -112,9 +112,14 @@ void Receiver::onConnectionConnected(PendingOperation *op)
         QDBusVariant(uint(1));
     HandlerCapabilities capabilities;
     capabilities.channelClasses << Tp::ChannelClass(filter);
-    mConn->contactCapabilitiesInterface()->UpdateCapabilities(HandlerCapabilitiesList() << capabilities);
 
-    connect(mConn->requestsInterface(),
+    Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface =
+        mConn->optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>();
+    contactCapabilitiesInterface->UpdateCapabilities(HandlerCapabilitiesList() << capabilities);
+
+    Client::ConnectionInterfaceRequestsInterface *requestsInterface =
+        mConn->optionalInterface<Client::ConnectionInterfaceRequestsInterface>();
+    connect(requestsInterface,
             SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
             SLOT(onNewChannels(const Tp::ChannelDetailsList&)));
 }
