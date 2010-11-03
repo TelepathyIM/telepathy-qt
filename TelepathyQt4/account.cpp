@@ -141,7 +141,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
     bool usingConnectionCaps;
-    ConnectionCapabilities *customCaps;
+    ConnectionCapabilities customCaps;
 };
 
 Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
@@ -163,8 +163,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       protocolInfo(0),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified),
-      usingConnectionCaps(false),
-      customCaps(0)
+      usingConnectionCaps(false)
 {
     automaticPresence.type = currentPresence.type = requestedPresence.type
         = ConnectionPresenceTypeUnknown;
@@ -252,7 +251,6 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
 
 Account::Private::~Private()
 {
-    delete customCaps;
 }
 
 bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
@@ -291,12 +289,8 @@ bool Account::Private::useConferenceDRAFT(const char *channelType,
         HandleType targetHandleType) const
 {
     // default to Conference
-    ConnectionCapabilities *caps = parent->capabilities();
-    if (!caps) {
-        return false;
-    }
-
-    RequestableChannelClassSpecList rccSpecs = caps->allClassSpecs();
+    ConnectionCapabilities caps = parent->capabilities();
+    RequestableChannelClassSpecList rccSpecs = caps.allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == QLatin1String(channelType)) {
             if (targetHandleType != HandleTypeNone) {
@@ -1082,17 +1076,15 @@ ProtocolInfo *Account::protocolInfo() const
  * to return the subtraction of the protocolInfo() capabilities and the profile unsupported
  * capabilities.
  *
- * \return The capabilities for this account or 0 if FeatureCapabilities is not
- *         ready or the capabilities are unknown (e.g. the connection is offline and protocolInfo()
- *         returns 0).
+ * \return The capabilities for this account.
  */
-ConnectionCapabilities *Account::capabilities() const
+ConnectionCapabilities Account::capabilities() const
 {
     if (!isReady(FeatureCapabilities)) {
         warning() << "Trying to retrieve capabilities from account, but "
                      "FeatureCapabilities was not requested. "
                      "Use becomeReady(FeatureCapabilities)";
-        return 0;
+        return ConnectionCapabilities();
     }
 
     // if the connection is online and ready use its caps
@@ -1110,18 +1102,14 @@ ConnectionCapabilities *Account::capabilities() const
     // serviceName() is not present and protocolInfo is NULL.
     ProtocolInfo *pi = protocolInfo();
     if (!pi) {
-        return NULL;
+        return ConnectionCapabilities();
     }
     ProfilePtr pr = profile();
     if (!pr) {
         return pi->capabilities();
     }
 
-    if (mPriv->customCaps) {
-        return mPriv->customCaps;
-    }
-
-    RequestableChannelClassSpecList piClassSpecs = pi->capabilities()->allClassSpecs();
+    RequestableChannelClassSpecList piClassSpecs = pi->capabilities().allClassSpecs();
     RequestableChannelClassSpecList prUnsupportedClassSpecs = pr->unsupportedChannelClassSpecs();
     RequestableChannelClassSpecList classSpecs;
     bool unsupported;
@@ -1152,7 +1140,7 @@ ConnectionCapabilities *Account::capabilities() const
         } else {
         }
     }
-    mPriv->customCaps = new ConnectionCapabilities(classSpecs);
+    mPriv->customCaps = ConnectionCapabilities(classSpecs);
     return mPriv->customCaps;
 }
 
@@ -2539,14 +2527,6 @@ void Account::Private::updateProperties(const QVariantMap &props)
     bool profileChanged = false;
     if (props.contains(QLatin1String("Service")) &&
         serviceName != qdbus_cast<QString>(props[QLatin1String("Service")])) {
-        /* The service name, which means the profile changed, even if we are using the connection
-         * caps, whenever the connection goes offline (if ever) we need to recompute a new caps for
-         * the new profile */
-        if (customCaps) {
-            delete customCaps;
-            customCaps = 0;
-        }
-
         serviceNameChanged = true;
         serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
         debug() << " Service Name:" << parent->serviceName();

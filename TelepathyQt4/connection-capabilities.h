@@ -58,10 +58,6 @@ private:
 
     ConnectionCapabilities(const RequestableChannelClassList &rccs);
     ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs);
-
-    struct Private;
-    friend struct Private;
-    QSharedDataPointer<Private> mPriv;
 };
 
 } // Tp

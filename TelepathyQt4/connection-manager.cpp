@@ -124,20 +124,14 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private
     Private(const QString &cmName, const QString &name)
         : cmName(cmName),
           name(name),
-          caps(new ConnectionCapabilities()),
           iconName(QString(QLatin1String("im-%1")).arg(name))
     {
-    }
-
-    ~Private()
-    {
-        delete caps;
     }
 
     QString cmName;
     QString name;
     ProtocolParameterList params;
-    ConnectionCapabilities *caps;
+    ConnectionCapabilities caps;
     QString vcardField;
     QString englishName;
     QString iconName;
@@ -250,7 +244,7 @@ bool ProtocolInfo::canRegister() const
  * @return An object representing the capabilities expected to be available from
  *         a connection to this protocol.
  */
-ConnectionCapabilities *ProtocolInfo::capabilities() const
+ConnectionCapabilities ProtocolInfo::capabilities() const
 {
     return mPriv->caps;
 }
@@ -346,7 +340,7 @@ void ProtocolInfo::setIconName(const QString &iconName)
 void ProtocolInfo::setRequestableChannelClasses(
         const RequestableChannelClassList &caps)
 {
-    mPriv->caps->updateRequestableChannelClasses(caps);
+    mPriv->caps.updateRequestableChannelClasses(caps);
 }
 
 ConnectionManager::Private::PendingNames::PendingNames(const QDBusConnection &bus)

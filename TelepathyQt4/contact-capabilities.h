@@ -50,10 +50,6 @@ private:
             bool specificToContact);
     ContactCapabilities(const RequestableChannelClassSpecList &rccSpecs,
             bool specificToContact);
-
-    struct Private;
-    friend struct Private;
-    QSharedDataPointer<Private> mPriv;
 };
 
 } // Tp

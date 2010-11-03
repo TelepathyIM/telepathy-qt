@@ -95,7 +95,7 @@ public:
 
     bool canRegister() const;
 
-    ConnectionCapabilities *capabilities() const;
+    ConnectionCapabilities capabilities() const;
 
     QString vcardField() const;
 

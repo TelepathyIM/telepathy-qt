@@ -45,26 +45,19 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
         : parent(parent),
           manager(manager),
           handle(handle),
+          caps(manager->supportedFeatures().contains(Contact::FeatureCapabilities) ?
+                   ContactCapabilities(true) :  ContactCapabilities(
+                           manager->connection()->capabilities().allClassSpecs(), false)),
           isAvatarTokenKnown(false),
           subscriptionState(PresenceStateNo),
           publishState(PresenceStateNo),
           blocked(false)
     {
-        if (manager->supportedFeatures().contains(Contact::FeatureCapabilities)) {
-            caps = new ContactCapabilities(true);
-        } else {
-            // use the connection capabilities
-            caps = new ContactCapabilities(
-                    manager->connection()->capabilities()->allClassSpecs(),
-                    false);
-        }
-
         location = new ContactLocation();
     }
 
     ~Private()
     {
-        delete caps;
         delete location;
     }
 
@@ -79,7 +72,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 
     QString alias;
     Presence presence;
-    ContactCapabilities *caps;
+    ContactCapabilities caps;
     ContactLocation *location;
     InfoFields info;
 
@@ -233,28 +226,28 @@ Presence Contact::presence() const
 
 /**
  * Return the capabilities for this contact.
+ *
  * User interfaces can use this information to show or hide UI components.
  *
  * Change notification is advertised through capabilitiesChanged().
  *
- * If ContactManager::supportedFeatures contains Contact::FeatureCapabilities,
+ * If ContactManager::supportedFeatures() contains Contact::FeatureCapabilities,
  * the returned object will be a ContactCapabilities object, where
- * CapabilitiesBase::isSpecificToContact() will be true; if that feature
+ * CapabilitiesBase::isSpecificToContact() will be \c true; if that feature
  * isn't present, this returned object is the subset of
- * Contact::manager()::connection()->capabilities()
- * and CapabilitiesBase::>isSpecificToContact() will be false.
+ * Contact::manager()::connection()::capabilities()
+ * and CapabilitiesBase::isSpecificToContact() will be \c false.
  *
  * This method requires Contact::FeatureCapabilities to be enabled.
  *
- * @return An object representing the contact capabilities or 0 if
- *         FeatureCapabilities is not ready.
+ * @return An object representing the contact capabilities.
  */
-ContactCapabilities *Contact::capabilities() const
+ContactCapabilities Contact::capabilities() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureCapabilities)) {
         warning() << "Contact::capabilities() used on" << this
             << "for which FeatureCapabilities hasn't been requested - returning 0";
-        return 0;
+        return ContactCapabilities(false);
     }
 
     return mPriv->caps;
@@ -691,8 +684,8 @@ void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
 
     mPriv->actualFeatures.insert(FeatureCapabilities);
 
-    if (mPriv->caps->allClassSpecs().bareClasses() != caps) {
-        mPriv->caps->updateRequestableChannelClasses(caps);
+    if (mPriv->caps.allClassSpecs().bareClasses() != caps) {
+        mPriv->caps.updateRequestableChannelClasses(caps);
         emit capabilitiesChanged(mPriv->caps);
     }
 }

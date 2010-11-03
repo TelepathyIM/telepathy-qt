@@ -29,6 +29,7 @@
 #include <TelepathyQt4/_gen/cli-account.h>
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ChannelFactory>
@@ -79,7 +80,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
     Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
     Q_PROPERTY(ProtocolInfo* protocolInfo READ protocolInfo)
-    Q_PROPERTY(ConnectionCapabilities* capabilities READ capabilities NOTIFY capabilitiesChanged)
+    Q_PROPERTY(ConnectionCapabilities capabilities READ capabilities NOTIFY capabilitiesChanged)
     Q_PROPERTY(bool hasBeenOnline READ hasBeenOnline)
     Q_PROPERTY(bool connectsAutomatically READ connectsAutomatically NOTIFY connectsAutomaticallyPropertyChanged)
     // FIXME: (API/ABI break) Use Connection::Status
@@ -159,8 +160,7 @@ public:
     // FIXME: (API/ABI break) Use ProtocolInfoPtr
     ProtocolInfo *protocolInfo() const;
 
-    // FIXME: (API/ABI break) Use ConnectionCapabilitiesPtr
-    ConnectionCapabilities *capabilities() const;
+    ConnectionCapabilities capabilities() const;
 
     bool connectsAutomatically() const;
     PendingOperation *setConnectsAutomatically(bool value);
@@ -316,7 +316,7 @@ Q_SIGNALS:
     void normalizedNameChanged(const QString &normalizedName);
     void validityChanged(bool validity);
     void stateChanged(bool state);
-    void capabilitiesChanged(Tp::ConnectionCapabilities *capabilities);
+    void capabilitiesChanged(const Tp::ConnectionCapabilities &capabilities);
     void connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
     void firstOnline();
     void parametersChanged(const QVariantMap &parameters);

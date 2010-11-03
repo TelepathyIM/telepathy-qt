@@ -118,8 +118,7 @@ public:
     Presence presence() const;
 
     // TODO filter: the same as Account filtering by caps
-    // FIXME: (API/ABI break) Return ContactCapabilities
-    ContactCapabilities *capabilities() const;
+    ContactCapabilities capabilities() const;
 
     // TODO filter: is it available, how accurate, are they near me
     // FIXME: (API/ABI break) Return ContactLocation
@@ -165,8 +164,7 @@ Q_SIGNALS:
 
     void presenceChanged(const Tp::Presence &presence);
 
-    // FIXME: (API/ABI break) Use Tp::ContactCapabilities
-    void capabilitiesChanged(Tp::ContactCapabilities *caps);
+    void capabilitiesChanged(const Tp::ContactCapabilities &caps);
 
     // FIXME: (API/ABI break) Use Tp::ContactLocation
     void locationUpdated(Tp::ContactLocation *location);

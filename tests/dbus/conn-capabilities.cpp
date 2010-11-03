@@ -92,14 +92,13 @@ void TestConnCapabilities::testCapabilities()
 {
     // Before the connection is Ready, it doesn't guarantee support for anything but doesn't crash
     // either if we ask it for something
-    QVERIFY(mConn->capabilities() != 0);
-    QCOMPARE(mConn->capabilities()->textChats(), false);
-    QCOMPARE(mConn->capabilities()->textChatrooms(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaAudioCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaVideoCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaVideoCallsWithAudio(), false);
-    QCOMPARE(mConn->capabilities()->upgradingStreamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities().textChats(), false);
+    QCOMPARE(mConn->capabilities().textChatrooms(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaAudioCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaVideoCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(mConn->capabilities().upgradingStreamedMediaCalls(), false);
 
     QVERIFY(connect(mConn->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -109,13 +108,13 @@ void TestConnCapabilities::testCapabilities()
     QCOMPARE(mConn->status(), Connection::StatusConnected);
 
     // Now we should have the real information on what the connection supports
-    QCOMPARE(mConn->capabilities()->textChats(), true);
-    QCOMPARE(mConn->capabilities()->textChatrooms(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaAudioCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaVideoCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaVideoCallsWithAudio(), false);
-    QCOMPARE(mConn->capabilities()->upgradingStreamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities().textChats(), true);
+    QCOMPARE(mConn->capabilities().textChatrooms(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaAudioCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaVideoCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(mConn->capabilities().upgradingStreamedMediaCalls(), false);
 
     // Now, invalidate the connection by disconnecting it
     QVERIFY(connect(mConn.data(),
@@ -124,9 +123,7 @@ void TestConnCapabilities::testCapabilities()
                 SLOT(expectConnInvalidated())));
     mConn->requestDisconnect();
 
-    // Check that capabilities doesn't go NULL in the process of the connection going invalidated
     do {
-        QVERIFY(mConn->capabilities() != 0);
         mLoop->processEvents();
     } while (!mConnInvalidated);
 
@@ -134,13 +131,13 @@ void TestConnCapabilities::testCapabilities()
     QCOMPARE(mConn->status(), Connection::StatusDisconnected);
 
     // Check that no support for anything is again reported
-    QCOMPARE(mConn->capabilities()->textChats(), false);
-    QCOMPARE(mConn->capabilities()->textChatrooms(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaAudioCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaVideoCalls(), false);
-    QCOMPARE(mConn->capabilities()->streamedMediaVideoCallsWithAudio(), false);
-    QCOMPARE(mConn->capabilities()->upgradingStreamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities().textChats(), false);
+    QCOMPARE(mConn->capabilities().textChatrooms(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaAudioCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaVideoCalls(), false);
+    QCOMPARE(mConn->capabilities().streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(mConn->capabilities().upgradingStreamedMediaCalls(), false);
 }
 
 void TestConnCapabilities::cleanup()

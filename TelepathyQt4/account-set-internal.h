@@ -64,19 +64,17 @@ public:
 
     AccountPtr account() const { return mAccount; }
 
-    ConnectionCapabilities *capabilities() const;
-
 Q_SIGNALS:
     void accountRemoved(const Tp::AccountPtr &account);
     void accountPropertyChanged(const Tp::AccountPtr &account,
             const QString &propertyName);
     void accountCapabilitiesChanged(const Tp::AccountPtr &account,
-            Tp::ConnectionCapabilities *capabilities);
+            const Tp::ConnectionCapabilities &capabilities);
 
 private Q_SLOTS:
     void onAccountRemoved();
     void onAccountPropertyChanged(const QString &propertyName);
-    void onAccountCapalitiesChanged(Tp::ConnectionCapabilities *capabilities);
+    void onAccountCapalitiesChanged(const Tp::ConnectionCapabilities &capabilities);
 
 private:
     AccountPtr mAccount;

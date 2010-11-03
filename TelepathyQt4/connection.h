@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/_gen/cli-connection.h>
 
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
@@ -169,7 +170,7 @@ public:
 
     CurrencyAmount accountBalance() const;
 
-    ConnectionCapabilities *capabilities() const;
+    ConnectionCapabilities capabilities() const;
 
     PendingChannel *createChannel(const QVariantMap &request);
     PendingChannel *ensureChannel(const QVariantMap &request);

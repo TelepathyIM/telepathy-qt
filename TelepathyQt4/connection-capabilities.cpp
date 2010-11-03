@@ -29,10 +29,6 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ConnectionCapabilities::Private : public QSharedData
-{
-};
-
 /**
  * \class ConnectionCapabilities
  * \ingroup clientconn

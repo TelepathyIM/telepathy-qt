@@ -43,7 +43,7 @@ protected Q_SLOTS:
     void onNewAccount(const Tp::AccountPtr &);
     void onAccountServiceNameChanged(const QString &);
     void onAccountIconNameChanged(const QString &);
-    void onAccountCapabilitiesChanged(Tp::ConnectionCapabilities *);
+    void onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &);
     void onAvatarChanged(const Tp::Avatar &);
 
 private Q_SLOTS:
@@ -103,7 +103,7 @@ void TestAccountBasics::onAccountIconNameChanged(const QString &iconName)
     mLoop->exit(0);
 }
 
-void TestAccountBasics::onAccountCapabilitiesChanged(Tp::ConnectionCapabilities *caps)
+void TestAccountBasics::onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &caps)
 {
     mCapabilitiesChanged = true;
     mLoop->exit(0);
@@ -562,9 +562,8 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->isReady(Account::FeatureCapabilities), true);
 
     /* using protocol info */
-    ConnectionCapabilities *caps = acc->capabilities();
-    QVERIFY(caps != NULL);
-    QCOMPARE(caps->textChats(), true);
+    ConnectionCapabilities caps = acc->capabilities();
+    QCOMPARE(caps.textChats(), true);
 
     mServiceNameChanged = false;
     mServiceName = QString();
@@ -578,8 +577,8 @@ void TestAccountBasics::testBasics()
                     SIGNAL(iconNameChanged(const QString &)),
                     SLOT(onAccountIconNameChanged(const QString &))));
     QVERIFY(connect(acc.data(),
-                    SIGNAL(capabilitiesChanged(Tp::ConnectionCapabilities *)),
-                    SLOT(onAccountCapabilitiesChanged(Tp::ConnectionCapabilities *))));
+                    SIGNAL(capabilitiesChanged(const Tp::ConnectionCapabilities &)),
+                    SLOT(onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &))));
     QVERIFY(connect(acc->setServiceName(QLatin1String("test-profile")),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -595,8 +594,7 @@ void TestAccountBasics::testBasics()
 
     /* using merged protocol info caps and profile caps */
     caps = acc->capabilities();
-    QVERIFY(caps != NULL);
-    QCOMPARE(caps->textChats(), false);
+    QCOMPARE(caps.textChats(), false);
 
     Client::DBus::PropertiesInterface *accPropertiesInterface =
         acc->interface<Client::DBus::PropertiesInterface>();
@@ -638,13 +636,13 @@ void TestAccountBasics::testBasics()
 
     // using connection caps now
     caps = acc->capabilities();
-    QCOMPARE(caps->textChats(), true);
-    QCOMPARE(caps->textChatrooms(), false);
-    QCOMPARE(caps->streamedMediaCalls(), false);
-    QCOMPARE(caps->streamedMediaAudioCalls(), false);
-    QCOMPARE(caps->streamedMediaVideoCalls(), false);
-    QCOMPARE(caps->streamedMediaVideoCallsWithAudio(), false);
-    QCOMPARE(caps->upgradingStreamedMediaCalls(), false);
+    QCOMPARE(caps.textChats(), true);
+    QCOMPARE(caps.textChatrooms(), false);
+    QCOMPARE(caps.streamedMediaCalls(), false);
+    QCOMPARE(caps.streamedMediaAudioCalls(), false);
+    QCOMPARE(caps.streamedMediaVideoCalls(), false);
+    QCOMPARE(caps.streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(caps.upgradingStreamedMediaCalls(), false);
 
     // once the status change the capabilities will be updated
     mCapabilitiesChanged = false;
@@ -670,8 +668,7 @@ void TestAccountBasics::testBasics()
 
     /* back to using merged protocol info caps and profile caps */
     caps = acc->capabilities();
-    QVERIFY(caps != NULL);
-    QCOMPARE(caps->textChats(), false);
+    QCOMPARE(caps.textChats(), false);
 }
 
 void TestAccountBasics::cleanup()
