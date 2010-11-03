@@ -363,9 +363,9 @@ AccountManagerPtr AccountManager::create()
 AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
 {
     return AccountManagerPtr(new AccountManager(bus,
-                AccountFactory::create(QDBusConnection::sessionBus()),
-                ConnectionFactory::create(QDBusConnection::sessionBus()),
-                ChannelFactory::create(QDBusConnection::sessionBus()),
+                AccountFactory::create(bus),
+                ConnectionFactory::create(bus),
+                ChannelFactory::create(bus),
                 ContactFactory::create()));
 }
 
