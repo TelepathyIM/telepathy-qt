@@ -62,6 +62,10 @@ AccountPropertyFilter::~AccountPropertyFilter()
 bool AccountPropertyFilter::isValid() const
 {
     QVariantMap mFilter = filter();
+    if (mFilter.isEmpty()) {
+        return false;
+    }
+
     QVariantMap::const_iterator i = mFilter.constBegin();
     QVariantMap::const_iterator end = mFilter.constEnd();
     while (i != end) {
