@@ -51,16 +51,6 @@ public:
     bool contactSearchWithSpecificServer() const;
     bool contactSearchWithLimit() const;
 
-    TELEPATHY_QT4_DEPRECATED bool supportsTextChatrooms() const;
-
-    TELEPATHY_QT4_DEPRECATED bool supportsConferenceMediaCalls(bool withInitialInvitees = true) const;
-    TELEPATHY_QT4_DEPRECATED bool supportsConferenceTextChats(bool withInitialInvitees = true) const;
-    TELEPATHY_QT4_DEPRECATED bool supportsConferenceTextChatrooms(bool withInitialInvitees = true) const;
-
-    TELEPATHY_QT4_DEPRECATED bool supportsContactSearch();
-    TELEPATHY_QT4_DEPRECATED bool supportsContactSearchWithSpecificServer() const;
-    TELEPATHY_QT4_DEPRECATED bool supportsContactSearchWithLimit() const;
-
 private:
     friend class Account;
     friend class Connection;

@@ -566,7 +566,6 @@ void TestAccountBasics::testBasics()
     ConnectionCapabilities *caps = acc->capabilities();
     QVERIFY(caps != NULL);
     QCOMPARE(caps->textChats(), true);
-    QCOMPARE(caps->supportsTextChats(), true);
 
     mServiceNameChanged = false;
     mServiceName = QString();
@@ -599,7 +598,6 @@ void TestAccountBasics::testBasics()
     caps = acc->capabilities();
     QVERIFY(caps != NULL);
     QCOMPARE(caps->textChats(), false);
-    QCOMPARE(caps->supportsTextChats(), false);
 
     Client::DBus::PropertiesInterface *accPropertiesInterface =
         acc->interface<Client::DBus::PropertiesInterface>();
@@ -648,13 +646,6 @@ void TestAccountBasics::testBasics()
     QCOMPARE(caps->streamedMediaVideoCalls(), false);
     QCOMPARE(caps->streamedMediaVideoCallsWithAudio(), false);
     QCOMPARE(caps->upgradingStreamedMediaCalls(), false);
-    QCOMPARE(caps->supportsTextChats(), true);
-    QCOMPARE(caps->supportsTextChatrooms(), false);
-    QCOMPARE(caps->supportsMediaCalls(), false);
-    QCOMPARE(caps->supportsAudioCalls(), false);
-    QCOMPARE(caps->supportsVideoCalls(false), false);
-    QCOMPARE(caps->supportsVideoCalls(true), false);
-    QCOMPARE(caps->supportsUpgradingCalls(), false);
 
     // once the status change the capabilities will be updated
     mCapabilitiesChanged = false;
@@ -682,7 +673,6 @@ void TestAccountBasics::testBasics()
     caps = acc->capabilities();
     QVERIFY(caps != NULL);
     QCOMPARE(caps->textChats(), false);
-    QCOMPARE(caps->supportsTextChats(), false);
 }
 
 void TestAccountBasics::cleanup()
