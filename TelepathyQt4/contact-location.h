@@ -29,6 +29,7 @@
 #include <TelepathyQt4/Global>
 
 #include <QDateTime>
+#include <QSharedDataPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -39,9 +40,13 @@ class TELEPATHY_QT4_EXPORT ContactLocation
 {
 public:
     ContactLocation();
+    ContactLocation(const QVariantMap &location);
+    ContactLocation(const ContactLocation &other);
     virtual ~ContactLocation();
 
-    bool isValid() const;
+    bool isValid() const { return mPriv.constData() != 0; }
+
+    ContactLocation &operator=(const ContactLocation &other);
 
     QString countryCode() const;
     QString country() const;
@@ -70,16 +75,16 @@ public:
 
     QDateTime timestamp() const;
 
+    QVariantMap allDetails() const;
+
 private:
     friend class Contact;
 
-    QVariantMap data() const;
     void updateData(const QVariantMap &location);
 
     struct Private;
     friend struct Private;
-    // FIXME: (API/ABI break) Use QSharedDataPointer
-    Private *mPriv;
+    QSharedDataPointer<Private> mPriv;
 };
 
 } // Tp

@@ -705,7 +705,7 @@ void Contact::receiveLocation(const QVariantMap &location)
 
     mPriv->actualFeatures.insert(FeatureLocation);
 
-    if (mPriv->location->data() != location) {
+    if (mPriv->location->allDetails() != location) {
         mPriv->location->updateData(location);
         emit locationUpdated(mPriv->location);
     }
