@@ -30,6 +30,7 @@
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContactInfo>
 #include <TelepathyQt4/PendingVoid>
+#include <TelepathyQt4/Presence>
 #include <TelepathyQt4/ReferencedHandles>
 
 #include "TelepathyQt4/debug-internal.h"

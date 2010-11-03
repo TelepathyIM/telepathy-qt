@@ -21,6 +21,8 @@
 #include "roster-item.h"
 #include "_gen/roster-item.moc.hpp"
 
+#include <TelepathyQt4/Presence>
+
 using namespace Tp;
 
 RosterItem::RosterItem(const ContactPtr &contact,
