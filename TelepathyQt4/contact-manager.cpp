@@ -240,7 +240,7 @@ PendingOperation *ContactManager::addGroup(const QString &group)
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRosterGroups)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRosterGroups is not ready"), this);
@@ -277,7 +277,7 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRosterGroups)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRosterGroups is not ready"), this);
@@ -331,7 +331,7 @@ PendingOperation *ContactManager::addContactsToGroup(const QString &group,
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRosterGroups)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRosterGroups is not ready"), this);
@@ -362,7 +362,7 @@ PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRosterGroups)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRosterGroups is not ready"), this);
@@ -443,7 +443,7 @@ PendingOperation *ContactManager::requestPresenceSubscription(
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRoster)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRoster is not ready"), this);
@@ -541,7 +541,7 @@ PendingOperation *ContactManager::removePresenceSubscription(
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRoster)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRoster is not ready"), this);
@@ -609,7 +609,7 @@ PendingOperation *ContactManager::authorizePresencePublication(
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRoster)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRoster is not ready"), this);
@@ -702,7 +702,7 @@ PendingOperation *ContactManager::removePresencePublication(
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRoster)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRoster is not ready"), this);
@@ -733,7 +733,7 @@ PendingOperation *ContactManager::removeContacts(
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRoster)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRoster is not ready"), this);
@@ -746,19 +746,19 @@ PendingOperation *ContactManager::removeContacts(
 
     if (mPriv->storedChannel &&
         mPriv->storedChannel->groupCanRemoveContacts()) {
-        debug() << "Remove contacts from stored list";
+        debug() << "Removing contacts from stored list";
         return mPriv->storedChannel->groupRemoveContacts(contacts, message);
     }
 
     QList<PendingOperation*> operations;
 
     if (canRemovePresenceSubscription()) {
-        debug() << "Remove contacts from subscribe list";
+        debug() << "Removing contacts from subscribe list";
         operations << removePresenceSubscription(contacts, message);
     }
 
     if (canRemovePresencePublication()) {
-        debug() << "Remove contacts from publish list";
+        debug() << "Removing contacts from publish list";
         operations << removePresencePublication(contacts, message);
     }
 
@@ -799,7 +799,7 @@ PendingOperation *ContactManager::blockContacts(
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"), this);
+                QLatin1String("Connection is invalid"), this);
     } else if (!connection()->isReady(Connection::FeatureRoster)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureRoster is not ready"), this);
@@ -836,7 +836,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     if (!connection()->isValid()) {
         return new PendingContacts(this, handles, realFeatures, QStringList(),
                 satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"));
+                QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
         return new PendingContacts(this, handles, realFeatures, QStringList(),
                 satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
@@ -890,7 +890,7 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
     if (!connection()->isValid()) {
         return new PendingContacts(this, identifiers, features,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"));
+                QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
         return new PendingContacts(this, identifiers, features,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
@@ -907,7 +907,7 @@ PendingContacts *ContactManager::upgradeContacts(const QList<ContactPtr> &contac
     if (!connection()->isValid()) {
         return new PendingContacts(this, contacts, features,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("the Connection is invalid"));
+                QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
         return new PendingContacts(this, contacts, features,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
