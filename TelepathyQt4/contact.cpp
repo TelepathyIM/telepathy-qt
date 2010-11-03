@@ -53,12 +53,6 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
           publishState(PresenceStateNo),
           blocked(false)
     {
-        location = new ContactLocation();
-    }
-
-    ~Private()
-    {
-        delete location;
     }
 
     Contact *parent;
@@ -73,7 +67,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     QString alias;
     Presence presence;
     ContactCapabilities caps;
-    ContactLocation *location;
+    ContactLocation location;
     InfoFields info;
 
     bool isAvatarTokenKnown;
@@ -258,20 +252,17 @@ ContactCapabilities Contact::capabilities() const
  *
  * Change notification is advertised through locationUpdated().
  *
- * Note that the returned ContactLocation object should not be deleted. Its
- * lifetime is the same as this contact lifetime.
- *
  * This method requires Contact::FeatureLocation to be enabled.
  *
- * @return An object representing the contact location or 0 if
- *         FeatureLocation is not ready.
+ * @return An object representing the contact location which will return \c false for
+ *         ContactLocation::isValid() if FeatureLocation is not ready.
  */
-ContactLocation *Contact::location() const
+ContactLocation Contact::location() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureLocation)) {
         warning() << "Contact::location() used on" << this
             << "for which FeatureLocation hasn't been requested - returning 0";
-        return 0;
+        return ContactLocation();
     }
 
     return mPriv->location;
@@ -698,8 +689,8 @@ void Contact::receiveLocation(const QVariantMap &location)
 
     mPriv->actualFeatures.insert(FeatureLocation);
 
-    if (mPriv->location->allDetails() != location) {
-        mPriv->location->updateData(location);
+    if (mPriv->location.allDetails() != location) {
+        mPriv->location.updateData(location);
         emit locationUpdated(mPriv->location);
     }
 }

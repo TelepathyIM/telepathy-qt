@@ -25,8 +25,8 @@ public:
 
 protected Q_SLOTS:
     void expectConnInvalidated();
-    void expectPendingContactsFinished(Tp::PendingOperation *);
-    void onContactLocationUpdated(Tp::ContactLocation *);
+    void expectPendingContactsFinished(Tp::PendingOperation *op);
+    void onContactLocationUpdated(const Tp::ContactLocation &location);
 
 private Q_SLOTS:
     void initTestCase();
@@ -78,7 +78,7 @@ void TestContactsLocation::expectPendingContactsFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestContactsLocation::onContactLocationUpdated(Tp::ContactLocation *location)
+void TestContactsLocation::onContactLocationUpdated(const Tp::ContactLocation &location)
 {
     Q_UNUSED(location);
     mContactsLocationUpdated++;
@@ -159,11 +159,9 @@ void TestContactsLocation::testLocation()
         QCOMPARE(contact->actualFeatures(),
                  QSet<Contact::Feature>() << Contact::FeatureLocation);
 
-        QVERIFY(contact->location() != 0);
-
-        connect(contact.data(),
-                SIGNAL(locationUpdated(Tp::ContactLocation *)),
-                SLOT(onContactLocationUpdated(Tp::ContactLocation *)));
+        QVERIFY(connect(contact.data(),
+                        SIGNAL(locationUpdated(const Tp::ContactLocation &)),
+                        SLOT(onContactLocationUpdated(const Tp::ContactLocation &))));
     }
 
     GHashTable *location_1 = tp_asv_new(
@@ -194,9 +192,9 @@ void TestContactsLocation::testLocation()
     for (int i = 0; i < mContacts.size(); i++) {
         ContactPtr contact = mContacts[i];
 
-        QCOMPARE(contact->location()->country(),
+        QCOMPARE(contact->location().country(),
                  QLatin1String(tp_asv_get_string(locations[i], "country")));
-        QCOMPARE(contact->location()->latitude(),
+        QCOMPARE(contact->location().latitude(),
                  tp_asv_get_double(locations[i], "lat", NULL));
     }
 

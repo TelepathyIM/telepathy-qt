@@ -121,8 +121,7 @@ public:
     ContactCapabilities capabilities() const;
 
     // TODO filter: is it available, how accurate, are they near me
-    // FIXME: (API/ABI break) Return ContactLocation
-    ContactLocation *location() const;
+    ContactLocation location() const;
 
     // TODO filter: having a specific field, having ANY field,
     // (field: exact, contents: exact/prefix/substring)
@@ -166,8 +165,7 @@ Q_SIGNALS:
 
     void capabilitiesChanged(const Tp::ContactCapabilities &caps);
 
-    // FIXME: (API/ABI break) Use Tp::ContactLocation
-    void locationUpdated(Tp::ContactLocation *location);
+    void locationUpdated(const Tp::ContactLocation &location);
 
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
