@@ -51,7 +51,7 @@ RosterItem::~RosterItem()
 
 void RosterItem::onContactChanged()
 {
-    QString status = mContact->presenceStatus();
+    QString status = mContact->presence().status();
     // I've asked to see the contact presence
     if (mContact->subscriptionState() == Contact::PresenceStateAsk) {
         setText(QString(QLatin1String("%1 (%2) (awaiting approval)")).arg(mContact->id()).arg(status));
