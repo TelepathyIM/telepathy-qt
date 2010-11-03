@@ -28,6 +28,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/AccountCapabilityFilter>
+#include <TelepathyQt4/AccountFilter>
 #include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/PendingAccount>
