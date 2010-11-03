@@ -252,6 +252,17 @@ QString Contact::presenceMessage() const
     return mPriv->presence.statusMessage();
 }
 
+Presence Contact::presence() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
+        warning() << "Contact::presence() used on" << this
+            << "for which FeatureSimplePresence hasn't been requested - returning Unknown";
+        return Presence();
+    }
+
+    return mPriv->presence;
+}
+
 /**
  * Return the capabilities for this contact.
  * User interfaces can use this information to show or hide UI components.
