@@ -92,12 +92,15 @@ public:
     ContactManager *manager() const;
 
     ReferencedHandles handle() const;
-    QString id() const; // TODO filter: exact, prefix, substring match
+
+    // TODO filter: exact, prefix, substring match
+    QString id() const;
 
     QSet<Feature> requestedFeatures() const;
     QSet<Feature> actualFeatures() const;
 
-    QString alias() const; // TODO filter: exact, prefix, substring match
+    // TODO filter: exact, prefix, substring match
+    QString alias() const;
 
     bool isAvatarTokenKnown() const;
     QString avatarToken() const;
@@ -105,15 +108,11 @@ public:
 
     /*
      * TODO filter:
-     *  - exact match of presenceType, presenceStatus
-     *  - ANY 1 of a number of presenceTypes/Statuses
-     *  - presenceType greater or less than a set value
+     *  - exact match of presence().type(), presence().status()
+     *  - ANY 1 of a number of presence types/statuses
+     *  - presence().type() greater or less than a set value
+     *  - have/don't have presence().message() AND exact/prefix/substring
      */
-    TELEPATHY_QT4_DEPRECATED QString presenceStatus() const;
-    TELEPATHY_QT4_DEPRECATED uint presenceType() const;
-    // TODO filter: have/don't have message AND exact/prefix/substring
-    TELEPATHY_QT4_DEPRECATED QString presenceMessage() const;
-
     Presence presence() const;
 
     // TODO filter: the same as Account filtering by caps
@@ -126,7 +125,6 @@ public:
 
     // TODO filter: having a specific field, having ANY field,
     // (field: exact, contents: exact/prefix/substring)
-    TELEPATHY_QT4_DEPRECATED ContactInfoFieldList info() const;
     InfoFields infoFields() const;
     PendingOperation *refreshInfo();
     PendingContactInfo *requestInfo();
@@ -165,8 +163,6 @@ Q_SIGNALS:
     void avatarTokenChanged(const QString &avatarToken);
     void avatarDataChanged(const Tp::AvatarData &avatarData);
 
-    // FIXME: (API/ABI break) Remove simplePresenceChanged in favor of presenceChanged
-    void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
     void presenceChanged(const Tp::Presence &presence);
 
     // FIXME: (API/ABI break) Use Tp::ContactCapabilities
@@ -175,8 +171,6 @@ Q_SIGNALS:
     // FIXME: (API/ABI break) Use Tp::ContactLocation
     void locationUpdated(Tp::ContactLocation *location);
 
-    // FIXME: (API/ABI break) Remove infoChanged in favor of infoFieldsChanged
-    void infoChanged(const Tp::ContactInfoFieldList &info);
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
     void subscriptionStateChanged(Tp::Contact::PresenceState state);
@@ -191,10 +185,6 @@ Q_SIGNALS:
     // void renamedTo(Tp::ContactPtr)
     // with that contact getting the same features requested as the current one. Or would we rather
     // want to signal that change right away with a handle?
-
-protected:
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private:
     Contact(ContactManager *manager, const ReferencedHandles &handle,
