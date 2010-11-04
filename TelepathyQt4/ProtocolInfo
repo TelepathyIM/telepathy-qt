@@ -5,7 +5,7 @@
 #define IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/connection-manager.h>
+#include <TelepathyQt4/protocol-info.h>
 
 #undef IN_TELEPATHY_QT4_HEADER
 

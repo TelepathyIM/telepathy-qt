@@ -28,102 +28,22 @@
 
 #include <TelepathyQt4/_gen/cli-connection-manager.h>
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
+#include <TelepathyQt4/ProtocolInfo>
+#include <TelepathyQt4/ProtocolParameter>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/ReadyObject>
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/SharedPtr>
-
-#include <QSet>
+#include <TelepathyQt4/Types>
 
 namespace Tp
 {
 
-class ConnectionCapabilities;
 class PendingConnection;
-class PendingReady;
 class PendingStringList;
-class ProtocolParameter;
-class ProtocolInfo;
-
-typedef QList<ProtocolParameter> ProtocolParameterList;
-typedef QList<ProtocolInfo> ProtocolInfoList;
-
-class TELEPATHY_QT4_EXPORT ProtocolParameter
-{
-public:
-    ProtocolParameter(const QString &name,
-                      const QDBusSignature &dbusSignature,
-                      QVariant defaultValue,
-                      ConnMgrParamFlag flags);
-    ProtocolParameter(const ProtocolParameter &other);
-    ~ProtocolParameter();
-
-    ProtocolParameter &operator=(const ProtocolParameter &other);
-
-    QString name() const;
-    QDBusSignature dbusSignature() const;
-    QVariant::Type type() const;
-    QVariant defaultValue() const;
-
-    bool isRequired() const;
-    bool isSecret() const;
-    bool isRequiredForRegistration() const;
-
-    bool operator==(const ProtocolParameter &other) const;
-    bool operator==(const QString &name) const;
-
-private:
-    struct Private;
-    friend struct Private;
-    QSharedDataPointer<Private> mPriv;
-};
-
-class TELEPATHY_QT4_EXPORT ProtocolInfo
-{
-public:
-    ProtocolInfo();
-    ProtocolInfo(const ProtocolInfo &other);
-    ~ProtocolInfo();
-
-    bool isValid() const { return mPriv.constData() != 0; }
-
-    ProtocolInfo &operator=(const ProtocolInfo &other);
-
-    QString cmName() const;
-
-    QString name() const;
-
-    ProtocolParameterList parameters() const;
-    bool hasParameter(const QString &name) const;
-
-    bool canRegister() const;
-
-    ConnectionCapabilities capabilities() const;
-
-    QString vcardField() const;
-
-    QString englishName() const;
-
-    QString iconName() const;
-
-private:
-    ProtocolInfo(const QString &cmName, const QString &name);
-
-    void addParameter(const ParamSpec &spec);
-    void setRequestableChannelClasses(const RequestableChannelClassList &caps);
-    void setVCardField(const QString &vcardField);
-    void setEnglishName(const QString &englishName);
-    void setIconName(const QString &iconName);
-
-    struct Private;
-    friend struct Private;
-    friend class ConnectionManager;
-    QSharedDataPointer<Private> mPriv;
-};
 
 class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
                           public OptionalInterfaceFactory<ConnectionManager>,
