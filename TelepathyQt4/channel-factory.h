@@ -187,6 +187,12 @@ public:
     Features featuresFor(const ChannelClassSpec &channelClass) const;
     void addFeaturesFor(const ChannelClassSpec &channelClass, const Features &features);
 
+    template <typename Subclass>
+    void setSubclassFor(const ChannelClassSpec &channelClass)
+    {
+        setConstructorFor(channelClass, SubclassCtor<Subclass>::create());
+    }
+
     ConstructorConstPtr constructorFor(const ChannelClassSpec &channelClass) const;
     void setConstructorFor(const ChannelClassSpec &channelClass, const ConstructorConstPtr &ctor);
 
