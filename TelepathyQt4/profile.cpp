@@ -802,23 +802,6 @@ Profile::Presence Profile::presence(const QString &id) const
  * A list of channel classes not supported by the service to which this profile
  * applies.
  *
- * \deprecated Use unsupportedChannelClassSpecs() instead.
- *
- * \return A list of RequestableChannelClass.
- */
-RequestableChannelClassList Profile::unsupportedChannelClasses() const
-{
-    RequestableChannelClassList ret;
-    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->data.unsupportedChannelClassSpecs) {
-        ret << rccSpec.bareClass();
-    }
-    return ret;
-}
-
-/**
- * A list of channel classes not supported by the service to which this profile
- * applies.
- *
  * \return A list of RequestableChannelClassSpec.
  */
 RequestableChannelClassSpecList Profile::unsupportedChannelClassSpecs() const

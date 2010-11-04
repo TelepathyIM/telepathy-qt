@@ -405,7 +405,6 @@ void TestAccountBasics::testBasics()
     QCOMPARE(profile->parameters().isEmpty(), false);
     QCOMPARE(profile->allowOtherPresences(), true);
     QCOMPARE(profile->presences().isEmpty(), true);
-    QCOMPARE(profile->unsupportedChannelClasses().isEmpty(), true);
     QCOMPARE(profile->unsupportedChannelClassSpecs().isEmpty(), true);
 
     QList<AccountPtr> allAccounts = mAM->allAccounts();
