@@ -565,17 +565,6 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
  * methods must not be called on it.
  */
 
-/**
- * \fn Client::DBus::PropertiesInterface *ChannelRequest::propertiesInterface() const
- *
- * Convenience function for getting a PropertiesInterface interface proxy object
- * for this account. The ChannelRequest interface relies on
- * properties, so this interface is always assumed to be present.
- *
- * \return A pointer to the existing Client::DBus::PropertiesInterface object
- *         for this ChannelRequest object.
- */
-
 void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;

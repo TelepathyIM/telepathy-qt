@@ -79,11 +79,6 @@ public:
 
     PendingOperation *cancel();
 
-    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
-    }
-
 Q_SIGNALS:
     void failed(const QString &errorName, const QString &errorMessage);
     void succeeded();
