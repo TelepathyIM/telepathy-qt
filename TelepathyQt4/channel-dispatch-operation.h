@@ -79,11 +79,6 @@ public:
 
     PendingOperation *claim();
 
-    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
-    }
-
 Q_SIGNALS:
     void channelLost(const ChannelPtr &channel, const QString &errorName,
             const QString &errorMessage);

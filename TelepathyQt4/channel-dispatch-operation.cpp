@@ -521,19 +521,6 @@ Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterfa
     return mPriv->baseInterface;
 }
 
-/**
- * \fn Client::DBus::PropertiesInterface *ChannelDispatchOperation::propertiesInterface() const
- *
- * Convenience function for getting a PropertiesInterface interface proxy object
- * for this account. The ChannelDispatchOperation interface relies on
- * properties, so this interface is always assumed to be present.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \return A pointer to the existing Client::DBus::PropertiesInterface object
- *         for this ChannelDispatchOperation object.
- */
-
 void ChannelDispatchOperation::onFinished()
 {
     debug() << "ChannelDispatchOperation finished and was removed";
