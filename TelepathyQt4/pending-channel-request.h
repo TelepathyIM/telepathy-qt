@@ -64,14 +64,6 @@ private Q_SLOTS:
 private:
     friend class Account;
 
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest(const QDBusConnection &dbusConnection,
-            const QString &accountObjectPath,
-            const QVariantMap &requestedProperties,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            bool create,
-            QObject *parent);
-
     PendingChannelRequest(
             const QVariantMap &requestedProperties,
             const QDateTime &userActionTime,
