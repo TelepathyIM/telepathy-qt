@@ -420,17 +420,17 @@ void TestAccountChannelDispatcher::testEnsureTextChatroomCancel()
 
 void TestAccountChannelDispatcher::testEnsureMediaCall()
 {
-    TEST_ENSURE_CHANNEL_SPECIFIC(ensureMediaCall, false, false, "");
+    TEST_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, false, false, "");
 }
 
 void TestAccountChannelDispatcher::testEnsureMediaCallFail()
 {
-    TEST_ENSURE_CHANNEL_SPECIFIC(ensureMediaCall, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
 }
 
 void TestAccountChannelDispatcher::testEnsureMediaCallCancel()
 {
-    TEST_ENSURE_CHANNEL_SPECIFIC(ensureMediaCall, false, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, false, true, TELEPATHY_ERROR_CANCELLED);
 }
 
 void TestAccountChannelDispatcher::testCreateChannel()

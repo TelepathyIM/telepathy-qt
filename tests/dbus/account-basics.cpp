@@ -229,7 +229,8 @@ void TestAccountBasics::testBasics()
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
 
     AccountPtr acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
+            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"),
+            mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -300,14 +301,16 @@ void TestAccountBasics::testBasics()
     }
 
     acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
+            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"),
+            mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
+            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"),
+            mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
 
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -630,7 +633,7 @@ void TestAccountBasics::testBasics()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     // wait for the connection to be built in Account
-    while (!acc->haveConnection()) {
+    while (acc->connection().isNull()) {
         QCOMPARE(mLoop->exec(), 0);
     }
 

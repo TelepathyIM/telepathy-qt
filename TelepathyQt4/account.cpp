@@ -567,54 +567,6 @@ const Feature Account::FeatureProfile = FeatureProtocolInfo;
 // a full-featured feature if needed later.
 
 /**
- * Create a new Account object using QDBusConnection::sessionBus().
- *
- * The instance will use a connection factory creating Tp::Connection objects with no features
- * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
- * with no features ready.
- *
- * \param busName The account well-known bus name (sometimes called a "service
- *                name"). This is usually the same as the account manager
- *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
- * \param objectPath The account object path.
- * \return An AccountPtr object pointing to the newly created Account object.
- */
-AccountPtr Account::create(const QString &busName,
-        const QString &objectPath)
-{
-    QDBusConnection bus = QDBusConnection::sessionBus();
-    return AccountPtr(new Account(bus, busName, objectPath,
-                ConnectionFactory::create(bus),
-                ChannelFactory::create(bus),
-                ContactFactory::create()));
-}
-
-/**
- * Create a new Account object using the given \a bus.
- *
- * The instance will use a connection factory creating Tp::Connection objects with no features
- * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
- * with no features ready.
- *
- * \deprecated Use other create() methods.
- *
- * \param bus QDBusConnection to use.
- * \param busName The account well-known bus name (sometimes called a "service
- *                name"). This is usually the same as the account manager
- *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
- * \param objectPath The account object path.
- * \return An AccountPtr object pointing to the newly created Account object.
- */
-AccountPtr Account::create(const QDBusConnection &bus,
-        const QString &busName, const QString &objectPath)
-{
-    return AccountPtr(new Account(bus, busName, objectPath,
-                ConnectionFactory::create(bus),
-                ChannelFactory::create(bus),
-                ContactFactory::create()));
-}
-
-/**
  * Create a new Account object using QDBusConnection::sessionBus() and the given factories.
  *
  * A warning is printed if the factories are not for QDBusConnection::sessionBus().
@@ -660,58 +612,6 @@ AccountPtr Account::create(const QDBusConnection &bus,
 {
     return AccountPtr(new Account(bus, busName, objectPath, connectionFactory, channelFactory,
                 contactFactory));
-}
-
-/**
- * Construct a new Account object using QDBusConnection::sessionBus().
- *
- * The instance will use a connection factory creating Tp::Connection objects with no features
- * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
- * with no features ready.
- *
- * \deprecated
- *
- * \param busName The account well-known bus name (sometimes called a "service
- *                name"). This is usually the same as the account manager
- *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
- * \param objectPath The account object path.
- */
-Account::Account(const QString &busName, const QString &objectPath)
-    : StatelessDBusProxy(QDBusConnection::sessionBus(),
-            busName, objectPath),
-      OptionalInterfaceFactory<Account>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(this,
-                  ConnectionFactory::create(QDBusConnection::sessionBus()),
-                  ChannelFactory::create(QDBusConnection::sessionBus()),
-                  ContactFactory::create()))
-{
-}
-
-/**
- * Construct a new Account object using the given \a bus.
- *
- * The instance will use a connection factory creating Tp::Connection objects with no features
- * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
- * with no features ready.
- *
- * \deprecated
- *
- * \param bus QDBusConnection to use.
- * \param busName The account well-known bus name (sometimes called a "service
- *                name"). This is usually the same as the account manager
- *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
- * \param objectPath The account object path.
- */
-Account::Account(const QDBusConnection &bus,
-        const QString &busName, const QString &objectPath)
-    : StatelessDBusProxy(bus, busName, objectPath),
-      OptionalInterfaceFactory<Account>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, ConnectionFactory::create(bus),
-                  ChannelFactory::create(bus),
-                  ContactFactory::create()))
-{
 }
 
 /**
@@ -862,20 +762,6 @@ QString Account::cmName() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \deprecated Use protocolName() methods.
- *
- * \return The protocol name of this account.
- */
-QString Account::protocol() const
-{
-    return mPriv->protocolName;
-}
-
-/**
- * Return the protocol name of this account.
- *
- * This method requires Account::FeatureCore to be enabled.
- *
  * \return The protocol name of this account.
  */
 QString Account::protocolName() const
@@ -1005,21 +891,6 @@ PendingOperation *Account::setDisplayName(const QString &value)
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \deprecated Use iconName() instead.
- *
- * \return The icon name of this account.
- * \sa iconChanged()
- */
-QString Account::icon() const
-{
-    return iconName();
-}
-
-/**
- * Return the icon name of this account.
- *
- * This method requires Account::FeatureCore to be enabled.
- *
  * If the account has no icon, and Account::FeatureProfile is enabled, the icon from the result of
  * profile() will be used.
  *
@@ -1051,26 +922,6 @@ QString Account::iconName() const
     }
 
     return mPriv->iconName;
-}
-
-/**
- * Set the icon name of this account.
- *
- * \deprecated Use setIconName() instead.
- *
- * \param value The icon name of this account.
- * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
- * \sa iconChanged()
- */
-PendingOperation *Account::setIcon(const QString &value)
-{
-    return new PendingVoid(
-            mPriv->properties->Set(
-                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
-                QLatin1String("Icon"),
-                QDBusVariant(value)),
-            this);
 }
 
 /**
@@ -1388,13 +1239,11 @@ ConnectionStatusReason Account::connectionStatusReason() const
  * (in particular, #TELEPATHY_ERROR_CANCELLED if it was disconnected by user
  * request), or an empty string if the account is connected.
  *
- * One can receive change notifications on this property by connecting
- * to the statusChanged() signal.
- *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The D-Bus error name for the last disconnection or connection failure.
- * \sa connectionErrorDetails(), connectionStatus(), connectionStatusReason(), statusChanged()
+ * \sa connectionErrorDetails(), connectionStatus(), connectionStatusReason(),
+ *     connectionStatusChanged()
  */
 QString Account::connectionError() const
 {
@@ -1411,9 +1260,6 @@ QString Account::connectionError() const
  * <literal>debug-message</literal>, which is a debugging message in the C
  * locale.
  *
- * One can receive change notifications on this property by connecting
- * to the statusChanged() signal.
- *
  * Connection::ErrorDetails can be used to wrap the returned map for more convenient access. In a
  * future API/ABI incompatible version we'll change this method to return one.
  *
@@ -1421,33 +1267,12 @@ QString Account::connectionError() const
  *
  * \return A map containing extensible error details related to
  *         connectionError().
- * \sa connectionError(), connectionStatus(), connectionStatusReason(), statusChanged(),
- * Connection::ErrorDetails.
+ * \sa connectionError(), connectionStatus(), connectionStatusReason(), connectionStatusChanged(),
+ *     Connection::ErrorDetails.
  */
 QVariantMap Account::connectionErrorDetails() const
 {
     return mPriv->connectionErrorDetails;
-}
-
-/**
- * Return whether this account has a connection object that can be retrieved
- * using connection().
- *
- * This method requires Account::FeatureCore to be enabled.
- *
- * \deprecated Use connection() instead.
- *
- * \return \c true if a connection object can be retrieved, \c false otherwise.
- * \sa connection(), connectionChanged()
- */
-bool Account::haveConnection() const
-{
-    return _deprecated_haveConnection();
-}
-
-bool Account::_deprecated_haveConnection() const
-{
-    return !mPriv->connection.isNull();
 }
 
 /**
@@ -1592,26 +1417,6 @@ QString Account::uniqueIdentifier() const
     QString path = objectPath();
     return path.right(path.length() -
             strlen("/org/freedesktop/Telepathy/Account/"));
-}
-
-/**
- * Return the connection object path of this account.
- *
- * This method requires Account::FeatureCore to be enabled.
- *
- * \deprecated Use Connection::objectPath() instead.
- *
- * \return The connection object path of this account.
- * \sa connectionChanged(), connection()
- */
-QString Account::connectionObjectPath() const
-{
-    return mPriv->connectionObjectPath();
-}
-
-QString Account::_deprecated_connectionObjectPath() const
-{
-    return mPriv->connectionObjectPath();
 }
 
 /**
@@ -1800,17 +1605,6 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
 }
 
 /**
- * \deprecated Use ensureStreamedMediaCall() instead.
- */
-PendingChannelRequest *Account::ensureMediaCall(
-        const QString &contactIdentifier,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler);
-}
-
-/**
  * Start a request to ensure that a media channel with the given
  * contact \a contact exists, creating it if necessary.
  *
@@ -1845,17 +1639,6 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
 }
 
 /**
- * \deprecated Use ensureStreamedMediaCall() instead.
- */
-PendingChannelRequest *Account::ensureMediaCall(
-        const ContactPtr &contact,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaCall(contact, userActionTime, preferredHandler);
-}
-
-/**
  * Start a request to ensure that an audio call with the given
  * contact \a contactIdentifier exists, creating it if necessary.
  *
@@ -1895,17 +1678,6 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
 }
 
 /**
- * \deprecated Use ensureStreamedMediaAudioCall() instead.
- */
-PendingChannelRequest *Account::ensureAudioCall(
-        const QString &contactIdentifier,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler);
-}
-
-/**
  * Start a request to ensure that an audio call with the given
  * contact \a contact exists, creating it if necessary.
  *
@@ -1942,17 +1714,6 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
                    contact ? contact->handle().at(0) : (uint) 0);
     return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
             AccountPtr(this));
-}
-
-/**
- * Use ensureStreamedMediaAudioCall() instead.
- */
-PendingChannelRequest *Account::ensureAudioCall(
-        const ContactPtr &contact,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler);
 }
 
 /**
@@ -2004,18 +1765,6 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
 }
 
 /**
- * \deprecated ensureStreamedMediaVideoCall() instead.
- */
-PendingChannelRequest *Account::ensureVideoCall(
-        const QString &contactIdentifier,
-        bool withAudio,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler);
-}
-
-/**
  * Start a request to ensure that a video call with the given
  * contact \a contact exists, creating it if necessary.
  *
@@ -2061,18 +1810,6 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
             AccountPtr(this));
-}
-
-/**
- * \deprecated Use ensureStreamedMediaVideoCall() instead.
- */
-PendingChannelRequest *Account::ensureVideoCall(
-        const ContactPtr &contact,
-        bool withAudio,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler);
 }
 
 /**
@@ -2455,18 +2192,6 @@ PendingChannelRequest *Account::createContactSearch(
 }
 
 /**
- * \deprecated Use createContactSearch() instead.
- */
-PendingChannelRequest *Account::createContactSearchChannel(
-        const QString &server,
-        uint limit,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createContactSearch(server, limit, userActionTime, preferredHandler);
-}
-
-/**
  * Start a request to create a channel.
  * This initially just creates a PendingChannelRequest object,
  * which can be used to track the success or failure of the request,
@@ -2550,15 +2275,6 @@ PendingChannelRequest *Account::ensureChannel(
  *
  * \param displayName The new display name of this account.
  * \sa displayName(), setDisplayName()
- */
-
-/**
- * \fn void Account::iconChanged(const QString &icon);
- *
- * This signal is emitted when the value of icon() of this account changes.
- *
- * \param icon The new icon name of this account.
- * \sa icon(), setIcon()
  */
 
 /**
@@ -2716,39 +2432,6 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
- * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status, Tp::ConnectionStatusReason statusReason);
- *
- * This signal is emitted when the value of connectionStatus() of this
- * account changes.
- *
- * \deprecated Use connectionStatusChanged(Tp::Connection::Status status) instead.
- *
- * \param status The new status of this account connection.
- * \param statusReason The new status reason of this account connection.
- * \sa connectionStatus(), connectionStatusReason()
- */
-
-/**
- * \fn void Account::statusChanged(Tp::ConnectionStatus status,
- *                                 Tp::ConnectionStatusReason statusReason,
- *                                 const QString &errorName,
- *                                 const QVariantMap &errorDetails);
- *
- * This signal is emitted when the connection status of this account changes.
- *
- * \deprecated Use connectionStatusChanged(Tp::Connection::Status status) instead.
- *
- * \param status The new status of this account connection.
- * \param statusReason The new status reason of this account connection.
- * \param errorName The D-Bus error name for the last disconnection or
- *                  connection failure,
- * \param errorDetails A map containing extensible error details related to
- *                     errorName.
- * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails(),
- *     Connection::ErrorDetails
- */
-
-/**
  * \fn void Account::connectionChanged(const Tp::ConnectionPtr &connection);
  *
  * This signal is emitted when the value of connection() of this
@@ -2757,18 +2440,6 @@ PendingChannelRequest *Account::ensureChannel(
  * \param connection A ConnectionPtr pointing to the new Connection object or a null ConnectionPtr
  *                   if there is no connection.
  * \sa connection()
- */
-
-/**
- * \fn void Account::haveConnectionChanged(bool haveConnection);
- *
- * This signal is emitted when the value of haveConnection() of this
- * account changes.
- *
- * \deprecated Use connectionChanged() instead.
- *
- * \param haveConnection Whether this account have a connection.
- * \sa haveConnection(), connection()
  */
 
 /**
@@ -2939,7 +2610,6 @@ void Account::Private::updateProperties(const QVariantMap &props)
         QString newIconName = parent->iconName();
         if (oldIconName != newIconName) {
             debug() << " Icon:" << newIconName;
-            emit parent->iconChanged(newIconName);
             emit parent->iconNameChanged(newIconName);
             parent->notify("iconName");
         }
@@ -3102,12 +2772,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
             connectionStatusChanged = true;
         }
 
-        /* FIXME (API-BREAK)
-         * Remove signal connectionStatusChanged in favor of statusChanged
-         * signal */
         if (connectionStatusChanged) {
-            emit parent->connectionStatusChanged(
-                    connectionStatus, connectionStatusReason);
             parent->notify("connectionStatus");
             parent->notify("connectionStatusReason");
         }
@@ -3131,7 +2796,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         }
 
         if (connectionStatusChanged) {
-            /* Something other than status changed, let's not emit statusChanged
+            /* Something other than status changed, let's not emit connectionStatusChanged
              * and keep the error/errorDetails, for the next interaction.
              * It may happen if ConnectionError changes and in another property
              * change the status changes to Disconnected, so we use the error
@@ -3149,8 +2814,6 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
                 checkCapabilitiesChanged(profileChanged);
 
-                emit parent->statusChanged(connectionStatus, connectionStatusReason,
-                        connectionError, connectionErrorDetails);
                 emit parent->connectionStatusChanged((Connection::Status) connectionStatus);
                 parent->notify("connectionError");
                 parent->notify("connectionErrorDetails");
@@ -3185,9 +2848,7 @@ bool Account::Private::processConnQueue()
                 debug() << "Dropping connection for account" << parent->objectPath();
 
                 connection.reset();
-                emit parent->haveConnectionChanged(false);
                 emit parent->connectionChanged(connection);
-                parent->notify("haveConnection");
                 parent->notify("connection");
                 parent->notify("connectionObjectPath");
             }
@@ -3343,14 +3004,11 @@ void Account::onConnectionBuilt(PendingOperation *op)
 
         if (!mPriv->connection.isNull()) {
             mPriv->connection.reset();
-            emit haveConnectionChanged(false);
             emit connectionChanged(mPriv->connection);
-            notify("haveConnection");
             notify("connection");
             notify("connectionObjectPath");
         }
     } else {
-        bool hadConnection = !mPriv->connection.isNull();
         ConnectionPtr prevConn = mPriv->connection;
         QString prevConnPath = mPriv->connectionObjectPath();
 
@@ -3358,11 +3016,6 @@ void Account::onConnectionBuilt(PendingOperation *op)
         Q_ASSERT(mPriv->connection);
 
         debug() << "Connection" << mPriv->connectionObjectPath() << "built for" << objectPath();
-
-        if (!hadConnection) {
-            emit haveConnectionChanged(true);
-            notify("haveConnection");
-        }
 
         if (prevConn != mPriv->connection) {
             notify("connection");
@@ -3386,19 +3039,6 @@ void Account::onConnectionBuilt(PendingOperation *op)
 void Account::notify(const char *propertyName)
 {
     emit propertyChanged(QLatin1String(propertyName));
-}
-
-void Account::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(iconChanged(QString))) == 0) {
-        warning() << "Connecting to deprecated signal iconChanged(QString)";
-    } else if (qstrcmp(signalName, SIGNAL(connectionStatusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason))) == 0) {
-        warning() << "Connecting to deprecated signal connectionStatusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason)";
-    } else if (qstrcmp(signalName, SIGNAL(statusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason,QString,QVariantMap))) == 0) {
-        warning() << "Connecting to deprecated signal statusChanged(Tp::ConnectionStatus,Tp::ConnectionStatusReason,QString,QVariantMap)";
-    } else if (qstrcmp(signalName, SIGNAL(haveConnectionChanged(bool))) == 0) {
-        warning() << "Connecting to deprecated signal haveConnectionChanged(bool)";
-    }
 }
 
 } // Tp

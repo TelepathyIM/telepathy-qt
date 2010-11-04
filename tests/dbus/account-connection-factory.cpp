@@ -96,7 +96,7 @@ public:
     { }
 
 protected Q_SLOTS:
-    void onHaveConnectionChanged(bool have);
+    void onConnectionChanged(const Tp::ConnectionPtr &conn);
     void expectPropertyChange(const QString &property);
 
 private Q_SLOTS:
@@ -125,12 +125,11 @@ private:
     QStringList mReceivedConns;
 };
 
-void TestAccountConnectionFactory::onHaveConnectionChanged(bool have)
+void TestAccountConnectionFactory::onConnectionChanged(const Tp::ConnectionPtr &conn)
 {
-    qDebug() << "have connection:" << have;
+    qDebug() << "have connection:" << !conn.isNull();
 
-    Q_ASSERT(!mReceivedHaveConnection);
-    mReceivedHaveConnection = new bool(have);
+    mReceivedHaveConnection = new bool(!conn.isNull());
 }
 
 void TestAccountConnectionFactory::expectPropertyChange(const QString &property)
@@ -144,7 +143,7 @@ void TestAccountConnectionFactory::expectPropertyChange(const QString &property)
     qDebug() << "connection changed:" << (conn ? conn->objectPath() : QLatin1String("none"));
 
     if (conn) {
-        QCOMPARE(mAccount->connectionObjectPath(), conn->objectPath());
+        QCOMPARE(conn->objectPath(), conn->objectPath());
     }
 
     if (mReceivedConn) {
@@ -246,7 +245,7 @@ void TestAccountConnectionFactory::testDefaultFactoryInitialConn()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mAccount->connectionObjectPath(), mConnPath1);
+    QCOMPARE(mAccount->connection()->objectPath(), mConnPath1);
     QVERIFY(!mAccount->connection().isNull());
 
     QCOMPARE(mAccount->connectionFactory()->features(), Features());
@@ -266,7 +265,7 @@ void TestAccountConnectionFactory::testReadifyingFactoryInitialConn()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mAccount->connectionObjectPath(), mConnPath1);
+    QCOMPARE(mAccount->connection()->objectPath(), mConnPath1);
 
     ConnectionPtr conn = mAccount->connection();
     QVERIFY(!conn.isNull());
@@ -288,12 +287,11 @@ void TestAccountConnectionFactory::testSwitch()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(mAccount->connectionObjectPath().isEmpty());
-    QVERIFY(!mAccount->haveConnection());
+    QVERIFY(mAccount->connection().isNull());
 
     QVERIFY(connect(mAccount.data(),
-                SIGNAL(haveConnectionChanged(bool)),
-                SLOT(onHaveConnectionChanged(bool))));
+                SIGNAL(connectionChanged(const Tp::ConnectionPtr &)),
+                SLOT(onConnectionChanged(const Tp::ConnectionPtr &))));
 
     QVERIFY(connect(mAccount.data(),
                 SIGNAL(propertyChanged(QString)),
@@ -313,8 +311,8 @@ void TestAccountConnectionFactory::testSwitch()
     delete mReceivedConn;
     mReceivedConn = 0;
 
-    QCOMPARE(mAccount->connectionObjectPath(), mConnPath1);
-    QVERIFY(mAccount->haveConnection());
+    QCOMPARE(mAccount->connection()->objectPath(), mConnPath1);
+    QVERIFY(!mAccount->connection().isNull());
 
     ConnectionPtr conn = mAccount->connection();
     QVERIFY(!conn.isNull());
@@ -332,11 +330,11 @@ void TestAccountConnectionFactory::testSwitch()
     delete mReceivedConn;
     mReceivedConn = 0;
 
-    // haveConnectionChanged() shouldn't have been emitted as it was true -> true
-    QVERIFY(!mReceivedHaveConnection);
-    QVERIFY(mAccount->haveConnection());
+    // connectionChanged() should have been emitted as it is a new connection
+    QVERIFY(mReceivedHaveConnection);
+    QVERIFY(!mAccount->connection().isNull());
 
-    QCOMPARE(mAccount->connectionObjectPath(), mConnPath2);
+    QCOMPARE(mAccount->connection()->objectPath(), mConnPath2);
 
     conn = mAccount->connection();
     QVERIFY(!conn.isNull());
@@ -352,10 +350,7 @@ void TestAccountConnectionFactory::testSwitch()
     QCOMPARE(*mReceivedConn, QString());
     QCOMPARE(*mReceivedHaveConnection, false);
 
-    QVERIFY(mAccount->connectionObjectPath().isEmpty());
     QVERIFY(mAccount->connection().isNull());
-
-    QVERIFY(!mAccount->haveConnection());
 }
 
 void TestAccountConnectionFactory::testQueuedSwitch()
@@ -370,8 +365,7 @@ void TestAccountConnectionFactory::testQueuedSwitch()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(mAccount->connectionObjectPath().isEmpty());
-    QVERIFY(!mAccount->haveConnection());
+    QVERIFY(mAccount->connection().isNull());
 
     QVERIFY(connect(mAccount.data(),
                 SIGNAL(propertyChanged(QString)),
@@ -408,10 +402,8 @@ void TestAccountConnectionFactory::testQueuedSwitch()
                                            << mConnPath1);
 
     // Check that the final state is correct
-    QCOMPARE(mAccount->connectionObjectPath(), mConnPath1);
-    QVERIFY(mAccount->haveConnection());
-    QVERIFY(!mAccount->connection().isNull());
     QCOMPARE(mAccount->connection()->objectPath(), mConnPath1);
+    QVERIFY(!mAccount->connection().isNull());
 }
 
 void TestAccountConnectionFactory::cleanup()

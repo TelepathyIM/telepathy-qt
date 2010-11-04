@@ -88,7 +88,6 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QString connectionError READ connectionError)
     // FIXME: (API/ABI break) Use Connection::ErrorDetails
     Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
-    Q_PROPERTY(bool haveConnection READ _deprecated_haveConnection NOTIFY haveConnectionChanged)
     Q_PROPERTY(ConnectionPtr connection READ connection NOTIFY connectionChanged)
     Q_PROPERTY(bool changingPresence READ isChangingPresence NOTIFY changingPresence)
     Q_PROPERTY(SimplePresence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
@@ -96,8 +95,6 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(SimplePresence requestedPresence READ requestedPresence NOTIFY requestedPresenceChanged)
     Q_PROPERTY(bool online READ isOnline NOTIFY onlinenessChanged)
     Q_PROPERTY(QString uniqueIdentifier READ uniqueIdentifier)
-    // FIXME: (API/ABI break) Remove connectionObjectPath
-    Q_PROPERTY(QString connectionObjectPath READ _deprecated_connectionObjectPath)
     Q_PROPERTY(QString normalizedName READ normalizedName NOTIFY normalizedNameChanged)
 
 public:
@@ -107,29 +104,19 @@ public:
     static const Feature FeatureCapabilities;
     static const Feature FeatureProfile;
 
-    // FIXME: (API/ABI break) Remove both constructors that don't take factories as params.
-    static AccountPtr create(const QString &busName,
-            const QString &objectPath);
-    TELEPATHY_QT4_DEPRECATED static AccountPtr create(const QDBusConnection &bus,
-            const QString &busName, const QString &objectPath);
-
-    // FIXME: (API/ABI break) collapse these with the above variants and have all factories be
-    //        default params for the non-bus version
     static AccountPtr create(const QString &busName, const QString &objectPath,
-            const ConnectionFactoryConstPtr &connectionFactory,
+            const ConnectionFactoryConstPtr &connectionFactory =
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
             const ChannelFactoryConstPtr &channelFactory =
                 ChannelFactory::create(QDBusConnection::sessionBus()),
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
-    // The bus-taking variant should never have default factories unless the bus is the last param
-    // which would be illogical?
     static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
-
     virtual ~Account();
 
     ConnectionFactoryConstPtr connectionFactory() const;
@@ -143,7 +130,6 @@ public:
 
     QString cmName() const;
 
-    TELEPATHY_QT4_DEPRECATED QString protocol() const;
     QString protocolName() const;
 
     QString serviceName() const;
@@ -154,9 +140,7 @@ public:
     QString displayName() const;
     PendingOperation *setDisplayName(const QString &value);
 
-    TELEPATHY_QT4_DEPRECATED QString icon() const;
     QString iconName() const;
-    TELEPATHY_QT4_DEPRECATED PendingOperation *setIcon(const QString &value);
     PendingOperation *setIconName(const QString &value);
 
     QString nickname() const;
@@ -189,7 +173,6 @@ public:
     QString connectionError() const;
     // FIXME: (API/ABI break) Use Connection::ErrorDetails
     QVariantMap connectionErrorDetails() const;
-    TELEPATHY_QT4_DEPRECATED bool haveConnection() const;
     ConnectionPtr connection() const;
 
     bool isChangingPresence() const;
@@ -211,8 +194,6 @@ public:
     bool isOnline() const;
 
     QString uniqueIdentifier() const;
-
-    TELEPATHY_QT4_DEPRECATED QString connectionObjectPath() const;
 
     QString normalizedName() const;
 
@@ -258,35 +239,6 @@ public:
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureStreamedMediaVideoCall(
-            const ContactPtr &contact,
-            bool withAudio = true,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureMediaCall(
-            const QString &contactIdentifier,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureMediaCall(
-            const ContactPtr &contact,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureAudioCall(
-            const QString &contactIdentifier,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureAudioCall(
-            const ContactPtr &contact,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureVideoCall(
-            const QString &contactIdentifier,
-            bool withAudio = true,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *ensureVideoCall(
             const ContactPtr &contact,
             bool withAudio = true,
             QDateTime userActionTime = QDateTime::currentDateTime(),
@@ -343,11 +295,6 @@ public:
             uint limit = 0,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *createContactSearchChannel(
-            const QString &server = QString(),
-            uint limit = 0,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
 
     // advanced
     PendingChannelRequest *createChannel(
@@ -375,8 +322,6 @@ Q_SIGNALS:
     void serviceNameChanged(const QString &serviceName);
     void profileChanged(const Tp::ProfilePtr &profile);
     void displayNameChanged(const QString &displayName);
-    // FIXME: (API/ABI break) Remove iconChanged in favor of iconNameChanged
-    void iconChanged(const QString &iconName);
     void iconNameChanged(const QString &iconName);
     void nicknameChanged(const QString &nickname);
     void normalizedNameChanged(const QString &normalizedName);
@@ -385,7 +330,6 @@ Q_SIGNALS:
     void capabilitiesChanged(Tp::ConnectionCapabilities *capabilities);
     void connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
     void firstOnline();
-    // FIXME: (API/ABI break) Use high-level class for parameters
     void parametersChanged(const QVariantMap &parameters);
     void changingPresence(bool value);
     // FIXME: (API/ABI break) Remove const
@@ -397,26 +341,12 @@ Q_SIGNALS:
     void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
     void connectionStatusChanged(Tp::Connection::Status status);
-    // FIXME: (API/ABI break) Remove connectionStatusChanged in favor of connectionStatusChanged
-    //        taking error and errorDetails as params.
-    void connectionStatusChanged(Tp::ConnectionStatus status,
-            Tp::ConnectionStatusReason statusReason);
-    // FIXME: (API/ABI break) Remove statusChanged in favor of connectionStatusChanged
-    //        taking error and errorDetails as params.
-    void statusChanged(Tp::ConnectionStatus status,
-            Tp::ConnectionStatusReason statusReason,
-            const QString &error, const QVariantMap &errorDetails);
     void connectionChanged(const Tp::ConnectionPtr &connection);
-    // FIXME: (API/ABI break) Remove haveConnectionChanged in favor of connectionChanged
-    void haveConnectionChanged(bool haveConnection);
 
     // TODO: (API/ABI break) Move this to Tp::Object probably
     void propertyChanged(const QString &propertyName);
 
 protected:
-    TELEPATHY_QT4_DEPRECATED Account(const QString &busName, const QString &objectPath);
-    TELEPATHY_QT4_DEPRECATED Account(const QDBusConnection &bus,
-            const QString &busName, const QString &objectPath);
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
@@ -424,9 +354,6 @@ protected:
             const ContactFactoryConstPtr &contactFactory);
 
     Client::AccountInterface *baseInterface() const;
-
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
@@ -444,9 +371,6 @@ private:
 
     // TODO: (API/ABI break) Move this to Tp::Object probably
     void notify(const char *propertyName);
-
-    QString _deprecated_connectionObjectPath() const;
-    bool _deprecated_haveConnection() const;
 
     Private *mPriv;
 };
