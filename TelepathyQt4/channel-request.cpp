@@ -280,43 +280,6 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
 const Feature ChannelRequest::FeatureCore = Feature(QLatin1String(ChannelRequest::staticMetaObject.className()), 0, true);
 
 /**
- * Create a new channel request object using QDBusConnection::sessionBus().
- *
- * \deprecated Use other create() methods instead.
- *
- * \param objectPath The channel request object path.
- * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
- */
-ChannelRequestPtr ChannelRequest::create(const QString &objectPath,
-        const QVariantMap &immutableProperties)
-{
-    return ChannelRequestPtr(new ChannelRequest(QDBusConnection::sessionBus(),
-                objectPath, immutableProperties,
-                AccountFactoryPtr(), ConnectionFactoryPtr(),
-                ChannelFactoryPtr(), ContactFactoryPtr()));
-}
-
-/**
- * Create a new channel request object using the given \a bus.
- *
- * \deprecated Use other create() methods instead.
- *
- * \param bus QDBusConnection to use.
- * \param objectPath The channel request object path.
- * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
- */
-ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus,
-        const QString &objectPath, const QVariantMap &immutableProperties)
-{
-    return ChannelRequestPtr(new ChannelRequest(bus, objectPath,
-                immutableProperties,
-                AccountFactoryPtr(), ConnectionFactoryPtr(),
-                ChannelFactoryPtr(), ContactFactoryPtr()));
-}
-
-/**
  * Create a new channel request object using the given \a bus and the given factories.
  *
  * \param objectPath The channel request object path.
@@ -352,28 +315,6 @@ ChannelRequestPtr ChannelRequest::create(const AccountPtr &account, const QStrin
         const QVariantMap &immutableProperties)
 {
     return ChannelRequestPtr(new ChannelRequest(account, objectPath, immutableProperties));
-}
-
-/**
- * Construct a new channel request object using the given \a bus.
- *
- * \deprecated
- *
- * \param bus QDBusConnection to use.
- * \param objectPath The channel request object path.
- * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
- */
-ChannelRequest::ChannelRequest(const QDBusConnection &bus,
-        const QString &objectPath, const QVariantMap &immutableProperties)
-    : StatefulDBusProxy(bus,
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
-            objectPath),
-      OptionalInterfaceFactory<ChannelRequest>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, immutableProperties, AccountFactoryPtr(), ConnectionFactoryPtr(),
-                  ChannelFactoryPtr(), ContactFactoryPtr()))
-{
 }
 
 /**
