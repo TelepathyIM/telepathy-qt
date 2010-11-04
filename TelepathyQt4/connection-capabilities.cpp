@@ -42,7 +42,7 @@ namespace Tp
  * Construct a new ConnectionCapabilities object.
  */
 ConnectionCapabilities::ConnectionCapabilities()
-    : CapabilitiesBase(false)
+    : CapabilitiesBase()
 {
 }
 
