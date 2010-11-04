@@ -867,48 +867,6 @@ const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connecti
 /**
  * Create a new connection object using QDBusConnection::sessionBus().
  *
- * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
- * as appropriate, with no features ready.
- *
- * \deprecated Use other create() methods instead.
- *
- * \param busName The connection well-known bus name (sometimes called a
- *                "service name").
- * \param objectPath The connection object path.
- * \return A ConnectionPtr pointing to the newly created Connection.
- */
-ConnectionPtr Connection::create(const QString &busName,
-        const QString &objectPath)
-{
-    QDBusConnection bus = QDBusConnection::sessionBus();
-    return ConnectionPtr(new Connection(bus, busName, objectPath,
-                ChannelFactory::create(bus), ContactFactory::create()));
-}
-
-/**
- * Create a new connection object using the given \a bus.
- *
- * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
- * as appropriate, with no features ready.
- *
- * \deprecated Use other create() methods instead.
- *
- * \param bus QDBusConnection to use.
- * \param busName The connection well-known bus name (sometimes called a
- *                "service name").
- * \param objectPath The connection object path.
- * \return A ConnectionPtr pointing to the newly created Connection.
- */
-ConnectionPtr Connection::create(const QDBusConnection &bus,
-        const QString &busName, const QString &objectPath)
-{
-    return ConnectionPtr(new Connection(bus, busName, objectPath,
-                ChannelFactory::create(bus), ContactFactory::create()));
-}
-
-/**
- * Create a new connection object using QDBusConnection::sessionBus().
- *
  * A warning is printed if the factories are not for QDBusConnection::sessionBus().
  *
  * \param busName The connection well-known bus name (sometimes called a
@@ -946,55 +904,6 @@ ConnectionPtr Connection::create(const QDBusConnection &bus,
         const ContactFactoryConstPtr &contactFactory)
 {
     return ConnectionPtr(new Connection(bus, busName, objectPath, channelFactory, contactFactory));
-}
-
-/**
- * Construct a new connection object using QDBusConnection::sessionBus().
- *
- * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
- * as appropriate, with no features ready.
- *
- * \deprecated
- *
- * \param busName The connection's well-known bus name (sometimes called a
- *                "service name").
- * \param objectPath The connection object path.
- */
-Connection::Connection(const QString &busName,
-                       const QString &objectPath)
-    : StatefulDBusProxy(QDBusConnection::sessionBus(),
-            busName, objectPath),
-      OptionalInterfaceFactory<Connection>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(this,
-                  ChannelFactory::create(QDBusConnection::sessionBus()),
-                  ContactFactory::create()))
-{
-}
-
-/**
- * Construct a new connection object using the given \bus.
- *
- * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
- * as appropriate, with no features ready.
- *
- * \deprecated
- *
- * \param bus QDBusConnection to use.
- * \param busName The connection's well-known bus name (sometimes called a
- *                "service name").
- * \param objectPath The connection object path.
- */
-Connection::Connection(const QDBusConnection &bus,
-                       const QString &busName,
-                       const QString &objectPath)
-    : StatefulDBusProxy(bus, busName, objectPath),
-      OptionalInterfaceFactory<Connection>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(this,
-                  ChannelFactory::create(bus),
-                  ContactFactory::create()))
-{
 }
 
 /**
@@ -1486,8 +1395,6 @@ void Connection::onStatusReady(uint status)
     mPriv->status = status;
     mPriv->statusReason = mPriv->pendingStatusReason;
     emit statusChanged((Connection::Status) mPriv->status);
-    emit statusChanged((Connection::Status) mPriv->status,
-            (ConnectionStatusReason) mPriv->statusReason);
 }
 
 void Connection::onStatusChanged(uint status, uint reason)
@@ -2426,13 +2333,6 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
     return QLatin1String(errorName);
 }
 
-void Connection::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(statusChanged(Tp::Connection::Status,Tp::ConnectionStatusReason))) == 0) {
-        warning() << "Connecting to deprecated signal statusChanged(Tp::Connection::Status,Tp::ConnectionStatusReason)";
-    }
-}
-
 /**
  * \fn void Connection::statusChanged(Tp::Connection::Status newStatus)
  *
@@ -2456,17 +2356,6 @@ void Connection::connectNotify(const char *signalName)
  * particular (likely domain-specific if so) error name given by invalidateReason().
  *
  * \param newStatus The new status of the connection, as would be returned by status().
- */
-
-/**
- * \fn void Connection::statusChanged(Tp::Connection::Status newStatus, Tp::ConnectionStatusReason
- * reason)
- *
- * \deprecated It is tempting to use the status reason parameter as a primary means of error
- * handling, which must be avoided. Use statusReason(Tp::Connection::Status) instead.
- *
- * \param newStatus The new status of the connection, as would be returned by status().
- * \param newStatusReason The reason for the change. Should not be used for error handling.
  */
 
 } // Tp

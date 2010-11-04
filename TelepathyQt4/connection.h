@@ -81,11 +81,6 @@ public:
         StatusUnknown = 0xFFFFFFFF
     };
 
-    TELEPATHY_QT4_DEPRECATED static ConnectionPtr create(const QString &busName,
-            const QString &objectPath);
-    TELEPATHY_QT4_DEPRECATED static ConnectionPtr create(const QDBusConnection &bus,
-            const QString &busName, const QString &objectPath);
-
     static ConnectionPtr create(const QString &busName,
             const QString &objectPath,
             const ChannelFactoryConstPtr &channelFactory,
@@ -299,8 +294,6 @@ public:
 
 Q_SIGNALS:
     void statusChanged(Tp::Connection::Status newStatus);
-    // FIXME: (API/ABI break) Remove statusChanged(status, reason) in favor of statusChanged(status)
-    void statusChanged(Tp::Connection::Status newStatus, Tp::ConnectionStatusReason newStatusReason);
 
     void selfHandleChanged(uint newHandle);
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts
@@ -309,19 +302,12 @@ Q_SIGNALS:
     void accountBalanceChanged(const Tp::CurrencyAmount &accountBalance);
 
 protected:
-    TELEPATHY_QT4_DEPRECATED Connection(const QString &busName, const QString &objectPath);
-    TELEPATHY_QT4_DEPRECATED Connection(const QDBusConnection &bus, const QString &busName,
-            const QString &objectPath);
-
     Connection(const QDBusConnection &bus, const QString &busName,
             const QString &objectPath,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
     Client::ConnectionInterface *baseInterface() const;
-
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private Q_SLOTS:
     void onStatusReady(uint status);
