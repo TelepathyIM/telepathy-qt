@@ -72,8 +72,7 @@ public:
     QString channelType() const;
 
     bool hasTargetHandleType() const;
-    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
-    uint targetHandleType() const;
+    HandleType targetHandleType() const;
 
     bool hasFixedProperty(const QString &name) const;
     QVariant fixedProperty(const QString &name) const;

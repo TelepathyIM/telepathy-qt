@@ -26,8 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/Types>
 #include <TelepathyQt4/Types>
 
 #include <QHash>
@@ -52,7 +52,7 @@ public:
 
     ConnectionPtr connection() const;
 
-    uint handleType() const;
+    HandleType handleType() const;
 
     bool isRequest() const;
 
@@ -79,9 +79,10 @@ private Q_SLOTS:
 private:
     friend class Connection;
 
-    PendingHandles(const ConnectionPtr &connection, uint handleType, const QStringList &names);
-    PendingHandles(const ConnectionPtr &connection, uint handleType, const UIntList &handles,
-            const UIntList &alreadyHeld, const UIntList &notYetHeld);
+    PendingHandles(const ConnectionPtr &connection, HandleType handleType,
+            const QStringList &names);
+    PendingHandles(const ConnectionPtr &connection, HandleType handleType,
+            const UIntList &handles, const UIntList &alreadyHeld, const UIntList &notYetHeld);
 
     struct Private;
     friend struct Private;

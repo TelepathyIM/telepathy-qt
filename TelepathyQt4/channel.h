@@ -72,7 +72,7 @@ public:
 
     QString channelType() const;
 
-    uint targetHandleType() const;
+    HandleType targetHandleType() const;
     uint targetHandle() const;
 
     bool isRequested() const;
@@ -80,7 +80,7 @@ public:
 
     PendingOperation *requestClose();
 
-    uint groupFlags() const;
+    ChannelGroupFlags groupFlags() const;
 
     bool groupCanAddContacts() const;
     bool groupCanAddContactsWithMessage() const;
@@ -95,7 +95,7 @@ public:
     bool groupCanDepartWithMessage() const;
     PendingOperation *groupRemoveContacts(const QList<ContactPtr> &contacts,
             const QString &message = QString(),
-            uint reason = ChannelGroupChangeReasonNone);
+            ChannelGroupChangeReason reason = ChannelGroupChangeReasonNone);
 
     /**
      * TODO: have parameters on these like
@@ -120,7 +120,7 @@ public:
         ContactPtr actor() const;
 
         bool hasReason() const { return allDetails().contains(QLatin1String("change-reason")); }
-        uint reason() const { return qdbus_cast<uint>(allDetails().value(QLatin1String("change-reason"))); }
+        ChannelGroupChangeReason reason() const { return (ChannelGroupChangeReason) qdbus_cast<uint>(allDetails().value(QLatin1String("change-reason"))); }
 
         bool hasMessage() const { return allDetails().contains(QLatin1String("message")); }
         QString message () const { return qdbus_cast<QString>(allDetails().value(QLatin1String("message"))); }
@@ -165,7 +165,8 @@ public:
     PendingOperation *conferenceSplitChannel();
 
 Q_SIGNALS:
-    void groupFlagsChanged(uint flags, uint added, uint removed);
+    void groupFlagsChanged(Tp::ChannelGroupFlags flags,
+            Tp::ChannelGroupFlags added, Tp::ChannelGroupFlags removed);
 
     void groupCanAddContactsChanged(bool canAddContacts);
     void groupCanRemoveContactsChanged(bool canRemoveContacts);
@@ -216,16 +217,17 @@ private Q_SLOTS:
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
     void gotContacts(Tp::PendingOperation *op);
 
-    void onGroupFlagsChanged(uint, uint);
-    void onMembersChanged(const QString&,
-            const Tp::UIntList&, const Tp::UIntList&,
-            const Tp::UIntList&, const Tp::UIntList&, uint, uint);
+    void onGroupFlagsChanged(uint added, uint removed);
+    void onMembersChanged(const QString &message,
+            const Tp::UIntList &added, const Tp::UIntList &removed,
+            const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
+            uint actor, uint reason);
     void onMembersChangedDetailed(
-        const Tp::UIntList &added, const Tp::UIntList &removed,
-        const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
-        const QVariantMap &details);
-    void onHandleOwnersChanged(const Tp::HandleOwnerMap&, const Tp::UIntList&);
-    void onSelfHandleChanged(uint);
+            const Tp::UIntList &added, const Tp::UIntList &removed,
+            const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
+            const QVariantMap &details);
+    void onHandleOwnersChanged(const Tp::HandleOwnerMap &added, const Tp::UIntList &removed);
+    void onSelfHandleChanged(uint selfHandle);
 
     void gotConferenceProperties(QDBusPendingCallWatcher *watcher);
     void gotConferenceInitialInviteeContacts(Tp::PendingOperation *op);

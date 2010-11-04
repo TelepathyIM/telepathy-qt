@@ -177,8 +177,8 @@ public:
     PendingReady *requestConnect(const Features &requestedFeatures = Features());
     PendingOperation *requestDisconnect();
 
-    PendingHandles *requestHandles(uint handleType, const QStringList &names);
-    PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
+    PendingHandles *requestHandles(HandleType handleType, const QStringList &names);
+    PendingHandles *referenceHandles(HandleType handleType, const UIntList &handles);
 
     PendingContactAttributes *contactAttributes(const UIntList &handles,
             const QStringList &interfaces, bool reference = true);
@@ -221,7 +221,7 @@ private Q_SLOTS:
     void onContactListGroupChannelReady(Tp::PendingOperation *op);
     void gotChannels(QDBusPendingCallWatcher *watcher);
 
-    void doReleaseSweep(uint type);
+    void doReleaseSweep(uint handleType);
 
     void onSelfHandleChanged(uint);
 
@@ -237,9 +237,9 @@ private:
     friend class PendingHandles;
     friend class ReferencedHandles;
 
-    void refHandle(uint type, uint handle);
-    void unrefHandle(uint type, uint handle);
-    void handleRequestLanded(uint type);
+    void refHandle(HandleType handleType, uint handle);
+    void unrefHandle(HandleType handleType, uint handle);
+    void handleRequestLanded(HandleType handleType);
 
     struct Private;
     friend struct Private;
