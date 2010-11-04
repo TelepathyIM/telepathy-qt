@@ -217,6 +217,11 @@ enum %(singular)s
             self.do_val(flag, singular, flag == flagvalues[-1])
 
         self.h("""\
+
+     %s = 0xffffffffU
+""" % ("_" + singular + "Padding"))
+
+        self.h("""\
 };
 
 /**
@@ -259,8 +264,13 @@ enum %(singular)s
             self.do_val(val, singular, val == vals[-1])
 
         self.h("""\
+
+     %s = 0xffffffffU
 };
 
+""" % ("_" + singular + "Padding"))
+
+        self.h("""\
 /**
  * \\ingroup enumtypeconsts
  *
@@ -276,8 +286,8 @@ const int NUM_%(upper-plural)s = (%(last-val)s+1);
         name = (val.getAttribute('suffix') or val.getAttribute('name')).replace('_', '')
         self.h("""\
 %s\
-     %s = %s%s
-""" % (format_docstring(val, indent='     * ', brackets=('    /**', '     */')), prefix + name, val.getAttribute('value'), (not last and ',\n') or ''))
+     %s = %s,
+""" % (format_docstring(val, indent='     * ', brackets=('    /**', '     */')), prefix + name, val.getAttribute('value')))
 
 if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
