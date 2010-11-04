@@ -409,6 +409,7 @@ ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaVideoCallWithAudio(const 
         return ChannelClassSpec(spec, additionalProperties);
     }
 }
+
 ChannelClassSpec ChannelClassSpec::roomList(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
