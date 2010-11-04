@@ -278,56 +278,6 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
 const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(ChannelDispatchOperation::staticMetaObject.className()), 0, true);
 
 /**
- * Create a new channel dispatch operation object using
- * QDBusConnection::sessionBus().
- *
- * \deprecated Use other create() methods.
- *
- * \param objectPath The channel dispatch operation object path.
- * \param immutableProperties The immutable properties of the channel dispatch
- *        operation.
- * \return A ChannelDispatchOperationPtr pointing to the newly created
- *         ChannelDispatchOperation.
- */
-ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QString &objectPath,
-        const QVariantMap &immutableProperties)
-{
-    QDBusConnection bus = QDBusConnection::sessionBus();
-    return ChannelDispatchOperationPtr(new ChannelDispatchOperation(
-                bus, objectPath,
-                immutableProperties,
-                QList<ChannelPtr>(),
-                AccountFactory::create(bus, Account::FeatureCore),
-                ConnectionFactory::create(bus, Connection::FeatureCore),
-                ChannelFactory::create(bus),
-                ContactFactory::create()));
-}
-
-/**
- * Create a new channel dispatch operation object using the given \a bus.
- *
- * \deprecated Use other create() methods.
- *
- * \param bus QDBusConnection to use.
- * \param objectPath The channel dispatch operation object path.
- * \param immutableProperties The immutable properties of the channel dispatch
- *        operation.
- * \return A ChannelDispatchOperationPtr pointing to the newly created
- *         ChannelDispatchOperation.
- */
-ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnection &bus,
-        const QString &objectPath, const QVariantMap &immutableProperties)
-{
-    return ChannelDispatchOperationPtr(new ChannelDispatchOperation(
-                bus, objectPath, immutableProperties,
-                QList<ChannelPtr>(),
-                AccountFactory::create(bus, Account::FeatureCore),
-                ConnectionFactory::create(bus, Connection::FeatureCore),
-                ChannelFactory::create(bus),
-                ContactFactory::create()));
-}
-
-/**
  * Create a new channel dispatch operation object using the given \a bus, the given factories and
  * the given initial channels.
  *
@@ -354,36 +304,6 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
     return ChannelDispatchOperationPtr(new ChannelDispatchOperation(
                 bus, objectPath, immutableProperties, initialChannels, accountFactory,
                 connectionFactory, channelFactory, contactFactory));
-}
-
-/**
- * Construct a new channel dispatch operation object using the given \a bus.
- *
- * \deprecated
- *
- * \param bus QDBusConnection to use
- * \param objectPath The channel dispatch operation object path.
- * \param immutableProperties The immutable properties of the channel dispatch
- *        operation.
- */
-ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
-        const QString &objectPath, const QVariantMap &immutableProperties)
-    : StatefulDBusProxy(bus,
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
-            objectPath),
-      OptionalInterfaceFactory<ChannelDispatchOperation>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
-{
-    // API/ABI break TODO: remove this constructor and any other way to get "default factories" in
-    // CDO - these sort of emulate the old pre-factory behavior of CDO, making core in Acc and Conn
-    // ready, but sadly not in Channels.
-    mPriv->accFactory = AccountFactory::create(bus, Account::FeatureCore);
-    mPriv->connFactory = ConnectionFactory::create(bus, Connection::FeatureCore);
-    mPriv->chanFactory = ChannelFactory::create(bus);
-    mPriv->contactFactory = ContactFactory::create();
-
-    mPriv->immutableProperties = immutableProperties;
 }
 
 /**
