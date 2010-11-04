@@ -2,11 +2,17 @@ telepathy-qt4 0.3.14 (UNRELEASED)
 =================================
 
 Enhancements:
+* fd.o #30098 - Added an asynchronous property request API for generated
+  low-level proxies
 * Added high-level class for SimplePresence and changed Contact to use it,
   deprecating the old methods using SimplePresence directly.
 * Added signals deprecation support to Contact.
-* Deprecated StreamedMediaChannel methods that only make sense.
+* Deprecated StreamedMediaChannel methods that only make sense when used with
+  Call.DRAFT channels (we're going to drop support for that particular draft in
+  0.5.0)
 * Deprecated all optional interface convenience methods.
+  The methods inherited from OptionalInterfaceFactory should be used directly
+  instead if access to low-level proxies is needed.
 
 telepathy-qt4 0.3.13 (2010-11-01)
 =================================
