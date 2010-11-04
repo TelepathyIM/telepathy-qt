@@ -2,6 +2,10 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
 tpqt4_setup_dbus_test_environment()
 
+if(HAVE_TEST_PYTHON)
+    tpqt4_add_dbus_unit_test(DBusProperties dbus-properties "")
+endif(HAVE_TEST_PYTHON)
+
 if(ENABLE_TP_GLIB_TESTS)
     include_directories(${TELEPATHY_GLIB_INCLUDE_DIR}
                         ${GLIB2_INCLUDE_DIR}

@@ -89,7 +89,13 @@ class Generator(object):
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/Global>
 
+namespace Tp{
+class PendingVariant;
+class PendingOperation;
+}
+
 // FIXME: (API/ABI break) Remove definition of TELEPATHY_GNUC_DEPRECATED
+
 // basically the same as GLib's G_GNUC_DEPRECATED
 #ifndef TELEPATHY_GNUC_DEPRECATED
 #   if defined(Q_CC_GNUC) && __GNUC__ >= 4
@@ -277,10 +283,25 @@ public:
        'mainiface' : mainiface})
 
         # Properties
+        has_props = False
         for prop in get_by_path(iface, 'property'):
             # Skip tp:properties
             if not prop.namespaceURI:
                 self.do_prop(prop)
+                has_props = True
+
+        self.h("""
+    /**
+     * Request all of the DBus properties on the interface.
+     *
+     * \\return A pending variant map which will emit finished when the properties have
+     *          been retrieved.
+     */
+    Tp::PendingVariantMap *requestAllProperties() const
+    {
+        return internalRequestAllProperties();
+    }
+""")
 
         # Methods
         methods = get_by_path(iface, 'method')
@@ -346,8 +367,8 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         if 'write' in access:
             settername = 'set' + name
 
+        # TODO: Remove this property entirely and just leave the async getter function
         self.h("""
-public:
     /**
      * Represents property "%(name)s" on the remote object.
 %(docstring)s\
@@ -357,7 +378,8 @@ public:
     /**
      * Getter for the remote object property "%(name)s".
      *
-     * Don't use this: it blocks the main loop.
+     * Don't use this: it blocks the main loop. Use the asynchronous
+     * requestProperty%(name)s() instead.
      *
      * \\return The value of the property, or a default-constructed value
      *          if the property is not readable.
@@ -372,6 +394,7 @@ private:
     {
         return %(getter-return)s;
     }
+public:
 """ % {'name' : name,
        'docstring' : format_docstring(prop, '     * ').replace('*/',
            '&#42;&#47;'),
@@ -381,9 +404,30 @@ private:
        'maybesettername' : settername and (' WRITE _deprecated_' + settername) or '',
        'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, name)) or binding.val + '()'})
 
+        if 'read' in access:
+            self.h("""
+    /**
+     * Asynchronous getter for the remote object property "%(name)s" of type %(val)s.
+     *
+%(docstring)s\
+     *
+     * \\return A pending variant which will emit finished when the property has been
+     *          retrieved.
+     */
+    inline Tp::PendingVariant *%(gettername)s() const
+    {
+        return internalRequestProperty(QLatin1String("%(name)s"));
+    }
+""" % {'name' : name,
+       'docstring' : format_docstring(prop, '     * ').replace('*/',
+           '&#42;&#47;'),
+       'val' : binding.val,
+       'name' : name,
+       'gettername' : 'requestProperty' + name})
+
+        # TODO: Remove the sync setter
         if settername:
             self.h("""
-public:
     /**
      * Setter for the remote object property "%s".
      *
@@ -401,7 +445,29 @@ private:
     {
         internalPropSet("%s", QVariant::fromValue(newValue));
     }
+public:
 """ % (name, settername, binding.inarg, settername, settername, binding.inarg, name))
+
+        if 'write' in access:
+            self.h("""
+    /**
+     * Asynchronous setter for the remote object property "%(name)s" of type %(type)s.
+     *
+%(docstring)s\
+     *
+     * \\return A pending operation which will emit finished when the property has been
+     *          set.
+     */
+    inline Tp::PendingOperation *%(settername)s(%(type)s newValue)
+    {
+        return internalSetProperty(QLatin1String("%(name)s"), QVariant::fromValue(newValue));
+    }
+""" % {'name' : name,
+       'docstring' : format_docstring(prop, '     * ').replace('*/',
+           '&#42;&#47;'),
+       'type' : binding.val,
+       'name' : name,
+       'settername' : 'setProperty' + name})
 
     def do_method(self, method):
         name = method.getAttribute('name')

@@ -74,6 +74,7 @@ set(telepathy_qt4_SRCS
     pending-string-list.cpp
     pending-variant.cpp
     presence.cpp
+    pending-variant-map.cpp
     profile.cpp
     profile-manager.cpp
     properties.cpp
@@ -273,6 +274,8 @@ set(telepathy_qt4_HEADERS
     PendingSuccess
     PendingVariant
     pending-variant.h
+    PendingVariantMap
+    pending-variantMap.h
     PendingVoid
     Presence
     presence.h
@@ -375,6 +378,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-ready.h
     pending-string-list.h
     pending-variant.h
+    pending-variant-map.h
     profile-manager.h
     readiness-helper.h
     room-list-channel.h
