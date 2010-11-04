@@ -42,8 +42,10 @@ public:
     ChannelClassSpec();
     ChannelClassSpec(const ChannelClass &cc);
     ChannelClassSpec(const QVariantMap &props);
+    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
     ChannelClassSpec(const QString &channelType, uint targetHandleType,
             const QVariantMap &otherProperties = QVariantMap());
+    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
     ChannelClassSpec(const QString &channelType, uint targetHandleType, bool requested,
             const QVariantMap &otherProperties = QVariantMap());
     ChannelClassSpec(const ChannelClassSpec &other,
@@ -63,6 +65,7 @@ public:
     bool isSubsetOf(const ChannelClassSpec &other) const;
     bool matches(const QVariantMap &immutableProperties) const;
 
+    // TODO: Use new TP_QT4_... constants
     QString channelType() const
     {
         return qdbus_cast<QString>(
@@ -75,6 +78,7 @@ public:
                 QVariant::fromValue(type));
     }
 
+    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
     uint targetHandleType() const
     {
         return qdbus_cast<uint>(
@@ -82,6 +86,7 @@ public:
                     QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
     }
 
+    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
     void setTargetHandleType(uint type)
     {
         setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
