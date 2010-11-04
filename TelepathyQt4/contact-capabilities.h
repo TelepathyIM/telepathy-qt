@@ -35,6 +35,7 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT ContactCapabilities : public CapabilitiesBase
 {
 public:
+    ContactCapabilities();
     virtual ~ContactCapabilities();
 
     // later:
@@ -57,5 +58,7 @@ private:
 };
 
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::ContactCapabilities);
 
 #endif

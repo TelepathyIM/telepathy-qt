@@ -38,6 +38,14 @@ namespace Tp
 /**
  * Construct a new ContactCapabilities object.
  */
+ContactCapabilities::ContactCapabilities()
+    : CapabilitiesBase()
+{
+}
+
+/**
+ * Construct a new ContactCapabilities object.
+ */
 ContactCapabilities::ContactCapabilities(bool specificToContact)
     : CapabilitiesBase(specificToContact)
 {
