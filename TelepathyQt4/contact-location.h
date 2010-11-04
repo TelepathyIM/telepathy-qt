@@ -38,6 +38,7 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT ContactLocation
 {
 public:
+    ContactLocation();
     virtual ~ContactLocation();
 
     bool isValid() const;
@@ -72,8 +73,6 @@ public:
 private:
     friend class Contact;
 
-    ContactLocation();
-
     QVariantMap data() const;
     void updateData(const QVariantMap &location);
 
@@ -84,5 +83,7 @@ private:
 };
 
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::ContactLocation);
 
 #endif
