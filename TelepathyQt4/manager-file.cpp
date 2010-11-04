@@ -37,6 +37,7 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
 {
+    Private();
     Private(const QString &cnName);
 
     void init();
@@ -70,6 +71,11 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
     QHash<QString, ProtocolInfo> protocolsMap;
     bool valid;
 };
+
+ManagerFile::Private::Private()
+    : valid(false)
+{
+}
 
 ManagerFile::Private::Private(const QString &cmName)
     : cmName(cmName),
@@ -300,6 +306,14 @@ QVariant ManagerFile::Private::valueForKey(const QString &param,
 
 /**
  * Create a ManagerFile object used to read .manager compliant files.
+ */
+ManagerFile::ManagerFile()
+    : mPriv(new Private())
+{
+}
+
+/**
+ * Create a ManagerFile object used to read .manager compliant files.
  *
  * \param cmName Name of the connection manager to read the file for.
  */
@@ -309,11 +323,32 @@ ManagerFile::ManagerFile(const QString &cmName)
 }
 
 /**
+ * Create a ManagerFile object used to read .manager compliant files.
+ */
+ManagerFile::ManagerFile(const ManagerFile &other)
+    : mPriv(new Private())
+{
+    mPriv->cmName = other.mPriv->cmName;
+    mPriv->keyFile = other.mPriv->keyFile;
+    mPriv->protocolsMap = other.mPriv->protocolsMap;
+    mPriv->valid = other.mPriv->valid;
+}
+
+/**
  * Class destructor.
  */
 ManagerFile::~ManagerFile()
 {
     delete mPriv;
+}
+
+ManagerFile &ManagerFile::operator=(const ManagerFile &other)
+{
+    mPriv->cmName = other.mPriv->cmName;
+    mPriv->keyFile = other.mPriv->keyFile;
+    mPriv->protocolsMap = other.mPriv->protocolsMap;
+    mPriv->valid = other.mPriv->valid;
+    return *this;
 }
 
 /**
