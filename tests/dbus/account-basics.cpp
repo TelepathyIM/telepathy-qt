@@ -623,9 +623,12 @@ void TestAccountBasics::testBasics()
     QCOMPARE(caps->textChats(), false);
     QCOMPARE(caps->supportsTextChats(), false);
 
+    Client::DBus::PropertiesInterface *accPropertiesInterface =
+        acc->interface<Client::DBus::PropertiesInterface>();
+
     // simulate that the account has a connection
     QVERIFY(connect(new PendingVoid(
-                        acc->propertiesInterface()->Set(
+                        accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("Connection"),
                             QDBusVariant(mConnPath)),
@@ -647,7 +650,7 @@ void TestAccountBasics::testBasics()
     // once the status change the capabilities will be updated
     mCapabilitiesChanged = false;
     QVERIFY(connect(new PendingVoid(
-                        acc->propertiesInterface()->Set(
+                        accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("ConnectionStatus"),
                             QDBusVariant(static_cast<uint>(ConnectionStatusConnected))),
@@ -678,7 +681,7 @@ void TestAccountBasics::testBasics()
     // once the status change the capabilities will be updated
     mCapabilitiesChanged = false;
     QVERIFY(connect(new PendingVoid(
-                        acc->propertiesInterface()->Set(
+                        accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("Connection"),
                             QDBusVariant(QLatin1String("/"))),
@@ -686,7 +689,7 @@ void TestAccountBasics::testBasics()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QVERIFY(connect(new PendingVoid(
-                        acc->propertiesInterface()->Set(
+                        accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("ConnectionStatus"),
                             QDBusVariant(static_cast<uint>(ConnectionStatusDisconnected))),

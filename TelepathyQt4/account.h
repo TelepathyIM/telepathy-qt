@@ -306,17 +306,6 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
-    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::AccountInterfaceAvatarInterface *avatarInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::AccountInterfaceAvatarInterface>(check);
-    }
-
 Q_SIGNALS:
     void removed();
     void serviceNameChanged(const QString &serviceName);

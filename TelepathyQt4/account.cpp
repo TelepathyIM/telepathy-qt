@@ -2443,32 +2443,6 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
- * \fn Client::DBus::PropertiesInterface *Account::propertiesInterface() const
- *
- * Convenience function for getting a PropertiesInterface interface proxy object
- * for this account. The Account interface relies on properties, so this
- * interface is always assumed to be present.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \return A pointer to the existing Client::DBus::PropertiesInterface object
- *         for this Account object.
- */
-
-/**
- * \fn Client::AccountInterfaceAvatarInterface *Account::avatarInterface(
- *             InterfaceSupportedChecking check) const;
- *
- * Convenience function for getting a AvatarInterface interface proxy object for
- * this account.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \return A pointer to the existing Client::AccountInterfaceAvatarInterface
- *         object for this Account object.
- */
-
-/**
  * Return the Client::AccountInterface interface proxy object for this account.
  * This method is protected since the convenience methods provided by this
  * class should generally be used instead of calling D-Bus methods
