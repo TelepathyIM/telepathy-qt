@@ -112,35 +112,20 @@ public:
     void requestContactAvatar(Contact *contact);
 
 Q_SIGNALS:
-    // FIXME: (API/ABI break) Remove presencePublicationRequested that does not take details as
-    //                        param
-    void presencePublicationRequested(const Tp::Contacts &contacts);
     void presencePublicationRequested(const Tp::Contacts &contacts,
         const Tp::Channel::GroupMemberChangeDetails &details);
 
     void groupAdded(const QString &group);
     void groupRemoved(const QString &group);
-    // FIXME: (API/ABI break) Remove groupMembersChanged that does not take details as
-    //                        param
-    void groupMembersChanged(const QString &group,
-            const Tp::Contacts &groupMembersAdded,
-            const Tp::Contacts &groupMembersRemoved);
+
     void groupMembersChanged(const QString &group,
             const Tp::Contacts &groupMembersAdded,
             const Tp::Contacts &groupMembersRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
 
-    // FIXME: (API/ABI break) Remove allKnownContactsChanged that does not take details as
-    //                        param
-    void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
-            const Tp::Contacts &contactsRemoved);
     void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
             const Tp::Contacts &contactsRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
-
-protected:
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);

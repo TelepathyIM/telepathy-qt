@@ -1160,7 +1160,6 @@ void ContactManager::onPublishChannelMembersChanged(
     }
 
     if (!groupLocalPendingMembersAdded.isEmpty()) {
-        emit presencePublicationRequested(groupLocalPendingMembersAdded);
         emit presencePublicationRequested(groupLocalPendingMembersAdded,
             details);
     }
@@ -1219,7 +1218,6 @@ void ContactManager::onContactListGroupMembersChanged(
         contact->setRemovedFromGroup(id);
     }
 
-    emit groupMembersChanged(id, groupMembersAdded, groupMembersRemoved);
     emit groupMembersChanged(id, groupMembersAdded, groupMembersRemoved, details);
 }
 
@@ -1503,7 +1501,6 @@ void ContactManager::Private::computeKnownContactsChanges(const Tp::Contacts& ad
         // Yes, update our "cache" and emit the signal
         cachedAllKnownContacts.unite(realAdded);
         cachedAllKnownContacts.subtract(realRemoved);
-        emit parent->allKnownContactsChanged(realAdded, realRemoved);
         emit parent->allKnownContactsChanged(realAdded, realRemoved, details);
     }
 }
@@ -1631,25 +1628,6 @@ void PendingContactManagerRemoveContactListGroup::onChannelClosed(PendingOperati
     }
 }
 
-void ContactManager::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts))) == 0) {
-        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts)";
-    } else if (qstrcmp(signalName, SIGNAL(groupMembersChanged(QString,Tp::Contacts,Tp::Contacts))) == 0) {
-        warning() << "Connecting to deprecated signal groupMembersChanged(QString,Tp::Contacts,Tp::Contacts)";
-    } else if (qstrcmp(signalName, SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts))) == 0) {
-        warning() << "Connecting to deprecated signal allKnownContactsChanged(Tp::Contacts,Tp::Contacts)";
-    }
-}
-
-/**
- * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts);
- *
- * \deprecated Use presencePublicationRequested(const Tp::Contacts &contacts,
- *                                              const Tp::Channel::GroupMemberChangeDetails &details)
- *             instead.
- */
-
 /**
  * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts);
  *          const Tp::Channel::GroupMemberChangeDetails &details);
@@ -1658,18 +1636,6 @@ void ContactManager::connectNotify(const char *signalName)
  *
  * \param contacts A set of contacts which requested presence publication.
  * \param details The request details.
- */
-
-/**
- * \fn void ContactManager::groupMembersChanged(const QString &group,
- *          const Tp::Contacts &groupMembersAdded,
- *          const Tp::Contacts &groupMembersRemoved);
- *
- * \deprecated Use groupMembersChanged(const QString &group,
- *                                     const Tp::Contacts &groupMembersAdded,
- *                                     const Tp::Contacts &groupMembersRemoved,
- *                                     const Tp::Channel::GroupMemberChangeDetails &details)
- *             instead.
  */
 
 /**
@@ -1685,16 +1651,6 @@ void ContactManager::connectNotify(const char *signalName)
  * \param groupMembersAdded A set of contacts which were added to the group \a group.
  * \param groupMembersRemoved A set of contacts which were removed from the group \a group.
  * \param details The change details.
- */
-
-/**
- * \fn void ContactManager::allKnownContactsChanged(const Tp::Contacts &contactsAdded,
- *          const Tp::Contacts &contactsRemoved);
- *
- * \deprecated Use allKnownContactsChanged(const Tp::Contacts &contactsAdded,
- *                                         const Tp::Contacts &contactsRemoved,
- *                                         const Tp::Channel::GroupMemberChangeDetails &details)
- *             instead.
  */
 
 /**
