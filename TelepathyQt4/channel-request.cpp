@@ -197,8 +197,6 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
         }
 
         // We need to check again because we might have dropped the expected account just a sec ago
-        // Note that many of the if paths will go away in the API/ABI break - they're just for
-        // backwards compat
         if (account.isNull()) {
             if (!accFact.isNull()) {
                 readyOp = accFact->proxy(
@@ -206,18 +204,9 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
                         connFact, chanFact, contactFact);
                 account = AccountPtr::dynamicCast(readyOp->proxy());
             } else {
-                // We might have the conn fact from the expected account, let's use that for good
-                // measure even if the account didn't match
-                if (!connFact.isNull()) {
-                    account = Account::create(
-                            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-                            accountObjectPath.path(), connFact, chanFact, contactFact);
-                } else {
-                    account = Account::create(
-                            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-                            accountObjectPath.path());
-                }
-
+                account = Account::create(
+                        QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+                        accountObjectPath.path(), connFact, chanFact, contactFact);
                 readyOp = account->becomeReady();
             }
         }
