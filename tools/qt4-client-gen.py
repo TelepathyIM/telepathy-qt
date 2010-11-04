@@ -292,9 +292,9 @@ public:
 
         self.h("""
     /**
-     * Request all the DBus properties on the interface.
+     * Request all of the DBus properties on the interface.
      *
-     * \\return A pending variant map which will emit finished when the property has
+     * \\return A pending variant map which will emit finished when the properties have
      *          been retrieved.
      */
     Tp::PendingVariantMap *requestAllProperties() const
