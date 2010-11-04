@@ -1005,11 +1005,7 @@ AccountPtr AccountManager::accountForPath(const QString &path)
         return AccountPtr();
     }
 
-    if (!mPriv->accounts.contains(path)) {
-        return AccountPtr();
-    }
-
-    return mPriv->accounts[path];
+    return mPriv->accounts.value(path);
 }
 
 /**
