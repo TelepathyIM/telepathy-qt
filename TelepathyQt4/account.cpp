@@ -132,7 +132,6 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     QString normalizedName;
     Avatar avatar;
     ConnectionManagerPtr cm;
-    ProtocolInfo *protocolInfo;
     ConnectionStatus connectionStatus;
     ConnectionStatusReason connectionStatusReason;
     QString connectionError;
@@ -160,7 +159,6 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       changingPresence(false),
       mayFinishCore(false),
       coreFinished(false),
-      protocolInfo(0),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified),
       usingConnectionCaps(false)
@@ -834,12 +832,12 @@ ProfilePtr Account::profile() const
     if (!mPriv->profile) {
         mPriv->profile = Profile::createForServiceName(serviceName());
         if (!mPriv->profile->isValid()) {
-            if (mPriv->protocolInfo) {
+            if (protocolInfo().isValid()) {
                 mPriv->profile = ProfilePtr(new Profile(
                             QString(QLatin1String("%1-%2")).arg(mPriv->cmName).arg(serviceName()),
                             mPriv->cmName,
                             mPriv->protocolName,
-                            mPriv->protocolInfo));
+                            protocolInfo()));
             } else {
                 warning() << "Cannot create profile as neither a .profile is installed for service" <<
                     serviceName() << "nor protocol info can be retrieved";
@@ -908,8 +906,8 @@ QString Account::iconName() const
             }
         }
 
-        if (isReady(FeatureProtocolInfo) && protocolInfo() != NULL) {
-            return protocolInfo()->iconName();
+        if (isReady(FeatureProtocolInfo) && protocolInfo().isValid()) {
+            return protocolInfo().iconName();
         }
 
         return QString(QLatin1String("im-%1")).arg(protocolName());
@@ -1050,20 +1048,18 @@ PendingStringList *Account::updateParameters(const QVariantMap &set,
  *
  * This method requires Account::FeatureProtocolInfo to be enabled.
  *
- * The returned pointer points to an internal data structure, which should not be deleted by the
- * caller.
- *
  * \return The protocol info of this account protocol.
  */
-ProtocolInfo *Account::protocolInfo() const
+ProtocolInfo Account::protocolInfo() const
 {
     if (!isReady(Features() << FeatureProtocolInfo)) {
         warning() << "Trying to retrieve protocol info from account, but "
                      "protocol info is not supported or was not requested. "
                      "Use becomeReady(FeatureProtocolInfo)";
+        return ProtocolInfo();
     }
 
-    return mPriv->protocolInfo;
+    return mPriv->cm->protocol(mPriv->protocolName);
 }
 
 /**
@@ -1100,16 +1096,16 @@ ConnectionCapabilities Account::capabilities() const
     // However, if we failed to introspect the CM (eg. this is a test), then let's not try to use
     // the protocolInfo because it'll be NULL! Profile may also be NULL in case a .profile for
     // serviceName() is not present and protocolInfo is NULL.
-    ProtocolInfo *pi = protocolInfo();
-    if (!pi) {
+    ProtocolInfo pi = protocolInfo();
+    if (!pi.isValid()) {
         return ConnectionCapabilities();
     }
     ProfilePtr pr = profile();
     if (!pr) {
-        return pi->capabilities();
+        return pi.capabilities();
     }
 
-    RequestableChannelClassSpecList piClassSpecs = pi->capabilities().allClassSpecs();
+    RequestableChannelClassSpecList piClassSpecs = pi.capabilities().allClassSpecs();
     RequestableChannelClassSpecList prUnsupportedClassSpecs = pr->unsupportedChannelClassSpecs();
     RequestableChannelClassSpecList classSpecs;
     bool unsupported;
@@ -2899,14 +2895,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
 {
     bool error = operation->isError();
     if (!error) {
-        foreach (ProtocolInfo *info, mPriv->cm->protocols()) {
-            if (info->name() == mPriv->protocolName) {
-                mPriv->protocolInfo = info;
-                break;
-            }
-        }
-
-        error = (mPriv->protocolInfo == 0);
+        error = !mPriv->cm->hasProtocol(mPriv->protocolName);
     }
 
     if (!error) {

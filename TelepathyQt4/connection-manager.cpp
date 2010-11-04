@@ -129,8 +129,12 @@ bool ProtocolParameter::operator==(const QString &name) const
     return (mPriv->name == name);
 }
 
-struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private
+struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private : public QSharedData
 {
+    Private()
+    {
+    }
+
     Private(const QString &cmName, const QString &name)
         : cmName(cmName),
           name(name),
@@ -155,6 +159,10 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private
  * \brief Object representing a Telepathy protocol info.
  */
 
+ProtocolInfo::ProtocolInfo()
+{
+}
+
 /**
  * Construct a new ProtocolInfo object.
  *
@@ -166,12 +174,22 @@ ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
 {
 }
 
+ProtocolInfo::ProtocolInfo(const ProtocolInfo &other)
+    : mPriv(other.mPriv)
+{
+}
+
 /**
  * Class destructor.
  */
 ProtocolInfo::~ProtocolInfo()
 {
-    delete mPriv;
+}
+
+ProtocolInfo &ProtocolInfo::operator=(const ProtocolInfo &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
 }
 
 /**
@@ -181,6 +199,10 @@ ProtocolInfo::~ProtocolInfo()
  */
 QString ProtocolInfo::cmName() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->cmName;
 }
 
@@ -195,6 +217,10 @@ QString ProtocolInfo::cmName() const
  */
 QString ProtocolInfo::name() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->name;
 }
 
@@ -224,6 +250,10 @@ ProtocolParameterList ProtocolInfo::parameters() const
  */
 bool ProtocolInfo::hasParameter(const QString &name) const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     foreach (const ProtocolParameter &param, mPriv->params) {
         if (param.name() == name) {
             return true;
@@ -242,6 +272,10 @@ bool ProtocolInfo::hasParameter(const QString &name) const
  */
 bool ProtocolInfo::canRegister() const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return hasParameter(QLatin1String("register"));
 }
 
@@ -256,6 +290,10 @@ bool ProtocolInfo::canRegister() const
  */
 ConnectionCapabilities ProtocolInfo::capabilities() const
 {
+    if (!isValid()) {
+        return ConnectionCapabilities();
+    }
+
     return mPriv->caps;
 }
 
@@ -279,6 +317,10 @@ ConnectionCapabilities ProtocolInfo::capabilities() const
  */
 QString ProtocolInfo::vcardField() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->vcardField;
 }
 
@@ -296,6 +338,10 @@ QString ProtocolInfo::vcardField() const
  */
 QString ProtocolInfo::englishName() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->englishName;
 }
 
@@ -309,11 +355,19 @@ QString ProtocolInfo::englishName() const
  */
 QString ProtocolInfo::iconName() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->iconName;
 }
 
 void ProtocolInfo::addParameter(const ParamSpec &spec)
 {
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
     QVariant defaultValue;
     if (spec.flags & ConnMgrParamFlagHasDefault) {
         defaultValue = spec.defaultValue.variant();
@@ -333,22 +387,38 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
 
 void ProtocolInfo::setVCardField(const QString &vcardField)
 {
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
     mPriv->vcardField = vcardField;
 }
 
 void ProtocolInfo::setEnglishName(const QString &englishName)
 {
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
     mPriv->englishName = englishName;
 }
 
 void ProtocolInfo::setIconName(const QString &iconName)
 {
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
     mPriv->iconName = iconName;
 }
 
 void ProtocolInfo::setRequestableChannelClasses(
         const RequestableChannelClassList &caps)
 {
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
     mPriv->caps.updateRequestableChannelClasses(caps);
 }
 
@@ -421,7 +491,7 @@ ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
       OptionalInterfaceFactory<ProtocolWrapper>(this),
       ReadyObject(this, FeatureCore),
       mReadinessHelper(readinessHelper()),
-      mInfo(new ProtocolInfo(cmName, name)),
+      mInfo(ProtocolInfo(cmName, name)),
       mImmutableProps(props)
 {
     fillRCCs();
@@ -453,13 +523,13 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
 
     if (self->receiveProperties(self->mImmutableProps)) {
         debug() << "Got everything we want from the immutable props for" <<
-            self->info()->name();
+            self->info().name();
         self->mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
         return;
     }
 
     debug() << "Not enough immutable properties, calling Properties::GetAll(Protocol) for" <<
-        self->info()->name();
+        self->info().name();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->GetAll(
                 QLatin1String(TELEPATHY_INTERFACE_PROTOCOL)),
@@ -555,7 +625,7 @@ void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
 
     // That also settles upgrading calls, because the media classes don't have ImmutableStreams
 
-    mInfo->setRequestableChannelClasses(classes);
+    mInfo.setRequestableChannelClasses(classes);
 }
 
 bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVariantMap &props)
@@ -575,31 +645,31 @@ bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVaria
     ParamSpecList parameters = qdbus_cast<ParamSpecList>(
             props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Parameters")]);
     foreach (const ParamSpec &spec, parameters) {
-        mInfo->addParameter(spec);
+        mInfo.addParameter(spec);
     }
 
-    mInfo->setVCardField(qdbus_cast<QString>(
+    mInfo.setVCardField(qdbus_cast<QString>(
                 props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".VCardField")]));
     QString englishName = qdbus_cast<QString>(
             props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".EnglishName")]);
     if (englishName.isEmpty()) {
-        QStringList words = mInfo->name().split(QLatin1Char('-'));
+        QStringList words = mInfo.name().split(QLatin1Char('-'));
         for (int i = 0; i < words.size(); ++i) {
             words[i][0] = words[i].at(0).toUpper();
         }
         englishName = words.join(QLatin1String(" "));
     }
-    mInfo->setEnglishName(englishName);
+    mInfo.setEnglishName(englishName);
     QString iconName = qdbus_cast<QString>(
             props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Icon")]);
     if (iconName.isEmpty()) {
-        iconName = QString(QLatin1String("im-%1")).arg(mInfo->name());
+        iconName = QString(QLatin1String("im-%1")).arg(mInfo.name());
     }
-    mInfo->setIconName(iconName);
+    mInfo.setIconName(iconName);
 
     // Don't overwrite the everything-is-possible RCCs with an empty list if there is no RCCs key
     if (props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses"))) {
-        mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
+        mInfo.setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
                 props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses")]));
     }
 
@@ -633,14 +703,7 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
 ConnectionManager::Private::~Private()
 {
     foreach (ProtocolWrapper *wrapper, wrappers) {
-        /* wrapper->info() is not deleted by ProtocolWrapper as we borrow it in
-         * case it gets ready */
-        delete wrapper->info();
         delete wrapper;
-    }
-
-    foreach (ProtocolInfo *info, protocols) {
-        delete info;
     }
 
     delete baseInterface;
@@ -653,18 +716,19 @@ bool ConnectionManager::Private::parseConfigFile()
         return false;
     }
 
-    foreach (QString protocol, f.protocols()) {
-        ProtocolInfo *info = new ProtocolInfo(name, protocol);
-        protocols.append(info);
+    foreach (const QString &protocol, f.protocols()) {
+        ProtocolInfo info(name, protocol);
 
-        foreach (ParamSpec spec, f.parameters(protocol)) {
-            info->addParameter(spec);
+        foreach (const ParamSpec &spec, f.parameters(protocol)) {
+            info.addParameter(spec);
         }
-        info->setRequestableChannelClasses(
+        info.setRequestableChannelClasses(
                 f.requestableChannelClasses(protocol));
-        info->setVCardField(f.vcardField(protocol));
-        info->setEnglishName(f.englishName(protocol));
-        info->setIconName(f.iconName(protocol));
+        info.setVCardField(f.vcardField(protocol));
+        info.setEnglishName(f.englishName(protocol));
+        info.setIconName(f.iconName(protocol));
+
+        protocols.append(info);
     }
 
     return true;
@@ -722,16 +786,6 @@ QString ConnectionManager::Private::makeObjectPath(const QString &name)
 {
     return QString(QLatin1String(
                 TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE)).append(name);
-}
-
-ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
-{
-    foreach (ProtocolInfo *info, protocols) {
-        if (info->name() == protocolName) {
-            return info;
-        }
-    }
-    return NULL;
 }
 
 /**
@@ -851,8 +905,8 @@ QString ConnectionManager::name() const
 QStringList ConnectionManager::supportedProtocols() const
 {
     QStringList protocols;
-    foreach (const ProtocolInfo *info, mPriv->protocols) {
-        protocols.append(info->name());
+    foreach (const ProtocolInfo &info, mPriv->protocols) {
+        protocols.append(info.name());
     }
     return protocols;
 }
@@ -882,8 +936,8 @@ const ProtocolInfoList &ConnectionManager::protocols() const
  */
 bool ConnectionManager::hasProtocol(const QString &protocolName) const
 {
-    foreach (const ProtocolInfo *info, mPriv->protocols) {
-        if (info->name() == protocolName) {
+    foreach (const ProtocolInfo &info, mPriv->protocols) {
+        if (info.name() == protocolName) {
             return true;
         }
     }
@@ -896,21 +950,19 @@ bool ConnectionManager::hasProtocol(const QString &protocolName) const
  *
  * This method requires ConnectionManager::FeatureCore to be enabled.
  *
- * The returned pointer points to an internal data structure, which should not be deleted by the
- * caller.
- *
- * \return A ProtocolInfo object or 0 if the protocol specified by \a
- *         protocolName is not supported.
+ * \param protocolName The name of the protocol.
+ * \return A ProtocolInfo object which will return \c for ProtocolInfo::isValid() if the protocol
+ *         specified by \a protocolName is not supported.
  * \sa hasProtocol()
  */
-ProtocolInfo *ConnectionManager::protocol(const QString &protocolName) const
+ProtocolInfo ConnectionManager::protocol(const QString &protocolName) const
 {
-    foreach (ProtocolInfo *info, mPriv->protocols) {
-        if (info->name() == protocolName) {
+    foreach (const ProtocolInfo &info, mPriv->protocols) {
+        if (info.name() == protocolName) {
             return info;
         }
     }
-    return 0;
+    return ProtocolInfo();
 }
 
 /**
@@ -1020,8 +1072,7 @@ void ConnectionManager::gotProtocolsLegacy(QDBusPendingCallWatcher *watcher)
         protocolsNames = reply.value();
 
         foreach (const QString &protocolName, protocolsNames) {
-            mPriv->protocols.append(new ProtocolInfo(mPriv->name,
-                        protocolName));
+            mPriv->protocols.append(ProtocolInfo(mPriv->name, protocolName));
             mPriv->parametersQueue.enqueue(protocolName);
         }
 
@@ -1043,20 +1094,30 @@ void ConnectionManager::gotParametersLegacy(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<ParamSpecList> reply = *watcher;
     QString protocolName = mPriv->parametersQueue.dequeue();
-    ProtocolInfo *info = mPriv->protocol(protocolName);
+    bool found = false;
+    int pos = 0;
+    foreach (const ProtocolInfo &info, mPriv->protocols) {
+        if (info.name() == protocolName) {
+            found = true;
+            break;
+        }
+        ++pos;
+    }
+    Q_ASSERT(found);
 
     if (!reply.isError()) {
         debug() << QString(QLatin1String("Got reply to ConnectionManager.GetParameters(%1)")).arg(protocolName);
         ParamSpecList parameters = reply.value();
+        ProtocolInfo &info = mPriv->protocols[pos];
         foreach (const ParamSpec &spec, parameters) {
             debug() << "Parameter" << spec.name << "has flags" << spec.flags
                 << "and signature" << spec.signature;
 
-            info->addParameter(spec);
+            info.addParameter(spec);
         }
     } else {
         // let's remove this protocol as we can't get the params
-        mPriv->protocols.removeOne(info);
+        mPriv->protocols.removeAt(pos);
 
         warning().nospace() <<
             QString(QLatin1String("ConnectionManager.GetParameters(%1) failed: ")).arg(protocolName) <<
@@ -1080,16 +1141,15 @@ void ConnectionManager::onProtocolReady(Tp::PendingOperation *op)
     PendingReady *pr = qobject_cast<PendingReady*>(op);
     Private::ProtocolWrapper *wrapper =
         qobject_cast<Private::ProtocolWrapper*>(pr->object());
-    ProtocolInfo *info = wrapper->info();
+    ProtocolInfo info = wrapper->info();
 
     mPriv->wrappers.remove(wrapper);
 
     if (!op->isError()) {
         mPriv->protocols.append(info);
     } else {
-        warning().nospace() << "Protocol(" << info->name() << ")::becomeReady "
+        warning().nospace() << "Protocol(" << info.name() << ")::becomeReady "
             "failed: " << op->errorName() << ": " << op->errorMessage();
-        delete info;
     }
 
     /* use deleteLater as "op" is a child of wrapper, so we don't crash */

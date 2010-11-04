@@ -368,11 +368,11 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->serviceName(), acc->protocolName());
     QCOMPARE(mServiceName, acc->serviceName());
 
-    ProtocolInfo *protocolInfo = acc->protocolInfo();
-    QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
-    QCOMPARE(protocolInfo->hasParameter(QLatin1String("account")), true);
-    QCOMPARE(protocolInfo->hasParameter(QLatin1String("password")), true);
-    QCOMPARE(protocolInfo->hasParameter(QLatin1String("register")), true);
+    ProtocolInfo protocolInfo = acc->protocolInfo();
+    QCOMPARE(protocolInfo.isValid(), true);
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("account")), true);
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("password")), true);
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("register")), true);
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -390,7 +390,7 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
     protocolInfo = acc->protocolInfo();
-    QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
+    QCOMPARE(protocolInfo.isValid(), true);
 
     profile = acc->profile();
     QCOMPARE(profile.isNull(), false);

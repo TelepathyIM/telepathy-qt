@@ -37,6 +37,7 @@
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
 #include <TelepathyQt4/OptionalInterfaceFactory>
+#include <TelepathyQt4/ProtocolInfo>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/Types>
@@ -58,7 +59,6 @@ class PendingConnection;
 class PendingOperation;
 class PendingReady;
 class PendingStringList;
-class ProtocolInfo;
 
 class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
                 public OptionalInterfaceFactory<Account>,
@@ -79,7 +79,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
     Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
     Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
-    Q_PROPERTY(ProtocolInfo* protocolInfo READ protocolInfo)
+    Q_PROPERTY(ProtocolInfo protocolInfo READ protocolInfo)
     Q_PROPERTY(ConnectionCapabilities capabilities READ capabilities NOTIFY capabilitiesChanged)
     Q_PROPERTY(bool hasBeenOnline READ hasBeenOnline)
     Q_PROPERTY(bool connectsAutomatically READ connectsAutomatically NOTIFY connectsAutomaticallyPropertyChanged)
@@ -157,8 +157,7 @@ public:
     PendingStringList *updateParameters(const QVariantMap &set,
             const QStringList &unset);
 
-    // FIXME: (API/ABI break) Use ProtocolInfoPtr
-    ProtocolInfo *protocolInfo() const;
+    ProtocolInfo protocolInfo() const;
 
     ConnectionCapabilities capabilities() const;
 

@@ -50,7 +50,7 @@ class ProtocolParameter;
 class ProtocolInfo;
 
 typedef QList<ProtocolParameter> ProtocolParameterList;
-typedef QList<ProtocolInfo*> ProtocolInfoList;
+typedef QList<ProtocolInfo> ProtocolInfoList;
 
 class TELEPATHY_QT4_EXPORT ProtocolParameter
 {
@@ -85,7 +85,13 @@ private:
 class TELEPATHY_QT4_EXPORT ProtocolInfo
 {
 public:
+    ProtocolInfo();
+    ProtocolInfo(const ProtocolInfo &other);
     ~ProtocolInfo();
+
+    bool isValid() const { return mPriv.constData() != 0; }
+
+    ProtocolInfo &operator=(const ProtocolInfo &other);
 
     QString cmName() const;
 
@@ -105,8 +111,6 @@ public:
     QString iconName() const;
 
 private:
-    Q_DISABLE_COPY(ProtocolInfo);
-
     ProtocolInfo(const QString &cmName, const QString &name);
 
     void addParameter(const ParamSpec &spec);
@@ -118,7 +122,7 @@ private:
     struct Private;
     friend struct Private;
     friend class ConnectionManager;
-    Private *mPriv;
+    QSharedDataPointer<Private> mPriv;
 };
 
 class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
@@ -148,7 +152,7 @@ public:
     QStringList supportedProtocols() const;
     const ProtocolInfoList &protocols() const;
     bool hasProtocol(const QString &protocolName) const;
-    ProtocolInfo *protocol(const QString &protocolName) const;
+    ProtocolInfo protocol(const QString &protocolName) const;
 
     // TODO (API/ABI break): Do we want to keep requestConnection as public API?
     PendingConnection *requestConnection(const QString &protocolName,

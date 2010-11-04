@@ -564,7 +564,7 @@ Profile::Profile()
  * \param protocolInfo The protocol info for the protocol \a protocolName.
  */
 Profile::Profile(const QString &serviceName, const QString &cmName,
-        const QString &protocolName, const ProtocolInfo *protocolInfo)
+        const QString &protocolName, const ProtocolInfo &protocolInfo)
     : mPriv(new Private())
 {
     mPriv->serviceName = serviceName;
@@ -576,7 +576,7 @@ Profile::Profile(const QString &serviceName, const QString &cmName,
     mPriv->data.cmName = cmName;
     mPriv->data.protocolName = protocolName;
 
-    foreach (const ProtocolParameter &protocolParam, protocolInfo->parameters()) {
+    foreach (const ProtocolParameter &protocolParam, protocolInfo.parameters()) {
         if (!protocolParam.defaultValue().isNull()) {
             mPriv->data.parameters.append(Profile::Parameter(
                         protocolParam.name(),
