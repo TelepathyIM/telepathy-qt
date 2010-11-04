@@ -152,21 +152,16 @@ public:
     bool groupIsSelfContactTracked() const;
     ContactPtr groupSelfContact() const;
 
-    TELEPATHY_QT4_DEPRECATED bool hasConferenceInterface() const;
     bool isConference() const;
     Contacts conferenceInitialInviteeContacts() const;
-    TELEPATHY_QT4_DEPRECATED bool conferenceSupportsNonMerges() const;
     QList<ChannelPtr> conferenceChannels() const;
     QList<ChannelPtr> conferenceInitialChannels() const;
     QHash<uint, ChannelPtr> conferenceOriginalChannels() const;
 
-    TELEPATHY_QT4_DEPRECATED bool hasMergeableConferenceInterface() const;
     bool supportsConferenceMerging() const;
     PendingOperation *conferenceMergeChannel(const ChannelPtr &channel);
 
-    TELEPATHY_QT4_DEPRECATED bool hasSplittableInterface() const;
     bool supportsConferenceSplitting() const;
-    TELEPATHY_QT4_DEPRECATED PendingOperation *splitChannel();
     PendingOperation *conferenceSplitChannel();
 
     TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
@@ -322,8 +317,6 @@ Q_SIGNALS:
     void groupSelfContactChanged();
 
     void conferenceChannelMerged(const Tp::ChannelPtr &channel);
-    // FIXME: (API/ABI break) Remove conferenceChannelRemoved that does not take details as param.
-    void conferenceChannelRemoved(const Tp::ChannelPtr &channel);
     void conferenceChannelRemoved(const Tp::ChannelPtr &channel,
             const Tp::Channel::GroupMemberChangeDetails &details);
 
@@ -340,9 +333,6 @@ protected:
     }
 
     bool groupSelfHandleIsLocalPending() const;
-
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 protected Q_SLOTS:
     PendingOperation *groupAddSelfHandle();

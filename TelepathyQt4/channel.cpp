@@ -2285,21 +2285,6 @@ PendingOperation *Channel::groupAddSelfHandle()
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \deprecated Use isConference() instead.
- *
- * \return \c true if the interface is supported, \c false otherwise.
- */
-bool Channel::hasConferenceInterface() const
-{
-    return isConference();
-}
-
-/**
- * Return whether this channel implements the
- * org.freedesktop.Telepathy.Channel.Interface.Conference interface.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::isConference() const
@@ -2323,44 +2308,10 @@ Contacts Channel::conferenceInitialInviteeContacts() const
 }
 
 /**
- * Return whether requests to create a conference channel with InitialChannels
- * omitted, empty, or one element long are expected to succeed.
- *
- * If false, InitialChannels must be supplied in all requests for this channel
- * class, and contain at least two channels.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
- * Note that this method will always return false if the Channel supports the Conference interface,
- * even if Conference.DRAFT is also supported.
- *
- * \deprecated Use ConnectionCapabilities conference methods instead.
- *
- * \return Whether the channels supports non merges.
- */
-bool Channel::conferenceSupportsNonMerges() const
-{
-    if (!isReady(FeatureCore)) {
-        warning() << "Channel::conferenceSupportsNonMerges() used with channel not ready";
-        return false;
-    }
-
-    // FIXME: cannot use hasInterface here as hasInterface is not const
-    // if (hasInterface(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-    if (interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-        return false;
-    // } else if (hasInterface(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-    } else if (interfaces().contains(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-        return mPriv->conferenceSupportsNonMerges;
-    }
-    return false;
-}
-
-/**
  * Return the individual channels that are part of this conference.
  *
- * Change notification is via the conferenceChannelMerged and
- * conferenceChannelRemoved signals.
+ * Change notification is via the conferenceChannelMerged() and
+ * conferenceChannelRemoved() signals.
  *
  * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
@@ -2441,21 +2392,6 @@ QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \deprecated Use supportsConferenceMerging() instead.
- *
- * \return \c true if the interface is supported, \c false otherwise.
- */
-bool Channel::hasMergeableConferenceInterface() const
-{
-    return supportsConferenceMerging();
-}
-
-/**
- * Return whether this channel implements the
- * org.freedesktop.Telepathy.Channel.Interface.MergeableConference interface.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::supportsConferenceMerging() const
@@ -2490,43 +2426,12 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \deprecated Use supportsConferenceSplitting() instead.
- *
- * \return \c true if the interface is supported, \c false otherwise.
- */
-bool Channel::hasSplittableInterface() const
-{
-    return supportsConferenceSplitting();
-}
-
-/**
- * Return whether this channel implements the
- * org.freedesktop.Telepathy.Channel.Interface.Splittable interface.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::supportsConferenceSplitting() const
 {
     return interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_SPLITTABLE));
-}
-
-/**
- * Request that this channel is removed from any Conference of which it is
- * a part.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
- * \deprecated Use conferenceSplitChannel() instead.
- *
- * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
- */
-PendingOperation *Channel::splitChannel()
-{
-    return conferenceSplitChannel();
 }
 
 /**
@@ -2606,14 +2511,6 @@ PendingOperation *Channel::conferenceSplitChannel()
  * Emitted when a new channel is added to the value of conferenceChannels().
  *
  * \param channel The channel that was added to conferenceChannels().
- */
-
-/**
- * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel);
- *
- * \deprecated Use conferenceChannelRemoved(const Tp::ChannelPtr &channel,
- *                                          const Tp::Channel::GroupMemberChangeDetails &details)
- *             instead.
  */
 
 /**
@@ -3485,7 +3382,6 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 
     ChannelPtr channel = mPriv->conferenceChannels[info->channelPath.path()];
     mPriv->conferenceChannels.remove(info->channelPath.path());
-    emit conferenceChannelRemoved(channel);
     emit conferenceChannelRemoved(channel, GroupMemberChangeDetails(actorContact,
                 info->details));
 
@@ -3562,12 +3458,5 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
  *
  * \return The message as a string.
  */
-
-void Channel::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(conferenceChannelRemoved(Tp::ChannelPtr))) == 0) {
-        warning() << "Connecting to deprecated signal conferenceChannelRemoved(Tp::ChannelPtr)";
-    }
-}
 
 } // Tp
