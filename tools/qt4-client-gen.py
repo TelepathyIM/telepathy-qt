@@ -369,7 +369,6 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 
         # TODO: Remove this property entirely and just leave the async getter function
         self.h("""
-public:
     /**
      * Represents property "%(name)s" on the remote object.
 %(docstring)s\
@@ -395,6 +394,7 @@ private:
     {
         return %(getter-return)s;
     }
+public:
 """ % {'name' : name,
        'docstring' : format_docstring(prop, '     * ').replace('*/',
            '&#42;&#47;'),
@@ -428,7 +428,6 @@ private:
         # TODO: Remove the sync setter
         if settername:
             self.h("""
-public:
     /**
      * Setter for the remote object property "%s".
      *
@@ -446,6 +445,7 @@ private:
     {
         internalPropSet("%s", QVariant::fromValue(newValue));
     }
+public:
 """ % (name, settername, binding.inarg, settername, settername, binding.inarg, name))
 
         if 'write' in access:
