@@ -297,7 +297,7 @@ public:
      * \\return A pending variant map which will emit finished when the property has
      *          been retrieved.
      */
-    Tp::PendingVariantMap *requestAllProperties()
+    Tp::PendingVariantMap *requestAllProperties() const
     {
         return internalRequestAllProperties();
     }
@@ -414,7 +414,7 @@ public:
      * \\return A pending variant which will emit finished when the property has been
      *          retrieved.
      */
-    inline Tp::PendingVariant *%(gettername)s()
+    inline Tp::PendingVariant *%(gettername)s() const
     {
         return internalRequestProperty("%(name)s");
     }

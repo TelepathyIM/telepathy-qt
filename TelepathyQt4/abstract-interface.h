@@ -59,9 +59,9 @@ protected:
             const char *interface, const QDBusConnection &connection,
             QObject *parent);
 
-    PendingVariant *internalRequestProperty(const char *name);
+    PendingVariant *internalRequestProperty(const char *name) const;
     PendingOperation *internalSetProperty(const char *name, const QVariant &newValue);
-    PendingVariantMap *internalRequestAllProperties();
+    PendingVariantMap *internalRequestAllProperties() const;
 
 private:
     struct Private;
