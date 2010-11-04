@@ -35,6 +35,7 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT CapabilitiesBase
 {
 public:
+    CapabilitiesBase();
     CapabilitiesBase(const CapabilitiesBase &other);
     virtual ~CapabilitiesBase();
 
@@ -89,5 +90,7 @@ private:
 };
 
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::CapabilitiesBase);
 
 #endif
