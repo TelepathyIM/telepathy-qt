@@ -1203,7 +1203,7 @@ void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
     }
 
     if (newAccount) {
-        debug() << "New account" << path.path();
+        debug() << "New account" << path;
         mPriv->addAccountForPath(path);
     } else {
         /* Only emit accountValidityChanged if both the AM and the account
