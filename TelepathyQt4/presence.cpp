@@ -155,4 +155,13 @@ void Presence::setStatus(ConnectionPresenceType type, const QString &status,
     mPriv->sp.statusMessage = statusMessage;
 }
 
+SimplePresence Presence::barePresence() const
+{
+    if (!isValid()) {
+        return SimplePresence();
+    }
+
+    return mPriv->sp;
+}
+
 } // Tp
