@@ -102,6 +102,7 @@ public:
     TELEPATHY_QT4_DEPRECATED QList<AccountPtr> validAccounts();
     TELEPATHY_QT4_DEPRECATED QList<AccountPtr> invalidAccounts();
 
+    // API/ABI break TODO: make const
     QList<AccountPtr> allAccounts();
 
     // FIXME: (API/ABI break) Rename all xxxSet methods to just xxx
@@ -132,7 +133,9 @@ public:
     AccountSetPtr filterAccounts(const QList<AccountFilterConstPtr> &filters) const;
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
+    // API/ABI break TODO: make const
     AccountPtr accountForPath(const QString &path);
+    // API/ABI break TODO: make const
     QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
     QStringList supportedAccountProperties() const;
