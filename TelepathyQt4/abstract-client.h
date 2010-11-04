@@ -57,7 +57,6 @@ class TELEPATHY_QT4_EXPORT AbstractClientObserver : public virtual AbstractClien
 public:
     virtual ~AbstractClientObserver();
 
-    TELEPATHY_QT4_DEPRECATED ChannelClassList observerChannelFilter() const;
     ChannelClassSpecList observerFilter() const;
 
     bool shouldRecover() const;
@@ -72,10 +71,6 @@ public:
             const QVariantMap &observerInfo) = 0;
 
 protected:
-    TELEPATHY_QT4_DEPRECATED AbstractClientObserver(const ChannelClassList &channelFilter);
-    TELEPATHY_QT4_DEPRECATED AbstractClientObserver(const ChannelClassList &channelFilter,
-            bool shouldRecover);
-
     AbstractClientObserver(const ChannelClassSpecList &channelFilter, bool shouldRecover = false);
 
 private:
@@ -91,7 +86,6 @@ class TELEPATHY_QT4_EXPORT AbstractClientApprover : public virtual AbstractClien
 public:
     virtual ~AbstractClientApprover();
 
-    TELEPATHY_QT4_DEPRECATED ChannelClassList approverChannelFilter() const;
     ChannelClassSpecList approverFilter() const;
 
     virtual void addDispatchOperation(const MethodInvocationContextPtr<> &context,
@@ -99,7 +93,6 @@ public:
             const ChannelDispatchOperationPtr &dispatchOperation) = 0;
 
 protected:
-    TELEPATHY_QT4_DEPRECATED AbstractClientApprover(const ChannelClassList &channelFilter);
     AbstractClientApprover(const ChannelClassSpecList &channelFilter);
 
 private:
@@ -251,11 +244,8 @@ public:
 
     virtual ~AbstractClientHandler();
 
-    TELEPATHY_QT4_DEPRECATED ChannelClassList handlerChannelFilter() const;
     ChannelClassSpecList handlerFilter() const;
 
-    // FIXME: (API/ABI break) Use high-level class for capabilities
-    TELEPATHY_QT4_DEPRECATED QStringList capabilities() const;
     Capabilities handlerCapabilities() const;
 
     virtual bool bypassApproval() const = 0;
@@ -275,12 +265,6 @@ public:
             const QString &errorName, const QString &errorMessage);
 
 protected:
-    TELEPATHY_QT4_DEPRECATED AbstractClientHandler(const ChannelClassList &channelFilter,
-            bool wantsRequestNotification = false);
-    TELEPATHY_QT4_DEPRECATED AbstractClientHandler(const ChannelClassList &channelFilter,
-            const QStringList &capabilities,
-            bool wantsRequestNotification = false);
-
     AbstractClientHandler(const ChannelClassSpecList &channelFilter,
             const Capabilities &capabilities = Capabilities(),
             bool wantsRequestNotification = false);

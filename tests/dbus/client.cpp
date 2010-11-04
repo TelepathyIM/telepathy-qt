@@ -12,6 +12,7 @@
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/AbstractClientObserver>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/ChannelDispatchOperation>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/ClientHandlerInterface>
@@ -204,8 +205,8 @@ class MyClient : public QObject,
     Q_OBJECT
 
 public:
-    static AbstractClientPtr create(const ChannelClassList &channelFilter,
-            const QStringList &capabilities,
+    static AbstractClientPtr create(const ChannelClassSpecList &channelFilter,
+            const AbstractClientHandler::Capabilities &capabilities,
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
     {
@@ -214,8 +215,8 @@ public:
                         bypassApproval, wantsRequestNotification)));
     }
 
-    MyClient(const ChannelClassList &channelFilter,
-             const QStringList &capabilities,
+    MyClient(const ChannelClassSpecList &channelFilter,
+             const AbstractClientHandler::Capabilities &capabilities,
              bool bypassApproval = false,
              bool wantsRequestNotification = false)
         : AbstractClientObserver(channelFilter),
@@ -388,7 +389,7 @@ private:
     QString mChannelRequestPath;
     ChannelDispatchOperationAdaptor *mCDO;
     QString mCDOPath;
-    QStringList mClientCapabilities;
+    AbstractClientHandler::Capabilities mClientCapabilities;
     AbstractClientPtr mClientObject1;
     QString mClientObject1BusName;
     QString mClientObject1Path;
@@ -547,18 +548,12 @@ void TestClient::testRegister()
     // invalid client
     QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), QLatin1String("foo")));
 
-    mClientCapabilities.append(
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/ice-udp=true"));
-    mClientCapabilities.append(
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/audio/speex=true"));
+    mClientCapabilities.setICEUDPNATTraversalToken();
+    mClientCapabilities.setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+            QLatin1String("/audio/speex=true"));
 
-    ChannelClassList filters;
-    QMap<QString, QDBusVariant> filter;
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                  QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)));
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                  QDBusVariant((uint) Tp::HandleTypeContact));
-    filters.append(filter);
+    ChannelClassSpecList filters;
+    filters.append(ChannelClassSpec::textChat());
     mClientObject1 = MyClient::create(filters, mClientCapabilities, false, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
@@ -567,12 +562,7 @@ void TestClient::testRegister()
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
 
     filters.clear();
-    filter.clear();
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                  QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA)));
-    filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                  QDBusVariant((uint) Tp::HandleTypeContact));
-    filters.append(filter);
+    filters.append(ChannelClassSpec::streamedMediaCall());
     mClientObject2 = MyClient::create(filters, mClientCapabilities, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, QLatin1String("foo"), true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
@@ -605,13 +595,13 @@ void TestClient::testCapabilities()
             mClientObject1BusName, mClientObject1Path, this);
     QStringList capabilities;
     QVERIFY(waitForProperty(handler1Iface->requestPropertyCapabilities(), &capabilities));
-    QCOMPARE(capabilities, mClientCapabilities);
+    QCOMPARE(capabilities, mClientCapabilities.allTokens());
 
     // object 2
     ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
             mClientObject2BusName, mClientObject2Path, this);
     QVERIFY(waitForProperty(handler2Iface->requestPropertyCapabilities(), &capabilities));
-    QCOMPARE(capabilities, mClientCapabilities);
+    QCOMPARE(capabilities, mClientCapabilities.allTokens());
 }
 
 void TestClient::testRequests()
