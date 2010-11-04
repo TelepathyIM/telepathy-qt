@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/Global>
 
+#include <QMetaType>
 #include <QtGlobal>
 
 class QString;
@@ -38,8 +39,6 @@ namespace Tp
 
 class TELEPATHY_QT4_EXPORT KeyFile
 {
-    Q_DISABLE_COPY(KeyFile);
-
 public:
     enum Status {
         None = 0,
@@ -50,8 +49,11 @@ public:
     };
 
     KeyFile();
+    KeyFile(const KeyFile &other);
     KeyFile(const QString &fileName);
     ~KeyFile();
+
+    KeyFile &operator=(const KeyFile &other);
 
     void setFileName(const QString &fileName);
     QString fileName() const;
@@ -82,5 +84,7 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Tp::KeyFile);
 
 #endif
