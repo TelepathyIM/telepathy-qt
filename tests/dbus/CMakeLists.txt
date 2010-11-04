@@ -3,7 +3,6 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 tpqt4_setup_dbus_test_environment()
 
 if(HAVE_TEST_PYTHON)
-    tpqt4_add_dbus_unit_test(AccountBasics account-basics "")
     tpqt4_add_dbus_unit_test(DBusProperties dbus-properties "")
 endif(HAVE_TEST_PYTHON)
 
