@@ -220,4 +220,7 @@ public:
 
 } // Tp
 
+Q_DECLARE_METATYPE(Tp::ChannelClassSpec);
+Q_DECLARE_METATYPE(Tp::ChannelClassSpecList);
+
 #endif
