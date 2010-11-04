@@ -415,58 +415,41 @@ void TestAccountBasics::testBasics()
 
     filter.insert(QLatin1String("protocolName"), QLatin1String("foo"));
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
 
     filter.clear();
     filter.insert(QLatin1String("protocolFoo"), acc->protocolName());
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
-    QCOMPARE(filteredAccountSet->isFilterValid(), false);
 
     filter.clear();
     filter.insert(QLatin1String("protocolName"), allAccounts.first()->protocolName());
     filteredAccountSet = mAM->filterAccounts(filter);
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QVERIFY(filteredAccountSet->accounts().contains(allAccounts.first()));
 
     filteredAccountSet = mAM->accountsByProtocol(allAccounts.first()->protocolName());
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QVERIFY(filteredAccountSet->accounts().contains(allAccounts.first()));
 
     filter.clear();
     filter.insert(QLatin1String("protocolFoo"), acc->protocolName());
     filteredAccountSet = mAM->filterAccounts(filter);
-    QCOMPARE(filteredAccountSet->isFilterValid(), false);
     QVERIFY(filteredAccountSet->accounts().isEmpty());
 
-    QCOMPARE(mAM->validAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->validAccounts()->accounts().isEmpty(), false);
-    QCOMPARE(mAM->invalidAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->invalidAccounts()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->enabledAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->enabledAccounts()->accounts().isEmpty(), false);
-    QCOMPARE(mAM->disabledAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->disabledAccounts()->accounts().isEmpty(), true);
 
     filter.clear();
     filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
     AccountSetPtr spuriousAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
-    QCOMPARE(spuriousAccountSet->isFilterValid(), true);
 
     filteredAccountSet = mAM->textChatAccounts();
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
-    QCOMPARE(mAM->textChatAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->textChatroomAccounts()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->streamedMediaCallAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->streamedMediaCallAccounts()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->streamedMediaAudioCallAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->streamedMediaAudioCallAccounts()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->streamedMediaVideoCallAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->streamedMediaVideoCallAccounts()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->streamedMediaVideoCallWithAudioAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->streamedMediaVideoCallWithAudioAccounts()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->fileTransferAccounts()->isFilterValid(), true);
     QCOMPARE(mAM->fileTransferAccounts()->accounts().isEmpty(), true);
 
     QList<AccountFilterConstPtr> filterChain;
@@ -491,7 +474,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
     /* match fixedProperties and allowedProperties is complete */
@@ -513,7 +495,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
     /* should not match as fixedProperties lack TargetHandleType */
@@ -530,7 +511,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     /* should not match as fixedProperties has more than expected */
@@ -553,7 +533,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     /* should not match as allowedProperties has TargetFoo that is not allowed */
@@ -575,7 +554,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureCapabilities),
