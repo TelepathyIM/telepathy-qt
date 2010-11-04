@@ -203,12 +203,7 @@ bool CapabilitiesBase::isSpecificToContact() const
 bool CapabilitiesBase::textChats() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.fixedProperties().size() != 2) {
-            continue;
-        }
-
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
-            rccSpec.targetHandleType() == HandleTypeContact) {
+        if (rccSpec.supports(RequestableChannelClassSpec::textChat())) {
             return true;
         }
     }
@@ -231,12 +226,7 @@ bool CapabilitiesBase::textChats() const
 bool CapabilitiesBase::streamedMediaCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.fixedProperties().size() != 2) {
-            continue;
-        }
-
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            rccSpec.targetHandleType() == HandleTypeContact) {
+        if (rccSpec.supports(RequestableChannelClassSpec::streamedMediaCall())) {
             return true;
         }
     }
@@ -267,13 +257,7 @@ bool CapabilitiesBase::streamedMediaCalls() const
 bool CapabilitiesBase::streamedMediaAudioCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.fixedProperties().size() != 2) {
-            continue;
-        }
-
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            rccSpec.targetHandleType() == HandleTypeContact &&
-            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::streamedMediaAudioCall())) {
             return true;
         }
     }
@@ -293,13 +277,7 @@ bool CapabilitiesBase::streamedMediaAudioCalls() const
 bool CapabilitiesBase::streamedMediaVideoCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.fixedProperties().size() != 2) {
-            continue;
-        }
-
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            rccSpec.targetHandleType() == HandleTypeContact &&
-            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::streamedMediaVideoCall())) {
             return true;
         }
     }
@@ -319,14 +297,7 @@ bool CapabilitiesBase::streamedMediaVideoCalls() const
 bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.fixedProperties().size() != 2) {
-            continue;
-        }
-
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            rccSpec.targetHandleType() == HandleTypeContact &&
-            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo")) &&
-            rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::streamedMediaVideoCallWithAudio())) {
             return true;
         }
     }
