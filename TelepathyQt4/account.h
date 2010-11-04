@@ -37,6 +37,7 @@
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
 #include <TelepathyQt4/OptionalInterfaceFactory>
+#include <TelepathyQt4/Presence>
 #include <TelepathyQt4/ProtocolInfo>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/Types>
@@ -87,9 +88,9 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
     Q_PROPERTY(ConnectionPtr connection READ connection NOTIFY connectionChanged)
     Q_PROPERTY(bool changingPresence READ isChangingPresence NOTIFY changingPresence)
-    Q_PROPERTY(SimplePresence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
-    Q_PROPERTY(SimplePresence currentPresence READ currentPresence NOTIFY currentPresenceChanged)
-    Q_PROPERTY(SimplePresence requestedPresence READ requestedPresence NOTIFY requestedPresenceChanged)
+    Q_PROPERTY(Presence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
+    Q_PROPERTY(Presence currentPresence READ currentPresence NOTIFY currentPresenceChanged)
+    Q_PROPERTY(Presence requestedPresence READ requestedPresence NOTIFY requestedPresenceChanged)
     Q_PROPERTY(bool online READ isOnline NOTIFY onlinenessChanged)
     Q_PROPERTY(QString uniqueIdentifier READ uniqueIdentifier)
     Q_PROPERTY(QString normalizedName READ normalizedName NOTIFY normalizedNameChanged)
@@ -172,19 +173,16 @@ public:
 
     bool isChangingPresence() const;
 
-    // FIXME: (API/ABI break) Use Presence instead of SimplePresence everywhere
     // TODO: Add overload methods to set presence from a Profile::Presence
     // TODO: Add usablePresences() that would return a list of presences that could be set on the
     //       account
-    SimplePresence automaticPresence() const;
-    PendingOperation *setAutomaticPresence(
-            const SimplePresence &value);
+    Presence automaticPresence() const;
+    PendingOperation *setAutomaticPresence(const Presence &presence);
 
-    SimplePresence currentPresence() const;
+    Presence currentPresence() const;
 
-    SimplePresence requestedPresence() const;
-    PendingOperation *setRequestedPresence(
-            const SimplePresence &value);
+    Presence requestedPresence() const;
+    PendingOperation *setRequestedPresence(const Presence &presence);
 
     bool isOnline() const;
 
@@ -316,12 +314,9 @@ Q_SIGNALS:
     void firstOnline();
     void parametersChanged(const QVariantMap &parameters);
     void changingPresence(bool value);
-    // FIXME: (API/ABI break) Remove const
-    void automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
-    // FIXME: (API/ABI break) Remove const
-    void currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
-    // FIXME: (API/ABI break) Remove const
-    void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
+    void automaticPresenceChanged(const Tp::Presence &automaticPresence);
+    void currentPresenceChanged(const Tp::Presence &currentPresence);
+    void requestedPresenceChanged(const Tp::Presence &requestedPresence);
     void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
     void connectionStatusChanged(Tp::Connection::Status status);

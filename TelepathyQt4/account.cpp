@@ -136,9 +136,9 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     ConnectionStatusReason connectionStatusReason;
     QString connectionError;
     QVariantMap connectionErrorDetails;
-    SimplePresence automaticPresence;
-    SimplePresence currentPresence;
-    SimplePresence requestedPresence;
+    Presence automaticPresence;
+    Presence currentPresence;
+    Presence requestedPresence;
     bool usingConnectionCaps;
     ConnectionCapabilities customCaps;
 };
@@ -163,11 +163,6 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       connectionStatusReason(ConnectionStatusReasonNoneSpecified),
       usingConnectionCaps(false)
 {
-    automaticPresence.type = currentPresence.type = requestedPresence.type
-        = ConnectionPresenceTypeUnknown;
-    automaticPresence.status = currentPresence.status = requestedPresence.status
-        = QLatin1String("unknown");
-
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
     QRegExp rx(QLatin1String("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
@@ -1298,11 +1293,11 @@ bool Account::isChangingPresence() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The presence status that will be set by the account manager if this
+ * \return The presence that will be set by the account manager if this
  *         account is brought online automatically by it.
  * \sa automaticPresenceChanged()
  */
-SimplePresence Account::automaticPresence() const
+Presence Account::automaticPresence() const
 {
     return mPriv->automaticPresence;
 }
@@ -1311,20 +1306,19 @@ SimplePresence Account::automaticPresence() const
  * Set the presence status that this account should have if it is brought
  * online automatically by the account manager.
  *
- * \param value The presence status to set when this account is brought
- *        online automatically by the account manager.
+ * \param presence The presence to set when this account is brought
+ *                 online automatically by the account manager.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa automaticPresenceChanged(), setRequestedPresence()
  */
-PendingOperation *Account::setAutomaticPresence(
-        const SimplePresence &value)
+PendingOperation *Account::setAutomaticPresence(const Presence &presence)
 {
     return new PendingVoid(
             mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("AutomaticPresence"),
-                QDBusVariant(QVariant::fromValue(value))),
+                QDBusVariant(QVariant::fromValue(presence.barePresence()))),
             this);
 }
 
@@ -1336,7 +1330,7 @@ PendingOperation *Account::setAutomaticPresence(
  * \return The actual presence of this account.
  * \sa currentPresenceChanged(), setRequestedPresence(), requestedPresence(), automaticPresence()
  */
-SimplePresence Account::currentPresence() const
+Presence Account::currentPresence() const
 {
     return mPriv->currentPresence;
 }
@@ -1349,7 +1343,7 @@ SimplePresence Account::currentPresence() const
  * \return The requested presence of this account.
  * \sa requestedPresenceChanged(), setRequestedPresence(), currentPresence(), automaticPresence()
  */
-SimplePresence Account::requestedPresence() const
+Presence Account::requestedPresence() const
 {
     return mPriv->requestedPresence;
 }
@@ -1361,19 +1355,18 @@ SimplePresence Account::requestedPresence() const
  * manipulate the connection to make currentPresence() match requestedPresence()
  * as closely as possible.
  *
- * \param value The requested presence.
+ * \param presence The requested presence.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa requestedPresenceChanged(), currentPresence(), automaticPresence(), setAutomaticPresence()
  */
-PendingOperation *Account::setRequestedPresence(
-        const SimplePresence &value)
+PendingOperation *Account::setRequestedPresence(const Presence &presence)
 {
     return new PendingVoid(
             mPriv->properties->Set(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("RequestedPresence"),
-                QDBusVariant(QVariant::fromValue(value))),
+                QDBusVariant(QVariant::fromValue(presence.barePresence()))),
             this);
 }
 
@@ -1384,7 +1377,7 @@ PendingOperation *Account::setRequestedPresence(
  */
 bool Account::isOnline() const
 {
-    return mPriv->currentPresence.type != ConnectionPresenceTypeOffline;
+    return mPriv->currentPresence.type() != ConnectionPresenceTypeOffline;
 }
 
 /**
@@ -2348,7 +2341,7 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
- * \fn void Account::automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
+ * \fn void Account::automaticPresenceChanged(const Tp::Presence &automaticPresence) const;
  *
  * This signal is emitted when the value of automaticPresence() of this
  * account changes.
@@ -2359,7 +2352,7 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
- * \fn void Account::currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
+ * \fn void Account::currentPresenceChanged(const Tp::Presence &currentPresence) const;
  *
  * This signal is emitted when the value of currentPresence() of this
  * account changes.
@@ -2370,7 +2363,7 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
- * \fn void Account::requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
+ * \fn void Account::requestedPresenceChanged(const Tp::Presence &requestedPresence) const;
  *
  * This signal is emitted when the value of requestedPresence() of this
  * account changes.
@@ -2629,23 +2622,23 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("AutomaticPresence")) &&
-        automaticPresence != qdbus_cast<SimplePresence>(
+        automaticPresence.barePresence() != qdbus_cast<SimplePresence>(
                 props[QLatin1String("AutomaticPresence")])) {
-        automaticPresence = qdbus_cast<SimplePresence>(
-                props[QLatin1String("AutomaticPresence")]);
-        debug() << " Automatic Presence:" << automaticPresence.type <<
-            "-" << automaticPresence.status;
+        automaticPresence = Presence(qdbus_cast<SimplePresence>(
+                props[QLatin1String("AutomaticPresence")]));
+        debug() << " Automatic Presence:" << automaticPresence.type() <<
+            "-" << automaticPresence.status();
         emit parent->automaticPresenceChanged(automaticPresence);
         parent->notify("automaticPresence");
     }
 
     if (props.contains(QLatin1String("CurrentPresence")) &&
-        currentPresence != qdbus_cast<SimplePresence>(
+        currentPresence.barePresence() != qdbus_cast<SimplePresence>(
                 props[QLatin1String("CurrentPresence")])) {
-        currentPresence = qdbus_cast<SimplePresence>(
-                props[QLatin1String("CurrentPresence")]);
-        debug() << " Current Presence:" << currentPresence.type <<
-            "-" << currentPresence.status;
+        currentPresence = Presence(qdbus_cast<SimplePresence>(
+                props[QLatin1String("CurrentPresence")]));
+        debug() << " Current Presence:" << currentPresence.type() <<
+            "-" << currentPresence.status();
         emit parent->currentPresenceChanged(currentPresence);
         parent->notify("currentPresence");
         emit parent->onlinenessChanged(parent->isOnline());
@@ -2653,12 +2646,12 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("RequestedPresence")) &&
-        requestedPresence != qdbus_cast<SimplePresence>(
+        requestedPresence.barePresence() != qdbus_cast<SimplePresence>(
                 props[QLatin1String("RequestedPresence")])) {
-        requestedPresence = qdbus_cast<SimplePresence>(
-                props[QLatin1String("RequestedPresence")]);
-        debug() << " Requested Presence:" << requestedPresence.type <<
-            "-" << requestedPresence.status;
+        requestedPresence = Presence(qdbus_cast<SimplePresence>(
+                props[QLatin1String("RequestedPresence")]));
+        debug() << " Requested Presence:" << requestedPresence.type() <<
+            "-" << requestedPresence.status();
         emit parent->requestedPresenceChanged(requestedPresence);
         parent->notify("requestedPresence");
     }
