@@ -80,13 +80,7 @@ public:
 
     inline QStringList interfaces() const { return mInterfaces; }
 
-    TELEPATHY_QT4_DEPRECATED inline bool hasInterface(const char *name)
-    {
-        return mInterfaces.contains(QLatin1String(name));
-    }
-
-    // FIXME: (API/ABI break) make it const
-    inline bool hasInterface(const QString &name)
+    inline bool hasInterface(const QString &name) const
     {
         return mInterfaces.contains(name);
     }
