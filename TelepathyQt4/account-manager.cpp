@@ -1203,6 +1203,7 @@ void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
     }
 
     if (newAccount) {
+        debug() << "New account" << path.path();
         mPriv->addAccountForPath(path);
     } else {
         /* Only emit accountValidityChanged if both the AM and the account
@@ -1236,6 +1237,8 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
         mPriv->incompleteAccounts.remove(path);
         debug() << "Account" << path << "was removed, but it was "
             "not completely introspected, ignoring";
+    } else {
+        debug() << "Got AccountRemoved for unknown account" << path << ", ignoring";
     }
 }
 
