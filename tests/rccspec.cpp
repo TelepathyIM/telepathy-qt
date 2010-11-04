@@ -58,15 +58,13 @@ void TestRCCSpec::testRCCSpec()
 
     spec = RequestableChannelClassSpec::conferenceTextChat();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
-    QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
-    QCOMPARE(spec.fixedProperties().size(), 2);
+    QVERIFY(!spec.hasTargetHandleType());
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
 
     spec = RequestableChannelClassSpec::conferenceTextChatWithInvitees();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
-    QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
-    QCOMPARE(spec.fixedProperties().size(), 2);
+    QVERIFY(!spec.hasTargetHandleType());
     QCOMPARE(spec.allowedProperties().size(), 2);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")), true);
@@ -74,29 +72,25 @@ void TestRCCSpec::testRCCSpec()
     spec = RequestableChannelClassSpec::conferenceTextChatroom();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
     QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeRoom));
-    QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
 
     spec = RequestableChannelClassSpec::conferenceTextChatroomWithInvitees();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
     QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeRoom));
-    QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().size(), 2);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")), true);
 
     spec = RequestableChannelClassSpec::conferenceStreamedMediaCall();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-    QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
-    QCOMPARE(spec.fixedProperties().size(), 2);
+    QVERIFY(!spec.hasTargetHandleType());
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
 
     spec = RequestableChannelClassSpec::conferenceStreamedMediaCallWithInvitees();
     QCOMPARE(spec.channelType(), TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-    QCOMPARE(spec.targetHandleType(), static_cast<uint>(HandleTypeContact));
-    QCOMPARE(spec.fixedProperties().size(), 2);
+    QVERIFY(!spec.hasTargetHandleType());
     QCOMPARE(spec.allowedProperties().size(), 2);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
     QCOMPARE(spec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")), true);

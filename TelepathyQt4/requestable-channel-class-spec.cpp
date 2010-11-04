@@ -178,9 +178,6 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChat()
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
-        rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        // TODO: what to do with Conference.DRAFT, just ignore it?
         rcc.allowedProperties.append(
                 TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
         spec = RequestableChannelClassSpec(rcc);
@@ -197,9 +194,6 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatWithI
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
-        rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        // TODO: what to do with Conference.DRAFT, just ignore it?
         rcc.allowedProperties.append(
                 TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
         rcc.allowedProperties.append(
@@ -220,7 +214,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatroom(
                 TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
         rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeRoom);
-        // TODO: what to do with Conference.DRAFT, just ignore it?
+
         rcc.allowedProperties.append(
                 TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
         spec = RequestableChannelClassSpec(rcc);
@@ -239,7 +233,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatroomW
                 TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
         rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeRoom);
-        // TODO: what to do with Conference.DRAFT, just ignore it?
+
         rcc.allowedProperties.append(
                 TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
         rcc.allowedProperties.append(
@@ -258,9 +252,6 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceStreamedMedia
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-        rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        // TODO: what to do with Conference.DRAFT, just ignore it?
         rcc.allowedProperties.append(
                 TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
         spec = RequestableChannelClassSpec(rcc);
@@ -277,9 +268,6 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceStreamedMedia
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-        rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        // TODO: what to do with Conference.DRAFT, just ignore it?
         rcc.allowedProperties.append(
                 TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"));
         rcc.allowedProperties.append(
