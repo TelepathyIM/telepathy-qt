@@ -258,6 +258,22 @@ ChannelClassSpec ChannelClassSpec::textChatroom(const QVariantMap &additionalPro
     }
 }
 
+ChannelClassSpec ChannelClassSpec::unnamedTextChat(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT),
+                static_cast<uint>(HandleTypeNone));
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
 ChannelClassSpec ChannelClassSpec::streamedMediaCall(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
@@ -326,6 +342,73 @@ ChannelClassSpec ChannelClassSpec::streamedMediaVideoCallWithAudio(const QVarian
     }
 }
 
+ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaCall(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+                static_cast<uint>(HandleTypeNone));
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaAudioCall(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+                static_cast<uint>(HandleTypeNone));
+        spec.setStreamedMediaInitialAudioFlag();
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaVideoCall(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+                static_cast<uint>(HandleTypeNone));
+        spec.setStreamedMediaInitialVideoFlag();
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+                static_cast<uint>(HandleTypeNone));
+        spec.setStreamedMediaInitialAudioFlag();
+        spec.setStreamedMediaInitialVideoFlag();
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
 ChannelClassSpec ChannelClassSpec::roomList(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
