@@ -88,21 +88,21 @@ void AbstractInterface::invalidate(DBusProxy *proxy,
     }
 }
 
-PendingVariant *AbstractInterface::internalRequestProperty(const char *name) const
+PendingVariant *AbstractInterface::internalRequestProperty(const QString &name) const
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(),
             QLatin1String(TELEPATHY_INTERFACE_PROPERTIES), QLatin1String("Get"));
-    msg << interface() << QString::fromUtf8(name);
+    msg << interface() << name;
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
     return new PendingVariant(pendingCall);
 }
 
-PendingOperation *AbstractInterface::internalSetProperty(const char *name,
+PendingOperation *AbstractInterface::internalSetProperty(const QString &name,
         const QVariant &newValue)
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(),
             QLatin1String(TELEPATHY_INTERFACE_PROPERTIES), QLatin1String("Set"));
-    msg << interface() << QString::fromUtf8(name) << newValue;
+    msg << interface() << name << newValue;
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
     return new PendingVoid(pendingCall, this);
 }

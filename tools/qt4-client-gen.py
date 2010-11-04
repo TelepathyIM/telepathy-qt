@@ -416,7 +416,7 @@ public:
      */
     inline Tp::PendingVariant *%(gettername)s() const
     {
-        return internalRequestProperty("%(name)s");
+        return internalRequestProperty(QLatin1String("%(name)s"));
     }
 """ % {'name' : name,
        'docstring' : format_docstring(prop, '     * ').replace('*/',
@@ -460,7 +460,7 @@ public:
      */
     inline Tp::PendingOperation *%(settername)s(%(type)s newValue)
     {
-        return internalSetProperty("%(name)s", QVariant::fromValue(newValue));
+        return internalSetProperty(QLatin1String("%(name)s"), QVariant::fromValue(newValue));
     }
 """ % {'name' : name,
        'docstring' : format_docstring(prop, '     * ').replace('*/',
