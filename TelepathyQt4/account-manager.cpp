@@ -676,8 +676,7 @@ AccountSetPtr AccountManager::validAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("valid"), true);
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return filterAccounts(filter);
 }
 
 /**
@@ -689,8 +688,7 @@ AccountSetPtr AccountManager::invalidAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("valid"), false);
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return filterAccounts(filter);
 }
 
 /**
@@ -702,8 +700,7 @@ AccountSetPtr AccountManager::enabledAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("enabled"), true);
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return filterAccounts(filter);
 }
 
 /**
@@ -715,8 +712,7 @@ AccountSetPtr AccountManager::disabledAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("enabled"), false);
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return filterAccounts(filter);
 }
 
 /**
@@ -728,8 +724,7 @@ AccountSetPtr AccountManager::onlineAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("online"), true);
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return filterAccounts(filter);
 }
 
 /**
@@ -741,8 +736,7 @@ AccountSetPtr AccountManager::offlineAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("online"), false);
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return filterAccounts(filter);
 }
 
 /**
@@ -900,10 +894,14 @@ AccountSetPtr AccountManager::fileTransferAccountsSet() const
 AccountSetPtr AccountManager::accountsByProtocol(
         const QString &protocolName) const
 {
+    if (!isReady(FeatureCore)) {
+        warning() << "Account filtering requires AccountManager to be ready";
+        return filterAccounts(QList<AccountFilterConstPtr>());
+    }
+
     QVariantMap filter;
     filter.insert(QLatin1String("protocolName"), protocolName);
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return filterAccounts(filter);
 }
 
 /**
@@ -936,6 +934,12 @@ AccountSetPtr AccountManager::filterAccounts(const AccountFilterConstPtr &filter
  */
 AccountSetPtr AccountManager::filterAccounts(const QList<AccountFilterConstPtr> &filters) const
 {
+    if (!isReady(FeatureCore)) {
+        warning() << "Account filtering requires AccountManager to be ready";
+        return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                        (AccountManager *) this), QList<AccountFilterConstPtr>()));
+    }
+
     return AccountSetPtr(new AccountSet(AccountManagerPtr(
                     (AccountManager *) this), filters));
 }
@@ -985,6 +989,12 @@ AccountSetPtr AccountManager::filterAccounts(const QList<AccountFilterConstPtr> 
  */
 AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
 {
+    if (!isReady(FeatureCore)) {
+        warning() << "Account filtering requires AccountManager to be ready";
+        return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                        (AccountManager *) this), QVariantMap()));
+    }
+
     return AccountSetPtr(new AccountSet(AccountManagerPtr(
                     (AccountManager *) this), filter));
 }
