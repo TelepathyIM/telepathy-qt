@@ -234,4 +234,6 @@ inline uint qHash(const ContactPtr &contact)
 
 } // Tp
 
+Q_DECLARE_METATYPE(Tp::Contact::InfoFields);
+
 #endif
