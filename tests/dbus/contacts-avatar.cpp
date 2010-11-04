@@ -168,8 +168,11 @@ void TestContactsAvatar::testAvatar()
     QByteArray a = tmpDir.toLatin1();
     setenv ("XDG_CACHE_HOME", a.constData(), true);
 
+    Client::ConnectionInterfaceAvatarsInterface *connAvatarsInterface =
+        mConn->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>();
+
     /* Check if AvatarRetrieved gets called */
-    connect(mConn->avatarsInterface(),
+    connect(connAvatarsInterface,
             SIGNAL(AvatarRetrieved(uint, const QString &, const QByteArray &, const QString &)),
             SLOT(onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &)));
 

@@ -580,7 +580,11 @@ void TestStreamedMediaChanCall::testOutgoingCall()
 void TestStreamedMediaChanCall::testIncomingCall()
 {
     mConn->setSelfPresence(QLatin1String("away"), QLatin1String("preparing for a test"));
-    QVERIFY(connect(mConn->requestsInterface(),
+
+    Client::ConnectionInterfaceRequestsInterface *connRequestsInterface =
+        mConn->optionalInterface<Client::ConnectionInterfaceRequestsInterface>();
+
+    QVERIFY(connect(connRequestsInterface,
                     SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
                     SLOT(onNewChannels(const Tp::ChannelDetailsList&))));
     mConn->setSelfPresence(QLatin1String("available"), QLatin1String("call me?"));

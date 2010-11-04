@@ -108,9 +108,6 @@ void TestConnCapabilities::testCapabilities()
     QCOMPARE(mConn->isReady(), true);
     QCOMPARE(mConn->status(), Connection::StatusConnected);
 
-    QVERIFY(mConn->requestsInterface() != 0);
-    QVERIFY(mConn->capabilities() != 0);
-
     // Now we should have the real information on what the connection supports
     QCOMPARE(mConn->capabilities()->textChats(), true);
     QCOMPARE(mConn->capabilities()->textChatrooms(), false);
