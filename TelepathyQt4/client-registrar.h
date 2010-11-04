@@ -46,11 +46,10 @@ class TELEPATHY_QT4_EXPORT ClientRegistrar : public QObject, public RefCounted
     Q_DISABLE_COPY(ClientRegistrar)
 
 public:
+    static ClientRegistrarPtr create(const QDBusConnection &bus);
     static ClientRegistrarPtr create(
-            const QDBusConnection &bus = QDBusConnection::sessionBus());
-
-    static ClientRegistrarPtr create(
-            const AccountFactoryConstPtr &accountFactory,
+            const AccountFactoryConstPtr &accountFactory =
+                AccountFactory::create(QDBusConnection::sessionBus()),
             const ConnectionFactoryConstPtr &connectionFactory =
                 ConnectionFactory::create(QDBusConnection::sessionBus()),
             const ChannelFactoryConstPtr &channelFactory =
