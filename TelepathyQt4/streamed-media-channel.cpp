@@ -19,10 +19,8 @@
  */
 
 #include <TelepathyQt4/StreamedMediaChannel>
-#include "TelepathyQt4/streamed-media-channel-internal.h"
 
 #include "TelepathyQt4/_gen/streamed-media-channel.moc.hpp"
-#include "TelepathyQt4/_gen/streamed-media-channel-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -39,6 +37,19 @@ namespace Tp
 {
 
 /* ====== PendingMediaStreams ====== */
+struct TELEPATHY_QT4_NO_EXPORT PendingMediaStreams::Private
+{
+    Private(PendingMediaStreams *parent, const StreamedMediaChannelPtr &channel)
+        : parent(parent), channel(channel), streamsReady(0)
+    {
+    }
+
+    PendingMediaStreams *parent;
+    StreamedMediaChannelPtr channel;
+    MediaStreams streams;
+    uint numStreams;
+    uint streamsReady;
+};
 
 /**
  * \class PendingMediaStreams
@@ -188,6 +199,30 @@ void PendingMediaStreams::onStreamReady(PendingOperation *op)
 }
 
 /* ====== MediaStream ====== */
+struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private
+{
+    Private(MediaStream *parent, const StreamedMediaChannelPtr &channel,
+            const MediaStreamInfo &info);
+
+    static void introspectContact(Private *self);
+
+    PendingOperation *updateDirection(bool send, bool receive);
+    SendingState localSendingStateFromDirection();
+    SendingState remoteSendingStateFromDirection();
+
+    MediaStream *parent;
+    QPointer<StreamedMediaChannel> channel;
+    ReadinessHelper *readinessHelper;
+
+    uint id;
+    uint type;
+    uint contactHandle;
+    ContactPtr contact;
+    uint direction;
+    uint pendingSend;
+    uint state;
+};
+
 /**
  * \class MediaStream
  * \ingroup clientchannel
@@ -694,6 +729,30 @@ void MediaStream::gotStreamState(uint state)
 }
 
 /* ====== StreamedMediaChannel ====== */
+struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
+{
+    Private(StreamedMediaChannel *parent);
+    ~Private();
+
+    static void introspectStreams(Private *self);
+    static void introspectLocalHoldState(Private *self);
+
+    // Public object
+    StreamedMediaChannel *parent;
+
+    // Mandatory properties interface proxy
+    Client::DBus::PropertiesInterface *properties;
+
+    ReadinessHelper *readinessHelper;
+
+    // Introspection
+    MediaStreams incompleteStreams;
+    MediaStreams streams;
+
+    LocalHoldState localHoldState;
+    LocalHoldStateReason localHoldStateReason;
+};
+
 StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
     : parent(parent),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
