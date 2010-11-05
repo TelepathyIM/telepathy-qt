@@ -91,7 +91,8 @@
  * After installing all dependencies, run:
  *
  * \verbatim
-   $ sh autogen.sh
+   $ mkdir build; cd build
+   $ cmake ..
    $ make
    $ make install \endverbatim
  */
