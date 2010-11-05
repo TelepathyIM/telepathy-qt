@@ -1,5 +1,7 @@
-telepathy-qt4 0.3.14 (UNRELEASED)
+telepathy-qt4 0.3.14 (2010-11-05)
 =================================
+
+The "O HAI MY NAME IS CONFERENCE" release.
 
 Enhancements:
 * fd.o #30098 - Added an asynchronous property request API for generated
