@@ -1088,6 +1088,8 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
  *
  * This signal is emitted when a new account is created.
  *
+ * \deprecated Use newAccount() instead.
+ *
  * \param path The object path of the newly created account.
  * \sa accountForPath()
  */
@@ -1097,6 +1099,8 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
  *
  * This signal is emitted when an account gets removed.
  *
+ * \deprecated Use Account::removed() instead.
+ *
  * \param path The object path of the removed account.
  * \sa accountForPath()
  */
@@ -1105,6 +1109,8 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
  * \fn void AccountManager::accountValidityChanged(const QString &path, bool valid)
  *
  * This signal is emitted when an account validity changes.
+ *
+ * \deprecated Use Account::validityChanged() instead.
  *
  * \param path The object path of the account in which the validity changed.
  * \param valid Whether the account is valid or not.
