@@ -166,22 +166,11 @@ Features ChannelFactory::featuresForStreamedMediaCalls(const QVariantMap &additi
 void ChannelFactory::addFeaturesForStreamedMediaCalls(const Features &features,
         const QVariantMap &additionalProps)
 {
-    // Set for both StreamedMedia and Call.DRAFT - remove once SMChannel drops its Call.DRAFT
-    // support hacks
-
     ChannelClassSpec smSpec = ChannelClassSpec::streamedMediaCall(additionalProps);
     ChannelClassSpec unnamedSMSpec = ChannelClassSpec::unnamedStreamedMediaCall(additionalProps);
 
-    ChannelClassSpec callDraftSpec = smSpec;
-    callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
-
-    ChannelClassSpec unnamedCallDraftSpec = unnamedSMSpec;
-    unnamedCallDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
-
     addFeaturesFor(smSpec, features);
-    addFeaturesFor(callDraftSpec, features);
     addFeaturesFor(unnamedSMSpec, features);
-    addFeaturesFor(unnamedCallDraftSpec, features);
 }
 
 ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForStreamedMediaCalls(
@@ -193,22 +182,11 @@ ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForStreamedMediaC
 void ChannelFactory::setConstructorForStreamedMediaCalls(const ConstructorConstPtr &ctor,
         const QVariantMap &additionalProps)
 {
-    // Set for both StreamedMedia and Call.DRAFT - remove once SMChannel drops its Call.DRAFT
-    // support hacks
-
     ChannelClassSpec smSpec = ChannelClassSpec::streamedMediaCall(additionalProps);
     ChannelClassSpec unnamedSMSpec = ChannelClassSpec::unnamedStreamedMediaCall(additionalProps);
 
-    ChannelClassSpec callDraftSpec = smSpec;
-    callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
-
-    ChannelClassSpec unnamedCallDraftSpec = unnamedSMSpec;
-    unnamedCallDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
-
     setConstructorFor(smSpec, ctor);
-    setConstructorFor(callDraftSpec, ctor);
     setConstructorFor(unnamedSMSpec, ctor);
-    setConstructorFor(unnamedCallDraftSpec, ctor);
 }
 
 Features ChannelFactory::featuresForRoomLists(const QVariantMap &additionalProps) const

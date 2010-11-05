@@ -22,6 +22,7 @@
 #include <TelepathyQt4/ChannelClassSpec>
 
 #include "TelepathyQt4/_gen/future-constants.h"
+
 #include "TelepathyQt4/debug-internal.h"
 
 namespace Tp
@@ -155,21 +156,7 @@ void ChannelClassSpec::setProperty(const QString &qualifiedName, const QVariant 
         mPriv = new Private;
     }
 
-    // Flatten the InitialAudio/Video properties from the different media interfaces to one
-    // namespace - we convert back to the correct interface when this is converted back to a
-    // ChannelClass for use in e.g. client channel filters
-
-    QString propName = qualifiedName;
-
-    // API/ABI break TODO: remove this hack when the Call.DRAFT support hack is removed from
-    // StreamedMediaChannel
-    if (propName == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")
-            || propName == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")) {
-        propName.replace(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL,
-                TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-    }
-
-    mPriv->props.insert(propName, value);
+    mPriv->props.insert(qualifiedName, value);
 }
 
 void ChannelClassSpec::unsetProperty(const QString &qualifiedName)
@@ -179,17 +166,7 @@ void ChannelClassSpec::unsetProperty(const QString &qualifiedName)
         return;
     }
 
-    QString propName = qualifiedName;
-
-    // API/ABI break TODO: remove this hack when the Call.DRAFT support hack is removed from
-    // StreamedMediaChannel
-    if (propName == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")
-            || propName == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")) {
-        propName.replace(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL,
-                TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-    }
-
-    mPriv->props.remove(propName);
+    mPriv->props.remove(qualifiedName);
 }
 
 QVariantMap ChannelClassSpec::allProperties() const
@@ -209,16 +186,6 @@ ChannelClass ChannelClassSpec::bareClass() const
     QVariantMap props = mPriv->props;
     foreach (QString propName, props.keys()) {
         QVariant value = props.value(propName);
-
-        // API/ABI break TODO: remove this hack when the Call.DRAFT support hack is removed from
-        // StreamedMediaChannel
-        if (channelType() == TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL) {
-            if (propName.endsWith(QLatin1String(".InitialAudio"))
-                    || propName.endsWith(QLatin1String(".InitialVideo"))) {
-                propName.replace(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
-                        TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
-            }
-        }
 
         cc.insert(propName, QDBusVariant(value));
     }
