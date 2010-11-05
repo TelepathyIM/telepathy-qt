@@ -519,7 +519,6 @@ public:
                 invalidationMessage()
             ));
         }
-
 """ % {'rettypes' : rettypes,
        'name' : name,
        'params' : params})
