@@ -264,7 +264,6 @@ void TestStreamedMediaChan::expectOutgoingRequestStreamsFinished(PendingOperatio
     QCOMPARE(mRequestContactsReturn.size(), 1);
     MediaStreamPtr stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
-    QVERIFY(stream->members().contains(otherContact));
     QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
 
     // These checks can't work reliably, unless we add some complex backdoors to the test service,
