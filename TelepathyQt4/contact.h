@@ -26,7 +26,6 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/Presence>
 #include <TelepathyQt4/Types>
 
 #include <QObject>
@@ -42,6 +41,7 @@ class ContactLocation;
 class ContactManager;
 class PendingContactInfo;
 class PendingOperation;
+class Presence;
 class ReferencedHandles;
 
 class TELEPATHY_QT4_EXPORT Contact : public QObject

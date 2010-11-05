@@ -34,6 +34,7 @@
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/Presence>
 
 #include <QDebug>
 #include <QFile>

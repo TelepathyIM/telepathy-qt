@@ -60,6 +60,8 @@ public:
     void setStatus(ConnectionPresenceType type, const QString &status,
             const QString &statusMessage);
 
+    SimplePresence barePresence() const;
+
 private:
     struct Private;
     friend struct Private;
