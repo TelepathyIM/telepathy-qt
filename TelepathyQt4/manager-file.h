@@ -26,22 +26,23 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QVariant>
-
 #include <TelepathyQt4/Types>
 
-class QString;
+#include <QMetaType>
+#include <QVariant>
 
 namespace Tp
 {
 
 class TELEPATHY_QT4_EXPORT ManagerFile
 {
-    Q_DISABLE_COPY(ManagerFile);
-
 public:
+    ManagerFile();
+    ManagerFile(const ManagerFile &other);
     ManagerFile(const QString &cmName);
     ~ManagerFile();
+
+    ManagerFile &operator=(const ManagerFile &other);
 
     QString cmName() const;
 
@@ -66,5 +67,7 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Tp::ManagerFile);
 
 #endif

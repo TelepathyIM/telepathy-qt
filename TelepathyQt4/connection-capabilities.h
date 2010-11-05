@@ -35,6 +35,7 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT ConnectionCapabilities : public CapabilitiesBase
 {
 public:
+    ConnectionCapabilities();
     virtual ~ConnectionCapabilities();
 
     bool textChatrooms() const;
@@ -65,7 +66,6 @@ private:
     friend class Connection;
     friend class ProtocolInfo;
 
-    ConnectionCapabilities();
     ConnectionCapabilities(const RequestableChannelClassList &rccs);
     ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs);
 
@@ -76,5 +76,7 @@ private:
 };
 
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::ConnectionCapabilities);
 
 #endif

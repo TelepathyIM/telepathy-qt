@@ -68,4 +68,6 @@ private:
 
 } // Tp
 
+Q_DECLARE_METATYPE(Tp::Presence);
+
 #endif

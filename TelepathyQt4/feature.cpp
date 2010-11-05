@@ -31,6 +31,11 @@ struct TELEPATHY_QT4_NO_EXPORT Feature::Private : public QSharedData
     bool critical;
 };
 
+Feature::Feature()
+    : QPair<QString, uint>()
+{
+}
+
 Feature::Feature(const QString &className, uint id, bool critical)
     : QPair<QString, uint>(className, id),
       mPriv(new Private(critical))
@@ -56,6 +61,10 @@ Feature &Feature::operator=(const Feature &other)
 
 bool Feature::isCritical() const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return mPriv->critical;
 }
 

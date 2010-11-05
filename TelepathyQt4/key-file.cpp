@@ -36,11 +36,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT KeyFile::Private
 {
-    QString fileName;
-    KeyFile::Status status;
-    QHash<QString, QHash<QString, QByteArray> > groups;
-    QString currentGroup;
-
     Private();
     Private(const QString &fName);
 
@@ -57,6 +52,11 @@ struct TELEPATHY_QT4_NO_EXPORT KeyFile::Private
     QString rawValue(const QString &key) const;
     QString value(const QString &key) const;
     QStringList valueAsStringList(const QString &key) const;
+
+    QString fileName;
+    KeyFile::Status status;
+    QHash<QString, QHash<QString, QByteArray> > groups;
+    QString currentGroup;
 };
 
 KeyFile::Private::Private()
@@ -313,11 +313,32 @@ KeyFile::KeyFile(const QString &fileName)
 }
 
 /**
+ * Create a KeyFile object used to read (key-pair) compliant files.
+ */
+KeyFile::KeyFile(const KeyFile &other)
+    : mPriv(new Private())
+{
+    mPriv->fileName = other.mPriv->fileName;
+    mPriv->status = other.mPriv->status;
+    mPriv->groups = other.mPriv->groups;
+    mPriv->currentGroup = other.mPriv->currentGroup;
+}
+
+/**
  * Class destructor.
  */
 KeyFile::~KeyFile()
 {
     delete mPriv;
+}
+
+KeyFile &KeyFile::operator=(const KeyFile &other)
+{
+    mPriv->fileName = other.mPriv->fileName;
+    mPriv->status = other.mPriv->status;
+    mPriv->groups = other.mPriv->groups;
+    mPriv->currentGroup = other.mPriv->currentGroup;
+    return *this;
 }
 
 /**

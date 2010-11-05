@@ -60,6 +60,14 @@ CapabilitiesBase::Private::Private(const RequestableChannelClassSpecList &rccSpe
 
 /**
  * Construct a new CapabilitiesBase object.
+ */
+CapabilitiesBase::CapabilitiesBase()
+    : mPriv(new Private(false))
+{
+}
+
+/**
+ * Construct a new CapabilitiesBase object.
  *
  * \param specificToContact Whether this object describes the capabilities of a
  *                          particular contact.

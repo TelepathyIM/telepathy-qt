@@ -169,4 +169,7 @@ private:
 
 } // Tp
 
+Q_DECLARE_METATYPE(Tp::Profile::Parameter);
+Q_DECLARE_METATYPE(Tp::Profile::Presence);
+
 #endif

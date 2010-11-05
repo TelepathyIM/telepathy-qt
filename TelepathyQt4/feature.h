@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/Global>
 
+#include <QMetaType>
 #include <QPair>
 #include <QSet>
 #include <QSharedDataPointer>
@@ -39,9 +40,12 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT Feature : public QPair<QString, uint>
 {
 public:
+    Feature();
     Feature(const QString &className, uint id, bool critical = false);
     Feature(const Feature &other);
     ~Feature();
+
+    bool isValid() const { return mPriv.constData() != 0; }
 
     Feature &operator=(const Feature &other);
 
@@ -67,5 +71,8 @@ inline Features operator|(const Feature &feature1, const Feature &feature2)
 }
 
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::Feature);
+Q_DECLARE_METATYPE(Tp::Features);
 
 #endif
