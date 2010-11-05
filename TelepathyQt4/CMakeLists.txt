@@ -275,7 +275,7 @@ set(telepathy_qt4_HEADERS
     PendingVariant
     pending-variant.h
     PendingVariantMap
-    pending-variantMap.h
+    pending-variant-map.h
     PendingVoid
     Presence
     presence.h
