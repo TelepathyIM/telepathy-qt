@@ -119,6 +119,7 @@ void ChannelFactory::addFeaturesForTextChats(const Features &features,
         const QVariantMap &additionalProps)
 {
     addFeaturesFor(ChannelClassSpec::textChat(additionalProps), features);
+    addFeaturesFor(ChannelClassSpec::unnamedTextChat(additionalProps), features);
 }
 
 ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForTextChats(
@@ -131,6 +132,7 @@ void ChannelFactory::setConstructorForTextChats(const ConstructorConstPtr &ctor,
         const QVariantMap &additionalProps)
 {
     setConstructorFor(ChannelClassSpec::textChat(additionalProps), ctor);
+    setConstructorFor(ChannelClassSpec::unnamedTextChat(additionalProps), ctor);
 }
 
 Features ChannelFactory::featuresForTextChatrooms(const QVariantMap &additionalProps) const
@@ -168,12 +170,18 @@ void ChannelFactory::addFeaturesForStreamedMediaCalls(const Features &features,
     // support hacks
 
     ChannelClassSpec smSpec = ChannelClassSpec::streamedMediaCall(additionalProps);
+    ChannelClassSpec unnamedSMSpec = ChannelClassSpec::unnamedStreamedMediaCall(additionalProps);
 
     ChannelClassSpec callDraftSpec = smSpec;
     callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
 
+    ChannelClassSpec unnamedCallDraftSpec = unnamedSMSpec;
+    unnamedCallDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
+
     addFeaturesFor(smSpec, features);
     addFeaturesFor(callDraftSpec, features);
+    addFeaturesFor(unnamedSMSpec, features);
+    addFeaturesFor(unnamedCallDraftSpec, features);
 }
 
 ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForStreamedMediaCalls(
@@ -189,12 +197,18 @@ void ChannelFactory::setConstructorForStreamedMediaCalls(const ConstructorConstP
     // support hacks
 
     ChannelClassSpec smSpec = ChannelClassSpec::streamedMediaCall(additionalProps);
+    ChannelClassSpec unnamedSMSpec = ChannelClassSpec::unnamedStreamedMediaCall(additionalProps);
 
     ChannelClassSpec callDraftSpec = smSpec;
     callDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
 
+    ChannelClassSpec unnamedCallDraftSpec = unnamedSMSpec;
+    unnamedCallDraftSpec.setChannelType(TP_QT4_FUTURE_IFACE_CHANNEL_TYPE_CALL);
+
     setConstructorFor(smSpec, ctor);
     setConstructorFor(callDraftSpec, ctor);
+    setConstructorFor(unnamedSMSpec, ctor);
+    setConstructorFor(unnamedCallDraftSpec, ctor);
 }
 
 Features ChannelFactory::featuresForRoomLists(const QVariantMap &additionalProps) const

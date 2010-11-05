@@ -164,6 +164,8 @@ public:
 
     static ChannelClassSpec textChat(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec textChatroom(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec unnamedTextChat(const QVariantMap &additionalProperties = QVariantMap());
+
     static ChannelClassSpec streamedMediaCall(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec streamedMediaAudioCall(const QVariantMap &additionalProperties =
             QVariantMap());
@@ -171,6 +173,16 @@ public:
             QVariantMap());
     static ChannelClassSpec streamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
             QVariantMap());
+
+    static ChannelClassSpec unnamedStreamedMediaCall(const QVariantMap &additionalProperties =
+            QVariantMap());
+    static ChannelClassSpec unnamedStreamedMediaAudioCall(const QVariantMap &additionalProperties =
+            QVariantMap());
+    static ChannelClassSpec unnamedStreamedMediaVideoCall(const QVariantMap &additionalProperties =
+            QVariantMap());
+    static ChannelClassSpec unnamedStreamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
+            QVariantMap());
+
     // TODO: add Call when it's undrafted
     static ChannelClassSpec roomList(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec outgoingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
