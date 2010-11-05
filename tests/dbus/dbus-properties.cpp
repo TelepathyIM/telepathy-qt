@@ -123,7 +123,6 @@ void TestDBusProperties::testDBusProperties()
 
     Client::AccountInterface *cliAccount = acc->interface<Client::AccountInterface>();
 
-    QCOMPARE(cliAccount->DisplayName(), oldDisplayName);
     QString currDisplayName;
     QVERIFY(waitForProperty(cliAccount->requestPropertyDisplayName(), &currDisplayName));
     QCOMPARE(currDisplayName, oldDisplayName);
@@ -142,7 +141,6 @@ void TestDBusProperties::testDBusProperties()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(cliAccount->DisplayName(), newDisplayName);
     QVERIFY(waitForProperty(cliAccount->requestPropertyDisplayName(), &currDisplayName));
     QCOMPARE(currDisplayName, newDisplayName);
 

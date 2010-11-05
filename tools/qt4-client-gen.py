@@ -89,21 +89,12 @@ class Generator(object):
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/Global>
 
-namespace Tp{
+namespace Tp
+{
 class PendingVariant;
 class PendingOperation;
 }
 
-// FIXME: (API/ABI break) Remove definition of TELEPATHY_GNUC_DEPRECATED
-
-// basically the same as GLib's G_GNUC_DEPRECATED
-#ifndef TELEPATHY_GNUC_DEPRECATED
-#   if defined(Q_CC_GNUC) && __GNUC__ >= 4
-#       define TELEPATHY_GNUC_DEPRECATED __attribute__((__deprecated__))
-#   else
-#       define TELEPATHY_GNUC_DEPRECATED
-#   endif
-#endif
 """)
 
         if self.must_define:
@@ -367,43 +358,6 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         if 'write' in access:
             settername = 'set' + name
 
-        # TODO: Remove this property entirely and just leave the async getter function
-        self.h("""
-    /**
-     * Represents property "%(name)s" on the remote object.
-%(docstring)s\
-     */
-    Q_PROPERTY(%(val)s %(name)s READ _deprecated_%(gettername)s%(maybesettername)s)
-
-    /**
-     * Getter for the remote object property "%(name)s".
-     *
-     * Don't use this: it blocks the main loop. Use the asynchronous
-     * requestProperty%(name)s() instead.
-     *
-     * \\return The value of the property, or a default-constructed value
-     *          if the property is not readable.
-     */
-    inline TELEPATHY_QT4_DEPRECATED %(val)s %(gettername)s() const
-    {
-        return _deprecated_%(gettername)s();
-    }
-
-private:
-    inline %(val)s _deprecated_%(gettername)s() const
-    {
-        return %(getter-return)s;
-    }
-public:
-""" % {'name' : name,
-       'docstring' : format_docstring(prop, '     * ').replace('*/',
-           '&#42;&#47;'),
-       'val' : binding.val,
-       'name' : name,
-       'gettername' : gettername,
-       'maybesettername' : settername and (' WRITE _deprecated_' + settername) or '',
-       'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, name)) or binding.val + '()'})
-
         if 'read' in access:
             self.h("""
     /**
@@ -424,29 +378,6 @@ public:
        'val' : binding.val,
        'name' : name,
        'gettername' : 'requestProperty' + name})
-
-        # TODO: Remove the sync setter
-        if settername:
-            self.h("""
-    /**
-     * Setter for the remote object property "%s".
-     *
-     * Don't use this: it blocks the main loop.
-     *
-     * \\param newValue The value to set the property to.
-     */
-    inline TELEPATHY_QT4_DEPRECATED void %s(%s newValue)
-    {
-        return _deprecated_%s(newValue);
-    }
-
-private:
-    inline void _deprecated_%s(%s newValue)
-    {
-        internalPropSet("%s", QVariant::fromValue(newValue));
-    }
-public:
-""" % (name, settername, binding.inarg, settername, settername, binding.inarg, name))
 
         if 'write' in access:
             self.h("""
