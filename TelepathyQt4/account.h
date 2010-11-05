@@ -338,7 +338,12 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
-    PendingChannelRequest *createContactSearchChannel(
+    PendingChannelRequest *createContactSearch(
+            const QString &server = QString(),
+            uint limit = 0,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *createContactSearchChannel(
             const QString &server = QString(),
             uint limit = 0,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),

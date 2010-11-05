@@ -2430,7 +2430,7 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  *         when the call has finished.
  * \sa createChannel()
  */
-PendingChannelRequest *Account::createContactSearchChannel(
+PendingChannelRequest *Account::createContactSearch(
         const QString &server,
         uint limit,
         const QDateTime &userActionTime,
@@ -2445,6 +2445,18 @@ PendingChannelRequest *Account::createContactSearchChannel(
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
+}
+
+/**
+ * \deprecated Use createContactSearch() instead.
+ */
+PendingChannelRequest *Account::createContactSearchChannel(
+        const QString &server,
+        uint limit,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createContactSearch(server, limit, userActionTime, preferredHandler);
 }
 
 /**
