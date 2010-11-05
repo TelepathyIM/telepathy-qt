@@ -13,6 +13,14 @@ Enhancements:
 * Deprecated all optional interface convenience methods.
   The methods inherited from OptionalInterfaceFactory should be used directly
   instead if access to low-level proxies is needed.
+* Add unnamed (anonymous, TargetHandleType == None) variants for text chats and
+  calls to ChannelClassSpec
+
+Fixes:
+* Unnamed text and StreamedMedia calls not included in the ChannelFactory
+  (channel class) -> (subclass, features) mapping
+* Some RequestableChannelClassSpec and ConnectionCapabilities methods having a
+  notion of "text chat with a person WHO is a conference", which doesn't exist
 
 telepathy-qt4 0.3.13 (2010-11-01)
 =================================
