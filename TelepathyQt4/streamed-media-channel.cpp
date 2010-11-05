@@ -2310,6 +2310,25 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
 /**
  * Request that the call is ended.
  *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *StreamedMediaChannel::hangupCall()
+{
+    if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
+        return requestClose();
+    } else {
+        return new PendingVoid(mPriv->callInterface()->Hangup(
+                    StateChangeReasonUserRequested, QLatin1String("User requested"),
+                    QString()), this);
+    }
+}
+
+/**
+ * Request that the call is ended.
+ *
+ * \deprecated Use hangupCall() instead.
+ *
  * \param reason A generic hangup reason.
  * \param detailedReason A more specific reason for the call hangup, if one is
  *                       available, or an empty string otherwise.
