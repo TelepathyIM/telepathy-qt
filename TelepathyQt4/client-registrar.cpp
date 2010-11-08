@@ -689,7 +689,7 @@ QHash<QPair<QString, QString>, ClientRegistrar*> ClientRegistrar::registrarForCo
  */
 ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
 {
-    return create(bus, AccountFactory::create(bus, Features()), ConnectionFactory::create(bus),
+    return create(bus, AccountFactory::create(bus), ConnectionFactory::create(bus),
             ChannelFactory::create(bus), ContactFactory::create());
 }
 

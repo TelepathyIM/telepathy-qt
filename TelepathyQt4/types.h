@@ -36,14 +36,21 @@
 
 namespace Tp
 {
+
 TELEPATHY_QT4_EXPORT void registerTypes();
+
+template <typename T> class Filter;
+template <typename T> class GenericCapabilityFilter;
+template <typename T> class GenericPropertyFilter;
 
 class AbstractClient;
 class Account;
-class AccountPropertyFilter;
+typedef GenericCapabilityFilter<Account> AccountCapabilityFilter;
 class AccountFactory;
-class AccountSet;
+typedef Filter<Account> AccountFilter;
 class AccountManager;
+class AccountPropertyFilter;
+class AccountSet;
 class Channel;
 class ChannelDispatchOperation;
 class ChannelFactory;
@@ -57,9 +64,6 @@ class Contact;
 class ContactFactory;
 class ContactSearchChannel;
 class FileTransferChannel;
-template <typename T> class Filter;
-template <typename T> class GenericCapabilityFilter;
-template <typename T> class GenericPropertyFilter;
 class IncomingFileTransferChannel;
 class OutgoingFileTransferChannel;
 class Profile;
@@ -70,21 +74,18 @@ class MediaStream;
 class StreamedMediaChannel;
 class TextChannel;
 
-typedef Filter<Account> AccountFilter;
-typedef GenericCapabilityFilter<Account> AccountCapabilityFilter;
-
 typedef SharedPtr<AbstractClient> AbstractClientPtr;
 typedef SharedPtr<Account> AccountPtr;
-typedef SharedPtr<AccountFactory> AccountFactoryPtr;
-typedef SharedPtr<const AccountFactory> AccountFactoryConstPtr;
 typedef SharedPtr<AccountCapabilityFilter> AccountCapabilityFilterPtr;
 typedef SharedPtr<const AccountCapabilityFilter> AccountCapabilityFilterConstPtr;
-typedef SharedPtr<AccountPropertyFilter> AccountPropertyFilterPtr;
-typedef SharedPtr<const AccountPropertyFilter> AccountPropertyFilterConstPtr;
+typedef SharedPtr<AccountFactory> AccountFactoryPtr;
+typedef SharedPtr<const AccountFactory> AccountFactoryConstPtr;
 typedef SharedPtr<AccountFilter> AccountFilterPtr;
 typedef SharedPtr<const AccountFilter> AccountFilterConstPtr;
-typedef SharedPtr<AccountSet> AccountSetPtr;
 typedef SharedPtr<AccountManager> AccountManagerPtr;
+typedef SharedPtr<AccountPropertyFilter> AccountPropertyFilterPtr;
+typedef SharedPtr<const AccountPropertyFilter> AccountPropertyFilterConstPtr;
+typedef SharedPtr<AccountSet> AccountSetPtr;
 typedef SharedPtr<Channel> ChannelPtr;
 typedef SharedPtr<ChannelDispatchOperation> ChannelDispatchOperationPtr;
 typedef SharedPtr<ChannelFactory> ChannelFactoryPtr;

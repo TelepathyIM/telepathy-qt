@@ -89,6 +89,8 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
+    ~Contact();
+
     ContactManager *manager() const;
 
     ReferencedHandles handle() const;
@@ -154,8 +156,6 @@ public:
     QStringList groups() const;
     PendingOperation *addToGroup(const QString &group);
     PendingOperation *removeFromGroup(const QString &group);
-
-    ~Contact();
 
 Q_SIGNALS:
     void aliasChanged(const QString &alias);
