@@ -58,6 +58,10 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : 
     QDateTime lastModificationTime;
 };
 
+FileTransferChannelCreationProperties::FileTransferChannelCreationProperties()
+{
+}
+
 FileTransferChannelCreationProperties::FileTransferChannelCreationProperties(
         const QString &suggestedFileName, const QString &contentType,
         qulonglong size)
@@ -79,9 +83,7 @@ FileTransferChannelCreationProperties::~FileTransferChannelCreationProperties()
 FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::operator=(
         const FileTransferChannelCreationProperties &other)
 {
-    if (this != &other) {
-        mPriv = other.mPriv;
-    }
+    this->mPriv = other.mPriv;
     return *this;
 }
 
@@ -94,6 +96,12 @@ bool FileTransferChannelCreationProperties::operator==(
 FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::setContentHash(
         FileHashType contentHashType, const QString &contentHash)
 {
+    if (!isValid()) {
+        // there is no point in updating content hash if not valid, as we miss filename, content
+        // type and size
+        return *this;
+    }
+
     mPriv->hasContentHash = (contentHashType != FileHashTypeNone);
     mPriv->contentHashType = contentHashType;
     mPriv->contentHash = contentHash;
@@ -103,6 +111,12 @@ FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::se
 FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::setDescription(
         const QString &description)
 {
+    if (!isValid()) {
+        // there is no point in updating description if not valid, as we miss filename, content
+        // type and size
+        return *this;
+    }
+
     mPriv->hasDescription = (!description.isEmpty());
     mPriv->description = description;
     return *this;
@@ -111,6 +125,12 @@ FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::se
 FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::setLastModificationTime(
         const QDateTime &lastModificationTime)
 {
+    if (!isValid()) {
+        // there is no point in updating last modification time if not valid, as we miss filename,
+        // content type and size
+        return *this;
+    }
+
     mPriv->hasLastModificationTime = (lastModificationTime.isValid());
     mPriv->lastModificationTime = lastModificationTime;
     return *this;
@@ -118,52 +138,91 @@ FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::se
 
 QString FileTransferChannelCreationProperties::suggestedFileName() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->suggestedFileName;
 }
 
 QString FileTransferChannelCreationProperties::contentType() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->contentType;
 }
 
 qulonglong FileTransferChannelCreationProperties::size() const
 {
+    if (!isValid()) {
+        return 0;
+    }
+
     return mPriv->size;
 }
 
 bool FileTransferChannelCreationProperties::hasContentHash() const
 {
-    return mPriv->hasContentHash;
+    if (!isValid()) {
+        return false;
+    }
 
+    return mPriv->hasContentHash;
 }
 
 FileHashType FileTransferChannelCreationProperties::contentHashType() const
 {
+    if (!isValid()) {
+        return FileHashTypeNone;
+    }
+
     return mPriv->contentHashType;
 }
 
 QString FileTransferChannelCreationProperties::contentHash() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->contentHash;
 }
 
 bool FileTransferChannelCreationProperties::hasDescription() const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return mPriv->hasDescription;
 }
 
 QString FileTransferChannelCreationProperties::description() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->description;
 }
 
 bool FileTransferChannelCreationProperties::hasLastModificationTime() const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return mPriv->hasLastModificationTime;
 }
 
 QDateTime FileTransferChannelCreationProperties::lastModificationTime() const
 {
+    if (!isValid()) {
+        return QDateTime();
+    }
+
     return mPriv->lastModificationTime;
 }
 
