@@ -68,7 +68,7 @@ struct TELEPATHY_QT4_NO_EXPORT ReferencedHandles::Private : public QSharedData
                 return;
             }
 
-            for (const_iterator i = handles.begin(); i != handles.end(); ++i) {
+            for (const_iterator i = handles.constBegin(); i != handles.constEnd(); ++i) {
                 conn->refHandle(handleType, *i);
             }
         }
@@ -84,7 +84,7 @@ struct TELEPATHY_QT4_NO_EXPORT ReferencedHandles::Private : public QSharedData
                 return;
             }
 
-            for (const_iterator i = handles.begin(); i != handles.end(); ++i) {
+            for (const_iterator i = handles.constBegin(); i != handles.constEnd(); ++i) {
                 conn->unrefHandle(handleType, *i);
             }
         }
