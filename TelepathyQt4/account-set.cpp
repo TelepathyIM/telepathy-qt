@@ -408,7 +408,7 @@ bool AccountSet::isFilterValid() const
 
 bool AccountSet::_deprecated_isFilterValid() const
 {
-    foreach (const AccountFilterConstPtr &filter, filters()) {
+    foreach (const AccountFilterConstPtr &filter, mPriv->filters) {
         if (!filter->isValid()) {
             return false;
         }
@@ -422,10 +422,7 @@ bool AccountSet::_deprecated_isFilterValid() const
  *
  * The filter is composed by Account property names and values as map items.
  *
- * This method is deprecated and should not be used in newly written code. Use
- * filters() instead.
- *
- * \deprecated Use filters() instead.
+ * \deprecated
  *
  * \return A QVariantMap representing the filter used to filter accounts.
  */
@@ -450,17 +447,24 @@ QVariantMap AccountSet::_deprecated_filter() const
 /**
  * Return the filters used to filter accounts.
  *
+ * \deprecated
+ *
  * \return A list of filter objects used to filter accounts.
  */
 QList<AccountFilterConstPtr> AccountSet::filters() const
+{
+    return _deprecated_filters();
+}
+
+QList<AccountFilterConstPtr> AccountSet::_deprecated_filters() const
 {
     return mPriv->filters;
 }
 
 /**
- * Return a list of account objects that match filters().
+ * Return a list of account objects that match filters.
  *
- * \return A list of account objects that match filters().
+ * \return A list of account objects that match filters.
  */
 QList<AccountPtr> AccountSet::accounts() const
 {
@@ -470,7 +474,7 @@ QList<AccountPtr> AccountSet::accounts() const
 /**
  * \fn void AccountSet::accountAdded(const Tp::AccountPtr &account);
  *
- * This signal is emitted whenever an account that matches filters() is added to
+ * This signal is emitted whenever an account that matches filters is added to
  * this set.
  *
  * \param account The account that was added to this set.
@@ -479,7 +483,7 @@ QList<AccountPtr> AccountSet::accounts() const
 /**
  * \fn void AccountSet::accountRemoved(const Tp::AccountPtr &account);
  *
- * This signal is emitted whenever an account that matches filters() is removed
+ * This signal is emitted whenever an account that matches filters is removed
  * from this set.
  *
  * \param account The account that was removed from this set.
