@@ -40,8 +40,11 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT ProtocolParameter
 {
 public:
+    ProtocolParameter();
     ProtocolParameter(const ProtocolParameter &other);
     ~ProtocolParameter();
+
+    bool isValid() const { return mPriv.constData() != 0; }
 
     ProtocolParameter &operator=(const ProtocolParameter &other);
     bool operator==(const ProtocolParameter &other) const;
@@ -73,5 +76,8 @@ private:
 typedef QList<ProtocolParameter> ProtocolParameterList;
 
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::ProtocolParameter);
+Q_DECLARE_METATYPE(Tp::ProtocolParameterList);
 
 #endif

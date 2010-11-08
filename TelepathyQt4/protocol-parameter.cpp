@@ -40,6 +40,10 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolParameter::Private : public QSharedData
     ConnMgrParamFlag flags;
 };
 
+ProtocolParameter::ProtocolParameter()
+{
+}
+
 ProtocolParameter::ProtocolParameter(const QString &name,
                                      const QDBusSignature &dbusSignature,
                                      QVariant defaultValue,
@@ -67,46 +71,82 @@ ProtocolParameter &ProtocolParameter::operator=(const ProtocolParameter &other)
 
 bool ProtocolParameter::operator==(const ProtocolParameter &other) const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return (mPriv->name == other.name());
 }
 
 bool ProtocolParameter::operator==(const QString &name) const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return (mPriv->name == name);
 }
 
 QString ProtocolParameter::name() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->name;
 }
 
 QDBusSignature ProtocolParameter::dbusSignature() const
 {
+    if (!isValid()) {
+        return QDBusSignature();
+    }
+
     return mPriv->dbusSignature;
 }
 
 QVariant::Type ProtocolParameter::type() const
 {
+    if (!isValid()) {
+        return QVariant::Invalid;
+    }
+
     return mPriv->type;
 }
 
 QVariant ProtocolParameter::defaultValue() const
 {
+    if (!isValid()) {
+        return QVariant();
+    }
+
     return mPriv->defaultValue;
 }
 
 bool ProtocolParameter::isRequired() const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return mPriv->flags & ConnMgrParamFlagRequired;
 }
 
 bool ProtocolParameter::isSecret() const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return mPriv->flags & ConnMgrParamFlagSecret;
 }
 
 bool ProtocolParameter::isRequiredForRegistration() const
 {
+    if (!isValid()) {
+        return false;
+    }
+
     return mPriv->flags & ConnMgrParamFlagRegister;
 }
 
