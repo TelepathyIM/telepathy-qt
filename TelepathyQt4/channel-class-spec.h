@@ -42,11 +42,9 @@ public:
     ChannelClassSpec();
     ChannelClassSpec(const ChannelClass &cc);
     ChannelClassSpec(const QVariantMap &props);
-    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
-    ChannelClassSpec(const QString &channelType, uint targetHandleType,
+    ChannelClassSpec(const QString &channelType, HandleType targetHandleType,
             const QVariantMap &otherProperties = QVariantMap());
-    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
-    ChannelClassSpec(const QString &channelType, uint targetHandleType, bool requested,
+    ChannelClassSpec(const QString &channelType, HandleType targetHandleType, bool requested,
             const QVariantMap &otherProperties = QVariantMap());
     ChannelClassSpec(const ChannelClassSpec &other,
             const QVariantMap &additionalProperties = QVariantMap());
@@ -78,19 +76,17 @@ public:
                 QVariant::fromValue(type));
     }
 
-    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
-    uint targetHandleType() const
+    HandleType targetHandleType() const
     {
-        return qdbus_cast<uint>(
+        return (HandleType) qdbus_cast<uint>(
                 property(
                     QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
     }
 
-    // FIXME: (API/ABI break) Use TargetHandleType instead of uint
-    void setTargetHandleType(uint type)
+    void setTargetHandleType(HandleType type)
     {
         setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                QVariant::fromValue(type));
+                QVariant::fromValue((uint) type));
     }
 
     bool hasRequested() const

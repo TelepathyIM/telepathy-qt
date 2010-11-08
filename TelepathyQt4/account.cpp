@@ -74,22 +74,22 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 
     // TODO remove once Conference.DRAFT support is removed and simplify code that uses it
     bool useConferenceDRAFT(const char *channelType,
-            uint targetHandleType) const;
+            HandleType targetHandleType) const;
     void addConferenceRequestCommonParameters(
             const char *channelType,
-            uint targetHandleType,
+            HandleType targetHandleType,
             const char *conferenceIface,
             const QList<ChannelPtr> &channels,
             QVariantMap &request);
     void addConferenceRequestParameters(
             const char *channelType,
-            uint targetHandleType,
+            HandleType targetHandleType,
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers,
             QVariantMap &request);
     void addConferenceRequestParameters(
             const char *channelType,
-            uint targetHandleType,
+            HandleType targetHandleType,
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts,
             QVariantMap &request);
@@ -288,7 +288,7 @@ bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
 }
 
 bool Account::Private::useConferenceDRAFT(const char *channelType,
-        uint targetHandleType) const
+        HandleType targetHandleType) const
 {
     // default to Conference
     ConnectionCapabilities *caps = parent->capabilities();
@@ -320,7 +320,7 @@ bool Account::Private::useConferenceDRAFT(const char *channelType,
 
 void Account::Private::addConferenceRequestCommonParameters(
         const char *channelType,
-        uint targetHandleType,
+        HandleType targetHandleType,
         const char *conferenceIface,
         const QList<ChannelPtr> &channels,
         QVariantMap &request)
@@ -329,7 +329,7 @@ void Account::Private::addConferenceRequestCommonParameters(
                    QLatin1String(channelType));
     if (targetHandleType != HandleTypeNone) {
         request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                       targetHandleType);
+                       (uint) targetHandleType);
     }
 
     ObjectPathList objectPaths;
@@ -344,7 +344,7 @@ void Account::Private::addConferenceRequestCommonParameters(
 
 void Account::Private::addConferenceRequestParameters(
         const char *channelType,
-        uint targetHandleType,
+        HandleType targetHandleType,
         const QList<ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers,
         QVariantMap &request)
@@ -367,7 +367,7 @@ void Account::Private::addConferenceRequestParameters(
 
 void Account::Private::addConferenceRequestParameters(
         const char *channelType,
-        uint targetHandleType,
+        HandleType targetHandleType,
         const QList<ChannelPtr> &channels,
         const QList<ContactPtr> &initialInviteeContacts,
         QVariantMap &request)

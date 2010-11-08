@@ -384,12 +384,12 @@ bool RequestableChannelClassSpec::hasTargetHandleType() const
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"));
 }
 
-uint RequestableChannelClassSpec::targetHandleType() const
+HandleType RequestableChannelClassSpec::targetHandleType() const
 {
     if (!hasTargetHandleType()) {
-        return (uint) -1;
+        return (HandleType) -1;
     }
-    return qdbus_cast<uint>(mPriv->rcc.fixedProperties.value(
+    return (HandleType) qdbus_cast<uint>(mPriv->rcc.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
 }
 

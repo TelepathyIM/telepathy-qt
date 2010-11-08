@@ -1532,13 +1532,13 @@ QString Channel::channelType() const
  *
  * \return The type of the handle returned by targetHandle().
  */
-uint Channel::targetHandleType() const
+HandleType Channel::targetHandleType() const
 {
     if (!isReady()) {
         warning() << "Channel::targetHandleType() used channel not ready";
     }
 
-    return mPriv->targetHandleType;
+    return (HandleType) mPriv->targetHandleType;
 }
 
 /**
@@ -1647,16 +1647,16 @@ PendingOperation *Channel::requestClose()
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return Bitfield combination of flags, as defined in ChannelGroupFlag.
+ * \return Bitfield combination of flags, as defined in #ChannelGroupFlags.
  * \sa groupFlagsChanged()
  */
-uint Channel::groupFlags() const
+ChannelGroupFlags Channel::groupFlags() const
 {
     if (!isReady()) {
         warning() << "Channel::groupFlags() used channel not ready";
     }
 
-    return mPriv->groupFlags;
+    return (ChannelGroupFlags) mPriv->groupFlags;
 }
 
 /**
@@ -1921,7 +1921,7 @@ bool Channel::groupCanDepartWithMessage() const
  * \sa groupCanRemoveContacts()
  */
 PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts,
-        const QString &message, uint reason)
+        const QString &message, ChannelGroupChangeReason reason)
 {
     if (!isReady()) {
         warning() << "Channel::groupRemoveContacts() used channel not ready";
@@ -2838,7 +2838,8 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
     if (mPriv->setGroupFlags(groupFlags) && isReady()) {
         debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags <<
             "value" << added << "added" << removed << "removed";
-        emit groupFlagsChanged(mPriv->groupFlags, added, removed);
+        emit groupFlagsChanged((ChannelGroupFlags) mPriv->groupFlags,
+                (ChannelGroupFlags) added, (ChannelGroupFlags) removed);
 
         if (added & ChannelGroupFlagCanAdd ||
             removed & ChannelGroupFlagCanAdd) {
@@ -3019,14 +3020,14 @@ void Channel::onHandleOwnersChanged(const HandleOwnerMap &added,
     }
 }
 
-void Channel::onSelfHandleChanged(uint newSelfHandle)
+void Channel::onSelfHandleChanged(uint selfHandle)
 {
     debug().nospace() << "Got Channel.Interface.Group::SelfHandleChanged";
 
-    if (newSelfHandle != mPriv->groupSelfHandle) {
-        mPriv->groupSelfHandle = newSelfHandle;
+    if (selfHandle != mPriv->groupSelfHandle) {
+        mPriv->groupSelfHandle = selfHandle;
         debug() << " Emitting groupSelfHandleChanged with new self handle" <<
-            newSelfHandle;
+            selfHandle;
 
         // FIXME: fix self contact building with no group
         mPriv->pendingRetrieveGroupSelfContact = true;
@@ -3255,7 +3256,7 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
  */
 
 /**
- * \fn uint Channel::GroupMemberChangeDetails::reason() const
+ * \fn ChannelGroupChangeReason Channel::GroupMemberChangeDetails::reason() const
  *
  * Return the reason for the change.
  *

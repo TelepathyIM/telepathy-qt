@@ -34,7 +34,7 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
 {
     ConnectionPtr connection;
-    uint handleType;
+    HandleType handleType;
     bool isRequest;
     QStringList namesRequested;
     UIntList handlesToReference;
@@ -62,7 +62,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
  * Connection::referenceHandles().
  */
 
-PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
+PendingHandles::PendingHandles(const ConnectionPtr &connection, HandleType handleType,
         const QStringList &names)
     : PendingOperation(0),
       mPriv(new Private)
@@ -78,14 +78,14 @@ PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
     // try to request all handles at once
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                connection->baseInterface()->RequestHandles(handleType, names),
+                connection->baseInterface()->RequestHandles(mPriv->handleType, names),
                 this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onRequestHandlesFinished(QDBusPendingCallWatcher*)));
 }
 
-PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
+PendingHandles::PendingHandles(const ConnectionPtr &connection, HandleType handleType,
         const UIntList &handles, const UIntList &alreadyHeld,
         const UIntList &notYetHeld)
     : PendingOperation(0),
@@ -97,7 +97,7 @@ PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
     mPriv->handleType = handleType;
     mPriv->isRequest = false;
     mPriv->handlesToReference = handles;
-    mPriv->alreadyHeld = ReferencedHandles(connection, handleType, alreadyHeld);
+    mPriv->alreadyHeld = ReferencedHandles(connection, mPriv->handleType, alreadyHeld);
     mPriv->requestsFinished = 0;
 
     if (notYetHeld.isEmpty()) {
@@ -109,7 +109,7 @@ PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
 
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
-                    connection->baseInterface()->HoldHandles(handleType, notYetHeld),
+                    connection->baseInterface()->HoldHandles(mPriv->handleType, notYetHeld),
                     this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -140,7 +140,7 @@ ConnectionPtr PendingHandles::connection() const
  *
  * \return The handle type, as specified in #HandleType.
  */
-uint PendingHandles::handleType() const
+HandleType PendingHandles::handleType() const
 {
     return mPriv->handleType;
 }

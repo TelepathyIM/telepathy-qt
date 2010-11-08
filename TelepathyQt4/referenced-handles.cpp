@@ -34,15 +34,15 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT ReferencedHandles::Private : public QSharedData
 {
     WeakPtr<Connection> connection;
-    uint handleType;
+    HandleType handleType;
     UIntList handles;
 
     Private()
     {
-        handleType = 0;
+        handleType = HandleTypeNone;
     }
 
-    Private(const ConnectionPtr &connection, uint handleType,
+    Private(const ConnectionPtr &connection, HandleType handleType,
             const UIntList &handles)
         : connection(connection), handleType(handleType), handles(handles)
     {
@@ -132,7 +132,7 @@ ConnectionPtr ReferencedHandles::connection() const
     return ConnectionPtr(mPriv->connection);
 }
 
-uint ReferencedHandles::handleType() const
+HandleType ReferencedHandles::handleType() const
 {
     return mPriv->handleType;
 }
@@ -324,7 +324,7 @@ UIntList ReferencedHandles::toList() const
 }
 
 ReferencedHandles::ReferencedHandles(const ConnectionPtr &connection,
-        uint handleType, const UIntList &handles)
+        HandleType handleType, const UIntList &handles)
     : mPriv(new Private(connection, handleType, handles))
 {
 }

@@ -26,7 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/Types>
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
 #ifndef QT_NO_STL
@@ -61,7 +61,7 @@ public:
     ~ReferencedHandles();
 
     ConnectionPtr connection() const;
-    uint handleType() const;
+    HandleType handleType() const;
 
     uint at(int i) const;
 
@@ -246,7 +246,7 @@ private:
     friend class PendingHandles;
 
     ReferencedHandles(const ConnectionPtr &connection,
-            uint handleType, const UIntList& handles);
+            HandleType handleType, const UIntList& handles);
 
     struct Private;
     friend struct Private;
