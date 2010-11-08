@@ -291,7 +291,8 @@ public:
     bool awaitingRemoteAnswer() const;
 
     PendingOperation *acceptCall();
-    PendingOperation *hangupCall(StateChangeReason reason,
+    PendingOperation *hangupCall();
+    TELEPATHY_QT4_DEPRECATED PendingOperation *hangupCall(StateChangeReason reason,
             const QString &detailedReason, const QString &message);
 
     TELEPATHY_QT4_DEPRECATED MediaContents contents() const;

@@ -30,7 +30,6 @@
  *
  * \li \subpage accounts_example
  * \li \subpage roster_example
- * \li \subpage call_example
  */
 
 /**
@@ -113,87 +112,4 @@
 /**
  * \page roster_example_roster_window_h roster/roster-window.h
  * \include examples/roster/roster-window.h
- */
-
-/**
- * \page call_example Call Example
- *
- * \li \subpage call_example_call_handler_cpp
- * \li \subpage call_example_call_handler_h
- * \li \subpage call_example_call_roster_widget_cpp
- * \li \subpage call_example_call_roster_widget_h
- * \li \subpage call_example_call_widget_cpp
- * \li \subpage call_example_call_widget_h
- * \li \subpage call_example_call_window_cpp
- * \li \subpage call_example_call_window_h
- * \li \subpage call_example_farsight_channel_cpp
- * \li \subpage call_example_farsight_channel_h
- * \li \subpage call_example_main
- * \li \subpage call_example_video_widget_cpp
- * \li \subpage call_example_video_widget_h
- */
-
-/**
- * \page call_example_call_handler_cpp call/call-handler.cpp
- * \include examples/call/call-handler.cpp
- */
-
-/**
- * \page call_example_call_handler_h call/call-handler.h
- * \include examples/call/call-handler.h
- */
-
-/**
- * \page call_example_call_roster_widget_cpp call/call-roster-widget.cpp
- * \include examples/call/call-roster-widget.cpp
- */
-
-/**
- * \page call_example_call_roster_widget_h call/call-roster-widget.h
- * \include examples/call/call-roster-widget.h
- */
-
-/**
- * \page call_example_call_widget_cpp call/call-widget.cpp
- * \include examples/call/call-widget.cpp
- */
-
-/**
- * \page call_example_call_widget_h call/call-widget.h
- * \include examples/call/call-widget.h
- */
-
-/**
- * \page call_example_call_window_cpp call/call-window.cpp
- * \include examples/call/call-window.cpp
- */
-
-/**
- * \page call_example_call_window_h call/call-window.h
- * \include examples/call/call-window.h
- */
-
-/**
- * \page call_example_farsight_channel_cpp call/farsight-channel.cpp
- * \include examples/call/farsight-channel.cpp
- */
-
-/**
- * \page call_example_farsight_channel_h call/farsight-channel.h
- * \include examples/call/farsight-channel.h
- */
-
-/**
- * \page call_example_main call/main.cpp
- * \include examples/call/main.cpp
- */
-
-/**
- * \page call_example_video_widget_cpp call/video-widget.cpp
- * \include examples/call/video-widget.cpp
- */
-
-/**
- * \page call_example_video_widget_h call/video-widget.h
- * \include examples/call/video-widget.h
  */
