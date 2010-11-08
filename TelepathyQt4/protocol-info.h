@@ -87,4 +87,7 @@ typedef QList<ProtocolInfo> ProtocolInfoList;
 
 } // Tp
 
+Q_DECLARE_METATYPE(Tp::ProtocolInfo);
+Q_DECLARE_METATYPE(Tp::ProtocolInfoList);
+
 #endif
