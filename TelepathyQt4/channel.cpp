@@ -2285,9 +2285,24 @@ PendingOperation *Channel::groupAddSelfHandle()
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
+ * \deprecated Use isConference() instead.
+ *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::hasConferenceInterface() const
+{
+    return isConference();
+}
+
+/**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.Conference interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
+bool Channel::isConference() const
 {
     return interfaces().contains(QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) ||
@@ -2426,9 +2441,24 @@ QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
+ * \deprecated Use supportsConferenceMerging() instead.
+ *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::hasMergeableConferenceInterface() const
+{
+    return supportsConferenceMerging();
+}
+
+/**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.MergeableConference interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
+bool Channel::supportsConferenceMerging() const
 {
     return interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE));
@@ -2444,7 +2474,7 @@ bool Channel::hasMergeableConferenceInterface() const
  */
 PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 {
-    if (!hasMergeableConferenceInterface()) {
+    if (!supportsConferenceMerging()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Channel does not support MergeableConference interface"),
                 this);
@@ -2460,9 +2490,24 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
+ * \deprecated Use supportsConferenceSplitting() instead.
+ *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::hasSplittableInterface() const
+{
+    return supportsConferenceSplitting();
+}
+
+/**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.Splittable interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
+bool Channel::supportsConferenceSplitting() const
 {
     return interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_SPLITTABLE));
@@ -2474,12 +2519,28 @@ bool Channel::hasSplittableInterface() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
+ * \deprecated Use conferenceSplitChannel() instead.
+ *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
 PendingOperation *Channel::splitChannel()
 {
-    if (!hasSplittableInterface()) {
+    return conferenceSplitChannel();
+}
+
+/**
+ * Request that this channel is removed from any Conference of which it is
+ * a part.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *Channel::conferenceSplitChannel()
+{
+    if (!supportsConferenceSplitting()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Channel does not support Splittable interface"), this);
     }
