@@ -35,28 +35,28 @@ namespace Tp
 
 class StreamedMediaChannel;
 
-typedef QList<MediaStreamPtr> MediaStreams;
+typedef QList<StreamedMediaStreamPtr> StreamedMediaStreams;
 
-class TELEPATHY_QT4_EXPORT PendingMediaStreams : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingStreamedMediaStreams : public PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(PendingMediaStreams)
+    Q_DISABLE_COPY(PendingStreamedMediaStreams)
 
 public:
-    ~PendingMediaStreams();
+    ~PendingStreamedMediaStreams();
 
-    MediaStreams streams() const;
+    StreamedMediaStreams streams() const;
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *op);
 
-    void onStreamRemoved(const Tp::MediaStreamPtr &stream);
+    void onStreamRemoved(const Tp::StreamedMediaStreamPtr &stream);
     void onStreamReady(Tp::PendingOperation *op);
 
 private:
     friend class StreamedMediaChannel;
 
-    PendingMediaStreams(const StreamedMediaChannelPtr &channel,
+    PendingStreamedMediaStreams(const StreamedMediaChannelPtr &channel,
             const ContactPtr &contact,
             const QList<MediaStreamType> &types);
 
@@ -65,13 +65,12 @@ private:
     Private *mPriv;
 };
 
-// FIXME: (API/ABI break) Rename MediaStream to StreamedMediaStream
-class TELEPATHY_QT4_EXPORT MediaStream : public QObject,
+class TELEPATHY_QT4_EXPORT StreamedMediaStream : public QObject,
                     private ReadyObject,
                     public RefCounted
 {
     Q_OBJECT
-    Q_DISABLE_COPY(MediaStream)
+    Q_DISABLE_COPY(StreamedMediaStream)
 
 public:
     enum SendingState {
@@ -80,7 +79,7 @@ public:
         SendingStateSending = 2
     };
 
-    ~MediaStream();
+    ~StreamedMediaStream();
 
     StreamedMediaChannelPtr channel() const;
 
@@ -113,19 +112,19 @@ public:
     PendingOperation *stopDTMFTone();
 
 Q_SIGNALS:
-    void localSendingStateChanged(Tp::MediaStream::SendingState localSendingState);
-    void remoteSendingStateChanged(Tp::MediaStream::SendingState remoteSendingState);
+    void localSendingStateChanged(Tp::StreamedMediaStream::SendingState localSendingState);
+    void remoteSendingStateChanged(Tp::StreamedMediaStream::SendingState remoteSendingState);
 
 private Q_SLOTS:
     void gotContact(Tp::PendingOperation *op);
 
 private:
-    friend class PendingMediaStreams;
+    friend class PendingStreamedMediaStreams;
     friend class StreamedMediaChannel;
 
     static const Feature FeatureCore;
 
-    MediaStream(const StreamedMediaChannelPtr &channel, const MediaStreamInfo &info);
+    StreamedMediaStream(const StreamedMediaChannelPtr &channel, const MediaStreamInfo &info);
 
     void gotDirection(uint direction, uint pendingSend);
     void gotStreamState(uint state);
@@ -161,14 +160,14 @@ public:
     PendingOperation *acceptCall();
     PendingOperation *hangupCall();
 
-    MediaStreams streams() const;
-    MediaStreams streamsForType(MediaStreamType type) const;
+    StreamedMediaStreams streams() const;
+    StreamedMediaStreams streamsForType(MediaStreamType type) const;
 
-    PendingMediaStreams *requestStream(const ContactPtr &contact, MediaStreamType type);
-    PendingMediaStreams *requestStreams(const ContactPtr &contact, QList<MediaStreamType> types);
+    PendingStreamedMediaStreams *requestStream(const ContactPtr &contact, MediaStreamType type);
+    PendingStreamedMediaStreams *requestStreams(const ContactPtr &contact, QList<MediaStreamType> types);
 
-    PendingOperation *removeStream(const MediaStreamPtr &stream);
-    PendingOperation *removeStreams(const MediaStreams &streams);
+    PendingOperation *removeStream(const StreamedMediaStreamPtr &stream);
+    PendingOperation *removeStreams(const StreamedMediaStreams &streams);
 
     bool handlerStreamingRequired() const;
 
@@ -177,14 +176,14 @@ public:
     PendingOperation *requestHold(bool hold);
 
 Q_SIGNALS:
-    void streamAdded(const Tp::MediaStreamPtr &stream);
-    void streamRemoved(const Tp::MediaStreamPtr &stream);
-    void streamDirectionChanged(const Tp::MediaStreamPtr &stream,
+    void streamAdded(const Tp::StreamedMediaStreamPtr &stream);
+    void streamRemoved(const Tp::StreamedMediaStreamPtr &stream);
+    void streamDirectionChanged(const Tp::StreamedMediaStreamPtr &stream,
             Tp::MediaStreamDirection direction,
             Tp::MediaStreamPendingSend pendingSend);
-    void streamStateChanged(const Tp::MediaStreamPtr &stream,
+    void streamStateChanged(const Tp::StreamedMediaStreamPtr &stream,
             Tp::MediaStreamState state);
-    void streamError(const Tp::MediaStreamPtr &stream,
+    void streamError(const Tp::StreamedMediaStreamPtr &stream,
             Tp::MediaStreamError errorCode,
             const QString &errorMessage);
 
@@ -209,10 +208,10 @@ private Q_SLOTS:
     void onLocalHoldStateChanged(uint, uint);
 
 private:
-    friend class PendingMediaStreams;
+    friend class PendingStreamedMediaStreams;
 
-    MediaStreamPtr addStream(const MediaStreamInfo &streamInfo);
-    MediaStreamPtr lookupStreamById(uint streamId);
+    StreamedMediaStreamPtr addStream(const MediaStreamInfo &streamInfo);
+    StreamedMediaStreamPtr lookupStreamById(uint streamId);
 
     struct Private;
     friend struct Private;

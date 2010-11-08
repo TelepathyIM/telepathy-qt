@@ -69,8 +69,8 @@ class OutgoingFileTransferChannel;
 class Profile;
 class ProfileManager;
 class RoomListChannel;
-class MediaStream;
 class StreamedMediaChannel;
+class StreamedMediaStream;
 class TextChannel;
 
 typedef SharedPtr<AbstractClient> AbstractClientPtr;
@@ -106,8 +106,8 @@ typedef SharedPtr<OutgoingFileTransferChannel> OutgoingFileTransferChannelPtr;
 typedef SharedPtr<Profile> ProfilePtr;
 typedef SharedPtr<ProfileManager> ProfileManagerPtr;
 typedef SharedPtr<RoomListChannel> RoomListChannelPtr;
-typedef SharedPtr<MediaStream> MediaStreamPtr;
 typedef SharedPtr<StreamedMediaChannel> StreamedMediaChannelPtr;
+typedef SharedPtr<StreamedMediaStream> StreamedMediaStreamPtr;
 typedef SharedPtr<TextChannel> TextChannelPtr;
 
 template<typename T1 = MethodInvocationContextTypes::Nil, typename T2 = MethodInvocationContextTypes::Nil,
