@@ -589,19 +589,26 @@ void TestClient::testRegister()
 void TestClient::testCapabilities()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
+    QStringList normalizedClientCaps = mClientCapabilities.allTokens();
+    normalizedClientCaps.sort();
+
+    QStringList normalizedHandlerCaps;
 
     // object 1
     ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
-    QStringList capabilities;
-    QVERIFY(waitForProperty(handler1Iface->requestPropertyCapabilities(), &capabilities));
-    QCOMPARE(capabilities, mClientCapabilities.allTokens());
+
+    QVERIFY(waitForProperty(handler1Iface->requestPropertyCapabilities(), &normalizedHandlerCaps));
+    normalizedHandlerCaps.sort();
+    QCOMPARE(normalizedHandlerCaps, normalizedClientCaps);
 
     // object 2
     ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
             mClientObject2BusName, mClientObject2Path, this);
-    QVERIFY(waitForProperty(handler2Iface->requestPropertyCapabilities(), &capabilities));
-    QCOMPARE(capabilities, mClientCapabilities.allTokens());
+
+    QVERIFY(waitForProperty(handler2Iface->requestPropertyCapabilities(), &normalizedHandlerCaps));
+    normalizedHandlerCaps.sort();
+    QCOMPARE(normalizedHandlerCaps, normalizedClientCaps);
 }
 
 void TestClient::testRequests()

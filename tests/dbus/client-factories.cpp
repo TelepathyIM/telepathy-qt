@@ -637,8 +637,10 @@ void TestClientFactories::testRegister()
 void TestClientFactories::testCapabilities()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
-    QStringList normalizedHandlerCaps, normalizedClientCaps = mClientCapabilities.allTokens();
+    QStringList normalizedClientCaps = mClientCapabilities.allTokens();
     normalizedClientCaps.sort();
+
+    QStringList normalizedHandlerCaps;
 
     // object 1
     ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
