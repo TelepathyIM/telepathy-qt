@@ -146,7 +146,6 @@ public:
     bool hasPresence(const QString &id) const;
     Presence presence(const QString &id) const;
 
-    TELEPATHY_QT4_DEPRECATED RequestableChannelClassList unsupportedChannelClasses() const;
     RequestableChannelClassSpecList unsupportedChannelClassSpecs() const;
 
 private:

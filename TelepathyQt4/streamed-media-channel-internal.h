@@ -41,11 +41,9 @@ struct TELEPATHY_QT4_NO_EXPORT PendingMediaStreams::Private
     {
     }
 
-    inline ChannelTypeCallInterface *callInterface(
-            OptionalInterfaceFactory<Channel>::InterfaceSupportedChecking check =
-                OptionalInterfaceFactory<Channel>::CheckInterfaceSupported) const
+    inline ChannelTypeCallInterface *callInterface() const
     {
-        return StreamedMediaChannelPtr(channel)->typeInterface<ChannelTypeCallInterface>(check);
+        return StreamedMediaChannelPtr(channel)->interface<ChannelTypeCallInterface>();
     }
 
     PendingMediaStreams *parent;
@@ -144,13 +142,10 @@ struct TELEPATHY_QT4_NO_EXPORT PendingMediaContent::Private
     {
     }
 
-    inline ChannelTypeCallInterface *callInterface(
-            OptionalInterfaceFactory<Channel>::InterfaceSupportedChecking check =
-                OptionalInterfaceFactory<Channel>::CheckInterfaceSupported) const
+    inline ChannelTypeCallInterface *callInterface() const
     {
-        return StreamedMediaChannelPtr(channel)->typeInterface<ChannelTypeCallInterface>(check);
+        return StreamedMediaChannelPtr(channel)->interface<ChannelTypeCallInterface>();
     }
-
 
     PendingMediaContent *parent;
     StreamedMediaChannelPtr channel;
@@ -216,10 +211,9 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
 
     static void introspectLocalHoldState(Private *self);
 
-    inline ChannelTypeCallInterface *callInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelTypeCallInterface *callInterface() const
     {
-        return parent->typeInterface<ChannelTypeCallInterface>(check);
+        return parent->interface<ChannelTypeCallInterface>();
     }
 
     // Public object

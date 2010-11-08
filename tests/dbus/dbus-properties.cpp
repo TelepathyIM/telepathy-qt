@@ -106,7 +106,7 @@ void TestDBusProperties::testDBusProperties()
 
     QCOMPARE(mAM->interfaces(), QStringList());
 
-    AccountPtr acc = Account::create(mAM->dbusConnection(), mAM->busName(),
+    AccountPtr acc = Account::create(mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),

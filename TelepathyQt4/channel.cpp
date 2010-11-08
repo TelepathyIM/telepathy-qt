@@ -2285,21 +2285,6 @@ PendingOperation *Channel::groupAddSelfHandle()
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \deprecated Use isConference() instead.
- *
- * \return \c true if the interface is supported, \c false otherwise.
- */
-bool Channel::hasConferenceInterface() const
-{
-    return isConference();
-}
-
-/**
- * Return whether this channel implements the
- * org.freedesktop.Telepathy.Channel.Interface.Conference interface.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::isConference() const
@@ -2323,44 +2308,10 @@ Contacts Channel::conferenceInitialInviteeContacts() const
 }
 
 /**
- * Return whether requests to create a conference channel with InitialChannels
- * omitted, empty, or one element long are expected to succeed.
- *
- * If false, InitialChannels must be supplied in all requests for this channel
- * class, and contain at least two channels.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
- * Note that this method will always return false if the Channel supports the Conference interface,
- * even if Conference.DRAFT is also supported.
- *
- * \deprecated Use ConnectionCapabilities conference methods instead.
- *
- * \return Whether the channels supports non merges.
- */
-bool Channel::conferenceSupportsNonMerges() const
-{
-    if (!isReady(FeatureCore)) {
-        warning() << "Channel::conferenceSupportsNonMerges() used with channel not ready";
-        return false;
-    }
-
-    // FIXME: cannot use hasInterface here as hasInterface is not const
-    // if (hasInterface(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-    if (interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-        return false;
-    // } else if (hasInterface(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-    } else if (interfaces().contains(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
-        return mPriv->conferenceSupportsNonMerges;
-    }
-    return false;
-}
-
-/**
  * Return the individual channels that are part of this conference.
  *
- * Change notification is via the conferenceChannelMerged and
- * conferenceChannelRemoved signals.
+ * Change notification is via the conferenceChannelMerged() and
+ * conferenceChannelRemoved() signals.
  *
  * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
@@ -2441,21 +2392,6 @@ QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \deprecated Use supportsConferenceMerging() instead.
- *
- * \return \c true if the interface is supported, \c false otherwise.
- */
-bool Channel::hasMergeableConferenceInterface() const
-{
-    return supportsConferenceMerging();
-}
-
-/**
- * Return whether this channel implements the
- * org.freedesktop.Telepathy.Channel.Interface.MergeableConference interface.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::supportsConferenceMerging() const
@@ -2490,43 +2426,12 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \deprecated Use supportsConferenceSplitting() instead.
- *
- * \return \c true if the interface is supported, \c false otherwise.
- */
-bool Channel::hasSplittableInterface() const
-{
-    return supportsConferenceSplitting();
-}
-
-/**
- * Return whether this channel implements the
- * org.freedesktop.Telepathy.Channel.Interface.Splittable interface.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
  * \return \c true if the interface is supported, \c false otherwise.
  */
 bool Channel::supportsConferenceSplitting() const
 {
     return interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_SPLITTABLE));
-}
-
-/**
- * Request that this channel is removed from any Conference of which it is
- * a part.
- *
- * This method requires Channel::FeatureCore to be enabled.
- *
- * \deprecated Use conferenceSplitChannel() instead.
- *
- * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
- */
-PendingOperation *Channel::splitChannel()
-{
-    return conferenceSplitChannel();
 }
 
 /**
@@ -2609,14 +2514,6 @@ PendingOperation *Channel::conferenceSplitChannel()
  */
 
 /**
- * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel);
- *
- * \deprecated Use conferenceChannelRemoved(const Tp::ChannelPtr &channel,
- *                                          const Tp::Channel::GroupMemberChangeDetails &details)
- *             instead.
- */
-
-/**
  * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel,
             const Tp::Channel::GroupMemberChangeDetails &details);
  *
@@ -2634,194 +2531,6 @@ PendingOperation *Channel::conferenceSplitChannel()
  */
 
 //@{
-
-/**
- * \fn template <class Interface> Interface *Channel::optionalInterface(InterfaceSupportedChecking check) const
- *
- * Return a pointer to a valid instance of a given %Channel optional
- * interface class, associated with the same remote object the Channel is
- * associated with, and destroyed together with the Channel.
- *
- * If the list returned by interfaces() doesn't contain the name of the
- * interface requested <code>0</code> is returned. This check can be
- * bypassed by specifying #BypassInterfaceCheck for <code>check</code>, in
- * which case a valid instance is always returned.
- *
- * If the object is not ready, the list returned by
- * interfaces() isn't guaranteed to yet represent the full set of interfaces
- * supported by the remote object. Hence the check might fail even if the
- * remote object actually supports the requested interface; using
- * #BypassInterfaceCheck is suggested when the channel is not fully ready.
- *
- * \see OptionalInterfaceFactory::interface
- *
- * \tparam Interface Class of the optional interface to get.
- * \param check Should an instance be returned even if it can't be
- *              determined that the remote object supports the
- *              requested interface.
- * \return Pointer to an instance of the interface class, or <code>0</code>.
- */
-
-/**
- * \fn ChannelInterfaceCallStateInterface *Channel::callStateInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a CallState interface proxy.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \param check Passed to optionalInterface()
- * \return <code>optionalInterface<ChannelInterfaceCallStateInterface>(check)</code>
- */
-
-/**
- * \fn ChannelInterfaceChatStateInterface *Channel::chatStateInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a ChatState interface proxy.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \param check Passed to optionalInterface()
- * \return <code>optionalInterface<ChannelInterfaceChatStateInterface>(check)</code>
- */
-
-/**
- * \fn ChannelInterfaceDTMFInterface *Channel::DTMFInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a DTMF interface proxy.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \param check Passed to optionalInterface()
- * \return <code>optionalInterface<ChannelInterfaceDTMFInterface>(check)</code>
- */
-
-/**
- * \fn ChannelInterfaceGroupInterface *Channel::groupInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a Group interface proxy.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \param check Passed to optionalInterface()
- * \return <code>optionalInterface<ChannelInterfaceGroupInterface>(check)</code>
- */
-
-/**
- * \fn ChannelInterfaceHoldInterface *Channel::holdInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a Hold interface proxy.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \param check Passed to optionalInterface()
- * \return <code>optionalInterface<ChannelInterfaceHoldInterface>(check)</code>
- */
-
-/**
- * \fn ChannelInterfaceMediaSignallingInterface *Channel::mediaSignallingInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a MediaSignalling interface proxy.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \param check Passed to optionalInterface()
- * \return <code>optionalInterface<ChannelInterfaceMediaSignallingInterface>(check)</code>
- */
-
-/**
- * \fn ChannelInterfacePasswordInterface *Channel::passwordInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a Password interface proxy.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \param check Passed to optionalInterface()
- * \return <code>optionalInterface<ChannelInterfacePasswordInterface>(check)</code>
- */
-
-/**
- * \fn DBus::PropertiesInterface *Channel::propertiesInterface() const
- *
- * Convenience function for getting a Properties interface proxy. The
- * Properties interface is not necessarily reported by the services, so a
- * <code>check</code> parameter is not provided, and the interface is always
- * assumed to be present.
- *
- * \deprecated Use optionalInterface() instead.
- *
- * \return
- * <code>optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck)</code>
- */
-
-/**
- * \fn template <class Interface> Interface *Channel::typeInterface(InterfaceSupportedChecking check) const
- *
- * Return a pointer to a valid instance of a given %Channel type interface
- * class, associated with the same remote object the Channel is
- * associated with, and destroyed together with the Channel.
- *
- * If the interface name returned by channelType() isn't equivalent to the
- * name of the requested interface, or the Channel is not ready,
- * <code>0</code> is returned. This check can be bypassed by
- * specifying #BypassInterfaceCheck for <code>check</code>, in which case a
- * valid instance is always returned.
- *
- * Convenience functions are provided for well-known channel types. However,
- * there is no convenience getter for TypeContactList because the proxy for
- * that interface doesn't actually have any functionality.
- *
- * \see OptionalInterfaceFactory::interface
- *
- * \tparam Interface Class of the optional interface to get.
- * \param check Should an instance be returned even if it can't be
- *              determined that the remote object is of the requested
- *              channel type.
- * \return Pointer to an instance of the interface class, or <code>0</code>.
- */
-
-/**
- * \fn ChannelTypeRoomListInterface *Channel::roomListInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a TypeRoomList interface proxy.
- *
- * \deprecated Use interface() instead.
- *
- * \param check Passed to typeInterface()
- * \return <code>typeInterface<ChannelTypeRoomListInterface>(check)</code>
- */
-
-/**
- * \fn ChannelTypeStreamedMediaInterface *Channel::streamedMediaInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a TypeStreamedMedia interface proxy.
- *
- * \deprecated Use interface() instead.
- *
- * \param check Passed to typeInterface()
- * \return <code>typeInterface<ChannelTypeStreamedMediaInterface>(check)</code>
- */
-
-/**
- * \fn ChannelTypeTextInterface *Channel::textInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a TypeText interface proxy.
- *
- * \deprecated Use interface() instead.
- *
- * \param check Passed to typeInterface()
- * \return <code>typeInterface<ChannelTypeTextInterface>(check)</code>
- */
-
-/**
- * \fn ChannelTypeTubesInterface *Channel::tubesInterface(InterfaceSupportedChecking check) const
- *
- * Convenience function for getting a TypeTubes interface proxy.
- *
- * \deprecated Use interface() instead.
- *
- * \param check Passed to typeInterface()
- * \return <code>typeInterface<ChannelTypeTubesInterface>(check)</code>
- */
 
 /**
  * Return the ChannelInterface for this Channel class. This method is
@@ -3485,7 +3194,6 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 
     ChannelPtr channel = mPriv->conferenceChannels[info->channelPath.path()];
     mPriv->conferenceChannels.remove(info->channelPath.path());
-    emit conferenceChannelRemoved(channel);
     emit conferenceChannelRemoved(channel, GroupMemberChangeDetails(actorContact,
                 info->details));
 
@@ -3562,12 +3270,5 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
  *
  * \return The message as a string.
  */
-
-void Channel::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(conferenceChannelRemoved(Tp::ChannelPtr))) == 0) {
-        warning() << "Connecting to deprecated signal conferenceChannelRemoved(Tp::ChannelPtr)";
-    }
-}
 
 } // Tp

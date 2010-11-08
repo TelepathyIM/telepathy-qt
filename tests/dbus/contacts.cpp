@@ -13,6 +13,7 @@
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/Presence>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
@@ -231,9 +232,9 @@ void TestContacts::testSelfContact()
 
     QVERIFY(!selfContact->isAvatarTokenKnown());
 
-    QCOMPARE(selfContact->presenceStatus(), QString(QLatin1String("available")));
-    QCOMPARE(selfContact->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
-    QCOMPARE(selfContact->presenceMessage(), QString(QLatin1String("")));
+    QCOMPARE(selfContact->presence().status(), QString(QLatin1String("available")));
+    QCOMPARE(selfContact->presence().type(), Tp::ConnectionPresenceTypeAvailable);
+    QCOMPARE(selfContact->presence().statusMessage(), QString(QLatin1String("")));
 }
 
 void TestContacts::testForHandles()
@@ -505,7 +506,7 @@ void TestContacts::testFeatures()
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
-        QCOMPARE(mContacts[i]->presenceMessage(), QString(QLatin1String(initialMessages[i])));
+        QCOMPARE(mContacts[i]->presence().statusMessage(), QString(QLatin1String(initialMessages[i])));
     }
 
     // Check that there's no known avatar token for the first contact, but that there is for the
@@ -518,13 +519,13 @@ void TestContacts::testFeatures()
     QCOMPARE(mContacts[1]->avatarToken(), QString(QLatin1String(initialTokens[0])));
     QCOMPARE(mContacts[2]->avatarToken(), QString(QLatin1String(initialTokens[1])));
 
-    QCOMPARE(mContacts[0]->presenceStatus(), QString(QLatin1String("available")));
-    QCOMPARE(mContacts[1]->presenceStatus(), QString(QLatin1String("busy")));
-    QCOMPARE(mContacts[2]->presenceStatus(), QString(QLatin1String("away")));
+    QCOMPARE(mContacts[0]->presence().status(), QString(QLatin1String("available")));
+    QCOMPARE(mContacts[1]->presence().status(), QString(QLatin1String("busy")));
+    QCOMPARE(mContacts[2]->presence().status(), QString(QLatin1String("away")));
 
-    QCOMPARE(mContacts[0]->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
-    QCOMPARE(mContacts[1]->presenceType(), uint(Tp::ConnectionPresenceTypeBusy));
-    QCOMPARE(mContacts[2]->presenceType(), uint(Tp::ConnectionPresenceTypeAway));
+    QCOMPARE(mContacts[0]->presence().type(), Tp::ConnectionPresenceTypeAvailable);
+    QCOMPARE(mContacts[1]->presence().type(), Tp::ConnectionPresenceTypeBusy);
+    QCOMPARE(mContacts[2]->presence().type(), Tp::ConnectionPresenceTypeAway);
 
     // Change some of the contacts to a new set of attributes
     tp_tests_contacts_connection_change_aliases(mConnService, 2, handles.toVector().constData(),
@@ -558,17 +559,17 @@ void TestContacts::testFeatures()
     QCOMPARE(mContacts[1]->avatarToken(), QString(QLatin1String(latterTokens[1])));
     QCOMPARE(mContacts[2]->avatarToken(), QString(QLatin1String(initialTokens[1])));
 
-    QCOMPARE(mContacts[0]->presenceStatus(), QString(QLatin1String("away")));
-    QCOMPARE(mContacts[1]->presenceStatus(), QString(QLatin1String("available")));
-    QCOMPARE(mContacts[2]->presenceStatus(), QString(QLatin1String("away")));
+    QCOMPARE(mContacts[0]->presence().status(), QString(QLatin1String("away")));
+    QCOMPARE(mContacts[1]->presence().status(), QString(QLatin1String("available")));
+    QCOMPARE(mContacts[2]->presence().status(), QString(QLatin1String("away")));
 
-    QCOMPARE(mContacts[0]->presenceType(), uint(Tp::ConnectionPresenceTypeAway));
-    QCOMPARE(mContacts[1]->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
-    QCOMPARE(mContacts[2]->presenceType(), uint(Tp::ConnectionPresenceTypeAway));
+    QCOMPARE(mContacts[0]->presence().type(), Tp::ConnectionPresenceTypeAway);
+    QCOMPARE(mContacts[1]->presence().type(), Tp::ConnectionPresenceTypeAvailable);
+    QCOMPARE(mContacts[2]->presence().type(), Tp::ConnectionPresenceTypeAway);
 
-    QCOMPARE(mContacts[0]->presenceMessage(), QString(QLatin1String(latterMessages[0])));
-    QCOMPARE(mContacts[1]->presenceMessage(), QString(QLatin1String(latterMessages[1])));
-    QCOMPARE(mContacts[2]->presenceMessage(), QString(QLatin1String(initialMessages[2])));
+    QCOMPARE(mContacts[0]->presence().statusMessage(), QString(QLatin1String(latterMessages[0])));
+    QCOMPARE(mContacts[1]->presence().statusMessage(), QString(QLatin1String(latterMessages[1])));
+    QCOMPARE(mContacts[2]->presence().statusMessage(), QString(QLatin1String(initialMessages[2])));
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that
     mContacts.clear();
@@ -618,9 +619,7 @@ void TestContacts::testFeaturesNotRequested()
         QVERIFY(!contact->isAvatarTokenKnown());
         QCOMPARE(contact->avatarToken(), QString(QLatin1String("")));
 
-        QCOMPARE(contact->presenceStatus(), QString(QLatin1String("unknown")));
-        QCOMPARE(contact->presenceType(), uint(Tp::ConnectionPresenceTypeUnknown));
-        QCOMPARE(contact->presenceMessage(), QString(QLatin1String("")));
+        QCOMPARE(contact->presence().isValid(), false);
     }
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that
@@ -728,16 +727,16 @@ void TestContacts::testUpgrade()
         QCOMPARE(mContacts[i]->avatarToken(), QString(QLatin1String(tokens[i])));
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
-        QCOMPARE(mContacts[i]->presenceMessage(), QString(QLatin1String(messages[i])));
+        QCOMPARE(mContacts[i]->presence().statusMessage(), QString(QLatin1String(messages[i])));
     }
 
-    QCOMPARE(mContacts[0]->presenceStatus(), QString(QLatin1String("available")));
-    QCOMPARE(mContacts[1]->presenceStatus(), QString(QLatin1String("busy")));
-    QCOMPARE(mContacts[2]->presenceStatus(), QString(QLatin1String("away")));
+    QCOMPARE(mContacts[0]->presence().status(), QString(QLatin1String("available")));
+    QCOMPARE(mContacts[1]->presence().status(), QString(QLatin1String("busy")));
+    QCOMPARE(mContacts[2]->presence().status(), QString(QLatin1String("away")));
 
-    QCOMPARE(mContacts[0]->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
-    QCOMPARE(mContacts[1]->presenceType(), uint(Tp::ConnectionPresenceTypeBusy));
-    QCOMPARE(mContacts[2]->presenceType(), uint(Tp::ConnectionPresenceTypeAway));
+    QCOMPARE(mContacts[0]->presence().type(), Tp::ConnectionPresenceTypeAvailable);
+    QCOMPARE(mContacts[1]->presence().type(), Tp::ConnectionPresenceTypeBusy);
+    QCOMPARE(mContacts[2]->presence().type(), Tp::ConnectionPresenceTypeAway);
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that
     saveContacts.clear();
@@ -798,7 +797,7 @@ void TestContacts::testSelfContactFallback()
     QCOMPARE(selfContact->id(), QString(QLatin1String("me@example.com")));
     QCOMPARE(selfContact->alias(), QString(QLatin1String("me@example.com")));
     QVERIFY(!selfContact->isAvatarTokenKnown());
-    QCOMPARE(selfContact->presenceStatus(), QString(QLatin1String("unknown")));
+    QCOMPARE(selfContact->presence().isValid(), false);
 
     tp_tests_simple_connection_inject_disconnect(connService);
 

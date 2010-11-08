@@ -152,18 +152,6 @@ RequestableChannelClassSpecList CapabilitiesBase::allClassSpecs() const
     return mPriv->rccSpecs;
 }
 
-/**
- * \deprecated Use allClassSpecs() instead.
- */
-RequestableChannelClassList CapabilitiesBase::requestableChannelClasses() const
-{
-    RequestableChannelClassList ret;
-    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        ret << rccSpec.bareClass();
-    }
-    return ret;
-}
-
 void CapabilitiesBase::updateRequestableChannelClasses(
         const RequestableChannelClassList &rccs)
 {
@@ -348,49 +336,6 @@ bool CapabilitiesBase::upgradingStreamedMediaCalls() const
         }
     }
     return false;
-}
-
-/**
- * \deprecated Use textChats instead.
- */
-bool CapabilitiesBase::supportsTextChats() const
-{
-    return textChats();
-}
-
-/**
- * \deprecated Use streamedMediaCalls instead.
- */
-bool CapabilitiesBase::supportsMediaCalls() const
-{
-    return streamedMediaCalls();
-}
-
-/**
- * \deprecated Use streamedMediaAudioCalls instead.
- */
-bool CapabilitiesBase::supportsAudioCalls() const
-{
-    return streamedMediaAudioCalls();
-}
-
-/**
- * \deprecated Use streamedMediaVideoCalls() or streamedMediaVideoCallsWithAudio() instead.
- */
-bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
-{
-    if (withAudio) {
-        return streamedMediaVideoCallsWithAudio();
-    }
-    return streamedMediaVideoCalls();
-}
-
-/**
- * \deprecated Use upgradingStreamedMediaCalls() instead.
- */
-bool CapabilitiesBase::supportsUpgradingCalls() const
-{
-    return upgradingStreamedMediaCalls();
 }
 
 } // Tp

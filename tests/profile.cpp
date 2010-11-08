@@ -100,18 +100,13 @@ void TestProfile::testProfile()
     QCOMPARE(presence.iconName(), QString());
     QCOMPARE(presence.isDisabled(), true);
 
-    QCOMPARE(profile->unsupportedChannelClasses().isEmpty(), false);
-    QCOMPARE(profile->unsupportedChannelClasses().count(), 2);
+    QCOMPARE(profile->unsupportedChannelClassSpecs().isEmpty(), false);
+    QCOMPARE(profile->unsupportedChannelClassSpecs().count(), 2);
 
-    RequestableChannelClass rcc = profile->unsupportedChannelClasses().first();
-    QCOMPARE(rcc.fixedProperties.contains(QLatin1String("org.freedesktop.Telepathy.Channel.TargetHandleType")),
-            true);
-    QCOMPARE(rcc.fixedProperties[QLatin1String("org.freedesktop.Telepathy.Channel.TargetHandleType")],
-            QVariant(1));
-    QCOMPARE(rcc.fixedProperties.contains(QLatin1String("org.freedesktop.Telepathy.Channel.ChannelType")),
-            true);
-    QCOMPARE(rcc.fixedProperties[QLatin1String("org.freedesktop.Telepathy.Channel.ChannelType")],
-            QVariant(QLatin1String("org.freedesktop.Telepathy.Channel.Type.Text")));
+    RequestableChannelClassSpec rccSpec = profile->unsupportedChannelClassSpecs().first();
+    QCOMPARE(rccSpec.hasTargetHandleType(), true);
+    QCOMPARE(rccSpec.targetHandleType(), static_cast<uint>(HandleTypeContact));
+    QCOMPARE(rccSpec.channelType(), QLatin1String("org.freedesktop.Telepathy.Channel.Type.Text"));
 
     profile = Profile::createForServiceName(QLatin1String("test-profile-no-icon-and-provider"));
     QCOMPARE(profile->isValid(), true);

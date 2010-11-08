@@ -789,25 +789,6 @@ ClientRegistrarPtr ClientRegistrar::create(const AccountManagerPtr &manager)
 }
 
 /**
- * Construct a new client registrar object using the given \a bus.
- *
- * The resulting registrar will use factories constructing stock TpQt4 classes with no features
- * prepared. This is equivalent to the old pre-factory behavior of ClientRegistrar.
- *
- * \deprecated
- *
- * \param bus QDBusConnection to use.
- */
-ClientRegistrar::ClientRegistrar(const QDBusConnection &bus)
-    : mPriv(new Private(bus, AccountFactory::create(bus, Features()),
-                ConnectionFactory::create(bus),   ChannelFactory::create(bus),
-                ContactFactory::create()))
-{
-    registrarForConnection.insert(qMakePair(bus.name(),
-                bus.baseService()), this);
-}
-
-/**
  * Construct a new client registrar object using the given \a bus and the given factories.
  *
  * \param bus QDBusConnection to use.

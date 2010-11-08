@@ -226,8 +226,6 @@ void TestChanBasics::initTestCase()
                            SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
         QCOMPARE(mConn->status(), Connection::StatusConnected);
     }
-
-    QVERIFY(mConn->requestsInterface() != 0);
 }
 
 void TestChanBasics::init()

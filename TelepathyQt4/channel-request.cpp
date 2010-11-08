@@ -197,8 +197,6 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
         }
 
         // We need to check again because we might have dropped the expected account just a sec ago
-        // Note that many of the if paths will go away in the API/ABI break - they're just for
-        // backwards compat
         if (account.isNull()) {
             if (!accFact.isNull()) {
                 readyOp = accFact->proxy(
@@ -206,18 +204,9 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
                         connFact, chanFact, contactFact);
                 account = AccountPtr::dynamicCast(readyOp->proxy());
             } else {
-                // We might have the conn fact from the expected account, let's use that for good
-                // measure even if the account didn't match
-                if (!connFact.isNull()) {
-                    account = Account::create(
-                            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-                            accountObjectPath.path(), connFact, chanFact, contactFact);
-                } else {
-                    account = Account::create(
-                            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-                            accountObjectPath.path());
-                }
-
+                account = Account::create(
+                        QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+                        accountObjectPath.path(), connFact, chanFact, contactFact);
                 readyOp = account->becomeReady();
             }
         }
@@ -280,43 +269,6 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
 const Feature ChannelRequest::FeatureCore = Feature(QLatin1String(ChannelRequest::staticMetaObject.className()), 0, true);
 
 /**
- * Create a new channel request object using QDBusConnection::sessionBus().
- *
- * \deprecated Use other create() methods instead.
- *
- * \param objectPath The channel request object path.
- * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
- */
-ChannelRequestPtr ChannelRequest::create(const QString &objectPath,
-        const QVariantMap &immutableProperties)
-{
-    return ChannelRequestPtr(new ChannelRequest(QDBusConnection::sessionBus(),
-                objectPath, immutableProperties,
-                AccountFactoryPtr(), ConnectionFactoryPtr(),
-                ChannelFactoryPtr(), ContactFactoryPtr()));
-}
-
-/**
- * Create a new channel request object using the given \a bus.
- *
- * \deprecated Use other create() methods instead.
- *
- * \param bus QDBusConnection to use.
- * \param objectPath The channel request object path.
- * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
- */
-ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus,
-        const QString &objectPath, const QVariantMap &immutableProperties)
-{
-    return ChannelRequestPtr(new ChannelRequest(bus, objectPath,
-                immutableProperties,
-                AccountFactoryPtr(), ConnectionFactoryPtr(),
-                ChannelFactoryPtr(), ContactFactoryPtr()));
-}
-
-/**
  * Create a new channel request object using the given \a bus and the given factories.
  *
  * \param objectPath The channel request object path.
@@ -352,28 +304,6 @@ ChannelRequestPtr ChannelRequest::create(const AccountPtr &account, const QStrin
         const QVariantMap &immutableProperties)
 {
     return ChannelRequestPtr(new ChannelRequest(account, objectPath, immutableProperties));
-}
-
-/**
- * Construct a new channel request object using the given \a bus.
- *
- * \deprecated
- *
- * \param bus QDBusConnection to use.
- * \param objectPath The channel request object path.
- * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
- */
-ChannelRequest::ChannelRequest(const QDBusConnection &bus,
-        const QString &objectPath, const QVariantMap &immutableProperties)
-    : StatefulDBusProxy(bus,
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
-            objectPath),
-      OptionalInterfaceFactory<ChannelRequest>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, immutableProperties, AccountFactoryPtr(), ConnectionFactoryPtr(),
-                  ChannelFactoryPtr(), ContactFactoryPtr()))
-{
 }
 
 /**
@@ -622,17 +552,6 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
  *
  * This signals is emitted when the channel request has succeeded. No further
  * methods must not be called on it.
- */
-
-/**
- * \fn Client::DBus::PropertiesInterface *ChannelRequest::propertiesInterface() const
- *
- * Convenience function for getting a PropertiesInterface interface proxy object
- * for this account. The ChannelRequest interface relies on
- * properties, so this interface is always assumed to be present.
- *
- * \return A pointer to the existing Client::DBus::PropertiesInterface object
- *         for this ChannelRequest object.
  */
 
 void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)

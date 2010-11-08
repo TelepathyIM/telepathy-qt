@@ -45,7 +45,6 @@ public:
 
     ContactPtr contact() const;
 
-    TELEPATHY_QT4_DEPRECATED ContactInfoFieldList info() const;
     Contact::InfoFields infoFields() const;
 
 private Q_SLOTS:

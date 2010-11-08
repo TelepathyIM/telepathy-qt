@@ -58,11 +58,6 @@ class TELEPATHY_QT4_EXPORT ChannelDispatchOperation : public StatefulDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    TELEPATHY_QT4_DEPRECATED static ChannelDispatchOperationPtr create(const QString &objectPath,
-            const QVariantMap &immutableProperties);
-    TELEPATHY_QT4_DEPRECATED static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
-            const QString &objectPath, const QVariantMap &immutableProperties);
-
     static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties,
             const QList<ChannelPtr> &initialChannels,
@@ -84,19 +79,11 @@ public:
 
     PendingOperation *claim();
 
-    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
-    }
-
 Q_SIGNALS:
     void channelLost(const ChannelPtr &channel, const QString &errorName,
             const QString &errorMessage);
 
 protected:
-    TELEPATHY_QT4_DEPRECATED ChannelDispatchOperation(const QDBusConnection &bus,
-            const QString &objectPath, const QVariantMap &immutableProperties);
-
     ChannelDispatchOperation(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties,
             const QList<ChannelPtr> &initialChannels,

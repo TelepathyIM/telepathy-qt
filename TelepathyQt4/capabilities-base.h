@@ -43,8 +43,6 @@ public:
 
     RequestableChannelClassSpecList allClassSpecs() const;
 
-    TELEPATHY_QT4_DEPRECATED RequestableChannelClassList requestableChannelClasses() const;
-
     bool isSpecificToContact() const;
 
     bool textChats() const;
@@ -55,14 +53,7 @@ public:
     bool streamedMediaVideoCallsWithAudio() const;
     bool upgradingStreamedMediaCalls() const;
 
-    TELEPATHY_QT4_DEPRECATED bool supportsTextChats() const;
-
-    TELEPATHY_QT4_DEPRECATED bool supportsMediaCalls() const;
-    TELEPATHY_QT4_DEPRECATED bool supportsAudioCalls() const;
-    TELEPATHY_QT4_DEPRECATED bool supportsVideoCalls(bool withAudio = true) const;
-    TELEPATHY_QT4_DEPRECATED bool supportsUpgradingCalls() const;
-
-    // later: FIXME TODO why not now‽
+    // later: FIXME TODO why not now?
     // bool fileTransfers() const;
     // QList<FileHashType> fileTransfersRequireHash() const;
     //

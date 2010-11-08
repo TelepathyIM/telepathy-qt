@@ -26,7 +26,6 @@ public:
 protected Q_SLOTS:
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
-    void onContactInfoChanged(const Tp::ContactInfoFieldList &);
     void onContactInfoFieldsChanged(const Tp::Contact::InfoFields &);
 
 private Q_SLOTS:
@@ -44,7 +43,6 @@ private:
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
     int mContactsInfoFieldsUpdated;
-    int mContactsInfoUpdated;
 };
 
 void TestContactsInfo::expectConnInvalidated()
@@ -77,13 +75,6 @@ void TestContactsInfo::expectPendingContactsFinished(PendingOperation *op)
     PendingContacts *pending = qobject_cast<PendingContacts *>(op);
     mContacts = pending->contacts();
 
-    mLoop->exit(0);
-}
-
-void TestContactsInfo::onContactInfoChanged(const Tp::ContactInfoFieldList &info)
-{
-    Q_UNUSED(info);
-    mContactsInfoUpdated++;
     mLoop->exit(0);
 }
 
@@ -145,7 +136,6 @@ void TestContactsInfo::initTestCase()
 void TestContactsInfo::init()
 {
     initImpl();
-    mContactsInfoUpdated = 0;
     mContactsInfoFieldsUpdated = 0;
 }
 
@@ -169,11 +159,8 @@ void TestContactsInfo::testInfo()
         QCOMPARE(contact->actualFeatures(),
                  QSet<Contact::Feature>() << Contact::FeatureInfo);
 
-        QVERIFY(contact->info().isEmpty());
+        QVERIFY(contact->infoFields().allFields().isEmpty());
 
-        QVERIFY(connect(contact.data(),
-                        SIGNAL(infoChanged(const Tp::ContactInfoFieldList &)),
-                        SLOT(onContactInfoChanged(const Tp::ContactInfoFieldList &))));
         QVERIFY(connect(contact.data(),
                         SIGNAL(infoFieldsChanged(const Tp::Contact::InfoFields &)),
                         SLOT(onContactInfoFieldsChanged(const Tp::Contact::InfoFields &))));
@@ -216,28 +203,24 @@ void TestContactsInfo::testInfo()
     tp_tests_contacts_connection_change_contact_info(mConnService, handles[0], info_1);
     tp_tests_contacts_connection_change_contact_info(mConnService, handles[1], info_2);
 
-    while (mContactsInfoUpdated != 2)  {
+    while (mContactsInfoFieldsUpdated != 2)  {
         QCOMPARE(mLoop->exec(), 0);
     }
 
     QCOMPARE(mContactsInfoFieldsUpdated, 2);
 
-    mContactsInfoUpdated = 0;
     mContactsInfoFieldsUpdated = 0;
     ContactPtr contactFoo = mContacts[0];
     ContactPtr contactBar = mContacts[1];
 
-    QCOMPARE(contactFoo->info().size(), 1);
-    QCOMPARE(contactFoo->info()[0].fieldName, QLatin1String("n"));
-    QCOMPARE(contactFoo->info()[0].fieldValue[0], QLatin1String("Foo"));
-    QCOMPARE(contactBar->info().size(), 1);
-    QCOMPARE(contactBar->info()[0].fieldName, QLatin1String("n"));
-    QCOMPARE(contactBar->info()[0].fieldValue[0], QLatin1String("Bar"));
-
     QCOMPARE(contactFoo->infoFields().isValid(), true);
-    QCOMPARE(contactFoo->infoFields().allFields(), contactFoo->info());
+    QCOMPARE(contactFoo->infoFields().allFields().size(), 1);
+    QCOMPARE(contactFoo->infoFields().allFields()[0].fieldName, QLatin1String("n"));
+    QCOMPARE(contactFoo->infoFields().allFields()[0].fieldValue[0], QLatin1String("Foo"));
     QCOMPARE(contactBar->infoFields().isValid(), true);
-    QCOMPARE(contactBar->infoFields().allFields(), contactBar->info());
+    QCOMPARE(contactBar->infoFields().allFields().size(), 1);
+    QCOMPARE(contactBar->infoFields().allFields()[0].fieldName, QLatin1String("n"));
+    QCOMPARE(contactBar->infoFields().allFields()[0].fieldValue[0], QLatin1String("Bar"));
 
     Q_FOREACH (const ContactPtr &contact, mContacts) {
         PendingOperation *op = contact->refreshInfo();
@@ -248,7 +231,6 @@ void TestContactsInfo::testInfo()
     }
 
     /* nothing changed */
-    QCOMPARE(mContactsInfoUpdated, 0);
     QCOMPARE(mContactsInfoFieldsUpdated, 0);
 
     for (int i = 0; i < mContacts.size(); i++) {
@@ -267,12 +249,10 @@ void TestContactsInfo::testInfo()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    QCOMPARE(pci->info().size(), 1);
-    QCOMPARE(pci->info()[0].fieldName, QLatin1String("n"));
-    QCOMPARE(pci->info()[0].fieldValue[0], QLatin1String("Foo"));
-
     QCOMPARE(pci->infoFields().isValid(), true);
-    QCOMPARE(pci->infoFields().allFields(), pci->info());
+    QCOMPARE(pci->infoFields().allFields().size(), 1);
+    QCOMPARE(pci->infoFields().allFields()[0].fieldName, QLatin1String("n"));
+    QCOMPARE(pci->infoFields().allFields()[0].fieldValue[0], QLatin1String("Foo"));
 
     g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_1);
     g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_2);

@@ -37,19 +37,11 @@ template <class T>
 class GenericCapabilityFilter : public Filter<T>
 {
 public:
-    // FIXME (API/ABI break) Remove the create method taking a RCCList and make the method taking
-    //                       a RCCSpecList have a default param.
-    static SharedPtr<GenericCapabilityFilter<T> > create(const RequestableChannelClassList &rccs
-            = RequestableChannelClassList())
-    {
-        return SharedPtr<GenericCapabilityFilter<T> >(new GenericCapabilityFilter<T>(rccs));
-    }
-
     static SharedPtr<GenericCapabilityFilter<T> > create(
-            const RequestableChannelClassSpecList &rccSpecs)
+            const RequestableChannelClassSpecList &rccSpecs = RequestableChannelClassSpecList())
     {
         return SharedPtr<GenericCapabilityFilter<T> >(new GenericCapabilityFilter<T>(
-                    rccSpecs.bareClasses()));
+                    rccSpecs));
     }
 
     inline virtual ~GenericCapabilityFilter() { }
@@ -59,21 +51,21 @@ public:
     inline virtual bool matches(const SharedPtr<T> &t) const
     {
         bool supportedRcc;
-        RequestableChannelClassList objectRccs = t->capabilities() ?
-            t->capabilities()->allClassSpecs().bareClasses() :
-            RequestableChannelClassList();
-        Q_FOREACH (const RequestableChannelClass &filterRcc, mFilter) {
+        RequestableChannelClassSpecList objectRccSpecs = t->capabilities() ?
+            t->capabilities()->allClassSpecs() :
+            RequestableChannelClassSpecList();
+        Q_FOREACH (const RequestableChannelClassSpec &filterRccSpec, mFilter) {
             supportedRcc = false;
 
-            Q_FOREACH (const RequestableChannelClass &objectRcc, objectRccs) {
+            Q_FOREACH (const RequestableChannelClassSpec &objectRccSpec, objectRccSpecs) {
                 /* check if fixed properties match */
-                if (filterRcc.fixedProperties == objectRcc.fixedProperties) {
+                if (filterRccSpec.fixedProperties() == objectRccSpec.fixedProperties()) {
                     supportedRcc = true;
 
                     /* check if all allowed properties in the filter RCC
                      * are in the object RCC allowed properties */
-                    Q_FOREACH (const QString &value, filterRcc.allowedProperties) {
-                        if (!objectRcc.allowedProperties.contains(value)) {
+                    Q_FOREACH (const QString &value, filterRccSpec.allowedProperties()) {
+                        if (!objectRccSpec.allowsProperty(value)) {
                             /* one of the properties in the filter RCC
                              * allowed properties is not in the object RCC
                              * allowed properties */
@@ -99,22 +91,11 @@ public:
         return true;
     }
 
-    // FIXME: (API/ABI break) Return a RCCSpecList instead
-    inline RequestableChannelClassList filter() const { return mFilter; }
-
-    TELEPATHY_QT4_DEPRECATED inline void addRequestableChannelClassSubset(const RequestableChannelClass &rcc)
-    {
-        mFilter.append(rcc);
-    }
+    inline RequestableChannelClassSpecList filter() const { return mFilter; }
 
     inline void addRequestableChannelClassSubset(const RequestableChannelClassSpec &rccSpec)
     {
         mFilter.append(rccSpec.bareClass());
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline void setRequestableChannelClassesSubset(const RequestableChannelClassList &rccs)
-    {
-        mFilter = rccs;
     }
 
     inline void setRequestableChannelClassesSubset(const RequestableChannelClassSpecList &rccSpecs)
@@ -123,10 +104,10 @@ public:
     }
 
 private:
-    GenericCapabilityFilter(const RequestableChannelClassList &rccs) : Filter<T>(), mFilter(rccs) { }
+    GenericCapabilityFilter(const RequestableChannelClassSpecList &rccSpecs)
+        : Filter<T>(), mFilter(rccSpecs) { }
 
-    // FIXME: (API/ABI break) Use RCCSpecList instead
-    RequestableChannelClassList mFilter;
+    RequestableChannelClassSpecList mFilter;
 };
 
 } // Tp

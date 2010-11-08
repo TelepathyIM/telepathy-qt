@@ -219,17 +219,18 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mAM->interfaces(), QStringList());
 
     QStringList paths;
-    QCOMPARE(pathsForAccountSet(mAM->validAccountsSet()),
+    QCOMPARE(pathsForAccountSet(mAM->validAccounts()),
             QStringList() <<
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
-    QCOMPARE(pathsForAccountSet(mAM->invalidAccountsSet()),
+    QCOMPARE(pathsForAccountSet(mAM->invalidAccounts()),
             QStringList());
     QCOMPARE(pathsForAccountList(mAM->allAccounts()),
             QStringList() <<
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
 
     AccountPtr acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
+            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"),
+            mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -300,14 +301,16 @@ void TestAccountBasics::testBasics()
     }
 
     acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
+            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"),
+            mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
+            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"),
+            mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
 
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -402,7 +405,6 @@ void TestAccountBasics::testBasics()
     QCOMPARE(profile->parameters().isEmpty(), false);
     QCOMPARE(profile->allowOtherPresences(), true);
     QCOMPARE(profile->presences().isEmpty(), true);
-    QCOMPARE(profile->unsupportedChannelClasses().isEmpty(), true);
     QCOMPARE(profile->unsupportedChannelClassSpecs().isEmpty(), true);
 
     QList<AccountPtr> allAccounts = mAM->allAccounts();
@@ -412,59 +414,42 @@ void TestAccountBasics::testBasics()
 
     filter.insert(QLatin1String("protocolName"), QLatin1String("foo"));
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
 
     filter.clear();
     filter.insert(QLatin1String("protocolFoo"), acc->protocolName());
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
-    QCOMPARE(filteredAccountSet->isFilterValid(), false);
 
     filter.clear();
     filter.insert(QLatin1String("protocolName"), allAccounts.first()->protocolName());
     filteredAccountSet = mAM->filterAccounts(filter);
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QVERIFY(filteredAccountSet->accounts().contains(allAccounts.first()));
 
     filteredAccountSet = mAM->accountsByProtocol(allAccounts.first()->protocolName());
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QVERIFY(filteredAccountSet->accounts().contains(allAccounts.first()));
 
     filter.clear();
     filter.insert(QLatin1String("protocolFoo"), acc->protocolName());
     filteredAccountSet = mAM->filterAccounts(filter);
-    QCOMPARE(filteredAccountSet->isFilterValid(), false);
     QVERIFY(filteredAccountSet->accounts().isEmpty());
 
-    QCOMPARE(mAM->validAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->validAccountsSet()->accounts().isEmpty(), false);
-    QCOMPARE(mAM->invalidAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->invalidAccountsSet()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->enabledAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->enabledAccountsSet()->accounts().isEmpty(), false);
-    QCOMPARE(mAM->disabledAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->disabledAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->validAccounts()->accounts().isEmpty(), false);
+    QCOMPARE(mAM->invalidAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->enabledAccounts()->accounts().isEmpty(), false);
+    QCOMPARE(mAM->disabledAccounts()->accounts().isEmpty(), true);
 
     filter.clear();
     filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
     AccountSetPtr spuriousAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
-    QCOMPARE(spuriousAccountSet->isFilterValid(), true);
 
-    filteredAccountSet = mAM->textChatAccountsSet();
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    filteredAccountSet = mAM->textChatAccounts();
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
-    QCOMPARE(mAM->textChatAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->textChatRoomAccountsSet()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->mediaCallAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->mediaCallAccountsSet()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->audioCallAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->audioCallAccountsSet()->accounts().isEmpty(), true);
-    QCOMPARE(mAM->videoCallAccountsSet(false)->isFilterValid(), true);
-    QCOMPARE(mAM->videoCallAccountsSet(false)->accounts().isEmpty(), true);
-    QCOMPARE(mAM->videoCallAccountsSet(true)->isFilterValid(), true);
-    QCOMPARE(mAM->videoCallAccountsSet(true)->accounts().isEmpty(), true);
-    QCOMPARE(mAM->fileTransferAccountsSet()->isFilterValid(), true);
-    QCOMPARE(mAM->fileTransferAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->textChatroomAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->streamedMediaCallAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->streamedMediaAudioCallAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->streamedMediaVideoCallAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->streamedMediaVideoCallWithAudioAccounts()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->fileTransferAccounts()->accounts().isEmpty(), true);
 
     QList<AccountFilterConstPtr> filterChain;
 
@@ -488,7 +473,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
     /* match fixedProperties and allowedProperties is complete */
@@ -510,7 +494,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
     /* should not match as fixedProperties lack TargetHandleType */
@@ -527,7 +510,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     /* should not match as fixedProperties has more than expected */
@@ -550,7 +532,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     /* should not match as allowedProperties has TargetFoo that is not allowed */
@@ -572,7 +553,6 @@ void TestAccountBasics::testBasics()
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
-    QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureCapabilities),
@@ -585,7 +565,6 @@ void TestAccountBasics::testBasics()
     ConnectionCapabilities *caps = acc->capabilities();
     QVERIFY(caps != NULL);
     QCOMPARE(caps->textChats(), true);
-    QCOMPARE(caps->supportsTextChats(), true);
 
     mServiceNameChanged = false;
     mServiceName = QString();
@@ -618,11 +597,13 @@ void TestAccountBasics::testBasics()
     caps = acc->capabilities();
     QVERIFY(caps != NULL);
     QCOMPARE(caps->textChats(), false);
-    QCOMPARE(caps->supportsTextChats(), false);
+
+    Client::DBus::PropertiesInterface *accPropertiesInterface =
+        acc->interface<Client::DBus::PropertiesInterface>();
 
     // simulate that the account has a connection
     QVERIFY(connect(new PendingVoid(
-                        acc->propertiesInterface()->Set(
+                        accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("Connection"),
                             QDBusVariant(mConnPath)),
@@ -630,7 +611,7 @@ void TestAccountBasics::testBasics()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     // wait for the connection to be built in Account
-    while (!acc->haveConnection()) {
+    while (acc->connection().isNull()) {
         QCOMPARE(mLoop->exec(), 0);
     }
 
@@ -644,7 +625,7 @@ void TestAccountBasics::testBasics()
     // once the status change the capabilities will be updated
     mCapabilitiesChanged = false;
     QVERIFY(connect(new PendingVoid(
-                        acc->propertiesInterface()->Set(
+                        accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("ConnectionStatus"),
                             QDBusVariant(static_cast<uint>(ConnectionStatusConnected))),
@@ -664,18 +645,11 @@ void TestAccountBasics::testBasics()
     QCOMPARE(caps->streamedMediaVideoCalls(), false);
     QCOMPARE(caps->streamedMediaVideoCallsWithAudio(), false);
     QCOMPARE(caps->upgradingStreamedMediaCalls(), false);
-    QCOMPARE(caps->supportsTextChats(), true);
-    QCOMPARE(caps->supportsTextChatrooms(), false);
-    QCOMPARE(caps->supportsMediaCalls(), false);
-    QCOMPARE(caps->supportsAudioCalls(), false);
-    QCOMPARE(caps->supportsVideoCalls(false), false);
-    QCOMPARE(caps->supportsVideoCalls(true), false);
-    QCOMPARE(caps->supportsUpgradingCalls(), false);
 
     // once the status change the capabilities will be updated
     mCapabilitiesChanged = false;
     QVERIFY(connect(new PendingVoid(
-                        acc->propertiesInterface()->Set(
+                        accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("Connection"),
                             QDBusVariant(QLatin1String("/"))),
@@ -683,7 +657,7 @@ void TestAccountBasics::testBasics()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QVERIFY(connect(new PendingVoid(
-                        acc->propertiesInterface()->Set(
+                        accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("ConnectionStatus"),
                             QDBusVariant(static_cast<uint>(ConnectionStatusDisconnected))),
@@ -698,7 +672,6 @@ void TestAccountBasics::testBasics()
     caps = acc->capabilities();
     QVERIFY(caps != NULL);
     QCOMPARE(caps->textChats(), false);
-    QCOMPARE(caps->supportsTextChats(), false);
 }
 
 void TestAccountBasics::cleanup()

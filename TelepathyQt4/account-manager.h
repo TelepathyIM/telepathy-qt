@@ -33,14 +33,12 @@
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/DBus>
-#include <TelepathyQt4/DBusProxy>
+#include <TelepathyQt4/StatelessDBusProxy>
 #include <TelepathyQt4/Filter>
 #include <TelepathyQt4/OptionalInterfaceFactory>
-#include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/ReadyObject>
-#include <TelepathyQt4/Types>
 #include <TelepathyQt4/SharedPtr>
+#include <TelepathyQt4/Types>
 
 #include <QDBusObjectPath>
 #include <QSet>
@@ -50,9 +48,7 @@
 namespace Tp
 {
 
-class AccountManager;
 class PendingAccount;
-class PendingReady;
 
 class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
                        public OptionalInterfaceFactory<AccountManager>,
@@ -65,22 +61,16 @@ class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    // FIXME: (API/ABI break) Remove both constructors that don't take factories as params.
-    static AccountManagerPtr create();
     static AccountManagerPtr create(const QDBusConnection &bus);
-
-    // FIXME: (API/ABI break) Add a default parameter to accountFactory once the create methods
-    //        above are removed
     static AccountManagerPtr create(
-            const AccountFactoryConstPtr &accountFactory,
+            const AccountFactoryConstPtr &accountFactory =
+                AccountFactory::create(QDBusConnection::sessionBus()),
             const ConnectionFactoryConstPtr &connectionFactory =
                 ConnectionFactory::create(QDBusConnection::sessionBus()),
             const ChannelFactoryConstPtr &channelFactory =
                 ChannelFactory::create(QDBusConnection::sessionBus()),
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
-    // The bus-taking variant should never have default factories unless the bus is the last param
-    // which would be illogical?
     static AccountManagerPtr create(const QDBusConnection &bus,
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
@@ -95,48 +85,35 @@ public:
     ChannelFactoryConstPtr channelFactory() const;
     ContactFactoryConstPtr contactFactory() const;
 
-    TELEPATHY_QT4_DEPRECATED QStringList validAccountPaths() const;
-    TELEPATHY_QT4_DEPRECATED QStringList invalidAccountPaths() const;
-    TELEPATHY_QT4_DEPRECATED QStringList allAccountPaths() const;
+    QList<AccountPtr> allAccounts() const;
 
-    TELEPATHY_QT4_DEPRECATED QList<AccountPtr> validAccounts();
-    TELEPATHY_QT4_DEPRECATED QList<AccountPtr> invalidAccounts();
+    AccountSetPtr validAccounts() const;
+    AccountSetPtr invalidAccounts() const;
 
-    // API/ABI break TODO: make const
-    QList<AccountPtr> allAccounts();
+    AccountSetPtr enabledAccounts() const;
+    AccountSetPtr disabledAccounts() const;
 
-    // FIXME: (API/ABI break) Rename all xxxSet methods to just xxx
-    AccountSetPtr validAccountsSet() const;
-    AccountSetPtr invalidAccountsSet() const;
+    AccountSetPtr onlineAccounts() const;
+    AccountSetPtr offlineAccounts() const;
 
-    AccountSetPtr enabledAccountsSet() const;
-    AccountSetPtr disabledAccountsSet() const;
+    AccountSetPtr textChatAccounts() const;
+    AccountSetPtr textChatroomAccounts() const;
 
-    AccountSetPtr onlineAccountsSet() const;
-    AccountSetPtr offlineAccountsSet() const;
+    AccountSetPtr streamedMediaCallAccounts() const;
+    AccountSetPtr streamedMediaAudioCallAccounts() const;
+    AccountSetPtr streamedMediaVideoCallAccounts() const;
+    AccountSetPtr streamedMediaVideoCallWithAudioAccounts() const;
 
-    AccountSetPtr textChatAccountsSet() const;
-    AccountSetPtr textChatRoomAccountsSet() const;
+    AccountSetPtr fileTransferAccounts() const;
 
-    // FIXME: (API/ABI break) Rename SM related methods to contain SM in the name, like
-    //                        streamedMediaAudioCallAccounts(), etc.
-    AccountSetPtr mediaCallAccountsSet() const;
-    AccountSetPtr audioCallAccountsSet() const;
-    AccountSetPtr videoCallAccountsSet(bool withAudio = true) const;
-
-    AccountSetPtr fileTransferAccountsSet() const;
-
-    AccountSetPtr accountsByProtocol(
-            const QString &protocolName) const;
+    AccountSetPtr accountsByProtocol(const QString &protocolName) const;
 
     AccountSetPtr filterAccounts(const AccountFilterConstPtr &filter) const;
     AccountSetPtr filterAccounts(const QList<AccountFilterConstPtr> &filters) const;
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
-    // API/ABI break TODO: make const
-    AccountPtr accountForPath(const QString &path);
-    // API/ABI break TODO: make const
-    QList<AccountPtr> accountsForPaths(const QStringList &paths);
+    AccountPtr accountForPath(const QString &path) const;
+    QList<AccountPtr> accountsForPaths(const QStringList &paths) const;
 
     QStringList supportedAccountProperties() const;
     PendingAccount *createAccount(const QString &connectionManager,
@@ -144,27 +121,10 @@ public:
             const QVariantMap &parameters,
             const QVariantMap &properties = QVariantMap());
 
-    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return OptionalInterfaceFactory<AccountManager>::interface<Client::DBus::PropertiesInterface>();
-    }
-
 Q_SIGNALS:
-    // FIXME: (API/ABI break) Remove accountCreated in favor of newAccount
-    void accountCreated(const QString &path);
-    // FIXME: (API/ABI break) Remove accountRemoved in favor of Account::removed
-    void accountRemoved(const QString &path);
-    // FIXME: (API/ABI break) Remove accountValidityChanged in favor of Account::validityChanged
-    void accountValidityChanged(const QString &path,
-            bool valid);
-
-    // FIXME: (API/ABI break) Rename to accountCreated. Actually it should have being named
-    //        accountCreated in the first place
     void newAccount(const Tp::AccountPtr &account);
 
 protected:
-    TELEPATHY_QT4_DEPRECATED AccountManager();
-    TELEPATHY_QT4_DEPRECATED AccountManager(const QDBusConnection &bus);
     AccountManager(const QDBusConnection &bus,
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
@@ -173,14 +133,12 @@ protected:
 
     Client::AccountManagerInterface *baseInterface() const;
 
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
-
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *);
-    void onAccountReady(Tp::PendingOperation *);
-    void onAccountValidityChanged(const QDBusObjectPath &, bool);
-    void onAccountRemoved(const QDBusObjectPath &);
+    void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    void onAccountReady(Tp::PendingOperation *op);
+    void onAccountValidityChanged(const QDBusObjectPath &objectPath,
+            bool valid);
+    void onAccountRemoved(const QDBusObjectPath &objectPath);
 
 private:
     friend class PendingAccount;

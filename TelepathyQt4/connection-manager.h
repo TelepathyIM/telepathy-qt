@@ -156,11 +156,6 @@ public:
     static PendingStringList *listNames(
             const QDBusConnection &bus = QDBusConnection::sessionBus());
 
-    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return OptionalInterfaceFactory<ConnectionManager>::interface<Client::DBus::PropertiesInterface>();
-    }
-
 protected:
     ConnectionManager(const QString &name);
     ConnectionManager(const QDBusConnection &bus, const QString &name);

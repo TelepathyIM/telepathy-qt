@@ -131,13 +131,6 @@ void TestCmBasics::testBasics()
     QCOMPARE(info->capabilities()->streamedMediaVideoCalls(), false);
     QCOMPARE(info->capabilities()->streamedMediaVideoCallsWithAudio(), false);
     QCOMPARE(info->capabilities()->upgradingStreamedMediaCalls(), false);
-    QCOMPARE(info->capabilities()->supportsTextChatrooms(), false);
-    QCOMPARE(info->capabilities()->supportsTextChats(), true);
-    QCOMPARE(info->capabilities()->supportsMediaCalls(), false);
-    QCOMPARE(info->capabilities()->supportsAudioCalls(), false);
-    QCOMPARE(info->capabilities()->supportsVideoCalls(false), false);
-    QCOMPARE(info->capabilities()->supportsVideoCalls(true), false);
-    QCOMPARE(info->capabilities()->supportsUpgradingCalls(), false);
 
     QCOMPARE(info->vcardField(), QLatin1String("x-telepathy-example"));
     QCOMPARE(info->englishName(), QLatin1String("Echo II example"));
@@ -202,13 +195,6 @@ void TestCmBasics::testLegacy()
     QCOMPARE(info->capabilities()->streamedMediaVideoCalls(), true);
     QCOMPARE(info->capabilities()->streamedMediaVideoCallsWithAudio(), true);
     QCOMPARE(info->capabilities()->upgradingStreamedMediaCalls(), true);
-    QCOMPARE(info->capabilities()->supportsTextChatrooms(), true);
-    QCOMPARE(info->capabilities()->supportsTextChats(), true);
-    QCOMPARE(info->capabilities()->supportsMediaCalls(), true);
-    QCOMPARE(info->capabilities()->supportsAudioCalls(), true);
-    QCOMPARE(info->capabilities()->supportsVideoCalls(false), true);
-    QCOMPARE(info->capabilities()->supportsVideoCalls(true), true);
-    QCOMPARE(info->capabilities()->supportsUpgradingCalls(), true);
 
     QCOMPARE(info->vcardField(), QLatin1String(""));
     QCOMPARE(info->englishName(), QLatin1String("Simple"));

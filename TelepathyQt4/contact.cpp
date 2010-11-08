@@ -220,39 +220,6 @@ AvatarData Contact::avatarData() const
     return mPriv->avatarData;
 }
 
-QString Contact::presenceStatus() const
-{
-    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
-        warning() << "Contact::presenceStatus() used on" << this
-            << "for which FeatureSimplePresence hasn't been requested - returning \"unknown\"";
-        return QLatin1String("unknown");
-    }
-
-    return mPriv->presence.status();
-}
-
-uint Contact::presenceType() const
-{
-    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
-        warning() << "Contact::presenceType() used on" << this
-            << "for which FeatureSimplePresence hasn't been requested - returning Unknown";
-        return ConnectionPresenceTypeUnknown;
-    }
-
-    return mPriv->presence.type();
-}
-
-QString Contact::presenceMessage() const
-{
-    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
-        warning() << "Contact::presenceMessage() used on" << this
-            << "for which FeatureSimplePresence hasn't been requested - returning \"\"";
-        return QString();
-    }
-
-    return mPriv->presence.statusMessage();
-}
-
 Presence Contact::presence() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
@@ -315,32 +282,6 @@ ContactLocation *Contact::location() const
     }
 
     return mPriv->location;
-}
-
-/**
- * Return the information for this contact.
- *
- * Change notification is advertised through infoChanged().
- *
- * Note that this method only return cached information. In order to refresh the
- * information use refreshInfo().
- *
- * This method requires Contact::FeatureInfo to be enabled.
- *
- * \deprecated Use infoFields() instead.
- *
- * \return An object representing the contact information.
- */
-ContactInfoFieldList Contact::info() const
-{
-    if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
-        warning() << "Contact::info() used on" << this
-            << "for which FeatureInfo hasn't been requested - returning empty "
-               "ContactInfoFieldList";
-        return ContactInfoFieldList();
-    }
-
-    return mPriv->info.allFields();
 }
 
 /**
@@ -738,8 +679,6 @@ void Contact::receiveSimplePresence(const SimplePresence &presence)
     if (mPriv->presence.status() != presence.status ||
         mPriv->presence.statusMessage() != presence.statusMessage) {
         mPriv->presence.setStatus(presence);
-        emit simplePresenceChanged(mPriv->presence.status(),
-                mPriv->presence.type(), mPriv->presence.statusMessage());
         emit presenceChanged(mPriv->presence);
     }
 }
@@ -782,7 +721,6 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
 
     if (mPriv->info.allFields() != info) {
         mPriv->info = InfoFields(info);
-        emit infoChanged(mPriv->info.allFields());
         emit infoFieldsChanged(mPriv->info);
     }
 }
@@ -830,25 +768,12 @@ void Contact::setRemovedFromGroup(const QString &group)
 }
 
 /**
- * \fn void Contact::simplePresenceChanged(const QString &status, uint type,
- *          const QString &presenceMessage)
- *
- * \deprecated Use presenceChanged instead.
- */
-
-/**
  * \fn void Contact::presenceChanged(const Tp::Presence &presence)
  *
  * This signal is emitted when the value of presence() of this contact changes.
  *
  * \param presence The new presence.
  * \sa presence()
- */
-
-/**
- * \fn void Contact::infoChanged(const Tp::ContactInfoFieldList &info)
- *
- * \deprecated Use infoFieldsChanged() instead.
  */
 
 /**
@@ -859,14 +784,5 @@ void Contact::setRemovedFromGroup(const QString &group)
  * \param InfoFields The new info.
  * \sa infoFields()
  */
-
-void Contact::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(simplePresenceChanged(QString,uint,QString))) == 0) {
-        warning() << "Connecting to deprecated signal simplePresenceChanged(QString,uint,QString)";
-    } else if (qstrcmp(signalName, SIGNAL(infoChanged(Tp::ContactInfoFieldList))) == 0) {
-        warning() << "Connecting to deprecated signal infoChanged(Tp::ContactInfoFieldList)";
-    }
-}
 
 } // Tp

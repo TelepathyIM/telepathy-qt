@@ -99,24 +99,6 @@ ContactPtr PendingContactInfo::contact() const
 /**
  * Returns the information for contact().
  *
- * \deprecated Use infoFields() instead.
- *
- * \return An object representing the contact information.
- */
-ContactInfoFieldList PendingContactInfo::info() const
-{
-    if (!isFinished()) {
-        warning() << "PendingContactInfo::info called before finished";
-    } else if (!isValid()) {
-        warning() << "PendingContactInfo::info called when not valid";
-    }
-
-    return mPriv->info.allFields();
-}
-
-/**
- * Returns the information for contact().
- *
  * \return An object representing the contact information.
  */
 Contact::InfoFields PendingContactInfo::infoFields() const

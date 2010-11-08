@@ -187,8 +187,6 @@ void TestConnRequests::initTestCase()
     QCOMPARE(mConn->isReady(), true);
 
     QCOMPARE(mConn->status(), Connection::StatusConnected);
-
-    QVERIFY(mConn->requestsInterface() != 0);
 }
 
 void TestConnRequests::init()

@@ -81,11 +81,6 @@ public:
         StatusUnknown = 0xFFFFFFFF
     };
 
-    TELEPATHY_QT4_DEPRECATED static ConnectionPtr create(const QString &busName,
-            const QString &objectPath);
-    TELEPATHY_QT4_DEPRECATED static ConnectionPtr create(const QDBusConnection &bus,
-            const QString &busName, const QString &objectPath);
-
     static ConnectionPtr create(const QString &busName,
             const QString &objectPath,
             const ChannelFactoryConstPtr &channelFactory,
@@ -190,117 +185,8 @@ public:
     QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
 
-    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceAliasingInterface *aliasingInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceAliasingInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceAnonymityInterface *anonymityInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceAnonymityInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceAvatarsInterface *avatarsInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceAvatarsInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceCapabilitiesInterface *capabilitiesInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceCapabilitiesInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceClientTypesInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface(
-             InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceContactGroupsInterface *contactGroupsInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceContactGroupsInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceContactInfoInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceContactListInterface *contactListInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceContactListInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceLocationInterface *locationInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceLocationInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfacePresenceInterface *presenceInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfacePresenceInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfacePowerSavingInterface *powerSavingInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfacePowerSavingInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceServicePointInterface *servicePointInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceServicePointInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceSimplePresenceInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceRequestsInterface *requestsInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceRequestsInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceBalanceInterface *balanceInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceBalanceInterface>(check);
-    }
-
-    TELEPATHY_QT4_DEPRECATED inline Client::ConnectionInterfaceCellularInterface *cellularInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<Client::ConnectionInterfaceCellularInterface>(check);
-    }
-
 Q_SIGNALS:
     void statusChanged(Tp::Connection::Status newStatus);
-    // FIXME: (API/ABI break) Remove statusChanged(status, reason) in favor of statusChanged(status)
-    void statusChanged(Tp::Connection::Status newStatus, Tp::ConnectionStatusReason newStatusReason);
 
     void selfHandleChanged(uint newHandle);
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts
@@ -309,19 +195,12 @@ Q_SIGNALS:
     void accountBalanceChanged(const Tp::CurrencyAmount &accountBalance);
 
 protected:
-    TELEPATHY_QT4_DEPRECATED Connection(const QString &busName, const QString &objectPath);
-    TELEPATHY_QT4_DEPRECATED Connection(const QDBusConnection &bus, const QString &busName,
-            const QString &objectPath);
-
     Connection(const QDBusConnection &bus, const QString &busName,
             const QString &objectPath,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
     Client::ConnectionInterface *baseInterface() const;
-
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private Q_SLOTS:
     void onStatusReady(uint status);

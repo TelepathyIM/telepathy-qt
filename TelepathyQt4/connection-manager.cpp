@@ -943,15 +943,6 @@ PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
 }
 
 /**
- * \fn DBus::propertiesInterface *ConnectionManager::propertiesInterface() const
- *
- * Convenience function for getting a Properties interface proxy. The
- * Properties interface is not necessarily reported by the services, so a
- * <code>check</code> parameter is not provided, and the interface is
- * always assumed to be present.
- */
-
-/**
  * Return a pending operation from which a list of all installed connection
  * manager short names (such as "gabble" or "haze") can be retrieved if it
  * succeeds.

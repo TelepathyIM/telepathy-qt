@@ -81,7 +81,6 @@ public:
     void unregisterClients();
 
 private:
-    TELEPATHY_QT4_DEPRECATED ClientRegistrar(const QDBusConnection &bus);
     ClientRegistrar(const QDBusConnection &bus,
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
