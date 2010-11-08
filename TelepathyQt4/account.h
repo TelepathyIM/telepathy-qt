@@ -88,7 +88,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QString connectionError READ connectionError)
     // FIXME: (API/ABI break) Use Connection::ErrorDetails
     Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
-    Q_PROPERTY(bool haveConnection READ haveConnection NOTIFY haveConnectionChanged)
+    Q_PROPERTY(bool haveConnection READ _deprecated_haveConnection NOTIFY haveConnectionChanged)
     Q_PROPERTY(ConnectionPtr connection READ connection)
     Q_PROPERTY(bool changingPresence READ isChangingPresence NOTIFY changingPresence)
     Q_PROPERTY(SimplePresence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
@@ -189,7 +189,7 @@ public:
     QString connectionError() const;
     // FIXME: (API/ABI break) Use Connection::ErrorDetails
     QVariantMap connectionErrorDetails() const;
-    bool haveConnection() const;
+    TELEPATHY_QT4_DEPRECATED bool haveConnection() const;
     ConnectionPtr connection() const;
 
     bool isChangingPresence() const;
@@ -446,6 +446,7 @@ private:
     void notify(const char *propertyName);
 
     QString _deprecated_connectionObjectPath() const;
+    bool _deprecated_haveConnection() const;
 
     Private *mPriv;
 };

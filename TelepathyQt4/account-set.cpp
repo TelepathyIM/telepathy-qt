@@ -193,7 +193,7 @@ AccountSet::Private::AccountWrapper::~AccountWrapper()
 
 ConnectionCapabilities *AccountSet::Private::AccountWrapper::capabilities() const
 {
-    if (mAccount->haveConnection() &&
+    if (!mAccount->connection().isNull() &&
         mAccount->connection()->status() == Connection::StatusConnected) {
         return mAccount->connection()->capabilities();
     } else {
