@@ -89,7 +89,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     // FIXME: (API/ABI break) Use Connection::ErrorDetails
     Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
     Q_PROPERTY(bool haveConnection READ _deprecated_haveConnection NOTIFY haveConnectionChanged)
-    Q_PROPERTY(ConnectionPtr connection READ connection)
+    Q_PROPERTY(ConnectionPtr connection READ connection NOTIFY connectionChanged)
     Q_PROPERTY(bool changingPresence READ isChangingPresence NOTIFY changingPresence)
     Q_PROPERTY(SimplePresence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
     Q_PROPERTY(SimplePresence currentPresence READ currentPresence NOTIFY currentPresenceChanged)
