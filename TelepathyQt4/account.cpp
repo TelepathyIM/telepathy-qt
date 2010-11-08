@@ -267,12 +267,12 @@ bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
     bool changed = false;
 
     if (usingConnectionCaps &&
-        (!parent->haveConnection() ||
+        (parent->connection().isNull() ||
          connection->status() != Connection::StatusConnected)) {
         usingConnectionCaps = false;
         changed = true;
     } else if (!usingConnectionCaps &&
-        parent->haveConnection() &&
+        !parent->connection().isNull() &&
         connection->status() == Connection::StatusConnected) {
         usingConnectionCaps = true;
         changed = true;
@@ -1435,10 +1435,17 @@ QVariantMap Account::connectionErrorDetails() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
+ * \deprecated Use connection() instead.
+ *
  * \return \c true if a connection object can be retrieved, \c false otherwise.
  * \sa connection(), connectionChanged()
  */
 bool Account::haveConnection() const
+{
+    return _deprecated_haveConnection();
+}
+
+bool Account::_deprecated_haveConnection() const
 {
     return !mPriv->connection.isNull();
 }
@@ -1457,7 +1464,7 @@ bool Account::haveConnection() const
  * \return A ConnectionPtr object pointing to the Connection object of this
  *         account, or a null ConnectionPtr if this account does not currently
  *         have a connection or if an error occurred.
- * \sa haveConnection(), connectionChanged()
+ * \sa connectionChanged()
  */
 ConnectionPtr Account::connection() const
 {
@@ -1595,7 +1602,7 @@ QString Account::uniqueIdentifier() const
  * \deprecated Use Connection::objectPath() instead.
  *
  * \return The connection object path of this account.
- * \sa connectionChanged(), haveConnection(), connection()
+ * \sa connectionChanged(), connection()
  */
 QString Account::connectionObjectPath() const
 {
@@ -2749,7 +2756,7 @@ PendingChannelRequest *Account::ensureChannel(
  *
  * \param connection A ConnectionPtr pointing to the new Connection object or a null ConnectionPtr
  *                   if there is no connection.
- * \sa haveConnection(), connection()
+ * \sa connection()
  */
 
 /**
