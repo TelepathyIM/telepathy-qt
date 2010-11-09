@@ -58,6 +58,7 @@ set(telepathy_qt4_SRCS
     media-session-handler.cpp
     media-stream-handler.cpp
     message.cpp
+    object.cpp
     optional-interface-factory.cpp
     outgoing-file-transfer-channel.cpp
     pending-account.cpp
@@ -241,6 +242,8 @@ set(telepathy_qt4_HEADERS
     message.h
     MethodInvocationContext
     method-invocation-context.h
+    Object
+    object.h
     OptionalInterfaceFactory
     optional-interface-factory.h
     OutgoingFileTransferChannel
@@ -363,6 +366,7 @@ set(telepathy_qt4_MOC_SRCS
     dbus-proxy-factory-internal.h
     file-transfer-channel.h
     incoming-file-transfer-channel.h
+    object.h
     outgoing-file-transfer-channel.h
     pending-account.h
     pending-channel.h
