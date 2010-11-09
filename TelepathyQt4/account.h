@@ -255,16 +255,6 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *createConferenceMediaCall(
-            const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers = QStringList(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *createConferenceMediaCall(
-            const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
     PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),

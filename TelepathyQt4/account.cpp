@@ -1969,19 +1969,6 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
 }
 
 /**
- * \deprecated Use createConferenceStreamedMediaCall() instead.
- */
-PendingChannelRequest *Account::createConferenceMediaCall(
-        const QList<ChannelPtr> &channels,
-        const QStringList &initialInviteeContactsIdentifiers,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers,
-            userActionTime, preferredHandler);
-}
-
-/**
  * Start a request to create a conference media call with the given
  * channels \a channels.
  *
@@ -2016,19 +2003,6 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
-}
-
-/**
- * \deprecated Use createConferenceStreamedMediaCall() instead.
- */
-PendingChannelRequest *Account::createConferenceMediaCall(
-        const QList<ChannelPtr> &channels,
-        const QList<ContactPtr> &initialInviteeContacts,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createConferenceStreamedMediaCall(channels, initialInviteeContacts,
-            userActionTime, preferredHandler);
 }
 
 /**
