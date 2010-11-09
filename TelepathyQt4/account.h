@@ -328,9 +328,6 @@ Q_SIGNALS:
     void connectionStatusChanged(Tp::Connection::Status status);
     void connectionChanged(const Tp::ConnectionPtr &connection);
 
-    // TODO: (API/ABI break) Move this to Tp::Object probably
-    void propertyChanged(const QString &propertyName);
-
 protected:
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
@@ -353,9 +350,6 @@ private Q_SLOTS:
 private:
     struct Private;
     friend struct Private;
-
-    // TODO: (API/ABI break) Move this to Tp::Object probably
-    void notify(const char *propertyName);
 
     Private *mPriv;
 };

@@ -3009,9 +3009,4 @@ void Account::onConnectionBuilt(PendingOperation *op)
     }
 }
 
-void Account::notify(const char *propertyName)
-{
-    emit propertyChanged(QLatin1String(propertyName));
-}
-
 } // Tp
