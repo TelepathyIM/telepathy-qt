@@ -189,7 +189,7 @@ ProfileManagerPtr ProfileManager::create(const QDBusConnection &bus)
  * Construct a new ProfileManager object.
  */
 ProfileManager::ProfileManager(const QDBusConnection &bus)
-    : QObject(),
+    : Object(),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, bus))
 {

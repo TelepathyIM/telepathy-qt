@@ -329,9 +329,8 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
         const ContactFactoryConstPtr &contactFactory)
     : StatefulDBusProxy(bus,
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
-            objectPath),
+            objectPath, FeatureCore),
       OptionalInterfaceFactory<ChannelDispatchOperation>(this),
-      ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
     if (accountFactory->dbusConnection().name() != bus.name()) {

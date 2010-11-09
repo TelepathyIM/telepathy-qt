@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008-2009 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,8 +27,8 @@
 #endif
 
 #include <TelepathyQt4/Global>
-
-#include <QObject>
+#include <TelepathyQt4/Object>
+#include <TelepathyQt4/ReadyObject>
 
 class QDBusConnection;
 class QDBusError;
@@ -38,14 +38,14 @@ namespace Tp
 
 class TestBackdoors;
 
-class TELEPATHY_QT4_EXPORT DBusProxy : public QObject
+class TELEPATHY_QT4_EXPORT DBusProxy : public Object, public ReadyObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(DBusProxy)
 
 public:
     DBusProxy(const QDBusConnection &dbusConnection, const QString &busName,
-            const QString &objectPath, QObject *parent = 0);
+            const QString &objectPath, const Feature &featureCore);
     virtual ~DBusProxy();
 
     QDBusConnection dbusConnection() const;
@@ -83,9 +83,7 @@ class TELEPATHY_QT4_EXPORT StatelessDBusProxy : public DBusProxy
 
 public:
     StatelessDBusProxy(const QDBusConnection &dbusConnection,
-        const QString &busName, const QString &objectPath,
-        QObject *parent = 0);
-
+        const QString &busName, const QString &objectPath, const Feature &featureCore);
     virtual ~StatelessDBusProxy();
 
 private:
@@ -101,9 +99,7 @@ class TELEPATHY_QT4_EXPORT StatefulDBusProxy : public DBusProxy
 
 public:
     StatefulDBusProxy(const QDBusConnection &dbusConnection,
-        const QString &busName, const QString &objectPath,
-        QObject *parent = 0);
-
+        const QString &busName, const QString &objectPath, const Feature &featureCore);
     virtual ~StatefulDBusProxy();
 
     static QString uniqueNameFrom(const QDBusConnection &bus, const QString &wellKnownOrUnique);

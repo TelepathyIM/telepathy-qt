@@ -326,9 +326,8 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
         const ContactFactoryConstPtr &contactFactory)
     : StatefulDBusProxy(bus,
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
-            objectPath),
+            objectPath, FeatureCore),
       OptionalInterfaceFactory<ChannelRequest>(this),
-      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, immutableProperties, accountFactory, connectionFactory,
                   channelFactory, contactFactory))
 {
@@ -359,9 +358,8 @@ ChannelRequest::ChannelRequest(const AccountPtr &account,
         const QString &objectPath, const QVariantMap &immutableProperties)
     : StatefulDBusProxy(account->dbusConnection(),
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
-            objectPath),
+            objectPath, FeatureCore),
       OptionalInterfaceFactory<ChannelRequest>(this),
-      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, immutableProperties, AccountFactoryPtr(),
                   account->connectionFactory(),
                   account->channelFactory(),

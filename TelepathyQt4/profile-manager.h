@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Object>
 #include <TelepathyQt4/Profile>
 #include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/Types>
@@ -38,9 +39,7 @@ namespace Tp
 
 class PendingOperation;
 
-class TELEPATHY_QT4_EXPORT ProfileManager : public QObject,
-                public ReadyObject,
-                public RefCounted
+class TELEPATHY_QT4_EXPORT ProfileManager : public Object, public ReadyObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(ProfileManager);

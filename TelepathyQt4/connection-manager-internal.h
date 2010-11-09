@@ -96,9 +96,7 @@ private:
 };
 
 class TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private::ProtocolWrapper :
-                          public StatelessDBusProxy,
-                          public OptionalInterfaceFactory<ProtocolWrapper>,
-                          public ReadyObject
+                public StatelessDBusProxy, public OptionalInterfaceFactory<ProtocolWrapper>
 {
     Q_OBJECT
 
