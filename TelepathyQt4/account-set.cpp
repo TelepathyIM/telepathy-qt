@@ -350,7 +350,7 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  */
 AccountSet::AccountSet(const AccountManagerPtr &accountManager,
         const QList<AccountFilterConstPtr> &filters)
-    : QObject(),
+    : Object(),
       mPriv(new Private(this, accountManager, filters))
 {
 }
@@ -366,7 +366,7 @@ AccountSet::AccountSet(const AccountManagerPtr &accountManager,
  */
 AccountSet::AccountSet(const AccountManagerPtr &accountManager,
         const QVariantMap &filter)
-    : QObject(),
+    : Object(),
       mPriv(new Private(this, accountManager, filter))
 {
 }
