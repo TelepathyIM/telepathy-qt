@@ -132,7 +132,6 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     QString normalizedName;
     Avatar avatar;
     ConnectionManagerPtr cm;
-    ProtocolInfo *protocolInfo;
     ConnectionStatus connectionStatus;
     ConnectionStatusReason connectionStatusReason;
     QString connectionError;
@@ -141,7 +140,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
     bool usingConnectionCaps;
-    ConnectionCapabilities *customCaps;
+    ConnectionCapabilities customCaps;
 };
 
 Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
@@ -160,11 +159,9 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       changingPresence(false),
       mayFinishCore(false),
       coreFinished(false),
-      protocolInfo(0),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified),
-      usingConnectionCaps(false),
-      customCaps(0)
+      usingConnectionCaps(false)
 {
     automaticPresence.type = currentPresence.type = requestedPresence.type
         = ConnectionPresenceTypeUnknown;
@@ -252,7 +249,6 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
 
 Account::Private::~Private()
 {
-    delete customCaps;
 }
 
 bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
@@ -291,12 +287,8 @@ bool Account::Private::useConferenceDRAFT(const char *channelType,
         HandleType targetHandleType) const
 {
     // default to Conference
-    ConnectionCapabilities *caps = parent->capabilities();
-    if (!caps) {
-        return false;
-    }
-
-    RequestableChannelClassSpecList rccSpecs = caps->allClassSpecs();
+    ConnectionCapabilities caps = parent->capabilities();
+    RequestableChannelClassSpecList rccSpecs = caps.allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == QLatin1String(channelType)) {
             if (targetHandleType != HandleTypeNone) {
@@ -839,12 +831,12 @@ ProfilePtr Account::profile() const
     if (!mPriv->profile) {
         mPriv->profile = Profile::createForServiceName(serviceName());
         if (!mPriv->profile->isValid()) {
-            if (mPriv->protocolInfo) {
+            if (protocolInfo().isValid()) {
                 mPriv->profile = ProfilePtr(new Profile(
                             QString(QLatin1String("%1-%2")).arg(mPriv->cmName).arg(serviceName()),
                             mPriv->cmName,
                             mPriv->protocolName,
-                            mPriv->protocolInfo));
+                            protocolInfo()));
             } else {
                 warning() << "Cannot create profile as neither a .profile is installed for service" <<
                     serviceName() << "nor protocol info can be retrieved";
@@ -913,8 +905,8 @@ QString Account::iconName() const
             }
         }
 
-        if (isReady(FeatureProtocolInfo) && protocolInfo() != NULL) {
-            return protocolInfo()->iconName();
+        if (isReady(FeatureProtocolInfo) && protocolInfo().isValid()) {
+            return protocolInfo().iconName();
         }
 
         return QString(QLatin1String("im-%1")).arg(protocolName());
@@ -1055,20 +1047,18 @@ PendingStringList *Account::updateParameters(const QVariantMap &set,
  *
  * This method requires Account::FeatureProtocolInfo to be enabled.
  *
- * The returned pointer points to an internal data structure, which should not be deleted by the
- * caller.
- *
  * \return The protocol info of this account protocol.
  */
-ProtocolInfo *Account::protocolInfo() const
+ProtocolInfo Account::protocolInfo() const
 {
     if (!isReady(Features() << FeatureProtocolInfo)) {
         warning() << "Trying to retrieve protocol info from account, but "
                      "protocol info is not supported or was not requested. "
                      "Use becomeReady(FeatureProtocolInfo)";
+        return ProtocolInfo();
     }
 
-    return mPriv->protocolInfo;
+    return mPriv->cm->protocol(mPriv->protocolName);
 }
 
 /**
@@ -1081,17 +1071,15 @@ ProtocolInfo *Account::protocolInfo() const
  * to return the subtraction of the protocolInfo() capabilities and the profile unsupported
  * capabilities.
  *
- * \return The capabilities for this account or 0 if FeatureCapabilities is not
- *         ready or the capabilities are unknown (e.g. the connection is offline and protocolInfo()
- *         returns 0).
+ * \return The capabilities for this account.
  */
-ConnectionCapabilities *Account::capabilities() const
+ConnectionCapabilities Account::capabilities() const
 {
     if (!isReady(FeatureCapabilities)) {
         warning() << "Trying to retrieve capabilities from account, but "
                      "FeatureCapabilities was not requested. "
                      "Use becomeReady(FeatureCapabilities)";
-        return 0;
+        return ConnectionCapabilities();
     }
 
     // if the connection is online and ready use its caps
@@ -1107,20 +1095,16 @@ ConnectionCapabilities *Account::capabilities() const
     // However, if we failed to introspect the CM (eg. this is a test), then let's not try to use
     // the protocolInfo because it'll be NULL! Profile may also be NULL in case a .profile for
     // serviceName() is not present and protocolInfo is NULL.
-    ProtocolInfo *pi = protocolInfo();
-    if (!pi) {
-        return NULL;
+    ProtocolInfo pi = protocolInfo();
+    if (!pi.isValid()) {
+        return ConnectionCapabilities();
     }
     ProfilePtr pr = profile();
     if (!pr) {
-        return pi->capabilities();
+        return pi.capabilities();
     }
 
-    if (mPriv->customCaps) {
-        return mPriv->customCaps;
-    }
-
-    RequestableChannelClassSpecList piClassSpecs = pi->capabilities()->allClassSpecs();
+    RequestableChannelClassSpecList piClassSpecs = pi.capabilities().allClassSpecs();
     RequestableChannelClassSpecList prUnsupportedClassSpecs = pr->unsupportedChannelClassSpecs();
     RequestableChannelClassSpecList classSpecs;
     bool unsupported;
@@ -1151,7 +1135,7 @@ ConnectionCapabilities *Account::capabilities() const
         } else {
         }
     }
-    mPriv->customCaps = new ConnectionCapabilities(classSpecs);
+    mPriv->customCaps = ConnectionCapabilities(classSpecs);
     return mPriv->customCaps;
 }
 
@@ -2538,14 +2522,6 @@ void Account::Private::updateProperties(const QVariantMap &props)
     bool profileChanged = false;
     if (props.contains(QLatin1String("Service")) &&
         serviceName != qdbus_cast<QString>(props[QLatin1String("Service")])) {
-        /* The service name, which means the profile changed, even if we are using the connection
-         * caps, whenever the connection goes offline (if ever) we need to recompute a new caps for
-         * the new profile */
-        if (customCaps) {
-            delete customCaps;
-            customCaps = 0;
-        }
-
         serviceNameChanged = true;
         serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
         debug() << " Service Name:" << parent->serviceName();
@@ -2918,14 +2894,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
 {
     bool error = operation->isError();
     if (!error) {
-        foreach (ProtocolInfo *info, mPriv->cm->protocols()) {
-            if (info->name() == mPriv->protocolName) {
-                mPriv->protocolInfo = info;
-                break;
-            }
-        }
-
-        error = (mPriv->protocolInfo == 0);
+        error = !mPriv->cm->hasProtocol(mPriv->protocolName);
     }
 
     if (!error) {

@@ -50,8 +50,6 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
     static QString makeBusName(const QString &name);
     static QString makeObjectPath(const QString &name);
 
-    ProtocolInfo *protocol(const QString &protocolName);
-
     class PendingNames;
     class ProtocolWrapper;
 
@@ -108,7 +106,7 @@ public:
             const QString &cmName, const QString &name, const QVariantMap &props);
     ~ProtocolWrapper();
 
-    ProtocolInfo *info() const { return mInfo; }
+    ProtocolInfo info() const { return mInfo; }
 
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
@@ -125,7 +123,7 @@ private:
     bool receiveProperties(const QVariantMap &props);
 
     ReadinessHelper *mReadinessHelper;
-    ProtocolInfo *mInfo;
+    ProtocolInfo mInfo;
     QVariantMap mImmutableProps;
 };
 

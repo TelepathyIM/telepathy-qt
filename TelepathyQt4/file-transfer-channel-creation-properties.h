@@ -30,6 +30,7 @@
 #include <TelepathyQt4/Global>
 
 #include <QDateTime>
+#include <QMetaType>
 #include <QSharedDataPointer>
 #include <QString>
 
@@ -39,21 +40,18 @@ namespace Tp
 class TELEPATHY_QT4_EXPORT FileTransferChannelCreationProperties
 {
 public:
+    FileTransferChannelCreationProperties();
     FileTransferChannelCreationProperties(const QString &suggestedFileName,
             const QString &contentType, qulonglong size);
     FileTransferChannelCreationProperties(
             const FileTransferChannelCreationProperties &other);
     ~FileTransferChannelCreationProperties();
 
+    bool isValid() const { return mPriv.constData() != 0; }
+
     FileTransferChannelCreationProperties &operator=(
             const FileTransferChannelCreationProperties &other);
-    bool operator==(
-            const FileTransferChannelCreationProperties &other) const;
-    inline bool operator!=(
-            const FileTransferChannelCreationProperties &other) const
-    {
-        return !(*this == other);
-    }
+    bool operator==(const FileTransferChannelCreationProperties &other) const;
 
     FileTransferChannelCreationProperties &setContentHash(
             FileHashType contentHashType, const QString &contentHash);
@@ -87,5 +85,7 @@ private:
 };
 
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::FileTransferChannelCreationProperties);
 
 #endif

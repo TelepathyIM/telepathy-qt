@@ -28,96 +28,23 @@
 
 #include <TelepathyQt4/_gen/cli-connection-manager.h>
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
+#include <TelepathyQt4/ProtocolInfo>
+#include <TelepathyQt4/ProtocolParameter>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/SharedPtr>
-
-#include <QSet>
+#include <TelepathyQt4/Types>
 
 namespace Tp
 {
 
-class ConnectionCapabilities;
 class PendingConnection;
-class PendingReady;
 class PendingStringList;
-class ProtocolParameter;
-class ProtocolInfo;
-
-typedef QList<ProtocolParameter*> ProtocolParameterList;
-typedef QList<ProtocolInfo*> ProtocolInfoList;
-
-class TELEPATHY_QT4_EXPORT ProtocolParameter
-{
-public:
-    ProtocolParameter(const QString &name,
-                      const QDBusSignature &dbusSignature,
-                      QVariant defaultValue,
-                      ConnMgrParamFlag flags);
-    ~ProtocolParameter();
-
-    QString name() const;
-    QDBusSignature dbusSignature() const;
-    QVariant::Type type() const;
-    QVariant defaultValue() const;
-
-    bool isRequired() const;
-    bool isSecret() const;
-    bool isRequiredForRegistration() const;
-
-    bool operator==(const ProtocolParameter &other) const;
-    bool operator==(const QString &name) const;
-
-private:
-    Q_DISABLE_COPY(ProtocolParameter);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-class TELEPATHY_QT4_EXPORT ProtocolInfo
-{
-public:
-    ~ProtocolInfo();
-
-    QString cmName() const;
-
-    QString name() const;
-
-    const ProtocolParameterList &parameters() const;
-    bool hasParameter(const QString &name) const;
-
-    bool canRegister() const;
-
-    ConnectionCapabilities *capabilities() const;
-
-    QString vcardField() const;
-
-    QString englishName() const;
-
-    QString iconName() const;
-
-private:
-    Q_DISABLE_COPY(ProtocolInfo);
-
-    ProtocolInfo(const QString &cmName, const QString &name);
-
-    void addParameter(const ParamSpec &spec);
-    void setRequestableChannelClasses(const RequestableChannelClassList &caps);
-    void setVCardField(const QString &vcardField);
-    void setEnglishName(const QString &englishName);
-    void setIconName(const QString &iconName);
-
-    struct Private;
-    friend struct Private;
-    friend class ConnectionManager;
-    Private *mPriv;
-};
 
 class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
                 public OptionalInterfaceFactory<ConnectionManager>
@@ -144,7 +71,7 @@ public:
     QStringList supportedProtocols() const;
     const ProtocolInfoList &protocols() const;
     bool hasProtocol(const QString &protocolName) const;
-    ProtocolInfo *protocol(const QString &protocolName) const;
+    ProtocolInfo protocol(const QString &protocolName) const;
 
     // TODO (API/ABI break): Do we want to keep requestConnection as public API?
     PendingConnection *requestConnection(const QString &protocolName,

@@ -50,11 +50,6 @@ private:
             bool specificToContact);
     ContactCapabilities(const RequestableChannelClassSpecList &rccSpecs,
             bool specificToContact);
-
-    struct Private;
-    friend struct Private;
-    // FIXME: (API/ABI break) Make mPriv a QSharedDataPointer
-    Private *mPriv;
 };
 
 } // Tp

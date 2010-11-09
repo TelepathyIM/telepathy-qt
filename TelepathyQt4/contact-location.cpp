@@ -26,14 +26,8 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ContactLocation::Private
+struct TELEPATHY_QT4_NO_EXPORT ContactLocation::Private : public QSharedData
 {
-    Private()
-        : valid(false)
-    {
-    }
-
-    bool valid;
     QVariantMap location;
 };
 
@@ -50,7 +44,18 @@ struct TELEPATHY_QT4_NO_EXPORT ContactLocation::Private
  * Construct a new ContactLocation object.
  */
 ContactLocation::ContactLocation()
-    : mPriv(new Private())
+    : mPriv(new Private)
+{
+}
+
+ContactLocation::ContactLocation(const QVariantMap &location)
+    : mPriv(new Private)
+{
+    mPriv->location = location;
+}
+
+ContactLocation::ContactLocation(const ContactLocation &other)
+    : mPriv(other.mPriv)
 {
 }
 
@@ -59,12 +64,12 @@ ContactLocation::ContactLocation()
  */
 ContactLocation::~ContactLocation()
 {
-    delete mPriv;
 }
 
-bool ContactLocation::isValid() const
+ContactLocation &ContactLocation::operator=(const ContactLocation &other)
 {
-    return mPriv->valid;
+    this->mPriv = other.mPriv;
+    return *this;
 }
 
 QString ContactLocation::countryCode() const
@@ -198,15 +203,18 @@ QDateTime ContactLocation::timestamp() const
     return QDateTime();
 }
 
-QVariantMap ContactLocation::data() const
+QVariantMap ContactLocation::allDetails() const
 {
     return mPriv->location;
 }
 
 void ContactLocation::updateData(const QVariantMap &location)
 {
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
     mPriv->location = location;
-    mPriv->valid = true;
 }
 
 } // Tp

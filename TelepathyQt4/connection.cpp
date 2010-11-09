@@ -124,7 +124,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 
     uint selfHandle;
 
-    ConnectionCapabilities *caps;
+    ConnectionCapabilities caps;
 
     ContactManager *contactManager;
 
@@ -202,7 +202,6 @@ Connection::Private::Private(Connection *parent,
       status(Connection::StatusUnknown),
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
-      caps(new ConnectionCapabilities()),
       contactManager(new ContactManager(parent)),
       contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
@@ -309,8 +308,6 @@ Connection::Private::~Private()
     // Clear selfContact so its handle will be released cleanly before the
     // handleContext
     selfContact.clear();
-
-    delete caps;
 
     QMutexLocker locker(&handleContextsLock);
 
@@ -600,7 +597,7 @@ void Connection::Private::setInterfaces(const QStringList &interfaces)
 
 void Connection::Private::invalidateResetCaps(const QString &error, const QString &message)
 {
-    caps->updateRequestableChannelClasses(RequestableChannelClassList());
+    caps.updateRequestableChannelClasses(RequestableChannelClassList());
     parent->invalidate(error, message);
 }
 
@@ -1265,10 +1262,9 @@ CurrencyAmount Connection::accountBalance() const
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
- * @return An object representing the connection capabilities or 0 if
- *         FeatureCore is not ready.
+ * @return An object representing the connection capabilities.
  */
-ConnectionCapabilities *Connection::capabilities() const
+ConnectionCapabilities Connection::capabilities() const
 {
     if (!isReady()) {
         warning() << "Connection::capabilities() used before connection "
@@ -1476,7 +1472,7 @@ void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
 
     if (!reply.isError()) {
         debug() << "Got capabilities";
-        mPriv->caps->updateRequestableChannelClasses(
+        mPriv->caps.updateRequestableChannelClasses(
                 qdbus_cast<RequestableChannelClassList>(reply.value().variant()));
     } else {
         warning().nospace() << "Getting capabilities failed with " <<

@@ -126,7 +126,7 @@ void AccountSet::Private::wrapAccount(const AccountPtr &account)
             SIGNAL(accountPropertyChanged(Tp::AccountPtr,QString)),
             SLOT(onAccountChanged(Tp::AccountPtr)));
     parent->connect(wrapper,
-            SIGNAL(accountCapabilitiesChanged(Tp::AccountPtr,Tp::ConnectionCapabilities*)),
+            SIGNAL(accountCapabilitiesChanged(Tp::AccountPtr,Tp::ConnectionCapabilities)),
             SLOT(onAccountChanged(Tp::AccountPtr)));
     wrappers.insert(account->objectPath(), wrapper);
 }
@@ -183,27 +183,12 @@ AccountSet::Private::AccountWrapper::AccountWrapper(
             SIGNAL(propertyChanged(QString)),
             SLOT(onAccountPropertyChanged(QString)));
     connect(account.data(),
-            SIGNAL(capabilitiesChanged(Tp::ConnectionCapabilities*)),
-            SLOT(onAccountCapalitiesChanged(Tp::ConnectionCapabilities*)));
+            SIGNAL(capabilitiesChanged(Tp::ConnectionCapabilities)),
+            SLOT(onAccountCapalitiesChanged(Tp::ConnectionCapabilities)));
 }
 
 AccountSet::Private::AccountWrapper::~AccountWrapper()
 {
-}
-
-ConnectionCapabilities *AccountSet::Private::AccountWrapper::capabilities() const
-{
-    if (!mAccount->connection().isNull() &&
-        mAccount->connection()->status() == Connection::StatusConnected) {
-        return mAccount->connection()->capabilities();
-    } else {
-        if (mAccount->protocolInfo()) {
-            return mAccount->protocolInfo()->capabilities();
-        }
-    }
-    /* either we don't have a connected connection or
-     * Account::FeatureProtocolInfo is not ready */
-    return 0;
 }
 
 void AccountSet::Private::AccountWrapper::onAccountRemoved()
@@ -218,7 +203,7 @@ void AccountSet::Private::AccountWrapper::onAccountPropertyChanged(
 }
 
 void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
-        ConnectionCapabilities *caps)
+        const ConnectionCapabilities &caps)
 {
     emit accountCapabilitiesChanged(mAccount, caps);
 }

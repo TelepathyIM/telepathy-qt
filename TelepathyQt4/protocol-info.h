@@ -19,76 +19,75 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_contact_location_h_HEADER_GUARD_
-#define _TelepathyQt4_contact_location_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_protocol_info_h_HEADER_GUARD_
+#define _TelepathyQt4_protocol_info_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
 #include <TelepathyQt4/Global>
+#include <TelepathyQt4/ProtocolParameter>
+#include <TelepathyQt4/Types>
 
-#include <QDateTime>
 #include <QSharedDataPointer>
 #include <QString>
-#include <QVariantMap>
+#include <QList>
 
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ContactLocation
+class ConnectionCapabilities;
+
+class TELEPATHY_QT4_EXPORT ProtocolInfo
 {
 public:
-    ContactLocation();
-    ContactLocation(const QVariantMap &location);
-    ContactLocation(const ContactLocation &other);
-    virtual ~ContactLocation();
+    ProtocolInfo();
+    ProtocolInfo(const ProtocolInfo &other);
+    ~ProtocolInfo();
 
     bool isValid() const { return mPriv.constData() != 0; }
 
-    ContactLocation &operator=(const ContactLocation &other);
+    ProtocolInfo &operator=(const ProtocolInfo &other);
 
-    QString countryCode() const;
-    QString country() const;
-    QString region() const;
-    QString locality() const;
-    QString area() const;
-    QString postalCode() const;
-    QString street() const;
+    QString cmName() const;
 
-    QString building() const;
-    QString floor() const;
-    QString room() const;
-    QString text() const;
-    QString description() const;
-    QString uri() const;
+    QString name() const;
 
-    QString language() const;
+    ProtocolParameterList parameters() const;
+    bool hasParameter(const QString &name) const;
 
-    double latitude() const;
-    double longitude() const;
-    double altitude() const;
-    double accuracy() const;
+    bool canRegister() const;
 
-    double speed() const;
-    double bearing() const;
+    ConnectionCapabilities capabilities() const;
 
-    QDateTime timestamp() const;
+    QString vcardField() const;
 
-    QVariantMap allDetails() const;
+    QString englishName() const;
+
+    QString iconName() const;
 
 private:
-    friend class Contact;
+    friend class ConnectionManager;
 
-    void updateData(const QVariantMap &location);
+    ProtocolInfo(const QString &cmName, const QString &name);
+
+    void addParameter(const ParamSpec &spec);
+    void setRequestableChannelClasses(const RequestableChannelClassList &caps);
+    void setVCardField(const QString &vcardField);
+    void setEnglishName(const QString &englishName);
+    void setIconName(const QString &iconName);
 
     struct Private;
     friend struct Private;
     QSharedDataPointer<Private> mPriv;
 };
 
+typedef QList<ProtocolInfo> ProtocolInfoList;
+
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ContactLocation);
+Q_DECLARE_METATYPE(Tp::ProtocolInfo);
+Q_DECLARE_METATYPE(Tp::ProtocolInfoList);
 
 #endif

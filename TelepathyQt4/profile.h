@@ -154,7 +154,7 @@ private:
 
     Profile();
     Profile(const QString &serviceName, const QString &cmName,
-            const QString &protocolName, const ProtocolInfo *protocolInfo);
+            const QString &protocolName, const ProtocolInfo &protocolInfo);
 
     void setServiceName(const QString &serviceName);
     void setFileName(const QString &fileName);

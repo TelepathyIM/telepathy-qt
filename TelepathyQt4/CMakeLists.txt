@@ -79,6 +79,8 @@ set(telepathy_qt4_SRCS
     profile.cpp
     profile-manager.cpp
     properties.cpp
+    protocol-info.cpp
+    protocol-parameter.cpp
     readiness-helper.cpp
     requestable-channel-class-spec.cpp
     ready-object.cpp
@@ -281,7 +283,6 @@ set(telepathy_qt4_HEADERS
     PendingVoid
     Presence
     presence.h
-    ProtocolParameter
     Profile
     profile.h
     ProfileManager
@@ -291,6 +292,9 @@ set(telepathy_qt4_HEADERS
     PropertiesInterface
     PropertiesInterfaceInterface
     ProtocolInfo
+    protocol-info.h
+    ProtocolParameter
+    protocol-parameter.h
     ReadinessHelper
     readiness-helper.h
     ReadyObject

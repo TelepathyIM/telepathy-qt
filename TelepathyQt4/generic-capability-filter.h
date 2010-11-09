@@ -51,9 +51,7 @@ public:
     inline virtual bool matches(const SharedPtr<T> &t) const
     {
         bool supportedRcc;
-        RequestableChannelClassSpecList objectRccSpecs = t->capabilities() ?
-            t->capabilities()->allClassSpecs() :
-            RequestableChannelClassSpecList();
+        RequestableChannelClassSpecList objectRccSpecs = t->capabilities().allClassSpecs();
         Q_FOREACH (const RequestableChannelClassSpec &filterRccSpec, mFilter) {
             supportedRcc = false;
 

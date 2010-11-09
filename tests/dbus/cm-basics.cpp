@@ -99,42 +99,42 @@ void TestCmBasics::testBasics()
     QVERIFY(mCM->hasProtocol(QLatin1String("example")));
     QVERIFY(!mCM->hasProtocol(QLatin1String("not-there")));
 
-    ProtocolInfo *info = mCM->protocol(QLatin1String("example"));
-    QVERIFY(info != 0);
+    ProtocolInfo info = mCM->protocol(QLatin1String("example"));
+    QVERIFY(info.isValid());
 
-    QCOMPARE(info->cmName(), QLatin1String("example_echo_2"));
-    QCOMPARE(info->name(), QLatin1String("example"));
+    QCOMPARE(info.cmName(), QLatin1String("example_echo_2"));
+    QCOMPARE(info.name(), QLatin1String("example"));
 
-    QCOMPARE(info->hasParameter(QLatin1String("account")), true);
-    QCOMPARE(info->hasParameter(QLatin1String("not-there")), false);
+    QCOMPARE(info.hasParameter(QLatin1String("account")), true);
+    QCOMPARE(info.hasParameter(QLatin1String("not-there")), false);
 
-    QCOMPARE(info->parameters().size(), 1);
+    QCOMPARE(info.parameters().size(), 1);
 
-    ProtocolParameter *param = info->parameters().at(0);
-    QCOMPARE(param->name(), QLatin1String("account"));
-    QCOMPARE(static_cast<uint>(param->type()), static_cast<uint>(QVariant::String));
-    QCOMPARE(param->defaultValue().isNull(), true);
-    QCOMPARE(param->dbusSignature().signature(), QLatin1String("s"));
-    QCOMPARE(param->isRequired(), true);
-    QCOMPARE(param->isRequiredForRegistration(), true); // though it can't register!
-    QCOMPARE(param->isSecret(), false);
+    ProtocolParameter param = info.parameters().at(0);
+    QCOMPARE(param.name(), QLatin1String("account"));
+    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(param.defaultValue().isNull(), true);
+    QCOMPARE(param.dbusSignature().signature(), QLatin1String("s"));
+    QCOMPARE(param.isRequired(), true);
+    QCOMPARE(param.isRequiredForRegistration(), true); // though it can't register!
+    QCOMPARE(param.isSecret(), false);
 
-    QVERIFY(*param == QLatin1String("account"));
+    QVERIFY(param == QLatin1String("account"));
 
-    QCOMPARE(info->canRegister(), false);
+    QCOMPARE(info.canRegister(), false);
 
-    QCOMPARE(info->capabilities()->isSpecificToContact(), false);
-    QCOMPARE(info->capabilities()->textChatrooms(), false);
-    QCOMPARE(info->capabilities()->textChats(), true);
-    QCOMPARE(info->capabilities()->streamedMediaCalls(), false);
-    QCOMPARE(info->capabilities()->streamedMediaAudioCalls(), false);
-    QCOMPARE(info->capabilities()->streamedMediaVideoCalls(), false);
-    QCOMPARE(info->capabilities()->streamedMediaVideoCallsWithAudio(), false);
-    QCOMPARE(info->capabilities()->upgradingStreamedMediaCalls(), false);
+    QCOMPARE(info.capabilities().isSpecificToContact(), false);
+    QCOMPARE(info.capabilities().textChatrooms(), false);
+    QCOMPARE(info.capabilities().textChats(), true);
+    QCOMPARE(info.capabilities().streamedMediaCalls(), false);
+    QCOMPARE(info.capabilities().streamedMediaAudioCalls(), false);
+    QCOMPARE(info.capabilities().streamedMediaVideoCalls(), false);
+    QCOMPARE(info.capabilities().streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(info.capabilities().upgradingStreamedMediaCalls(), false);
 
-    QCOMPARE(info->vcardField(), QLatin1String("x-telepathy-example"));
-    QCOMPARE(info->englishName(), QLatin1String("Echo II example"));
-    QCOMPARE(info->iconName(), QLatin1String("im-icq"));
+    QCOMPARE(info.vcardField(), QLatin1String("x-telepathy-example"));
+    QCOMPARE(info.englishName(), QLatin1String("Echo II example"));
+    QCOMPARE(info.iconName(), QLatin1String("im-icq"));
 
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
@@ -157,48 +157,45 @@ void TestCmBasics::testLegacy()
     QVERIFY(mCMLegacy->hasProtocol(QLatin1String("simple")));
     QVERIFY(!mCMLegacy->hasProtocol(QLatin1String("not-there")));
 
-    ProtocolInfo *info = mCMLegacy->protocol(QLatin1String("simple"));
-    QVERIFY(info != 0);
+    ProtocolInfo info = mCMLegacy->protocol(QLatin1String("simple"));
+    QVERIFY(info.isValid());
 
-    QCOMPARE(info->cmName(), QLatin1String("simple"));
-    QCOMPARE(info->name(), QLatin1String("simple"));
+    QCOMPARE(info.cmName(), QLatin1String("simple"));
+    QCOMPARE(info.name(), QLatin1String("simple"));
 
-    QCOMPARE(info->hasParameter(QLatin1String("account")), true);
-    QCOMPARE(info->hasParameter(QLatin1String("not-there")), false);
+    QCOMPARE(info.hasParameter(QLatin1String("account")), true);
+    QCOMPARE(info.hasParameter(QLatin1String("not-there")), false);
 
-    QCOMPARE(info->parameters().size(), 1);
+    QCOMPARE(info.parameters().size(), 1);
 
-    ProtocolParameter *param = info->parameters().at(0);
-    QCOMPARE(param->name(), QLatin1String("account"));
-    QCOMPARE(static_cast<uint>(param->type()), static_cast<uint>(QVariant::String));
-    QCOMPARE(param->defaultValue().isNull(), true);
-    QCOMPARE(param->dbusSignature().signature(), QLatin1String("s"));
-    QCOMPARE(param->isRequired(), true);
-    QCOMPARE(param->isRequiredForRegistration(), true);
-    QCOMPARE(param->isSecret(), false);
+    ProtocolParameter param = info.parameters().at(0);
+    QCOMPARE(param.name(), QLatin1String("account"));
+    QCOMPARE(static_cast<uint>(param.type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(param.defaultValue().isNull(), true);
+    QCOMPARE(param.dbusSignature().signature(), QLatin1String("s"));
+    QCOMPARE(param.isRequired(), true);
+    QCOMPARE(param.isRequiredForRegistration(), true);
+    QCOMPARE(param.isSecret(), false);
 
-    QVERIFY(*param == QLatin1String("account"));
+    QVERIFY(param == QLatin1String("account"));
 
-    QCOMPARE(info->canRegister(), false);
-
-    QVERIFY(info->capabilities() != 0);
+    QCOMPARE(info.canRegister(), false);
 
     // Protocol capabilities semantics is "an actual connection supports whatever I claim, or
     // less", so for a service with no actual Protocol implementation everything should be
     // assumed to be possible at this point
-    QVERIFY(info->capabilities() != 0);
-    QCOMPARE(info->capabilities()->isSpecificToContact(), false);
-    QCOMPARE(info->capabilities()->textChatrooms(), true);
-    QCOMPARE(info->capabilities()->textChats(), true);
-    QCOMPARE(info->capabilities()->streamedMediaCalls(), true);
-    QCOMPARE(info->capabilities()->streamedMediaAudioCalls(), true);
-    QCOMPARE(info->capabilities()->streamedMediaVideoCalls(), true);
-    QCOMPARE(info->capabilities()->streamedMediaVideoCallsWithAudio(), true);
-    QCOMPARE(info->capabilities()->upgradingStreamedMediaCalls(), true);
+    QCOMPARE(info.capabilities().isSpecificToContact(), false);
+    QCOMPARE(info.capabilities().textChatrooms(), true);
+    QCOMPARE(info.capabilities().textChats(), true);
+    QCOMPARE(info.capabilities().streamedMediaCalls(), true);
+    QCOMPARE(info.capabilities().streamedMediaAudioCalls(), true);
+    QCOMPARE(info.capabilities().streamedMediaVideoCalls(), true);
+    QCOMPARE(info.capabilities().streamedMediaVideoCallsWithAudio(), true);
+    QCOMPARE(info.capabilities().upgradingStreamedMediaCalls(), true);
 
-    QCOMPARE(info->vcardField(), QLatin1String(""));
-    QCOMPARE(info->englishName(), QLatin1String("Simple"));
-    QCOMPARE(info->iconName(), QLatin1String("im-simple"));
+    QCOMPARE(info.vcardField(), QLatin1String(""));
+    QCOMPARE(info.englishName(), QLatin1String("Simple"));
+    QCOMPARE(info.iconName(), QLatin1String("im-simple"));
 
     QCOMPARE(mCMLegacy->supportedProtocols(), QStringList() << QLatin1String("simple"));
 }
