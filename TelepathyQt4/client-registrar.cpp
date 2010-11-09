@@ -802,7 +802,8 @@ ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory)
-    : mPriv(new Private(bus, accountFactory, connectionFactory, channelFactory, contactFactory))
+    : Object(),
+      mPriv(new Private(bus, accountFactory, connectionFactory, channelFactory, contactFactory))
 {
     registrarForConnection.insert(qMakePair(bus.name(),
                 bus.baseService()), this);
