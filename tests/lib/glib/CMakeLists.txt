@@ -47,7 +47,6 @@ if(ENABLE_TP_GLIB_TESTS)
                           example-cm-echo
                           example-cm-echo2
                           tp-glib-tests-future-extensions
-                          future-example-cm-call
                           future-example-cm-conference
                           future-example-cm-conference-draft)
 

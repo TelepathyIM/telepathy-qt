@@ -84,7 +84,6 @@ set(telepathy_qt4_SRCS
     referenced-handles.cpp
     room-list-channel.cpp
     streamed-media-channel.cpp
-    streamed-media-channel-internal.h
     test-backdoors.cpp
     test-backdoors.h
     text-channel.cpp
@@ -384,7 +383,6 @@ set(telepathy_qt4_MOC_SRCS
     room-list-channel.h
     simple-pending-operations.h
     streamed-media-channel.h
-    streamed-media-channel-internal.h
     text-channel.h)
 
 # Generate the spec files for both stable and future spec
