@@ -2215,7 +2215,7 @@ PendingChannelRequest *Account::createFileTransfer(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::createConferenceMediaCall(
+PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QList<ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers,
         const QDateTime &userActionTime,
@@ -2229,6 +2229,19 @@ PendingChannelRequest *Account::createConferenceMediaCall(
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
+}
+
+/**
+ * \deprecated Use createConferenceStreamedMediaCall() instead.
+ */
+PendingChannelRequest *Account::createConferenceMediaCall(
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers,
+            userActionTime, preferredHandler);
 }
 
 /**
@@ -2250,7 +2263,7 @@ PendingChannelRequest *Account::createConferenceMediaCall(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::createConferenceMediaCall(
+PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QList<ChannelPtr> &channels,
         const QList<ContactPtr> &initialInviteeContacts,
         const QDateTime &userActionTime,
@@ -2266,6 +2279,19 @@ PendingChannelRequest *Account::createConferenceMediaCall(
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
+}
+
+/**
+ * \deprecated Use createConferenceStreamedMediaCall() instead.
+ */
+PendingChannelRequest *Account::createConferenceMediaCall(
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createConferenceStreamedMediaCall(channels, initialInviteeContacts,
+            userActionTime, preferredHandler);
 }
 
 /**
