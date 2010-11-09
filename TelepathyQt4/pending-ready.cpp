@@ -25,7 +25,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-#include <TelepathyQt4/ReadyObject>
+#include <TelepathyQt4/DBusProxy>
 
 namespace Tp
 {
@@ -33,7 +33,7 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
 {
     Private(const SharedPtr<const DBusProxyFactory> &factory, const Features &requestedFeatures,
-            QObject *object, const SharedPtr<RefCounted> &proxy) :
+            QObject *object, const DBusProxyPtr &proxy) :
         factory(factory),
         requestedFeatures(requestedFeatures),
         object(object),
@@ -44,7 +44,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
     SharedPtr<const DBusProxyFactory> factory;
     Features requestedFeatures;
     QObject *object;
-    SharedPtr<RefCounted> proxy;
+    DBusProxyPtr proxy;
 };
 
 /**
@@ -72,7 +72,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
  * circular destruction.
  */
 PendingReady::PendingReady(const SharedPtr<const DBusProxyFactory> &factory,
-        const Features &requestedFeatures, const SharedPtr<RefCounted> &proxy, QObject *parent)
+        const Features &requestedFeatures, const DBusProxyPtr &proxy, QObject *parent)
     : PendingOperation(parent),
       mPriv(new Private(factory, requestedFeatures, 0, proxy))
 {
@@ -83,13 +83,7 @@ PendingReady::PendingReady(const SharedPtr<const DBusProxyFactory> &factory,
         return;
     }
 
-    // API/ABI break TODO: Make some refcounted baseclass exist which is both a QObject and a
-    // ReadyObject so we can avoid this dynamic_cast mess...
-
-    ReadyObject *readyObj = dynamic_cast<ReadyObject *>(proxy.data());
-    Q_ASSERT(readyObj != NULL);
-
-    connect(readyObj->becomeReady(requestedFeatures),
+    connect(proxy->becomeReady(requestedFeatures),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onNestedFinished(Tp::PendingOperation*)));
 }
@@ -105,7 +99,7 @@ PendingReady::PendingReady(const Features &requestedFeatures,
         QObject *object, QObject *parent)
     : PendingOperation(parent),
       mPriv(new Private(SharedPtr<DBusProxyFactory>(), requestedFeatures, object,
-                  SharedPtr<RefCounted>()))
+                  DBusProxyPtr()))
 {
     // This is a PendingReady created by ReadinessHelper, and will be set ready by it - so should
     // not do anything ourselves here.
@@ -141,12 +135,9 @@ QObject *PendingReady::object() const
  * This is only applicable for PendingReady objects from a DBusProxyFactory subclass. For others,
  * a \c NULL SharedPtr is returned.
  *
- * \todo API/ABI break TODO: after shuffling the object hierarchy around, drop this and have just
- * ReadyObjectPtr PendingReady::object() const for all PendingReadys no matter the source
- *
  * \return The proxy which is being made ready.
  */
-SharedPtr<RefCounted> PendingReady::proxy() const
+DBusProxyPtr PendingReady::proxy() const
 {
     return mPriv->proxy;
 }

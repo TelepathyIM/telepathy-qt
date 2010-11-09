@@ -44,15 +44,14 @@ class TELEPATHY_QT4_EXPORT PendingReady: public PendingOperation
 public:
     // API/ABI break TODO: Shouldn't these be private?
     PendingReady(const SharedPtr<const DBusProxyFactory> &factory,
-            const Features &requestedFeatures, const SharedPtr<RefCounted> &proxy,
+            const Features &requestedFeatures, const DBusProxyPtr &proxy,
             QObject *parent = 0);
     PendingReady(const Features &requestedFeatures, QObject *object,
             QObject *parent = 0);
     ~PendingReady();
 
     QObject *object() const;
-    // API/ABI break TODO: make this SharedPtr<TheRefCtdDBusProxyClass>
-    SharedPtr<RefCounted> proxy() const;
+    DBusProxyPtr proxy() const;
 
     Features requestedFeatures() const;
 

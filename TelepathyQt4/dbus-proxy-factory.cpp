@@ -139,9 +139,13 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy)
     ReadyObject *proxyReady = dynamic_cast<ReadyObject *>(proxy.data());
     Q_ASSERT(proxyReady != NULL);
 
+    DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(proxy.data());
+    Q_ASSERT(proxyProxy != NULL);
+
     mPriv->cache->put(proxy);
 
-    return new PendingReady(SharedPtr<const DBusProxyFactory>(this), featuresFor(proxy), proxy, 0);
+    return new PendingReady(SharedPtr<const DBusProxyFactory>(this), featuresFor(proxy),
+            DBusProxyPtr(proxyProxy), 0);
 }
 
 /**
