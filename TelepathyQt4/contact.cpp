@@ -462,7 +462,8 @@ Contact::~Contact()
 
 Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
         const QSet<Feature> &requestedFeatures, const QVariantMap &attributes)
-    : QObject(0), mPriv(new Private(this, manager, handle))
+    : Object(),
+      mPriv(new Private(this, manager, handle))
 {
     augment(requestedFeatures, attributes);
 }

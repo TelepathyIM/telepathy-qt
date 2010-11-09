@@ -26,11 +26,10 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Object>
 #include <TelepathyQt4/Types>
 
-#include <QObject>
 #include <QSet>
-#include <QSharedPointer>
 #include <QVariantMap>
 
 namespace Tp
@@ -44,10 +43,10 @@ class PendingOperation;
 class Presence;
 class ReferencedHandles;
 
-class TELEPATHY_QT4_EXPORT Contact : public QObject
+class TELEPATHY_QT4_EXPORT Contact : public Object
 {
     Q_OBJECT
-    Q_DISABLE_COPY(Contact);
+    Q_DISABLE_COPY(Contact)
 
 public:
     enum Feature {
@@ -211,12 +210,6 @@ private:
 };
 
 typedef QSet<ContactPtr> Contacts;
-
-// FIXME: (API/ABI break) Remove once Contact is a SharedPtr and add a new qHash(SharedPtr<T>)
-inline uint qHash(const ContactPtr &contact)
-{
-    return qHash(contact.data());
-}
 
 } // Tp
 

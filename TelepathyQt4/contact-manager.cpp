@@ -1283,7 +1283,7 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
 
     if (!contact) {
         contact = ContactPtr(new Contact(this, handle, features, attributes));
-        mPriv->contacts.insert(bareHandle, contact);
+        mPriv->contacts.insert(bareHandle, contact.data());
     } else {
         contact->augment(features, attributes);
     }
@@ -1393,8 +1393,8 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
     ContactPtr contact;
 
     if (mPriv->contacts.contains(handle)) {
-        contact = mPriv->contacts.value(handle).toStrongRef();
-        if (!contact) {
+        contact = ContactPtr(mPriv->contacts.value(handle).data());
+        if (contact.isNull()) {
             // Dangling weak pointer, remove it
             mPriv->contacts.remove(handle);
         }

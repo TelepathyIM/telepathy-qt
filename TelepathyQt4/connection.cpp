@@ -307,7 +307,7 @@ Connection::Private::~Private()
 {
     // Clear selfContact so its handle will be released cleanly before the
     // handleContext
-    selfContact.clear();
+    selfContact.reset();
 
     QMutexLocker locker(&handleContextsLock);
 

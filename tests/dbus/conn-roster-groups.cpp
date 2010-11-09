@@ -634,7 +634,7 @@ void TestConnRosterGroups::testNotADeathTrap()
 
 void TestConnRosterGroups::cleanup()
 {
-    mContact.clear();
+    mContact.reset();
 
     if (mConn) {
         if (mConn->status() != Connection::StatusDisconnected) {
