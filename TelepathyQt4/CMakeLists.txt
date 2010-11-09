@@ -363,6 +363,7 @@ set(telepathy_qt4_MOC_SRCS
     contact-search-channel.h
     contact-search-channel-internal.h
     dbus-proxy.h
+    dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
     file-transfer-channel.h
     incoming-file-transfer-channel.h

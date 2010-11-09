@@ -44,8 +44,9 @@ class Features;
 class PendingReady;
 class PendingOperation;
 
-class TELEPATHY_QT4_EXPORT DBusProxyFactory : public RefCounted
+class TELEPATHY_QT4_EXPORT DBusProxyFactory : public QObject, public RefCounted
 {
+    Q_OBJECT
     Q_DISABLE_COPY(DBusProxyFactory)
 
 public:

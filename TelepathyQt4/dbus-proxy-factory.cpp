@@ -22,6 +22,7 @@
 #include <TelepathyQt4/DBusProxyFactory>
 #include "TelepathyQt4/dbus-proxy-factory-internal.h"
 
+#include "TelepathyQt4/_gen/dbus-proxy-factory.moc.hpp"
 #include "TelepathyQt4/_gen/dbus-proxy-factory-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
