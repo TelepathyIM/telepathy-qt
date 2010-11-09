@@ -293,7 +293,7 @@ bool Account::Private::useConferenceDRAFT(const char *channelType,
     // default to Conference
     ConnectionCapabilities *caps = parent->capabilities();
     if (!caps) {
-        return false;
+        return true;
     }
 
     RequestableChannelClassSpecList rccSpecs = caps->allClassSpecs();
@@ -315,7 +315,7 @@ bool Account::Private::useConferenceDRAFT(const char *channelType,
             }
         }
     }
-    return false;
+    return true;
 }
 
 void Account::Private::addConferenceRequestCommonParameters(
