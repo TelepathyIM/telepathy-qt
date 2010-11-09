@@ -103,7 +103,7 @@ void FixedFeatureFactory::addFeatures(const Features &features)
  *
  * \return features(), irrespective of the actual \a proxy.
  */
-Features FixedFeatureFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
+Features FixedFeatureFactory::featuresFor(const DBusProxyPtr &proxy) const
 {
     Q_UNUSED(proxy);
 

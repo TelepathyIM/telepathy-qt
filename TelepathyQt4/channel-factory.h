@@ -22,6 +22,10 @@
 #ifndef _TelepathyQt4_channel_factory_h_HEADER_GUARD_
 #define _TelepathyQt4_channel_factory_h_HEADER_GUARD_
 
+#ifndef IN_TELEPATHY_QT4_HEADER
+#error IN_TELEPATHY_QT4_HEADER
+#endif
+
 #include <TelepathyQt4/DBusProxyFactory>
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
@@ -221,7 +225,7 @@ protected:
 
     virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
     // Nothing we'd like to prepare()
-    virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
+    virtual Features featuresFor(const DBusProxyPtr &proxy) const;
 
 private:
     struct Private;

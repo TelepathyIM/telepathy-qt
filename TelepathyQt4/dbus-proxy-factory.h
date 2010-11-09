@@ -56,22 +56,19 @@ public:
 protected:
     DBusProxyFactory(const QDBusConnection &bus);
 
-    // API/ABI break TODO: Make DBusProxy be a RefCounted so this can be SharedPtr<DBusProxy>
-    // If we don't want DBusProxy itself be a RefCounted, let's add RefCountedDBusProxy or something
-    // as an intermediate subclass?
-    SharedPtr<RefCounted> cachedProxy(const QString &busName, const QString &objectPath) const;
+    DBusProxyPtr cachedProxy(const QString &busName, const QString &objectPath) const;
 
-    PendingReady *nowHaveProxy(const SharedPtr<RefCounted> &proxy) const;
+    PendingReady *nowHaveProxy(const DBusProxyPtr &proxy) const;
 
     // I don't want this to be non-pure virtual, because I want ALL subclasses to have to think
     // about whether or not they need to uniquefy the name or not. If a subclass doesn't implement
     // this while it should, matching with the cache for future requests and invalidation breaks.
     virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const = 0;
 
-    virtual PendingOperation *initialPrepare(const SharedPtr<RefCounted> &proxy) const;
-    virtual PendingOperation *readyPrepare(const SharedPtr<RefCounted> &proxy) const;
+    virtual PendingOperation *initialPrepare(const DBusProxyPtr &proxy) const;
+    virtual PendingOperation *readyPrepare(const DBusProxyPtr &proxy) const;
 
-    virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const = 0;
+    virtual Features featuresFor(const DBusProxyPtr &proxy) const = 0;
 
 private:
     class Cache;

@@ -104,8 +104,8 @@ PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &ob
             const ChannelFactoryConstPtr &chanFactory,
             const ContactFactoryConstPtr &contactFactory) const
 {
-    SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
-    if (!proxy) {
+    DBusProxyPtr proxy = cachedProxy(busName, objectPath);
+    if (proxy.isNull()) {
         proxy = construct(busName, objectPath, chanFactory, contactFactory);
     }
 

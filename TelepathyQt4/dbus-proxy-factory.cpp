@@ -38,7 +38,10 @@ namespace Tp
 struct DBusProxyFactory::Private
 {
     Private(const QDBusConnection &bus)
-        : bus(bus), cache(new Cache) {}
+        : bus(bus),
+          cache(new Cache)
+    {
+    }
 
     ~Private()
     {
@@ -101,7 +104,7 @@ const QDBusConnection &DBusProxyFactory::dbusConnection() const
  * \param objectPath Object path of the proxy to return.
  * \return The proxy, if any.
  */
-SharedPtr<RefCounted> DBusProxyFactory::cachedProxy(const QString &busName,
+DBusProxyPtr DBusProxyFactory::cachedProxy(const QString &busName,
         const QString &objectPath) const
 {
     QString finalName = finalBusNameFrom(busName);
@@ -128,24 +131,12 @@ SharedPtr<RefCounted> DBusProxyFactory::cachedProxy(const QString &busName,
  * \param proxy The proxy which the factory should now make sure is prepared and made ready.
  * \return Readifying operation, which finishes when the proxy is usable.
  */
-PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy) const
+PendingReady *DBusProxyFactory::nowHaveProxy(const DBusProxyPtr &proxy) const
 {
     Q_ASSERT(!proxy.isNull());
 
-    // I really hate the casts needed in this function - we must really do something about the
-    // DBusProxy class hierarchy so that every DBusProxy(Something) is always a ReadyObject and a
-    // RefCounted, in the API/ABI break - then most of these proxyMisc-> things become just proxy->
-
-    ReadyObject *proxyReady = dynamic_cast<ReadyObject *>(proxy.data());
-    Q_ASSERT(proxyReady != NULL);
-
-    DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(proxy.data());
-    Q_ASSERT(proxyProxy != NULL);
-
     mPriv->cache->put(proxy);
-
-    return new PendingReady(SharedPtr<const DBusProxyFactory>(this), featuresFor(proxy),
-            DBusProxyPtr(proxyProxy), 0);
+    return new PendingReady(SharedPtr<const DBusProxyFactory>(this), featuresFor(proxy), proxy, 0);
 }
 
 /**
@@ -178,7 +169,7 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy)
  * \param proxy The just-constructed proxy to be prepared.
  * \return \c NULL ie. nothing to do.
  */
-PendingOperation *DBusProxyFactory::initialPrepare(const SharedPtr<RefCounted> &proxy) const
+PendingOperation *DBusProxyFactory::initialPrepare(const DBusProxyPtr &proxy) const
 {
     // Nothing we could think about needs doing
     return NULL;
@@ -195,7 +186,7 @@ PendingOperation *DBusProxyFactory::initialPrepare(const SharedPtr<RefCounted> &
  * \param proxy The just-readified proxy to be prepared.
  * \return \c NULL ie. nothing to do.
  */
-PendingOperation *DBusProxyFactory::readyPrepare(const SharedPtr<RefCounted> &proxy) const
+PendingOperation *DBusProxyFactory::readyPrepare(const DBusProxyPtr &proxy) const
 {
     // Nothing we could think about needs doing
     return NULL;
@@ -227,44 +218,40 @@ DBusProxyFactory::Cache::~Cache()
 {
 }
 
-SharedPtr<RefCounted> DBusProxyFactory::Cache::get(const Key &key) const
+DBusProxyPtr DBusProxyFactory::Cache::get(const Key &key) const
 {
-    SharedPtr<RefCounted> counted(proxies.value(key));
+    DBusProxyPtr proxy(proxies.value(key));
 
-    // We already assert for it being a DBusProxy in put()
-    if (!counted || !dynamic_cast<DBusProxy *>(counted.data())->isValid()) {
+    if (proxy.isNull() || !proxy->isValid()) {
         // Weak pointer invalidated or proxy invalidated during this mainloop iteration and we still
         // haven't got the invalidated() signal for it
-        return SharedPtr<RefCounted>();
+        return DBusProxyPtr();
     }
 
-    return counted;
+    return proxy;
 }
 
-void DBusProxyFactory::Cache::put(const SharedPtr<RefCounted> &obj)
+void DBusProxyFactory::Cache::put(const DBusProxyPtr &proxy)
 {
-    DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(obj.data());
-    Q_ASSERT(proxyProxy != NULL);
-
-    if (proxyProxy->busName().isEmpty()) {
-        debug() << "Not inserting proxy" << obj.data() << "with no bus name to factory cache";
+    if (proxy->busName().isEmpty()) {
+        debug() << "Not inserting proxy" << proxy.data() << "with no bus name to factory cache";
         return;
-    } else if (!proxyProxy->isValid()) {
+    } else if (!proxy->isValid()) {
         debug() << "Not inserting to factory cache invalid proxy - proxy is for" <<
-            proxyProxy->busName() << ',' << proxyProxy->objectPath();
+            proxy->busName() << ',' << proxy->objectPath();
         return;
     }
 
-    Key key(proxyProxy->busName(), proxyProxy->objectPath());
+    Key key(proxy->busName(), proxy->objectPath());
 
-    SharedPtr<RefCounted> existingProxy = SharedPtr<RefCounted>(proxies.value(key));
-    if (!existingProxy || existingProxy != obj) {
-        connect(proxyProxy,
+    DBusProxyPtr existingProxy(proxies.value(key));
+    if (!existingProxy || existingProxy != proxy) {
+        connect(proxy.data(),
                 SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                 SLOT(onProxyInvalidated(Tp::DBusProxy*)));
 
         debug() << "Inserting to factory cache proxy for" << key;
-        proxies.insert(key, obj);
+        proxies.insert(key, proxy);
     }
 }
 

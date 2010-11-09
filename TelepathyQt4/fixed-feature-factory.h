@@ -52,7 +52,7 @@ public:
 protected:
     FixedFeatureFactory(const QDBusConnection &bus);
 
-    virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
+    virtual Features featuresFor(const DBusProxyPtr &proxy) const;
 
 private:
     struct Private;
