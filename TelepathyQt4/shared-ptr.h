@@ -29,6 +29,7 @@
 #include <TelepathyQt4/Global>
 
 #include <QObject>
+#include <QHash>
 
 namespace Tp
 {
@@ -72,6 +73,8 @@ public:
 template <class T>
 class SharedPtr
 {
+    typedef bool (SharedPtr<T>::*UnspecifiedBoolType)() const;
+
 public:
     inline SharedPtr() : d(0) { }
     explicit inline SharedPtr(T *d) : d(d) { if (d) { d->ref(); } }
@@ -105,8 +108,8 @@ public:
     inline T *operator->() const { return d; }
 
     inline bool isNull() const { return !d; }
-    inline operator bool() const { return !isNull(); }
     inline bool operator!() const { return isNull(); }
+    operator UnspecifiedBoolType() const { return !isNull() ? &SharedPtr<T>::operator! : 0; }
 
     inline bool operator==(const SharedPtr<T> &o) const { return d == o.d; }
     inline bool operator!=(const SharedPtr<T> &o) const { return d != o.d; }
@@ -156,9 +159,19 @@ private:
     T *d;
 };
 
+template<typename T>
+inline uint qHash(const SharedPtr<T> &ptr)
+{
+    return QT_PREPEND_NAMESPACE(qHash<T>(ptr.data()));
+}
+
+template<typename T> inline uint qHash(const WeakPtr<T> &ptr);
+
 template <class T>
 class WeakPtr
 {
+    typedef bool (WeakPtr<T>::*UnspecifiedBoolType)() const;
+
 public:
     inline WeakPtr() : wd(0) { }
     inline WeakPtr(const WeakPtr<T> &o) : wd(o.wd) { if (wd) { wd->weakref.ref(); } }
@@ -185,8 +198,8 @@ public:
     }
 
     inline bool isNull() const { return !wd || !wd->d || wd->d->strongref == 0; }
-    inline operator bool() const { return !isNull(); }
     inline bool operator!() const { return isNull(); }
+    operator UnspecifiedBoolType() const { return !isNull() ? &WeakPtr<T>::operator! : 0; }
 
     inline WeakPtr<T> &operator=(const WeakPtr<T> &o)
     {
@@ -211,9 +224,17 @@ public:
 
 private:
     friend class SharedPtr<T>;
+    friend uint qHash<T>(const WeakPtr<T> &ptr);
 
     WeakData *wd;
 };
+
+template<typename T>
+inline uint qHash(const WeakPtr<T> &ptr)
+{
+    T *actualPtr = ptr.wd ? ptr.wd.d : 0;
+    return QT_PREPEND_NAMESPACE(qHash<T>(actualPtr));
+}
 
 } // Tp
 
