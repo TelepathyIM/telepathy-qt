@@ -1205,6 +1205,8 @@ void ContactManager::onDenyChannelMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
+    Q_UNUSED(details);
+
     if (!groupLocalPendingMembersAdded.isEmpty()) {
         warning() << "Found local pending contacts on deny list";
     }
