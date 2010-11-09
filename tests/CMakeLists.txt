@@ -34,6 +34,7 @@ tpqt4_add_generic_unit_test(RCCSpec rccspec)
 tpqt4_add_generic_unit_test(KeyFile key-file)
 tpqt4_add_generic_unit_test(ManagerFile manager-file)
 tpqt4_add_generic_unit_test(Profile profile)
+tpqt4_add_generic_unit_test(Ptr ptr)
 
 add_subdirectory(dbus-1)
 add_subdirectory(dbus)
