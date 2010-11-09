@@ -39,7 +39,7 @@ namespace Tp
  * \param features The features to make ready on constructed Contacts.
  * \returns A pointer to the created factory.
  */
-ContactFactoryPtr ContactFactory::create(const QSet<Contact::Feature> &features)
+ContactFactoryPtr ContactFactory::create(const Features &features)
 {
     return ContactFactoryPtr(new ContactFactory(features));
 }
@@ -49,7 +49,7 @@ ContactFactoryPtr ContactFactory::create(const QSet<Contact::Feature> &features)
  *
  * \param features The features to make ready on constructed Contacts.
  */
-ContactFactory::ContactFactory(const QSet<Contact::Feature> &features)
+ContactFactory::ContactFactory(const Features &features)
 {
 }
 
@@ -67,7 +67,7 @@ ContactFactory::~ContactFactory()
  * \return A pointer to the constructed Contact object.
  */
 ContactPtr ContactFactory::construct(Tp::ContactManager *manager, const ReferencedHandles &handle,
-        const QSet<Contact::Feature> &features, const QVariantMap &attributes) const
+        const Features &features, const QVariantMap &attributes) const
 {
     return ContactPtr();
 }

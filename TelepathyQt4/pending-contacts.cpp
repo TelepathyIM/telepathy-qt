@@ -43,7 +43,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     };
 
     Private(ContactManager *manager, const UIntList &handles,
-            const QSet<Contact::Feature> &features,
+            const Features &features,
             const QMap<uint, ContactPtr> &satisfyingContacts)
         : manager(manager),
           features(features),
@@ -55,7 +55,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     }
 
     Private(ContactManager *manager, const QStringList &identifiers,
-            const QSet<Contact::Feature> &features)
+            const Features &features)
         : manager(manager),
           features(features),
           requestType(ForIdentifiers),
@@ -65,7 +65,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     }
 
     Private(ContactManager *manager, const QList<ContactPtr> &contactsToUpgrade,
-            const QSet<Contact::Feature> &features)
+            const Features &features)
         : manager(manager),
           features(features),
           requestType(Upgrade),
@@ -76,7 +76,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
 
     // Generic parameters
     ContactManager *manager;
-    QSet<Contact::Feature> features;
+    Features features;
     QMap<uint, ContactPtr> satisfyingContacts;
 
     // Request type specific parameters
@@ -108,7 +108,7 @@ ContactManager *PendingContacts::manager() const
     return mPriv->manager;
 }
 
-QSet<Contact::Feature> PendingContacts::features() const
+Features PendingContacts::features() const
 {
     return mPriv->features;
 }
@@ -334,7 +334,7 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,
-        const UIntList &handles, const QSet<Contact::Feature> &features,
+        const UIntList &handles, const Features &features,
         const QStringList &interfaces,
         const QMap<uint, ContactPtr> &satisfyingContacts,
         const QSet<uint> &otherContacts,
@@ -372,7 +372,7 @@ PendingContacts::PendingContacts(ContactManager *manager,
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,
-        const QStringList &identifiers, const QSet<Contact::Feature> &features,
+        const QStringList &identifiers, const Features &features,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager), mPriv(new Private(manager, identifiers, features))
 {
@@ -390,7 +390,7 @@ PendingContacts::PendingContacts(ContactManager *manager,
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,
-        const QList<ContactPtr> &contacts, const QSet<Contact::Feature> &features,
+        const QList<ContactPtr> &contacts, const Features &features,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager), mPriv(new Private(manager, contacts, features))
 {

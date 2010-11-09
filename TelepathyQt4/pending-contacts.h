@@ -51,7 +51,7 @@ public:
     ~PendingContacts();
 
     ContactManager *manager() const;
-    QSet<Contact::Feature> features() const;
+    Features features() const;
 
     bool isForHandles() const;
     UIntList handles() const;
@@ -79,18 +79,18 @@ private:
 
     // If errorName is non-empty, these will fail instantly
     PendingContacts(ContactManager *manager, const UIntList &handles,
-            const QSet<Contact::Feature> &features,
+            const Features &features,
             const QStringList &interfaces,
             const QMap<uint, ContactPtr> &satisfyingContacts,
             const QSet<uint> &otherContacts,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
     PendingContacts(ContactManager *manager, const QStringList &identifiers,
-            const QSet<Contact::Feature> &features,
+            const Features &features,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
     PendingContacts(ContactManager *manager, const QList<ContactPtr> &contacts,
-            const QSet<Contact::Feature> &features,
+            const Features &features,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
 

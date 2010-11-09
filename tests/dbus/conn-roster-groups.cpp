@@ -342,7 +342,7 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(connect(mConn->contactManager()->upgradeContacts(QList<ContactPtr>(),
-                    QSet<Contact::Feature>()),
+                    Features()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -477,7 +477,7 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(connect(mConn->contactManager()->upgradeContacts(QList<ContactPtr>(),
-                    QSet<Contact::Feature>()),
+                    Features()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -575,7 +575,7 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(connect(mConn->contactManager()->upgradeContacts(QList<ContactPtr>(),
-                    QSet<Contact::Feature>()),
+                    Features()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);

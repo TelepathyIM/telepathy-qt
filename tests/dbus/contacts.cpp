@@ -204,7 +204,7 @@ void TestContacts::testSupport()
     QVERIFY(mConn->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)));
 
-    QSet<Contact::Feature> supportedFeatures = mConn->contactManager()->supportedFeatures();
+    Features supportedFeatures = mConn->contactManager()->supportedFeatures();
     QVERIFY(!supportedFeatures.isEmpty());
     QVERIFY(supportedFeatures.contains(Contact::FeatureAlias));
     QVERIFY(supportedFeatures.contains(Contact::FeatureAvatarToken));
@@ -221,7 +221,7 @@ void TestContacts::testSelfContact()
 
     QVERIFY(connect(selfContact->manager()->upgradeContacts(
                         QList<ContactPtr>() << selfContact,
-                        QSet<Contact::Feature>() << Contact::FeatureAlias
+                        Features() << Contact::FeatureAlias
                             << Contact::FeatureAvatarToken
                             << Contact::FeatureSimplePresence),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -263,7 +263,7 @@ void TestContacts::testForHandles()
 
     // Test the closure accessors
     QCOMPARE(pending->manager(), mConn->contactManager());
-    QCOMPARE(pending->features(), QSet<Contact::Feature>());
+    QCOMPARE(pending->features(), Features());
 
     QVERIFY(pending->isForHandles());
     QVERIFY(!pending->isForIdentifiers());
@@ -288,8 +288,8 @@ void TestContacts::testForHandles()
     for (int i = 0; i < 3; i++) {
         QVERIFY(mContacts[i] != NULL);
         QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
-        QCOMPARE(mContacts[i]->requestedFeatures(), QSet<Contact::Feature>());
-        QCOMPARE(mContacts[i]->actualFeatures(), QSet<Contact::Feature>());
+        QCOMPARE(mContacts[i]->requestedFeatures(), Features());
+        QCOMPARE(mContacts[i]->actualFeatures(), Features());
     }
 
     QCOMPARE(mContacts[0]->handle()[0], handles[0]);
@@ -381,7 +381,7 @@ void TestContacts::testForIdentifiers()
 
     // Test the closure accessors
     QCOMPARE(pending->manager(), mConn->contactManager());
-    QCOMPARE(pending->features(), QSet<Contact::Feature>());
+    QCOMPARE(pending->features(), Features());
 
     QVERIFY(!pending->isForHandles());
     QVERIFY(pending->isForIdentifiers());
@@ -402,8 +402,8 @@ void TestContacts::testForIdentifiers()
         QVERIFY(mContacts[i] != NULL);
         QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
         QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle()[0], NULL));
-        QCOMPARE(mContacts[i]->requestedFeatures(), QSet<Contact::Feature>());
-        QCOMPARE(mContacts[i]->actualFeatures(), QSet<Contact::Feature>());
+        QCOMPARE(mContacts[i]->requestedFeatures(), Features());
+        QCOMPARE(mContacts[i]->actualFeatures(), Features());
     }
 
     QCOMPARE(mContacts[0]->id(), QString(QLatin1String("alice")));
@@ -464,7 +464,7 @@ void TestContacts::testFeatures()
         "Having some carrots",
         "Done building for life, yay",
     };
-    QSet<Contact::Feature> features = QSet<Contact::Feature>()
+    Features features = Features()
         << Contact::FeatureAlias
         << Contact::FeatureAvatarToken
         << Contact::FeatureSimplePresence;
@@ -687,7 +687,7 @@ void TestContacts::testUpgrade()
     QList<ContactPtr> saveContacts = mContacts;
 
     // Upgrade them
-    QSet<Contact::Feature> features = QSet<Contact::Feature>()
+    Features features = Features()
         << Contact::FeatureAlias
         << Contact::FeatureAvatarToken
         << Contact::FeatureSimplePresence;

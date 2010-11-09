@@ -61,8 +61,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     ReferencedHandles handle;
     QString id;
 
-    QSet<Feature> requestedFeatures;
-    QSet<Feature> actualFeatures;
+    Features requestedFeatures;
+    Features actualFeatures;
 
     QString alias;
     Presence presence;
@@ -134,6 +134,14 @@ ContactInfoFieldList Contact::InfoFields::allFields() const
     return isValid() ? mPriv->allFields : ContactInfoFieldList();
 }
 
+const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaObject.className()), 0, false);
+const Feature Contact::FeatureAvatarData = Feature(QLatin1String(Contact::staticMetaObject.className()), 1, false);
+const Feature Contact::FeatureAvatarToken = Feature(QLatin1String(Contact::staticMetaObject.className()), 2, false);
+const Feature Contact::FeatureCapabilities = Feature(QLatin1String(Contact::staticMetaObject.className()), 3, false);
+const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaObject.className()), 4, false);
+const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMetaObject.className()), 5, false);
+const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::staticMetaObject.className()), 6, false);
+
 ContactManager *Contact::manager() const
 {
     return mPriv->manager;
@@ -149,12 +157,12 @@ QString Contact::id() const
     return mPriv->id;
 }
 
-QSet<Contact::Feature> Contact::requestedFeatures() const
+Features Contact::requestedFeatures() const
 {
     return mPriv->requestedFeatures;
 }
 
-QSet<Contact::Feature> Contact::actualFeatures() const
+Features Contact::actualFeatures() const
 {
     return mPriv->actualFeatures;
 }
@@ -461,129 +469,113 @@ Contact::~Contact()
 }
 
 Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
-        const QSet<Feature> &requestedFeatures, const QVariantMap &attributes)
+        const Features &requestedFeatures, const QVariantMap &attributes)
     : Object(),
       mPriv(new Private(this, manager, handle))
 {
     augment(requestedFeatures, attributes);
 }
 
-void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes)
+void Contact::augment(const Features &requestedFeatures, const QVariantMap &attributes)
 {
     mPriv->requestedFeatures.unite(requestedFeatures);
 
     mPriv->id = qdbus_cast<QString>(attributes[
             QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id")]);
 
-    foreach (Feature feature, requestedFeatures) {
+    foreach (const Feature &feature, requestedFeatures) {
         QString maybeAlias;
         SimplePresence maybePresence;
         RequestableChannelClassList maybeCaps;
         QVariantMap maybeLocation;
         ContactInfoFieldList maybeInfo;
 
-        switch (feature) {
-            case FeatureAlias:
-                maybeAlias = qdbus_cast<QString>(attributes.value(
-                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING "/alias")));
+        if (feature == FeatureAlias) {
+            maybeAlias = qdbus_cast<QString>(attributes.value(
+                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING "/alias")));
 
-                if (!maybeAlias.isEmpty()) {
-                    receiveAlias(maybeAlias);
-                } else if (mPriv->alias.isEmpty()) {
-                    mPriv->alias = mPriv->id;
+            if (!maybeAlias.isEmpty()) {
+                receiveAlias(maybeAlias);
+            } else if (mPriv->alias.isEmpty()) {
+                mPriv->alias = mPriv->id;
+            }
+        } else if (feature == FeatureAvatarData) {
+            if (manager()->supportedFeatures().contains(FeatureAvatarData)) {
+                mPriv->actualFeatures.insert(FeatureAvatarData);
+                mPriv->updateAvatarData();
+            }
+        } else if (feature == FeatureAvatarToken) {
+            if (attributes.contains(
+                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token"))) {
+                receiveAvatarToken(qdbus_cast<QString>(attributes.value(
+                                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token"))));
+            } else {
+                if (manager()->supportedFeatures().contains(FeatureAvatarToken)) {
+                    // AvatarToken being supported but not included in the mapping indicates
+                    // that the avatar token is not known - however, the feature is working fine
+                    mPriv->actualFeatures.insert(FeatureAvatarToken);
                 }
-                break;
+                // In either case, the avatar token can't be known
+                mPriv->isAvatarTokenKnown = false;
+                mPriv->avatarToken = QLatin1String("");
+            }
+        } else if (feature == FeatureCapabilities) {
+            maybeCaps = qdbus_cast<RequestableChannelClassList>(attributes.value(
+                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES "/capabilities")));
 
-            case FeatureAvatarToken:
-                if (attributes.contains(
-                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token"))) {
-                    receiveAvatarToken(qdbus_cast<QString>(attributes.value(
-                                    QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token"))));
-                } else {
-                    if (manager()->supportedFeatures().contains(FeatureAvatarToken)) {
-                        // AvatarToken being supported but not included in the mapping indicates
-                        // that the avatar token is not known - however, the feature is working fine
-                        mPriv->actualFeatures.insert(FeatureAvatarToken);
-                    }
-                    // In either case, the avatar token can't be known
-                    mPriv->isAvatarTokenKnown = false;
-                    mPriv->avatarToken = QLatin1String("");
+            if (!maybeCaps.isEmpty()) {
+                receiveCapabilities(maybeCaps);
+            } else {
+                if (manager()->supportedFeatures().contains(FeatureCapabilities) &&
+                    mPriv->requestedFeatures.contains(FeatureCapabilities)) {
+                    // Capabilities being supported but not updated in the
+                    // mapping indicates that the capabilities is not known -
+                    // however, the feature is working fine.
+                    mPriv->actualFeatures.insert(FeatureCapabilities);
                 }
-                break;
+            }
+        } else if (feature == FeatureInfo) {
+            maybeInfo = qdbus_cast<ContactInfoFieldList>(attributes.value(
+                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_INFO "/info")));
 
-            case FeatureAvatarData:
-                if (manager()->supportedFeatures().contains(FeatureAvatarData)) {
-                    mPriv->actualFeatures.insert(FeatureAvatarData);
-                    mPriv->updateAvatarData();
+            if (!maybeInfo.isEmpty()) {
+                receiveInfo(maybeInfo);
+            } else {
+                if (manager()->supportedFeatures().contains(FeatureInfo) &&
+                    mPriv->requestedFeatures.contains(FeatureInfo)) {
+                    // Info being supported but not updated in the
+                    // mapping indicates that the info is not known -
+                    // however, the feature is working fine
+                    mPriv->actualFeatures.insert(FeatureInfo);
                 }
-                break;
+            }
+        } else if (feature == FeatureLocation) {
+            maybeLocation = qdbus_cast<QVariantMap>(attributes.value(
+                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION "/location")));
 
-            case FeatureSimplePresence:
-                maybePresence = qdbus_cast<SimplePresence>(attributes.value(
-                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE "/presence")));
-
-                if (!maybePresence.status.isEmpty()) {
-                    receiveSimplePresence(maybePresence);
-                } else {
-                    mPriv->presence.setStatus(ConnectionPresenceTypeUnknown,
-                            QLatin1String("unknown"), QLatin1String(""));
+            if (!maybeLocation.isEmpty()) {
+                receiveLocation(maybeLocation);
+            } else {
+                if (manager()->supportedFeatures().contains(FeatureLocation) &&
+                    mPriv->requestedFeatures.contains(FeatureLocation)) {
+                    // Location being supported but not updated in the
+                    // mapping indicates that the location is not known -
+                    // however, the feature is working fine
+                    mPriv->actualFeatures.insert(FeatureLocation);
                 }
-                break;
+            }
+        } else if (feature == FeatureSimplePresence) {
+            maybePresence = qdbus_cast<SimplePresence>(attributes.value(
+                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE "/presence")));
 
-            case FeatureCapabilities:
-                maybeCaps = qdbus_cast<RequestableChannelClassList>(attributes.value(
-                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES "/capabilities")));
-
-                if (!maybeCaps.isEmpty()) {
-                    receiveCapabilities(maybeCaps);
-                } else {
-                    if (manager()->supportedFeatures().contains(FeatureCapabilities) &&
-                        mPriv->requestedFeatures.contains(FeatureCapabilities)) {
-                        // Capabilities being supported but not updated in the
-                        // mapping indicates that the capabilities is not known -
-                        // however, the feature is working fine.
-                        mPriv->actualFeatures.insert(FeatureCapabilities);
-                    }
-                }
-                break;
-
-            case FeatureLocation:
-                maybeLocation = qdbus_cast<QVariantMap>(attributes.value(
-                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION "/location")));
-
-                if (!maybeLocation.isEmpty()) {
-                    receiveLocation(maybeLocation);
-                } else {
-                    if (manager()->supportedFeatures().contains(FeatureLocation) &&
-                        mPriv->requestedFeatures.contains(FeatureLocation)) {
-                        // Location being supported but not updated in the
-                        // mapping indicates that the location is not known -
-                        // however, the feature is working fine
-                        mPriv->actualFeatures.insert(FeatureLocation);
-                    }
-                }
-                break;
-
-            case FeatureInfo:
-                maybeInfo = qdbus_cast<ContactInfoFieldList>(attributes.value(
-                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_INFO "/info")));
-
-                if (!maybeInfo.isEmpty()) {
-                    receiveInfo(maybeInfo);
-                } else {
-                    if (manager()->supportedFeatures().contains(FeatureInfo) &&
-                        mPriv->requestedFeatures.contains(FeatureInfo)) {
-                        // Info being supported but not updated in the
-                        // mapping indicates that the info is not known -
-                        // however, the feature is working fine
-                        mPriv->actualFeatures.insert(FeatureInfo);
-                    }
-                }
-                break;
-
-            default:
-                warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
-                break;
+            if (!maybePresence.status.isEmpty()) {
+                receiveSimplePresence(maybePresence);
+            } else {
+                mPriv->presence.setStatus(ConnectionPresenceTypeUnknown,
+                        QLatin1String("unknown"), QLatin1String(""));
+            }
+        } else {
+            warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
         }
     }
 }
