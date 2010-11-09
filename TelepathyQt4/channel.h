@@ -34,7 +34,6 @@
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
 #include <TelepathyQt4/ReadinessHelper>
-#include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/SharedPtr>
 
@@ -50,9 +49,7 @@ class PendingOperation;
 class PendingReady;
 
 class TELEPATHY_QT4_EXPORT Channel : public StatefulDBusProxy,
-                public OptionalInterfaceFactory<Channel>,
-                public ReadyObject,
-                public RefCounted
+                public OptionalInterfaceFactory<Channel>
 {
     Q_OBJECT
     Q_DISABLE_COPY(Channel)

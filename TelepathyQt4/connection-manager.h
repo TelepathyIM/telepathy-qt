@@ -32,7 +32,6 @@
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
 #include <TelepathyQt4/ReadinessHelper>
-#include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/SharedPtr>
@@ -121,12 +120,10 @@ private:
 };
 
 class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
-                          public OptionalInterfaceFactory<ConnectionManager>,
-                          public ReadyObject,
-                          public RefCounted
+                public OptionalInterfaceFactory<ConnectionManager>
 {
     Q_OBJECT
-    Q_DISABLE_COPY(ConnectionManager);
+    Q_DISABLE_COPY(ConnectionManager)
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(QStringList supportedProtocols READ supportedProtocols)
     Q_PROPERTY(ProtocolInfoList protocols READ protocols)

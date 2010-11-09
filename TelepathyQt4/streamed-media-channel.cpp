@@ -346,7 +346,7 @@ const Feature StreamedMediaStream::FeatureCore = Feature(QLatin1String(StreamedM
  */
 StreamedMediaStream::StreamedMediaStream(const StreamedMediaChannelPtr &channel,
         const MediaStreamInfo &streamInfo)
-    : QObject(),
+    : Object(),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, channel, streamInfo))
 {

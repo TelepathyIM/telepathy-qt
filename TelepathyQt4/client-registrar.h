@@ -30,17 +30,16 @@
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/RefCounted>
+#include <TelepathyQt4/Object>
 #include <TelepathyQt4/Types>
 
 #include <QDBusConnection>
-#include <QObject>
 #include <QString>
 
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ClientRegistrar : public QObject, public RefCounted
+class TELEPATHY_QT4_EXPORT ClientRegistrar : public Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(ClientRegistrar)

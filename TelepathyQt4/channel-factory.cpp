@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "TelepathyQt4/channel-factory.h"
+#include <TelepathyQt4/ChannelFactory>
 
 #include "TelepathyQt4/_gen/future-constants.h"
 
@@ -394,8 +394,8 @@ void ChannelFactory::setConstructorFor(const ChannelClassSpec &channelClass,
 PendingReady *ChannelFactory::proxy(const ConnectionPtr &connection, const QString &channelPath,
         const QVariantMap &immutableProperties) const
 {
-    SharedPtr<RefCounted> proxy = cachedProxy(connection->busName(), channelPath);
-    if (!proxy) {
+    DBusProxyPtr proxy = cachedProxy(connection->busName(), channelPath);
+    if (proxy.isNull()) {
         proxy = constructorFor(ChannelClassSpec(immutableProperties))->construct(connection,
                 channelPath, immutableProperties);
     }
@@ -423,10 +423,9 @@ QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
  * \param proxy The Channel proxy to determine the features for.
  * \return The channel class-specific features.
  */
-Features ChannelFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
+Features ChannelFactory::featuresFor(const DBusProxyPtr &proxy) const
 {
-    // API/ABI break TODO: change to qobjectCast once we have a saner object hierarchy
-    ChannelPtr chan = ChannelPtr::dynamicCast(proxy);
+    ChannelPtr chan = ChannelPtr::qObjectCast(proxy);
     Q_ASSERT(!chan.isNull());
 
     return featuresFor(ChannelClassSpec(chan->immutableProperties()));

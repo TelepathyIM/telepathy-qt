@@ -36,7 +36,6 @@
 #include <TelepathyQt4/StatelessDBusProxy>
 #include <TelepathyQt4/Filter>
 #include <TelepathyQt4/OptionalInterfaceFactory>
-#include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
@@ -51,9 +50,7 @@ namespace Tp
 class PendingAccount;
 
 class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
-                       public OptionalInterfaceFactory<AccountManager>,
-                       public ReadyObject,
-                       public RefCounted
+                public OptionalInterfaceFactory<AccountManager>
 {
     Q_OBJECT
     Q_DISABLE_COPY(AccountManager)

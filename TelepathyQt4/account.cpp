@@ -633,9 +633,8 @@ Account::Account(const QDBusConnection &bus,
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory)
-    : StatelessDBusProxy(bus, busName, objectPath),
+    : StatelessDBusProxy(bus, busName, objectPath, FeatureCore),
       OptionalInterfaceFactory<Account>(this),
-      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, connectionFactory, channelFactory, contactFactory))
 {
 }
@@ -3008,11 +3007,6 @@ void Account::onConnectionBuilt(PendingOperation *op)
         mPriv->coreFinished = true;
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
-}
-
-void Account::notify(const char *propertyName)
-{
-    emit propertyChanged(QLatin1String(propertyName));
 }
 
 } // Tp

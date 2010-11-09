@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008-2009 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,7 @@ namespace Tp
 
 /**
  * \class DBusProxy
- * \ingroup FIXME: what group is it in?
+ * \ingroup clientproxies
  * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/DBusProxy>
  *
  * Base class representing a remote object available over D-Bus.
@@ -66,13 +66,14 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT DBusProxy::Private
 {
+    Private(const QDBusConnection &dbusConnection, const QString &busName,
+            const QString &objectPath);
+
     QDBusConnection dbusConnection;
     QString busName;
     QString objectPath;
     QString invalidationReason;
     QString invalidationMessage;
-
-    Private(const QDBusConnection &, const QString &, const QString &);
 };
 
 DBusProxy::Private::Private(const QDBusConnection &dbusConnection,
@@ -88,8 +89,9 @@ DBusProxy::Private::Private(const QDBusConnection &dbusConnection,
  * Constructor
  */
 DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
-        const QString &busName, const QString &path, QObject *parent)
-    : QObject(parent),
+        const QString &busName, const QString &path, const Feature &featureCore)
+    : Object(),
+      ReadyObject(this, featureCore),
       mPriv(new Private(dbusConnection, busName, path))
 {
     if (!dbusConnection.isConnected()) {
@@ -257,7 +259,7 @@ struct StatefulDBusProxy::Private
 
 /**
  * \class StatefulDBusProxy
- * \ingroup FIXME: what group is it in?
+ * \ingroup clientproxies
  * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/DBusProxy>
  *
  * Base class representing a remote object whose API is stateful. These
@@ -268,8 +270,8 @@ struct StatefulDBusProxy::Private
  */
 
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
-        const QString &busName, const QString &objectPath, QObject *parent)
-    : DBusProxy(dbusConnection, busName, objectPath, parent),
+        const QString &busName, const QString &objectPath, const Feature &featureCore)
+    : DBusProxy(dbusConnection, busName, objectPath, featureCore),
       mPriv(new Private(busName))
 {
 #ifdef HAVE_QDBUSSERVICEWATCHER
@@ -345,7 +347,7 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
 
 /**
  * \class StatelessDBusProxy
- * \ingroup FIXME: what group is it in?
+ * \ingroup clientproxies
  * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/DBusProxy>
  *
  * Base class representing a remote object whose API is basically stateless.
@@ -360,8 +362,8 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
  * Constructor
  */
 StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
-        const QString &busName, const QString &objectPath, QObject *parent)
-    : DBusProxy(dbusConnection, busName, objectPath, parent),
+        const QString &busName, const QString &objectPath, const Feature &featureCore)
+    : DBusProxy(dbusConnection, busName, objectPath, featureCore),
       mPriv(0)
 {
     if (busName.startsWith(QLatin1String(":"))) {

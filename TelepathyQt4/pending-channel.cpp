@@ -23,10 +23,10 @@
 
 #include "TelepathyQt4/_gen/pending-channel.moc.hpp"
 
-#include "TelepathyQt4/channel-factory.h"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/PendingReady>

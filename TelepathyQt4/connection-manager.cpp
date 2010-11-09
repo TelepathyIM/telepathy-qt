@@ -414,9 +414,8 @@ ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
         const QDBusConnection &bus,
         const QString &busName, const QString &objectPath,
         const QString &cmName, const QString &name, const QVariantMap &props)
-    : StatelessDBusProxy(bus, busName, objectPath),
+    : StatelessDBusProxy(bus, busName, objectPath, FeatureCore),
       OptionalInterfaceFactory<ProtocolWrapper>(this),
-      ReadyObject(this, FeatureCore),
       mReadinessHelper(readinessHelper()),
       mInfo(new ProtocolInfo(cmName, name)),
       mImmutableProps(props)
@@ -805,9 +804,8 @@ ConnectionManagerPtr ConnectionManager::create(const QDBusConnection &bus,
  */
 ConnectionManager::ConnectionManager(const QString &name)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
-            Private::makeBusName(name), Private::makeObjectPath(name)),
+            Private::makeBusName(name), Private::makeObjectPath(name), FeatureCore),
       OptionalInterfaceFactory<ConnectionManager>(this),
-      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, name))
 {
 }
@@ -821,9 +819,8 @@ ConnectionManager::ConnectionManager(const QString &name)
 ConnectionManager::ConnectionManager(const QDBusConnection &bus,
         const QString &name)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
-            Private::makeObjectPath(name)),
+            Private::makeObjectPath(name), FeatureCore),
       OptionalInterfaceFactory<ConnectionManager>(this),
-      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, name))
 {
 }

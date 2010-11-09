@@ -45,14 +45,14 @@ public:
     Cache();
     ~Cache();
 
-    SharedPtr<RefCounted> get(const Key &key) const;
-    void put(const SharedPtr<RefCounted> &obj);
+    DBusProxyPtr get(const Key &key) const;
+    void put(const DBusProxyPtr &proxy);
 
 private Q_SLOTS:
     void onProxyInvalidated(Tp::DBusProxy *proxy); // The error itself is not interesting
 
 private:
-    QHash<Key, WeakPtr<RefCounted> > proxies;
+    QHash<Key, WeakPtr<DBusProxy> > proxies;
 };
 
 }

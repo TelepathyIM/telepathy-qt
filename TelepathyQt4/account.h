@@ -37,7 +37,6 @@
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
 #include <TelepathyQt4/OptionalInterfaceFactory>
 #include <TelepathyQt4/ReadinessHelper>
-#include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/SharedPtr>
@@ -60,10 +59,7 @@ class PendingStringList;
 class ProtocolInfo;
 
 class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
-                public OptionalInterfaceFactory<Account>,
-                public ReadyObject,
-                public RefCounted
-
+                public OptionalInterfaceFactory<Account>
 {
     Q_OBJECT
     Q_DISABLE_COPY(Account)
@@ -332,9 +328,6 @@ Q_SIGNALS:
     void connectionStatusChanged(Tp::Connection::Status status);
     void connectionChanged(const Tp::ConnectionPtr &connection);
 
-    // TODO: (API/ABI break) Move this to Tp::Object probably
-    void propertyChanged(const QString &propertyName);
-
 protected:
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
@@ -357,9 +350,6 @@ private Q_SLOTS:
 private:
     struct Private;
     friend struct Private;
-
-    // TODO: (API/ABI break) Move this to Tp::Object probably
-    void notify(const char *propertyName);
 
     Private *mPriv;
 };

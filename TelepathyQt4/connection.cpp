@@ -923,9 +923,8 @@ Connection::Connection(const QDBusConnection &bus,
         const QString &objectPath,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory)
-    : StatefulDBusProxy(bus, busName, objectPath),
+    : StatefulDBusProxy(bus, busName, objectPath, FeatureCore),
       OptionalInterfaceFactory<Connection>(this),
-      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, channelFactory, contactFactory))
 {
 }

@@ -39,9 +39,8 @@ class MyStatefulDBusProxy : public StatefulDBusProxy
 {
 public:
     MyStatefulDBusProxy(const QDBusConnection &dbusConnection,
-            const QString &busName, const QString &objectPath,
-            QObject *parent = 0)
-        : StatefulDBusProxy(dbusConnection, busName, objectPath, parent)
+            const QString &busName, const QString &objectPath)
+        : StatefulDBusProxy(dbusConnection, busName, objectPath, Feature())
     {
     }
 

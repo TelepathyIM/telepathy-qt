@@ -27,6 +27,7 @@
 #endif
 
 #include <TelepathyQt4/Filter>
+#include <TelepathyQt4/Object>
 #include <TelepathyQt4/Types>
 
 #include <QList>
@@ -36,8 +37,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT AccountSet : public QObject,
-                      public RefCounted
+class TELEPATHY_QT4_EXPORT AccountSet : public Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(AccountSet)

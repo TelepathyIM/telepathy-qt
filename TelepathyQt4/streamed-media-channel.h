@@ -27,8 +27,9 @@
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt4/Object>
 #include <TelepathyQt4/SharedPtr>
+#include <TelepathyQt4/Types>
 
 namespace Tp
 {
@@ -65,9 +66,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT StreamedMediaStream : public QObject,
-                    private ReadyObject,
-                    public RefCounted
+class TELEPATHY_QT4_EXPORT StreamedMediaStream : public Object, private ReadyObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamedMediaStream)

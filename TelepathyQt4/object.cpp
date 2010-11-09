@@ -19,47 +19,44 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_fixed_feature_factory_h_HEADER_GUARD_
-#define _TelepathyQt4_fixed_feature_factory_h_HEADER_GUARD_
+#include <TelepathyQt4/Object>
 
-#ifndef IN_TELEPATHY_QT4_HEADER
-#error IN_TELEPATHY_QT4_HEADER
-#endif
-
-#include <TelepathyQt4/Global>
-#include <TelepathyQt4/SharedPtr>
-
-#include <TelepathyQt4/DBusProxyFactory>
-
-class QDBusConnection;
+#include "TelepathyQt4/_gen/object.moc.hpp"
 
 namespace Tp
 {
 
-class Feature;
-class Features;
+/**
+ * \class Object
+ * \ingroup clientobject
+ * \headerfile TelepathyQt4/object.h <TelepathyQt4/Object>
+ *
+ * \brief The Object class provides an object with property notification.
+ */
 
-class TELEPATHY_QT4_EXPORT FixedFeatureFactory : public DBusProxyFactory
+/**
+ * Construct a new Object object.
+ */
+Object::Object()
+    : QObject()
 {
-public:
-    virtual ~FixedFeatureFactory();
+}
 
-    Features features() const;
+/**
+ * Class destructor.
+ */
+Object::~Object()
+{
+}
 
-    void addFeature(const Feature &feature);
-    void addFeatures(const Features &features);
-
-protected:
-    FixedFeatureFactory(const QDBusConnection &bus);
-
-    virtual Features featuresFor(const DBusProxyPtr &proxy) const;
-
-private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
+/**
+ * Notify that a property named \a propertyName changed.
+ *
+ * This method will emit propertyChanged() for \a propertyName.
+ */
+void Object::notify(const char *propertyName)
+{
+    emit propertyChanged(QLatin1String(propertyName));
+}
 
 } // Tp
-
-#endif

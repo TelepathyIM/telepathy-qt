@@ -19,40 +19,37 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_fixed_feature_factory_h_HEADER_GUARD_
-#define _TelepathyQt4_fixed_feature_factory_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_object_h_HEADER_GUARD_
+#define _TelepathyQt4_object_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
 #include <TelepathyQt4/Global>
-#include <TelepathyQt4/SharedPtr>
+#include <TelepathyQt4/RefCounted>
 
-#include <TelepathyQt4/DBusProxyFactory>
-
-class QDBusConnection;
+#include <QObject>
+#include <QString>
 
 namespace Tp
 {
 
-class Feature;
-class Features;
-
-class TELEPATHY_QT4_EXPORT FixedFeatureFactory : public DBusProxyFactory
+class TELEPATHY_QT4_EXPORT Object : public QObject, public RefCounted
 {
+    Q_OBJECT
+    Q_DISABLE_COPY(Object)
+
 public:
-    virtual ~FixedFeatureFactory();
+    virtual ~Object();
 
-    Features features() const;
-
-    void addFeature(const Feature &feature);
-    void addFeatures(const Features &features);
+Q_SIGNALS:
+    void propertyChanged(const QString &propertyName);
 
 protected:
-    FixedFeatureFactory(const QDBusConnection &bus);
+    Object();
 
-    virtual Features featuresFor(const DBusProxyPtr &proxy) const;
+    void notify(const char *propertyName);
 
 private:
     struct Private;

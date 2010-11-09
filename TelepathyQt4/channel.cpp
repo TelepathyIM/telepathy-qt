@@ -1418,9 +1418,8 @@ Channel::Channel(const ConnectionPtr &connection,
                  const QString &objectPath,
                  const QVariantMap &immutableProperties)
     : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
-            objectPath),
+            objectPath, FeatureCore),
       OptionalInterfaceFactory<Channel>(this),
-      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, connection, immutableProperties))
 {
 }
