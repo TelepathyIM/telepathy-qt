@@ -1103,8 +1103,6 @@ void ContactManager::onStoredChannelMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(details);
-
     if (!groupLocalPendingMembersAdded.isEmpty()) {
         warning() << "Found local pending contacts on stored list";
     }
@@ -1135,8 +1133,6 @@ void ContactManager::onSubscribeChannelMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(details);
-
     if (!groupLocalPendingMembersAdded.isEmpty()) {
         warning() << "Found local pending contacts on subscribe list";
     }
@@ -1170,8 +1166,6 @@ void ContactManager::onPublishChannelMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(details);
-
     if (!groupRemotePendingMembersAdded.isEmpty()) {
         warning() << "Found remote pending contacts on publish list";
     }
@@ -1211,8 +1205,6 @@ void ContactManager::onDenyChannelMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(details);
-
     if (!groupLocalPendingMembersAdded.isEmpty()) {
         warning() << "Found local pending contacts on deny list";
     }
