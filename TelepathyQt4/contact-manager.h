@@ -137,6 +137,12 @@ private Q_SLOTS:
     void onLocationUpdated(uint, const QVariantMap &);
     void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
 
+    void onStoredChannelMembersChanged(
+        const Tp::Contacts &groupMembersAdded,
+        const Tp::Contacts &groupLocalPendingMembersAdded,
+        const Tp::Contacts &groupRemotePendingMembersAdded,
+        const Tp::Contacts &groupMembersRemoved,
+        const Tp::Channel::GroupMemberChangeDetails &details);
     void onSubscribeChannelMembersChanged(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,

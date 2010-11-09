@@ -1096,6 +1096,38 @@ void ContactManager::onContactInfoChanged(uint handle,
     }
 }
 
+void ContactManager::onStoredChannelMembersChanged(
+        const Contacts &groupMembersAdded,
+        const Contacts &groupLocalPendingMembersAdded,
+        const Contacts &groupRemotePendingMembersAdded,
+        const Contacts &groupMembersRemoved,
+        const Channel::GroupMemberChangeDetails &details)
+{
+    Q_UNUSED(details);
+
+    if (!groupLocalPendingMembersAdded.isEmpty()) {
+        warning() << "Found local pending contacts on stored list";
+    }
+
+    if (!groupRemotePendingMembersAdded.isEmpty()) {
+        warning() << "Found remote pending contacts on stored list";
+    }
+
+    foreach (ContactPtr contact, groupMembersAdded) {
+        debug() << "Contact" << contact->id() << "on stored list";
+    }
+
+    foreach (ContactPtr contact, groupMembersRemoved) {
+        debug() << "Contact" << contact->id() << "removed from stored list";
+    }
+
+    // Perform the needed computation for allKnownContactsChanged
+    mPriv->computeKnownContactsChanges(groupMembersAdded,
+                                       groupLocalPendingMembersAdded,
+                                       groupRemotePendingMembersAdded,
+                                       groupMembersRemoved, details);
+}
+
 void ContactManager::onSubscribeChannelMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -1302,7 +1334,14 @@ void ContactManager::setContactListChannels(
             continue;
         }
 
-        if (type == ContactListChannel::TypeSubscribe) {
+        if (type == ContactListChannel::TypeStored) {
+            method = SLOT(onStoredChannelMembersChanged(
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Channel::GroupMemberChangeDetails));
+        }else if (type == ContactListChannel::TypeSubscribe) {
             method = SLOT(onSubscribeChannelMembersChanged(
                         Tp::Contacts,
                         Tp::Contacts,
