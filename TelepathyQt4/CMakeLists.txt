@@ -320,8 +320,7 @@ set(telepathy_qt4_HEADERS
     Types
     types.h
     Utils
-    utils.h
-    WeakPtr)
+    utils.h)
 
 # Generated headers which will be installed and exported
 set(telepathy_qt4_gen_HEADERS

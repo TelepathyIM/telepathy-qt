@@ -1394,8 +1394,8 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
     ContactPtr contact;
 
     if (mPriv->contacts.contains(handle)) {
-        contact = ContactPtr(mPriv->contacts.value(handle).data());
-        if (contact.isNull()) {
+        contact = ContactPtr(mPriv->contacts.value(handle));
+        if (!contact) {
             // Dangling weak pointer, remove it
             mPriv->contacts.remove(handle);
         }

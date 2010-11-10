@@ -28,7 +28,6 @@
 #include <QString>
 
 #include <TelepathyQt4/SharedPtr>
-#include <TelepathyQt4/WeakPtr>
 
 namespace Tp
 {
@@ -52,7 +51,7 @@ private Q_SLOTS:
     void onProxyInvalidated(Tp::DBusProxy *proxy); // The error itself is not interesting
 
 private:
-    QHash<Key, WeakPtr<DBusProxy> > proxies;
+    QHash<Key, QWeakPointer<DBusProxy> > proxies;
 };
 
 }
