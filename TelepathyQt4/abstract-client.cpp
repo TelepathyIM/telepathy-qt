@@ -643,7 +643,8 @@ AbstractClientHandler::Capabilities::~Capabilities()
 }
 
 AbstractClientHandler::Capabilities &AbstractClientHandler::Capabilities::operator=(
-        const Capabilities &other) {
+        const Capabilities &other)
+{
     if (this == &other) {
         return *this;
     }
