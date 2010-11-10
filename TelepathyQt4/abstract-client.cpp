@@ -159,7 +159,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  *             const QList<ChannelPtr> &channels,
  *             const ChannelDispatchOperationPtr &dispatchOperation,
  *             const QList<ChannelRequestPtr> &requestsSatisfied,
- *             const QVariantMap &observerInfo);
+ *             const AbstractClientObserver::ObserverInfo &observerInfo);
  * };
  *
  * MyObserver::MyObserver(const ChannelClassSpecList &channelFilter)
@@ -173,7 +173,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  *         const QList<ChannelPtr> &channels,
  *         const ChannelDispatchOperationPtr &dispatchOperation,
  *         const QList<ChannelRequestPtr> &requestsSatisfied,
- *         const QVariantMap &observerInfo)
+ *         const AbstractClientObserver::ObserverInfo &observerInfo)
  * {
  *     // do something, log messages, ...
  *
@@ -196,6 +196,44 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  *
  * \sa AbstractClient
  */
+
+struct AbstractClientObserver::ObserverInfo::Private : public QSharedData
+{
+    Private(const QVariantMap &info)
+        : info(info) {}
+
+    QVariantMap info;
+};
+
+AbstractClientObserver::ObserverInfo::ObserverInfo(const QVariantMap &info)
+    : mPriv(new Private(info))
+{
+}
+
+AbstractClientObserver::ObserverInfo::ObserverInfo(const ObserverInfo &other)
+    : mPriv(other.mPriv)
+{
+}
+
+AbstractClientObserver::ObserverInfo::~ObserverInfo()
+{
+}
+
+AbstractClientObserver::ObserverInfo &AbstractClientObserver::ObserverInfo::operator=(
+        const ObserverInfo &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    mPriv = other.mPriv;
+    return *this;
+}
+
+QVariantMap AbstractClientObserver::ObserverInfo::allInfo() const
+{
+    return mPriv->info;
+}
 
 /**
  * Construct a new AbstractClientObserver object.
@@ -274,7 +312,7 @@ bool AbstractClientObserver::shouldRecover() const
  *                  const QList<ChannelPtr> &channels,
  *                  const ChannelDispatchOperationPtr &dispatchOperation,
  *                  const QList<ChannelRequestPtr> &requestsSatisfied,
- *                  const QVariantMap &observerInfo);
+ *                  const ObserverInfo &observerInfo);
  *
  * Called by the channel dispatcher when channels in which the observer has
  * registered an interest are announced.
@@ -315,11 +353,7 @@ bool AbstractClientObserver::shouldRecover() const
  *                          these methods cannot return until the observer has
  *                          returned from observeChannels().
  * \param requestsSatisfied The requests satisfied by these channels.
- * \param observerInfo Additional information about these channels. No keys are
- *                     currently defined.
- *                     If keys are defined for this dictionary, all will be
- *                     optional; observers may safely ignore any entry in this
- *                     dictionary.
+ * \param observerInfo Additional information about these channels.
  */
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
@@ -577,7 +611,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  *             const QList<ChannelPtr> &channels,
  *             const QList<ChannelRequestPtr> &requestsSatisfied,
  *             const QDateTime &userActionTime,
- *             const QVariantMap &handlerInfo);
+ *             const AbstractClientHandler::HandlerInfo &handlerInfo);
  * };
  *
  * MyHandler::MyHandler(const ChannelClassSpecList &channelFilter)
@@ -596,7 +630,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  *         const QList<ChannelPtr> &channels,
  *         const QList<ChannelRequestPtr> &requestsSatisfied,
  *         const QDateTime &userActionTime,
- *         const QVariantMap &handlerInfo)
+ *         const AbstractClientHandler::HandlerInfo &handlerInfo)
  * {
  *     // do something
  *
@@ -643,7 +677,8 @@ AbstractClientHandler::Capabilities::~Capabilities()
 }
 
 AbstractClientHandler::Capabilities &AbstractClientHandler::Capabilities::operator=(
-        const Capabilities &other) {
+        const Capabilities &other)
+{
     if (this == &other) {
         return *this;
     }
@@ -670,6 +705,44 @@ void AbstractClientHandler::Capabilities::unsetToken(const QString &token)
 QStringList AbstractClientHandler::Capabilities::allTokens() const
 {
     return mPriv->tokens.toList();
+}
+
+struct AbstractClientHandler::HandlerInfo::Private : public QSharedData
+{
+    Private(const QVariantMap &info)
+        : info(info) {}
+
+    QVariantMap info;
+};
+
+AbstractClientHandler::HandlerInfo::HandlerInfo(const QVariantMap &info)
+    : mPriv(new Private(info))
+{
+}
+
+AbstractClientHandler::HandlerInfo::HandlerInfo(const HandlerInfo &other)
+    : mPriv(other.mPriv)
+{
+}
+
+AbstractClientHandler::HandlerInfo::~HandlerInfo()
+{
+}
+
+AbstractClientHandler::HandlerInfo &AbstractClientHandler::HandlerInfo::operator=(
+        const HandlerInfo &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    mPriv = other.mPriv;
+    return *this;
+}
+
+QVariantMap AbstractClientHandler::HandlerInfo::allInfo() const
+{
+    return mPriv->info;
 }
 
 /**
@@ -751,7 +824,7 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  *                  const QList<ChannelPtr> &channels,
  *                  const QList<ChannelRequestPtr> &requestsSatisfied,
  *                  const QDateTime &userActionTime,
- *                  const QVariantMap &handlerInfo);
+ *                  const HandlerInfo &handlerInfo);
  *
  * Called by the channel dispatcher when this handler should handle these
  * channels, or when this handler should present channels that it is already
@@ -792,11 +865,7 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  *                       channel is to be handled for some reason not involving
  *                       user action. Handlers should use this for
  *                       focus-stealing prevention, if applicable.
- * \param handlerInfo Additional information about these channels. No keys are
- *                    currently defined.
- *                    If keys are defined for this dictionary, all will be
- *                    optional; handlers may safely ignore any entry in this
- *                    dictionary.
+ * \param handlerInfo Additional information about these channels.
  */
 
 /**

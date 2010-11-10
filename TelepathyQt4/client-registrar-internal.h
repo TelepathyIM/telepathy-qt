@@ -136,7 +136,7 @@ private:
         QList<ChannelPtr> chans;
         ChannelDispatchOperationPtr dispatchOp;
         QList<ChannelRequestPtr> chanReqs;
-        QVariantMap observerInfo;
+        AbstractClientObserver::ObserverInfo observerInfo;
     };
     QLinkedList<SharedPtr<InvocationData> > mInvocations;
 
@@ -306,7 +306,7 @@ private:
         QList<ChannelPtr> chans;
         QList<ChannelRequestPtr> chanReqs;
         QDateTime time;
-        QVariantMap handlerInfo;
+        AbstractClientHandler::HandlerInfo handlerInfo;
     };
     QLinkedList<SharedPtr<InvocationData> > mInvocations;
 

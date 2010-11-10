@@ -242,7 +242,7 @@ public:
             const QList<ChannelPtr> &channels,
             const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
-            const QVariantMap &observerInfo)
+            const AbstractClientObserver::ObserverInfo &observerInfo)
     {
         mObserveChannelsAccount = account;
         mObserveChannelsConnection = connection;
@@ -277,7 +277,7 @@ public:
             const QList<ChannelPtr> &channels,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
-            const QVariantMap &handlerInfo)
+            const AbstractClientHandler::HandlerInfo &handlerInfo)
     {
         mHandleChannelsAccount = account;
         mHandleChannelsConnection = connection;
@@ -317,7 +317,7 @@ public:
     QList<ChannelPtr> mObserveChannelsChannels;
     ChannelDispatchOperationPtr mObserveChannelsDispatchOperation;
     QList<ChannelRequestPtr> mObserveChannelsRequestsSatisfied;
-    QVariantMap mObserveChannelsObserverInfo;
+    AbstractClientObserver::ObserverInfo mObserveChannelsObserverInfo;
 
     QList<ChannelPtr> mAddDispatchOperationChannels;
     ChannelDispatchOperationPtr mAddDispatchOperationDispatchOperation;
@@ -328,7 +328,7 @@ public:
     QList<ChannelPtr> mHandleChannelsChannels;
     QList<ChannelRequestPtr> mHandleChannelsRequestsSatisfied;
     QDateTime mHandleChannelsUserActionTime;
-    QVariantMap mHandleChannelsHandlerInfo;
+    AbstractClientHandler::HandlerInfo mHandleChannelsHandlerInfo;
     ChannelRequestPtr mAddRequestRequest;
     ChannelRequestPtr mRemoveRequestRequest;
     QString mRemoveRequestErrorName;

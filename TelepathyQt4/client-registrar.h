@@ -60,7 +60,6 @@ public:
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
-
     static ClientRegistrarPtr create(const AccountManagerPtr &accountManager);
 
     ~ClientRegistrar();
