@@ -241,6 +241,22 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
+    class HandlerInfo
+    {
+    public:
+        HandlerInfo(const QVariantMap &info = QVariantMap());
+        HandlerInfo(const HandlerInfo &other);
+        ~HandlerInfo();
+
+        HandlerInfo &operator=(const HandlerInfo &other);
+
+        QVariantMap allInfo() const;
+
+    private:
+        struct Private;
+        QSharedDataPointer<Private> mPriv;
+    };
+
     virtual ~AbstractClientHandler();
 
     ChannelClassSpecList handlerFilter() const;
@@ -277,5 +293,6 @@ private:
 } // Tp
 
 Q_DECLARE_METATYPE(Tp::AbstractClientHandler::Capabilities);
+Q_DECLARE_METATYPE(Tp::AbstractClientHandler::HandlerInfo);
 
 #endif

@@ -673,6 +673,44 @@ QStringList AbstractClientHandler::Capabilities::allTokens() const
     return mPriv->tokens.toList();
 }
 
+struct AbstractClientHandler::HandlerInfo::Private : public QSharedData
+{
+    Private(const QVariantMap &info)
+        : info(info) {}
+
+    QVariantMap info;
+};
+
+AbstractClientHandler::HandlerInfo::HandlerInfo(const QVariantMap &info)
+    : mPriv(new Private(info))
+{
+}
+
+AbstractClientHandler::HandlerInfo::HandlerInfo(const HandlerInfo &other)
+    : mPriv(other.mPriv)
+{
+}
+
+AbstractClientHandler::HandlerInfo::~HandlerInfo()
+{
+}
+
+AbstractClientHandler::HandlerInfo &AbstractClientHandler::HandlerInfo::operator=(
+        const HandlerInfo &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    mPriv = other.mPriv;
+    return *this;
+}
+
+QVariantMap AbstractClientHandler::HandlerInfo::allInfo() const
+{
+    return mPriv->info;
+}
+
 /**
  * Construct a new AbstractClientHandler object.
  *
