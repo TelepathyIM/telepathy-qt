@@ -265,14 +265,13 @@ public:
 
     virtual bool bypassApproval() const = 0;
 
-    // FIXME: (API/ABI break) Use high-level class for handlerInfo
     virtual void handleChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
-            const QVariantMap &handlerInfo) = 0;
+            const HandlerInfo &handlerInfo) = 0;
 
     bool wantsRequestNotification() const;
     virtual void addRequest(const ChannelRequestPtr &request);

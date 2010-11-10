@@ -306,7 +306,7 @@ private:
         QList<ChannelPtr> chans;
         QList<ChannelRequestPtr> chanReqs;
         QDateTime time;
-        QVariantMap handlerInfo;
+        AbstractClientHandler::HandlerInfo handlerInfo;
     };
     QLinkedList<SharedPtr<InvocationData> > mInvocations;
 

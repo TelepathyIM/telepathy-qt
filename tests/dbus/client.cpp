@@ -271,7 +271,7 @@ public:
             const QList<ChannelPtr> &channels,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
-            const QVariantMap &handlerInfo)
+            const AbstractClientHandler::HandlerInfo &handlerInfo)
     {
         mHandleChannelsAccount = account;
         mHandleChannelsConnection = connection;
@@ -322,7 +322,7 @@ public:
     QList<ChannelPtr> mHandleChannelsChannels;
     QList<ChannelRequestPtr> mHandleChannelsRequestsSatisfied;
     QDateTime mHandleChannelsUserActionTime;
-    QVariantMap mHandleChannelsHandlerInfo;
+    AbstractClientHandler::HandlerInfo mHandleChannelsHandlerInfo;
     ChannelRequestPtr mAddRequestRequest;
     ChannelRequestPtr mRemoveRequestRequest;
     QString mRemoveRequestErrorName;

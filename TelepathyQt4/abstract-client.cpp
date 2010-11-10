@@ -577,7 +577,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  *             const QList<ChannelPtr> &channels,
  *             const QList<ChannelRequestPtr> &requestsSatisfied,
  *             const QDateTime &userActionTime,
- *             const QVariantMap &handlerInfo);
+ *             const AbstractClientHandler::HandlerInfo &handlerInfo);
  * };
  *
  * MyHandler::MyHandler(const ChannelClassSpecList &channelFilter)
@@ -596,7 +596,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  *         const QList<ChannelPtr> &channels,
  *         const QList<ChannelRequestPtr> &requestsSatisfied,
  *         const QDateTime &userActionTime,
- *         const QVariantMap &handlerInfo)
+ *         const AbstractClientHandler::HandlerInfo &handlerInfo)
  * {
  *     // do something
  *
@@ -790,7 +790,7 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  *                  const QList<ChannelPtr> &channels,
  *                  const QList<ChannelRequestPtr> &requestsSatisfied,
  *                  const QDateTime &userActionTime,
- *                  const QVariantMap &handlerInfo);
+ *                  const HandlerInfo &handlerInfo);
  *
  * Called by the channel dispatcher when this handler should handle these
  * channels, or when this handler should present channels that it is already
@@ -831,11 +831,7 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  *                       channel is to be handled for some reason not involving
  *                       user action. Handlers should use this for
  *                       focus-stealing prevention, if applicable.
- * \param handlerInfo Additional information about these channels. No keys are
- *                    currently defined.
- *                    If keys are defined for this dictionary, all will be
- *                    optional; handlers may safely ignore any entry in this
- *                    dictionary.
+ * \param handlerInfo Additional information about these channels.
  */
 
 /**

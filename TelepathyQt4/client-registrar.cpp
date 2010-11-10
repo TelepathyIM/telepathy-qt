@@ -426,18 +426,13 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
         readyOps.append(chanReady);
     }
 
-    // API/ABI break TODO: make handler info nicer to use
-    invocation->handlerInfo = handlerInfo;
+    invocation->handlerInfo = AbstractClientHandler::HandlerInfo(handlerInfo);
 
-    /*
-     * Uncomment this and the below one when we have spec 0.19.12
-     *
-     * ObjectImmutablePropertiesMap propMap = qdbus_cast<ObjectImmutablePropertiesMap>(
-     * handlerInfo.value(QLatin1String("request-properties")));
-     */
-    foreach (const QDBusObjectPath &path, requestsSatisfied) {
+    ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<ObjectImmutablePropertiesMap>(
+    handlerInfo.value(QLatin1String("request-properties")));
+    foreach (const QDBusObjectPath &reqPath, requestsSatisfied) {
         ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
-                path.path(), QVariantMap() /* propMap.value(path.path()) */);
+                reqPath.path(), reqPropsMap.value(reqPath));
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }
@@ -500,8 +495,6 @@ void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
         debug() << "Invoking application observeChannels with" << invocation->chans.size()
             << "channels on" << mClient;
 
-        // API/ABI break TODO: make handlerInfo a friendly high-level variantmap wrapper similar to
-        // Connection::ErrorDetails
         mClient->handleChannels(invocation->ctx, invocation->acc, invocation->conn,
                 invocation->chans, invocation->chanReqs, invocation->time, invocation->handlerInfo);
     }
