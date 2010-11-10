@@ -53,9 +53,9 @@ void AccountItem::setupGui()
     mTable->setItem(mRow, ColumnNickname, new QTableWidgetItem(mAcc->nickname()));
     mTable->setItem(mRow, ColumnConnectsAutomatically, new QTableWidgetItem(mAcc->connectsAutomatically() ?
                 QLatin1String("true") : QLatin1String("false")));
-    mTable->setItem(mRow, ColumnAutomaticPresence, new QTableWidgetItem(mAcc->automaticPresence().status));
-    mTable->setItem(mRow, ColumnCurrentPresence, new QTableWidgetItem(mAcc->currentPresence().status));
-    mTable->setItem(mRow, ColumnRequestedPresence, new QTableWidgetItem(mAcc->requestedPresence().status));
+    mTable->setItem(mRow, ColumnAutomaticPresence, new QTableWidgetItem(mAcc->automaticPresence().status()));
+    mTable->setItem(mRow, ColumnCurrentPresence, new QTableWidgetItem(mAcc->currentPresence().status()));
+    mTable->setItem(mRow, ColumnRequestedPresence, new QTableWidgetItem(mAcc->requestedPresence().status()));
     mTable->setItem(mRow, ColumnChangingPresence, new QTableWidgetItem(mAcc->isChangingPresence() ?
                 QLatin1String("true") : QLatin1String("false")));
     mTable->setItem(mRow, ColumnConnectionStatus, new QTableWidgetItem(QString::number(mAcc->connectionStatus())));
