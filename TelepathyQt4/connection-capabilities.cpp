@@ -21,8 +21,6 @@
 
 #include <TelepathyQt4/ConnectionCapabilities>
 
-#include "TelepathyQt4/future-internal.h"
-
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
@@ -105,9 +103,7 @@ bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::conferenceStreamedMediaCall())) {
             return true;
         }
     }
@@ -130,11 +126,7 @@ bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::conferenceStreamedMediaCallWithInvitees())) {
             return true;
         }
     }
@@ -150,9 +142,7 @@ bool ConnectionCapabilities::conferenceTextChats() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::conferenceTextChat())) {
             return true;
         }
     }
@@ -175,11 +165,7 @@ bool ConnectionCapabilities::conferenceTextChatsWithInvitees() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::conferenceTextChatWithInvitees())) {
             return true;
         }
     }
@@ -195,10 +181,7 @@ bool ConnectionCapabilities::conferenceTextChatrooms() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
-            rccSpec.targetHandleType() == HandleTypeRoom &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::conferenceTextChatroom())) {
             return true;
         }
     }
@@ -221,12 +204,7 @@ bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_TEXT &&
-            rccSpec.targetHandleType() == HandleTypeRoom &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) &&
-            (rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")) ||
-             rccSpec.allowsProperty(TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")))) {
+        if (rccSpec.supports(RequestableChannelClassSpec::conferenceTextChatroomWithInvitees())) {
             return true;
         }
     }
