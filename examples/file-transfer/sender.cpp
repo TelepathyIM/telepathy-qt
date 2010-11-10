@@ -121,7 +121,7 @@ void Sender::onConnectionConnected(PendingOperation *op)
 
     qDebug() << "Creating contact object for receiver" << mReceiver;
     connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << mReceiver,
-                QSet<Contact::Feature>() << Contact::FeatureSimplePresence),
+                Features() << Contact::FeatureSimplePresence),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onContactRetrieved(Tp::PendingOperation *)));
 }
