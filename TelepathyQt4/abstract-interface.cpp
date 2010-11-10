@@ -41,16 +41,16 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractInterface::Private
 };
 
 AbstractInterface::AbstractInterface(const QString &busName,
-        const QString &path, const char *interface,
+        const QString &path, const QLatin1String &interface,
         const QDBusConnection &dbusConnection, QObject *parent)
-    : QDBusAbstractInterface(busName, path, interface, dbusConnection, parent),
+    : QDBusAbstractInterface(busName, path, interface.latin1(), dbusConnection, parent),
       mPriv(new Private)
 {
 }
 
-AbstractInterface::AbstractInterface(DBusProxy *parent, const char *interface)
+AbstractInterface::AbstractInterface(DBusProxy *parent, const QLatin1String &interface)
     : QDBusAbstractInterface(parent->busName(), parent->objectPath(),
-            interface, parent->dbusConnection(), parent),
+            interface.latin1(), parent->dbusConnection(), parent),
       mPriv(new Private)
 {
     connect(parent, SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),

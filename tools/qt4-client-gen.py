@@ -164,9 +164,9 @@ public:
      *
      * \\return The D-Bus interface name.
      */
-    static inline const char *staticInterfaceName()
+    static inline QLatin1String staticInterfaceName()
     {
-        return "%(dbusname)s";
+        return QLatin1String("%(dbusname)s");
     }
 
     /**
@@ -469,7 +469,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         if inargs:
             self.h("""
         QDBusMessage callMessage = QDBusMessage::createMethodCall(this->service(), this->path(),
-                QLatin1String(this->staticInterfaceName()), QLatin1String("%s"));
+                this->staticInterfaceName(), QLatin1String("%s"));
         callMessage << %s;
         return this->connection().asyncCall(callMessage, timeout);
     }
@@ -477,7 +477,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         else:
             self.h("""
         QDBusMessage callMessage = QDBusMessage::createMethodCall(this->service(), this->path(),
-                QLatin1String(this->staticInterfaceName()), QLatin1String("%s"));
+                this->staticInterfaceName(), QLatin1String("%s"));
         return this->connection().asyncCall(callMessage, timeout);
     }
 """ % name)
