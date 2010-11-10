@@ -135,7 +135,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     ConnectionStatus connectionStatus;
     ConnectionStatusReason connectionStatusReason;
     QString connectionError;
-    QVariantMap connectionErrorDetails;
+    Connection::ErrorDetails connectionErrorDetails;
     SimplePresence automaticPresence;
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
@@ -1253,7 +1253,7 @@ QString Account::connectionError() const
  * \sa connectionError(), connectionStatus(), connectionStatusReason(), connectionStatusChanged(),
  *     Connection::ErrorDetails.
  */
-QVariantMap Account::connectionErrorDetails() const
+Connection::ErrorDetails Account::connectionErrorDetails() const
 {
     return mPriv->connectionErrorDetails;
 }
@@ -2736,11 +2736,11 @@ void Account::Private::updateProperties(const QVariantMap &props)
         }
 
         if (props.contains(QLatin1String("ConnectionErrorDetails")) &&
-            connectionErrorDetails != qdbus_cast<QVariantMap>(
+            connectionErrorDetails.allDetails() != qdbus_cast<QVariantMap>(
                 props[QLatin1String("ConnectionErrorDetails")])) {
-            connectionErrorDetails = qdbus_cast<QVariantMap>(
-                    props[QLatin1String("ConnectionErrorDetails")]);
-            debug() << " Connection Error Details:" << connectionErrorDetails;
+            connectionErrorDetails = Connection::ErrorDetails(qdbus_cast<QVariantMap>(
+                    props[QLatin1String("ConnectionErrorDetails")]));
+            debug() << " Connection Error Details:" << connectionErrorDetails.allDetails();
             connectionStatusChanged = true;
         }
 
@@ -2755,7 +2755,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 /* We don't signal error for status other than Disconnected */
                 if (connectionStatus != ConnectionStatusDisconnected) {
                     connectionError = QString();
-                    connectionErrorDetails.clear();
+                    connectionErrorDetails = Connection::ErrorDetails();
                 } else if (connectionError.isEmpty()) {
                     connectionError = ConnectionHelper::statusReasonToErrorName(
                             connectionStatusReason, oldConnectionStatus);
