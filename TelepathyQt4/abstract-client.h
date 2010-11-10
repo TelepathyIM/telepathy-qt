@@ -64,7 +64,6 @@ public:
 
         ObserverInfo &operator=(const ObserverInfo &other);
 
-        bool hasRecovering() const { return allInfo().contains(QLatin1String("recovering")); }
         bool isRecovering() const { return qdbus_cast<bool>(allInfo().value(QLatin1String("recovering"))); }
 
         QVariantMap allInfo() const;
