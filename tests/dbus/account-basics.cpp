@@ -177,7 +177,7 @@ void TestAccountBasics::initTestCase()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(mConn->status(), Connection::StatusConnected);
+    QCOMPARE(mConn->status(), ConnectionStatusConnected);
 
     g_free(name);
     g_free(connPath);

@@ -135,7 +135,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     ConnectionStatus connectionStatus;
     ConnectionStatusReason connectionStatusReason;
     QString connectionError;
-    QVariantMap connectionErrorDetails;
+    Connection::ErrorDetails connectionErrorDetails;
     SimplePresence automaticPresence;
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
@@ -264,12 +264,12 @@ bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
 
     if (usingConnectionCaps &&
         (parent->connection().isNull() ||
-         connection->status() != Connection::StatusConnected)) {
+         connection->status() != ConnectionStatusConnected)) {
         usingConnectionCaps = false;
         changed = true;
     } else if (!usingConnectionCaps &&
         !parent->connection().isNull() &&
-        connection->status() == Connection::StatusConnected) {
+        connection->status() == ConnectionStatusConnected) {
         usingConnectionCaps = true;
         changed = true;
     } else if (!usingConnectionCaps && profileChanged) {
@@ -1084,7 +1084,7 @@ ConnectionCapabilities Account::capabilities() const
 
     // if the connection is online and ready use its caps
     if (mPriv->connection &&
-        mPriv->connection->status() == Connection::StatusConnected) {
+        mPriv->connection->status() == ConnectionStatusConnected) {
         return mPriv->connection->capabilities();
     }
 
@@ -1253,7 +1253,7 @@ QString Account::connectionError() const
  * \sa connectionError(), connectionStatus(), connectionStatusReason(), connectionStatusChanged(),
  *     Connection::ErrorDetails.
  */
-QVariantMap Account::connectionErrorDetails() const
+Connection::ErrorDetails Account::connectionErrorDetails() const
 {
     return mPriv->connectionErrorDetails;
 }
@@ -2401,7 +2401,7 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
- * \fn void Account::connectionStatusChanged(Tp::Connection::Status status);
+ * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status);
  *
  * This signal is emitted when the connection status of this account changes.
  *
@@ -2736,11 +2736,11 @@ void Account::Private::updateProperties(const QVariantMap &props)
         }
 
         if (props.contains(QLatin1String("ConnectionErrorDetails")) &&
-            connectionErrorDetails != qdbus_cast<QVariantMap>(
+            connectionErrorDetails.allDetails() != qdbus_cast<QVariantMap>(
                 props[QLatin1String("ConnectionErrorDetails")])) {
-            connectionErrorDetails = qdbus_cast<QVariantMap>(
-                    props[QLatin1String("ConnectionErrorDetails")]);
-            debug() << " Connection Error Details:" << connectionErrorDetails;
+            connectionErrorDetails = Connection::ErrorDetails(qdbus_cast<QVariantMap>(
+                    props[QLatin1String("ConnectionErrorDetails")]));
+            debug() << " Connection Error Details:" << connectionErrorDetails.allDetails();
             connectionStatusChanged = true;
         }
 
@@ -2755,7 +2755,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 /* We don't signal error for status other than Disconnected */
                 if (connectionStatus != ConnectionStatusDisconnected) {
                     connectionError = QString();
-                    connectionErrorDetails.clear();
+                    connectionErrorDetails = Connection::ErrorDetails();
                 } else if (connectionError.isEmpty()) {
                     connectionError = ConnectionHelper::statusReasonToErrorName(
                             connectionStatusReason, oldConnectionStatus);
@@ -2763,7 +2763,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
                 checkCapabilitiesChanged(profileChanged);
 
-                emit parent->connectionStatusChanged((Connection::Status) connectionStatus);
+                emit parent->connectionStatusChanged(connectionStatus);
                 parent->notify("connectionError");
                 parent->notify("connectionErrorDetails");
             } else {

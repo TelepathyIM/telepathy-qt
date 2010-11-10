@@ -152,7 +152,7 @@ void TestContactSearchChan::initTestCase()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
     QCOMPARE(static_cast<uint>(mConn->status()),
-             static_cast<uint>(Connection::StatusConnected));
+             static_cast<uint>(ConnectionStatusConnected));
 
     QByteArray chan1Path;
     mChan1Path = mConnPath + QLatin1String("/ContactSearchChannel/1");

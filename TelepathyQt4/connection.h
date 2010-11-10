@@ -62,7 +62,6 @@ class TELEPATHY_QT4_EXPORT Connection : public StatefulDBusProxy,
 {
     Q_OBJECT
     Q_DISABLE_COPY(Connection)
-    Q_ENUMS(Status)
 
 public:
     static const Feature FeatureCore;
@@ -71,13 +70,6 @@ public:
     static const Feature FeatureRoster;
     static const Feature FeatureRosterGroups;
     static const Feature FeatureAccountBalance; // TODO unit tests for this
-
-    enum Status {
-        StatusDisconnected = ConnectionStatusDisconnected,
-        StatusConnecting = ConnectionStatusConnecting,
-        StatusConnected = ConnectionStatusConnected,
-        StatusUnknown = 0xFFFFFFFF
-    };
 
     static ConnectionPtr create(const QString &busName,
             const QString &objectPath,
@@ -96,7 +88,7 @@ public:
     QString cmName() const;
     QString protocolName() const;
 
-    Status status() const;
+    ConnectionStatus status() const;
     ConnectionStatusReason statusReason() const;
 
     class ErrorDetails
@@ -184,7 +176,7 @@ public:
     ContactManager *contactManager() const;
 
 Q_SIGNALS:
-    void statusChanged(Tp::Connection::Status newStatus);
+    void statusChanged(Tp::ConnectionStatus newStatus);
 
     void selfHandleChanged(uint newHandle);
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts

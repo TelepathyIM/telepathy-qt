@@ -157,7 +157,7 @@ void TestConnRosterGroups::testRosterGroups()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(mConn->status(), Connection::StatusConnected);
+    QCOMPARE(mConn->status(), ConnectionStatusConnected);
 
     Features features = Features() << Connection::FeatureRoster << Connection::FeatureRosterGroups;
     QVERIFY(connect(mConn->becomeReady(features),
@@ -326,7 +326,7 @@ void TestConnRosterGroups::testNotADeathTrap()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(mConn->status(), Connection::StatusConnected);
+    QCOMPARE(mConn->status(), ConnectionStatusConnected);
 
     // As the conn is now ready, the contact building functions shouldn't return an error now
     QVERIFY(mConn->contactManager() != 0);
@@ -561,7 +561,7 @@ void TestConnRosterGroups::testNotADeathTrap()
     } while (!mConnInvalidated);
 
     QVERIFY(!mConn->isValid());
-    QCOMPARE(mConn->status(), Connection::StatusDisconnected);
+    QCOMPARE(mConn->status(), ConnectionStatusDisconnected);
 
     // Now that the conn is invalidated NOTHING should work anymore
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList()),
@@ -637,7 +637,7 @@ void TestConnRosterGroups::cleanup()
     mContact.clear();
 
     if (mConn) {
-        if (mConn->status() != Connection::StatusDisconnected) {
+        if (mConn->status() != ConnectionStatusDisconnected) {
             // Disconnect and wait for the readiness change
             QVERIFY(connect(mConn->requestDisconnect(),
                         SIGNAL(finished(Tp::PendingOperation*)),

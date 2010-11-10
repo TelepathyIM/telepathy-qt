@@ -79,12 +79,10 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(ConnectionCapabilities capabilities READ capabilities NOTIFY capabilitiesChanged)
     Q_PROPERTY(bool hasBeenOnline READ hasBeenOnline)
     Q_PROPERTY(bool connectsAutomatically READ connectsAutomatically NOTIFY connectsAutomaticallyPropertyChanged)
-    // FIXME: (API/ABI break) Use Connection::Status
-    Q_PROPERTY(ConnectionStatus connectionStatus READ connectionStatus)
+    Q_PROPERTY(ConnectionStatus connectionStatus READ connectionStatus NOTIFY connectionStatusChanged)
     Q_PROPERTY(ConnectionStatusReason connectionStatusReason READ connectionStatusReason)
     Q_PROPERTY(QString connectionError READ connectionError)
-    // FIXME: (API/ABI break) Use Connection::ErrorDetails
-    Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
+    Q_PROPERTY(Tp::Connection::ErrorDetails connectionErrorDetails READ connectionErrorDetails)
     Q_PROPERTY(ConnectionPtr connection READ connection NOTIFY connectionChanged)
     Q_PROPERTY(bool changingPresence READ isChangingPresence NOTIFY changingPresence)
     Q_PROPERTY(SimplePresence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
@@ -162,12 +160,10 @@ public:
 
     bool hasBeenOnline() const;
 
-    // FIXME: (API/ABI break) Use Connection::Status
     ConnectionStatus connectionStatus() const;
     ConnectionStatusReason connectionStatusReason() const;
     QString connectionError() const;
-    // FIXME: (API/ABI break) Use Connection::ErrorDetails
-    QVariantMap connectionErrorDetails() const;
+    Connection::ErrorDetails connectionErrorDetails() const;
     ConnectionPtr connection() const;
 
     bool isChangingPresence() const;
@@ -324,7 +320,7 @@ Q_SIGNALS:
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
     void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
-    void connectionStatusChanged(Tp::Connection::Status status);
+    void connectionStatusChanged(Tp::ConnectionStatus status);
     void connectionChanged(const Tp::ConnectionPtr &connection);
 
 protected:
