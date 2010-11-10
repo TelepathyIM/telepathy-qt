@@ -80,14 +80,13 @@ public:
 
     bool shouldRecover() const;
 
-    // FIXME: (API/ABI break) Use high-level class for observerInfo
     virtual void observeChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
             const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
-            const QVariantMap &observerInfo) = 0;
+            const ObserverInfo &observerInfo) = 0;
 
 protected:
     AbstractClientObserver(const ChannelClassSpecList &channelFilter, bool shouldRecover = false);

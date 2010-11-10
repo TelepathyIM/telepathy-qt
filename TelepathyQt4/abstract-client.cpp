@@ -159,7 +159,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  *             const QList<ChannelPtr> &channels,
  *             const ChannelDispatchOperationPtr &dispatchOperation,
  *             const QList<ChannelRequestPtr> &requestsSatisfied,
- *             const QVariantMap &observerInfo);
+ *             const AbstractClientObserver::ObserverInfo &observerInfo);
  * };
  *
  * MyObserver::MyObserver(const ChannelClassSpecList &channelFilter)
@@ -173,7 +173,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  *         const QList<ChannelPtr> &channels,
  *         const ChannelDispatchOperationPtr &dispatchOperation,
  *         const QList<ChannelRequestPtr> &requestsSatisfied,
- *         const QVariantMap &observerInfo)
+ *         const AbstractClientObserver::ObserverInfo &observerInfo)
  * {
  *     // do something, log messages, ...
  *
@@ -312,7 +312,7 @@ bool AbstractClientObserver::shouldRecover() const
  *                  const QList<ChannelPtr> &channels,
  *                  const ChannelDispatchOperationPtr &dispatchOperation,
  *                  const QList<ChannelRequestPtr> &requestsSatisfied,
- *                  const QVariantMap &observerInfo);
+ *                  const ObserverInfo &observerInfo);
  *
  * Called by the channel dispatcher when channels in which the observer has
  * registered an interest are announced.
@@ -353,11 +353,7 @@ bool AbstractClientObserver::shouldRecover() const
  *                          these methods cannot return until the observer has
  *                          returned from observeChannels().
  * \param requestsSatisfied The requests satisfied by these channels.
- * \param observerInfo Additional information about these channels. No keys are
- *                     currently defined.
- *                     If keys are defined for this dictionary, all will be
- *                     optional; observers may safely ignore any entry in this
- *                     dictionary.
+ * \param observerInfo Additional information about these channels.
  */
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private

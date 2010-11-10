@@ -236,7 +236,7 @@ public:
             const QList<ChannelPtr> &channels,
             const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
-            const QVariantMap &observerInfo)
+            const AbstractClientObserver::ObserverInfo &observerInfo)
     {
         mObserveChannelsAccount = account;
         mObserveChannelsConnection = connection;
@@ -311,7 +311,7 @@ public:
     QList<ChannelPtr> mObserveChannelsChannels;
     ChannelDispatchOperationPtr mObserveChannelsDispatchOperation;
     QList<ChannelRequestPtr> mObserveChannelsRequestsSatisfied;
-    QVariantMap mObserveChannelsObserverInfo;
+    AbstractClientObserver::ObserverInfo mObserveChannelsObserverInfo;
 
     QList<ChannelPtr> mAddDispatchOperationChannels;
     ChannelDispatchOperationPtr mAddDispatchOperationDispatchOperation;

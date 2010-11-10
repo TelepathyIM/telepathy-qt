@@ -136,7 +136,7 @@ private:
         QList<ChannelPtr> chans;
         ChannelDispatchOperationPtr dispatchOp;
         QList<ChannelRequestPtr> chanReqs;
-        QVariantMap observerInfo;
+        AbstractClientObserver::ObserverInfo observerInfo;
     };
     QLinkedList<SharedPtr<InvocationData> > mInvocations;
 

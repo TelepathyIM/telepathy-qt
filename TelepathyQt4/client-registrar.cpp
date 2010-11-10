@@ -186,8 +186,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         readyOps.append(invocation->dispatchOp->becomeReady());
     }
 
-    // TODO make observer info nicer to use...
-    invocation->observerInfo = observerInfo;
+    invocation->observerInfo = AbstractClientObserver::ObserverInfo(observerInfo);
 
     ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<ObjectImmutablePropertiesMap>(
             observerInfo.value(QLatin1String("request-properties")));
@@ -247,8 +246,6 @@ void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
         debug() << "Invoking application observeChannels with" << invocation->chans.size()
             << "channels on" << mClient;
 
-        // API/ABI break TODO: make observerInfo a friendly high-level variantmap wrapper similar to
-        // Connection::ErrorDetails
         mClient->observeChannels(invocation->ctx, invocation->acc, invocation->conn,
                 invocation->chans, invocation->dispatchOp, invocation->chanReqs,
                 invocation->observerInfo);
