@@ -124,8 +124,6 @@ public:
         : SharedPtr<MethodInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8> >(d) { }
     inline MethodInvocationContextPtr(const SharedPtr<MethodInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8> > &o)
         : SharedPtr<MethodInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8> >(o) { }
-    explicit inline MethodInvocationContextPtr(const WeakPtr<MethodInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8> > &o)
-        : SharedPtr<MethodInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8> >(o) { }
 };
 
 class AvatarData

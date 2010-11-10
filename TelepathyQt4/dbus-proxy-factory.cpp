@@ -252,7 +252,7 @@ void DBusProxyFactory::Cache::put(const DBusProxyPtr &proxy)
                 SLOT(onProxyInvalidated(Tp::DBusProxy*)));
 
         debug() << "Inserting to factory cache proxy for" << key;
-        proxies.insert(key, proxy);
+        proxies.insert(key, QWeakPointer<DBusProxy>(proxy.data()));
     }
 }
 

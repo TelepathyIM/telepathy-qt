@@ -28,46 +28,27 @@
 
 #include <TelepathyQt4/Global>
 
-#include <QObject>
 #include <QHash>
+#include <QWeakPointer>
 
 namespace Tp
 {
 
 class RefCounted;
-class WeakData;
 template <class T> class SharedPtr;
-template <class T> class WeakPtr;
-
-class TELEPATHY_QT4_EXPORT WeakData
-{
-    Q_DISABLE_COPY(WeakData)
-
-public:
-    WeakData(RefCounted *d) : d(d), weakref(0) { }
-
-    RefCounted *d;
-    mutable QAtomicInt weakref;
-};
 
 class TELEPATHY_QT4_EXPORT RefCounted
 {
     Q_DISABLE_COPY(RefCounted)
 
 public:
-    inline RefCounted() : strongref(0), wd(0) { }
-    inline virtual ~RefCounted() { if (wd) { wd->d = 0; } }
-
-    // So why were these not const in the first place although strongref was?
-    // API/ABI break TODO: remove, just leave the const variants in
-    inline void ref() { strongref.ref(); }
-    inline bool deref() { return strongref.deref(); }
+    inline RefCounted() : strongref(0) { }
+    inline virtual ~RefCounted() { }
 
     inline void ref() const { strongref.ref(); }
     inline bool deref() const { return strongref.deref(); }
 
     mutable QAtomicInt strongref;
-    WeakData *wd;
 };
 
 template <class T>
@@ -81,10 +62,10 @@ public:
     template <typename Subclass>
         inline SharedPtr(const SharedPtr<Subclass> &o) : d(o.data()) { if (d) { d->ref(); } }
     inline SharedPtr(const SharedPtr<T> &o) : d(o.d) { if (d) { d->ref(); } }
-    explicit inline SharedPtr(const WeakPtr<T> &o)
+    explicit inline SharedPtr(const QWeakPointer<T> &o)
     {
-        if (o.wd && o.wd->d && o.wd->d->strongref > 0) {
-            d = static_cast<T*>(o.wd->d);
+        if (o.data() && o.data()->strongref > 0) {
+            d = static_cast<T*>(o.data());
             d->ref();
         } else {
             d = 0;
@@ -154,8 +135,6 @@ public:
     }
 
 private:
-    friend class WeakPtr<T>;
-
     T *d;
 };
 
@@ -163,77 +142,6 @@ template<typename T>
 inline uint qHash(const SharedPtr<T> &ptr)
 {
     return QT_PREPEND_NAMESPACE(qHash<T>(ptr.data()));
-}
-
-template<typename T> inline uint qHash(const WeakPtr<T> &ptr);
-
-template <class T>
-class WeakPtr
-{
-    typedef bool (WeakPtr<T>::*UnspecifiedBoolType)() const;
-
-public:
-    inline WeakPtr() : wd(0) { }
-    inline WeakPtr(const WeakPtr<T> &o) : wd(o.wd) { if (wd) { wd->weakref.ref(); } }
-    inline WeakPtr(const SharedPtr<T> &o)
-    {
-        if (o.d) {
-            if (!o.d->wd) {
-                o.d->wd = new WeakData(o.d);
-            }
-            wd = o.d->wd;
-            wd->weakref.ref();
-        } else {
-            wd = 0;
-        }
-    }
-    inline ~WeakPtr()
-    {
-        if (wd && !wd->weakref.deref()) {
-            if (wd->d) {
-                wd->d->wd = 0;
-            }
-            delete wd;
-        }
-    }
-
-    inline bool isNull() const { return !wd || !wd->d || wd->d->strongref == 0; }
-    inline bool operator!() const { return isNull(); }
-    operator UnspecifiedBoolType() const { return !isNull() ? &WeakPtr<T>::operator! : 0; }
-
-    inline WeakPtr<T> &operator=(const WeakPtr<T> &o)
-    {
-        WeakPtr<T>(o).swap(*this);
-        return *this;
-    }
-
-    inline WeakPtr<T> &operator=(const SharedPtr<T> &o)
-    {
-        WeakPtr<T>(o).swap(*this);
-        return *this;
-    }
-
-    inline void swap(WeakPtr<T> &o)
-    {
-        WeakData *tmp = wd;
-        wd = o.wd;
-        o.wd = tmp;
-    }
-
-    SharedPtr<T> toStrongRef() const { return SharedPtr<T>(*this); }
-
-private:
-    friend class SharedPtr<T>;
-    friend uint qHash<T>(const WeakPtr<T> &ptr);
-
-    WeakData *wd;
-};
-
-template<typename T>
-inline uint qHash(const WeakPtr<T> &ptr)
-{
-    T *actualPtr = ptr.wd ? ptr.wd.d : 0;
-    return QT_PREPEND_NAMESPACE(qHash<T>(actualPtr));
 }
 
 } // Tp

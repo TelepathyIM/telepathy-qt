@@ -44,7 +44,7 @@ struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
     bool forceNonText;
 
     // for received messages only
-    WeakPtr<TextChannel> textChannel;
+    QWeakPointer<TextChannel> textChannel;
     ContactPtr sender;
 
     inline QVariant value(uint index, const char *key) const;
@@ -448,7 +448,7 @@ ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
                 QDBusVariant(static_cast<qlonglong>(
                         QDateTime::currentDateTime().toTime_t())));
     }
-    mPriv->textChannel = channel;
+    mPriv->textChannel = QWeakPointer<TextChannel>(channel.data());
 }
 
 /**
