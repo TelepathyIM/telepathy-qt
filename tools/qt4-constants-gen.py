@@ -193,10 +193,17 @@ namespace %s
 
     def do_flags(self, flags):
         singular = flags.getAttribute('singular') or \
-                   flags.getAttribute('value-prefix') or \
-                   flags.getAttribute('name')
+                   flags.getAttribute('value-prefix')
+
+        using_name = False
+        if not singular:
+            using_name = True
+            singular = flags.getAttribute('name')
 
         if singular.endswith('lags'):
+            singular = singular[:-1]
+
+        if using_name and singular.endswith('s'):
             singular = singular[:-1]
 
         singular = singular.replace('_', '')
