@@ -55,6 +55,25 @@ class TELEPATHY_QT4_EXPORT AbstractClientObserver : public virtual AbstractClien
     Q_DISABLE_COPY(AbstractClientObserver)
 
 public:
+    class ObserverInfo
+    {
+    public:
+        ObserverInfo(const QVariantMap &info = QVariantMap());
+        ObserverInfo(const ObserverInfo &other);
+        ~ObserverInfo();
+
+        ObserverInfo &operator=(const ObserverInfo &other);
+
+        bool hasRecovering() const { return allInfo().contains(QLatin1String("recovering")); }
+        bool isRecovering() const { return qdbus_cast<bool>(allInfo().value(QLatin1String("recovering"))); }
+
+        QVariantMap allInfo() const;
+
+    private:
+        struct Private;
+        QSharedDataPointer<Private> mPriv;
+    };
+
     virtual ~AbstractClientObserver();
 
     ChannelClassSpecList observerFilter() const;
@@ -291,6 +310,7 @@ private:
 
 } // Tp
 
+Q_DECLARE_METATYPE(Tp::AbstractClientObserver::ObserverInfo);
 Q_DECLARE_METATYPE(Tp::AbstractClientHandler::Capabilities);
 Q_DECLARE_METATYPE(Tp::AbstractClientHandler::HandlerInfo);
 

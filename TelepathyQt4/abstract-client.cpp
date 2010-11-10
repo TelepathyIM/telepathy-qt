@@ -197,6 +197,44 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  * \sa AbstractClient
  */
 
+struct AbstractClientObserver::ObserverInfo::Private : public QSharedData
+{
+    Private(const QVariantMap &info)
+        : info(info) {}
+
+    QVariantMap info;
+};
+
+AbstractClientObserver::ObserverInfo::ObserverInfo(const QVariantMap &info)
+    : mPriv(new Private(info))
+{
+}
+
+AbstractClientObserver::ObserverInfo::ObserverInfo(const ObserverInfo &other)
+    : mPriv(other.mPriv)
+{
+}
+
+AbstractClientObserver::ObserverInfo::~ObserverInfo()
+{
+}
+
+AbstractClientObserver::ObserverInfo &AbstractClientObserver::ObserverInfo::operator=(
+        const ObserverInfo &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    mPriv = other.mPriv;
+    return *this;
+}
+
+QVariantMap AbstractClientObserver::ObserverInfo::allInfo() const
+{
+    return mPriv->info;
+}
+
 /**
  * Construct a new AbstractClientObserver object.
  *
