@@ -115,131 +115,130 @@ class TELEPATHY_QT4_EXPORT AbstractClientHandler : public virtual AbstractClient
 public:
     class Capabilities
     {
-        public:
-            Capabilities(const QStringList &tokens = QStringList());
-            Capabilities(const Capabilities &other);
-            ~Capabilities();
+    public:
+        Capabilities(const QStringList &tokens = QStringList());
+        Capabilities(const Capabilities &other);
+        ~Capabilities();
 
-            Capabilities &operator=(const Capabilities &other);
+        Capabilities &operator=(const Capabilities &other);
 
-            bool hasGTalkP2PNATTraversalToken() const
-            {
-                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/gtalk-p2p"));
-            }
+        bool hasGTalkP2PNATTraversalToken() const
+        {
+            return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/gtalk-p2p"));
+        }
 
-            void setGTalkP2PNATTraversalToken()
-            {
-                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/gtalk-p2p"));
-            }
+        void setGTalkP2PNATTraversalToken()
+        {
+            setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/gtalk-p2p"));
+        }
 
-            void unsetGTalkP2PNATTraversalToken()
-            {
-                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/gtalk-p2p"));
-            }
+        void unsetGTalkP2PNATTraversalToken()
+        {
+            unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/gtalk-p2p"));
+        }
 
-            bool hasICEUDPNATTraversalToken() const
-            {
-                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/ice-udp"));
-            }
+        bool hasICEUDPNATTraversalToken() const
+        {
+            return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/ice-udp"));
+        }
 
-            void setICEUDPNATTraversalToken()
-            {
-                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/ice-udp"));
-            }
+        void setICEUDPNATTraversalToken()
+        {
+            setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/ice-udp"));
+        }
 
-            void unsetICEUDPNATTraversalToken()
-            {
-                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/ice-udp"));
-            }
+        void unsetICEUDPNATTraversalToken()
+        {
+            unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/ice-udp"));
+        }
 
-            bool hasWLM85NATTraversalToken() const
-            {
-                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/wlm-8.5"));
-            }
+        bool hasWLM85NATTraversalToken() const
+        {
+            return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/wlm-8.5"));
+        }
 
-            void setWLM85NATTraversalToken()
-            {
-                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/wlm-8.5"));
-            }
+        void setWLM85NATTraversalToken()
+        {
+            setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/wlm-8.5"));
+        }
 
-            void unsetWLM85NATTraversalToken()
-            {
-                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/wlm-8.5"));
-            }
+        void unsetWLM85NATTraversalToken()
+        {
+            unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/wlm-8.5"));
+        }
 
-            bool hasWLM2009NATTraversalToken() const
-            {
-                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/wlm-2009"));
-            }
+        bool hasWLM2009NATTraversalToken() const
+        {
+            return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/wlm-2009"));
+        }
 
-            void setWLM2009NATTraversalToken()
-            {
-                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/wlm-2009"));
-            }
+        void setWLM2009NATTraversalToken()
+        {
+            setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/wlm-2009"));
+        }
 
-            void unsetWLM2009NATTraversalToken()
-            {
-                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/wlm-2009"));
-            }
+        void unsetWLM2009NATTraversalToken()
+        {
+            unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/wlm-2009"));
+        }
 
-            bool hasAudioCodecToken(const QString &mimeSubType) const
-            {
-                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/audio/") + mimeSubType.toLower());
-            }
+        bool hasAudioCodecToken(const QString &mimeSubType) const
+        {
+            return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/audio/") + mimeSubType.toLower());
+        }
 
-            void setAudioCodecToken(const QString &mimeSubType)
-            {
-                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/audio/") + mimeSubType.toLower());
-            }
+        void setAudioCodecToken(const QString &mimeSubType)
+        {
+            setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/audio/") + mimeSubType.toLower());
+        }
 
-            void unsetAudioCodecToken(const QString &mimeSubType)
-            {
-                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/audio/") + mimeSubType.toLower());
-            }
+        void unsetAudioCodecToken(const QString &mimeSubType)
+        {
+            unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/audio/") + mimeSubType.toLower());
+        }
 
-            bool hasVideoCodecToken(const QString &mimeSubType) const
-            {
-                return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/video/") + mimeSubType.toLower());
-            }
+        bool hasVideoCodecToken(const QString &mimeSubType) const
+        {
+            return hasToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/video/") + mimeSubType.toLower());
+        }
 
-            void setVideoCodecToken(const QString &mimeSubType)
-            {
-                setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/video/") + mimeSubType.toLower());
-            }
+        void setVideoCodecToken(const QString &mimeSubType)
+        {
+            setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/video/") + mimeSubType.toLower());
+        }
 
-            void unsetVideoCodecToken(const QString &mimeSubType)
-            {
-                unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
-                    QLatin1String("/video/") + mimeSubType.toLower());
-            }
+        void unsetVideoCodecToken(const QString &mimeSubType)
+        {
+            unsetToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+                QLatin1String("/video/") + mimeSubType.toLower());
+        }
 
-            bool hasToken(const QString &token) const;
-            void setToken(const QString &token);
-            void unsetToken(const QString &token);
+        bool hasToken(const QString &token) const;
+        void setToken(const QString &token);
+        void unsetToken(const QString &token);
 
-            QStringList allTokens() const;
+        QStringList allTokens() const;
 
-        private:
-
-            struct Private;
-            QSharedDataPointer<Private> mPriv;
+    private:
+        struct Private;
+        QSharedDataPointer<Private> mPriv;
     };
 
     virtual ~AbstractClientHandler();
