@@ -22,6 +22,7 @@
 #include <TelepathyQt4/Contact>
 #include "TelepathyQt4/_gen/contact.moc.hpp"
 
+#include <TelepathyQt4/AvatarData>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/Constants>

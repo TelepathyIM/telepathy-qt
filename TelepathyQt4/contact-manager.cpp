@@ -31,6 +31,7 @@
 #include <QSet>
 #include <QWeakPointer>
 
+#include <TelepathyQt4/AvatarData>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContactAttributes>

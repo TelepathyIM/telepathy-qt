@@ -28,6 +28,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFilter>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionManager>

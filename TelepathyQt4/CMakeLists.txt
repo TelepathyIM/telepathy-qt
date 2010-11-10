@@ -104,10 +104,13 @@ set(telepathy_qt4_HEADERS
     AbstractInterface
     abstract-interface.h
     Account
-    AccountCapabilityFilter
     account.h
+    AccountCapabilityFilter
+    account-capability-filter.h
     AccountFactory
     account-factory.h
+    AccountFilter
+    account-filter.h
     AccountInterface
     AccountManager
     account-manager.h
@@ -116,6 +119,8 @@ set(telepathy_qt4_HEADERS
     AccountPropertyFilter
     AccountSet
     account-set.h
+    AvatarData
+    avatar-data.h
     CapabilitiesBase
     capabilities-base.h
     Channel
