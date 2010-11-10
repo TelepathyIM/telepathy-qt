@@ -54,9 +54,9 @@ protected Q_SLOTS:
             const QString &error, const QString &message);
 
 protected:
-    AbstractInterface(DBusProxy *proxy, const char *interface);
+    AbstractInterface(DBusProxy *proxy, const QLatin1String &interface);
     AbstractInterface(const QString &busName, const QString &path,
-            const char *interface, const QDBusConnection &connection,
+            const QLatin1String &interface, const QDBusConnection &connection,
             QObject *parent);
 
     PendingVariant *internalRequestProperty(const QString &name) const;

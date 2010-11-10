@@ -164,9 +164,9 @@ public:
      *
      * \\return The D-Bus interface name.
      */
-    static inline const char *staticInterfaceName()
+    static inline QLatin1String staticInterfaceName()
     {
-        return "%(dbusname)s";
+        return QLatin1String("%(dbusname)s");
     }
 
     /**
@@ -417,11 +417,19 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 
         rettypes = ', '.join([argbindings[i].val for i in outargs])
         params = ', '.join([argbindings[i].inarg + ' ' + argnames[i] for i in inargs])
+        if params:
+            params += ', int timeout = -1'
+        else:
+            params = 'int timeout = -1'
 
         self.h("""
     /**
      * Begins a call to the D-Bus method "%s" on the remote object.
 %s\
+     *
+     * Note that \\a timeout is ignored as of now. It will be used once
+     * http://bugreports.qt.nokia.com/browse/QTBUG-11775 is fixed.
+     *
 """ % (name, format_docstring(method, '     * ')))
 
         for i in inargs:
@@ -431,6 +439,10 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
      * \\param %s
 %s\
 """ % (argnames[i], argdocstrings[i]))
+
+        self.h("""\
+     * \\param timeout The timeout in milliseconds.
+""")
 
         for i in outargs:
             if argdocstrings[i]:
@@ -456,14 +468,17 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 
         if inargs:
             self.h("""
-        QList<QVariant> argumentList;
-        argumentList << %s;
-        return asyncCallWithArgumentList(QLatin1String("%s"), argumentList);
+        QDBusMessage callMessage = QDBusMessage::createMethodCall(this->service(), this->path(),
+                this->staticInterfaceName(), QLatin1String("%s"));
+        callMessage << %s;
+        return this->connection().asyncCall(callMessage, timeout);
     }
-""" % (' << '.join(['QVariant::fromValue(%s)' % argnames[i] for i in inargs]), name))
+""" % (name, ' << '.join(['QVariant::fromValue(%s)' % argnames[i] for i in inargs])))
         else:
             self.h("""
-        return asyncCall(QLatin1String("%s"));
+        QDBusMessage callMessage = QDBusMessage::createMethodCall(this->service(), this->path(),
+                this->staticInterfaceName(), QLatin1String("%s"));
+        return this->connection().asyncCall(callMessage, timeout);
     }
 """ % name)
 
