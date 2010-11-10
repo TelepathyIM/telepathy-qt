@@ -468,14 +468,17 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 
         if inargs:
             self.h("""
-        QList<QVariant> argumentList;
-        argumentList << %s;
-        return asyncCallWithArgumentList(QLatin1String("%s"), argumentList);
+        QDBusMessage callMessage = QDBusMessage::createMethodCall(this->service(), this->path(),
+                QLatin1String(this->staticInterfaceName()), QLatin1String("%s"));
+        callMessage << %s;
+        return this->connection().asyncCall(callMessage, timeout);
     }
-""" % (' << '.join(['QVariant::fromValue(%s)' % argnames[i] for i in inargs]), name))
+""" % (name, ' << '.join(['QVariant::fromValue(%s)' % argnames[i] for i in inargs])))
         else:
             self.h("""
-        return asyncCall(QLatin1String("%s"));
+        QDBusMessage callMessage = QDBusMessage::createMethodCall(this->service(), this->path(),
+                QLatin1String(this->staticInterfaceName()), QLatin1String("%s"));
+        return this->connection().asyncCall(callMessage, timeout);
     }
 """ % name)
 
