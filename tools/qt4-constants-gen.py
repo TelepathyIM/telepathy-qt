@@ -193,10 +193,17 @@ namespace %s
 
     def do_flags(self, flags):
         singular = flags.getAttribute('singular') or \
-                   flags.getAttribute('value-prefix') or \
-                   flags.getAttribute('name')
+                   flags.getAttribute('value-prefix')
+
+        using_name = False
+        if not singular:
+            using_name = True
+            singular = flags.getAttribute('name')
 
         if singular.endswith('lags'):
+            singular = singular[:-1]
+
+        if using_name and singular.endswith('s'):
             singular = singular[:-1]
 
         singular = singular.replace('_', '')
@@ -237,14 +244,17 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(%(plural)s)
 
     def do_enum(self, enum):
         singular = enum.getAttribute('singular') or \
-                   enum.getAttribute('value-prefix') or \
                    enum.getAttribute('name')
+        value_prefix = enum.getAttribute('singular') or \
+                       enum.getAttribute('value-prefix') or \
+                       enum.getAttribute('name')
 
         if singular.endswith('lags'):
             singular = singular[:-1]
 
         plural = enum.getAttribute('plural') or singular + 's'
         singular = singular.replace('_', '')
+        value_prefix = value_prefix.replace('_', '')
         vals = get_by_path(enum, 'enumvalue')
 
         self.h("""\
@@ -260,7 +270,7 @@ enum %(singular)s
 """ % {'singular' : singular, 'docstring' : format_docstring(enum)})
 
         for val in vals:
-            self.do_val(val, singular, val == vals[-1])
+            self.do_val(val, value_prefix, val == vals[-1])
 
         self.h("""\
     %s = 0xffffffffU
