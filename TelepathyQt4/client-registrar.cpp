@@ -301,11 +301,6 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
         readyOps.append(chanReady);
     }
 
-    // Note that creating the CDO used to not pass the bus connection at all! Which means the old
-    // code would've broken if used on a != sessionBus() bus. Therefore I think we can draw a
-    // conclusion that the classes we mostly create ourselves (CDO, CR, etc.) should NOT have
-    // default parameters for the bus and/or the factories after the API/ABI break, to catch this
-    // type of error at compile time.
     invocation->dispatchOp = ChannelDispatchOperation::create(mBus,
             dispatchOperationPath.path(), properties, QList<ChannelPtr>(), accFactory, connFactory,
             chanFactory, contactFactory);
