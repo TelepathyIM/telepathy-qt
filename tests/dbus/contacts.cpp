@@ -37,7 +37,7 @@ public:
     }
 
 protected Q_SLOTS:
-    void expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason);
+    void expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason);
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
 
@@ -65,18 +65,18 @@ private:
     Tp::UIntList mInvalidHandles;
 };
 
-void TestContacts::expectConnReady(Tp::Connection::Status newStatus,
+void TestContacts::expectConnReady(Tp::ConnectionStatus newStatus,
         Tp::ConnectionStatusReason newStatusReason)
 {
     switch (newStatus) {
-    case Connection::StatusDisconnected:
+    case ConnectionStatusDisconnected:
         qWarning() << "Disconnected";
         mLoop->exit(1);
         break;
-    case Connection::StatusConnecting:
+    case ConnectionStatusConnecting:
         /* do nothing */
         break;
-    case Connection::StatusConnected:
+    case ConnectionStatusConnected:
         qDebug() << "Ready";
         mLoop->exit(0);
         break;
@@ -171,16 +171,16 @@ void TestContacts::initTestCase()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
-    if (mConn->status() != Connection::StatusConnected) {
+    if (mConn->status() != ConnectionStatusConnected) {
         QVERIFY(connect(mConn.data(),
-                        SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
-                        SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
+                        SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
+                        SLOT(expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason))));
         QCOMPARE(mLoop->exec(), 0);
         QVERIFY(disconnect(mConn.data(),
-                           SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
+                           SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
                            this,
-                           SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
-        QCOMPARE(mConn->status(), Connection::StatusConnected);
+                           SLOT(expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason))));
+        QCOMPARE(mConn->status(), ConnectionStatusConnected);
     }
 }
 

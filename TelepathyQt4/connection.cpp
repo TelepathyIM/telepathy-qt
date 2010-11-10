@@ -197,9 +197,9 @@ Connection::Private::Private(Connection *parent,
       readinessHelper(parent->readinessHelper()),
       introspectingMain(false),
       statusChangedWhileIntrospectingMain(false),
-      pendingStatus(Connection::StatusUnknown),
+      pendingStatus((uint) -1),
       pendingStatusReason(ConnectionStatusReasonNoneSpecified),
-      status(Connection::StatusUnknown),
+      status((uint) -1),
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
       contactManager(new ContactManager(parent)),
@@ -218,9 +218,9 @@ Connection::Private::Private(Connection *parent,
     ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableCore(
-        QSet<uint>() << Connection::StatusUnknown <<
-                        Connection::StatusDisconnected <<
-                        Connection::StatusConnected,                                   // makesSenseForStatuses
+        QSet<uint>() << (uint) -1 <<
+                        ConnectionStatusDisconnected <<
+                        ConnectionStatusConnected,                                     // makesSenseForStatuses
         Features(),                                                                    // dependsOnFeatures (none)
         QStringList(),                                                                 // dependsOnInterfaces (none)
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
@@ -228,7 +228,7 @@ Connection::Private::Private(Connection *parent,
     introspectables[FeatureCore] = introspectableCore;
 
     ReadinessHelper::Introspectable introspectableSelfContact(
-        QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
+        QSet<uint>() << ConnectionStatusConnected,                                     // makesSenseForStatuses
         Features() << FeatureCore,                                                     // dependsOnFeatures (core)
         QStringList(),                                                                 // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSelfContact,
@@ -236,7 +236,7 @@ Connection::Private::Private(Connection *parent,
     introspectables[FeatureSelfContact] = introspectableSelfContact;
 
     ReadinessHelper::Introspectable introspectableSimplePresence(
-        QSet<uint>() << Connection::StatusConnected,                                                // makesSenseForStatuses
+        QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),   // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
@@ -244,7 +244,7 @@ Connection::Private::Private(Connection *parent,
     introspectables[FeatureSimplePresence] = introspectableSimplePresence;
 
     ReadinessHelper::Introspectable introspectableRoster(
-        QSet<uint>() << Connection::StatusConnected,                                                // makesSenseForStatuses
+        QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS),          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectRoster,
@@ -252,7 +252,7 @@ Connection::Private::Private(Connection *parent,
     introspectables[FeatureRoster] = introspectableRoster;
 
     ReadinessHelper::Introspectable introspectableRosterGroups(
-        QSet<uint>() << Connection::StatusConnected,                                                // makesSenseForStatuses
+        QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureRoster,                                                                // dependsOnFeatures (core)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectRosterGroups,
@@ -260,7 +260,7 @@ Connection::Private::Private(Connection *parent,
     introspectables[FeatureRosterGroups] = introspectableRosterGroups;
 
     ReadinessHelper::Introspectable introspectableBalance(
-        QSet<uint>() << Connection::StatusConnected,                                                // makesSenseForStatuses
+        QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_BALANCE),           // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectBalance,
@@ -578,7 +578,7 @@ void Connection::Private::setCurrentStatus(uint status)
 void Connection::Private::forceCurrentStatus(uint status)
 {
     // only update the status if we did not get it from StatusChanged
-    if (pendingStatus == Connection::StatusUnknown) {
+    if (pendingStatus == (uint) -1) {
         debug() << "Got status:" << status;
         pendingStatus = status;
         // No need to re-run introspection as we just received the status. Let
@@ -639,8 +639,8 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
     if (watcher->isError()) {
         setFinishedWithError(watcher->error());
     } else {
-        if (qobject_cast<Connection*>(parent())->status() == StatusConnected) {
-            onStatusChanged(Tp::Connection::StatusConnected);
+        if (qobject_cast<Connection*>(parent())->status() == ConnectionStatusConnected) {
+            onStatusChanged(ConnectionStatusConnected);
         } else {
             // Wait for statusChanged()! Connect returning just means that the connection has
             // started to connect - spec quoted for truth:
@@ -652,13 +652,13 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
             //
             // Which should actually say progress and/or errors IMO, but anyway...
             connect(parent(),
-                    SIGNAL(statusChanged(Tp::Connection::Status)),
-                    SLOT(onStatusChanged(Tp::Connection::Status)));
+                    SIGNAL(statusChanged(Tp::ConnectionStatus)),
+                    SLOT(onStatusChanged(Tp::ConnectionStatus)));
         }
     }
 }
 
-void Connection::PendingConnect::onStatusChanged(Tp::Connection::Status newStatus)
+void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
 {
     if (!qobject_cast<Connection *>(parent())->isValid()) {
         return;
@@ -667,13 +667,13 @@ void Connection::PendingConnect::onStatusChanged(Tp::Connection::Status newStatu
     Connection *connection = qobject_cast<Connection*>(parent());
     Q_ASSERT(connection != NULL);
 
-    if (newStatus == StatusDisconnected) {
+    if (newStatus == ConnectionStatusDisconnected) {
         debug() << "Connection became disconnected while a PendingConnect was underway";
         setFinishedWithError(connection->invalidationReason(), connection->invalidationMessage());
         return;
     }
 
-    if (newStatus == StatusConnected) {
+    if (newStatus == ConnectionStatusConnected) {
         // OK, the connection is Connected now - finally, we'll get down to business
         connect(connection->becomeReady(requestedFeatures()),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -731,7 +731,7 @@ QMutex Connection::Private::handleContextsLock;
  * Their return value is mostly undefined until the
  * introspection process is completed, i.e. isReady() returns true. See the
  * individual accessor descriptions for more details. A status change to
- * StatusConnected indicates that the introspection process is finished
+ * ConnectionStatusConnected indicates that the introspection process is finished
  *
  * Signals are emitted to indicate that properties have changed for example
  * statusChanged()(), selfContactChanged(), etc.
@@ -980,12 +980,12 @@ QString Connection::protocolName() const
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
- * \return The status of this connection, as defined in Connection::Status.
+ * \return The status of this connection, as defined in ConnectionStatus.
  * \sa statusChanged()
  */
-Connection::Status Connection::status() const
+ConnectionStatus Connection::status() const
 {
-    return (Connection::Status) mPriv->status;
+    return (ConnectionStatus) mPriv->status;
 }
 
 /**
@@ -1150,7 +1150,7 @@ const Connection::ErrorDetails &Connection::errorDetails() const
  * Return the handle which represents the user on this connection, which will
  * remain valid for the lifetime of this connection, or until a change in the
  * user's identifier is signalled by the selfHandleChanged() signal. If the
- * connection is not yet in the StatusConnected state, the value of this
+ * connection is not yet in the ConnectionStatusConnected state, the value of this
  * property may be zero.
  *
  * This method requires Connection::FeatureCore to be enabled.
@@ -1166,8 +1166,8 @@ uint Connection::selfHandle() const
  * Return a dictionary of presence statuses valid for use in this connection.
  *
  * The value may have changed arbitrarily during the time the
- * Connection spends in status StatusConnecting,
- * again staying fixed for the entire time in StatusConnected.
+ * Connection spends in status ConnectionStatusConnecting,
+ * again staying fixed for the entire time in ConnectionStatusConnected.
  *
  * This method requires Connection::FeatureSimplePresence to be enabled.
  *
@@ -1193,7 +1193,7 @@ SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
  *
  * Note that clients SHOULD set the status message for the local user to the
  * empty string, unless the user has actually provided a specific message (i.e.
- * one that conveys more information than the Status).
+ * one that conveys more information than the ConnectionStatus).
  *
  * \param status The desired status.
  * \param statusMessage The desired status message.
@@ -1290,7 +1290,7 @@ void Connection::onStatusReady(uint status)
 
     mPriv->status = status;
     mPriv->statusReason = mPriv->pendingStatusReason;
-    emit statusChanged((Connection::Status) mPriv->status);
+    emit statusChanged((ConnectionStatus) mPriv->status);
 }
 
 void Connection::onStatusChanged(uint status, uint reason)
@@ -1333,7 +1333,7 @@ void Connection::onStatusChanged(uint status, uint reason)
                 //      Also none of the pendingOperations will finish. The
                 //      user should just consider them to fail as the connection
                 //      is invalid
-                onStatusReady(StatusDisconnected);
+                onStatusReady(ConnectionStatusDisconnected);
                 mPriv->invalidateResetCaps(errorName,
                         QString(QLatin1String("ConnectionStatusReason = %1")).arg(uint(reason)));
             }
@@ -1374,7 +1374,7 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
                     props[QLatin1String("Status")]));
     } else {
         // only introspect status if we did not got it from StatusChanged
-        if (mPriv->pendingStatus == StatusUnknown) {
+        if (mPriv->pendingStatus == (uint) -1) {
             mPriv->introspectMainQueue.enqueue(
                     &Private::introspectMainFallbackStatus);
         }
@@ -1747,7 +1747,7 @@ Client::ConnectionInterface *Connection::baseInterface() const
  */
 PendingChannel *Connection::createChannel(const QVariantMap &request)
 {
-    if (mPriv->pendingStatus != StatusConnected) {
+    if (mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
         return new PendingChannel(ConnectionPtr(this),
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
@@ -1802,7 +1802,7 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
  */
 PendingChannel *Connection::ensureChannel(const QVariantMap &request)
 {
-    if (mPriv->pendingStatus != StatusConnected) {
+    if (mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
         return new PendingChannel(ConnectionPtr(this),
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
@@ -1927,12 +1927,12 @@ PendingHandles *Connection::referenceHandles(HandleType handleType, const UIntLi
  * Start an asynchronous request that the connection be connected.
  *
  * The returned PendingOperation will finish successfully when the connection
- * has reached StatusConnected and the requested \a features are all ready, or
+ * has reached ConnectionStatusConnected and the requested \a features are all ready, or
  * finish with an error if a fatal error occurs during that process.
  *
  * \param requestedFeatures The features which should be enabled
  * \return A PendingReady object which will emit finished
- *         when the Connection has reached StatusConnected, and initial setup
+ *         when the Connection has reached ConnectionStatusConnected, and initial setup
  *         for basic functionality, plus the given features, has succeeded or
  *         failed
  */
@@ -1974,7 +1974,7 @@ PendingOperation *Connection::requestDisconnect()
  * TELEPATHY_ERROR_NOT_IMPLEMENTED.
  *
  * Similarly, if the connection isn't both connected and ready
- * (<code>status() == StatusConnected && isReady()</code>), the returned
+ * (<code>status() == ConnectionStatusConnected && isReady()</code>), the returned
  * PendingContactAttributes instance will fail instantly with the
  * error %TELEPATHY_ERROR_NOT_AVAILABLE.
  *
@@ -2001,8 +2001,8 @@ PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("The connection isn't ready"));
         return pending;
-    } else if (mPriv->pendingStatus != StatusConnected) {
-        warning() << "Connection::contactAttributes() used with status" << status() << "!= StatusConnected";
+    } else if (mPriv->pendingStatus != ConnectionStatusConnected) {
+        warning() << "Connection::contactAttributes() used with status" << status() << "!= ConnectionStatusConnected";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("The connection isn't Connected"));
         return pending;
@@ -2032,9 +2032,9 @@ PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
 
 QStringList Connection::contactAttributeInterfaces() const
 {
-    if (mPriv->pendingStatus != StatusConnected) {
+    if (mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Connection::contactAttributeInterfaces() used with status"
-            << status() << "!= StatusConnected";
+            << status() << "!= ConnectionStatusConnected";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
         warning() << "Connection::contactAttributeInterfaces() used without the remote object supporting"
                   << "the Contacts interface";
@@ -2231,22 +2231,23 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
 }
 
 /**
- * \fn void Connection::statusChanged(Tp::Connection::Status newStatus)
+ * \fn void Connection::statusChanged(Tp::ConnectionStatus newStatus)
  *
  * Indicates that the connection's status has changed and that all previously requested features are
  * now ready to use for the new status.
  *
  * Legitimate uses for this signal, apart from waiting for a given connection status to be ready,
- * include updating an animation based on the connection being in Status::Connecting, Status::Connected
- * and Status::Disconnected, and otherwise showing progress indication to the user. It should,
- * however, NEVER be used for error handling:
+ * include updating an animation based on the connection being in ConnectionStatusConnecting,
+ * ConnectionStatusConnected and ConnectionStatusDisconnected, and otherwise showing progress
+ * indication to the user. It should, however, NEVER be used for error handling:
  *
  * This signal doesn't contain the status reason as an argument, because statusChanged() shouldn't
  * be used for error-handling. There are numerous cases in which a Connection may become unusable
- * without there being an status change to Status::Disconnected. All of these cases, and being
- * disconnected itself, are signaled by invalidated() with appropriate error names. On the other
- * hand, the reason for the status going to Status::Connecting or Status::Connected will always be
- * ConnectionStatusReasonRequested, so signaling that would be useless.
+ * without there being an status change to ConnectionStatusDisconnected. All of these cases, and
+ * being disconnected itself, are signaled by invalidated() with appropriate error names. On the
+ * other hand, the reason for the status going to ConnectionStatusConnecting or
+ * ConnectionStatusConnected will always be ConnectionStatusReasonRequested, so signaling that would
+ * be useless.
  *
  * The status reason, as returned by statusReason(), may however be used as a fallback for error
  * handling in slots connected to the invalidated() signal, if the client doesn't understand a

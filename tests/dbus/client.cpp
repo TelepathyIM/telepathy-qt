@@ -470,7 +470,7 @@ void TestClient::initTestCase()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
     QCOMPARE(static_cast<uint>(mConn->status()),
-             static_cast<uint>(Connection::StatusConnected));
+             static_cast<uint>(ConnectionStatusConnected));
 
     // create a Channel by magic, rather than doing D-Bus round-trips for it
 

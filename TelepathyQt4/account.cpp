@@ -264,12 +264,12 @@ bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
 
     if (usingConnectionCaps &&
         (parent->connection().isNull() ||
-         connection->status() != Connection::StatusConnected)) {
+         connection->status() != ConnectionStatusConnected)) {
         usingConnectionCaps = false;
         changed = true;
     } else if (!usingConnectionCaps &&
         !parent->connection().isNull() &&
-        connection->status() == Connection::StatusConnected) {
+        connection->status() == ConnectionStatusConnected) {
         usingConnectionCaps = true;
         changed = true;
     } else if (!usingConnectionCaps && profileChanged) {
@@ -1084,7 +1084,7 @@ ConnectionCapabilities Account::capabilities() const
 
     // if the connection is online and ready use its caps
     if (mPriv->connection &&
-        mPriv->connection->status() == Connection::StatusConnected) {
+        mPriv->connection->status() == ConnectionStatusConnected) {
         return mPriv->connection->capabilities();
     }
 
@@ -2401,7 +2401,7 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
- * \fn void Account::connectionStatusChanged(Tp::Connection::Status status);
+ * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status);
  *
  * This signal is emitted when the connection status of this account changes.
  *
@@ -2763,7 +2763,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
                 checkCapabilitiesChanged(profileChanged);
 
-                emit parent->connectionStatusChanged((Connection::Status) connectionStatus);
+                emit parent->connectionStatusChanged(connectionStatus);
                 parent->notify("connectionError");
                 parent->notify("connectionErrorDetails");
             } else {

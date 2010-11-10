@@ -128,7 +128,7 @@ void TestContactsInfo::initTestCase()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
 
-    QCOMPARE(mConn->status(), Connection::StatusConnected);
+    QCOMPARE(mConn->status(), ConnectionStatusConnected);
 
     QVERIFY(mConn->contactManager()->supportedFeatures().contains(Contact::FeatureInfo));
 }

@@ -105,7 +105,7 @@ void TestConnCapabilities::testCapabilities()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(mConn->status(), Connection::StatusConnected);
+    QCOMPARE(mConn->status(), ConnectionStatusConnected);
 
     // Now we should have the real information on what the connection supports
     QCOMPARE(mConn->capabilities().textChats(), true);
@@ -128,7 +128,7 @@ void TestConnCapabilities::testCapabilities()
     } while (!mConnInvalidated);
 
     QVERIFY(!mConn->isValid());
-    QCOMPARE(mConn->status(), Connection::StatusDisconnected);
+    QCOMPARE(mConn->status(), ConnectionStatusDisconnected);
 
     // Check that no support for anything is again reported
     QCOMPARE(mConn->capabilities().textChats(), false);

@@ -79,7 +79,6 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(ConnectionCapabilities capabilities READ capabilities NOTIFY capabilitiesChanged)
     Q_PROPERTY(bool hasBeenOnline READ hasBeenOnline)
     Q_PROPERTY(bool connectsAutomatically READ connectsAutomatically NOTIFY connectsAutomaticallyPropertyChanged)
-    // FIXME: (API/ABI break) Use Connection::Status
     Q_PROPERTY(ConnectionStatus connectionStatus READ connectionStatus)
     Q_PROPERTY(ConnectionStatusReason connectionStatusReason READ connectionStatusReason)
     Q_PROPERTY(QString connectionError READ connectionError)
@@ -162,7 +161,6 @@ public:
 
     bool hasBeenOnline() const;
 
-    // FIXME: (API/ABI break) Use Connection::Status
     ConnectionStatus connectionStatus() const;
     ConnectionStatusReason connectionStatusReason() const;
     QString connectionError() const;
@@ -324,7 +322,7 @@ Q_SIGNALS:
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
     void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
-    void connectionStatusChanged(Tp::Connection::Status status);
+    void connectionStatusChanged(Tp::ConnectionStatus status);
     void connectionChanged(const Tp::ConnectionPtr &connection);
 
 protected:
