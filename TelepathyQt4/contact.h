@@ -26,11 +26,11 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Feature>
+#include <TelepathyQt4/Object>
 #include <TelepathyQt4/Types>
 
-#include <QObject>
 #include <QSet>
-#include <QSharedPointer>
 #include <QVariantMap>
 
 namespace Tp
@@ -44,22 +44,19 @@ class PendingOperation;
 class Presence;
 class ReferencedHandles;
 
-class TELEPATHY_QT4_EXPORT Contact : public QObject
+class TELEPATHY_QT4_EXPORT Contact : public Object
 {
     Q_OBJECT
-    Q_DISABLE_COPY(Contact);
+    Q_DISABLE_COPY(Contact)
 
 public:
-    enum Feature {
-        FeatureAlias,
-        FeatureAvatarToken,
-        FeatureSimplePresence,
-        FeatureCapabilities,
-        FeatureLocation,
-        FeatureInfo,
-        FeatureAvatarData,
-        _Padding = 0xFFFFFFFF
-    };
+    static const Feature FeatureAlias;
+    static const Feature FeatureAvatarData;
+    static const Feature FeatureAvatarToken;
+    static const Feature FeatureCapabilities;
+    static const Feature FeatureInfo;
+    static const Feature FeatureLocation;
+    static const Feature FeatureSimplePresence;
 
     enum PresenceState {
          PresenceStateNo,
@@ -98,8 +95,8 @@ public:
     // TODO filter: exact, prefix, substring match
     QString id() const;
 
-    QSet<Feature> requestedFeatures() const;
-    QSet<Feature> actualFeatures() const;
+    Features requestedFeatures() const;
+    Features actualFeatures() const;
 
     // TODO filter: exact, prefix, substring match
     QString alias() const;
@@ -184,9 +181,9 @@ Q_SIGNALS:
 
 private:
     Contact(ContactManager *manager, const ReferencedHandles &handle,
-            const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
+            const Features &requestedFeatures, const QVariantMap &attributes);
 
-    void augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
+    void augment(const Features &requestedFeatures, const QVariantMap &attributes);
 
     void receiveAlias(const QString &alias);
     void receiveAvatarToken(const QString &avatarToken);
@@ -211,12 +208,6 @@ private:
 };
 
 typedef QSet<ContactPtr> Contacts;
-
-// FIXME: (API/ABI break) Remove once Contact is a SharedPtr and add a new qHash(SharedPtr<T>)
-inline uint qHash(const ContactPtr &contact)
-{
-    return qHash(contact.data());
-}
 
 } // Tp
 

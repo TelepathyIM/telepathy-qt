@@ -95,10 +95,10 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     QMap<uint, QWeakPointer<Contact> > contacts;
     Contacts cachedAllKnownContacts;
 
-    QMap<Contact::Feature, bool> tracking;
-    void ensureTracking(Contact::Feature feature);
+    QMap<Feature, bool> tracking;
+    void ensureTracking(const Feature &feature);
 
-    QSet<Contact::Feature> supportedFeatures;
+    Features supportedFeatures;
 
     QMap<uint, ContactListChannel> contactListChannels;
     ChannelPtr subscribeChannel;
@@ -128,36 +128,37 @@ ConnectionPtr ContactManager::connection() const
 
 namespace
 {
-QString featureToInterface(Contact::Feature feature)
+
+QString featureToInterface(const Feature &feature)
 {
-    switch (feature) {
-        case Contact::FeatureAlias:
-            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING);
-        case Contact::FeatureAvatarToken:
-            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
-        case Contact::FeatureAvatarData:
-            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
-        case Contact::FeatureSimplePresence:
-            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
-        case Contact::FeatureCapabilities:
-            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES);
-        case Contact::FeatureLocation:
-            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION);
-        case Contact::FeatureInfo:
-            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_INFO);
-        default:
-            warning() << "ContactManager doesn't know which interface corresponds to feature"
-                << feature;
-            return QString();
+    if (feature == Contact::FeatureAlias) {
+        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING);
+    } else if (feature == Contact::FeatureAvatarToken) {
+        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
+    } else if (feature == Contact::FeatureAvatarData) {
+        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
+    } else if (feature == Contact::FeatureSimplePresence) {
+        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
+    } else if (feature == Contact::FeatureCapabilities) {
+        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES);
+    } if (feature == Contact::FeatureLocation) {
+        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION);
+    } if (feature == Contact::FeatureInfo) {
+        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_INFO);
+    } else {
+        warning() << "ContactManager doesn't know which interface corresponds to feature"
+            << feature;
+        return QString();
     }
 }
+
 }
 
-QSet<Contact::Feature> ContactManager::supportedFeatures() const
+Features ContactManager::supportedFeatures() const
 {
     if (mPriv->supportedFeatures.isEmpty() &&
         connection()->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
-        QList<Contact::Feature> allFeatures = QList<Contact::Feature>()
+        Features allFeatures = Features()
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
             << Contact::FeatureAvatarData
@@ -166,7 +167,7 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
             << Contact::FeatureLocation
             << Contact::FeatureInfo;
         QStringList interfaces = connection()->contactAttributeInterfaces();
-        foreach (Contact::Feature feature, allFeatures) {
+        foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
                 mPriv->supportedFeatures.insert(feature);
             }
@@ -820,14 +821,14 @@ PendingOperation *ContactManager::blockContacts(
 }
 
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
-        const QSet<Contact::Feature> &features)
+        const Features &features)
 {
     QMap<uint, ContactPtr> satisfyingContacts;
     QSet<uint> otherContacts;
-    QSet<Contact::Feature> missingFeatures;
+    Features missingFeatures;
 
     // FeatureAvatarData depends on FeatureAvatarToken
-    QSet<Contact::Feature> realFeatures(features);
+    Features realFeatures(features);
     if (realFeatures.contains(Contact::FeatureAvatarData) &&
         !realFeatures.contains(Contact::FeatureAvatarToken)) {
         realFeatures.insert(Contact::FeatureAvatarToken);
@@ -861,9 +862,9 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         }
     }
 
-    QSet<Contact::Feature> supported = supportedFeatures();
+    Features supported = supportedFeatures();
     QSet<QString> interfaces;
-    foreach (Contact::Feature feature, missingFeatures) {
+    foreach (const Feature &feature, missingFeatures) {
         mPriv->ensureTracking(feature);
 
         if (supported.contains(feature)) {
@@ -879,13 +880,13 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
 }
 
 PendingContacts *ContactManager::contactsForHandles(const ReferencedHandles &handles,
-        const QSet<Contact::Feature> &features)
+        const Features &features)
 {
     return contactsForHandles(handles.toList(), features);
 }
 
 PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &identifiers,
-        const QSet<Contact::Feature> &features)
+        const Features &features)
 {
     if (!connection()->isValid()) {
         return new PendingContacts(this, identifiers, features,
@@ -902,7 +903,7 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
 }
 
 PendingContacts *ContactManager::upgradeContacts(const QList<ContactPtr> &contacts,
-        const QSet<Contact::Feature> &features)
+        const Features &features)
 {
     if (!connection()->isValid()) {
         return new PendingContacts(this, contacts, features,
@@ -1276,14 +1277,14 @@ ContactManager::~ContactManager()
 }
 
 ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
-        const QSet<Contact::Feature> &features, const QVariantMap &attributes)
+        const Features &features, const QVariantMap &attributes)
 {
     uint bareHandle = handle[0];
     ContactPtr contact = lookupContactByHandle(bareHandle);
 
     if (!contact) {
         contact = ContactPtr(new Contact(this, handle, features, attributes));
-        mPriv->contacts.insert(bareHandle, contact);
+        mPriv->contacts.insert(bareHandle, contact.data());
     } else {
         contact->augment(features, attributes);
     }
@@ -1393,8 +1394,8 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
     ContactPtr contact;
 
     if (mPriv->contacts.contains(handle)) {
-        contact = mPriv->contacts.value(handle).toStrongRef();
-        if (!contact) {
+        contact = ContactPtr(mPriv->contacts.value(handle).data());
+        if (contact.isNull()) {
             // Dangling weak pointer, remove it
             mPriv->contacts.remove(handle);
         }
@@ -1403,7 +1404,7 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
     return contact;
 }
 
-void ContactManager::Private::ensureTracking(Contact::Feature feature)
+void ContactManager::Private::ensureTracking(const Feature &feature)
 {
     if (tracking[feature]) {
         return;
@@ -1411,80 +1412,71 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 
     ConnectionPtr conn(connection);
 
-    Client::ConnectionInterfaceAliasingInterface *aliasingInterface =
-        conn->interface<Client::ConnectionInterfaceAliasingInterface>();
-    Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
-        conn->interface<Client::ConnectionInterfaceAvatarsInterface>();
-    Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface =
-        conn->interface<Client::ConnectionInterfaceContactCapabilitiesInterface>();
-    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
-        conn->interface<Client::ConnectionInterfaceContactInfoInterface>();
-    Client::ConnectionInterfaceLocationInterface *locationInterface =
-        conn->interface<Client::ConnectionInterfaceLocationInterface>();
-    Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
-        conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
+    if (feature == Contact::FeatureAlias) {
+        Client::ConnectionInterfaceAliasingInterface *aliasingInterface =
+            conn->interface<Client::ConnectionInterfaceAliasingInterface>();
 
-    switch (feature) {
-        case Contact::FeatureAlias:
-            QObject::connect(
-                    aliasingInterface,
-                    SIGNAL(AliasesChanged(Tp::AliasPairList)),
-                    conn->contactManager(),
-                    SLOT(onAliasesChanged(Tp::AliasPairList)));
-            break;
+        QObject::connect(
+                aliasingInterface,
+                SIGNAL(AliasesChanged(Tp::AliasPairList)),
+                conn->contactManager(),
+                SLOT(onAliasesChanged(Tp::AliasPairList)));
+    } else if (feature == Contact::FeatureAvatarData) {
+        Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
+            conn->interface<Client::ConnectionInterfaceAvatarsInterface>();
 
-        case Contact::FeatureAvatarToken:
-            QObject::connect(
-                    avatarsInterface,
-                    SIGNAL(AvatarUpdated(uint,QString)),
-                    conn->contactManager(),
-                    SLOT(onAvatarUpdated(uint,QString)));
-            break;
+        QObject::connect(
+                avatarsInterface,
+                SIGNAL(AvatarRetrieved(uint,QString,QByteArray,QString)),
+                conn->contactManager(),
+                SLOT(onAvatarRetrieved(uint,QString,QByteArray,QString)));
+    } else if (feature == Contact::FeatureAvatarToken) {
+        Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
+            conn->interface<Client::ConnectionInterfaceAvatarsInterface>();
+        QObject::connect(
+                avatarsInterface,
+                SIGNAL(AvatarUpdated(uint,QString)),
+                conn->contactManager(),
+                SLOT(onAvatarUpdated(uint,QString)));
+    } else if (feature == Contact::FeatureCapabilities) {
+        Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface =
+            conn->interface<Client::ConnectionInterfaceContactCapabilitiesInterface>();
 
-        case Contact::FeatureAvatarData:
-            QObject::connect(
-                    avatarsInterface,
-                    SIGNAL(AvatarRetrieved(uint,QString,QByteArray,QString)),
-                    conn->contactManager(),
-                    SLOT(onAvatarRetrieved(uint,QString,QByteArray,QString)));
-            break;
+        QObject::connect(
+                contactCapabilitiesInterface,
+                SIGNAL(ContactCapabilitiesChanged(Tp::ContactCapabilitiesMap)),
+                conn->contactManager(),
+                SLOT(onCapabilitiesChanged(Tp::ContactCapabilitiesMap)));
+    } else if (feature == Contact::FeatureInfo) {
+        Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
+            conn->interface<Client::ConnectionInterfaceContactInfoInterface>();
 
-        case Contact::FeatureSimplePresence:
-            QObject::connect(
-                    simplePresenceInterface,
-                    SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
-                    conn->contactManager(),
-                    SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
-            break;
+        QObject::connect(
+                contactInfoInterface,
+                SIGNAL(ContactInfoChanged(uint,Tp::ContactInfoFieldList)),
+                conn->contactManager(),
+                SLOT(onContactInfoChanged(uint,Tp::ContactInfoFieldList)));
+    } else if (feature == Contact::FeatureLocation) {
+        Client::ConnectionInterfaceLocationInterface *locationInterface =
+            conn->interface<Client::ConnectionInterfaceLocationInterface>();
 
-        case Contact::FeatureCapabilities:
-            QObject::connect(
-                    contactCapabilitiesInterface,
-                    SIGNAL(ContactCapabilitiesChanged(Tp::ContactCapabilitiesMap)),
-                    conn->contactManager(),
-                    SLOT(onCapabilitiesChanged(Tp::ContactCapabilitiesMap)));
-            break;
+        QObject::connect(
+                locationInterface,
+                SIGNAL(LocationUpdated(uint,QVariantMap)),
+                conn->contactManager(),
+                SLOT(onLocationUpdated(uint,QVariantMap)));
+    } else if (feature == Contact::FeatureSimplePresence) {
+        Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
+            conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
 
-        case Contact::FeatureLocation:
-            QObject::connect(
-                    locationInterface,
-                    SIGNAL(LocationUpdated(uint,QVariantMap)),
-                    conn->contactManager(),
-                    SLOT(onLocationUpdated(uint,QVariantMap)));
-            break;
-
-        case Contact::FeatureInfo:
-            QObject::connect(
-                    contactInfoInterface,
-                    SIGNAL(ContactInfoChanged(uint,Tp::ContactInfoFieldList)),
-                    conn->contactManager(),
-                    SLOT(onContactInfoChanged(uint,Tp::ContactInfoFieldList)));
-            break;
-
-        default:
-            warning() << " Unknown feature" << feature
-                << "when trying to figure out how to connect change notification!";
-            return;
+        QObject::connect(
+                simplePresenceInterface,
+                SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
+                conn->contactManager(),
+                SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
+    } else {
+        warning() << " Unknown feature" << feature
+            << "when trying to figure out how to connect change notification!";
     }
 
     tracking[feature] = true;

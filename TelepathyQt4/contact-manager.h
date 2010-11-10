@@ -51,7 +51,7 @@ class TELEPATHY_QT4_EXPORT ContactManager : public QObject
 public:
     ConnectionPtr connection() const;
 
-    QSet<Contact::Feature> supportedFeatures() const;
+    Features supportedFeatures() const;
 
     Contacts allKnownContacts() const;
     QStringList allKnownGroups() const;
@@ -97,15 +97,15 @@ public:
             const QList<ContactPtr> &contacts, bool value = true);
 
     PendingContacts *contactsForHandles(const UIntList &handles,
-            const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+            const Features &features = Features());
     PendingContacts *contactsForHandles(const ReferencedHandles &handles,
-            const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+            const Features &features = Features());
 
     PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
-            const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+            const Features &features = Features());
 
     PendingContacts *upgradeContacts(const QList<ContactPtr> &contacts,
-            const QSet<Contact::Feature> &features);
+            const Features &features);
 
     ContactPtr lookupContactByHandle(uint handle);
 
@@ -211,7 +211,7 @@ private:
     ~ContactManager();
 
     ContactPtr ensureContact(const ReferencedHandles &handle,
-            const QSet<Contact::Feature> &features,
+            const Features &features,
             const QVariantMap &attributes);
 
     void setContactListChannels(

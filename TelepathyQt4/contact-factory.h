@@ -26,12 +26,13 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QSet>
-#include <QtGlobal>
-
 #include <TelepathyQt4/Contact>
+#include <TelepathyQt4/Feature>
 #include <TelepathyQt4/Global>
 #include <TelepathyQt4/Types>
+
+#include <QSet>
+#include <QtGlobal>
 
 namespace Tp
 {
@@ -44,18 +45,17 @@ class TELEPATHY_QT4_EXPORT ContactFactory : public RefCounted
     Q_DISABLE_COPY(ContactFactory);
 
 public:
-    static ContactFactoryPtr create(const QSet<Contact::Feature> &features
-            = QSet<Contact::Feature>());
+    static ContactFactoryPtr create(const Features &features = Features());
 
     virtual ~ContactFactory();
 
     // Nothing useful...
 
 protected:
-    ContactFactory(const QSet<Contact::Feature> &features);
+    ContactFactory(const Features &features);
 
     virtual ContactPtr construct(Tp::ContactManager *manager, const ReferencedHandles &handle,
-            const QSet<Contact::Feature> &features, const QVariantMap &attributes) const;
+            const Features &features, const QVariantMap &attributes) const;
     virtual PendingOperation *prepare(const ContactPtr &contact) const;
 
 private:

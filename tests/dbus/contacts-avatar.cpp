@@ -116,7 +116,7 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
         array, avatarMimeType, avatarToken);
 
     Tp::UIntList handles = Tp::UIntList() << handle;
-    QSet<Contact::Feature> features = QSet<Contact::Feature>()
+    Features features = Features()
         << Contact::FeatureAvatarToken
         << Contact::FeatureAvatarData;
 

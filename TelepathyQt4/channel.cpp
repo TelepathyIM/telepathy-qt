@@ -892,7 +892,7 @@ void Channel::Private::buildContacts()
     // were being built at the time, so check now
     if (toBuild.isEmpty()) {
         if (!groupSelfHandle && groupSelfContact) {
-            groupSelfContact.clear();
+            groupSelfContact.reset();
             if (parent->isReady()) {
                 emit parent->groupSelfContactChanged();
             }
@@ -1033,7 +1033,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
     }
 
     if (!groupSelfHandle && groupSelfContact) {
-        groupSelfContact.clear();
+        groupSelfContact.reset();
         selfContactUpdated = true;
     }
 
@@ -2806,7 +2806,7 @@ void Channel::gotContacts(PendingOperation *op)
             if (mPriv->groupSelfHandle &&
                 pending->invalidHandles().contains(mPriv->groupSelfHandle)) {
                 warning() << "Unable to retrieve self contact";
-                mPriv->groupSelfContact.clear();
+                mPriv->groupSelfContact.reset();
                 emit groupSelfContactChanged();
             }
         }

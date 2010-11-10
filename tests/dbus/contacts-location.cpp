@@ -145,7 +145,7 @@ void TestContactsLocation::testLocation()
         << QLatin1String("bar");
 
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(
-            validIDs, QSet<Contact::Feature>() << Contact::FeatureLocation);
+            validIDs, Features() << Contact::FeatureLocation);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
@@ -154,10 +154,8 @@ void TestContactsLocation::testLocation()
     for (int i = 0; i < mContacts.size(); i++) {
         ContactPtr contact = mContacts[i];
 
-        QCOMPARE(contact->requestedFeatures(),
-                 QSet<Contact::Feature>() << Contact::FeatureLocation);
-        QCOMPARE(contact->actualFeatures(),
-                 QSet<Contact::Feature>() << Contact::FeatureLocation);
+        QCOMPARE(contact->requestedFeatures().contains(Contact::FeatureLocation), true);
+        QCOMPARE(contact->actualFeatures().contains(Contact::FeatureLocation), true);
 
         QVERIFY(connect(contact.data(),
                         SIGNAL(locationUpdated(const Tp::ContactLocation &)),

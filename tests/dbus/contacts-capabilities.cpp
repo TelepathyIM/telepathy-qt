@@ -193,7 +193,7 @@ void TestContactsCapabilities::testCapabilities()
     tp_tests_contacts_connection_change_capabilities(mConnService, capabilities);
 
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(
-            ids, QSet<Contact::Feature>() << Contact::FeatureCapabilities);
+            ids, Features() << Contact::FeatureCapabilities);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
@@ -202,10 +202,8 @@ void TestContactsCapabilities::testCapabilities()
     for (int i = 0; i < mContacts.size(); i++) {
         ContactPtr contact = mContacts[i];
 
-        QCOMPARE(contact->requestedFeatures(),
-                 QSet<Contact::Feature>() << Contact::FeatureCapabilities);
-        QCOMPARE(contact->actualFeatures(),
-                 QSet<Contact::Feature>() << Contact::FeatureCapabilities);
+        QCOMPARE(contact->requestedFeatures().contains(Contact::FeatureCapabilities), true);
+        QCOMPARE(contact->actualFeatures().contains(Contact::FeatureCapabilities), true);
 
         QCOMPARE(contact->capabilities().textChats(), supportTextChat[i]);
         QCOMPARE(contact->capabilities().streamedMediaCalls(), false);
