@@ -28,9 +28,9 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include "TelepathyQt4/connection-internal.h"
-#include "TelepathyQt4/future-internal.h"
 
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingChannelRequest>
@@ -72,13 +72,9 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 
     bool checkCapabilitiesChanged(bool profileChanged);
 
-    // TODO remove once Conference.DRAFT support is removed and simplify code that uses it
-    bool useConferenceDRAFT(const char *channelType,
-            HandleType targetHandleType) const;
     void addConferenceRequestCommonParameters(
             const char *channelType,
             HandleType targetHandleType,
-            const char *conferenceIface,
             const QList<ChannelPtr> &channels,
             QVariantMap &request);
     void addConferenceRequestParameters(
@@ -278,37 +274,9 @@ bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
     return changed;
 }
 
-bool Account::Private::useConferenceDRAFT(const char *channelType,
-        HandleType targetHandleType) const
-{
-    // default to Conference
-    ConnectionCapabilities caps = parent->capabilities();
-    RequestableChannelClassSpecList rccSpecs = caps.allClassSpecs();
-    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == QLatin1String(channelType)) {
-            if (targetHandleType != HandleTypeNone) {
-                if (rccSpec.targetHandleType() != targetHandleType) {
-                    continue;
-                }
-            }
-
-            if (rccSpec.allowsProperty(
-                        TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) {
-                return false;
-            }
-            if (rccSpec.allowsProperty(
-                        TP_QT4_FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"))) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 void Account::Private::addConferenceRequestCommonParameters(
         const char *channelType,
         HandleType targetHandleType,
-        const char *conferenceIface,
         const QList<ChannelPtr> &channels,
         QVariantMap &request)
 {
@@ -324,9 +292,8 @@ void Account::Private::addConferenceRequestCommonParameters(
         objectPaths << QDBusObjectPath(channel->objectPath());
     }
 
-    request.insert(QString(QLatin1String("%1.InitialChannels"))
-                    .arg(QLatin1String(conferenceIface)),
-                qVariantFromValue(objectPaths));
+    request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"),
+            qVariantFromValue(objectPaths));
 }
 
 void Account::Private::addConferenceRequestParameters(
@@ -336,18 +303,11 @@ void Account::Private::addConferenceRequestParameters(
         const QStringList &initialInviteeContactsIdentifiers,
         QVariantMap &request)
 {
-    const char *conferenceIface;
-    if (!useConferenceDRAFT(channelType, targetHandleType)) {
-        conferenceIface = TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
-    } else {
-        conferenceIface = TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
-    }
     addConferenceRequestCommonParameters(channelType, targetHandleType,
-            conferenceIface, channels, request);
+            channels, request);
 
     if (!initialInviteeContactsIdentifiers.isEmpty()) {
-        request.insert(QString(QLatin1String("%1.InitialInviteeIDs"))
-                    .arg(QLatin1String(conferenceIface)),
+        request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeIDs"),
                 initialInviteeContactsIdentifiers);
     }
 }
@@ -359,14 +319,8 @@ void Account::Private::addConferenceRequestParameters(
         const QList<ContactPtr> &initialInviteeContacts,
         QVariantMap &request)
 {
-    const char *conferenceIface;
-    if (!useConferenceDRAFT(channelType, targetHandleType)) {
-        conferenceIface = TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
-    } else {
-        conferenceIface = TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
-    }
     addConferenceRequestCommonParameters(channelType, targetHandleType,
-            conferenceIface, channels, request);
+            channels, request);
 
     if (!initialInviteeContacts.isEmpty()) {
         UIntList handles;
@@ -377,8 +331,8 @@ void Account::Private::addConferenceRequestParameters(
             handles << contact->handle()[0];
         }
         if (!handles.isEmpty()) {
-            request.insert(QString(QLatin1String("%1.InitialInviteeHandles"))
-                        .arg(QLatin1String(conferenceIface)),
+            request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE +
+                        QLatin1String(".InitialInviteeHandles"),
                     qVariantFromValue(handles));
         }
     }
