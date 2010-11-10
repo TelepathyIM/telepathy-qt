@@ -276,4 +276,6 @@ private:
 
 } // Tp
 
+Q_DECLARE_METATYPE(Tp::AbstractClientHandler::Capabilities);
+
 #endif
