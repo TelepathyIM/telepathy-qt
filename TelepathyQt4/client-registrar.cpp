@@ -660,24 +660,12 @@ struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
  * \sa AbstractClientObserver, AbstractClientApprover, AbstractClientHandler
  */
 
-QHash<QPair<QString, QString>, ClientRegistrar*> ClientRegistrar::registrarForConnection;
-
 /**
  * Create a new client registrar object using the given \a bus.
  *
- * ClientRegistrar instances are unique per D-Bus connection. The returned
- * ClientRegistrarPtr will point to the same ClientRegistrar instance on
- * successive calls with the same \a bus, unless the instance
- * had already been destroyed, in which case a new instance will be returned.
- *
- * The resulting instance will use factories from a previous ClientRegistrar with the same \a bus,
- * if any, otherwise factories returning stock TpQt4 subclasses as approriate, with no features
- * prepared. This gives fully backwards compatible behavior for this function if the factory
- * variants are never used.
- *
- * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
- * registration checks have always been implemented incorrectly anyway. We need this for the account
- * friendly channel request and handle API at least.
+ * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
+ * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
+ * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
@@ -690,16 +678,6 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
 
 /**
  * Create a new client registrar object using QDBusConnection::sessionBus() and the given factories.
- *
- * ClientRegistrar instances are unique per D-Bus connection. The returned ClientRegistrarPtr will
- * point to the same ClientRegistrar instance on successive calls, unless the instance for
- * QDBusConnection::sessionBus() had already been destroyed, in which case a new instance will be
- * returned. Therefore, the factory settings have no effect if there already is a ClientRegistrar
- * for QDBusConnection::sessionBus().
- *
- * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
- * registration checks have always been implemented incorrectly anyway. We need this for the account
- * friendly channel request and handle API at least.
  *
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
@@ -720,16 +698,6 @@ ClientRegistrarPtr ClientRegistrar::create(
 /**
  * Create a new client registrar object using the given \a bus and the given factories.
  *
- * ClientRegistrar instances are unique per D-Bus connection. The returned
- * ClientRegistrarPtr will point to the same ClientRegistrar instance on
- * successive calls with the same \a bus, unless the instance
- * had already been destroyed, in which case a new instance will be returned. Therefore, the factory
- * settings have no effect if there already is a ClientRegistrar for the given \a bus.
- *
- * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
- * registration checks have always been implemented incorrectly anyway. We need this for the account
- * friendly channel request and handle API at least.
- *
  * \param bus QDBusConnection to use.
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
@@ -743,12 +711,6 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory)
 {
-    QPair<QString, QString> busId =
-        qMakePair(bus.name(), bus.baseService());
-    if (registrarForConnection.contains(busId)) {
-        return ClientRegistrarPtr(
-                registrarForConnection.value(busId));
-    }
     return ClientRegistrarPtr(new ClientRegistrar(bus, accountFactory, connectionFactory,
                 channelFactory, contactFactory));
 }
@@ -756,19 +718,9 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
 /**
  * Create a new client registrar object using the bus and factories of the given Account \a manager.
  *
- * ClientRegistrar instances are unique per D-Bus connection. The returned ClientRegistrarPtr will
- * point to the same ClientRegistrar instance on successive calls with the same bus, unless the
- * instance had already been destroyed, in which case a new instance will be returned. Therefore,
- * the factory settings have no effect if there already is a ClientRegistrar for the bus of the
- * given \a manager.
- *
- * Using this create() method will enable (like any other way of passing the same factories to an AM
+ * Using this create method will enable (like any other way of passing the same factories to an AM
  * and a registrar) getting the same Account/Connection etc. proxy instances from both
  * AccountManager and AbstractClient implementations.
- *
- * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
- * registration checks have always been implemented incorrectly anyway. We need this for the account
- * friendly channel request and handle API at least.
  *
  * \param manager The AccountManager the bus and factories of which should be used.
  * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
@@ -800,8 +752,6 @@ ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
     : Object(),
       mPriv(new Private(bus, accountFactory, connectionFactory, channelFactory, contactFactory))
 {
-    registrarForConnection.insert(qMakePair(bus.name(),
-                bus.baseService()), this);
 }
 
 /**
@@ -809,8 +759,6 @@ ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
  */
 ClientRegistrar::~ClientRegistrar()
 {
-    registrarForConnection.remove(qMakePair(mPriv->bus.name(),
-                mPriv->bus.baseService()));
     unregisterClients();
     delete mPriv;
 }
