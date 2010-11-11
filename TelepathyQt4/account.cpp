@@ -1192,9 +1192,6 @@ QString Account::connectionError() const
  * <literal>debug-message</literal>, which is a debugging message in the C
  * locale.
  *
- * Connection::ErrorDetails can be used to wrap the returned map for more convenient access. In a
- * future API/ABI incompatible version we'll change this method to return one.
- *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return A map containing extensible error details related to
