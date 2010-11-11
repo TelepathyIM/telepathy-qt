@@ -197,7 +197,7 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
         }
 
         // We need to check again because we might have dropped the expected account just a sec ago
-        if (account.isNull()) {
+        if (account.isNull() && !accountObjectPath.path().isEmpty()) {
             if (!accFact.isNull()) {
                 readyOp = accFact->proxy(
                         QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME), accountObjectPath.path(),
