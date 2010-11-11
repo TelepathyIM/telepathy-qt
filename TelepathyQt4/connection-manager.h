@@ -28,15 +28,16 @@
 
 #include <TelepathyQt4/_gen/cli-connection-manager.h>
 
+#include <TelepathyQt4/ChannelFactory>
+#include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
 #include <TelepathyQt4/ProtocolInfo>
 #include <TelepathyQt4/ProtocolParameter>
 #include <TelepathyQt4/ReadinessHelper>
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
@@ -58,15 +59,29 @@ class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    // TODO (API/ABI break): Should we keep ConnectionManager::requestConnection. If so we
-    //                       probably want to pass factories here and use them in requestConnection.
-    static ConnectionManagerPtr create(const QString &name);
     static ConnectionManagerPtr create(const QDBusConnection &bus,
             const QString &name);
+    static ConnectionManagerPtr create(const QString &name,
+            const ConnectionFactoryConstPtr &connectionFactory =
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
+            const ChannelFactoryConstPtr &channelFactory =
+                ChannelFactory::create(QDBusConnection::sessionBus()),
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
+    static ConnectionManagerPtr create(const QDBusConnection &bus,
+            const QString &name,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
 
     virtual ~ConnectionManager();
 
     QString name() const;
+
+    ConnectionFactoryConstPtr connectionFactory() const;
+    ChannelFactoryConstPtr channelFactory() const;
+    ContactFactoryConstPtr contactFactory() const;
 
     QStringList supportedProtocols() const;
     const ProtocolInfoList &protocols() const;
@@ -81,8 +96,10 @@ public:
             const QDBusConnection &bus = QDBusConnection::sessionBus());
 
 protected:
-    ConnectionManager(const QString &name);
-    ConnectionManager(const QDBusConnection &bus, const QString &name);
+    ConnectionManager(const QDBusConnection &bus, const QString &name,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::ConnectionManagerInterface *baseInterface() const;
 
