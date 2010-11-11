@@ -669,7 +669,7 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
             QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interface.DomainSpecific.IntegerProp"), 3);
     channelReqImmutableProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"),
-            mAccount->objectPath());
+            qVariantFromValue(QDBusObjectPath(mAccount->objectPath())));
     reqPropsMap.insert(QDBusObjectPath(mChannelRequestPath), channelReqImmutableProps);
     observerInfo.insert(QLatin1String("request-properties"), qVariantFromValue(reqPropsMap));
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
