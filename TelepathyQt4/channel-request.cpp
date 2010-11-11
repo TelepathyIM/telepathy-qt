@@ -202,7 +202,7 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
                 readyOp = accFact->proxy(
                         QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME), accountObjectPath.path(),
                         connFact, chanFact, contactFact);
-                account = AccountPtr::dynamicCast(readyOp->proxy());
+                account = AccountPtr::qObjectCast(readyOp->proxy());
             } else {
                 account = Account::create(
                         QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),

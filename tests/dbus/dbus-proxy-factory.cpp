@@ -134,6 +134,7 @@ void TestDBusProxyFactory::testCaching()
 
     QVERIFY(first != NULL);
     QVERIFY(!first->object().isNull());
+    QVERIFY(!first->proxy().isNull());
 
     PendingReady *same = mFactory->proxy(mConnName1, mConnPath1,
             ChannelFactory::create(QDBusConnection::sessionBus()),
@@ -141,8 +142,10 @@ void TestDBusProxyFactory::testCaching()
 
     QVERIFY(same != NULL);
     QVERIFY(!same->object().isNull());
+    QVERIFY(!same->proxy().isNull());
 
     QCOMPARE(same->object().data(), first->object().data());
+    QCOMPARE(same->proxy().data(), first->proxy().data());
 
     PendingReady *different = mFactory->proxy(mConnName2, mConnPath2,
             ChannelFactory::create(QDBusConnection::sessionBus()),
@@ -150,10 +153,12 @@ void TestDBusProxyFactory::testCaching()
 
     QVERIFY(different != NULL);
     QVERIFY(!different->object().isNull());
+    QVERIFY(!different->proxy().isNull());
 
-    QVERIFY(different->object() != first->object());
+    QVERIFY(different->object() == first->object());
+    QVERIFY(different->proxy() != first->proxy());
 
-    ConnectionPtr firstProxy = ConnectionPtr::dynamicCast(first->object());
+    ConnectionPtr firstProxy = ConnectionPtr::qObjectCast(first->proxy());
 
     QVERIFY(!first->isFinished() && !same->isFinished() && !different->isFinished());
     QVERIFY(connect(first, SIGNAL(finished(Tp::PendingOperation*)),
@@ -176,9 +181,10 @@ void TestDBusProxyFactory::testCaching()
 
     QVERIFY(another != NULL);
     QVERIFY(!another->object().isNull());
+    QVERIFY(!another->proxy().isNull());
 
     // Should still be the same even if all the initial requests already finished
-    QCOMPARE(another->object().data(), firstProxy.data());
+    QCOMPARE(another->proxy().data(), firstProxy.data());
 
     QVERIFY(connect(another, SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -193,8 +199,9 @@ void TestDBusProxyFactory::testDropRefs()
 
     QVERIFY(first != NULL);
     QVERIFY(!first->object().isNull());
-    ConnectionPtr firstProxy = ConnectionPtr::dynamicCast(first->object());
+    QVERIFY(!first->proxy().isNull());
 
+    ConnectionPtr firstProxy = ConnectionPtr::qObjectCast(first->proxy());
     QVERIFY(firstProxy->isValid());
 
     QVERIFY(connect(first, SIGNAL(finished(Tp::PendingOperation*)),
@@ -207,9 +214,10 @@ void TestDBusProxyFactory::testDropRefs()
 
     QVERIFY(same != NULL);
     QVERIFY(!same->object().isNull());
+    QVERIFY(!same->proxy().isNull());
 
     // The first one is in scope so we should've got it again
-    QCOMPARE(same->object().data(), firstProxy.data());
+    QCOMPARE(same->proxy().data(), firstProxy.data());
 
     QVERIFY(connect(same, SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -228,9 +236,10 @@ void TestDBusProxyFactory::testDropRefs()
 
     QVERIFY(different != NULL);
     QVERIFY(!different->object().isNull());
+    QVERIFY(!different->proxy().isNull());
 
     // The first one has gone out of scope and deleted so we should've got a different one
-    QVERIFY(different->object().data() != firstPtr);
+    QVERIFY(different->proxy().data() != firstPtr);
 }
 
 void TestDBusProxyFactory::testInvalidate()
@@ -241,8 +250,9 @@ void TestDBusProxyFactory::testInvalidate()
 
     QVERIFY(first != NULL);
     QVERIFY(!first->object().isNull());
-    ConnectionPtr firstProxy = ConnectionPtr::dynamicCast(first->object());
+    QVERIFY(!first->proxy().isNull());
 
+    ConnectionPtr firstProxy = ConnectionPtr::qObjectCast(first->proxy());
     QVERIFY(firstProxy->isValid());
 
     QVERIFY(connect(first, SIGNAL(finished(Tp::PendingOperation*)),
@@ -255,9 +265,10 @@ void TestDBusProxyFactory::testInvalidate()
 
     QVERIFY(same != NULL);
     QVERIFY(!same->object().isNull());
+    QVERIFY(!same->proxy().isNull());
 
     // The first one is in scope and valid so we should've got it again
-    QCOMPARE(same->object().data(), firstProxy.data());
+    QCOMPARE(same->proxy().data(), firstProxy.data());
 
     QVERIFY(connect(same, SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -280,7 +291,7 @@ void TestDBusProxyFactory::testInvalidate()
             ContactFactory::create());
 
     QVERIFY(different != NULL);
-    ConnectionPtr differentProxy = ConnectionPtr::dynamicCast(different->object());
+    ConnectionPtr differentProxy = ConnectionPtr::qObjectCast(different->proxy());
     QVERIFY(!differentProxy.isNull());
 
     // The first one is invalid so we should've got a different one
@@ -307,8 +318,9 @@ void TestDBusProxyFactory::testBogusService()
 
     QVERIFY(bogus != NULL);
     QVERIFY(!bogus->object().isNull());
+    QVERIFY(!bogus->proxy().isNull());
 
-    QVERIFY(!ConnectionPtr::dynamicCast(bogus->object())->isValid());
+    QVERIFY(!ConnectionPtr::qObjectCast(bogus->proxy())->isValid());
 
     PendingReady *another = mFactory->proxy(QLatin1String("org.bogus.Totally"),
             QLatin1String("/org/bogus/Totally"),
@@ -317,13 +329,15 @@ void TestDBusProxyFactory::testBogusService()
 
     QVERIFY(another != NULL);
     QVERIFY(!another->object().isNull());
+    QVERIFY(!another->proxy().isNull());
 
-    QVERIFY(!ConnectionPtr::dynamicCast(another->object())->isValid());
+    QVERIFY(!ConnectionPtr::qObjectCast(another->proxy())->isValid());
 
     // We shouldn't get the same proxy twice ie. a proxy should not be cached if not present on bus
     // and invalidated because of that, otherwise we'll return an invalid instance from the cache
     // even if after the service appears on the bus
-    QVERIFY(another->object() != bogus->object());
+    QCOMPARE(another->object(), bogus->object());
+    QVERIFY(another->proxy() != bogus->proxy());
 }
 
 void TestDBusProxyFactory::cleanup()

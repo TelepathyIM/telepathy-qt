@@ -291,7 +291,7 @@ void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watche
 
         PendingReady *channelReady =
             connection()->channelFactory()->proxy(connection(), objectPath, map);
-        mPriv->channel = ChannelPtr::dynamicCast(channelReady->object());
+        mPriv->channel = ChannelPtr::qObjectCast(channelReady->proxy());
 
         mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
@@ -323,7 +323,7 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watche
 
         PendingReady *channelReady =
             connection()->channelFactory()->proxy(connection(), objectPath, map);
-        mPriv->channel = ChannelPtr::dynamicCast(channelReady->object());
+        mPriv->channel = ChannelPtr::qObjectCast(channelReady->proxy());
 
         mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();

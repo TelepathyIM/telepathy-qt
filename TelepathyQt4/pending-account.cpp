@@ -149,11 +149,11 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
         mPriv->objectPath = reply.value();
         debug() << "Got reply to AccountManager.CreateAccount - object path:" <<
             mPriv->objectPath.path();
-        PendingReady *proxyOp = manager()->accountFactory()->proxy(manager()->busName(),
+        PendingReady *readyOp = manager()->accountFactory()->proxy(manager()->busName(),
                 mPriv->objectPath.path(), manager()->connectionFactory(),
                 manager()->channelFactory(), manager()->contactFactory());
-        mPriv->account = AccountPtr(qobject_cast<Account*>((Account*) proxyOp->object().data()));
-        connect(proxyOp,
+        mPriv->account = AccountPtr::qObjectCast(readyOp->proxy());
+        connect(readyOp,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onAccountBuilt(Tp::PendingOperation*)));
     } else {

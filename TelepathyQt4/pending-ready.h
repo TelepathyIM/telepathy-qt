@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,8 @@ class TELEPATHY_QT4_EXPORT PendingReady: public PendingOperation
 public:
     ~PendingReady();
 
+    DBusProxyPtr proxy() const;
+
     Features requestedFeatures() const;
 
 private Q_SLOTS:
@@ -54,8 +56,9 @@ private:
     friend class DBusProxyFactory;
     friend class ReadinessHelper;
 
-    PendingReady(const SharedPtr<RefCounted> &object, const Features &requestedFeatures,
-            const SharedPtr<const DBusProxyFactory> &factory = SharedPtr<const DBusProxyFactory>());
+    PendingReady(const SharedPtr<RefCounted> &object, const Features &requestedFeatures);
+    PendingReady(const SharedPtr<DBusProxyFactory> &factory,
+            const DBusProxyPtr &proxy, const Features &requestedFeatures);
 
     struct Private;
     friend struct Private;

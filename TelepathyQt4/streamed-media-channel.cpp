@@ -1234,8 +1234,7 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
 void StreamedMediaChannel::onStreamReady(PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady*>(op);
-    StreamedMediaStreamPtr stream = StreamedMediaStreamPtr(
-            qobject_cast<StreamedMediaStream*>((StreamedMediaChannel*) pr->object().data()));
+    StreamedMediaStreamPtr stream = StreamedMediaStreamPtr::qObjectCast(pr->proxy());
 
     if (op->isError()) {
         mPriv->incompleteStreams.removeOne(stream);

@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,15 +32,15 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
 {
-    Private(const Features &requestedFeatures,
-            const SharedPtr<const DBusProxyFactory> &factory)
-        : requestedFeatures(requestedFeatures),
-          factory(factory)
+   Private(const DBusProxyPtr &proxy,
+           const Features &requestedFeatures)
+        : proxy(proxy),
+          requestedFeatures(requestedFeatures)
     {
     }
 
+    DBusProxyPtr proxy;
     Features requestedFeatures;
-    SharedPtr<const DBusProxyFactory> factory;
 };
 
 /**
@@ -61,28 +61,40 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
  *
  * \param object The object that will become ready.
  * \param requestedFeatures Features to be made ready on the object.
- * \param factory The factory the request was made with.
  */
 PendingReady::PendingReady(const SharedPtr<RefCounted> &object,
-        const Features &requestedFeatures,
-        const SharedPtr<const DBusProxyFactory> &factory)
+        const Features &requestedFeatures)
     : PendingOperation(object),
-      mPriv(new Private(requestedFeatures, factory))
+      mPriv(new Private(DBusProxyPtr(dynamic_cast<DBusProxy*>((DBusProxy*) object.data())),
+                  requestedFeatures))
 {
-    DBusProxy *proxy = dynamic_cast<DBusProxy*>(object.data());
-    if (proxy && factory) {
-        if (requestedFeatures.isEmpty()) {
-            setFinished();
-            return;
-        }
+    // This is a PendingReady created by ReadinessHelper, and will be set ready by it - so should
+    // not do anything ourselves here.
+}
 
-        connect(proxy->becomeReady(requestedFeatures),
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onNestedFinished(Tp::PendingOperation*)));
-    } else {
-        // This is a PendingReady created by ReadinessHelper, and will be set ready by it - so should
-        // not do anything ourselves here.
+/**
+ * Construct a PendingReady object.
+ *
+ * \todo Actually make it do the prepare ops. Currently they aren't taken into account in any way.
+ *
+ * \param factory The factory the request was made with.
+ * \param proxy The proxy that will become ready.
+ * \param requestedFeatures Features to be made ready on the object.
+ */
+PendingReady::PendingReady(const SharedPtr<DBusProxyFactory> &factory,
+        const DBusProxyPtr &proxy,
+        const Features &requestedFeatures)
+    : PendingOperation(factory),
+      mPriv(new Private(proxy, requestedFeatures))
+{
+    if (requestedFeatures.isEmpty()) {
+        setFinished();
+        return;
     }
+
+    connect(proxy->becomeReady(requestedFeatures),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onNestedFinished(Tp::PendingOperation*)));
 }
 
 /**
@@ -91,6 +103,17 @@ PendingReady::PendingReady(const SharedPtr<RefCounted> &object,
 PendingReady::~PendingReady()
 {
     delete mPriv;
+}
+
+/**
+ * Return the DBusProxy that should become ready.
+ *
+ * \return The DBusProxy that should become ready if the PendingReady was
+ *         created by a proxy object or a DBusProxyFactory, otherwise a \c NULL DBusProxyPtr.
+ */
+DBusProxyPtr PendingReady::proxy() const
+{
+    return mPriv->proxy;
 }
 
 /**

@@ -3003,8 +3003,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
 
             PendingReady *readyOp = chanFactory->proxy(conn,
                     channelPath.path(), QVariantMap());
-
-            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->object()));
+            ChannelPtr channel(ChannelPtr::qObjectCast(readyOp->proxy()));
             Q_ASSERT(!channel.isNull());
 
             mPriv->conferenceChannels.insert(channelPath.path(), channel);
@@ -3019,8 +3018,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
 
             PendingReady *readyOp = chanFactory->proxy(conn,
                     channelPath.path(), QVariantMap());
-
-            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->object()));
+            ChannelPtr channel(ChannelPtr::qObjectCast(readyOp->proxy()));
             Q_ASSERT(!channel.isNull());
 
             mPriv->conferenceInitialChannels.insert(channelPath.path(), channel);
@@ -3038,8 +3036,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
                 i != originalChannels.constEnd(); ++i) {
             PendingReady *readyOp = chanFactory->proxy(conn,
                     i.value().path(), QVariantMap());
-
-            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->object()));
+            ChannelPtr channel(ChannelPtr::qObjectCast(readyOp->proxy()));
             Q_ASSERT(!channel.isNull());
 
             mPriv->conferenceOriginalChannels.insert(i.key(), channel);
@@ -3080,8 +3077,7 @@ void Channel::onConferenceChannelMerged(const QDBusObjectPath &channelPath,
     ChannelFactoryConstPtr chanFactory = conn->channelFactory();
     PendingReady *readyOp = chanFactory->proxy(conn,
             channelPath.path(), properties);
-
-    ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->object()));
+    ChannelPtr channel(ChannelPtr::qObjectCast(readyOp->proxy()));
     Q_ASSERT(!channel.isNull());
 
     mPriv->conferenceChannels.insert(channelPath.path(), channel);

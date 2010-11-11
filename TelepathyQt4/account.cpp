@@ -750,7 +750,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  * Return the profile used for this account.
  *
  * Note that if a profile for serviceName() is not available, a fake profile
- * (Profile::isFake() will return \c true) will be returned in case protocolInfo() returns non-NULL.
+ * (Profile::isFake() will return \c true) will be returned in case protocolInfo() is valid.
  *
  * The fake profile will contain the following info:
  *  - Profile::type() will return "IM"
@@ -2902,8 +2902,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
         ConnectionPtr prevConn = mPriv->connection;
         QString prevConnPath = mPriv->connectionObjectPath();
 
-        mPriv->connection = ConnectionPtr(qobject_cast<Connection*>(
-                    (Connection*) readyOp->object().data()));
+        mPriv->connection = ConnectionPtr::qObjectCast(readyOp->proxy());
         Q_ASSERT(mPriv->connection);
 
         debug() << "Connection" << mPriv->connectionObjectPath() << "built for" << objectPath();

@@ -754,9 +754,8 @@ void ConnectionManager::gotParametersLegacy(QDBusPendingCallWatcher *watcher)
 void ConnectionManager::onProtocolReady(Tp::PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady*>(op);
-    SharedPtr<Private::ProtocolWrapper> wrapper = SharedPtr<Private::ProtocolWrapper>(
-            qobject_cast<Private::ProtocolWrapper*>(
-                (Private::ProtocolWrapper*) pr->object().data()));
+    SharedPtr<Private::ProtocolWrapper> wrapper =
+        SharedPtr<Private::ProtocolWrapper>::qObjectCast(pr->proxy());
     ProtocolInfo info = wrapper->info();
 
     mPriv->wrappers.remove(wrapper);

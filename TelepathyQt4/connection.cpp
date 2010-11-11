@@ -633,8 +633,7 @@ Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
 
 void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher)
 {
-    ConnectionPtr connection = ConnectionPtr(
-            qobject_cast<Connection*>((Connection*) object().data()));
+    ConnectionPtr connection = ConnectionPtr::qObjectCast(proxy());
 
     if (watcher->isError()) {
         debug() << "Connect failed with" <<
@@ -661,8 +660,7 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
 
 void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
 {
-    ConnectionPtr connection = ConnectionPtr(
-            qobject_cast<Connection*>((Connection*) object().data()));
+    ConnectionPtr connection = ConnectionPtr::qObjectCast(proxy());
 
     if (newStatus == ConnectionStatusDisconnected) {
         debug() << "Connection became disconnected while a PendingConnect was underway";
@@ -1661,7 +1659,7 @@ void Connection::onContactListGroupChannelReady(Tp::PendingOperation *op)
         mPriv->checkFeatureRosterGroupsReady();
     } else {
         PendingReady *pr = qobject_cast<PendingReady*>(op);
-        ChannelPtr channel = ChannelPtr(qobject_cast<Channel*>((Channel*) pr->object().data()));
+        ChannelPtr channel = ChannelPtr::qObjectCast(pr->proxy());
         mPriv->contactManager->addContactListGroupChannel(channel);
         mPriv->contactListGroupChannels.removeOne(channel);
     }
