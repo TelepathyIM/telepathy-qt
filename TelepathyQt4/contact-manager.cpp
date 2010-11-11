@@ -1141,17 +1141,17 @@ void ContactManager::onSubscribeChannelMembersChanged(
 
     foreach (ContactPtr contact, groupMembersAdded) {
         debug() << "Contact" << contact->id() << "on subscribe list";
-        contact->setSubscriptionState(Contact::PresenceStateYes);
+        contact->setSubscriptionState(Contact::PresenceStateYes, details);
     }
 
     foreach (ContactPtr contact, groupRemotePendingMembersAdded) {
         debug() << "Contact" << contact->id() << "added to subscribe list";
-        contact->setSubscriptionState(Contact::PresenceStateAsk);
+        contact->setSubscriptionState(Contact::PresenceStateAsk, details);
     }
 
     foreach (ContactPtr contact, groupMembersRemoved) {
         debug() << "Contact" << contact->id() << "removed from subscribe list";
-        contact->setSubscriptionState(Contact::PresenceStateNo);
+        contact->setSubscriptionState(Contact::PresenceStateNo, details);
     }
 
     // Perform the needed computation for allKnownContactsChanged
@@ -1174,17 +1174,17 @@ void ContactManager::onPublishChannelMembersChanged(
 
     foreach (ContactPtr contact, groupMembersAdded) {
         debug() << "Contact" << contact->id() << "on publish list";
-        contact->setPublishState(Contact::PresenceStateYes);
+        contact->setPublishState(Contact::PresenceStateYes, details);
     }
 
     foreach (ContactPtr contact, groupLocalPendingMembersAdded) {
         debug() << "Contact" << contact->id() << "added to publish list";
-        contact->setPublishState(Contact::PresenceStateAsk);
+        contact->setPublishState(Contact::PresenceStateAsk, details);
     }
 
     foreach (ContactPtr contact, groupMembersRemoved) {
         debug() << "Contact" << contact->id() << "removed from publish list";
-        contact->setPublishState(Contact::PresenceStateNo);
+        contact->setPublishState(Contact::PresenceStateNo, details);
     }
 
     if (!groupLocalPendingMembersAdded.isEmpty()) {
@@ -1206,8 +1206,6 @@ void ContactManager::onDenyChannelMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(details);
-
     if (!groupLocalPendingMembersAdded.isEmpty()) {
         warning() << "Found local pending contacts on deny list";
     }
@@ -1218,12 +1216,12 @@ void ContactManager::onDenyChannelMembersChanged(
 
     foreach (ContactPtr contact, groupMembersAdded) {
         debug() << "Contact" << contact->id() << "added to deny list";
-        contact->setBlocked(true);
+        contact->setBlocked(true, details);
     }
 
     foreach (ContactPtr contact, groupMembersRemoved) {
         debug() << "Contact" << contact->id() << "removed from deny list";
-        contact->setBlocked(false);
+        contact->setBlocked(false, details);
     }
 }
 

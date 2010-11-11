@@ -98,6 +98,7 @@ typedef SharedPtr<ConnectionFactory> ConnectionFactoryPtr;
 typedef SharedPtr<const ConnectionFactory> ConnectionFactoryConstPtr;
 typedef SharedPtr<ConnectionManager> ConnectionManagerPtr;
 typedef SharedPtr<Contact> ContactPtr;
+typedef QSet<ContactPtr> Contacts;
 typedef SharedPtr<ContactFactory> ContactFactoryPtr;
 typedef SharedPtr<const ContactFactory> ContactFactoryConstPtr;
 typedef SharedPtr<ContactSearchChannel> ContactSearchChannelPtr;
