@@ -37,13 +37,13 @@ RosterItem::RosterItem(const ContactPtr &contact,
             SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
+            SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
+            SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(blockStatusChanged(bool)),
+            SIGNAL(blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails)),
             SLOT(onContactChanged()));
 }
 
