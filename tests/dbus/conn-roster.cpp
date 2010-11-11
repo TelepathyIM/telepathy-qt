@@ -212,10 +212,10 @@ void TestConnRoster::testRoster()
 
     Q_FOREACH (const ContactPtr &contact, mContacts) {
         QVERIFY(connect(contact.data(),
-                        SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
+                        SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
         QVERIFY(connect(contact.data(),
-                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
+                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
         if ((i % 2) == 0) {
             contact->requestPresenceSubscription(QLatin1String("please add me"));
@@ -283,7 +283,7 @@ void TestConnRoster::testRoster()
     Contact::PresenceState expectedPresenceState;
     Q_FOREACH (const ContactPtr &contact, pendingPublish) {
         QVERIFY(connect(contact.data(),
-                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
+                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
 
         if ((i % 2) == 0) {

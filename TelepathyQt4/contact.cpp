@@ -703,31 +703,33 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
     }
 }
 
-void Contact::setSubscriptionState(Contact::PresenceState state)
+void Contact::setSubscriptionState(Contact::PresenceState state,
+        const Channel::GroupMemberChangeDetails &details)
 {
     if (mPriv->subscriptionState == state) {
         return;
     }
     mPriv->subscriptionState = state;
-    emit subscriptionStateChanged(state);
+    emit subscriptionStateChanged(state, details);
 }
 
-void Contact::setPublishState(Contact::PresenceState state)
+void Contact::setPublishState(Contact::PresenceState state,
+        const Channel::GroupMemberChangeDetails &details)
 {
     if (mPriv->publishState == state) {
         return;
     }
     mPriv->publishState = state;
-    emit publishStateChanged(state);
+    emit publishStateChanged(state, details);
 }
 
-void Contact::setBlocked(bool value)
+void Contact::setBlocked(bool value, const Channel::GroupMemberChangeDetails &details)
 {
     if (mPriv->blocked == value) {
         return;
     }
     mPriv->blocked = value;
-    emit blockStatusChanged(value);
+    emit blockStatusChanged(value, details);
 }
 
 void Contact::setAddedToGroup(const QString &group)

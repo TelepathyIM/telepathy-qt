@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Feature>
 #include <TelepathyQt4/Object>
 #include <TelepathyQt4/Types>
@@ -167,9 +168,11 @@ Q_SIGNALS:
 
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
-    void subscriptionStateChanged(Tp::Contact::PresenceState state);
-    void publishStateChanged(Tp::Contact::PresenceState state);
-    void blockStatusChanged(bool blocked);
+    void subscriptionStateChanged(Tp::Contact::PresenceState state,
+            const Tp::Channel::GroupMemberChangeDetails &details);
+    void publishStateChanged(Tp::Contact::PresenceState state,
+            const Tp::Channel::GroupMemberChangeDetails &details);
+    void blockStatusChanged(bool blocked, const Tp::Channel::GroupMemberChangeDetails &details);
 
     void addedToGroup(const QString &group);
     void removedFromGroup(const QString &group);
@@ -195,9 +198,12 @@ private:
     void receiveLocation(const QVariantMap &location);
     void receiveInfo(const ContactInfoFieldList &info);
 
-    void setSubscriptionState(PresenceState state);
-    void setPublishState(PresenceState state);
-    void setBlocked(bool value);
+    void setSubscriptionState(PresenceState state, const Channel::GroupMemberChangeDetails &details =
+            Channel::GroupMemberChangeDetails());
+    void setPublishState(PresenceState state, const Channel::GroupMemberChangeDetails &details =
+            Channel::GroupMemberChangeDetails());
+    void setBlocked(bool value, const Channel::GroupMemberChangeDetails &details =
+            Channel::GroupMemberChangeDetails());
 
     void setAddedToGroup(const QString &group);
     void setRemovedFromGroup(const QString &group);
@@ -207,8 +213,6 @@ private:
     friend struct Private;
     Private *mPriv;
 };
-
-typedef QSet<ContactPtr> Contacts;
 
 } // Tp
 

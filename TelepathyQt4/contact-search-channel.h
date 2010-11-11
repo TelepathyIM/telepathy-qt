@@ -27,6 +27,8 @@
 #endif
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/Types>
 
 namespace Tp
 {
