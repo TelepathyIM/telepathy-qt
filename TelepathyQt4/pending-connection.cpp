@@ -109,49 +109,6 @@ ConnectionPtr PendingConnection::connection() const
     return mPriv->connection;
 }
 
-/**
- * Returns the connection's bus name ("service name"), or an empty string on
- * error.
- *
- * This method is useful for creating custom Connection objects: instead
- * of using PendingConnection::connection, one could construct a new custom
- * connection from the bus name and object path.
- *
- * \return Connection bus name
- * \sa objectPath()
- */
-QString PendingConnection::busName() const
-{
-    if (!isFinished()) {
-        warning() << "PendingConnection::busName called before finished";
-    } else if (!isValid()) {
-        warning() << "PendingConnection::busName called when not valid";
-    }
-
-    return mPriv->connection->busName();
-}
-
-/**
- * Returns the connection's object path or an empty string on error.
- *
- * This method is useful for creating custom Connection objects: instead
- * of using PendingConnection::connection, one could construct a new custom
- * connection with the bus name and object path.
- *
- * \return Connection object path
- * \sa busName()
- */
-QString PendingConnection::objectPath() const
-{
-    if (!isFinished()) {
-        warning() << "PendingConnection::connection called before finished";
-    } else if (!isValid()) {
-        warning() << "PendingConnection::connection called when not valid";
-    }
-
-    return mPriv->connection->objectPath();
-}
-
 void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QString, QDBusObjectPath> reply = *watcher;
