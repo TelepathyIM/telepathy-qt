@@ -325,7 +325,7 @@ const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager
 /**
  * Create a new AccountManager object using the given \a bus.
  *
- * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
+ * The instance will use an account factory creating Tp::Account objects with no features
  * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
  * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
  *

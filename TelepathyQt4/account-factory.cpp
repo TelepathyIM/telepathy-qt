@@ -42,8 +42,8 @@ namespace Tp
  * Creates a new AccountFactory.
  *
  * Optionally, the \a features to make ready on all constructed proxies can be specified. The
- * default is to make Account::FeatureCore ready. It should be noted that unlike
- * Account::becomeReady(), FeatureCore isn't assumed. If no features are specified, no
+ * default is to make no features ready. It should be noted that unlike Account::becomeReady(),
+ * FeatureCore isn't assumed. If no features are specified, which is the default behavior, no
  * Account::becomeReady() call is made at all and the proxy won't be Account::isReady().
  *
  * \param bus The QDBusConnection for proxies constructed using this factory to use.

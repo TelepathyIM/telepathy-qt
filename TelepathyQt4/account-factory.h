@@ -45,7 +45,7 @@ class TELEPATHY_QT4_EXPORT AccountFactory : public FixedFeatureFactory
 {
 public:
     static AccountFactoryPtr create(const QDBusConnection &bus,
-            const Features &features = Features(Account::FeatureCore));
+            const Features &features = Features());
 
     virtual ~AccountFactory();
 
