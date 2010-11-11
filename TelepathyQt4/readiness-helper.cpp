@@ -159,11 +159,9 @@ ReadinessHelper::Private::Private(
 
 ReadinessHelper::Private::~Private()
 {
-    // API/ABI break TODO: make string constants const QStrings to begin with?
-    const static QString errorCancelled(QLatin1String(TELEPATHY_ERROR_CANCELLED));
     const static QString messageDestroyed(QLatin1String("Destroyed"));
 
-    abortOperations(errorCancelled, messageDestroyed);
+    abortOperations(TP_QT4_ERROR_CANCELLED, messageDestroyed);
 }
 
 void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
