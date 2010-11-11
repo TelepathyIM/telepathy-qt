@@ -2,7 +2,7 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ContactLocation>
+#include <TelepathyQt4/LocationInfo>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
@@ -26,7 +26,7 @@ public:
 protected Q_SLOTS:
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *op);
-    void onContactLocationUpdated(const Tp::ContactLocation &location);
+    void onLocationInfoUpdated(const Tp::LocationInfo &location);
 
 private Q_SLOTS:
     void initTestCase();
@@ -78,7 +78,7 @@ void TestContactsLocation::expectPendingContactsFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestContactsLocation::onContactLocationUpdated(const Tp::ContactLocation &location)
+void TestContactsLocation::onLocationInfoUpdated(const Tp::LocationInfo &location)
 {
     Q_UNUSED(location);
     mContactsLocationUpdated++;
@@ -158,8 +158,8 @@ void TestContactsLocation::testLocation()
         QCOMPARE(contact->actualFeatures().contains(Contact::FeatureLocation), true);
 
         QVERIFY(connect(contact.data(),
-                        SIGNAL(locationUpdated(const Tp::ContactLocation &)),
-                        SLOT(onContactLocationUpdated(const Tp::ContactLocation &))));
+                        SIGNAL(locationUpdated(const Tp::LocationInfo &)),
+                        SLOT(onLocationInfoUpdated(const Tp::LocationInfo &))));
     }
 
     GHashTable *location_1 = tp_asv_new(

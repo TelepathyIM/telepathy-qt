@@ -37,7 +37,6 @@ set(telepathy_qt4_SRCS
     contact.cpp
     contact-capabilities.cpp
     contact-factory.cpp
-    contact-location.cpp
     contact-manager.cpp
     contact-search-channel.cpp
     dbus.cpp
@@ -54,6 +53,7 @@ set(telepathy_qt4_SRCS
     future-internal.h
     incoming-file-transfer-channel.cpp
     key-file.cpp
+    location-info.cpp
     manager-file.cpp
     media-session-handler.cpp
     media-stream-handler.cpp
@@ -201,8 +201,6 @@ set(telepathy_qt4_HEADERS
     contact-capabilities.h
     ContactFactory
     contact-factory.h
-    ContactLocation
-    contact-location.h
     ContactManager
     contact-manager.h
     ContactSearchChannel
@@ -237,6 +235,8 @@ set(telepathy_qt4_HEADERS
     IntrospectableInterface
     KeyFile
     key-file.h
+    LocationInfo
+    location-info.h
     ManagerFile
     manager-file.h
     MediaSessionHandler
