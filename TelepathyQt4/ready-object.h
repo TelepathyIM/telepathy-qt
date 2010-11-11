@@ -36,13 +36,14 @@ namespace Tp
 class DBusProxy;
 class PendingReady;
 class ReadinessHelper;
+class RefCounted;
 
 class TELEPATHY_QT4_EXPORT ReadyObject
 {
     Q_DISABLE_COPY(ReadyObject)
 
 public:
-    ReadyObject(QObject *object, const Feature &featureCore);
+    ReadyObject(RefCounted *object, const Feature &featureCore);
     virtual ~ReadyObject();
 
     virtual bool isReady(const Features &features = Features()) const;

@@ -94,7 +94,7 @@ PendingVariant *AbstractInterface::internalRequestProperty(const QString &name) 
             TP_QT4_IFACE_PROPERTIES, QLatin1String("Get"));
     msg << interface() << name;
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
-    return new PendingVariant(pendingCall);
+    return new PendingVariant(pendingCall, SharedPtr<RefCounted>());
 }
 
 PendingOperation *AbstractInterface::internalSetProperty(const QString &name,
@@ -104,7 +104,7 @@ PendingOperation *AbstractInterface::internalSetProperty(const QString &name,
             TP_QT4_IFACE_PROPERTIES, QLatin1String("Set"));
     msg << interface() << name << newValue;
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
-    return new PendingVoid(pendingCall, this);
+    return new PendingVoid(pendingCall, SharedPtr<RefCounted>());
 }
 
 PendingVariantMap *AbstractInterface::internalRequestAllProperties() const
@@ -113,7 +113,7 @@ PendingVariantMap *AbstractInterface::internalRequestAllProperties() const
             TP_QT4_IFACE_PROPERTIES, QLatin1String("GetAll"));
     msg << interface();
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
-    return new PendingVariantMap(pendingCall);
+    return new PendingVariantMap(pendingCall, SharedPtr<RefCounted>());
 }
 
 } // Tp

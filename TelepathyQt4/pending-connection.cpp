@@ -39,12 +39,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
 {
-    Private(const ConnectionManagerPtr &manager) :
-        manager(manager)
-    {
-    }
-
-    ConnectionManagerPtr manager;
     ConnectionPtr connection;
     QString busName;
     QDBusObjectPath objectPath;
@@ -69,8 +63,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
  */
 PendingConnection::PendingConnection(const ConnectionManagerPtr &manager,
         const QString &protocol, const QVariantMap &parameters)
-    : PendingOperation(0),
-      mPriv(new Private(manager))
+    : PendingOperation(manager),
+      mPriv(new Private)
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             manager->baseInterface()->RequestConnection(protocol,
@@ -95,7 +89,7 @@ PendingConnection::~PendingConnection()
  */
 ConnectionManagerPtr PendingConnection::manager() const
 {
-    return mPriv->manager;
+    return ConnectionManagerPtr(qobject_cast<ConnectionManager*>((ConnectionManager*) object().data()));
 }
 
 /**
@@ -114,13 +108,12 @@ ConnectionPtr PendingConnection::connection() const
     }
 
     if (!mPriv->connection) {
-        ConnectionManagerPtr manager(mPriv->manager);
         // TODO (API/ABI break): If we are going to keep ConnectionManager::requestConnection we
         //                       probably want to pass factories to ConnectionManager and use them
         //                       here.
-        mPriv->connection = Connection::create(manager->dbusConnection(),
+        mPriv->connection = Connection::create(manager()->dbusConnection(),
                 mPriv->busName, mPriv->objectPath.path(),
-                  ChannelFactory::create(manager->dbusConnection()),
+                  ChannelFactory::create(manager()->dbusConnection()),
                   ContactFactory::create());
     }
 

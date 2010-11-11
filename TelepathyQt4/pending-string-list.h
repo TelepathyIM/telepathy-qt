@@ -39,8 +39,8 @@ class TELEPATHY_QT4_EXPORT PendingStringList : public PendingOperation
     Q_DISABLE_COPY(PendingStringList);
 
 public:
-    PendingStringList(QObject *parent = 0);
-    PendingStringList(QDBusPendingCall call, QObject *parent = 0);
+    PendingStringList(const SharedPtr<RefCounted> &object);
+    PendingStringList(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
     ~PendingStringList();
 
     QStringList result() const;
@@ -49,7 +49,7 @@ protected:
     void setResult(const QStringList &result);
 
 private Q_SLOTS:
-    void watcherFinished(QDBusPendingCallWatcher*);
+    void watcherFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     struct Private;

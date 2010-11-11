@@ -27,6 +27,8 @@
 #endif
 
 #include <TelepathyQt4/Global>
+#include <TelepathyQt4/RefCounted>
+#include <TelepathyQt4/SharedPtr>
 
 #include <QObject>
 
@@ -47,6 +49,8 @@ class TELEPATHY_QT4_EXPORT PendingOperation : public QObject
 public:
     virtual ~PendingOperation();
 
+    SharedPtr<RefCounted> object() const;
+
     bool isFinished() const;
 
     bool isValid() const;
@@ -59,7 +63,7 @@ Q_SIGNALS:
     void finished(Tp::PendingOperation *operation);
 
 protected:
-    PendingOperation(QObject *parent);
+    PendingOperation(const SharedPtr<RefCounted> &object);
 
 protected Q_SLOTS:
     void setFinished();

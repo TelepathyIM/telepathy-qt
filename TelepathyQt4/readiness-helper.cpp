@@ -25,9 +25,11 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Constants>
+#include <TelepathyQt4/RefCounted>
+#include <TelepathyQt4/SharedPtr>
 
 #include <QDBusError>
 #include <QSharedData>
@@ -91,7 +93,7 @@ ReadinessHelper::Introspectable &ReadinessHelper::Introspectable::operator=(
 struct TELEPATHY_QT4_NO_EXPORT ReadinessHelper::Private
 {
     Private(ReadinessHelper *parent,
-            QObject *object,
+            RefCounted *object,
             uint currentStatus,
             const Introspectables &introspectables);
     ~Private();
@@ -106,7 +108,7 @@ struct TELEPATHY_QT4_NO_EXPORT ReadinessHelper::Private
     void abortOperations(const QString &errorName, const QString &errorMessage);
 
     ReadinessHelper *parent;
-    QObject *object;
+    RefCounted *object;
     DBusProxy *proxy;
     uint currentStatus;
     QStringList interfaces;
@@ -127,12 +129,12 @@ struct TELEPATHY_QT4_NO_EXPORT ReadinessHelper::Private
 
 ReadinessHelper::Private::Private(
         ReadinessHelper *parent,
-        QObject *object,
+        RefCounted *object,
         uint currentStatus,
         const Introspectables &introspectables)
     : parent(parent),
       object(object),
-      proxy(qobject_cast<DBusProxy*>(object)),
+      proxy(dynamic_cast<DBusProxy*>(object)),
       currentStatus(currentStatus),
       introspectables(introspectables),
       pendingStatusChange(false),
@@ -371,7 +373,7 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
     pendingOperations.clear();
 }
 
-ReadinessHelper::ReadinessHelper(QObject *object,
+ReadinessHelper::ReadinessHelper(RefCounted *object,
         uint currentStatus,
         const Introspectables &introspectables,
         QObject *parent)
@@ -539,8 +541,8 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     if (supportedFeatures.intersect(requestedFeatures) != requestedFeatures) {
         warning() << "ReadinessHelper::becomeReady called with invalid features: requestedFeatures =" <<
             requestedFeatures << "- supportedFeatures =" << mPriv->supportedFeatures;
-        PendingReady *operation =
-            new PendingReady(requestedFeatures, mPriv->object, this);
+        PendingReady *operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object),
+                requestedFeatures);
         operation->setFinishedWithError(
                 QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Requested features contains unsupported feature"));
@@ -548,8 +550,8 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     }
 
     if (mPriv->proxy && !mPriv->proxy->isValid()) {
-        PendingReady *operation =
-            new PendingReady(requestedFeatures, mPriv->object, this);
+        PendingReady *operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object),
+                requestedFeatures);
         operation->setFinishedWithError(mPriv->proxy->invalidationReason(),
                 mPriv->proxy->invalidationMessage());
         return operation;
@@ -573,7 +575,7 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     }
     mPriv->pendingFeatures.unite(deps);
 
-    operation = new PendingReady(requestedFeatures, mPriv->object, this);
+    operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object), requestedFeatures);
     connect(operation,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onOperationFinished(Tp::PendingOperation*)));

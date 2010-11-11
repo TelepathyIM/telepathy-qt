@@ -36,7 +36,7 @@ class TELEPATHY_QT4_NO_EXPORT Connection::PendingConnect : public PendingReady
     Q_OBJECT
 
 public:
-    PendingConnect(Connection *parent, const Features &requestedFeatures);
+    PendingConnect(const ConnectionPtr &connection, const Features &requestedFeatures);
 
 private Q_SLOTS:
     void onConnectReply(QDBusPendingCallWatcher *);

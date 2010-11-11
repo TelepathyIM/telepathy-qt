@@ -42,7 +42,6 @@ private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
-    ContactSearchChannelPtr mChannel;
     bool mFinished;
     QDBusError mError;
 };

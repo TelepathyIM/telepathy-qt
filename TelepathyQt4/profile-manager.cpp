@@ -283,7 +283,7 @@ void ProfileManager::onCmNamesRetrieved(Tp::PendingOperation *op)
         ops.append(cm->becomeReady());
     }
 
-    PendingComposite *pc = new PendingComposite(ops, false, this);
+    PendingComposite *pc = new PendingComposite(ops, false, ProfileManagerPtr(this));
     connect(pc,
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onCMsReady(Tp::PendingOperation *)));

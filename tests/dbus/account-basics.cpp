@@ -234,7 +234,6 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-
     while (!acc->isReady()) {
         mLoop->processEvents();
     }
@@ -246,12 +245,9 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-
     while (!acc->isReady(Account::FeatureAvatar)) {
         mLoop->processEvents();
     }
-
-    QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
 
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
 
@@ -276,8 +272,9 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
+    while (!acc->isReady(Account::FeatureAvatar)) {
+        mLoop->processEvents();
+    }
 
     // We might have got it already in the earlier mainloop runs
     if (!mGotAvatarChanged) {
@@ -306,7 +303,9 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (!acc->isReady()) {
+        mLoop->processEvents();
+    }
 
     acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"),
@@ -315,25 +314,36 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (!acc->isReady()) {
+        mLoop->processEvents();
+    }
 
     // At this point, there's a set icon
     QCOMPARE(acc->iconName(), QLatin1String("bob.png")); // ?!??
 
     // Unset that
+    mIconNameChanged = false;
+    mIconName = QString();
+    QVERIFY(connect(acc.data(),
+                    SIGNAL(iconNameChanged(const QString &)),
+                    SLOT(onAccountIconNameChanged(const QString &))));
     QVERIFY(connect(acc->setIconName(QString()),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (!mIconNameChanged) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
 
     // Now that it's unset, an icon name is formed from the protocol name
     QCOMPARE(acc->iconName(), QLatin1String("im-normal"));
+    QCOMPARE(acc->iconName(), mIconName);
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureProtocolInfo),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(acc->isReady(Account::FeatureProtocolInfo), true);
+    while (!acc->isReady(Account::FeatureProtocolInfo)) {
+        mLoop->processEvents();
+    }
 
     // This time it's fetched from the protocol object (although it probably internally just
     // infers it from the protocol name too)
@@ -342,8 +352,9 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(Account::FeatureProfile),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(acc->isReady(Account::FeatureProfile), true);
+    while (!acc->isReady(Account::FeatureProfile)) {
+        mLoop->processEvents();
+    }
 
     ProfilePtr profile = acc->profile();
     QCOMPARE(profile.isNull(), false);
@@ -377,16 +388,18 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
+    while (!acc->isReady(Account::FeatureAvatar)) {
+        mLoop->processEvents();
+    }
 
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar | Account::FeatureProtocolInfo),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(acc->isReady(Account::FeatureAvatar | Account::FeatureProtocolInfo), true);
+    while (!acc->isReady(Account::FeatureAvatar | Account::FeatureProtocolInfo)) {
+        mLoop->processEvents();
+    }
 
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
     protocolInfo = acc->protocolInfo();
@@ -558,8 +571,9 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(Account::FeatureCapabilities),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(acc->isReady(Account::FeatureCapabilities), true);
+    while (!acc->isReady(Account::FeatureCapabilities)) {
+        mLoop->processEvents();
+    }
 
     /* using protocol info */
     ConnectionCapabilities caps = acc->capabilities();
@@ -573,9 +587,6 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc.data(),
                     SIGNAL(serviceNameChanged(const QString &)),
                     SLOT(onAccountServiceNameChanged(const QString &))));
-    QVERIFY(connect(acc.data(),
-                    SIGNAL(iconNameChanged(const QString &)),
-                    SLOT(onAccountIconNameChanged(const QString &))));
     QVERIFY(connect(acc.data(),
                     SIGNAL(capabilitiesChanged(const Tp::ConnectionCapabilities &)),
                     SLOT(onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &))));
@@ -605,7 +616,7 @@ void TestAccountBasics::testBasics()
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("Connection"),
                             QDBusVariant(mConnPath)),
-                        this),
+                        acc),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     // wait for the connection to be built in Account
@@ -617,7 +628,7 @@ void TestAccountBasics::testBasics()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     while (!acc->connection()->isReady()) {
-        QCOMPARE(mLoop->exec(), 0);
+        mLoop->processEvents();
     }
 
     // once the status change the capabilities will be updated
@@ -627,7 +638,7 @@ void TestAccountBasics::testBasics()
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("ConnectionStatus"),
                             QDBusVariant(static_cast<uint>(ConnectionStatusConnected))),
-                        this),
+                        acc),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     while (!mCapabilitiesChanged) {
@@ -651,7 +662,7 @@ void TestAccountBasics::testBasics()
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("Connection"),
                             QDBusVariant(QLatin1String("/"))),
-                        this),
+                        acc),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QVERIFY(connect(new PendingVoid(
@@ -659,7 +670,7 @@ void TestAccountBasics::testBasics()
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("ConnectionStatus"),
                             QDBusVariant(static_cast<uint>(ConnectionStatusDisconnected))),
-                        this),
+                        acc),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     while (!mCapabilitiesChanged) {

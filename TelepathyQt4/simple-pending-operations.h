@@ -39,8 +39,8 @@ class TELEPATHY_QT4_EXPORT PendingSuccess : public PendingOperation
     Q_DISABLE_COPY(PendingSuccess)
 
 public:
-    PendingSuccess(QObject *parent)
-        : PendingOperation(parent)
+    PendingSuccess(const SharedPtr<RefCounted> &object)
+        : PendingOperation(object)
     {
         setFinished();
     }
@@ -53,15 +53,15 @@ class TELEPATHY_QT4_EXPORT PendingFailure : public PendingOperation
 
 public:
     PendingFailure(const QString &name, const QString &message,
-            QObject *parent)
-        : PendingOperation(parent)
+            const SharedPtr<RefCounted> &object)
+        : PendingOperation(object)
     {
         setFinishedWithError(name, message);
     }
 
     PendingFailure(const QDBusError &error,
-            QObject *parent)
-        : PendingOperation(parent)
+            const SharedPtr<RefCounted> &object)
+        : PendingOperation(object)
     {
         setFinishedWithError(error);
     }
@@ -73,7 +73,7 @@ class TELEPATHY_QT4_EXPORT PendingVoid : public PendingOperation
     Q_DISABLE_COPY(PendingVoid)
 
 public:
-    PendingVoid(QDBusPendingCall call, QObject *parent);
+    PendingVoid(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
 
 private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);
@@ -90,9 +90,9 @@ class TELEPATHY_QT4_EXPORT PendingComposite : public PendingOperation
     Q_DISABLE_COPY(PendingComposite)
 
 public:
-    PendingComposite(const QList<PendingOperation*> &operations, QObject *parent);
+    PendingComposite(const QList<PendingOperation*> &operations, const SharedPtr<RefCounted> &object);
     PendingComposite(const QList<PendingOperation*> &operations, bool failOnFirstError,
-            QObject *parent);
+            const SharedPtr<RefCounted> &object);
     ~PendingComposite();
 
 private Q_SLOTS:

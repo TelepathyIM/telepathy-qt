@@ -598,7 +598,9 @@ void TestStreamedMediaChan::testOutgoingCall()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
@@ -790,7 +792,9 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice (busy)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
@@ -855,8 +859,10 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice (no answer)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(mRequestContactsReturn.size() == 1);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mRequestContactsReturn.size(), 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
 
@@ -939,8 +945,10 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice (terminate)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(mRequestContactsReturn.size() == 1);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mRequestContactsReturn.size(), 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
 
@@ -1173,7 +1181,9 @@ void TestStreamedMediaChan::testHold()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
@@ -1242,7 +1252,9 @@ void TestStreamedMediaChan::testHoldNoUnhold()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob (no unhold)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
@@ -1306,7 +1318,9 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob (inability to unhold)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
@@ -1388,7 +1402,9 @@ void TestStreamedMediaChan::testDTMF()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("john")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
@@ -1475,7 +1491,9 @@ void TestStreamedMediaChan::testDTMFNoContinuousTone()
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("john (no continuous tone)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (mRequestContactsReturn.size() != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);

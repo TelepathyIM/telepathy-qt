@@ -40,7 +40,7 @@ class TELEPATHY_QT4_EXPORT PendingVariantMap : public PendingOperation
     Q_DISABLE_COPY(PendingVariantMap);
 
 public:
-    PendingVariantMap(QDBusPendingCall call, QObject *parent = 0);
+    PendingVariantMap(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
     ~PendingVariantMap();
 
     QVariantMap result() const;

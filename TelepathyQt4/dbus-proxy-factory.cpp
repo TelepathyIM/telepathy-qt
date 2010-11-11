@@ -137,7 +137,7 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const DBusProxyPtr &proxy) const
     Q_ASSERT(!proxy.isNull());
 
     mPriv->cache->put(proxy);
-    return new PendingReady(SharedPtr<const DBusProxyFactory>(this), featuresFor(proxy), proxy, 0);
+    return new PendingReady(proxy, featuresFor(proxy), SharedPtr<const DBusProxyFactory>(this));
 }
 
 /**

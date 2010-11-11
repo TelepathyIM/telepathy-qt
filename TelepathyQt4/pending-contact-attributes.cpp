@@ -45,7 +45,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingContactAttributes::Private
 {
-    ConnectionPtr connection;
     UIntList contactsRequested;
     QStringList interfacesRequested;
     bool shouldReference;
@@ -56,10 +55,9 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContactAttributes::Private
 
 PendingContactAttributes::PendingContactAttributes(const ConnectionPtr &connection,
         const UIntList &handles, const QStringList &interfaces, bool reference)
-    : PendingOperation(0),
+    : PendingOperation(connection),
       mPriv(new Private)
 {
-    mPriv->connection = connection;
     mPriv->contactsRequested = handles;
     mPriv->interfacesRequested = interfaces;
     mPriv->shouldReference = reference;
@@ -80,7 +78,7 @@ PendingContactAttributes::~PendingContactAttributes()
  */
 ConnectionPtr PendingContactAttributes::connection() const
 {
-    return mPriv->connection;
+    return ConnectionPtr(qobject_cast<Connection*>((Connection*) object().data()));
 }
 
 /**
@@ -198,14 +196,14 @@ void PendingContactAttributes::onCallFinished(QDBusPendingCallWatcher* watcher)
         }
 
         if (shouldReference()) {
-            mPriv->validHandles = ReferencedHandles(mPriv->connection, HandleTypeContact,
+            mPriv->validHandles = ReferencedHandles(connection(), HandleTypeContact,
                     validHandles);
         }
 
         setFinished();
     }
 
-    mPriv->connection->handleRequestLanded(HandleTypeContact);
+    connection()->handleRequestLanded(HandleTypeContact);
 
     watcher->deleteLater();
 }

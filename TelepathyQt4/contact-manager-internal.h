@@ -33,16 +33,12 @@ class TELEPATHY_QT4_NO_EXPORT PendingContactManagerRemoveContactListGroup : publ
     Q_OBJECT
 
 public:
-    PendingContactManagerRemoveContactListGroup(const ChannelPtr &channel,
-            QObject *parent = 0);
+    PendingContactManagerRemoveContactListGroup(const ChannelPtr &channel);
     ~PendingContactManagerRemoveContactListGroup() {};
 
 private Q_SLOTS:
     void onContactsRemoved(Tp::PendingOperation *);
     void onChannelClosed(Tp::PendingOperation *);
-
-private:
-    ChannelPtr mChannel;
 };
 
 } // Tp

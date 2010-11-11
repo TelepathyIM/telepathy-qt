@@ -485,7 +485,7 @@ void TestClientFactories::initTestCase()
     g_free(connPath);
 
     mConn = ConnectionPtr::dynamicCast(mAccount->connectionFactory()->proxy(mConnName, mConnPath,
-                ChannelFactory::create(bus), ContactFactory::create())->proxy());
+                ChannelFactory::create(bus), ContactFactory::create())->object());
     QCOMPARE(mConn->isReady(), false);
 
     PendingReady *mConnReady = mConn->requestConnect();

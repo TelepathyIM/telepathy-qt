@@ -260,11 +260,10 @@ QVariantMap ContactSearchChannel::SearchStateChangeDetails::allDetails() const
 
 ContactSearchChannel::PendingSearch::PendingSearch(const ContactSearchChannelPtr &channel,
         QDBusPendingCall call)
-    : PendingOperation(0),
-      mChannel(channel),
+    : PendingOperation(channel),
       mFinished(false)
 {
-    connect(mChannel.data(),
+    connect(channel.data(),
             SIGNAL(searchStateChanged(Tp::ChannelContactSearchState, const QString &,
                     const Tp::ContactSearchChannel::SearchStateChangeDetails &)),
             SLOT(onSearchStateChanged(Tp::ChannelContactSearchState, const QString &,
@@ -472,14 +471,16 @@ PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
 {
     if (!isReady(FeatureCore)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Channel not ready"), this);
+                QLatin1String("Channel not ready"),
+                ContactSearchChannelPtr(this));
     }
 
     if (searchState() != ChannelContactSearchStateNotStarted) {
         warning() << "ContactSearchChannel::search called with "
             "searchState() != ChannelContactSearchStateNotStarted. Doing nothing";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Search already started"), this);
+                QLatin1String("Search already started"),
+                ContactSearchChannelPtr(this));
     }
 
     return new PendingSearch(ContactSearchChannelPtr(this),
@@ -503,7 +504,8 @@ void ContactSearchChannel::continueSearch()
         return;
     }
 
-    (void) new PendingVoid(mPriv->contactSearchInterface->More(), this);
+    (void) new PendingVoid(mPriv->contactSearchInterface->More(),
+            ContactSearchChannelPtr(this));
 }
 
 /**
@@ -531,7 +533,8 @@ void ContactSearchChannel::stopSearch()
         return;
     }
 
-    (void) new PendingVoid(mPriv->contactSearchInterface->Stop(), this);
+    (void) new PendingVoid(mPriv->contactSearchInterface->Stop(),
+            ContactSearchChannelPtr(this));
 }
 
 /**

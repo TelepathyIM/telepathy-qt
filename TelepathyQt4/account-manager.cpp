@@ -213,7 +213,7 @@ void AccountManager::Private::addAccountForPath(const QString &path)
     PendingReady *readyOp = accFactory->proxy(parent->busName(), path, connFactory,
             chanFactory, contactFactory);
 
-    AccountPtr account(AccountPtr::dynamicCast(readyOp->proxy()));
+    AccountPtr account(AccountPtr(qobject_cast<Account*>((Account*) readyOp->object().data())));
     Q_ASSERT(!account.isNull());
 
     parent->connect(readyOp,
@@ -1019,7 +1019,7 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
 void AccountManager::onAccountReady(Tp::PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady*>(op);
-    AccountPtr account = AccountPtr::dynamicCast(pr->proxy());
+    AccountPtr account(AccountPtr(qobject_cast<Account*>((Account*) pr->object().data())));
     QString path = account->objectPath();
 
     /* Some error occurred or the account was removed before become ready */

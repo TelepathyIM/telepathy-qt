@@ -39,13 +39,6 @@ namespace Tp
 /* ====== PendingStreamedMediaStreams ====== */
 struct TELEPATHY_QT4_NO_EXPORT PendingStreamedMediaStreams::Private
 {
-    Private(PendingStreamedMediaStreams *parent, const StreamedMediaChannelPtr &channel)
-        : parent(parent), channel(channel), streamsReady(0)
-    {
-    }
-
-    PendingStreamedMediaStreams *parent;
-    StreamedMediaChannelPtr channel;
     StreamedMediaStreams streams;
     uint numStreams;
     uint streamsReady;
@@ -75,8 +68,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamedMediaStreams::Private
 PendingStreamedMediaStreams::PendingStreamedMediaStreams(const StreamedMediaChannelPtr &channel,
         const ContactPtr &contact,
         const QList<MediaStreamType> &types)
-    : PendingOperation(0),
-      mPriv(new Private(this, channel))
+    : PendingOperation(channel),
+      mPriv(new Private)
 {
     mPriv->numStreams = types.size();
 
@@ -102,6 +95,17 @@ PendingStreamedMediaStreams::PendingStreamedMediaStreams(const StreamedMediaChan
 PendingStreamedMediaStreams::~PendingStreamedMediaStreams()
 {
     delete mPriv;
+}
+
+/**
+ * Returns the StreamedMediaStream object through which the request was made.
+ *
+ * \return Pointer to the Connection.
+ */
+StreamedMediaChannelPtr PendingStreamedMediaStreams::channel() const
+{
+    return StreamedMediaChannelPtr(qobject_cast<StreamedMediaChannel*>(
+                (StreamedMediaChannel*) object().data()));
 }
 
 /**
@@ -140,20 +144,19 @@ void PendingStreamedMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
     debug() << "Got reply to StreamedMedia::RequestStreams()";
 
     MediaStreamInfoList list = reply.value();
-    StreamedMediaChannelPtr channel(mPriv->channel);
     foreach (const MediaStreamInfo &streamInfo, list) {
-        StreamedMediaStreamPtr stream = channel->lookupStreamById(
+        StreamedMediaStreamPtr stream = channel()->lookupStreamById(
                 streamInfo.identifier);
         if (!stream) {
-            stream = channel->addStream(streamInfo);
+            stream = channel()->addStream(streamInfo);
         } else {
-            channel->onStreamDirectionChanged(streamInfo.identifier,
+            channel()->onStreamDirectionChanged(streamInfo.identifier,
                     streamInfo.direction, streamInfo.pendingSendFlags);
-            channel->onStreamStateChanged(streamInfo.identifier,
+            channel()->onStreamStateChanged(streamInfo.identifier,
                     streamInfo.state);
         }
         mPriv->streams.append(stream);
-        connect(channel.data(),
+        connect(channel().data(),
                 SIGNAL(streamRemoved(Tp::StreamedMediaStreamPtr)),
                 SLOT(onStreamRemoved(Tp::StreamedMediaStreamPtr)));
         connect(stream->becomeReady(),
@@ -261,7 +264,6 @@ StreamedMediaStream::Private::Private(StreamedMediaStream *parent,
     introspectables[FeatureCore] = introspectableCore;
 
     readinessHelper->addIntrospectables(introspectables);
-    readinessHelper->becomeReady(FeatureCore);
 }
 
 void StreamedMediaStream::Private::introspectContact(StreamedMediaStream::Private *self)
@@ -301,7 +303,7 @@ PendingOperation *StreamedMediaStream::Private::updateDirection(
     return new PendingVoid(
             streamedMediaInterface->RequestStreamDirection(
                 id, newDirection),
-            parent);
+            StreamedMediaStreamPtr(parent));
 }
 
 StreamedMediaStream::SendingState StreamedMediaStream::Private::localSendingStateFromDirection()
@@ -502,7 +504,7 @@ PendingOperation *StreamedMediaStream::requestDirection(
     return new PendingVoid(
             streamedMediaInterface->RequestStreamDirection(
                 mPriv->id, direction),
-            this);
+            StreamedMediaStreamPtr(this));
 }
 
 /**
@@ -528,14 +530,14 @@ PendingOperation *StreamedMediaStream::startDTMFTone(DTMFEvent event)
         warning() << "StreamedMediaStream::startDTMFTone() used with no dtmf interface";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("StreamedMediaChannel does not support dtmf interface"),
-                this);
+                StreamedMediaStreamPtr(this));
     }
 
     Client::ChannelInterfaceDTMFInterface *dtmfInterface =
         chan->interface<Client::ChannelInterfaceDTMFInterface>();
     return new PendingVoid(
             dtmfInterface->StartTone(mPriv->id, event),
-            this);
+            StreamedMediaStreamPtr(this));
 }
 
 /**
@@ -561,14 +563,14 @@ PendingOperation *StreamedMediaStream::stopDTMFTone()
         warning() << "StreamedMediaStream::stopDTMFTone() used with no dtmf interface";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("StreamedMediaChannel does not support dtmf interface"),
-                this);
+                StreamedMediaStreamPtr(this));
     }
 
     Client::ChannelInterfaceDTMFInterface *dtmfInterface =
         chan->interface<Client::ChannelInterfaceDTMFInterface>();
     return new PendingVoid(
             dtmfInterface->StopTone(mPriv->id),
-            this);
+            StreamedMediaStreamPtr(this));
 }
 
 /**
@@ -976,7 +978,8 @@ PendingOperation *StreamedMediaChannel::removeStream(const StreamedMediaStreamPt
 {
     if (!stream) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                QLatin1String("Unable to remove a null stream"), this);
+                QLatin1String("Unable to remove a null stream"),
+                StreamedMediaChannelPtr(this));
     }
 
     // StreamedMedia.RemoveStreams will trigger StreamedMedia.StreamRemoved
@@ -986,7 +989,7 @@ PendingOperation *StreamedMediaChannel::removeStream(const StreamedMediaStreamPt
     return new PendingVoid(
             streamedMediaInterface->RemoveStreams(
                 UIntList() << stream->id()),
-            this);
+            StreamedMediaChannelPtr(this));
 }
 
 /**
@@ -1011,14 +1014,15 @@ PendingOperation *StreamedMediaChannel::removeStreams(const StreamedMediaStreams
 
     if (ids.isEmpty()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                QLatin1String("Unable to remove invalid streams"), this);
+                QLatin1String("Unable to remove invalid streams"),
+                StreamedMediaChannelPtr(this));
     }
 
     Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
         interface<Client::ChannelTypeStreamedMediaInterface>();
     return new PendingVoid(
             streamedMediaInterface->RemoveStreams(ids),
-            this);
+            StreamedMediaChannelPtr(this));
 }
 
 /**
@@ -1161,12 +1165,13 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
         warning() << "StreamedMediaChannel::requestHold() used with no hold interface";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("StreamedMediaChannel does not support hold interface"),
-                this);
+                StreamedMediaChannelPtr(this));
     }
 
     Client::ChannelInterfaceHoldInterface *holdInterface =
         interface<Client::ChannelInterfaceHoldInterface>();
-    return new PendingVoid(holdInterface->RequestHold(hold), this);
+    return new PendingVoid(holdInterface->RequestHold(hold),
+            StreamedMediaChannelPtr(this));
 }
 
 /**
@@ -1230,7 +1235,7 @@ void StreamedMediaChannel::onStreamReady(PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady*>(op);
     StreamedMediaStreamPtr stream = StreamedMediaStreamPtr(
-            qobject_cast<StreamedMediaStream*>(pr->object()));
+            qobject_cast<StreamedMediaStream*>((StreamedMediaChannel*) pr->object().data()));
 
     if (op->isError()) {
         mPriv->incompleteStreams.removeOne(stream);

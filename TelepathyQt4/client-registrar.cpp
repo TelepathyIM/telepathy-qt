@@ -133,20 +133,20 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
             connFactory,
             chanFactory,
             contactFactory);
-    invocation->acc = AccountPtr::dynamicCast(accReady->proxy());
+    invocation->acc = AccountPtr::dynamicCast(accReady->object());
     readyOps.append(accReady);
 
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
     PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(),
             chanFactory, contactFactory);
-    invocation->conn = ConnectionPtr::dynamicCast(connReady->proxy());
+    invocation->conn = ConnectionPtr::dynamicCast(connReady->object());
     readyOps.append(connReady);
 
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
         PendingReady *chanReady = chanFactory->proxy(invocation->conn,
                 channelDetails.channel.path(), channelDetails.properties);
-        ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->proxy());
+        ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->object());
         invocation->chans.append(channel);
         readyOps.append(chanReady);
     }
@@ -199,7 +199,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
 
     invocation->ctx = MethodInvocationContextPtr<>(new MethodInvocationContext<>(mBus, message));
 
-    invocation->readyOp = new PendingComposite(readyOps, this);
+    invocation->readyOp = new PendingComposite(readyOps, invocation->ctx);
     connect(invocation->readyOp,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));
@@ -286,7 +286,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
             QLatin1String("/"), QLatin1String("."));
     PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(), chanFactory,
                 contactFactory);
-    ConnectionPtr connection = ConnectionPtr::dynamicCast(connReady->proxy());
+    ConnectionPtr connection = ConnectionPtr::dynamicCast(connReady->object());
     readyOps.append(connReady);
 
     SharedPtr<InvocationData> invocation(new InvocationData);
@@ -294,7 +294,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
         PendingReady *chanReady = chanFactory->proxy(connection, channelDetails.channel.path(),
                 channelDetails.properties);
-        invocation->chans.append(ChannelPtr::dynamicCast(chanReady->proxy()));
+        invocation->chans.append(ChannelPtr::dynamicCast(chanReady->object()));
         readyOps.append(chanReady);
     }
 
@@ -305,7 +305,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
 
     invocation->ctx = MethodInvocationContextPtr<>(new MethodInvocationContext<>(mBus, message));
 
-    invocation->readyOp = new PendingComposite(readyOps, this);
+    invocation->readyOp = new PendingComposite(readyOps, invocation->ctx);
     connect(invocation->readyOp,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));
@@ -405,20 +405,20 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
             connFactory,
             chanFactory,
             contactFactory);
-    invocation->acc = AccountPtr::dynamicCast(accReady->proxy());
+    invocation->acc = AccountPtr::dynamicCast(accReady->object());
     readyOps.append(accReady);
 
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
     PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(),
             chanFactory, contactFactory);
-    invocation->conn = ConnectionPtr::dynamicCast(connReady->proxy());
+    invocation->conn = ConnectionPtr::dynamicCast(connReady->object());
     readyOps.append(connReady);
 
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
         PendingReady *chanReady = chanFactory->proxy(invocation->conn,
                 channelDetails.channel.path(), channelDetails.properties);
-        ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->proxy());
+        ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->object());
         invocation->chans.append(channel);
         readyOps.append(chanReady);
     }
@@ -445,7 +445,7 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
                     &ClientHandlerAdaptor::onContextFinished),
                 this);
 
-    invocation->readyOp = new PendingComposite(readyOps, this);
+    invocation->readyOp = new PendingComposite(readyOps, invocation->ctx);
     connect(invocation->readyOp,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));

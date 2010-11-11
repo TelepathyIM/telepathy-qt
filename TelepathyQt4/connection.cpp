@@ -615,12 +615,13 @@ void Connection::Private::checkFeatureRosterGroupsReady()
     contactListGroupChannels.clear();
 }
 
-Connection::PendingConnect::PendingConnect(Connection *parent, const Features &requestedFeatures)
-    : PendingReady(requestedFeatures, parent, parent)
+Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
+        const Features &requestedFeatures)
+    : PendingReady(connection, requestedFeatures)
 {
-    QDBusPendingCall call = parent->baseInterface()->Connect();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, parent);
-    connect(parent,
+    QDBusPendingCall call = connection->baseInterface()->Connect();
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, connection.data());
+    connect(connection.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             this,
             SLOT(onConnInvalidated(Tp::DBusProxy*,QString,QString)));
@@ -632,26 +633,26 @@ Connection::PendingConnect::PendingConnect(Connection *parent, const Features &r
 
 void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher)
 {
-    if (!qobject_cast<Connection *>(parent())->isValid()) {
-        return;
-    }
+    ConnectionPtr connection = ConnectionPtr(
+            qobject_cast<Connection*>((Connection*) object().data()));
 
     if (watcher->isError()) {
+        debug() << "Connect failed with" <<
+            watcher->error().name() << ": " << watcher->error().message();
         setFinishedWithError(watcher->error());
     } else {
-        if (qobject_cast<Connection*>(parent())->status() == ConnectionStatusConnected) {
+        if (connection->status() == ConnectionStatusConnected) {
             onStatusChanged(ConnectionStatusConnected);
         } else {
             // Wait for statusChanged()! Connect returning just means that the connection has
             // started to connect - spec quoted for truth:
             //
-            // Connect () → nothing
+            // Connect () -> nothing
             // Request that the connection be established. This will be done asynchronously and
             // errors will be returned by emitting StatusChanged signals.
             //
-            //
             // Which should actually say progress and/or errors IMO, but anyway...
-            connect(parent(),
+            connect(connection.data(),
                     SIGNAL(statusChanged(Tp::ConnectionStatus)),
                     SLOT(onStatusChanged(Tp::ConnectionStatus)));
         }
@@ -660,12 +661,8 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
 
 void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
 {
-    if (!qobject_cast<Connection *>(parent())->isValid()) {
-        return;
-    }
-
-    Connection *connection = qobject_cast<Connection*>(parent());
-    Q_ASSERT(connection != NULL);
+    ConnectionPtr connection = ConnectionPtr(
+            qobject_cast<Connection*>((Connection*) object().data()));
 
     if (newStatus == ConnectionStatusDisconnected) {
         debug() << "Connection became disconnected while a PendingConnect was underway";
@@ -683,14 +680,12 @@ void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
 
 void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 {
-    if (!qobject_cast<Connection *>(parent())->isValid()) {
-        return;
-    }
-
     if (op->isError()) {
+        debug() << "Connection->becomeReady failed with" <<
+            op->errorName() << ": " << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
-    }
-    else {
+    } else {
+        debug() << "Connected";
         setFinished();
     }
 }
@@ -698,8 +693,11 @@ void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 void Connection::PendingConnect::onConnInvalidated(Tp::DBusProxy *proxy, const QString &error,
         const QString &message)
 {
-    Q_ASSERT(proxy == parent());
-    setFinishedWithError(error, message);
+    Q_ASSERT(proxy == object().data());
+    if (!isFinished()) {
+        debug() << "Unable to connect. Connection invalidated";
+        setFinishedWithError(error, message);
+    }
 }
 
 QMap<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;
@@ -1207,14 +1205,15 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
 {
     if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Connection does not support SimplePresence"), this);
+                QLatin1String("Connection does not support SimplePresence"),
+                ConnectionPtr(this));
     }
 
     Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
         interface<Client::ConnectionInterfaceSimplePresenceInterface>();
     return new PendingVoid(
             simplePresenceInterface->SetPresence(status, statusMessage),
-            this);
+            ConnectionPtr(this));
 }
 
 /**
@@ -1662,7 +1661,7 @@ void Connection::onContactListGroupChannelReady(Tp::PendingOperation *op)
         mPriv->checkFeatureRosterGroupsReady();
     } else {
         PendingReady *pr = qobject_cast<PendingReady*>(op);
-        ChannelPtr channel = ChannelPtr(qobject_cast<Channel*>(pr->object()));
+        ChannelPtr channel = ChannelPtr(qobject_cast<Channel*>((Channel*) pr->object().data()));
         mPriv->contactManager->addContactListGroupChannel(channel);
         mPriv->contactListGroupChannels.removeOne(channel);
     }
@@ -1938,7 +1937,7 @@ PendingHandles *Connection::referenceHandles(HandleType handleType, const UIntLi
  */
 PendingReady *Connection::requestConnect(const Features &requestedFeatures)
 {
-    return new PendingConnect(this, requestedFeatures);
+    return new PendingConnect(ConnectionPtr(this), requestedFeatures);
 }
 
 /**
@@ -1952,7 +1951,8 @@ PendingReady *Connection::requestConnect(const Features &requestedFeatures)
  */
 PendingOperation *Connection::requestDisconnect()
 {
-    return new PendingVoid(baseInterface()->Disconnect(), this);
+    return new PendingVoid(baseInterface()->Disconnect(),
+            ConnectionPtr(this));
 }
 
 /**

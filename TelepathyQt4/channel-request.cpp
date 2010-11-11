@@ -503,7 +503,8 @@ QVariantMap ChannelRequest::immutableProperties() const
  */
 PendingOperation *ChannelRequest::cancel()
 {
-    return new PendingVoid(mPriv->baseInterface->Cancel(), this);
+    return new PendingVoid(mPriv->baseInterface->Cancel(),
+            ChannelRequestPtr(this));
 }
 
 /**
@@ -518,7 +519,8 @@ PendingOperation *ChannelRequest::cancel()
  */
 PendingOperation *ChannelRequest::proceed()
 {
-    return new PendingVoid(mPriv->baseInterface->Proceed(), this);
+    return new PendingVoid(mPriv->baseInterface->Proceed(),
+            ChannelRequestPtr(this));
 }
 
 /**

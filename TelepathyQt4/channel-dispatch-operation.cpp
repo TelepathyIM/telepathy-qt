@@ -164,7 +164,7 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         PendingReady *ready =
             connFactory->proxy(connectionBusName, connectionObjectPath.path(),
                     chanFactory, contactFactory);
-        connection = ConnectionPtr::dynamicCast(ready->proxy());
+        connection = ConnectionPtr::dynamicCast(ready->object());
         readyOps.append(ready);
     }
 
@@ -175,7 +175,7 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         PendingReady *ready =
             accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
                     accountObjectPath.path(), connFactory, chanFactory, contactFactory);
-        account = AccountPtr::dynamicCast(ready->proxy());
+        account = AccountPtr::dynamicCast(ready->object());
         readyOps.append(ready);
     }
 
@@ -195,7 +195,7 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
             PendingReady *ready =
                 chanFactory->proxy(connection,
                         channelDetails.channel.path(), channelDetails.properties);
-            channels.append(ChannelPtr::dynamicCast(ready->proxy()));
+            channels.append(ChannelPtr::dynamicCast(ready->object()));
             readyOps.append(ready);
         }
 
@@ -212,7 +212,7 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         debug() << "No proxies to prepare for CDO" << parent->objectPath();
         readinessHelper->setIntrospectCompleted(FeatureCore, true);
     } else {
-        parent->connect(new PendingComposite(readyOps, parent),
+        parent->connect(new PendingComposite(readyOps, ChannelDispatchOperationPtr(parent)),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onProxiesPrepared(Tp::PendingOperation*)));
     }
@@ -450,7 +450,7 @@ PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
 {
     return new PendingVoid(
             mPriv->baseInterface->HandleWith(handler),
-            this);
+            ChannelDispatchOperationPtr(this));
 }
 
 /**
@@ -489,7 +489,8 @@ PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
  */
 PendingOperation *ChannelDispatchOperation::claim()
 {
-    return new PendingVoid(mPriv->baseInterface->Claim(), this);
+    return new PendingVoid(mPriv->baseInterface->Claim(),
+            ChannelDispatchOperationPtr(this));
 }
 
 /**

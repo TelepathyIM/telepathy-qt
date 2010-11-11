@@ -35,12 +35,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingContactInfo::Private
 {
-    Private(const ContactPtr &contact)
-        : contact(contact)
-    {
-    }
-
-    ContactPtr contact;
     Contact::InfoFields info;
 };
 
@@ -64,8 +58,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContactInfo::Private
  * \param contact Contact to use.
  */
 PendingContactInfo::PendingContactInfo(const ContactPtr &contact)
-    : PendingOperation(0),
-      mPriv(new Private(contact))
+    : PendingOperation(contact),
+      mPriv(new Private)
 {
     ConnectionPtr connection = contact->manager()->connection();
     Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
@@ -93,7 +87,7 @@ PendingContactInfo::~PendingContactInfo()
  */
 ContactPtr PendingContactInfo::contact() const
 {
-    return mPriv->contact;
+    return ContactPtr(qobject_cast<Contact*>((Contact*) object().data()));
 }
 
 /**
