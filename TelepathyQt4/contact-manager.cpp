@@ -92,7 +92,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     class PendingContactManagerRemoveContactListGroup;
 
     ContactManager *parent;
-    QPointer<Connection> connection;
+    QWeakPointer<Connection> connection;
     QMap<uint, QWeakPointer<Contact> > contacts;
     Contacts cachedAllKnownContacts;
 
@@ -859,11 +859,11 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     }
 
     if (!connection()->isValid()) {
-        return new PendingContacts(this, handles, realFeatures, QStringList(),
+        return new PendingContacts(ContactManagerPtr(this), handles, realFeatures, QStringList(),
                 satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
-        return new PendingContacts(this, handles, realFeatures, QStringList(),
+        return new PendingContacts(ContactManagerPtr(this), handles, realFeatures, QStringList(),
                 satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
@@ -898,7 +898,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     }
 
     PendingContacts *contacts =
-        new PendingContacts(this, handles, realFeatures, interfaces.toList(),
+        new PendingContacts(ContactManagerPtr(this), handles, realFeatures, interfaces.toList(),
                 satisfyingContacts, otherContacts);
     return contacts;
 }
@@ -913,16 +913,16 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
         const Features &features)
 {
     if (!connection()->isValid()) {
-        return new PendingContacts(this, identifiers, features,
+        return new PendingContacts(ContactManagerPtr(this), identifiers, features,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
-        return new PendingContacts(this, identifiers, features,
+        return new PendingContacts(ContactManagerPtr(this), identifiers, features,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
-    PendingContacts *contacts = new PendingContacts(this, identifiers, features);
+    PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), identifiers, features);
     return contacts;
 }
 
@@ -930,16 +930,16 @@ PendingContacts *ContactManager::upgradeContacts(const QList<ContactPtr> &contac
         const Features &features)
 {
     if (!connection()->isValid()) {
-        return new PendingContacts(this, contacts, features,
+        return new PendingContacts(ContactManagerPtr(this), contacts, features,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
-        return new PendingContacts(this, contacts, features,
+        return new PendingContacts(ContactManagerPtr(this), contacts, features,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
-    return new PendingContacts(this, contacts, features);
+    return new PendingContacts(ContactManagerPtr(this), contacts, features);
 }
 
 void ContactManager::onAliasesChanged(const AliasPairList &aliases)
@@ -963,8 +963,9 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
         cacheDir = QString(QLatin1String("%1/.cache")).arg(QLatin1String(qgetenv("HOME")));
     }
 
+    ConnectionPtr conn(parent->connection());
     QString path = QString(QLatin1String("%1/telepathy/avatars/%2/%3")).
-        arg(cacheDir).arg(connection->cmName()).arg(connection->protocolName());
+        arg(cacheDir).arg(conn->cmName()).arg(conn->protocolName());
 
     if (createDir && !QDir().mkpath(path)) {
         return false;
@@ -981,7 +982,7 @@ void ContactManager::doRequestAvatars()
     debug() << "Request" << mPriv->requestAvatarsQueue.size() << "avatar(s)";
 
     Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
-        mPriv->connection->interface<Client::ConnectionInterfaceAvatarsInterface>();
+        connection()->interface<Client::ConnectionInterfaceAvatarsInterface>();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
         avatarsInterface->RequestAvatars(mPriv->requestAvatarsQueue),
         this);
@@ -1288,7 +1289,7 @@ void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
 }
 
 ContactManager::ContactManager(Connection *connection)
-    : QObject(connection),
+    : Object(),
       mPriv(new Private(this, connection))
 {
 }
@@ -1432,69 +1433,63 @@ void ContactManager::Private::ensureTracking(const Feature &feature)
         return;
     }
 
-    ConnectionPtr conn(connection);
+    ConnectionPtr conn(parent->connection());
 
     if (feature == Contact::FeatureAlias) {
         Client::ConnectionInterfaceAliasingInterface *aliasingInterface =
             conn->interface<Client::ConnectionInterfaceAliasingInterface>();
 
-        QObject::connect(
+        parent->connect(
                 aliasingInterface,
                 SIGNAL(AliasesChanged(Tp::AliasPairList)),
-                conn->contactManager(),
                 SLOT(onAliasesChanged(Tp::AliasPairList)));
     } else if (feature == Contact::FeatureAvatarData) {
         Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
             conn->interface<Client::ConnectionInterfaceAvatarsInterface>();
 
-        QObject::connect(
+        parent->connect(
                 avatarsInterface,
                 SIGNAL(AvatarRetrieved(uint,QString,QByteArray,QString)),
-                conn->contactManager(),
                 SLOT(onAvatarRetrieved(uint,QString,QByteArray,QString)));
     } else if (feature == Contact::FeatureAvatarToken) {
         Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
             conn->interface<Client::ConnectionInterfaceAvatarsInterface>();
-        QObject::connect(
+
+        parent->connect(
                 avatarsInterface,
                 SIGNAL(AvatarUpdated(uint,QString)),
-                conn->contactManager(),
                 SLOT(onAvatarUpdated(uint,QString)));
     } else if (feature == Contact::FeatureCapabilities) {
         Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface =
             conn->interface<Client::ConnectionInterfaceContactCapabilitiesInterface>();
 
-        QObject::connect(
+        parent->connect(
                 contactCapabilitiesInterface,
                 SIGNAL(ContactCapabilitiesChanged(Tp::ContactCapabilitiesMap)),
-                conn->contactManager(),
                 SLOT(onCapabilitiesChanged(Tp::ContactCapabilitiesMap)));
     } else if (feature == Contact::FeatureInfo) {
         Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
             conn->interface<Client::ConnectionInterfaceContactInfoInterface>();
 
-        QObject::connect(
+        parent->connect(
                 contactInfoInterface,
                 SIGNAL(ContactInfoChanged(uint,Tp::ContactInfoFieldList)),
-                conn->contactManager(),
                 SLOT(onContactInfoChanged(uint,Tp::ContactInfoFieldList)));
     } else if (feature == Contact::FeatureLocation) {
         Client::ConnectionInterfaceLocationInterface *locationInterface =
             conn->interface<Client::ConnectionInterfaceLocationInterface>();
 
-        QObject::connect(
+        parent->connect(
                 locationInterface,
                 SIGNAL(LocationUpdated(uint,QVariantMap)),
-                conn->contactManager(),
                 SLOT(onLocationUpdated(uint,QVariantMap)));
     } else if (feature == Contact::FeatureSimplePresence) {
         Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
             conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
 
-        QObject::connect(
+        parent->connect(
                 simplePresenceInterface,
                 SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
-                conn->contactManager(),
                 SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
     } else {
         warning() << " Unknown feature" << feature

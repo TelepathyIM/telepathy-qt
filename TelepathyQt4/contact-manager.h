@@ -26,15 +26,18 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QObject>
+#include <TelepathyQt4/Channel>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/Feature>
+#include <TelepathyQt4/Object>
+#include <TelepathyQt4/ReferencedHandles>
+#include <TelepathyQt4/Types>
 
 #include <QList>
 #include <QSet>
-
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/Contact>
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/ReferencedHandles>
+#include <QString>
+#include <QStringList>
+#include <QVariantMap>
 
 namespace Tp
 {
@@ -43,12 +46,14 @@ class Connection;
 class PendingContacts;
 class PendingOperation;
 
-class TELEPATHY_QT4_EXPORT ContactManager : public QObject
+class TELEPATHY_QT4_EXPORT ContactManager : public Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(ContactManager)
 
 public:
+    virtual ~ContactManager();
+
     ConnectionPtr connection() const;
 
     Features supportedFeatures() const;
@@ -208,7 +213,6 @@ private:
     };
 
     ContactManager(Connection *parent);
-    ~ContactManager();
 
     ContactPtr ensureContact(const ReferencedHandles &handle,
             const Features &features,

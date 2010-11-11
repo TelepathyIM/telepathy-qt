@@ -187,7 +187,7 @@ void RosterWidget::onConnectionReady(Tp::PendingOperation *op)
     PendingReady *pr = qobject_cast<PendingReady *>(op);
     ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(
                 (Connection *) pr->object().data()));
-    connect(conn->contactManager(),
+    connect(conn->contactManager().data(),
             SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
             SLOT(onPresencePublicationRequested(const Tp::Contacts &)));
 
@@ -345,7 +345,7 @@ void RosterWidget::updateActions()
     RosterItem *item = dynamic_cast<RosterItem*>(selectedItems.first());
     ContactPtr contact = item->contact();
 
-    ContactManager *manager = contact->manager();
+    ContactManagerPtr manager = contact->manager();
     qDebug() << "Contact" << contact->id() << "selected";
     qDebug() << " subscription state:" << contact->subscriptionState();
     qDebug() << " publish state     :" << contact->publishState();

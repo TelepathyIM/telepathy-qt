@@ -276,7 +276,7 @@ void StreamedMediaStream::Private::introspectContact(StreamedMediaStream::Privat
     }
 
     debug() << "Introspecting stream contact";
-    ContactManager *contactManager =
+    ContactManagerPtr contactManager =
         self->parent->channel()->connection()->contactManager();
     debug() << "contact manager" << contactManager;
     self->parent->connect(contactManager->contactsForHandles(

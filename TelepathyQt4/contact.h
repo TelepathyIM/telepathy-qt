@@ -90,7 +90,7 @@ public:
 
     ~Contact();
 
-    ContactManager *manager() const;
+    ContactManagerPtr manager() const;
 
     ReferencedHandles handle() const;
 

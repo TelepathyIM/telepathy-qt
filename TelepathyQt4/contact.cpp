@@ -58,7 +58,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 
     Contact *parent;
 
-    ContactManager *manager;
+    QWeakPointer<ContactManager> manager;
     ReferencedHandles handle;
     QString id;
 
@@ -143,9 +143,9 @@ const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaOb
 const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMetaObject.className()), 5, false);
 const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::staticMetaObject.className()), 6, false);
 
-ContactManager *Contact::manager() const
+ContactManagerPtr Contact::manager() const
 {
-    return mPriv->manager;
+    return ContactManagerPtr(mPriv->manager);
 }
 
 ReferencedHandles Contact::handle() const
@@ -323,7 +323,7 @@ PendingOperation *Contact::refreshInfo()
                 ContactPtr(this));
     }
 
-    ConnectionPtr connection = mPriv->manager->connection();
+    ConnectionPtr connection = manager()->connection();
     if (!connection->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Connection does not support ContactInfo interface"),
@@ -350,8 +350,7 @@ PendingOperation *Contact::refreshInfo()
  */
 PendingContactInfo *Contact::requestInfo()
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
     return new PendingContactInfo(self);
 }
 
@@ -367,38 +366,26 @@ Contact::PresenceState Contact::publishState() const
 
 PendingOperation *Contact::requestPresenceSubscription(const QString &message)
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->requestPresenceSubscription(
-            QList<ContactPtr >() << self,
-            message);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->requestPresenceSubscription(QList<ContactPtr >() << self, message);
 }
 
 PendingOperation *Contact::removePresenceSubscription(const QString &message)
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->removePresenceSubscription(
-            QList<ContactPtr>() << self,
-            message);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->removePresenceSubscription(QList<ContactPtr>() << self, message);
 }
 
 PendingOperation *Contact::authorizePresencePublication(const QString &message)
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->authorizePresencePublication(
-            QList<ContactPtr>() << self,
-            message);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->authorizePresencePublication(QList<ContactPtr>() << self, message);
 }
 
 PendingOperation *Contact::removePresencePublication(const QString &message)
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->removePresencePublication(
-            QList<ContactPtr>() << self,
-            message);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->removePresencePublication(QList<ContactPtr>() << self, message);
 }
 
 bool Contact::isBlocked() const
@@ -408,11 +395,8 @@ bool Contact::isBlocked() const
 
 PendingOperation *Contact::block(bool value)
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->blockContacts(
-            QList<ContactPtr>() << self,
-            value);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->blockContacts(QList<ContactPtr>() << self, value);
 }
 
 /**
@@ -441,10 +425,8 @@ QStringList Contact::groups() const
  */
 PendingOperation *Contact::addToGroup(const QString &group)
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->addContactsToGroup(
-            group, QList<ContactPtr>() << self);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->addContactsToGroup(group, QList<ContactPtr>() << self);
 }
 
 /**
@@ -459,10 +441,8 @@ PendingOperation *Contact::addToGroup(const QString &group)
  */
 PendingOperation *Contact::removeFromGroup(const QString &group)
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->removeContactsFromGroup(
-            group, QList<ContactPtr>() << self);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->removeContactsFromGroup(group, QList<ContactPtr>() << self);
 }
 
 Contact::~Contact()
@@ -630,7 +610,7 @@ void Contact::Private::updateAvatarData()
         return;
     }
 
-    manager->requestContactAvatar(parent);
+    parent->manager()->requestContactAvatar(parent);
 }
 
 void Contact::receiveAvatarToken(const QString &token)

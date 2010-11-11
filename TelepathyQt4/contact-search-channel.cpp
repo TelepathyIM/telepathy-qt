@@ -203,7 +203,7 @@ void ContactSearchChannel::Private::processSearchResultQueue()
 {
     const ContactSearchResultMap &result = searchResultQueue.first();
     if (!result.isEmpty()) {
-        ContactManager *manager = parent->connection()->contactManager();
+        ContactManagerPtr manager = parent->connection()->contactManager();
         PendingContacts *pendingContacts = manager->contactsForIdentifiers(
                 result.keys());
         parent->connect(pendingContacts,

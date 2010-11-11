@@ -166,7 +166,7 @@ void TestConnRosterGroups::testRosterGroups()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
-    ContactManager *contactManager = mConn->contactManager();
+    ContactManagerPtr contactManager = mConn->contactManager();
 
     QStringList expectedGroups;
     expectedGroups << QLatin1String("Cambridge") << QLatin1String("Francophones")
@@ -224,7 +224,7 @@ void TestConnRosterGroups::testRosterGroups()
     QVERIFY(contactManager->groupContacts(group).isEmpty());
 
     // add group foo
-    QVERIFY(connect(contactManager,
+    QVERIFY(connect(contactManager.data(),
                     SIGNAL(groupAdded(const QString&)),
                     SLOT(onGroupAdded(const QString&))));
     QVERIFY(connect(contactManager->addGroup(group),
@@ -279,7 +279,7 @@ void TestConnRosterGroups::testRosterGroups()
     }
 
     // add group foo
-    QVERIFY(connect(contactManager,
+    QVERIFY(connect(contactManager.data(),
                     SIGNAL(groupRemoved(const QString&)),
                     SLOT(onGroupRemoved(const QString&))));
     QVERIFY(connect(contactManager->removeGroup(group),
@@ -315,7 +315,7 @@ void TestConnRosterGroups::testNotADeathTrap()
 
     // Check that the contact manager doesn't crash, but returns an error (because the conn isn't
     // ready)
-    QVERIFY(mConn->contactManager() != 0);
+    QVERIFY(!mConn->contactManager().isNull());
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
@@ -329,7 +329,7 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mConn->status(), ConnectionStatusConnected);
 
     // As the conn is now ready, the contact building functions shouldn't return an error now
-    QVERIFY(mConn->contactManager() != 0);
+    QVERIFY(!mConn->contactManager().isNull());
 
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList()),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -464,7 +464,7 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mConn->isReady(features), true);
 
     // Now that Core, Roster and RosterGroups are all ready, everything should work
-    QVERIFY(mConn->contactManager() != 0);
+    QVERIFY(!mConn->contactManager().isNull());
 
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList()),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -556,7 +556,7 @@ void TestConnRosterGroups::testNotADeathTrap()
 
     // Check that contactManager doesn't go NULL in the process of the connection going invalidated
     do {
-        QVERIFY(mConn->contactManager() != 0);
+        QVERIFY(!mConn->contactManager().isNull());
         mLoop->processEvents();
     } while (!mConnInvalidated);
 
