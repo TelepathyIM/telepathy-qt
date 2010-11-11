@@ -92,6 +92,8 @@ ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
       contactSearchInterface(parent->interface<Client::ChannelTypeContactSearchInterface>()),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
+      searchState(ChannelContactSearchStateNotStarted),
+      limit(0),
       processingSignalsQueue(false)
 {
     ReadinessHelper::Introspectables introspectables;
