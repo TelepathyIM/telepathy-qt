@@ -29,6 +29,7 @@
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactFactory>
+#include <TelepathyQt4/PendingReady>
 
 #include <QDBusObjectPath>
 #include <QDBusPendingCallWatcher>
@@ -40,8 +41,6 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
 {
     ConnectionPtr connection;
-    QString busName;
-    QDBusObjectPath objectPath;
 };
 
 /**
@@ -107,16 +106,6 @@ ConnectionPtr PendingConnection::connection() const
         return ConnectionPtr();
     }
 
-    if (!mPriv->connection) {
-        // TODO (API/ABI break): If we are going to keep ConnectionManager::requestConnection we
-        //                       probably want to pass factories to ConnectionManager and use them
-        //                       here.
-        mPriv->connection = Connection::create(manager()->dbusConnection(),
-                mPriv->busName, mPriv->objectPath.path(),
-                  ChannelFactory::create(manager()->dbusConnection()),
-                  ContactFactory::create());
-    }
-
     return mPriv->connection;
 }
 
@@ -139,7 +128,7 @@ QString PendingConnection::busName() const
         warning() << "PendingConnection::busName called when not valid";
     }
 
-    return mPriv->busName;
+    return mPriv->connection->busName();
 }
 
 /**
@@ -160,7 +149,7 @@ QString PendingConnection::objectPath() const
         warning() << "PendingConnection::connection called when not valid";
     }
 
-    return mPriv->objectPath.path();
+    return mPriv->connection->objectPath();
 }
 
 void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
@@ -168,11 +157,18 @@ void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QString, QDBusObjectPath> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->busName = reply.argumentAt<0>();
-        mPriv->objectPath = reply.argumentAt<1>();
+        QString busName = reply.argumentAt<0>();
+        QString objectPath = reply.argumentAt<1>().path();
+
         debug() << "Got reply to ConnectionManager.CreateConnection - bus name:" <<
-            mPriv->busName << "- object path:" << mPriv->objectPath.path();
-        setFinished();
+            busName << "- object path:" << objectPath;
+
+        PendingReady *readyOp = manager()->connectionFactory()->proxy(busName,
+                objectPath, manager()->channelFactory(), manager()->contactFactory());
+        mPriv->connection = ConnectionPtr::qObjectCast(readyOp->proxy());
+        connect(readyOp,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onConnectionBuilt(Tp::PendingOperation*)));
     } else {
         debug().nospace() <<
             "CreateConnection failed: " <<
@@ -181,6 +177,20 @@ void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
     }
 
     watcher->deleteLater();
+}
+
+void PendingConnection::onConnectionBuilt(Tp::PendingOperation *op)
+{
+    Q_ASSERT(op->isFinished());
+
+    if (op->isError()) {
+        warning() << "Making connection ready using the factory failed:" <<
+            op->errorName() << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    } else {
+        setFinished();
+        debug() << "New connection" << mPriv->connection->objectPath() << "built";
+    }
 }
 
 } // Tp
