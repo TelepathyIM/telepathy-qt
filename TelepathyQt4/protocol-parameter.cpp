@@ -71,7 +71,10 @@ ProtocolParameter &ProtocolParameter::operator=(const ProtocolParameter &other)
 
 bool ProtocolParameter::operator==(const ProtocolParameter &other) const
 {
-    if (!isValid()) {
+    if (!isValid() || !other.isValid()) {
+        if (!isValid() && !other.isValid()) {
+            return true;
+        }
         return false;
     }
 

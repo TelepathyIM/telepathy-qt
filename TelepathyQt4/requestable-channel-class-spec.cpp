@@ -350,7 +350,10 @@ RequestableChannelClassSpec &RequestableChannelClassSpec::operator=(const Reques
 
 bool RequestableChannelClassSpec::operator==(const RequestableChannelClassSpec &other) const
 {
-    if (!isValid()) {
+    if (!isValid() || !other.isValid()) {
+        if (!isValid() && !other.isValid()) {
+            return true;
+        }
         return false;
     }
 
