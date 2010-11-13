@@ -19,42 +19,42 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/ContactLocation>
+#include <TelepathyQt4/LocationInfo>
 
 #include <QDBusArgument>
 
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ContactLocation::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT LocationInfo::Private : public QSharedData
 {
     QVariantMap location;
 };
 
 /**
- * \class ContactLocation
+ * \class LocationInfo
  * \ingroup clientconn
- * \headerfile TelepathyQt4/contact-location.h <TelepathyQt4/ContactLocation>
+ * \headerfile TelepathyQt4/contact-location.h <TelepathyQt4/LocationInfo>
  *
- * \brief The ContactLocation class provides an object representing the
+ * \brief The LocationInfo class provides an object representing the
  * location of a Contact.
  */
 
 /**
- * Construct a new ContactLocation object.
+ * Construct a new LocationInfo object.
  */
-ContactLocation::ContactLocation()
+LocationInfo::LocationInfo()
     : mPriv(new Private)
 {
 }
 
-ContactLocation::ContactLocation(const QVariantMap &location)
+LocationInfo::LocationInfo(const QVariantMap &location)
     : mPriv(new Private)
 {
     mPriv->location = location;
 }
 
-ContactLocation::ContactLocation(const ContactLocation &other)
+LocationInfo::LocationInfo(const LocationInfo &other)
     : mPriv(other.mPriv)
 {
 }
@@ -62,137 +62,137 @@ ContactLocation::ContactLocation(const ContactLocation &other)
 /**
  * Class destructor.
  */
-ContactLocation::~ContactLocation()
+LocationInfo::~LocationInfo()
 {
 }
 
-ContactLocation &ContactLocation::operator=(const ContactLocation &other)
+LocationInfo &LocationInfo::operator=(const LocationInfo &other)
 {
     this->mPriv = other.mPriv;
     return *this;
 }
 
-QString ContactLocation::countryCode() const
+QString LocationInfo::countryCode() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("countrycode")));
 }
 
-QString ContactLocation::country() const
+QString LocationInfo::country() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("country")));
 }
 
-QString ContactLocation::region() const
+QString LocationInfo::region() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("region")));
 }
 
-QString ContactLocation::locality() const
+QString LocationInfo::locality() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("locality")));
 }
 
-QString ContactLocation::area() const
+QString LocationInfo::area() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("area")));
 }
 
-QString ContactLocation::postalCode() const
+QString LocationInfo::postalCode() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("postalcode")));
 }
 
-QString ContactLocation::street() const
+QString LocationInfo::street() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("street")));
 }
 
-QString ContactLocation::building() const
+QString LocationInfo::building() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("building")));
 }
 
-QString ContactLocation::floor() const
+QString LocationInfo::floor() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("floor")));
 }
 
-QString ContactLocation::room() const
+QString LocationInfo::room() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("room")));
 }
 
-QString ContactLocation::text() const
+QString LocationInfo::text() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("text")));
 }
 
-QString ContactLocation::description() const
+QString LocationInfo::description() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("description")));
 }
 
-QString ContactLocation::uri() const
+QString LocationInfo::uri() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("uri")));
 }
 
-QString ContactLocation::language() const
+QString LocationInfo::language() const
 {
     return qdbus_cast<QString>(mPriv->location.value(
                 QLatin1String("language")));
 }
 
-double ContactLocation::latitude() const
+double LocationInfo::latitude() const
 {
     return qdbus_cast<double>(mPriv->location.value(
                 QLatin1String("lat")));
 }
 
-double ContactLocation::longitude() const
+double LocationInfo::longitude() const
 {
     return qdbus_cast<double>(mPriv->location.value(
                 QLatin1String("lon")));
 }
 
-double ContactLocation::altitude() const
+double LocationInfo::altitude() const
 {
     return qdbus_cast<double>(mPriv->location.value(
                 QLatin1String("alt")));
 }
 
-double ContactLocation::accuracy() const
+double LocationInfo::accuracy() const
 {
     return qdbus_cast<double>(mPriv->location.value(
                 QLatin1String("accuracy")));
 }
 
-double ContactLocation::speed() const
+double LocationInfo::speed() const
 {
     return qdbus_cast<double>(mPriv->location.value(
                 QLatin1String("speed")));
 }
 
-double ContactLocation::bearing() const
+double LocationInfo::bearing() const
 {
     return qdbus_cast<double>(mPriv->location.value(
                 QLatin1String("bearing")));
 }
 
-QDateTime ContactLocation::timestamp() const
+QDateTime LocationInfo::timestamp() const
 {
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
     qlonglong t = qdbus_cast<qlonglong>(mPriv->location.value(
@@ -203,12 +203,12 @@ QDateTime ContactLocation::timestamp() const
     return QDateTime();
 }
 
-QVariantMap ContactLocation::allDetails() const
+QVariantMap LocationInfo::allDetails() const
 {
     return mPriv->location;
 }
 
-void ContactLocation::updateData(const QVariantMap &location)
+void LocationInfo::updateData(const QVariantMap &location)
 {
     if (!isValid()) {
         mPriv = new Private;

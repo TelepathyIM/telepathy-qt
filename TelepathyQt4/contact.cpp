@@ -27,7 +27,7 @@
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactCapabilities>
-#include <TelepathyQt4/ContactLocation>
+#include <TelepathyQt4/LocationInfo>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContactInfo>
 #include <TelepathyQt4/PendingVoid>
@@ -68,7 +68,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     QString alias;
     Presence presence;
     ContactCapabilities caps;
-    ContactLocation location;
+    LocationInfo location;
     InfoFields info;
 
     bool isAvatarTokenKnown;
@@ -264,14 +264,14 @@ ContactCapabilities Contact::capabilities() const
  * This method requires Contact::FeatureLocation to be enabled.
  *
  * @return An object representing the contact location which will return \c false for
- *         ContactLocation::isValid() if FeatureLocation is not ready.
+ *         LocationInfo::isValid() if FeatureLocation is not ready.
  */
-ContactLocation Contact::location() const
+LocationInfo Contact::location() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureLocation)) {
         warning() << "Contact::location() used on" << this
             << "for which FeatureLocation hasn't been requested - returning 0";
-        return ContactLocation();
+        return LocationInfo();
     }
 
     return mPriv->location;

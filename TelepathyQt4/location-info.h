@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_contact_location_h_HEADER_GUARD_
-#define _TelepathyQt4_contact_location_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_location_info_h_HEADER_GUARD_
+#define _TelepathyQt4_location_info_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
@@ -36,17 +36,17 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ContactLocation
+class TELEPATHY_QT4_EXPORT LocationInfo
 {
 public:
-    ContactLocation();
-    ContactLocation(const QVariantMap &location);
-    ContactLocation(const ContactLocation &other);
-    virtual ~ContactLocation();
+    LocationInfo();
+    LocationInfo(const QVariantMap &location);
+    LocationInfo(const LocationInfo &other);
+    virtual ~LocationInfo();
 
     bool isValid() const { return mPriv.constData() != 0; }
 
-    ContactLocation &operator=(const ContactLocation &other);
+    LocationInfo &operator=(const LocationInfo &other);
 
     QString countryCode() const;
     QString country() const;
@@ -89,6 +89,6 @@ private:
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ContactLocation);
+Q_DECLARE_METATYPE(Tp::LocationInfo);
 
 #endif

@@ -39,7 +39,7 @@ namespace Tp
 
 struct AvatarData;
 class ContactCapabilities;
-class ContactLocation;
+class LocationInfo;
 class ContactManager;
 class PendingContactInfo;
 class PendingOperation;
@@ -120,7 +120,7 @@ public:
     ContactCapabilities capabilities() const;
 
     // TODO filter: is it available, how accurate, are they near me
-    ContactLocation location() const;
+    LocationInfo location() const;
 
     // TODO filter: having a specific field, having ANY field,
     // (field: exact, contents: exact/prefix/substring)
@@ -164,7 +164,7 @@ Q_SIGNALS:
 
     void capabilitiesChanged(const Tp::ContactCapabilities &caps);
 
-    void locationUpdated(const Tp::ContactLocation &location);
+    void locationUpdated(const Tp::LocationInfo &location);
 
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
