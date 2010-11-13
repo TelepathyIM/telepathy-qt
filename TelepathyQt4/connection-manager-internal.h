@@ -38,7 +38,10 @@ class ReadinessHelper;
 
 struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
 {
-    Private(ConnectionManager *parent, const QString &name);
+    Private(ConnectionManager *parent, const QString &name,
+            const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory);
     ~Private();
 
     bool parseConfigFile();
@@ -65,6 +68,10 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
     Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
+
+    ConnectionFactoryConstPtr connFactory;
+    ChannelFactoryConstPtr chanFactory;
+    ContactFactoryConstPtr contactFactory;
 
     // Introspection
     QQueue<QString> parametersQueue;

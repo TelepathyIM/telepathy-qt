@@ -2433,8 +2433,8 @@ void Account::Private::introspectProtocolInfo(Account::Private *self)
     Q_ASSERT(!self->cm);
 
     self->cm = ConnectionManager::create(
-            self->parent->dbusConnection(),
-            self->cmName);
+            self->parent->dbusConnection(), self->cmName,
+            self->connFactory, self->chanFactory, self->contactFactory);
     self->parent->connect(self->cm->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onConnectionManagerReady(Tp::PendingOperation*)));

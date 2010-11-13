@@ -51,12 +51,9 @@ public:
 
     ConnectionPtr connection() const;
 
-    QString busName() const;
-
-    QString objectPath() const;
-
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
+    void onConnectionBuilt(Tp::PendingOperation *op);
 
 private:
     friend class ConnectionManager;

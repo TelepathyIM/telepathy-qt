@@ -38,7 +38,6 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT PendingAccount::Private
 {
     AccountPtr account;
-    QDBusObjectPath objectPath;
 };
 
 /**
@@ -121,36 +120,17 @@ AccountPtr PendingAccount::account() const
     return mPriv->account;
 }
 
-/**
- * Returns the account object path.
- *
- * This method is useful for creating custom Account objects, so instead of
- * using PendingAccount::account, one could construct a new custom account with
- * the object path.
- *
- * \return Account object path or an empty string an error occurred.
- */
-QString PendingAccount::objectPath() const
-{
-    if (!isFinished()) {
-        warning() << "PendingAccount::objectPath() called before finished";
-    } else if (!isValid()) {
-        warning() << "PendingAccount::objectPath() called when not valid";
-    }
-
-    return mPriv->objectPath.path();
-}
-
 void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->objectPath = reply.value();
-        debug() << "Got reply to AccountManager.CreateAccount - object path:" <<
-            mPriv->objectPath.path();
+        QString objectPath = reply.value().path();
+
+        debug() << "Got reply to AccountManager.CreateAccount - object path:" << objectPath;
+
         PendingReady *readyOp = manager()->accountFactory()->proxy(manager()->busName(),
-                mPriv->objectPath.path(), manager()->connectionFactory(),
+                objectPath, manager()->connectionFactory(),
                 manager()->channelFactory(), manager()->contactFactory());
         mPriv->account = AccountPtr::qObjectCast(readyOp->proxy());
         connect(readyOp,
@@ -181,7 +161,7 @@ void PendingAccount::onAccountBuilt(Tp::PendingOperation *op)
 
         if (manager()->allAccounts().contains(mPriv->account)) {
             setFinished();
-            debug() << "New account" << objectPath() << "built";
+            debug() << "New account" << mPriv->account->objectPath() << "built";
         } else {
             // Have to wait for the AM to pick up the change and signal it so the world can be
             // assumed to be ~round when we finish
@@ -198,7 +178,7 @@ void PendingAccount::onNewAccount(const AccountPtr &account)
         return;
     }
 
-    debug() << "Account" << objectPath() << "added to AM, finishing PendingAccount";
+    debug() << "Account" << account->objectPath() << "added to AM, finishing PendingAccount";
     setFinished();
 }
 

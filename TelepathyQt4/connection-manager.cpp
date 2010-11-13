@@ -297,14 +297,28 @@ bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVaria
     return gotEverything;
 }
 
-ConnectionManager::Private::Private(ConnectionManager *parent, const QString &name)
+ConnectionManager::Private::Private(ConnectionManager *parent, const QString &name,
+        const ConnectionFactoryConstPtr &connFactory,
+        const ChannelFactoryConstPtr &chanFactory,
+        const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
       name(name),
       baseInterface(new Client::ConnectionManagerInterface(parent)),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
-      readinessHelper(parent->readinessHelper())
+      readinessHelper(parent->readinessHelper()),
+      connFactory(connFactory),
+      chanFactory(chanFactory),
+      contactFactory(contactFactory)
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();
+
+    if (connFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the connection factory is not the proxy connection";
+    }
+
+    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
+    }
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -435,40 +449,70 @@ const Feature ConnectionManager::FeatureCore = Feature(QLatin1String(ConnectionM
 /**
  * Create a new ConnectionManager object.
  *
- * \param name Name of the connection manager.
- * \return A ConnectionManagerPtr object pointing to the newly created
- *         ConnectionManager object.
- */
-ConnectionManagerPtr ConnectionManager::create(const QString &name)
-{
-    return ConnectionManagerPtr(new ConnectionManager(name));
-}
-
-/**
- * Create a new ConnectionManager object using the given \a bus.
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \param name Name of the connection manager.
  * \return A ConnectionManagerPtr object pointing to the newly created
  *         ConnectionManager object.
  */
-ConnectionManagerPtr ConnectionManager::create(const QDBusConnection &bus,
-        const QString &name)
+ConnectionManagerPtr ConnectionManager::create(const QDBusConnection &bus, const QString &name)
 {
-    return ConnectionManagerPtr(new ConnectionManager(bus, name));
+    return ConnectionManagerPtr(new ConnectionManager(QDBusConnection::sessionBus(), name,
+                ConnectionFactory::create(bus), ChannelFactory::create(bus),
+                ContactFactory::create()));
 }
 
 /**
- * Construct a new ConnectionManager object.
+ * Create a new ConnectionManager using QDBusConnection::sessionBus() and the given factories.
+ *
+ * The channel factory is passed to any Connection objects created by this manager
+ * object. In fact, they're not used directly by ConnectionManager at all.
+ *
+ * A warning is printed if the factories are for a bus different from QDBusConnection::sessionBus().
  *
  * \param name Name of the connection manager.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ConnectionManagerPtr object pointing to the newly created
+ *         ConnectionManager object.
  */
-ConnectionManager::ConnectionManager(const QString &name)
-    : StatelessDBusProxy(QDBusConnection::sessionBus(),
-            Private::makeBusName(name), Private::makeObjectPath(name), FeatureCore),
-      OptionalInterfaceFactory<ConnectionManager>(this),
-      mPriv(new Private(this, name))
+ConnectionManagerPtr ConnectionManager::create(const QString &name,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
 {
+    return ConnectionManagerPtr(new ConnectionManager(QDBusConnection::sessionBus(), name,
+                connectionFactory, channelFactory, contactFactory));
+}
+
+/**
+ * Create a new ConnectionManager using the given \a bus and the given factories.
+ *
+ * The channel factory is passed to any Connection objects created by this manager
+ * object. In fact, they're not used directly by ConnectionManager at all.
+ *
+ * A warning is printed if the factories are for a bus different from QDBusConnection::sessionBus().
+ *
+ * \param bus QDBusConnection to use.
+ * \param name Name of the connection manager.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ConnectionManagerPtr object pointing to the newly created
+ *         ConnectionManager object.
+ */
+ConnectionManagerPtr ConnectionManager::create(const QDBusConnection &bus,
+        const QString &name,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+{
+    return ConnectionManagerPtr(new ConnectionManager(bus, name,
+                connectionFactory, channelFactory, contactFactory));
 }
 
 /**
@@ -478,11 +522,14 @@ ConnectionManager::ConnectionManager(const QString &name)
  * \param name Name of the connection manager.
  */
 ConnectionManager::ConnectionManager(const QDBusConnection &bus,
-        const QString &name)
+        const QString &name,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), FeatureCore),
       OptionalInterfaceFactory<ConnectionManager>(this),
-      mPriv(new Private(this, name))
+      mPriv(new Private(this, name, connectionFactory, channelFactory, contactFactory))
 {
 }
 
@@ -502,6 +549,51 @@ ConnectionManager::~ConnectionManager()
 QString ConnectionManager::name() const
 {
     return mPriv->name;
+}
+
+/**
+ * Return the connection factory used by this manager.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the manager would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the connection factory.
+ */
+ConnectionFactoryConstPtr ConnectionManager::connectionFactory() const
+{
+    return mPriv->connFactory;
+}
+
+/**
+ * Return the channel factory used by this manager.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the manager would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the channel factory.
+ */
+ChannelFactoryConstPtr ConnectionManager::channelFactory() const
+{
+    return mPriv->chanFactory;
+}
+
+/**
+ * Return the contact factory used by this manager.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the manager would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the contact factory.
+ */
+ContactFactoryConstPtr ConnectionManager::contactFactory() const
+{
+    return mPriv->contactFactory;
 }
 
 /**

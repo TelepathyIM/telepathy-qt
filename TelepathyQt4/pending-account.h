@@ -51,8 +51,6 @@ public:
 
     AccountPtr account() const;
 
-    QString objectPath() const;
-
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
     void onAccountBuilt(Tp::PendingOperation *readyOp);
