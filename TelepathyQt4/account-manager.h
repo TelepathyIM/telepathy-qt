@@ -61,7 +61,7 @@ public:
     static AccountManagerPtr create(const QDBusConnection &bus);
     static AccountManagerPtr create(
             const AccountFactoryConstPtr &accountFactory =
-                AccountFactory::create(QDBusConnection::sessionBus()),
+                AccountFactory::create(QDBusConnection::sessionBus(), Account::FeatureCore),
             const ConnectionFactoryConstPtr &connectionFactory =
                 ConnectionFactory::create(QDBusConnection::sessionBus()),
             const ChannelFactoryConstPtr &channelFactory =
