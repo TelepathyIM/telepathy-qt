@@ -42,8 +42,9 @@ class TELEPATHY_QT4_EXPORT PendingSendMessage : public PendingOperation
     Q_DISABLE_COPY(PendingSendMessage)
 
 public:
-    PendingSendMessage(const Message &message, QObject *parent = 0);
     ~PendingSendMessage();
+
+    TextChannelPtr channel() const;
 
     QString sentMessageToken() const;
     Message message() const;
@@ -54,6 +55,8 @@ private Q_SLOTS:
 
 private:
     friend class TextChannel;
+
+    PendingSendMessage(const TextChannelPtr &channel, const Message &message);
 
     struct Private;
     friend struct Private;

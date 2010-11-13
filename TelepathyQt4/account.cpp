@@ -682,7 +682,7 @@ PendingOperation *Account::setEnabled(bool value)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Enabled"),
                 QDBusVariant(value)),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -743,14 +743,14 @@ PendingOperation *Account::setServiceName(const QString &value)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Service"),
                 QDBusVariant(value)),
-            this);
+            AccountPtr(this));
 }
 
 /**
  * Return the profile used for this account.
  *
  * Note that if a profile for serviceName() is not available, a fake profile
- * (Profile::isFake() will return \c true) will be returned in case protocolInfo() returns non-NULL.
+ * (Profile::isFake() will return \c true) will be returned in case protocolInfo() is valid.
  *
  * The fake profile will contain the following info:
  *  - Profile::type() will return "IM"
@@ -823,7 +823,7 @@ PendingOperation *Account::setDisplayName(const QString &value)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("DisplayName"),
                 QDBusVariant(value)),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -879,7 +879,7 @@ PendingOperation *Account::setIconName(const QString &value)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Icon"),
                 QDBusVariant(value)),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -910,7 +910,7 @@ PendingOperation *Account::setNickname(const QString &value)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("Nickname"),
                 QDBusVariant(value)),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -945,7 +945,8 @@ PendingOperation *Account::setAvatar(const Avatar &avatar)
     if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR))) {
         return new PendingFailure(
                 QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Account does not support Avatar"), this);
+                QLatin1String("Account does not support Avatar"),
+                AccountPtr(this));
     }
 
     return new PendingVoid(
@@ -953,7 +954,7 @@ PendingOperation *Account::setAvatar(const Avatar &avatar)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR),
                 QLatin1String("Avatar"),
                 QDBusVariant(QVariant::fromValue(avatar))),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -988,7 +989,7 @@ PendingStringList *Account::updateParameters(const QVariantMap &set,
 {
     return new PendingStringList(
             baseInterface()->UpdateParameters(set, unset),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -1120,7 +1121,7 @@ PendingOperation *Account::setConnectsAutomatically(bool value)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("ConnectAutomatically"),
                 QDBusVariant(value)),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -1270,7 +1271,7 @@ PendingOperation *Account::setAutomaticPresence(const Presence &presence)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("AutomaticPresence"),
                 QDBusVariant(QVariant::fromValue(presence.barePresence()))),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -1318,7 +1319,7 @@ PendingOperation *Account::setRequestedPresence(const Presence &presence)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                 QLatin1String("RequestedPresence"),
                 QDBusVariant(QVariant::fromValue(presence.barePresence()))),
-            this);
+            AccountPtr(this));
 }
 
 /**
@@ -1381,7 +1382,7 @@ QString Account::normalizedName() const
  */
 PendingOperation *Account::reconnect()
 {
-    return new PendingVoid(baseInterface()->Reconnect(), this);
+    return new PendingVoid(baseInterface()->Reconnect(), AccountPtr(this));
 }
 
 /**
@@ -1392,7 +1393,7 @@ PendingOperation *Account::reconnect()
  */
 PendingOperation *Account::remove()
 {
-    return new PendingVoid(baseInterface()->Remove(), this);
+    return new PendingVoid(baseInterface()->Remove(), AccountPtr(this));
 }
 
 /**
@@ -1425,8 +1426,8 @@ PendingChannelRequest *Account::ensureTextChat(
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1459,8 +1460,8 @@ PendingChannelRequest *Account::ensureTextChat(
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1493,8 +1494,8 @@ PendingChannelRequest *Account::ensureTextChatroom(
                    (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    roomName);
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1527,8 +1528,8 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1561,8 +1562,8 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1600,8 +1601,8 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
                    true);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1639,8 +1640,8 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
                    true);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1687,8 +1688,8 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
                        true);
     }
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1735,8 +1736,8 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
                        true);
     }
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -1796,8 +1797,8 @@ PendingChannelRequest *Account::createFileTransfer(
                        (qulonglong) properties.lastModificationTime().toTime_t());
     }
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -1856,8 +1857,8 @@ PendingChannelRequest *Account::createFileTransfer(
                        (qulonglong) properties.lastModificationTime().toTime_t());
     }
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -1891,8 +1892,8 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
             HandleTypeNone,
             channels, initialInviteeContactsIdentifiers, request);
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -1928,8 +1929,8 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
             HandleTypeNone,
             channels, initialInviteeContacts, request);
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -1963,8 +1964,8 @@ PendingChannelRequest *Account::createConferenceTextChat(
             HandleTypeNone,
             channels, initialInviteeContactsIdentifiers, request);
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -1998,8 +1999,8 @@ PendingChannelRequest *Account::createConferenceTextChat(
             HandleTypeNone,
             channels, initialInviteeContacts, request);
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -2037,8 +2038,8 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
             HandleTypeRoom,
             channels, initialInviteeContactsIdentifiers, request);
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -2076,8 +2077,8 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
             HandleTypeRoom,
             channels, initialInviteeContacts, request);
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -2114,8 +2115,8 @@ PendingChannelRequest *Account::createContactSearch(
                    server);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), limit);
 
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -2142,8 +2143,8 @@ PendingChannelRequest *Account::createChannel(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true);
 }
 
 /**
@@ -2170,8 +2171,8 @@ PendingChannelRequest *Account::ensureChannel(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
-            AccountPtr(this));
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false);
 }
 
 /**
@@ -2898,7 +2899,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
         ConnectionPtr prevConn = mPriv->connection;
         QString prevConnPath = mPriv->connectionObjectPath();
 
-        mPriv->connection = ConnectionPtr::dynamicCast(readyOp->proxy());
+        mPriv->connection = ConnectionPtr::qObjectCast(readyOp->proxy());
         Q_ASSERT(mPriv->connection);
 
         debug() << "Connection" << mPriv->connectionObjectPath() << "built for" << objectPath();

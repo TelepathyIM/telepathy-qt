@@ -33,7 +33,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
 {
-    ConnectionPtr connection;
     HandleType handleType;
     bool isRequest;
     QStringList namesRequested;
@@ -64,12 +63,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
 
 PendingHandles::PendingHandles(const ConnectionPtr &connection, HandleType handleType,
         const QStringList &names)
-    : PendingOperation(0),
+    : PendingOperation(connection),
       mPriv(new Private)
 {
     debug() << "PendingHandles(request)";
 
-    mPriv->connection = connection;
     mPriv->handleType = handleType;
     mPriv->isRequest = true;
     mPriv->namesRequested = names;
@@ -88,12 +86,11 @@ PendingHandles::PendingHandles(const ConnectionPtr &connection, HandleType handl
 PendingHandles::PendingHandles(const ConnectionPtr &connection, HandleType handleType,
         const UIntList &handles, const UIntList &alreadyHeld,
         const UIntList &notYetHeld)
-    : PendingOperation(0),
+    : PendingOperation(connection),
       mPriv(new Private)
 {
     debug() << "PendingHandles(reference)";
 
-    mPriv->connection = connection;
     mPriv->handleType = handleType;
     mPriv->isRequest = false;
     mPriv->handlesToReference = handles;
@@ -132,7 +129,7 @@ PendingHandles::~PendingHandles()
  */
 ConnectionPtr PendingHandles::connection() const
 {
-    return mPriv->connection;
+    return ConnectionPtr(qobject_cast<Connection*>((Connection*) object().data()));
 }
 
 /**
@@ -268,7 +265,7 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
                             error.message()));
             }
             setFinishedWithError(error);
-            mPriv->connection->handleRequestLanded(mPriv->handleType);
+            connection()->handleRequestLanded(mPriv->handleType);
             watcher->deleteLater();
             return;
         }
@@ -282,7 +279,7 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
                     QPair<QString, QString>(error.name(),
                         error.message()));
             setFinished();
-            mPriv->connection->handleRequestLanded(mPriv->handleType);
+            connection()->handleRequestLanded(mPriv->handleType);
             watcher->deleteLater();
             return;
         }
@@ -291,7 +288,7 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
         foreach (const QString &name, mPriv->namesRequested) {
             QDBusPendingCallWatcher *watcher =
                 new QDBusPendingCallWatcher(
-                        mPriv->connection->baseInterface()->RequestHandles(
+                        connection()->baseInterface()->RequestHandles(
                             mPriv->handleType,
                             QStringList() << name),
                         this);
@@ -302,11 +299,11 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
         }
     } else {
         debug() << "Received reply to RequestHandles";
-        mPriv->handles = ReferencedHandles(mPriv->connection,
+        mPriv->handles = ReferencedHandles(connection(),
                 mPriv->handleType, reply.value());
         mPriv->validNames.append(mPriv->namesRequested);
         setFinished();
-        mPriv->connection->handleRequestLanded(mPriv->handleType);
+        connection()->handleRequestLanded(mPriv->handleType);
     }
 }
 
@@ -347,7 +344,7 @@ void PendingHandles::onHoldHandlesFinished(QDBusPendingCallWatcher *watcher)
         foreach (uint handle, mPriv->handlesToReference) {
             QDBusPendingCallWatcher *watcher =
                 new QDBusPendingCallWatcher(
-                        mPriv->connection->baseInterface()->HoldHandles(
+                        connection()->baseInterface()->HoldHandles(
                             mPriv->handleType,
                             UIntList() << handle),
                         this);
@@ -357,7 +354,7 @@ void PendingHandles::onHoldHandlesFinished(QDBusPendingCallWatcher *watcher)
             mPriv->handlesForWatchers.insert(watcher, handle);
         }
     } else {
-        mPriv->handles = ReferencedHandles(mPriv->connection,
+        mPriv->handles = ReferencedHandles(connection(),
                 mPriv->handleType, mPriv->handlesToReference);
         setFinished();
     }
@@ -389,7 +386,7 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
                             error.message()));
             }
             setFinishedWithError(error);
-            mPriv->connection->handleRequestLanded(mPriv->handleType);
+            connection()->handleRequestLanded(mPriv->handleType);
             watcher->deleteLater();
             return;
         }
@@ -419,7 +416,7 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
                     mPriv->validNames.append(name);
                 }
             }
-            mPriv->handles = ReferencedHandles(mPriv->connection,
+            mPriv->handles = ReferencedHandles(connection(),
                     mPriv->handleType, handles);
 
             setFinished();
@@ -429,7 +426,7 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
         debug() << " invalidNames  :" << mPriv->invalidNames;
         debug() << " validNames    :" << mPriv->validNames;
 
-        mPriv->connection->handleRequestLanded(mPriv->handleType);
+        connection()->handleRequestLanded(mPriv->handleType);
     }
 
     watcher->deleteLater();
@@ -472,7 +469,7 @@ void PendingHandles::onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watc
         }
 
         if (handles.size() != 0) {
-            mPriv->handles = ReferencedHandles(mPriv->connection,
+            mPriv->handles = ReferencedHandles(connection(),
                     mPriv->handleType, handles);
         }
 

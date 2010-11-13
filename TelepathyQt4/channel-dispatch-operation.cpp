@@ -161,22 +161,22 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
             connectionObjectPath.path().mid(1).replace(QLatin1String("/"),
                     QLatin1String("."));
 
-        PendingReady *ready =
+        PendingReady *readyOp =
             connFactory->proxy(connectionBusName, connectionObjectPath.path(),
                     chanFactory, contactFactory);
-        connection = ConnectionPtr::dynamicCast(ready->proxy());
-        readyOps.append(ready);
+        connection = ConnectionPtr::qObjectCast(readyOp->proxy());
+        readyOps.append(readyOp);
     }
 
     if (!account && props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
 
-        PendingReady *ready =
+        PendingReady *readyOp =
             accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
                     accountObjectPath.path(), connFactory, chanFactory, contactFactory);
-        account = AccountPtr::dynamicCast(ready->proxy());
-        readyOps.append(ready);
+        account = AccountPtr::qObjectCast(readyOp->proxy());
+        readyOps.append(readyOp);
     }
 
     if (!immutableProperties) {
@@ -192,11 +192,11 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
             qdbus_cast<ChannelDetailsList>(props.value(QLatin1String("Channels")));
         ChannelPtr channel;
         foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-            PendingReady *ready =
+            PendingReady *readyOp =
                 chanFactory->proxy(connection,
                         channelDetails.channel.path(), channelDetails.properties);
-            channels.append(ChannelPtr::dynamicCast(ready->proxy()));
-            readyOps.append(ready);
+            channels.append(ChannelPtr::qObjectCast(readyOp->proxy()));
+            readyOps.append(readyOp);
         }
 
         // saveChannels goes out of scope now, so any initial channels which don't exist anymore are
@@ -212,7 +212,7 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         debug() << "No proxies to prepare for CDO" << parent->objectPath();
         readinessHelper->setIntrospectCompleted(FeatureCore, true);
     } else {
-        parent->connect(new PendingComposite(readyOps, parent),
+        parent->connect(new PendingComposite(readyOps, ChannelDispatchOperationPtr(parent)),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onProxiesPrepared(Tp::PendingOperation*)));
     }
@@ -450,7 +450,7 @@ PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
 {
     return new PendingVoid(
             mPriv->baseInterface->HandleWith(handler),
-            this);
+            ChannelDispatchOperationPtr(this));
 }
 
 /**
@@ -489,7 +489,8 @@ PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
  */
 PendingOperation *ChannelDispatchOperation::claim()
 {
-    return new PendingVoid(mPriv->baseInterface->Claim(), this);
+    return new PendingVoid(mPriv->baseInterface->Claim(),
+            ChannelDispatchOperationPtr(this));
 }
 
 /**

@@ -42,15 +42,13 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
 {
-    Private(const AccountPtr &account)
-        : dbusConnection(account->dbusConnection()),
-          account(account),
+    Private(const QDBusConnection &dbusConnection)
+        : dbusConnection(dbusConnection),
           cancelOperation(0)
     {
     }
 
     QDBusConnection dbusConnection;
-    AccountPtr account;
     ChannelRequestPtr channelRequest;
     PendingChannelRequestCancelOperation *cancelOperation;
 };
@@ -80,14 +78,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
  * \param create Whether createChannel or ensureChannel should be called.
  * \param account The account the request was made through.
  */
-PendingChannelRequest::PendingChannelRequest(
-        const QVariantMap &requestedProperties,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler,
-        bool create,
-        const AccountPtr &account)
-    : PendingOperation(0),
-      mPriv(new Private(account))
+PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
+        const QVariantMap &requestedProperties, const QDateTime &userActionTime,
+        const QString &preferredHandler, bool create)
+    : PendingOperation(account),
+      mPriv(new Private(account->dbusConnection()))
 {
     QString channelDispatcherObjectPath =
         QString(QLatin1String("/%1")).arg(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER));
@@ -135,6 +130,16 @@ PendingChannelRequest::~PendingChannelRequest()
     delete mPriv;
 }
 
+/**
+ * Return the AccountPtr object through which the request was made.
+ *
+ * \return An AccountPtr object.
+ */
+AccountPtr PendingChannelRequest::account() const
+{
+    return AccountPtr(qobject_cast<Account*>((Account*) object().data()));
+}
+
 ChannelRequestPtr PendingChannelRequest::channelRequest() const
 {
     return mPriv->channelRequest;
@@ -145,11 +150,12 @@ PendingOperation *PendingChannelRequest::cancel()
     if (isFinished()) {
         // CR has already succeeded or failed, so let's just fail here
         return new PendingFailure(QLatin1String(TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD),
-                QLatin1String("ChannnelRequest already finished"), this);
+                QLatin1String("ChannnelRequest already finished"),
+                object());
     }
 
     if (!mPriv->cancelOperation) {
-        mPriv->cancelOperation = new PendingChannelRequestCancelOperation(this);
+        mPriv->cancelOperation = new PendingChannelRequestCancelOperation();
         connect(mPriv->cancelOperation,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onCancelOperationFinished(Tp::PendingOperation*)));
@@ -171,22 +177,13 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to ChannelDispatcher.Ensure/CreateChannel "
             "- object path:" << objectPath.path();
 
-        // API/ABI break TODO: Remove the extra branch here when removing the deprecated
-        // ctor/create()
-        if (!mPriv->account.isNull()) {
-            mPriv->channelRequest = ChannelRequest::create(mPriv->account,
+        if (!account().isNull()) {
+            mPriv->channelRequest = ChannelRequest::create(account(),
                     objectPath.path(), QVariantMap());
-        } else {
-            mPriv->channelRequest = ChannelRequest::create(mPriv->dbusConnection,
-                    objectPath.path(), QVariantMap(),
-                    AccountFactoryPtr(), ConnectionFactoryPtr(),
-                    ChannelFactoryPtr(), ContactFactoryPtr());
         }
 
         if (mPriv->cancelOperation) {
             mPriv->cancelOperation->go(mPriv->channelRequest);
-            setFinishedWithError(QLatin1String(TELEPATHY_ERROR_CANCELLED),
-                    QLatin1String("ChannelRequest cancelled"));
         } else {
             emit channelRequestCreated(mPriv->channelRequest);
 
@@ -220,6 +217,10 @@ void PendingChannelRequest::onProceedOperationFinished(PendingOperation *op)
 void PendingChannelRequest::onCancelOperationFinished(PendingOperation *op)
 {
     mPriv->cancelOperation = 0;
+    if (!isFinished()) {
+        setFinishedWithError(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+                QLatin1String("ChannelRequest cancelled"));
+    }
 }
 
 } // Tp

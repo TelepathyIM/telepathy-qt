@@ -46,6 +46,8 @@ class TELEPATHY_QT4_EXPORT PendingStreamedMediaStreams : public PendingOperation
 public:
     ~PendingStreamedMediaStreams();
 
+    StreamedMediaChannelPtr channel() const;
+
     StreamedMediaStreams streams() const;
 
 private Q_SLOTS:

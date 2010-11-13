@@ -50,14 +50,20 @@ inline PendingSendMessage::Private::Private(const Message &message)
 {
 }
 
-PendingSendMessage::PendingSendMessage(const Message &message, QObject *parent)
-    : PendingOperation(parent), mPriv(new Private(message))
+PendingSendMessage::PendingSendMessage(const TextChannelPtr &channel, const Message &message)
+    : PendingOperation(channel),
+      mPriv(new Private(message))
 {
 }
 
 PendingSendMessage::~PendingSendMessage()
 {
     delete mPriv;
+}
+
+TextChannelPtr PendingSendMessage::channel() const
+{
+    return TextChannelPtr(qobject_cast<TextChannel*>((TextChannel*) object().data()));
 }
 
 QString PendingSendMessage::sentMessageToken() const
@@ -916,7 +922,7 @@ PendingSendMessage *TextChannel::send(const QString &text,
         ChannelTextMessageType type, MessageSendingFlags flags)
 {
     Message m(type, text);
-    PendingSendMessage *op = new PendingSendMessage(m, this);
+    PendingSendMessage *op = new PendingSendMessage(TextChannelPtr(this), m);
 
     if (hasMessagesInterface()) {
         Client::ChannelInterfaceMessagesInterface *messagesInterface =
@@ -941,7 +947,7 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
         MessageSendingFlags flags)
 {
     Message m(parts);
-    PendingSendMessage *op = new PendingSendMessage(m, this);
+    PendingSendMessage *op = new PendingSendMessage(TextChannelPtr(this), m);
 
     if (hasMessagesInterface()) {
         Client::ChannelInterfaceMessagesInterface *messagesInterface =
@@ -980,13 +986,13 @@ PendingOperation *TextChannel::requestChatState(ChannelChatState state)
             "state interface";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("TextChannel does not support chat state interface"),
-                this);
+                TextChannelPtr(this));
     }
 
     Client::ChannelInterfaceChatStateInterface *chatStateInterface =
         interface<Client::ChannelInterfaceChatStateInterface>();
     return new PendingVoid(chatStateInterface->SetChatState(
-                (uint) state), this);
+                (uint) state), TextChannelPtr(this));
 }
 
 void TextChannel::onMessageSent(const MessagePartList &parts,

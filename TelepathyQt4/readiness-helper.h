@@ -41,6 +41,7 @@ namespace Tp
 class DBusProxy;
 class PendingOperation;
 class PendingReady;
+class RefCounted;
 
 class TELEPATHY_QT4_EXPORT ReadinessHelper : public QObject
 {
@@ -73,7 +74,7 @@ public:
     };
     typedef QMap<Feature, Introspectable> Introspectables;
 
-    ReadinessHelper(QObject *object,
+    ReadinessHelper(RefCounted *object,
             uint currentStatus = 0,
             const Introspectables &introspectables = Introspectables(),
             QObject *parent = 0);

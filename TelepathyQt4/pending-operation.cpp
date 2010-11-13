@@ -39,10 +39,13 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingOperation::Private
 {
-    Private() : finished(false)
+    Private(const SharedPtr<RefCounted> &object)
+        : object(object),
+          finished(false)
     {
     }
 
+    SharedPtr<RefCounted> object;
     QString errorName;
     QString errorMessage;
     bool finished;
@@ -78,11 +81,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOperation::Private
 /**
  * Protected constructor. Only subclasses of this class may be constructed.
  *
- * \param parent The object on which this pending operation takes place
+ * \param object The object on which this pending operation takes place
  */
-PendingOperation::PendingOperation(QObject *parent)
-    : QObject(parent),
-      mPriv(new Private())
+PendingOperation::PendingOperation(const SharedPtr<RefCounted> &object)
+    : QObject(),
+      mPriv(new Private(object))
 {
 }
 
@@ -98,6 +101,11 @@ PendingOperation::~PendingOperation()
     }
 
     delete mPriv;
+}
+
+SharedPtr<RefCounted> PendingOperation::object() const
+{
+    return mPriv->object;
 }
 
 void PendingOperation::emitFinished()
@@ -287,14 +295,13 @@ QString PendingOperation::errorMessage() const
 /**
  * Constructor.
  *
- * \param parent The object on which this pending operation takes place
+ * \param object The object on which this pending operation takes place
  * \param call A pending call as returned by the auto-generated low level
  *             Telepathy API; if the method returns anything, the return
  *             value(s) will be ignored
  */
-PendingVoid::PendingVoid(QDBusPendingCall call,
-        QObject *parent)
-    : PendingOperation(parent)
+PendingVoid::PendingVoid(QDBusPendingCall call, const SharedPtr<RefCounted> &object)
+    : PendingOperation(object)
 {
     connect(new QDBusPendingCallWatcher(call),
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -331,8 +338,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingComposite::Private
 };
 
 PendingComposite::PendingComposite(const QList<PendingOperation*> &operations,
-         QObject *parent)
-    : PendingOperation(parent),
+         const SharedPtr<RefCounted> &object)
+    : PendingOperation(object),
       mPriv(new Private(true, operations.size()))
 {
     foreach (PendingOperation *operation, operations) {
@@ -343,8 +350,8 @@ PendingComposite::PendingComposite(const QList<PendingOperation*> &operations,
 }
 
 PendingComposite::PendingComposite(const QList<PendingOperation*> &operations,
-         bool failOnFirstError, QObject *parent)
-    : PendingOperation(parent),
+         bool failOnFirstError, const SharedPtr<RefCounted> &object)
+    : PendingOperation(object),
       mPriv(new Private(failOnFirstError, operations.size()))
 {
     foreach (PendingOperation *operation, operations) {

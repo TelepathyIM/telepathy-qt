@@ -41,8 +41,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingVariant::Private
  * \headerfile TelepathyQt4/pending-variant.h <TelepathyQt4/PendingVariant>
  */
 
-PendingVariant::PendingVariant(QDBusPendingCall call, QObject *parent)
-    : PendingOperation(parent),
+PendingVariant::PendingVariant(QDBusPendingCall call, const SharedPtr<RefCounted> &object)
+    : PendingOperation(object),
       mPriv(new Private)
 {
     connect(new QDBusPendingCallWatcher(call),

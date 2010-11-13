@@ -20,14 +20,16 @@
 
 #include <TelepathyQt4/AbstractInterface>
 
+#include "TelepathyQt4/_gen/abstract-interface.moc.hpp"
+
+#include "TelepathyQt4/debug-internal.h"
+
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/PendingVariantMap>
 #include <TelepathyQt4/PendingVoid>
-#include <TelepathyQt4/Constants>
-
-#include "TelepathyQt4/_gen/abstract-interface.moc.hpp"
-#include "TelepathyQt4/debug-internal.h"
+#include <TelepathyQt4/Types>
 
 #include <QDBusPendingCall>
 
@@ -94,7 +96,8 @@ PendingVariant *AbstractInterface::internalRequestProperty(const QString &name) 
             TP_QT4_IFACE_PROPERTIES, QLatin1String("Get"));
     msg << interface() << name;
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
-    return new PendingVariant(pendingCall);
+    DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
+    return new PendingVariant(pendingCall, DBusProxyPtr(proxy));
 }
 
 PendingOperation *AbstractInterface::internalSetProperty(const QString &name,
@@ -104,7 +107,8 @@ PendingOperation *AbstractInterface::internalSetProperty(const QString &name,
             TP_QT4_IFACE_PROPERTIES, QLatin1String("Set"));
     msg << interface() << name << newValue;
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
-    return new PendingVoid(pendingCall, this);
+    DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
+    return new PendingVoid(pendingCall, DBusProxyPtr(proxy));
 }
 
 PendingVariantMap *AbstractInterface::internalRequestAllProperties() const
@@ -113,7 +117,8 @@ PendingVariantMap *AbstractInterface::internalRequestAllProperties() const
             TP_QT4_IFACE_PROPERTIES, QLatin1String("GetAll"));
     msg << interface();
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
-    return new PendingVariantMap(pendingCall);
+    DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
+    return new PendingVariantMap(pendingCall, DBusProxyPtr(proxy));
 }
 
 } // Tp

@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright (C) 2009-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,15 +42,8 @@ class TELEPATHY_QT4_EXPORT PendingReady: public PendingOperation
     Q_DISABLE_COPY(PendingReady);
 
 public:
-    // API/ABI break TODO: Shouldn't these be private?
-    PendingReady(const SharedPtr<const DBusProxyFactory> &factory,
-            const Features &requestedFeatures, const DBusProxyPtr &proxy,
-            QObject *parent = 0);
-    PendingReady(const Features &requestedFeatures, QObject *object,
-            QObject *parent = 0);
     ~PendingReady();
 
-    QObject *object() const;
     DBusProxyPtr proxy() const;
 
     Features requestedFeatures() const;
@@ -59,8 +52,13 @@ private Q_SLOTS:
     void onNestedFinished(Tp::PendingOperation *);
 
 private:
-    friend class ReadinessHelper;
+    friend class Connection;
     friend class DBusProxyFactory;
+    friend class ReadinessHelper;
+
+    PendingReady(const SharedPtr<RefCounted> &object, const Features &requestedFeatures);
+    PendingReady(const SharedPtr<DBusProxyFactory> &factory,
+            const DBusProxyPtr &proxy, const Features &requestedFeatures);
 
     struct Private;
     friend struct Private;

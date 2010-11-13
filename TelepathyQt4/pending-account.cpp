@@ -37,12 +37,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingAccount::Private
 {
-    Private(const AccountManagerPtr &manager) :
-        manager(manager)
-    {
-    }
-
-    AccountManagerPtr manager;
     AccountPtr account;
     QDBusObjectPath objectPath;
 };
@@ -78,8 +72,8 @@ PendingAccount::PendingAccount(const AccountManagerPtr &manager,
         const QString &connectionManager, const QString &protocol,
         const QString &displayName, const QVariantMap &parameters,
         const QVariantMap &properties)
-    : PendingOperation(0),
-      mPriv(new Private(manager))
+    : PendingOperation(manager),
+      mPriv(new Private)
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             manager->baseInterface()->CreateAccount(connectionManager,
@@ -104,7 +98,7 @@ PendingAccount::~PendingAccount()
  */
 AccountManagerPtr PendingAccount::manager() const
 {
-    return mPriv->manager;
+    return AccountManagerPtr(qobject_cast<AccountManager *>((AccountManager*) object().data()));
 }
 
 /**
@@ -155,11 +149,11 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
         mPriv->objectPath = reply.value();
         debug() << "Got reply to AccountManager.CreateAccount - object path:" <<
             mPriv->objectPath.path();
-        PendingReady *proxyOp = manager()->accountFactory()->proxy(manager()->busName(),
+        PendingReady *readyOp = manager()->accountFactory()->proxy(manager()->busName(),
                 mPriv->objectPath.path(), manager()->connectionFactory(),
                 manager()->channelFactory(), manager()->contactFactory());
-        mPriv->account = AccountPtr::dynamicCast(proxyOp->proxy());
-        connect(proxyOp,
+        mPriv->account = AccountPtr::qObjectCast(readyOp->proxy());
+        connect(readyOp,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onAccountBuilt(Tp::PendingOperation*)));
     } else {
@@ -183,15 +177,15 @@ void PendingAccount::onAccountBuilt(Tp::PendingOperation *op)
     } else {
         // AM is stateless, so the only way for it to become invalid is in the introspection phase,
         // and a PendingAccount should never be created if AM introspection hasn't succeeded
-        Q_ASSERT(!mPriv->manager.isNull() && mPriv->manager->isValid());
+        Q_ASSERT(!manager().isNull() && manager()->isValid());
 
-        if (mPriv->manager->allAccounts().contains(mPriv->account)) {
+        if (manager()->allAccounts().contains(mPriv->account)) {
             setFinished();
             debug() << "New account" << objectPath() << "built";
         } else {
             // Have to wait for the AM to pick up the change and signal it so the world can be
             // assumed to be ~round when we finish
-            connect(mPriv->manager.data(),
+            connect(manager().data(),
                     SIGNAL(newAccount(Tp::AccountPtr)),
                     SLOT(onNewAccount(Tp::AccountPtr)));
         }

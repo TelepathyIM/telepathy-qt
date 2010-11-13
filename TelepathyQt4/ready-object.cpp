@@ -31,8 +31,7 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ReadyObject::Private
 {
-    Private(ReadyObject *parent, QObject *object,
-            Feature featureCore);
+    Private(ReadyObject *parent, RefCounted *object, Feature featureCore);
     ~Private();
 
     ReadyObject *parent;
@@ -40,7 +39,7 @@ struct TELEPATHY_QT4_NO_EXPORT ReadyObject::Private
     ReadinessHelper *readinessHelper;
 };
 
-ReadyObject::Private::Private(ReadyObject *parent, QObject *object,
+ReadyObject::Private::Private(ReadyObject *parent, RefCounted *object,
         Feature featureCore)
     : parent(parent),
       coreFeatures(Features() << featureCore),
@@ -62,10 +61,10 @@ ReadyObject::Private::~Private()
 /**
  * Construct a new ReadyObject object.
  *
- * \param object The QObject the object refers to.
+ * \param object The RefCounted the object refers to.
  * \param featureCore The core feature of the object.
  */
-ReadyObject::ReadyObject(QObject *object, const Feature &featureCore)
+ReadyObject::ReadyObject(RefCounted *object, const Feature &featureCore)
     : mPriv(new Private(this, object, featureCore))
 {
 }
@@ -116,7 +115,6 @@ PendingReady *ReadyObject::becomeReady(const Features &requestedFeatures)
         return mPriv->readinessHelper->becomeReady(mPriv->coreFeatures);
     }
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
-
 }
 
 Features ReadyObject::requestedFeatures() const

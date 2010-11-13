@@ -49,6 +49,8 @@ class TELEPATHY_QT4_EXPORT PendingChannelRequest : public PendingOperation
 public:
     ~PendingChannelRequest();
 
+    AccountPtr account() const;
+
     ChannelRequestPtr channelRequest() const;
 
     PendingOperation *cancel();
@@ -64,12 +66,9 @@ private Q_SLOTS:
 private:
     friend class Account;
 
-    PendingChannelRequest(
-            const QVariantMap &requestedProperties,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            bool create,
-            const AccountPtr &account);
+    PendingChannelRequest(const AccountPtr &account,
+            const QVariantMap &requestedProperties, const QDateTime &userActionTime,
+            const QString &preferredHandler, bool create);
 
     struct Private;
     friend struct Private;

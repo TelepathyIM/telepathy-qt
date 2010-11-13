@@ -1548,10 +1548,10 @@ PendingOperation *Channel::requestClose()
     // Closing a channel does not make sense if it is already closed,
     // just silently Return.
     if (!isValid()) {
-        return new PendingSuccess(this);
+        return new PendingSuccess(ChannelPtr(this));
     }
 
-    return new PendingVoid(mPriv->baseInterface->Close(), this);
+    return new PendingVoid(mPriv->baseInterface->Close(), ChannelPtr(this));
 }
 
 /**
@@ -1681,11 +1681,13 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
     if (!isReady()) {
         warning() << "Channel::groupAddContacts() used channel not ready";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Channel not ready"), this);
+                QLatin1String("Channel not ready"),
+                ChannelPtr(this));
     } else if (contacts.isEmpty()) {
         warning() << "Channel::groupAddContacts() used with empty contacts param";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                QLatin1String("contacts cannot be an empty list"), this);
+                QLatin1String("contacts cannot be an empty list"),
+                ChannelPtr(this));
     }
 
     foreach (const ContactPtr &contact, contacts) {
@@ -1693,23 +1695,23 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
             warning() << "Channel::groupAddContacts() used but contacts param contains "
                 "invalid contact";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                    QLatin1String("Unable to add invalid contacts"), this);
+                    QLatin1String("Unable to add invalid contacts"),
+                    ChannelPtr(this));
         }
     }
 
     if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupAddContacts() used with no group interface";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Channel does not support group interface"), this);
+                QLatin1String("Channel does not support group interface"),
+                ChannelPtr(this));
     }
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle()[0];
     }
-    return new PendingVoid(
-            mPriv->group->AddMembers(handles, message),
-            this);
+    return new PendingVoid(mPriv->group->AddMembers(handles, message), ChannelPtr(this));
 }
 
 /**
@@ -1866,13 +1868,15 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
     if (!isReady()) {
         warning() << "Channel::groupRemoveContacts() used channel not ready";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Channel not ready"), this);
+                QLatin1String("Channel not ready"),
+                ChannelPtr(this));
     }
 
     if (contacts.isEmpty()) {
         warning() << "Channel::groupRemoveContacts() used with empty contacts param";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                QLatin1String("contacts param cannot be an empty list"), this);
+                QLatin1String("contacts param cannot be an empty list"),
+                ChannelPtr(this));
     }
 
     foreach (const ContactPtr &contact, contacts) {
@@ -1880,14 +1884,16 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
             warning() << "Channel::groupRemoveContacts() used but contacts param contains "
                 "invalid contact:";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                    QLatin1String("Unable to remove invalid contacts"), this);
+                    QLatin1String("Unable to remove invalid contacts"),
+                    ChannelPtr(this));
         }
     }
 
     if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupRemoveContacts() used with no group interface";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Channel does not support group interface"), this);
+                QLatin1String("Channel does not support group interface"),
+                ChannelPtr(this));
     }
 
     UIntList handles;
@@ -1896,7 +1902,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
     }
     return new PendingVoid(
             mPriv->group->RemoveMembersWithReason(handles, message, reason),
-            this);
+            ChannelPtr(this));
 }
 
 /**
@@ -2203,7 +2209,8 @@ PendingOperation *Channel::groupAddSelfHandle()
         warning() << "Channel::groupAddSelfHandle() used when channel not "
             "ready";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                QLatin1String("Channel object not ready"), this);
+                QLatin1String("Channel object not ready"),
+                ChannelPtr(this));
     }
 
     UIntList handles;
@@ -2216,7 +2223,7 @@ PendingOperation *Channel::groupAddSelfHandle()
 
     return new PendingVoid(
             mPriv->group->AddMembers(handles, QLatin1String("")),
-            this);
+            ChannelPtr(this));
 }
 
 /**
@@ -2350,11 +2357,12 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
     if (!supportsConferenceMerging()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Channel does not support MergeableConference interface"),
-                this);
+                ChannelPtr(this));
     }
 
     return new PendingVoid(mPriv->mergeableConferenceInterface()->Merge(
-                QDBusObjectPath(channel->objectPath())), this);
+                QDBusObjectPath(channel->objectPath())),
+                ChannelPtr(this));
 }
 
 /**
@@ -2384,10 +2392,11 @@ PendingOperation *Channel::conferenceSplitChannel()
 {
     if (!supportsConferenceSplitting()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Channel does not support Splittable interface"), this);
+                QLatin1String("Channel does not support Splittable interface"),
+                ChannelPtr(this));
     }
 
-    return new PendingVoid(mPriv->splittableInterface()->Split(), this);
+    return new PendingVoid(mPriv->splittableInterface()->Split(), ChannelPtr(this));
 }
 
 /**
@@ -2994,8 +3003,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
 
             PendingReady *readyOp = chanFactory->proxy(conn,
                     channelPath.path(), QVariantMap());
-
-            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+            ChannelPtr channel(ChannelPtr::qObjectCast(readyOp->proxy()));
             Q_ASSERT(!channel.isNull());
 
             mPriv->conferenceChannels.insert(channelPath.path(), channel);
@@ -3010,8 +3018,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
 
             PendingReady *readyOp = chanFactory->proxy(conn,
                     channelPath.path(), QVariantMap());
-
-            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+            ChannelPtr channel(ChannelPtr::qObjectCast(readyOp->proxy()));
             Q_ASSERT(!channel.isNull());
 
             mPriv->conferenceInitialChannels.insert(channelPath.path(), channel);
@@ -3029,8 +3036,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
                 i != originalChannels.constEnd(); ++i) {
             PendingReady *readyOp = chanFactory->proxy(conn,
                     i.value().path(), QVariantMap());
-
-            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+            ChannelPtr channel(ChannelPtr::qObjectCast(readyOp->proxy()));
             Q_ASSERT(!channel.isNull());
 
             mPriv->conferenceOriginalChannels.insert(i.key(), channel);
@@ -3071,8 +3077,7 @@ void Channel::onConferenceChannelMerged(const QDBusObjectPath &channelPath,
     ChannelFactoryConstPtr chanFactory = conn->channelFactory();
     PendingReady *readyOp = chanFactory->proxy(conn,
             channelPath.path(), properties);
-
-    ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+    ChannelPtr channel(ChannelPtr::qObjectCast(readyOp->proxy()));
     Q_ASSERT(!channel.isNull());
 
     mPriv->conferenceChannels.insert(channelPath.path(), channel);

@@ -35,8 +35,8 @@ class TELEPATHY_QT4_NO_EXPORT PendingChannelRequestCancelOperation : public Pend
     Q_DISABLE_COPY(PendingChannelRequestCancelOperation)
 
 public:
-    PendingChannelRequestCancelOperation(QObject *parent)
-        : PendingOperation(parent)
+    PendingChannelRequestCancelOperation()
+        : PendingOperation(SharedPtr<Object>())
     {
     }
 

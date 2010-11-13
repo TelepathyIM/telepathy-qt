@@ -46,7 +46,7 @@ namespace Tp
 {
 
 ConnectionManager::Private::PendingNames::PendingNames(const QDBusConnection &bus)
-    : PendingStringList(),
+    : PendingStringList(SharedPtr<RefCounted>()),
       mBus(bus)
 {
     mMethodsQueue.enqueue(QLatin1String("ListNames"));
@@ -130,7 +130,6 @@ ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
     introspectables[FeatureCore] = introspectableCore;
 
     mReadinessHelper->addIntrospectables(introspectables);
-    mReadinessHelper->becomeReady(Features() << FeatureCore);
 }
 
 ConnectionManager::Private::ProtocolWrapper::~ProtocolWrapper()
@@ -319,15 +318,10 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
     introspectables[FeatureCore] = introspectableCore;
 
     readinessHelper->addIntrospectables(introspectables);
-    readinessHelper->becomeReady(Features() << FeatureCore);
 }
 
 ConnectionManager::Private::~Private()
 {
-    foreach (ProtocolWrapper *wrapper, wrappers) {
-        delete wrapper;
-    }
-
     delete baseInterface;
 }
 
@@ -666,13 +660,14 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         while (i != end) {
             QString protocolPath = QString(
                     QLatin1String("%1/%2")).arg(objectPath()).arg(i.key());
-            Private::ProtocolWrapper *wrapper = new Private::ProtocolWrapper(
-                    dbusConnection(), busName(), protocolPath,
-                    mPriv->name, i.key(), i.value());
+            SharedPtr<Private::ProtocolWrapper> wrapper = SharedPtr<Private::ProtocolWrapper>(
+                    new Private::ProtocolWrapper(
+                        dbusConnection(), busName(), protocolPath,
+                        mPriv->name, i.key(), i.value()));
             connect(wrapper->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(onProtocolReady(Tp::PendingOperation*)));
-            mPriv->wrappers.insert(wrapper, wrapper);
+            mPriv->wrappers.insert(wrapper);
             ++i;
         }
     } else {
@@ -759,8 +754,8 @@ void ConnectionManager::gotParametersLegacy(QDBusPendingCallWatcher *watcher)
 void ConnectionManager::onProtocolReady(Tp::PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady*>(op);
-    Private::ProtocolWrapper *wrapper =
-        qobject_cast<Private::ProtocolWrapper*>(pr->object());
+    SharedPtr<Private::ProtocolWrapper> wrapper =
+        SharedPtr<Private::ProtocolWrapper>::qObjectCast(pr->proxy());
     ProtocolInfo info = wrapper->info();
 
     mPriv->wrappers.remove(wrapper);
@@ -771,9 +766,6 @@ void ConnectionManager::onProtocolReady(Tp::PendingOperation *op)
         warning().nospace() << "Protocol(" << info.name() << ")::becomeReady "
             "failed: " << op->errorName() << ": " << op->errorMessage();
     }
-
-    /* use deleteLater as "op" is a child of wrapper, so we don't crash */
-    wrapper->deleteLater();
 
     if (mPriv->wrappers.isEmpty()) {
         if (!mPriv->protocols.isEmpty()) {

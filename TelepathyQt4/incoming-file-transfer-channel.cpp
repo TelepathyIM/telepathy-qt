@@ -169,7 +169,8 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
         warning() << "FileTransferChannel::FeatureCore must be ready before "
             "calling acceptFile";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Channel not ready"), this);
+                QLatin1String("Channel not ready"),
+                IncomingFileTransferChannelPtr(this));
     }
 
     // let's fail here direclty as we may only have one device to handle
@@ -178,14 +179,15 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
             "channel";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("File transfer can only be started once in the same channel"),
-                this);
+                IncomingFileTransferChannelPtr(this));
     }
 
     if ((!output->isOpen() && !output->open(QIODevice::WriteOnly)) &&
         (!output->isWritable())) {
         warning() << "Unable to open IO device for writing";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_PERMISSION_DENIED),
-                QLatin1String("Unable to open IO device for writing"), this);
+                QLatin1String("Unable to open IO device for writing"),
+                IncomingFileTransferChannelPtr(this));
     }
 
     mPriv->output = output;
@@ -196,7 +198,7 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
             mPriv->fileTransferInterface->AcceptFile(SocketAddressTypeIPv4,
                 SocketAccessControlLocalhost, QDBusVariant(QVariant(QString())),
                 offset),
-            this);
+            IncomingFileTransferChannelPtr(this));
     connect(pv,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onAcceptFileFinished(Tp::PendingOperation*)));

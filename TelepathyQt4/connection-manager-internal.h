@@ -69,7 +69,7 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
     // Introspection
     QQueue<QString> parametersQueue;
     ProtocolInfoList protocols;
-    QHash<ProtocolWrapper *, ProtocolWrapper *> wrappers;
+    QSet<SharedPtr<ProtocolWrapper> > wrappers;
 };
 
 class TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private::PendingNames : public PendingStringList

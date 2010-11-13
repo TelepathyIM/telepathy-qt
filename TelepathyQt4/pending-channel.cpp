@@ -36,12 +36,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
 {
-    Private(const ConnectionPtr &connection) :
-        connection(connection)
-    {
-    }
-
-    ConnectionPtr connection;
     bool yours;
     QString channelType;
     uint handleType;
@@ -69,8 +63,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
  */
 PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &errorName,
         const QString &errorMessage)
-    : PendingOperation(0),
-      mPriv(new Private(connection))
+    : PendingOperation(connection),
+      mPriv(new Private)
 {
     mPriv->yours = false;
     mPriv->handleType = 0;
@@ -88,8 +82,8 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &e
  */
 PendingChannel::PendingChannel(const ConnectionPtr &connection,
         const QVariantMap &request, bool create)
-    : PendingOperation(0),
-      mPriv(new Private(connection))
+    : PendingOperation(connection),
+      mPriv(new Private)
 {
     mPriv->yours = create;
     mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
@@ -129,7 +123,7 @@ PendingChannel::~PendingChannel()
  */
 ConnectionPtr PendingChannel::connection() const
 {
-    return mPriv->connection;
+    return ConnectionPtr(qobject_cast<Connection*>((Connection*) object().data()));
 }
 
 /**
@@ -232,12 +226,11 @@ QVariantMap PendingChannel::immutableProperties() const
     // be the Connection's self handle
     if (!props.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle"))) {
         if (qdbus_cast<bool>(props.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")))) {
-            ConnectionPtr conn(mPriv->connection);
-            if (conn && conn->isReady()) {
+            if (connection() && connection()->isReady()) {
                 debug() << "CM didn't provide InitiatorHandle in channel immutable props, but we "
                     "know it's the conn's self handle (and have it)";
                 props[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle")] =
-                    conn->selfHandle();
+                    connection()->selfHandle();
             }
         }
     }
@@ -297,8 +290,8 @@ void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watche
         debug() << "Got reply to Connection.CreateChannel - object path:" << objectPath;
 
         PendingReady *channelReady =
-            mPriv->connection->channelFactory()->proxy(mPriv->connection, objectPath, map);
-        mPriv->channel = ChannelPtr::dynamicCast(channelReady->proxy());
+            connection()->channelFactory()->proxy(connection(), objectPath, map);
+        mPriv->channel = ChannelPtr::qObjectCast(channelReady->proxy());
 
         mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
@@ -329,8 +322,8 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watche
         debug() << "Got reply to Connection.EnsureChannel - object path:" << objectPath;
 
         PendingReady *channelReady =
-            mPriv->connection->channelFactory()->proxy(mPriv->connection, objectPath, map);
-        mPriv->channel = ChannelPtr::dynamicCast(channelReady->proxy());
+            connection()->channelFactory()->proxy(connection(), objectPath, map);
+        mPriv->channel = ChannelPtr::qObjectCast(channelReady->proxy());
 
         mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();

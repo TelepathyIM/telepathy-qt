@@ -66,7 +66,7 @@ public:
 private Q_SLOTS:
     void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);
     void onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher);
-    void onChannelReady(Tp::PendingOperation *);
+    void onChannelReady(Tp::PendingOperation *op);
 
 private:
     friend class Connection;

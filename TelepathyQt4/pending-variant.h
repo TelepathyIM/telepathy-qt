@@ -40,7 +40,7 @@ class TELEPATHY_QT4_EXPORT PendingVariant : public PendingOperation
     Q_DISABLE_COPY(PendingVariant);
 
 public:
-    PendingVariant(QDBusPendingCall call, QObject *parent = 0);
+    PendingVariant(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
     ~PendingVariant();
 
     QVariant result() const;

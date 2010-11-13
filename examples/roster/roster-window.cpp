@@ -110,7 +110,8 @@ void RosterWindow::onConnectionConnected(Tp::PendingOperation *op)
     }
 
     PendingReady *pr = qobject_cast<PendingReady *>(op);
-    ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(pr->object()));
+    ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(
+                (Connection *) pr->object().data()));
     mRoster->addConnection(conn);
 }
 

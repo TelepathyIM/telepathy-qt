@@ -39,14 +39,14 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStringList::Private
  * \headerfile TelepathyQt4/pending-string-list.h <TelepathyQt4/PendingStringList>
  */
 
-PendingStringList::PendingStringList(QObject *parent)
-    : PendingOperation(parent),
+PendingStringList::PendingStringList(const SharedPtr<RefCounted> &object)
+    : PendingOperation(object),
       mPriv(new Private)
 {
 }
 
-PendingStringList::PendingStringList(QDBusPendingCall call, QObject *parent)
-    : PendingOperation(parent),
+PendingStringList::PendingStringList(QDBusPendingCall call, const SharedPtr<RefCounted> &object)
+    : PendingOperation(object),
       mPriv(new Private)
 {
     connect(new QDBusPendingCallWatcher(call),
