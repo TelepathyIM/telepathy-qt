@@ -336,7 +336,7 @@ const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager
 AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
 {
     return AccountManagerPtr(new AccountManager(bus,
-                AccountFactory::create(bus), ConnectionFactory::create(bus),
+                AccountFactory::create(bus, Account::FeatureCore), ConnectionFactory::create(bus),
                 ChannelFactory::create(bus), ContactFactory::create()));
 }
 
