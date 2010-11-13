@@ -173,7 +173,7 @@ public:
     PendingContactAttributes *contactAttributes(const UIntList &handles,
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
-    ContactManager *contactManager() const;
+    ContactManagerPtr contactManager() const;
 
 Q_SIGNALS:
     void statusChanged(Tp::ConnectionStatus newStatus);

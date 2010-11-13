@@ -42,7 +42,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
         Upgrade
     };
 
-    Private(ContactManager *manager, const UIntList &handles,
+    Private(const ContactManagerPtr &manager, const UIntList &handles,
             const Features &features,
             const QMap<uint, ContactPtr> &satisfyingContacts)
         : manager(manager),
@@ -54,7 +54,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     {
     }
 
-    Private(ContactManager *manager, const QStringList &identifiers,
+    Private(const ContactManagerPtr &manager, const QStringList &identifiers,
             const Features &features)
         : manager(manager),
           features(features),
@@ -64,7 +64,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     {
     }
 
-    Private(ContactManager *manager, const QList<ContactPtr> &contactsToUpgrade,
+    Private(const ContactManagerPtr &manager, const QList<ContactPtr> &contactsToUpgrade,
             const Features &features)
         : manager(manager),
           features(features),
@@ -75,7 +75,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     }
 
     // Generic parameters
-    ContactManager *manager;
+    ContactManagerPtr manager;
     Features features;
     QMap<uint, ContactPtr> satisfyingContacts;
 
@@ -103,7 +103,7 @@ PendingContacts::~PendingContacts()
     delete mPriv;
 }
 
-ContactManager *PendingContacts::manager() const
+ContactManagerPtr PendingContacts::manager() const
 {
     return mPriv->manager;
 }
@@ -333,14 +333,14 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-PendingContacts::PendingContacts(ContactManager *manager,
+PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const UIntList &handles, const Features &features,
         const QStringList &interfaces,
         const QMap<uint, ContactPtr> &satisfyingContacts,
         const QSet<uint> &otherContacts,
         const QString &errorName,
         const QString &errorMessage)
-    : PendingOperation(manager->connection()),
+    : PendingOperation(manager),
       mPriv(new Private(manager, handles, features, satisfyingContacts))
 {
     if (!errorName.isEmpty()) {
@@ -371,10 +371,10 @@ PendingContacts::PendingContacts(ContactManager *manager,
     }
 }
 
-PendingContacts::PendingContacts(ContactManager *manager,
+PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const QStringList &identifiers, const Features &features,
         const QString &errorName, const QString &errorMessage)
-    : PendingOperation(manager->connection()),
+    : PendingOperation(manager),
       mPriv(new Private(manager, identifiers, features))
 {
     if (!errorName.isEmpty()) {
@@ -390,10 +390,10 @@ PendingContacts::PendingContacts(ContactManager *manager,
             SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
 }
 
-PendingContacts::PendingContacts(ContactManager *manager,
+PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const QList<ContactPtr> &contacts, const Features &features,
         const QString &errorName, const QString &errorMessage)
-    : PendingOperation(manager->connection()),
+    : PendingOperation(manager),
       mPriv(new Private(manager, contacts, features))
 {
     if (!errorName.isEmpty()) {

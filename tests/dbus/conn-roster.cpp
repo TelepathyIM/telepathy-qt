@@ -306,7 +306,7 @@ void TestConnRoster::testRoster()
     // Cache the current value
     mHowManyKnownContacts = mConn->contactManager()->allKnownContacts().size();
     // Watch for contacts changed
-    QVERIFY(connect(mConn->contactManager(),
+    QVERIFY(connect(mConn->contactManager().data(),
                     SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts,
                             Tp::Channel::GroupMemberChangeDetails)),
                     SLOT(expectAllKnownContactsChanged(Tp::Contacts,Tp::Contacts,

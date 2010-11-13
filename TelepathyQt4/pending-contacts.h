@@ -50,7 +50,7 @@ class TELEPATHY_QT4_EXPORT PendingContacts : public PendingOperation
 public:
     ~PendingContacts();
 
-    ContactManager *manager() const;
+    ContactManagerPtr manager() const;
     Features features() const;
 
     bool isForHandles() const;
@@ -78,18 +78,18 @@ private:
     friend class ContactManager;
 
     // If errorName is non-empty, these will fail instantly
-    PendingContacts(ContactManager *manager, const UIntList &handles,
+    PendingContacts(const ContactManagerPtr &manager, const UIntList &handles,
             const Features &features,
             const QStringList &interfaces,
             const QMap<uint, ContactPtr> &satisfyingContacts,
             const QSet<uint> &otherContacts,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
-    PendingContacts(ContactManager *manager, const QStringList &identifiers,
+    PendingContacts(const ContactManagerPtr &manager, const QStringList &identifiers,
             const Features &features,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
-    PendingContacts(ContactManager *manager, const QList<ContactPtr> &contacts,
+    PendingContacts(const ContactManagerPtr &manager, const QList<ContactPtr> &contacts,
             const Features &features,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());

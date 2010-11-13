@@ -126,7 +126,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 
     ConnectionCapabilities caps;
 
-    ContactManager *contactManager;
+    ContactManagerPtr contactManager;
 
     // FeatureSelfContact
     ContactPtr selfContact;
@@ -202,7 +202,7 @@ Connection::Private::Private(Connection *parent,
       status((uint) -1),
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
-      contactManager(new ContactManager(parent)),
+      contactManager(ContactManagerPtr(new ContactManager(parent))),
       contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
       handleContext(0)
@@ -2047,11 +2047,9 @@ QStringList Connection::contactAttributeInterfaces() const
  * The contact manager is responsible for all contact handling in this
  * connection, including adding, removing, authorizing, etc.
  *
- * \return A pointer to this connection ContactManager object.
- *         The returned object is owned by this connection and should not be
- *         freed.
+ * \return Pointer to this connection ContactManager object.
  */
-ContactManager *Connection::contactManager() const
+ContactManagerPtr Connection::contactManager() const
 {
     return mPriv->contactManager;
 }

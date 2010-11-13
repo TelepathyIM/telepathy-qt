@@ -555,7 +555,7 @@ void Channel::Private::introspectConference()
 void Channel::Private::introspectConferenceInitialInviteeContacts(Private *self)
 {
     if (!self->conferenceInitialInviteeHandles.isEmpty()) {
-        ContactManager *manager = self->connection->contactManager();
+        ContactManagerPtr manager = self->connection->contactManager();
         PendingContacts *pendingContacts = manager->contactsForHandles(
                 self->conferenceInitialInviteeHandles);
         self->parent->connect(pendingContacts,
@@ -807,7 +807,7 @@ void Channel::Private::buildContacts()
 {
     buildingContacts = true;
 
-    ContactManager *manager = connection->contactManager();
+    ContactManagerPtr manager = connection->contactManager();
     UIntList toBuild = QSet<uint>(pendingGroupMembers +
             pendingGroupLocalPendingMembers +
             pendingGroupRemotePendingMembers).toList();
@@ -1184,7 +1184,7 @@ void Channel::Private::processConferenceChannelRemoved()
     buildingConferenceChannelRemovedActorContact = true;
 
     if (info->details.contains(keyActor)) {
-        ContactManager *manager = connection->contactManager();
+        ContactManagerPtr manager = connection->contactManager();
         PendingContacts *pendingContacts = manager->contactsForHandles(
                 UIntList() << qdbus_cast<uint>(info->details.value(keyActor)));
         parent->connect(pendingContacts,
