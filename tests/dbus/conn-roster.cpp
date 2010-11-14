@@ -53,6 +53,7 @@ private:
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
     int mHowManyKnownContacts;
+    bool mGotPresenceStateChanged;
 };
 
 void TestConnRoster::expectConnInvalidated()
@@ -94,8 +95,11 @@ void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, co
     qDebug() << added.size() << " contacts added, " << removed.size() << " contacts removed";
     mHowManyKnownContacts += added.size();
     mHowManyKnownContacts -= removed.size();
-    QVERIFY(details.hasMessage());
-    QCOMPARE(details.message(), QLatin1String("add me now"));
+
+    if (details.hasMessage()) {
+        QCOMPARE(details.message(), QLatin1String("add me now"));
+    }
+
     if (mConn->contactManager()->allKnownContacts().size() != mHowManyKnownContacts) {
         qWarning() << "Contacts number mismatch! Watched value: " << mHowManyKnownContacts
                    << "allKnownContacts(): " << mConn->contactManager()->allKnownContacts().size();
@@ -107,7 +111,7 @@ void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, co
 
 void TestConnRoster::expectPresenceStateChanged(Contact::PresenceState state)
 {
-    mLoop->exit(0);
+    mGotPresenceStateChanged = true;
 }
 
 void TestConnRoster::initTestCase()
@@ -211,6 +215,8 @@ void TestConnRoster::testRoster()
     int i = 0;
 
     Q_FOREACH (const ContactPtr &contact, mContacts) {
+        mGotPresenceStateChanged = false;
+
         QVERIFY(connect(contact.data(),
                         SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
@@ -223,7 +229,9 @@ void TestConnRoster::testRoster()
             contact->requestPresenceSubscription(QLatin1String("add me now"));
         }
 
-        QCOMPARE(mLoop->exec(), 0);
+        while (!mGotPresenceStateChanged) {
+            mLoop->processEvents();
+        }
 
         if ((i % 2) == 0) {
             // I asked to see his presence - he might have already accepted it, though
@@ -233,12 +241,12 @@ void TestConnRoster::testRoster()
             // if he accepted it already, one iteration won't be enough as the
             // first iteration will just flush the subscription -> Yes event
             while (contact->publishState() != Contact::PresenceStateAsk) {
-                QCOMPARE(mLoop->exec(), 0);
+                mLoop->processEvents();
             }
 
             contact->authorizePresencePublication();
             while (contact->publishState() != Contact::PresenceStateYes) {
-                QCOMPARE(mLoop->exec(), 0);
+                mLoop->processEvents();
             }
             // I authorized him to see my presence
             QCOMPARE(static_cast<uint>(contact->publishState()),
@@ -248,19 +256,18 @@ void TestConnRoster::testRoster()
                      static_cast<uint>(Contact::PresenceStateYes));
 
             contact->removePresenceSubscription();
-            QCOMPARE(mLoop->exec(), 0);
-            QCOMPARE(static_cast<uint>(contact->subscriptionState()),
-                     static_cast<uint>(Contact::PresenceStateNo));
+
+            while (contact->subscriptionState() != Contact::PresenceStateNo) {
+                mLoop->processEvents();
+            }
         } else {
-            // I asked to see his presence - she might have already rejected it, though
+            // I asked to see her presence - she might have already rejected it, though
             QVERIFY(contact->subscriptionState() == Contact::PresenceStateAsk
                     || contact->subscriptionState() == Contact::PresenceStateNo);
 
             // If she didn't already reject it, wait until she does
-            if (contact->subscriptionState() != Contact::PresenceStateNo) {
-                QCOMPARE(mLoop->exec(), 0);
-                QCOMPARE(static_cast<uint>(contact->subscriptionState()),
-                        static_cast<uint>(Contact::PresenceStateNo));
+            while (contact->subscriptionState() != Contact::PresenceStateNo) {
+                mLoop->processEvents();
             }
         }
 
@@ -282,11 +289,13 @@ void TestConnRoster::testRoster()
     i = 0;
     Contact::PresenceState expectedPresenceState;
     Q_FOREACH (const ContactPtr &contact, pendingPublish) {
+        mGotPresenceStateChanged = false;
+
         QVERIFY(connect(contact.data(),
                         SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
 
-        if ((i % 2) == 0) {
+        if ((i++ % 2) == 0) {
             expectedPresenceState = Contact::PresenceStateYes;
             contact->authorizePresencePublication();
         } else {
@@ -294,11 +303,12 @@ void TestConnRoster::testRoster()
             contact->removePresencePublication();
         }
 
-        QCOMPARE(mLoop->exec(), 0);
+        while (!mGotPresenceStateChanged) {
+            mLoop->processEvents();
+        }
+
         QCOMPARE(static_cast<uint>(contact->publishState()),
                  static_cast<uint>(expectedPresenceState));
-
-        ++i;
     }
 
     // Test allKnownContactsChanged.
