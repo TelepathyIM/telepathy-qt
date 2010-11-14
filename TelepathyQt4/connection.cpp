@@ -617,14 +617,16 @@ void Connection::Private::checkFeatureRosterGroupsReady()
 
 Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
         const Features &requestedFeatures)
-    : PendingReady(connection, requestedFeatures)
+    : PendingReady(connection, requestedFeatures), connection(connection)
 {
     QDBusPendingCall call = connection->baseInterface()->Connect();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, connection.data());
+
     connect(connection.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             this,
             SLOT(onConnInvalidated(Tp::DBusProxy*,QString,QString)));
+
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             this,
@@ -639,6 +641,9 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
         debug() << "Connect failed with" <<
             watcher->error().name() << ": " << watcher->error().message();
         setFinishedWithError(watcher->error());
+        connection->disconnect(
+                this,
+                SLOT(onConnInvalidated(Tp::DBusProxy*,QString,QString)));
     } else {
         if (connection->status() == ConnectionStatusConnected) {
             onStatusChanged(ConnectionStatusConnected);
@@ -665,6 +670,10 @@ void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
     if (newStatus == ConnectionStatusDisconnected) {
         debug() << "Connection became disconnected while a PendingConnect was underway";
         setFinishedWithError(connection->invalidationReason(), connection->invalidationMessage());
+
+        connection->disconnect(this,
+                SLOT(onConnInvalidated(Tp::DBusProxy*,QString,QString)));
+
         return;
     }
 
@@ -678,24 +687,41 @@ void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
 
 void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 {
+    // We don't care about future disconnects even if they happen before we are destroyed
+    // (which happens two mainloop iterations from now)
+    connection->disconnect(this,
+            SLOT(onStatusChanged(Tp::ConnectionStatus)));
+    connection->disconnect(this,
+            SLOT(onConnInvalidated(Tp::DBusProxy*,QString,QString)));
+
     if (op->isError()) {
         debug() << "Connection->becomeReady failed with" <<
             op->errorName() << ": " << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
     } else {
         debug() << "Connected";
-        setFinished();
+
+        if (connection->isValid()) {
+            setFinished();
+        } else {
+            debug() << "  ... but the Connection was immediately invalidated!";
+            setFinishedWithError(connection->invalidationReason(), connection->invalidationMessage());
+        }
     }
 }
 
 void Connection::PendingConnect::onConnInvalidated(Tp::DBusProxy *proxy, const QString &error,
         const QString &message)
 {
-    Q_ASSERT(proxy == object().data());
+    Q_ASSERT(proxy == connection.data());
+
     if (!isFinished()) {
         debug() << "Unable to connect. Connection invalidated";
         setFinishedWithError(error, message);
     }
+
+    connection->disconnect(this,
+            SLOT(onStatusChanged(Tp::ConnectionStatus)));
 }
 
 QMap<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;
