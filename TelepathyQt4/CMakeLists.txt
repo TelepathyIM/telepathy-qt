@@ -31,8 +31,9 @@ set(telepathy_qt4_SRCS
     connection.cpp
     connection-capabilities.cpp
     connection-factory.cpp
-    connection-manager.cpp
     connection-internal.h
+    connection-lowlevel.h
+    connection-manager.cpp
     connection-manager-internal.h
     contact.cpp
     contact-capabilities.cpp
@@ -190,6 +191,7 @@ set(telepathy_qt4_HEADERS
     ConnectionInterfaceRequestsInterface
     ConnectionInterfaceServicePointInterface
     ConnectionInterfaceSimplePresenceInterface
+    ConnectionLowlevel
     ConnectionManager
     connection-manager.h
     ConnectionManagerInterface
@@ -363,6 +365,7 @@ set(telepathy_qt4_MOC_SRCS
     client-registrar-internal.h
     connection.h
     connection-internal.h
+    connection-lowlevel.h
     connection-manager.h
     connection-manager-internal.h
     contact.h

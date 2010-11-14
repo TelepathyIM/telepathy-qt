@@ -28,6 +28,7 @@
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/PendingReady>
 

@@ -20,12 +20,14 @@
  */
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include "TelepathyQt4/connection-internal.h"
 
 #include "TelepathyQt4/_gen/cli-connection.moc.hpp"
 #include "TelepathyQt4/_gen/cli-connection-body.hpp"
 #include "TelepathyQt4/_gen/connection.moc.hpp"
 #include "TelepathyQt4/_gen/connection-internal.moc.hpp"
+#include "TelepathyQt4/_gen/connection-lowlevel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -91,6 +93,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 
     // Public object
     Connection *parent;
+    ConnectionLowlevelPtr lowlevel;
 
     // Factories
     ChannelFactoryConstPtr chanFactory;
@@ -158,6 +161,16 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     QString protocolName;
 };
 
+struct ConnectionLowlevel::Private
+{
+    Private(Connection *conn)
+        : conn(QWeakPointer<Connection>(conn))
+    {
+    }
+
+    QWeakPointer<Connection> conn;
+};
+
 // Handle tracking
 struct TELEPATHY_QT4_NO_EXPORT Connection::Private::HandleContext
 {
@@ -189,6 +202,7 @@ Connection::Private::Private(Connection *parent,
         const ChannelFactoryConstPtr &chanFactory,
         const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
+      lowlevel(ConnectionLowlevelPtr(new ConnectionLowlevel(parent))),
       chanFactory(chanFactory),
       contactFactory(contactFactory),
       baseInterface(new Client::ConnectionInterface(parent)),
@@ -613,6 +627,26 @@ void Connection::Private::checkFeatureRosterGroupsReady()
     readinessHelper->setIntrospectCompleted(
             FeatureRosterGroups, true);
     contactListGroupChannels.clear();
+}
+
+ConnectionLowlevel::ConnectionLowlevel(Connection *conn)
+    : mPriv(new Private(conn))
+{
+}
+
+ConnectionLowlevel::~ConnectionLowlevel()
+{
+    delete mPriv;
+}
+
+bool ConnectionLowlevel::isValid() const
+{
+    return !mPriv->conn.isNull();
+}
+
+ConnectionPtr ConnectionLowlevel::connection() const
+{
+    return ConnectionPtr(mPriv->conn);
 }
 
 Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
@@ -1196,19 +1230,29 @@ uint Connection::selfHandle() const
  * \return Dictionary from string identifiers to structs for each valid
  * status.
  */
-SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
+SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 {
-    if (!isReady(Features() << FeatureSimplePresence)) {
+    if (!isValid()) {
+        warning() << "ConnectionLowlevel::selfHandle() called for a connection which is already destroyed";
+        return SimpleStatusSpecMap();
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (!conn->isReady(Features() << Connection::FeatureSimplePresence)) {
         warning() << "Trying to retrieve simple presence from connection, but "
                      "simple presence is not supported or was not requested. "
                      "Use becomeReady(FeatureSimplePresence)";
     }
 
-    return mPriv->simplePresenceStatuses;
+    return conn->mPriv->simplePresenceStatuses;
 }
 
 /**
  * Set the self presence status.
+ *
+ * This should generally only be called by an Account Manager. In typical usage,
+ * Account::setRequestedPresence() should be used instead.
  *
  * \a status must be one of the allowed statuses returned by
  * allowedPresenceStatuses().
@@ -1224,20 +1268,26 @@ SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
  *
  * \sa allowedPresenceStatuses()
  */
-PendingOperation *Connection::setSelfPresence(const QString &status,
+PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
         const QString &statusMessage)
 {
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))) {
+    if (!isValid()) {
+        warning() << "ConnectionLowlevel::selfHandle() called for a connection which is already destroyed";
+        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE, QLatin1String("Connection already destroyed"),
+                ConnectionPtr());
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Connection does not support SimplePresence"),
-                ConnectionPtr(this));
+                QLatin1String("Connection does not support SimplePresence"), conn);
     }
 
     Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
-        interface<Client::ConnectionInterfaceSimplePresenceInterface>();
+        conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
     return new PendingVoid(
-            simplePresenceInterface->SetPresence(status, statusMessage),
-            ConnectionPtr(this));
+            simplePresenceInterface->SetPresence(status, statusMessage), conn);
 }
 
 /**
@@ -2083,6 +2133,16 @@ QStringList Connection::contactAttributeInterfaces() const
 ContactManagerPtr Connection::contactManager() const
 {
     return mPriv->contactManager;
+}
+
+ConnectionLowlevelPtr Connection::lowlevel()
+{
+    return mPriv->lowlevel;
+}
+
+ConnectionLowlevelConstPtr Connection::lowlevel() const
+{
+    return mPriv->lowlevel;
 }
 
 void Connection::refHandle(HandleType handleType, uint handle)

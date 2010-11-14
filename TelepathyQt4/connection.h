@@ -49,6 +49,7 @@ namespace Tp
 
 class Channel;
 class ConnectionCapabilities;
+class ConnectionLowlevel;
 class Contact;
 class ContactManager;
 class PendingChannel;
@@ -154,9 +155,6 @@ public:
     uint selfHandle() const;
     ContactPtr selfContact() const;
 
-    SimpleStatusSpecMap allowedPresenceStatuses() const;
-    PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
-
     CurrencyAmount accountBalance() const;
 
     ConnectionCapabilities capabilities() const;
@@ -174,6 +172,11 @@ public:
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
     ContactManagerPtr contactManager() const;
+
+#if defined(BUILDING_TELEPATHY_QT4) || defined(TP_QT4_ENABLE_LOWLEVEL_API)
+    ConnectionLowlevelPtr lowlevel();
+    ConnectionLowlevelConstPtr lowlevel() const;
+#endif
 
 Q_SIGNALS:
     void statusChanged(Tp::ConnectionStatus newStatus);
@@ -220,6 +223,7 @@ private Q_SLOTS:
 
 private:
     class PendingConnect;
+    friend class ConnectionLowlevel;
     friend class PendingChannel;
     friend class PendingConnect;
     friend class PendingContactAttributes;

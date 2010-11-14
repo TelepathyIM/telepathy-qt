@@ -2,8 +2,11 @@
 #include <QtCore/QPointer>
 #include <QtTest/QtTest>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingChannel>
@@ -1030,7 +1033,7 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
 
 void TestStreamedMediaChan::testIncomingCall()
 {
-    mConn->setSelfPresence(QLatin1String("away"), QLatin1String("preparing for a test"));
+    mConn->lowlevel()->setSelfPresence(QLatin1String("away"), QLatin1String("preparing for a test"));
 
     Client::ConnectionInterfaceRequestsInterface *connRequestsInterface =
         mConn->optionalInterface<Client::ConnectionInterfaceRequestsInterface>();
@@ -1038,7 +1041,7 @@ void TestStreamedMediaChan::testIncomingCall()
     QVERIFY(connect(connRequestsInterface,
                     SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
                     SLOT(onNewChannels(const Tp::ChannelDetailsList&))));
-    mConn->setSelfPresence(QLatin1String("available"), QLatin1String("call me?"));
+    mConn->lowlevel()->setSelfPresence(QLatin1String("available"), QLatin1String("call me?"));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(mChan);
