@@ -67,7 +67,7 @@ private Q_SLOTS:
     void onChannelReady(Tp::PendingOperation *op);
 
 private:
-    friend class Connection;
+    friend class ConnectionLowlevel;
 
     PendingChannel(const ConnectionPtr &connection,
             const QString &errorName, const QString &errorMessage);

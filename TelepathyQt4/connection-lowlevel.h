@@ -53,6 +53,9 @@ public:
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 
+    PendingChannel *createChannel(const QVariantMap &request);
+    PendingChannel *ensureChannel(const QVariantMap &request);
+
 private:
     friend class Connection;
 

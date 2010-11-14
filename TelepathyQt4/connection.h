@@ -159,9 +159,6 @@ public:
 
     ConnectionCapabilities capabilities() const;
 
-    PendingChannel *createChannel(const QVariantMap &request);
-    PendingChannel *ensureChannel(const QVariantMap &request);
-
     PendingReady *requestConnect(const Features &requestedFeatures = Features());
     PendingOperation *requestDisconnect();
 

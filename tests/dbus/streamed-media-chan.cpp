@@ -615,7 +615,7 @@ void TestStreamedMediaChan::testOutgoingCall()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -809,7 +809,7 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -876,7 +876,7 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -962,7 +962,7 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -1198,7 +1198,7 @@ void TestStreamedMediaChan::testHold()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -1269,7 +1269,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -1335,7 +1335,7 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -1419,7 +1419,7 @@ void TestStreamedMediaChan::testDTMF()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -1508,7 +1508,7 @@ void TestStreamedMediaChan::testDTMFNoContinuousTone()
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);

@@ -5,9 +5,12 @@
 
 #include <QtTest/QtTest>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingChannel>
@@ -260,7 +263,7 @@ void TestChanGroup::testCreateChannel()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    QLatin1String("Cambridge"));
 
-    QVERIFY(connect(mConn->ensureChannel(request),
+    QVERIFY(connect(mConn->lowlevel()->ensureChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);

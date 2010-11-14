@@ -1666,7 +1666,7 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     Q_ASSERT(type != (uint) -1 && type < ContactManager::ContactListChannel::LastType);
     mPriv->contactListChannels[type].handle = handle;
     request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle[0];
-    connect(ensureChannel(request),
+    connect(lowlevel()->ensureChannel(request),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(gotContactListChannel(Tp::PendingOperation*)));
 }
@@ -1800,6 +1800,9 @@ Client::ConnectionInterface *Connection::baseInterface() const
 /**
  * Asynchronously creates a channel satisfying the given request.
  *
+ * In typical usage, only the Channel Dispatcher should call this. Ordinary applications should use
+ * the Account::createChannel() family of methods (which invoke the Channel Dispatcher's services).
+ *
  * The request MUST contain the following keys:
  *   org.freedesktop.Telepathy.Channel.ChannelType
  *   org.freedesktop.Telepathy.Channel.TargetHandleType
@@ -1823,38 +1826,48 @@ Client::ConnectionInterface *Connection::baseInterface() const
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
  */
-PendingChannel *Connection::createChannel(const QVariantMap &request)
+PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
 {
-    if (mPriv->pendingStatus != ConnectionStatusConnected) {
+    if (!isValid()) {
+        return new PendingChannel(ConnectionPtr(),
+                TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection not yet connected"));
     }
 
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
+    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
         warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Connection does not support Requests Interface"));
     }
 
     if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Invalid 'request' argument"));
     }
 
     debug() << "Creating a Channel";
     PendingChannel *channel =
-        new PendingChannel(ConnectionPtr(this),
-                request, true);
+        new PendingChannel(conn, request, true);
     return channel;
 }
 
 /**
  * Asynchronously ensures a channel exists satisfying the given request.
  *
+ * In typical usage, only the Channel Dispatcher should call this. Ordinary applications should use
+ * the Account::ensureChannel() family of methods (which invoke the Channel Dispatcher's services).
+ *
  * The request MUST contain the following keys:
  *   org.freedesktop.Telepathy.Channel.ChannelType
  *   org.freedesktop.Telepathy.Channel.TargetHandleType
@@ -1878,31 +1891,39 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
  */
-PendingChannel *Connection::ensureChannel(const QVariantMap &request)
+PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
 {
-    if (mPriv->pendingStatus != ConnectionStatusConnected) {
+    if (!isValid()) {
+        return new PendingChannel(ConnectionPtr(),
+                TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection not yet connected"));
     }
 
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
+    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
         warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Connection does not support Requests Interface"));
     }
 
     if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Invalid 'request' argument"));
     }
 
     debug() << "Creating a Channel";
     PendingChannel *channel =
-        new PendingChannel(ConnectionPtr(this), request, false);
+        new PendingChannel(conn, request, false);
     return channel;
 }
 
