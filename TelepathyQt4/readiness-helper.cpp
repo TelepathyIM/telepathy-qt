@@ -96,6 +96,10 @@ struct TELEPATHY_QT4_NO_EXPORT ReadinessHelper::Private
             RefCounted *object,
             uint currentStatus,
             const Introspectables &introspectables);
+    Private(ReadinessHelper *parent,
+            DBusProxy *proxy,
+            uint currentStatus,
+            const Introspectables &introspectables);
     ~Private();
 
     void setCurrentStatus(uint newStatus);
@@ -134,7 +138,7 @@ ReadinessHelper::Private::Private(
         const Introspectables &introspectables)
     : parent(parent),
       object(object),
-      proxy(dynamic_cast<DBusProxy*>(object)),
+      proxy(0),
       currentStatus(currentStatus),
       introspectables(introspectables),
       pendingStatusChange(false),
@@ -148,15 +152,31 @@ ReadinessHelper::Private::Private(
         supportedStatuses += introspectable.mPriv->makesSenseForStatuses;
         supportedFeatures += feature;
     }
+}
 
-    if (proxy) {
-        parent->connect(proxy,
-                SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-                SLOT(onProxyInvalidated(Tp::DBusProxy*,QString,QString)));
+ReadinessHelper::Private::Private(
+        ReadinessHelper *parent,
+        DBusProxy *proxy,
+        uint currentStatus,
+        const Introspectables &introspectables)
+    : parent(parent),
+      object(proxy),
+      proxy(proxy),
+      currentStatus(currentStatus),
+      introspectables(introspectables),
+      pendingStatusChange(false),
+      pendingStatus(-1)
+{
+    Q_ASSERT(proxy != 0);
+
+    for (Introspectables::const_iterator i = introspectables.constBegin();
+            i != introspectables.constEnd(); ++i) {
+        Feature feature = i.key();
+        Introspectable introspectable = i.value();
+        Q_ASSERT(introspectable.mPriv->introspectFunc != 0);
+        supportedStatuses += introspectable.mPriv->makesSenseForStatuses;
+        supportedFeatures += feature;
     }
-
-    debug() << "ReadinessHelper: supportedStatuses =" << supportedStatuses;
-    debug() << "ReadinessHelper: supportedFeatures =" << supportedFeatures;
 }
 
 ReadinessHelper::Private::~Private()
@@ -380,6 +400,15 @@ ReadinessHelper::ReadinessHelper(RefCounted *object,
 {
 }
 
+ReadinessHelper::ReadinessHelper(DBusProxy *proxy,
+        uint currentStatus,
+        const Introspectables &introspectables,
+        QObject *parent)
+    : QObject(parent),
+      mPriv(new Private(this, proxy, currentStatus, introspectables))
+{
+}
+
 ReadinessHelper::~ReadinessHelper()
 {
     delete mPriv;
@@ -534,6 +563,20 @@ bool ReadinessHelper::isReady(const Features &features, QString *errorName, QStr
 PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
 {
     Q_ASSERT(!requestedFeatures.isEmpty());
+
+    if (mPriv->proxy) {
+        connect(mPriv->proxy,
+                SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                SLOT(onProxyInvalidated(Tp::DBusProxy*,QString,QString)));
+
+        if (!mPriv->proxy->isValid()) {
+            PendingReady *operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object),
+                    requestedFeatures);
+            operation->setFinishedWithError(mPriv->proxy->invalidationReason(),
+                    mPriv->proxy->invalidationMessage());
+            return operation;
+        }
+    }
 
     Features supportedFeatures = mPriv->supportedFeatures;
     if (supportedFeatures.intersect(requestedFeatures) != requestedFeatures) {
