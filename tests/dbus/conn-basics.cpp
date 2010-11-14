@@ -76,6 +76,8 @@ void TestConnBasics::expectConnReady(Tp::ConnectionStatus newStatus,
 
 void TestConnBasics::expectConnInvalidated()
 {
+    qDebug() << "conn invalidated";
+
     mLoop->exit(0);
 }
 
@@ -259,6 +261,8 @@ void TestConnBasics::cleanup()
         QCOMPARE(qdbus_cast<uint>(mConn->errorDetails().allDetails().value(
                         QLatin1String("x-tpqt4-test-rgba-herring-color"))),
                 0xff0000ffU);
+
+        processDBusQueue(mConn.data());
 
         mConn.reset();
     }

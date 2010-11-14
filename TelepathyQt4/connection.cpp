@@ -1313,7 +1313,12 @@ void Connection::onStatusReady(uint status)
 
     mPriv->status = status;
     mPriv->statusReason = mPriv->pendingStatusReason;
-    emit statusChanged((ConnectionStatus) mPriv->status);
+
+    if (isValid()) {
+        emit statusChanged((ConnectionStatus) mPriv->status);
+    } else {
+        debug() << this << " not emitting statusChanged because it has been invalidated";
+    }
 }
 
 void Connection::onStatusChanged(uint status, uint reason)
