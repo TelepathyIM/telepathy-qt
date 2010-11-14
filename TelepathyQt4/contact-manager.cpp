@@ -168,7 +168,7 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureCapabilities
             << Contact::FeatureLocation
             << Contact::FeatureInfo;
-        QStringList interfaces = connection()->contactAttributeInterfaces();
+        QStringList interfaces = connection()->lowlevel()->contactAttributeInterfaces();
         foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
                 mPriv->supportedFeatures.insert(feature);

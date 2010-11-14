@@ -5,8 +5,11 @@
 #include <QtDBus>
 #include <QtTest>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
@@ -193,15 +196,15 @@ void TestContacts::testSupport()
 {
     QCOMPARE(mConn->contactManager()->connection(), mConn);
 
-    QVERIFY(!mConn->contactAttributeInterfaces().isEmpty());
+    QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().isEmpty());
 
-    QVERIFY(mConn->contactAttributeInterfaces().contains(
+    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION)));
-    QVERIFY(mConn->contactAttributeInterfaces().contains(
+    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)));
-    QVERIFY(mConn->contactAttributeInterfaces().contains(
+    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)));
-    QVERIFY(mConn->contactAttributeInterfaces().contains(
+    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)));
 
     Features supportedFeatures = mConn->contactManager()->supportedFeatures();

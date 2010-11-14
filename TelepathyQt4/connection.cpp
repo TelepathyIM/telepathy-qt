@@ -2061,6 +2061,9 @@ PendingOperation *Connection::requestDisconnect()
  * ConnectionInterfaceContactsInterface::GetContactAttributes(), integrating it
  * with the rest of the handle-referencing machinery.
  *
+ * This is very low-level API the Contact/ContactManager API provides a higher level of abstraction
+ * for the same functionality.
+ *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingContactAttributes object. The object also provides access to
  * the parameters with which the call was made and a signal to connect to to get
@@ -2088,26 +2091,36 @@ PendingOperation *Connection::requestDisconnect()
  * \return Pointer to a newly constructed PendingContactAttributes, tracking the
  *         progress of the request.
  */
-PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
+PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &handles,
         const QStringList &interfaces, bool reference)
 {
     debug() << "Request for attributes for" << handles.size() << "contacts";
 
-    PendingContactAttributes *pending =
-        new PendingContactAttributes(ConnectionPtr(this),
+    if (!isValid()) {
+        PendingContactAttributes *pending = new PendingContactAttributes(ConnectionPtr(),
                 handles, interfaces, reference);
-    if (!isReady()) {
-        warning() << "Connection::contactAttributes() used when not ready";
+        pending->failImmediately(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+        return pending;
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    PendingContactAttributes *pending =
+        new PendingContactAttributes(conn,
+                handles, interfaces, reference);
+    if (!conn->isReady()) {
+        warning() << "ConnectionLowlevel::contactAttributes() used when not ready";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("The connection isn't ready"));
         return pending;
-    } else if (mPriv->pendingStatus != ConnectionStatusConnected) {
-        warning() << "Connection::contactAttributes() used with status" << status() << "!= ConnectionStatusConnected";
+    } else if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
+        warning() << "ConnectionLowlevel::contactAttributes() used with status" << conn->status() << "!= ConnectionStatusConnected";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("The connection isn't Connected"));
         return pending;
-    } else if (!this->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
-        warning() << "Connection::contactAttributes() used without the remote object supporting"
+    } else if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+        warning() << "ConnectionLowlevel::contactAttributes() used without the remote object supporting"
                   << "the Contacts interface";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("The connection doesn't support the Contacts interface"));
@@ -2115,13 +2128,13 @@ PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
     }
 
     {
-        Private::HandleContext *handleContext = mPriv->handleContext;
+        Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
         handleContext->types[HandleTypeContact].requestsInFlight++;
     }
 
     Client::ConnectionInterfaceContactsInterface *contactsInterface =
-        interface<Client::ConnectionInterfaceContactsInterface>();
+        conn->interface<Client::ConnectionInterfaceContactsInterface>();
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(contactsInterface->GetContactAttributes(handles, interfaces,
                     reference));
@@ -2130,17 +2143,24 @@ PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
     return pending;
 }
 
-QStringList Connection::contactAttributeInterfaces() const
+QStringList ConnectionLowlevel::contactAttributeInterfaces() const
 {
-    if (mPriv->pendingStatus != ConnectionStatusConnected) {
-        warning() << "Connection::contactAttributeInterfaces() used with status"
-            << status() << "!= ConnectionStatusConnected";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
-        warning() << "Connection::contactAttributeInterfaces() used without the remote object supporting"
+    if (!isValid()) {
+        warning() << "ConnectionLowlevel::contactAttributeInterfaces() called for a destroyed Connection";
+        return QStringList();
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
+        warning() << "ConnectionLowlevel::contactAttributeInterfaces() used with status"
+            << conn->status() << "!= ConnectionStatusConnected";
+    } else if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+        warning() << "ConnectionLowlevel::contactAttributeInterfaces() used without the remote object supporting"
                   << "the Contacts interface";
     }
 
-    return mPriv->contactAttributeInterfaces;
+    return conn->mPriv->contactAttributeInterfaces;
 }
 
 /**

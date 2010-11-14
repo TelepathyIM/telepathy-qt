@@ -58,7 +58,7 @@ private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
 
 private:
-    friend class Connection;
+    friend class ConnectionLowlevel;
 
     PendingContactAttributes(const ConnectionPtr &connection,
             const UIntList &handles,
