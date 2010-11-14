@@ -5,8 +5,11 @@
 
 #include <QtTest/QtTest>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/PendingVoid>
@@ -176,7 +179,7 @@ void TestHandles::testRequestAndRelease()
         << QLatin1String("bob") << QLatin1String("chris");
 
     // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->requestHandles(Tp::HandleTypeContact, ids);
+    PendingHandles *pending = mConn->lowlevel()->requestHandles(Tp::HandleTypeContact, ids);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));

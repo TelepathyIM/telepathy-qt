@@ -203,7 +203,7 @@ void TestConnRequests::testRequestHandle()
     QStringList ids = QStringList() << QLatin1String("alice");
 
     // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->requestHandles(Tp::HandleTypeContact, ids);
+    PendingHandles *pending = mConn->lowlevel()->requestHandles(Tp::HandleTypeContact, ids);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingHandleFinished(Tp::PendingOperation*))));

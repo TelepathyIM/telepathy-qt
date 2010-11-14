@@ -77,7 +77,7 @@ private Q_SLOTS:
     void onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
 
 private:
-    friend class Connection;
+    friend class ConnectionLowlevel;
 
     PendingHandles(const ConnectionPtr &connection, HandleType handleType,
             const QStringList &names);

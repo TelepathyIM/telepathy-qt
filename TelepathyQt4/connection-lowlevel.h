@@ -56,6 +56,9 @@ public:
     PendingChannel *createChannel(const QVariantMap &request);
     PendingChannel *ensureChannel(const QVariantMap &request);
 
+    PendingHandles *requestHandles(HandleType handleType, const QStringList &names);
+    PendingHandles *referenceHandles(HandleType handleType, const UIntList &handles);
+
     PendingContactAttributes *contactAttributes(const UIntList &handles,
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;

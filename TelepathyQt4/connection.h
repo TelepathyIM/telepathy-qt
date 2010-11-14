@@ -162,9 +162,6 @@ public:
     PendingReady *requestConnect(const Features &requestedFeatures = Features());
     PendingOperation *requestDisconnect();
 
-    PendingHandles *requestHandles(HandleType handleType, const QStringList &names);
-    PendingHandles *referenceHandles(HandleType handleType, const UIntList &handles);
-
     ContactManagerPtr contactManager() const;
 
 #if defined(BUILDING_TELEPATHY_QT4) || defined(TP_QT4_ENABLE_LOWLEVEL_API)

@@ -361,7 +361,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
                     SLOT(onAttributesFinished(Tp::PendingOperation*)));
         } else {
             // fallback to just create the contacts
-            PendingHandles *handles = conn->referenceHandles(HandleTypeContact,
+            PendingHandles *handles = conn->lowlevel()->referenceHandles(HandleTypeContact,
                     otherContacts.toList());
             connect(handles,
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -384,7 +384,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
     }
 
     ConnectionPtr conn = manager->connection();
-    PendingHandles *handles = conn->requestHandles(HandleTypeContact, identifiers);
+    PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, identifiers);
 
     connect(handles,
             SIGNAL(finished(Tp::PendingOperation*)),

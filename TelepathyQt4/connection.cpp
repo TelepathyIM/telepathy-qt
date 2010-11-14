@@ -499,7 +499,7 @@ void Connection::Private::introspectRoster(Connection::Private *self)
                 ContactManager::ContactListChannel(
                     (ContactManager::ContactListChannel::Type) i));
 
-        PendingHandles *pending = self->parent->requestHandles(
+        PendingHandles *pending = self->parent->lowlevel()->requestHandles(
                 HandleTypeList,
                 QStringList() << ContactManager::ContactListChannel::identifierForType(
                     (ContactManager::ContactListChannel::Type) i));
@@ -1931,6 +1931,12 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
  * Request handles of the given type for the given entities (contacts,
  * rooms, lists, etc.).
  *
+ * Typically one doesn't need to request and use handles directly; instead, string identifiers
+ * and/or Contact objects are used in most APIs. File a bug for APIs in which there is no
+ * alternative to using handles. In particular however using low-level DBus interfaces for which
+ * there is no corresponding high-level (or one is implementing that abstraction) functionality does
+ * and will always require using bare handles.
+ *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingHandles object. The object also provides access to the
  * parameters with which the call was made and a signal to connect to to get
@@ -1952,18 +1958,28 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
  * \return Pointer to a newly constructed PendingHandles object, tracking
  *         the progress of the request.
  */
-PendingHandles *Connection::requestHandles(HandleType handleType, const QStringList &names)
+PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const QStringList &names)
 {
     debug() << "Request for" << names.length() << "handles of type" << handleType;
 
+    if (!isValid()) {
+        PendingHandles *pending =
+            new PendingHandles(ConnectionPtr(), handleType, names);
+        pending->setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+        return pending;
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
     {
-        Private::HandleContext *handleContext = mPriv->handleContext;
+        Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
         handleContext->types[handleType].requestsInFlight++;
     }
 
     PendingHandles *pending =
-        new PendingHandles(ConnectionPtr(this), handleType, names);
+        new PendingHandles(conn, handleType, names);
     return pending;
 }
 
@@ -1971,6 +1987,12 @@ PendingHandles *Connection::requestHandles(HandleType handleType, const QStringL
  * Request a reference to the given handles. Handles not explicitly
  * requested (via requestHandles()) but eg. observed in a signal need to be
  * referenced to guarantee them staying valid.
+ *
+ * Typically one doesn't need to reference and use handles directly; instead, string identifiers
+ * and/or Contact objects are used in most APIs. File a bug for APIs in which there is no
+ * alternative to using handles. In particular however using low-level DBus interfaces for which
+ * there is no corresponding high-level (or one is implementing that abstraction) functionality does
+ * and will always require using bare handles.
  *
  * Upon completion, the reply to the operation can be retrieved through the
  * returned PendingHandles object. The object also provides access to the
@@ -1992,14 +2014,25 @@ PendingHandles *Connection::requestHandles(HandleType handleType, const QStringL
  * \return Pointer to a newly constructed PendingHandles object, tracking
  *         the progress of the request.
  */
-PendingHandles *Connection::referenceHandles(HandleType handleType, const UIntList &handles)
+PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, const UIntList &handles)
 {
     debug() << "Reference of" << handles.length() << "handles of type" << handleType;
+
+    if (!isValid()) {
+        PendingHandles *pending =
+            new PendingHandles(ConnectionPtr(), handleType, handles,
+                    UIntList(), handles);
+        pending->setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+        return pending;
+    }
+
+    ConnectionPtr conn(mPriv->conn);
 
     UIntList alreadyHeld;
     UIntList notYetHeld;
     {
-        Private::HandleContext *handleContext = mPriv->handleContext;
+        Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
 
         foreach (uint handle, handles) {
@@ -2017,8 +2050,7 @@ PendingHandles *Connection::referenceHandles(HandleType handleType, const UIntLi
         "of the handles -" << notYetHeld.size() << "to go";
 
     PendingHandles *pending =
-        new PendingHandles(ConnectionPtr(this), handleType, handles,
-                alreadyHeld, notYetHeld);
+        new PendingHandles(conn, handleType, handles, alreadyHeld, notYetHeld);
     return pending;
 }
 
