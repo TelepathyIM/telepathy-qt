@@ -83,6 +83,7 @@ private:
             const QStringList &names);
     PendingHandles(const ConnectionPtr &connection, HandleType handleType,
             const UIntList &handles, const UIntList &alreadyHeld, const UIntList &notYetHeld);
+    PendingHandles(const QString &errorName, const QString &errorMessage);
 
     struct Private;
     friend struct Private;

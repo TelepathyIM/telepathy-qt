@@ -653,6 +653,11 @@ Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
         const Features &requestedFeatures)
     : PendingReady(connection, requestedFeatures), connection(connection)
 {
+    if (!connection) {
+        // Called when the connection had already been destroyed
+        return;
+    }
+
     QDBusPendingCall call = connection->baseInterface()->Connect();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, connection.data());
 
@@ -1963,11 +1968,8 @@ PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const 
     debug() << "Request for" << names.length() << "handles of type" << handleType;
 
     if (!isValid()) {
-        PendingHandles *pending =
-            new PendingHandles(ConnectionPtr(), handleType, names);
-        pending->setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+        return new PendingHandles(TP_QT4_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
-        return pending;
     }
 
     ConnectionPtr conn(mPriv->conn);
@@ -2019,12 +2021,8 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
     debug() << "Reference of" << handles.length() << "handles of type" << handleType;
 
     if (!isValid()) {
-        PendingHandles *pending =
-            new PendingHandles(ConnectionPtr(), handleType, handles,
-                    UIntList(), handles);
-        pending->setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+        return new PendingHandles(TP_QT4_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
-        return pending;
     }
 
     ConnectionPtr conn(mPriv->conn);
