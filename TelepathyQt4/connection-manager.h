@@ -44,6 +44,7 @@
 namespace Tp
 {
 
+class ConnectionManagerLowlevel;
 class PendingConnection;
 class PendingStringList;
 
@@ -88,12 +89,13 @@ public:
     bool hasProtocol(const QString &protocolName) const;
     ProtocolInfo protocol(const QString &protocolName) const;
 
-    // TODO (API/ABI break): Do we want to keep requestConnection as public API?
-    PendingConnection *requestConnection(const QString &protocolName,
-            const QVariantMap &parameters);
-
     static PendingStringList *listNames(
             const QDBusConnection &bus = QDBusConnection::sessionBus());
+
+#if defined(BUILDING_TELEPATHY_QT4) || defined(TP_QT4_ENABLE_LOWLEVEL_API)
+    ConnectionManagerLowlevelPtr lowlevel();
+    ConnectionManagerLowlevelConstPtr lowlevel() const;
+#endif
 
 protected:
     ConnectionManager(const QDBusConnection &bus, const QString &name,

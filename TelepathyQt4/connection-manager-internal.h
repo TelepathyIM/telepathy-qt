@@ -29,6 +29,7 @@
 #include <QQueue>
 #include <QSet>
 #include <QString>
+#include <QWeakPointer>
 
 namespace Tp
 {
@@ -58,6 +59,7 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
 
     // Public object
     ConnectionManager *parent;
+    ConnectionManagerLowlevelPtr lowlevel;
 
     QString name;
 
@@ -77,6 +79,16 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
     QQueue<QString> parametersQueue;
     ProtocolInfoList protocols;
     QSet<SharedPtr<ProtocolWrapper> > wrappers;
+};
+
+struct TELEPATHY_QT4_NO_EXPORT ConnectionManagerLowlevel::Private
+{
+    Private(ConnectionManager *cm)
+        : cm(QWeakPointer<ConnectionManager>(cm))
+    {
+    }
+
+    QWeakPointer<ConnectionManager> cm;
 };
 
 class TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private::PendingNames : public PendingStringList

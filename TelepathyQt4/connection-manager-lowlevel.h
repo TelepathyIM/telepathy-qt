@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,48 +19,39 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_pending_connection_h_HEADER_GUARD_
-#define _TelepathyQt4_pending_connection_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_connection_manager_lowlevel_h_HEADER_GUARD_
+#define _TelepathyQt4_connection_manager_lowlevel_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/PendingOperation>
-
-#include <QString>
-#include <QVariantMap>
-
-class QDBusPendingCallWatcher;
+#include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Types>
 
 namespace Tp
 {
 
-class ConnectionManager;
+class PendingConnection;
 
-class TELEPATHY_QT4_EXPORT PendingConnection : public PendingOperation
+class TELEPATHY_QT4_EXPORT ConnectionManagerLowlevel : public QObject, public RefCounted
 {
     Q_OBJECT
-    Q_DISABLE_COPY(PendingConnection);
+    Q_DISABLE_COPY(ConnectionManagerLowlevel)
 
 public:
-    ~PendingConnection();
+    ~ConnectionManagerLowlevel();
 
-    ConnectionManagerPtr manager() const;
+    bool isValid() const;
+    ConnectionManagerPtr connectionManager() const;
 
-    ConnectionPtr connection() const;
-
-private Q_SLOTS:
-    void onCallFinished(QDBusPendingCallWatcher *watcher);
-    void onConnectionBuilt(Tp::PendingOperation *op);
+    PendingConnection *requestConnection(const QString &protocolName,
+            const QVariantMap &parameters);
 
 private:
-    friend class ConnectionManagerLowlevel;
+    friend class ConnectionManager;
 
-    PendingConnection(const ConnectionManagerPtr &manager,
-            const QString &protocol, const QVariantMap &parameters);
-    PendingConnection(const QString &error, const QString &errorMessage);
+    ConnectionManagerLowlevel(ConnectionManager *parent);
 
     struct Private;
     friend struct Private;
