@@ -32,7 +32,6 @@ set(telepathy_qt4_SRCS
     connection-capabilities.cpp
     connection-factory.cpp
     connection-internal.h
-    connection-lowlevel.h
     connection-manager.cpp
     connection-manager-internal.h
     contact.cpp
@@ -172,6 +171,7 @@ set(telepathy_qt4_HEADERS
     connection.h
     ConnectionFactory
     connection-factory.h
+    connection-lowlevel.h
     ConnectionInterface
     ConnectionInterfaceAliasingInterface
     ConnectionInterfaceAnonymityInterface
