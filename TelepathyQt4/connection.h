@@ -159,9 +159,6 @@ public:
 
     ConnectionCapabilities capabilities() const;
 
-    PendingReady *requestConnect(const Features &requestedFeatures = Features());
-    PendingOperation *requestDisconnect();
-
     ContactManagerPtr contactManager() const;
 
 #if defined(BUILDING_TELEPATHY_QT4) || defined(TP_QT4_ENABLE_LOWLEVEL_API)

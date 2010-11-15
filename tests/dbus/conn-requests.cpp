@@ -183,7 +183,7 @@ void TestConnRequests::initTestCase()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    QVERIFY(connect(mConn->requestConnect(),
+    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -254,7 +254,7 @@ void TestConnRequests::cleanupTestCase()
 {
     if (mConn) {
         // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->requestDisconnect(),
+        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
                         SIGNAL(finished(Tp::PendingOperation*)),
                         SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);

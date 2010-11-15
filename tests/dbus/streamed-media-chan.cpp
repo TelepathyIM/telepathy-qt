@@ -567,7 +567,7 @@ void TestStreamedMediaChan::initTestCase()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    QVERIFY(connect(mConn->requestConnect(Connection::FeatureSelfContact),
+    QVERIFY(connect(mConn->lowlevel()->requestConnect(Connection::FeatureSelfContact),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -1566,7 +1566,7 @@ void TestStreamedMediaChan::cleanup()
 void TestStreamedMediaChan::cleanupTestCase()
 {
     if (mConn) {
-        QVERIFY(connect(mConn->requestDisconnect(),
+        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
                         SIGNAL(finished(Tp::PendingOperation*)),
                         SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);

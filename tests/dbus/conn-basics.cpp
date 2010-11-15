@@ -135,7 +135,7 @@ void TestConnBasics::init()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->requestConnect();
+    mConn->lowlevel()->requestConnect();
 
     qDebug() << "waiting connection to become ready";
     QVERIFY(connect(mConn->becomeReady(),

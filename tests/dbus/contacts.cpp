@@ -165,7 +165,7 @@ void TestContacts::initTestCase()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->requestConnect();
+    mConn->lowlevel()->requestConnect();
 
     Features features = Features() << Connection::FeatureSelfContact;
     QVERIFY(connect(mConn->becomeReady(features),
@@ -784,10 +784,8 @@ void TestContacts::testSelfContactFallback()
 
     QCOMPARE(conn->isReady(), false);
 
-    conn->requestConnect();
-
     Features features = Features() << Connection::FeatureSelfContact;
-    QVERIFY(connect(conn->becomeReady(features),
+    QVERIFY(connect(conn->lowlevel()->requestConnect(features),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -833,7 +831,7 @@ void TestContacts::cleanupTestCase()
 
     if (mConn) {
         // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->requestDisconnect(),
+        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);

@@ -50,6 +50,9 @@ public:
     bool isValid() const;
     ConnectionPtr connection() const;
 
+    PendingReady *requestConnect(const Features &requestedFeatures = Features());
+    PendingOperation *requestDisconnect();
+
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 

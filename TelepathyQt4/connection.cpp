@@ -2057,6 +2057,9 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
 /**
  * Start an asynchronous request that the connection be connected.
  *
+ * When using a full-fledged Telepathy setup with an Account Manager service, the Account methods
+ * Account::setRequestedPresence() and Account::reconnect() must be used instead.
+ *
  * The returned PendingOperation will finish successfully when the connection
  * has reached ConnectionStatusConnected and the requested \a features are all ready, or
  * finish with an error if a fatal error occurs during that process.
@@ -2067,9 +2070,17 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
  *         for basic functionality, plus the given features, has succeeded or
  *         failed
  */
-PendingReady *Connection::requestConnect(const Features &requestedFeatures)
+PendingReady *ConnectionLowlevel::requestConnect(const Features &requestedFeatures)
 {
-    return new PendingConnect(ConnectionPtr(this), requestedFeatures);
+    if (!isValid()) {
+        Connection::PendingConnect *pending = new Connection::PendingConnect(ConnectionPtr(),
+                requestedFeatures);
+        pending->setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+        return pending;
+    }
+
+    return new Connection::PendingConnect(ConnectionPtr(mPriv->conn), requestedFeatures);
 }
 
 /**
@@ -2078,13 +2089,23 @@ PendingReady *Connection::requestConnect(const Features &requestedFeatures)
  * of this request; under normal circumstances, it can be expected to
  * succeed.
  *
+ * When using a full-fledged Telepathy setup with an Account Manager service,
+ * Account::setRequestedPresence() with Presence::offline() as an argument should generally be used
+ * instead.
+ *
  * \return A %PendingOperation, which will emit finished when the
  *         request finishes.
  */
-PendingOperation *Connection::requestDisconnect()
+PendingOperation *ConnectionLowlevel::requestDisconnect()
 {
-    return new PendingVoid(baseInterface()->Disconnect(),
-            ConnectionPtr(this));
+    if (!isValid()) {
+        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"), ConnectionPtr());
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    return new PendingVoid(conn->baseInterface()->Disconnect(), conn);
 }
 
 /**
