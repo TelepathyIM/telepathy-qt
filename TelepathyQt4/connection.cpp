@@ -161,7 +161,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     QString protocolName;
 };
 
-struct ConnectionLowlevel::Private
+struct TELEPATHY_QT4_NO_EXPORT ConnectionLowlevel::Private
 {
     Private(Connection *conn)
         : conn(QWeakPointer<Connection>(conn))
