@@ -72,6 +72,7 @@ PendingStreamedMediaStreams::PendingStreamedMediaStreams(const StreamedMediaChan
       mPriv(new Private)
 {
     mPriv->numStreams = types.size();
+    mPriv->streamsReady = 0;
 
     UIntList l;
     foreach (MediaStreamType type, types) {

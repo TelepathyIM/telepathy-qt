@@ -32,6 +32,7 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT ReadyObject::Private
 {
     Private(ReadyObject *parent, RefCounted *object, Feature featureCore);
+    Private(ReadyObject *parent, DBusProxy *proxy, Feature featureCore);
     ~Private();
 
     ReadyObject *parent;
@@ -44,6 +45,14 @@ ReadyObject::Private::Private(ReadyObject *parent, RefCounted *object,
     : parent(parent),
       coreFeatures(Features() << featureCore),
       readinessHelper(new ReadinessHelper(object))
+{
+}
+
+ReadyObject::Private::Private(ReadyObject *parent, DBusProxy *proxy,
+        Feature featureCore)
+    : parent(parent),
+      coreFeatures(Features() << featureCore),
+      readinessHelper(new ReadinessHelper(proxy))
 {
 }
 
@@ -66,6 +75,17 @@ ReadyObject::Private::~Private()
  */
 ReadyObject::ReadyObject(RefCounted *object, const Feature &featureCore)
     : mPriv(new Private(this, object, featureCore))
+{
+}
+
+/**
+ * Construct a new ReadyObject object.
+ *
+ * \param proxy The DBusProxy the object refers to.
+ * \param featureCore The core feature of the object.
+ */
+ReadyObject::ReadyObject(DBusProxy *proxy, const Feature &featureCore)
+    : mPriv(new Private(this, proxy, featureCore))
 {
 }
 

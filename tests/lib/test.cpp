@@ -103,10 +103,12 @@ void Test::processDBusQueue(Tp::DBusProxy *proxy)
     PendingVoid *call = new PendingVoid(peer.Ping(), Tp::SharedPtr<Tp::RefCounted>());
 
     // Wait for the reply to the Ping call
-    QVERIFY(connect(call,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (!call->isFinished()) {
+        mLoop->processEvents();
+    }
+
+    QVERIFY(call->isFinished());
+    QVERIFY(call->isValid());
 }
 
 void Test::onWatchdog()

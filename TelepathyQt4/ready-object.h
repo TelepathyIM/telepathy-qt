@@ -44,6 +44,7 @@ class TELEPATHY_QT4_EXPORT ReadyObject
 
 public:
     ReadyObject(RefCounted *object, const Feature &featureCore);
+    ReadyObject(DBusProxy *proxy, const Feature &featureCore);
     virtual ~ReadyObject();
 
     virtual bool isReady(const Features &features = Features()) const;

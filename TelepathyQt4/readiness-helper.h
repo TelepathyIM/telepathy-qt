@@ -78,6 +78,10 @@ public:
             uint currentStatus = 0,
             const Introspectables &introspectables = Introspectables(),
             QObject *parent = 0);
+    ReadinessHelper(DBusProxy *proxy,
+            uint currentStatus = 0,
+            const Introspectables &introspectables = Introspectables(),
+            QObject *parent = 0);
     ~ReadinessHelper();
 
     void addIntrospectables(const Introspectables &introspectables);
