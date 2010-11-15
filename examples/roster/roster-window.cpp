@@ -18,13 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+// FIXME: This example is quite non-exemplary, using the low-level API directly!
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include "roster-window.h"
 #include "_gen/roster-window.moc.hpp"
 
 #include "roster-widget.h"
 
 #include <TelepathyQt4/Types>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/ConnectionManagerLowlevel>
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
@@ -54,7 +59,7 @@ RosterWindow::RosterWindow(const QString &username, const QString &password,
 RosterWindow::~RosterWindow()
 {
     foreach (const ConnectionPtr &conn, mConns) {
-        conn->requestDisconnect();
+        conn->lowlevel()->requestDisconnect();
     }
 }
 
@@ -75,7 +80,7 @@ void RosterWindow::onCMReady(Tp::PendingOperation *op)
     QVariantMap params;
     params.insert(QLatin1String("account"), QVariant(mUsername));
     params.insert(QLatin1String("password"), QVariant(mPassword));
-    PendingConnection *pconn = mCM->requestConnection(QLatin1String("jabber"),
+    PendingConnection *pconn = mCM->lowlevel()->requestConnection(QLatin1String("jabber"),
             params);
     connect(pconn,
             SIGNAL(finished(Tp::PendingOperation *)),
@@ -94,7 +99,7 @@ void RosterWindow::onConnectionCreated(Tp::PendingOperation *op)
         qobject_cast<PendingConnection *>(op);
     ConnectionPtr conn = pconn->connection();
     mConns.append(conn);
-    connect(conn->requestConnect(),
+    connect(conn->lowlevel()->requestConnect(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onConnectionConnected(Tp::PendingOperation *)));
     connect(conn.data(),

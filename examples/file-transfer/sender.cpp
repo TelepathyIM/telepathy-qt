@@ -22,9 +22,15 @@
 #include "sender.h"
 #include "_gen/sender.moc.hpp"
 
+// FIXME: This example is quite non-exemplary, as it uses requestConnection and createChannel
+// directly!
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/ConnectionManagerLowlevel>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/FileTransferChannel>
@@ -80,7 +86,7 @@ void Sender::onCMReady(PendingOperation *op)
     QVariantMap params;
     params.insert(QLatin1String("account"), QVariant(mUsername));
     params.insert(QLatin1String("password"), QVariant(mPassword));
-    PendingConnection *pconn = mCM->requestConnection(QLatin1String("jabber"),
+    PendingConnection *pconn = mCM->lowlevel()->requestConnection(QLatin1String("jabber"),
             params);
     connect(pconn,
             SIGNAL(finished(Tp::PendingOperation *)),
@@ -101,7 +107,7 @@ void Sender::onConnectionCreated(PendingOperation *op)
     PendingConnection *pconn =
         qobject_cast<PendingConnection *>(op);
     mConn = pconn->connection();
-    connect(mConn->requestConnect(),
+    connect(mConn->lowlevel()->requestConnect(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onConnectionConnected(Tp::PendingOperation *)));
     connect(mConn.data(),
@@ -242,7 +248,7 @@ void Sender::createFileTransferChannel()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
                    QLatin1String("application/octet-stream"));
     qDebug() << "Request:" << request;
-    connect(mConn->createChannel(request),
+    connect(mConn->lowlevel()->createChannel(request),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onFileTransferChannelCreated(Tp::PendingOperation*)));
 }

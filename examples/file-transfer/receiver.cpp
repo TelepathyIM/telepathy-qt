@@ -24,9 +24,15 @@
 
 #include "receiver-channel.h"
 
+// FIXME: This example is quite non-exemplary, as it uses RequestConnection and the Requests
+// low-level interface (!!!) directly!
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/ConnectionManagerLowlevel>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/FileTransferChannel>
 #include <TelepathyQt4/IncomingFileTransferChannel>
@@ -66,7 +72,7 @@ void Receiver::onCMReady(PendingOperation *op)
     QVariantMap params;
     params.insert(QLatin1String("account"), QVariant(mUsername));
     params.insert(QLatin1String("password"), QVariant(mPassword));
-    PendingConnection *pconn = mCM->requestConnection(QLatin1String("jabber"),
+    PendingConnection *pconn = mCM->lowlevel()->requestConnection(QLatin1String("jabber"),
             params);
     connect(pconn,
             SIGNAL(finished(Tp::PendingOperation *)),
@@ -87,7 +93,7 @@ void Receiver::onConnectionCreated(PendingOperation *op)
     PendingConnection *pconn =
         qobject_cast<PendingConnection *>(op);
     mConn = pconn->connection();
-    connect(mConn->requestConnect(),
+    connect(mConn->lowlevel()->requestConnect(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onConnectionConnected(Tp::PendingOperation *)));
     connect(mConn.data(),
