@@ -299,7 +299,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
     }
 
     invocation->dispatchOp = ChannelDispatchOperation::create(mBus,
-            dispatchOperationPath.path(), properties, QList<ChannelPtr>(), accFactory, connFactory,
+            dispatchOperationPath.path(), properties, invocation->chans, accFactory, connFactory,
             chanFactory, contactFactory);
     readyOps.append(invocation->dispatchOp->becomeReady());
 
@@ -349,9 +349,7 @@ void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
         debug() << "Invoking application addDispatchOperation with CDO"
             << invocation->dispatchOp->objectPath() << "on" << mClient;
 
-        // API/ABI break FIXME: Don't pass the same channels as the channels arg and (separately
-        // constructed) in dispatchOp->channels() !!!
-        mClient->addDispatchOperation(invocation->ctx, invocation->chans, invocation->dispatchOp);
+        mClient->addDispatchOperation(invocation->ctx, invocation->dispatchOp);
     }
 }
 

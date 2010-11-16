@@ -253,10 +253,9 @@ public:
     }
 
     void addDispatchOperation(const MethodInvocationContextPtr<> &context,
-            const QList<ChannelPtr> &channels,
             const ChannelDispatchOperationPtr &dispatchOperation)
     {
-        mAddDispatchOperationChannels = channels;
+        mAddDispatchOperationChannels = dispatchOperation->channels();
         mAddDispatchOperationDispatchOperation = dispatchOperation;
 
         context->setFinished();

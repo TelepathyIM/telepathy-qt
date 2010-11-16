@@ -106,7 +106,6 @@ public:
     ChannelClassSpecList approverFilter() const;
 
     virtual void addDispatchOperation(const MethodInvocationContextPtr<> &context,
-            const QList<ChannelPtr> &channels,
             const ChannelDispatchOperationPtr &dispatchOperation) = 0;
 
 protected:
