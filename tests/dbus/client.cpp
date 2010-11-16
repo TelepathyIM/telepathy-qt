@@ -7,6 +7,8 @@
 #include <QString>
 #include <QVariantMap>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/AbstractClientHandler>
@@ -20,6 +22,7 @@
 #include <TelepathyQt4/ClientObserverInterface>
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/MethodInvocationContext>
 #include <TelepathyQt4/PendingAccount>
@@ -462,9 +465,7 @@ void TestClient::initTestCase()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->requestConnect();
-
-    QVERIFY(connect(mConn->requestConnect(),
+    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);

@@ -77,12 +77,13 @@ private Q_SLOTS:
     void onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
 
 private:
-    friend class Connection;
+    friend class ConnectionLowlevel;
 
     PendingHandles(const ConnectionPtr &connection, HandleType handleType,
             const QStringList &names);
     PendingHandles(const ConnectionPtr &connection, HandleType handleType,
             const UIntList &handles, const UIntList &alreadyHeld, const UIntList &notYetHeld);
+    PendingHandles(const QString &errorName, const QString &errorMessage);
 
     struct Private;
     friend struct Private;

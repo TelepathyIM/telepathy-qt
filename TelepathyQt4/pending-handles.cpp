@@ -114,6 +114,12 @@ PendingHandles::PendingHandles(const ConnectionPtr &connection, HandleType handl
     }
 }
 
+PendingHandles::PendingHandles(const QString &errorName, const QString &errorMessage)
+    : PendingOperation(ConnectionPtr()), mPriv(new Private)
+{
+    setFinishedWithError(errorName, errorMessage);
+}
+
 /**
  * Class destructor.
  */

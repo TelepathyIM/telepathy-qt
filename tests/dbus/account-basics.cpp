@@ -1,6 +1,8 @@
 #include <QtCore/QEventLoop>
 #include <QtTest/QtTest>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Account>
@@ -9,6 +11,7 @@
 #include <TelepathyQt4/AccountPropertyFilter>
 #include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
@@ -172,7 +175,7 @@ void TestAccountBasics::initTestCase()
     mConn = Connection::create(mConnName, mConnPath,
             ChannelFactory::create(QDBusConnection::sessionBus()),
             ContactFactory::create());
-    QVERIFY(connect(mConn->requestConnect(),
+    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -691,7 +694,7 @@ void TestAccountBasics::cleanupTestCase()
 {
     if (mConn) {
         // Disconnect and wait for invalidated
-        QVERIFY(connect(mConn->requestDisconnect(),
+        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
                         SIGNAL(finished(Tp::PendingOperation*)),
                         SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);

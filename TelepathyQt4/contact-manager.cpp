@@ -33,6 +33,7 @@
 
 #include <TelepathyQt4/AvatarData>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContactAttributes>
 #include <TelepathyQt4/PendingContacts>
@@ -167,7 +168,7 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureCapabilities
             << Contact::FeatureLocation
             << Contact::FeatureInfo;
-        QStringList interfaces = connection()->contactAttributeInterfaces();
+        QStringList interfaces = connection()->lowlevel()->contactAttributeInterfaces();
         foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
                 mPriv->supportedFeatures.insert(feature);
@@ -257,7 +258,7 @@ PendingOperation *ContactManager::addGroup(const QString &group)
                                  (uint) Tp::HandleTypeGroup);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                                  group);
-    return connection()->ensureChannel(request);
+    return connection()->lowlevel()->ensureChannel(request);
 }
 
 /**

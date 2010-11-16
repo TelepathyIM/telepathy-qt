@@ -5,8 +5,11 @@
 
 #include <QtTest/QtTest>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingReady>
@@ -132,7 +135,7 @@ void TestConnBasics::init()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->requestConnect();
+    mConn->lowlevel()->requestConnect();
 
     qDebug() << "waiting connection to become ready";
     QVERIFY(connect(mConn->becomeReady(),
@@ -197,7 +200,7 @@ void TestConnBasics::testSimplePresence()
         ConnectionPresenceTypeError
     };
 
-    SimpleStatusSpecMap statuses = mConn->allowedPresenceStatuses();
+    SimpleStatusSpecMap statuses = mConn->lowlevel()->allowedPresenceStatuses();
     Q_FOREACH (QString name, statuses.keys()) {
         QVERIFY(expectedNames.contains(name));
 

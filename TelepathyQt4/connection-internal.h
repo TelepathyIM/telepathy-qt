@@ -45,6 +45,8 @@ private Q_SLOTS:
     void onConnInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
 
 private:
+    friend class ConnectionLowlevel;
+
     ConnectionPtr connection;
 };
 

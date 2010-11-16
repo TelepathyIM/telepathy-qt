@@ -5,8 +5,11 @@
 #include <QtDBus>
 #include <QtTest>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
@@ -162,7 +165,7 @@ void TestContacts::initTestCase()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->requestConnect();
+    mConn->lowlevel()->requestConnect();
 
     Features features = Features() << Connection::FeatureSelfContact;
     QVERIFY(connect(mConn->becomeReady(features),
@@ -193,15 +196,15 @@ void TestContacts::testSupport()
 {
     QCOMPARE(mConn->contactManager()->connection(), mConn);
 
-    QVERIFY(!mConn->contactAttributeInterfaces().isEmpty());
+    QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().isEmpty());
 
-    QVERIFY(mConn->contactAttributeInterfaces().contains(
+    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION)));
-    QVERIFY(mConn->contactAttributeInterfaces().contains(
+    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)));
-    QVERIFY(mConn->contactAttributeInterfaces().contains(
+    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)));
-    QVERIFY(mConn->contactAttributeInterfaces().contains(
+    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)));
 
     Features supportedFeatures = mConn->contactManager()->supportedFeatures();
@@ -781,10 +784,8 @@ void TestContacts::testSelfContactFallback()
 
     QCOMPARE(conn->isReady(), false);
 
-    conn->requestConnect();
-
     Features features = Features() << Connection::FeatureSelfContact;
-    QVERIFY(connect(conn->becomeReady(features),
+    QVERIFY(connect(conn->lowlevel()->requestConnect(features),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -830,7 +831,7 @@ void TestContacts::cleanupTestCase()
 
     if (mConn) {
         // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->requestDisconnect(),
+        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);

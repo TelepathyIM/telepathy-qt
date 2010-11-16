@@ -74,6 +74,19 @@ PendingConnection::PendingConnection(const ConnectionManagerPtr &manager,
 }
 
 /**
+ * Construct a PendingConnection object which will fail immediately.
+ *
+ * \param error Name of the error to fail with.
+ * \param errorMessage Detail message for the error.
+ */
+PendingConnection::PendingConnection(const QString &error, const QString &errorMessage)
+    : PendingOperation(ConnectionManagerPtr()),
+      mPriv(new Private)
+{
+    setFinishedWithError(error, errorMessage);
+}
+
+/**
  * Class destructor.
  */
 PendingConnection::~PendingConnection()

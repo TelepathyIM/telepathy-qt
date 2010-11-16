@@ -20,12 +20,14 @@
  */
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include "TelepathyQt4/connection-internal.h"
 
 #include "TelepathyQt4/_gen/cli-connection.moc.hpp"
 #include "TelepathyQt4/_gen/cli-connection-body.hpp"
 #include "TelepathyQt4/_gen/connection.moc.hpp"
 #include "TelepathyQt4/_gen/connection-internal.moc.hpp"
+#include "TelepathyQt4/_gen/connection-lowlevel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -91,6 +93,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 
     // Public object
     Connection *parent;
+    ConnectionLowlevelPtr lowlevel;
 
     // Factories
     ChannelFactoryConstPtr chanFactory;
@@ -158,6 +161,16 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     QString protocolName;
 };
 
+struct TELEPATHY_QT4_NO_EXPORT ConnectionLowlevel::Private
+{
+    Private(Connection *conn)
+        : conn(QWeakPointer<Connection>(conn))
+    {
+    }
+
+    QWeakPointer<Connection> conn;
+};
+
 // Handle tracking
 struct TELEPATHY_QT4_NO_EXPORT Connection::Private::HandleContext
 {
@@ -189,6 +202,7 @@ Connection::Private::Private(Connection *parent,
         const ChannelFactoryConstPtr &chanFactory,
         const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
+      lowlevel(ConnectionLowlevelPtr(new ConnectionLowlevel(parent))),
       chanFactory(chanFactory),
       contactFactory(contactFactory),
       baseInterface(new Client::ConnectionInterface(parent)),
@@ -485,7 +499,7 @@ void Connection::Private::introspectRoster(Connection::Private *self)
                 ContactManager::ContactListChannel(
                     (ContactManager::ContactListChannel::Type) i));
 
-        PendingHandles *pending = self->parent->requestHandles(
+        PendingHandles *pending = self->parent->lowlevel()->requestHandles(
                 HandleTypeList,
                 QStringList() << ContactManager::ContactListChannel::identifierForType(
                     (ContactManager::ContactListChannel::Type) i));
@@ -615,10 +629,35 @@ void Connection::Private::checkFeatureRosterGroupsReady()
     contactListGroupChannels.clear();
 }
 
+ConnectionLowlevel::ConnectionLowlevel(Connection *conn)
+    : mPriv(new Private(conn))
+{
+}
+
+ConnectionLowlevel::~ConnectionLowlevel()
+{
+    delete mPriv;
+}
+
+bool ConnectionLowlevel::isValid() const
+{
+    return !mPriv->conn.isNull();
+}
+
+ConnectionPtr ConnectionLowlevel::connection() const
+{
+    return ConnectionPtr(mPriv->conn);
+}
+
 Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
         const Features &requestedFeatures)
     : PendingReady(connection, requestedFeatures), connection(connection)
 {
+    if (!connection) {
+        // Called when the connection had already been destroyed
+        return;
+    }
+
     QDBusPendingCall call = connection->baseInterface()->Connect();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, connection.data());
 
@@ -1196,19 +1235,29 @@ uint Connection::selfHandle() const
  * \return Dictionary from string identifiers to structs for each valid
  * status.
  */
-SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
+SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 {
-    if (!isReady(Features() << FeatureSimplePresence)) {
+    if (!isValid()) {
+        warning() << "ConnectionLowlevel::selfHandle() called for a connection which is already destroyed";
+        return SimpleStatusSpecMap();
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (!conn->isReady(Features() << Connection::FeatureSimplePresence)) {
         warning() << "Trying to retrieve simple presence from connection, but "
                      "simple presence is not supported or was not requested. "
                      "Use becomeReady(FeatureSimplePresence)";
     }
 
-    return mPriv->simplePresenceStatuses;
+    return conn->mPriv->simplePresenceStatuses;
 }
 
 /**
  * Set the self presence status.
+ *
+ * This should generally only be called by an Account Manager. In typical usage,
+ * Account::setRequestedPresence() should be used instead.
  *
  * \a status must be one of the allowed statuses returned by
  * allowedPresenceStatuses().
@@ -1224,20 +1273,26 @@ SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
  *
  * \sa allowedPresenceStatuses()
  */
-PendingOperation *Connection::setSelfPresence(const QString &status,
+PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
         const QString &statusMessage)
 {
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))) {
+    if (!isValid()) {
+        warning() << "ConnectionLowlevel::selfHandle() called for a connection which is already destroyed";
+        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE, QLatin1String("Connection already destroyed"),
+                ConnectionPtr());
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Connection does not support SimplePresence"),
-                ConnectionPtr(this));
+                QLatin1String("Connection does not support SimplePresence"), conn);
     }
 
     Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
-        interface<Client::ConnectionInterfaceSimplePresenceInterface>();
+        conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
     return new PendingVoid(
-            simplePresenceInterface->SetPresence(status, statusMessage),
-            ConnectionPtr(this));
+            simplePresenceInterface->SetPresence(status, statusMessage), conn);
 }
 
 /**
@@ -1616,7 +1671,7 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     Q_ASSERT(type != (uint) -1 && type < ContactManager::ContactListChannel::LastType);
     mPriv->contactListChannels[type].handle = handle;
     request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle[0];
-    connect(ensureChannel(request),
+    connect(lowlevel()->ensureChannel(request),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(gotContactListChannel(Tp::PendingOperation*)));
 }
@@ -1750,6 +1805,9 @@ Client::ConnectionInterface *Connection::baseInterface() const
 /**
  * Asynchronously creates a channel satisfying the given request.
  *
+ * In typical usage, only the Channel Dispatcher should call this. Ordinary applications should use
+ * the Account::createChannel() family of methods (which invoke the Channel Dispatcher's services).
+ *
  * The request MUST contain the following keys:
  *   org.freedesktop.Telepathy.Channel.ChannelType
  *   org.freedesktop.Telepathy.Channel.TargetHandleType
@@ -1773,38 +1831,48 @@ Client::ConnectionInterface *Connection::baseInterface() const
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
  */
-PendingChannel *Connection::createChannel(const QVariantMap &request)
+PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
 {
-    if (mPriv->pendingStatus != ConnectionStatusConnected) {
+    if (!isValid()) {
+        return new PendingChannel(ConnectionPtr(),
+                TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection not yet connected"));
     }
 
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
+    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
         warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Connection does not support Requests Interface"));
     }
 
     if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Invalid 'request' argument"));
     }
 
     debug() << "Creating a Channel";
     PendingChannel *channel =
-        new PendingChannel(ConnectionPtr(this),
-                request, true);
+        new PendingChannel(conn, request, true);
     return channel;
 }
 
 /**
  * Asynchronously ensures a channel exists satisfying the given request.
  *
+ * In typical usage, only the Channel Dispatcher should call this. Ordinary applications should use
+ * the Account::ensureChannel() family of methods (which invoke the Channel Dispatcher's services).
+ *
  * The request MUST contain the following keys:
  *   org.freedesktop.Telepathy.Channel.ChannelType
  *   org.freedesktop.Telepathy.Channel.TargetHandleType
@@ -1828,37 +1896,51 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
  */
-PendingChannel *Connection::ensureChannel(const QVariantMap &request)
+PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
 {
-    if (mPriv->pendingStatus != ConnectionStatusConnected) {
+    if (!isValid()) {
+        return new PendingChannel(ConnectionPtr(),
+                TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection not yet connected"));
     }
 
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
+    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
         warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Connection does not support Requests Interface"));
     }
 
     if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
-        return new PendingChannel(ConnectionPtr(this),
+        return new PendingChannel(conn,
                 QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Invalid 'request' argument"));
     }
 
     debug() << "Creating a Channel";
     PendingChannel *channel =
-        new PendingChannel(ConnectionPtr(this), request, false);
+        new PendingChannel(conn, request, false);
     return channel;
 }
 
 /**
  * Request handles of the given type for the given entities (contacts,
  * rooms, lists, etc.).
+ *
+ * Typically one doesn't need to request and use handles directly; instead, string identifiers
+ * and/or Contact objects are used in most APIs. File a bug for APIs in which there is no
+ * alternative to using handles. In particular however using low-level DBus interfaces for which
+ * there is no corresponding high-level (or one is implementing that abstraction) functionality does
+ * and will always require using bare handles.
  *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingHandles object. The object also provides access to the
@@ -1881,18 +1963,25 @@ PendingChannel *Connection::ensureChannel(const QVariantMap &request)
  * \return Pointer to a newly constructed PendingHandles object, tracking
  *         the progress of the request.
  */
-PendingHandles *Connection::requestHandles(HandleType handleType, const QStringList &names)
+PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const QStringList &names)
 {
     debug() << "Request for" << names.length() << "handles of type" << handleType;
 
+    if (!isValid()) {
+        return new PendingHandles(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
     {
-        Private::HandleContext *handleContext = mPriv->handleContext;
+        Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
         handleContext->types[handleType].requestsInFlight++;
     }
 
     PendingHandles *pending =
-        new PendingHandles(ConnectionPtr(this), handleType, names);
+        new PendingHandles(conn, handleType, names);
     return pending;
 }
 
@@ -1900,6 +1989,12 @@ PendingHandles *Connection::requestHandles(HandleType handleType, const QStringL
  * Request a reference to the given handles. Handles not explicitly
  * requested (via requestHandles()) but eg. observed in a signal need to be
  * referenced to guarantee them staying valid.
+ *
+ * Typically one doesn't need to reference and use handles directly; instead, string identifiers
+ * and/or Contact objects are used in most APIs. File a bug for APIs in which there is no
+ * alternative to using handles. In particular however using low-level DBus interfaces for which
+ * there is no corresponding high-level (or one is implementing that abstraction) functionality does
+ * and will always require using bare handles.
  *
  * Upon completion, the reply to the operation can be retrieved through the
  * returned PendingHandles object. The object also provides access to the
@@ -1921,14 +2016,21 @@ PendingHandles *Connection::requestHandles(HandleType handleType, const QStringL
  * \return Pointer to a newly constructed PendingHandles object, tracking
  *         the progress of the request.
  */
-PendingHandles *Connection::referenceHandles(HandleType handleType, const UIntList &handles)
+PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, const UIntList &handles)
 {
     debug() << "Reference of" << handles.length() << "handles of type" << handleType;
+
+    if (!isValid()) {
+        return new PendingHandles(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+    }
+
+    ConnectionPtr conn(mPriv->conn);
 
     UIntList alreadyHeld;
     UIntList notYetHeld;
     {
-        Private::HandleContext *handleContext = mPriv->handleContext;
+        Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
 
         foreach (uint handle, handles) {
@@ -1946,13 +2048,15 @@ PendingHandles *Connection::referenceHandles(HandleType handleType, const UIntLi
         "of the handles -" << notYetHeld.size() << "to go";
 
     PendingHandles *pending =
-        new PendingHandles(ConnectionPtr(this), handleType, handles,
-                alreadyHeld, notYetHeld);
+        new PendingHandles(conn, handleType, handles, alreadyHeld, notYetHeld);
     return pending;
 }
 
 /**
  * Start an asynchronous request that the connection be connected.
+ *
+ * When using a full-fledged Telepathy setup with an Account Manager service, the Account methods
+ * Account::setRequestedPresence() and Account::reconnect() must be used instead.
  *
  * The returned PendingOperation will finish successfully when the connection
  * has reached ConnectionStatusConnected and the requested \a features are all ready, or
@@ -1964,9 +2068,17 @@ PendingHandles *Connection::referenceHandles(HandleType handleType, const UIntLi
  *         for basic functionality, plus the given features, has succeeded or
  *         failed
  */
-PendingReady *Connection::requestConnect(const Features &requestedFeatures)
+PendingReady *ConnectionLowlevel::requestConnect(const Features &requestedFeatures)
 {
-    return new PendingConnect(ConnectionPtr(this), requestedFeatures);
+    if (!isValid()) {
+        Connection::PendingConnect *pending = new Connection::PendingConnect(ConnectionPtr(),
+                requestedFeatures);
+        pending->setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+        return pending;
+    }
+
+    return new Connection::PendingConnect(ConnectionPtr(mPriv->conn), requestedFeatures);
 }
 
 /**
@@ -1975,13 +2087,23 @@ PendingReady *Connection::requestConnect(const Features &requestedFeatures)
  * of this request; under normal circumstances, it can be expected to
  * succeed.
  *
+ * When using a full-fledged Telepathy setup with an Account Manager service,
+ * Account::setRequestedPresence() with Presence::offline() as an argument should generally be used
+ * instead.
+ *
  * \return A %PendingOperation, which will emit finished when the
  *         request finishes.
  */
-PendingOperation *Connection::requestDisconnect()
+PendingOperation *ConnectionLowlevel::requestDisconnect()
 {
-    return new PendingVoid(baseInterface()->Disconnect(),
-            ConnectionPtr(this));
+    if (!isValid()) {
+        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"), ConnectionPtr());
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    return new PendingVoid(conn->baseInterface()->Disconnect(), conn);
 }
 
 /**
@@ -1989,6 +2111,9 @@ PendingOperation *Connection::requestDisconnect()
  * will be referenced automatically. Essentially, this method wraps
  * ConnectionInterfaceContactsInterface::GetContactAttributes(), integrating it
  * with the rest of the handle-referencing machinery.
+ *
+ * This is very low-level API the Contact/ContactManager API provides a higher level of abstraction
+ * for the same functionality.
  *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingContactAttributes object. The object also provides access to
@@ -2017,26 +2142,36 @@ PendingOperation *Connection::requestDisconnect()
  * \return Pointer to a newly constructed PendingContactAttributes, tracking the
  *         progress of the request.
  */
-PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
+PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &handles,
         const QStringList &interfaces, bool reference)
 {
     debug() << "Request for attributes for" << handles.size() << "contacts";
 
-    PendingContactAttributes *pending =
-        new PendingContactAttributes(ConnectionPtr(this),
+    if (!isValid()) {
+        PendingContactAttributes *pending = new PendingContactAttributes(ConnectionPtr(),
                 handles, interfaces, reference);
-    if (!isReady()) {
-        warning() << "Connection::contactAttributes() used when not ready";
+        pending->failImmediately(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection has been destroyed"));
+        return pending;
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    PendingContactAttributes *pending =
+        new PendingContactAttributes(conn,
+                handles, interfaces, reference);
+    if (!conn->isReady()) {
+        warning() << "ConnectionLowlevel::contactAttributes() used when not ready";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("The connection isn't ready"));
         return pending;
-    } else if (mPriv->pendingStatus != ConnectionStatusConnected) {
-        warning() << "Connection::contactAttributes() used with status" << status() << "!= ConnectionStatusConnected";
+    } else if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
+        warning() << "ConnectionLowlevel::contactAttributes() used with status" << conn->status() << "!= ConnectionStatusConnected";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("The connection isn't Connected"));
         return pending;
-    } else if (!this->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
-        warning() << "Connection::contactAttributes() used without the remote object supporting"
+    } else if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+        warning() << "ConnectionLowlevel::contactAttributes() used without the remote object supporting"
                   << "the Contacts interface";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("The connection doesn't support the Contacts interface"));
@@ -2044,13 +2179,13 @@ PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
     }
 
     {
-        Private::HandleContext *handleContext = mPriv->handleContext;
+        Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
         handleContext->types[HandleTypeContact].requestsInFlight++;
     }
 
     Client::ConnectionInterfaceContactsInterface *contactsInterface =
-        interface<Client::ConnectionInterfaceContactsInterface>();
+        conn->interface<Client::ConnectionInterfaceContactsInterface>();
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(contactsInterface->GetContactAttributes(handles, interfaces,
                     reference));
@@ -2059,17 +2194,24 @@ PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
     return pending;
 }
 
-QStringList Connection::contactAttributeInterfaces() const
+QStringList ConnectionLowlevel::contactAttributeInterfaces() const
 {
-    if (mPriv->pendingStatus != ConnectionStatusConnected) {
-        warning() << "Connection::contactAttributeInterfaces() used with status"
-            << status() << "!= ConnectionStatusConnected";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
-        warning() << "Connection::contactAttributeInterfaces() used without the remote object supporting"
+    if (!isValid()) {
+        warning() << "ConnectionLowlevel::contactAttributeInterfaces() called for a destroyed Connection";
+        return QStringList();
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
+        warning() << "ConnectionLowlevel::contactAttributeInterfaces() used with status"
+            << conn->status() << "!= ConnectionStatusConnected";
+    } else if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+        warning() << "ConnectionLowlevel::contactAttributeInterfaces() used without the remote object supporting"
                   << "the Contacts interface";
     }
 
-    return mPriv->contactAttributeInterfaces;
+    return conn->mPriv->contactAttributeInterfaces;
 }
 
 /**
@@ -2083,6 +2225,16 @@ QStringList Connection::contactAttributeInterfaces() const
 ContactManagerPtr Connection::contactManager() const
 {
     return mPriv->contactManager;
+}
+
+ConnectionLowlevelPtr Connection::lowlevel()
+{
+    return mPriv->lowlevel;
+}
+
+ConnectionLowlevelConstPtr Connection::lowlevel() const
+{
+    return mPriv->lowlevel;
 }
 
 void Connection::refHandle(HandleType handleType, uint handle)

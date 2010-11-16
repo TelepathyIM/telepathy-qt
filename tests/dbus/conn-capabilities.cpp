@@ -1,6 +1,9 @@
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingReady>
 
@@ -100,7 +103,7 @@ void TestConnCapabilities::testCapabilities()
     QCOMPARE(mConn->capabilities().streamedMediaVideoCallsWithAudio(), false);
     QCOMPARE(mConn->capabilities().upgradingStreamedMediaCalls(), false);
 
-    QVERIFY(connect(mConn->requestConnect(),
+    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -121,7 +124,7 @@ void TestConnCapabilities::testCapabilities()
                 SIGNAL(invalidated(Tp::DBusProxy *,
                         const QString &, const QString &)),
                 SLOT(expectConnInvalidated())));
-    mConn->requestDisconnect();
+    mConn->lowlevel()->requestDisconnect();
 
     do {
         mLoop->processEvents();
@@ -151,7 +154,7 @@ void TestConnCapabilities::cleanupTestCase()
 {
     if (mConn) {
         // Disconnect and wait for invalidated
-        QVERIFY(connect(mConn->requestDisconnect(),
+        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
                         SIGNAL(finished(Tp::PendingOperation*)),
                         SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);

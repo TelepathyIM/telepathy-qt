@@ -20,12 +20,14 @@
  */
 
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/ConnectionManagerLowlevel>
 #include "TelepathyQt4/connection-manager-internal.h"
 
 #include "TelepathyQt4/_gen/cli-connection-manager-body.hpp"
 #include "TelepathyQt4/_gen/cli-connection-manager.moc.hpp"
 #include "TelepathyQt4/_gen/connection-manager.moc.hpp"
 #include "TelepathyQt4/_gen/connection-manager-internal.moc.hpp"
+#include "TelepathyQt4/_gen/connection-manager-lowlevel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -302,6 +304,7 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
         const ChannelFactoryConstPtr &chanFactory,
         const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
+      lowlevel(ConnectionManagerLowlevelPtr(new ConnectionManagerLowlevel(parent))),
       name(name),
       baseInterface(new Client::ConnectionManagerInterface(parent)),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
@@ -416,6 +419,26 @@ QString ConnectionManager::Private::makeObjectPath(const QString &name)
 {
     return QString(QLatin1String(
                 TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE)).append(name);
+}
+
+ConnectionManagerLowlevel::ConnectionManagerLowlevel(ConnectionManager *cm)
+    : mPriv(new Private(cm))
+{
+}
+
+ConnectionManagerLowlevel::~ConnectionManagerLowlevel()
+{
+    delete mPriv;
+}
+
+bool ConnectionManagerLowlevel::isValid() const
+{
+    return !mPriv->cm.isNull();
+}
+
+ConnectionManagerPtr ConnectionManagerLowlevel::connectionManager() const
+{
+    return ConnectionManagerPtr(mPriv->cm);
 }
 
 /**
@@ -683,10 +706,15 @@ ProtocolInfo ConnectionManager::protocol(const QString &protocolName) const
  * \return A PendingOperation which will emit PendingConnection::finished when
  *         the account has been created of failed its creation process.
  */
-PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
+PendingConnection *ConnectionManagerLowlevel::requestConnection(const QString &protocol,
         const QVariantMap &parameters)
 {
-    return new PendingConnection(ConnectionManagerPtr(this),
+    if (!isValid()) {
+        return new PendingConnection(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("The connection manager has been destroyed already"));
+    }
+
+    return new PendingConnection(ConnectionManagerPtr(mPriv->cm),
             protocol, parameters);
 }
 
@@ -702,6 +730,16 @@ PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
 PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
 {
     return new ConnectionManager::Private::PendingNames(bus);
+}
+
+ConnectionManagerLowlevelPtr ConnectionManager::lowlevel()
+{
+    return mPriv->lowlevel;
+}
+
+ConnectionManagerLowlevelConstPtr ConnectionManager::lowlevel() const
+{
+    return mPriv->lowlevel;
 }
 
 /**

@@ -23,6 +23,7 @@
 #include "TelepathyQt4/_gen/pending-contacts.moc.hpp"
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContactAttributes>
 #include <TelepathyQt4/PendingHandles>
@@ -352,7 +353,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         ConnectionPtr conn = manager->connection();
         if (conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
             PendingContactAttributes *attributes =
-                conn->contactAttributes(otherContacts.toList(),
+                conn->lowlevel()->contactAttributes(otherContacts.toList(),
                         interfaces, true);
 
             connect(attributes,
@@ -360,7 +361,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
                     SLOT(onAttributesFinished(Tp::PendingOperation*)));
         } else {
             // fallback to just create the contacts
-            PendingHandles *handles = conn->referenceHandles(HandleTypeContact,
+            PendingHandles *handles = conn->lowlevel()->referenceHandles(HandleTypeContact,
                     otherContacts.toList());
             connect(handles,
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -383,7 +384,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
     }
 
     ConnectionPtr conn = manager->connection();
-    PendingHandles *handles = conn->requestHandles(HandleTypeContact, identifiers);
+    PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, identifiers);
 
     connect(handles,
             SIGNAL(finished(Tp::PendingOperation*)),
