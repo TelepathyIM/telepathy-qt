@@ -323,7 +323,8 @@ protected:
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
-            const ContactFactoryConstPtr &contactFactory);
+            const ContactFactoryConstPtr &contactFactory,
+            const Feature &coreFeature);
 
     Client::AccountInterface *baseInterface() const;
 
