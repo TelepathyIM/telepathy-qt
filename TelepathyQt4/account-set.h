@@ -42,16 +42,19 @@ class TELEPATHY_QT4_EXPORT AccountSet : public Object
     Q_OBJECT
     Q_DISABLE_COPY(AccountSet)
     Q_PROPERTY(AccountManagerPtr accountManager READ accountManager)
+    Q_PROPERTY(AccountFilterConstPtr filter READ filter)
     Q_PROPERTY(QList<AccountPtr> accounts READ accounts)
 
 public:
     AccountSet(const AccountManagerPtr &accountManager,
-            const QList<AccountFilterConstPtr > &filters);
+            const AccountFilterConstPtr &filter);
     AccountSet(const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
     virtual ~AccountSet();
 
     AccountManagerPtr accountManager() const;
+
+    AccountFilterConstPtr filter() const;
 
     QList<AccountPtr> accounts() const;
 

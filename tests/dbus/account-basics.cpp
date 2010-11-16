@@ -3,6 +3,7 @@
 
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
+#include <TelepathyQt4/AndFilter>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Account>
@@ -488,7 +489,7 @@ void TestAccountBasics::testBasics()
     rccs.append(rcc);
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
-    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, AndFilter<Account>::create(filterChain)));
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
     /* match fixedProperties and allowedProperties is complete */
@@ -509,7 +510,7 @@ void TestAccountBasics::testBasics()
     rccs.append(rcc);
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
-    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, AndFilter<Account>::create(filterChain)));
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
     /* should not match as fixedProperties lack TargetHandleType */
@@ -525,7 +526,7 @@ void TestAccountBasics::testBasics()
     rccs.append(rcc);
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
-    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, AndFilter<Account>::create(filterChain)));
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     /* should not match as fixedProperties has more than expected */
@@ -547,7 +548,7 @@ void TestAccountBasics::testBasics()
     rccs.append(rcc);
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
-    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, AndFilter<Account>::create(filterChain)));
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     /* should not match as allowedProperties has TargetFoo that is not allowed */
@@ -568,7 +569,7 @@ void TestAccountBasics::testBasics()
     rccs.append(rcc);
     filterChain.append(AccountCapabilityFilter::create(rccs));
     filterChain.append(cmNameFilter);
-    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, AndFilter<Account>::create(filterChain)));
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureCapabilities),

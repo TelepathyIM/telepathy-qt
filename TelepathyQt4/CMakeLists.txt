@@ -119,6 +119,8 @@ set(telepathy_qt4_HEADERS
     AccountPropertyFilter
     AccountSet
     account-set.h
+    AndFilter
+    and-filter.h
     AvatarData
     avatar-data.h
     CapabilitiesBase
