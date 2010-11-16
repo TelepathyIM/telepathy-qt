@@ -54,7 +54,9 @@ add_custom_target(maintainer-upload-release
 telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/releases/${PACKAGE_NAME}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
         COMMAND
         rsync -vzP ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc
-telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/releases/${PACKAGE_NAME}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc)
+telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/releases/${PACKAGE_NAME}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
 add_dependencies(maintainer-upload-release _maintainer-upload-release-check maintainer-upload-release-docs)
 
 
