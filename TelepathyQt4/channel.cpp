@@ -1345,7 +1345,8 @@ const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(QLatin1
 ChannelPtr Channel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
-    return ChannelPtr(new Channel(connection, objectPath, immutableProperties));
+    return ChannelPtr(new Channel(connection, objectPath, immutableProperties,
+                Channel::FeatureCore));
 }
 
 /**
@@ -1355,10 +1356,13 @@ ChannelPtr Channel::create(const ConnectionPtr &connection,
  *                   service.
  * \param objectPath The object path of this channel.
  * \param immutableProperties The immutable properties of this channel.
+ * \param coreFeature The core feature of the channel type. The corresponding introspectable should
+ * depend on Channel::FeatureCore.
  */
 Channel::Channel(const ConnectionPtr &connection,
                  const QString &objectPath,
-                 const QVariantMap &immutableProperties)
+                 const QVariantMap &immutableProperties,
+                 const Feature &coreFeature)
     : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
             objectPath, FeatureCore),
       OptionalInterfaceFactory<Channel>(this),

@@ -652,7 +652,7 @@ TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return TextChannelPtr(new TextChannel(connection, objectPath,
-                immutableProperties));
+                immutableProperties, TextChannel::FeatureCore));
 }
 
 /**
@@ -662,11 +662,14 @@ TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
  *                   service.
  * \param objectPath The object path of this channel.
  * \param immutableProperties The immutable properties of this channel.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ * depend on TextChannel::FeatureCore.
  */
 TextChannel::TextChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : Channel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : Channel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
 }

@@ -343,7 +343,7 @@ ContactSearchChannelPtr ContactSearchChannel::create(const ConnectionPtr &connec
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return ContactSearchChannelPtr(new ContactSearchChannel(connection, objectPath,
-                immutableProperties));
+                immutableProperties, ContactSearchChannel::FeatureCore));
 }
 
 /**
@@ -353,11 +353,14 @@ ContactSearchChannelPtr ContactSearchChannel::create(const ConnectionPtr &connec
  * \param connection Connection owning this channel, and specifying the service.
  * \param objectPath Path to the object on the service.
  * \param immutableProperties The immutable properties of the channel.
+ * \param coreFeature The core feature of the channel type. The corresponding introspectable should
+ * depend on ContactSearchChannel::FeatureCore.
  */
 ContactSearchChannel::ContactSearchChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : Channel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : Channel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this, immutableProperties))
 {
 }

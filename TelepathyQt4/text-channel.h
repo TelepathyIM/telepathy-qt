@@ -133,7 +133,8 @@ Q_SIGNALS:
 
 protected:
     TextChannel(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties);
+            const QVariantMap &immutableProperties,
+            const Feature &coreFeature = TextChannel::FeatureCore);
 
 private Q_SLOTS:
     void onContactsFinished(Tp::PendingOperation *);

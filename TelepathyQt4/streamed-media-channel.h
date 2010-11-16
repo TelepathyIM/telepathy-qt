@@ -194,7 +194,8 @@ Q_SIGNALS:
 
 protected:
     StreamedMediaChannel(const ConnectionPtr &connection,
-            const QString &objectPath, const QVariantMap &immutableProperties);
+            const QString &objectPath, const QVariantMap &immutableProperties,
+            const Feature &coreFeature = StreamedMediaChannel::FeatureCore);
 
 private Q_SLOTS:
     void onStreamReady(Tp::PendingOperation *op);

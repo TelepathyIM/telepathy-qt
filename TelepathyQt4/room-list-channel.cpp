@@ -71,11 +71,14 @@ RoomListChannelPtr RoomListChannel::create(const ConnectionPtr &connection,
  * \param immutableProperties  The immutable properties of the channel, as
  *                             signalled by NewChannels or returned by
  *                             CreateChannel or EnsureChannel
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ * depend on Channel::FeatureCore.
  */
 RoomListChannel::RoomListChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : Channel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : Channel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private())
 {
 }

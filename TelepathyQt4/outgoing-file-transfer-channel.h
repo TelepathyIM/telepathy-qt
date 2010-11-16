@@ -51,7 +51,8 @@ public:
 protected:
     OutgoingFileTransferChannel(const ConnectionPtr &connection,
             const QString &objectPath,
-            const QVariantMap &immutableProperties);
+            const QVariantMap &immutableProperties,
+            const Feature &coreFeature = OutgoingFileTransferChannel::FeatureCore);
 
 private Q_SLOTS:
     void onProvideFileFinished(Tp::PendingOperation *op);

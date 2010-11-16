@@ -43,7 +43,8 @@ public:
 
 protected:
     RoomListChannel(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties);
+            const QVariantMap &immutableProperties,
+            const Feature &coreFeature = Channel::FeatureCore);
 
 private:
     struct Private;

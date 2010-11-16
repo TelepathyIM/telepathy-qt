@@ -116,12 +116,15 @@ OutgoingFileTransferChannelPtr OutgoingFileTransferChannel::create(const Connect
  * \param connection Connection owning this channel, and specifying the service.
  * \param objectPath Path to the object on the service.
  * \param immutableProperties The immutable properties of the channel.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ * depend on OutgoingFileTransferChannel::FeatureCore.
  */
 OutgoingFileTransferChannel::OutgoingFileTransferChannel(
         const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : FileTransferChannel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : FileTransferChannel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
 }

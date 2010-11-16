@@ -877,7 +877,7 @@ StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connec
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return StreamedMediaChannelPtr(new StreamedMediaChannel(connection,
-                objectPath, immutableProperties));
+                objectPath, immutableProperties, StreamedMediaChannel::FeatureCore));
 }
 
 /**
@@ -888,11 +888,14 @@ StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connec
  *                   service.
  * \param objectPath The object path of this channel.
  * \param immutableProperties The immutable properties of this channel.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ * depend on StreamedMediaChannel::FeatureCore.
  */
 StreamedMediaChannel::StreamedMediaChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : Channel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : Channel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
 }

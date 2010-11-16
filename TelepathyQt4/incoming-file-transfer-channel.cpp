@@ -116,11 +116,14 @@ IncomingFileTransferChannelPtr IncomingFileTransferChannel::create(
  *                   service.
  * \param objectPath The object path of this channel.
  * \param immutableProperties The immutable properties of this channel.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ * depend on IncomingFileTransferChannel::FeatureCore.
  */
 IncomingFileTransferChannel::IncomingFileTransferChannel(
         const ConnectionPtr &connection, const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : FileTransferChannel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : FileTransferChannel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
 }
