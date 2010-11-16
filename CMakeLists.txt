@@ -39,21 +39,19 @@ endif(POLICY CMP0011)
 #   make the release, tag it
 #   set nano_version to 1
 set(TP_QT4_MAJOR_VERSION 0)
-set(TP_QT4_MINOR_VERSION 4)
-set(TP_QT4_MICRO_VERSION 9999)
-set(TP_QT4_NANO_VERSION  1)
+set(TP_QT4_MINOR_VERSION 5)
+set(TP_QT4_MICRO_VERSION 0)
+set(TP_QT4_NANO_VERSION  0)
 
 # This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
 # occurs, and will be used for the SOVERSION of the generated shared libraries.
-set(TP_QT4_ABI_VERSION 0)
+set(TP_QT4_ABI_VERSION 1)
 # This variable is used for the library's long version. It is generated dynamically, so don't change its
 # value! Change TP_QT4_ABI_VERSION and TP_QT4_*_VERSION instead.
-# NOTE: The generated version here has an additional .99 to differentiate its age from the old autotools version.
-#       Drop this as soon as ABI_VERSION is > 0
 if (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.99.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION})
+    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION})
 else (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.99.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
+    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
 endif (${TP_QT4_NANO_VERSION} EQUAL 0)
 
 set(PACKAGE_NAME telepathy-qt4)

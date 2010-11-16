@@ -8,7 +8,7 @@ in the 0.5 development series will however be compatible with this release, as
 will any releases in a 0.6 stable series.
 
 For enhanced compatibility versions from 0.5 and earlier series can be parallel
-installed, with 0.5 bumping the .so major version to .so.1. However, the
+installed, with 0.5 bumping the .so major version to .so.1.  However, the
 development headers and pkgconfig file can't be parallel installed.
 
 Enhancements:
