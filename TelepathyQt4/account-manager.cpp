@@ -403,7 +403,7 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
  * \param coreFeature The core feature of the Account subclass. The corresponding introspectable
- * should depend on Account::FeatureCore.
+ * should depend on AccountManager::FeatureCore.
  */
 AccountManager::AccountManager(const QDBusConnection &bus,
         const AccountFactoryConstPtr &accountFactory,
