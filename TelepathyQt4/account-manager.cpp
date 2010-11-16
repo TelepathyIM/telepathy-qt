@@ -336,7 +336,8 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
 {
     return AccountManagerPtr(new AccountManager(bus,
                 AccountFactory::create(bus, Account::FeatureCore), ConnectionFactory::create(bus),
-                ChannelFactory::create(bus), ContactFactory::create()));
+                ChannelFactory::create(bus), ContactFactory::create(),
+                AccountManager::FeatureCore));
 }
 
 /**
@@ -360,7 +361,8 @@ AccountManagerPtr AccountManager::create(const AccountFactoryConstPtr &accountFa
         const ContactFactoryConstPtr &contactFactory)
 {
     return AccountManagerPtr(new AccountManager(QDBusConnection::sessionBus(),
-                accountFactory, connectionFactory, channelFactory, contactFactory));
+                accountFactory, connectionFactory, channelFactory, contactFactory,
+                AccountManager::FeatureCore));
 }
 
 /**
@@ -386,7 +388,8 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
         const ContactFactoryConstPtr &contactFactory)
 {
     return AccountManagerPtr(new AccountManager(bus,
-                accountFactory, connectionFactory, channelFactory, contactFactory));
+                accountFactory, connectionFactory, channelFactory, contactFactory,
+                AccountManager::FeatureCore));
 }
 
 /**
@@ -399,15 +402,18 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
+ * \param coreFeature The core feature of the Account subclass. The corresponding introspectable
+ * should depend on Account::FeatureCore.
  */
 AccountManager::AccountManager(const QDBusConnection &bus,
         const AccountFactoryConstPtr &accountFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
-        const ContactFactoryConstPtr &contactFactory)
+        const ContactFactoryConstPtr &contactFactory,
+        const Feature &coreFeature)
     : StatelessDBusProxy(bus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), FeatureCore),
+            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), coreFeature),
       OptionalInterfaceFactory<AccountManager>(this),
       mPriv(new Private(this, accountFactory, connectionFactory, channelFactory, contactFactory))
 {

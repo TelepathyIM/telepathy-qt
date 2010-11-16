@@ -126,7 +126,8 @@ protected:
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
-            const ContactFactoryConstPtr &contactFactory);
+            const ContactFactoryConstPtr &contactFactory,
+            const Feature &coreFeature);
 
     Client::AccountManagerInterface *baseInterface() const;
 
