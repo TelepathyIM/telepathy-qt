@@ -258,6 +258,8 @@ set(telepathy_qt4_HEADERS
     object.h
     OptionalInterfaceFactory
     optional-interface-factory.h
+    OrFilter
+    or-filter.h
     OutgoingFileTransferChannel
     outgoing-file-transfer-channel.h
     PeerInterface
