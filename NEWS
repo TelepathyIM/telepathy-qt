@@ -1,7 +1,95 @@
-telepathy-qt4 0.5.0 (UNRELEASED)
+telepathy-qt4 0.5.0 (2010-11-16)
 =================================
 
-...
+The "new era of breakage" release.
+
+This release IS NOT API/ABI COMPATIBLE WITH EARLIER RELEASES. Further releases
+in the 0.5 development series will however be compatible with this release, as
+will any releases in a 0.6 stable series.
+
+For enhanced compatibility versions from 0.5 and earlier series can be parallel
+installed, with 0.5 bumping the .so major version to .so.1. However, the
+development headers and pkgconfig file can't be parallel installed.
+
+Enhancements:
+ * fd.o #28793 - It is no longer necessary to keep the proxy / other object you
+   get a PendingOperation from manually referenced until the operation is
+   finished
+ * fd.o #28797 - generated client code (AbstractInterface subclasses) now allows
+   setting a non-default timeout for D-Bus method calls
+ * fd.o #29486 - Bare variant maps and string lists are no longer exposed in the
+   API unless absolutely necessary; instead they have wrapper classes with
+   easy access to well-known keys and values. Among other consequences, this
+   means AbstractClient implementations NEED TO CHANGE their method
+   implementation signatures to accept the wrapper classes instead of bare
+   QVariantMaps.
+ * Setting automatic/requested presence in Account now uses Tp::Presence
+ * Cleaned up the API and internal code by removing all deprecated classes,
+   methods and signals.
+ * Added Tp::Object intermediate base class for uniform QObject property change
+   notification. Connection, Channel and Contact will be propertified using it
+   in the future.
+ * Enumeration and flag types generated from the specification can now be used
+   in API without endangering ABI stability due to added padding members,
+   enhancing type safety in numerous instances where bare uints used to be
+   returned / taken as a parameter.
+ * Moved low-level functionality which shouldn't be used when using a full
+   Telepathy setup with a Mission Control service (Account Manager + Channel
+   Dispatcher) available from Connection and ConnectionManager to Lowlevel
+   classes, which can be accessed only if TP_QT4_ENABLE_LOWLEVEL_API is #defined
+   through a lowlevel() accessor on them
+ * Bare pointers are no longer returned from the API, instead either SharedPtr
+   or Qt implicitly shared handle classes are used (applicable to
+   Connection/ContactCapabilities, ProtocolInfo, etc)
+ * Tp::Contact is now a RefCounted and uses Tp::Feature like the rest of the
+   library.
+ * ClientRegistrar no longer guarantees that a singleton instance is returned
+   for create(). In particular, this relaxation allows us to implement an API in
+   the future which constructs a ClientRegistrar behind the scenes to be able to
+   request and handle channels without manually implementing an
+   AbstractClientHandler.
+ * The Filter API is now more future-proof, with the assumption that the filter
+   chain is ANDed together dropped. It will be possible to combine filters using
+   And/Or/Not filter combiners in the future, of which And is included now.
+ * The SharedPtr API has been improved. In particular, it's now safe to use it
+   as a QMap/QHash key and more difficult to use it incorrectly as a boolean or
+   an integer. The redundant WeakPtr class has been removed - use QWeakPointer
+   instead (which works with SharedPtr for all QObject classes).
+ * Tp::Contact friend list state change signals now have a details argument
+   (which will contain e.g. the request message for publishState() == Ask when
+    somebody adds you to their contact list, for example). This means that
+   code connecting to them NEEDS TO BE CHANGED.
+ * Account::haveConnection(Changed) and friends is now the less confusing
+   Account::connection(Changed) pair
+ * AccountManager filtering methods returning an AccountSet now have more
+   descriptive names without the Set suffix
+ * Account/Connection/Channel subclasses now can override the "core" feature
+   implied by isReady() and becomeReady(). In particular, this means that e.g.
+   ContactSearchChannel::isReady() with no arguments will only return true if
+   ContactSearchChannel::FeatureCore is ready in addition to
+   Channel::FeatureCore.
+ * StreamedMediaChannel is once again just for Channel.Type.StreamedMedia
+   channels, with the intermediate Call.DRAFT support and API removed. When Call
+   is undrafted, a new CallChannel will be added and StreamedMediaChannel
+   deprecated.
+ * Similarly, hacky Conference.DRAFT support IS REMOVED. Only the final
+   Conference interface is supported from now on.
+ * Everything that used to be called just Audio/Video/MediaCall etc now has
+   StreamedMedia in the name, to not conflict with future Call API.
+
+Fixes:
+ * fd.o #27204 - Codegen erroneously uses enums' value-prefix as the name for
+   the C++ enum
+ * fd.o #29998 - Connecting to signal Tp::TextChannel::chatStateChanged needs
+   typedef if not done in Tp namespace
+ * fd.o #27795 - Problems using Tp::SharedPtr as a key in QMap
+ * ChannelRequest not becoming ready successfully when there is no Account
+   specified
+ * ContactSearchChannel not initializing its private members correctly
+ * Compile errors with QT_STRICT_ITERATORS
+ * Some MSVC++ compilation issues (though there still are likely some remaining)
+ * ContactManager::allKnownContacts not picking up changes from the "stored"
+   list
 
 telepathy-qt4 0.3.14 (2010-11-05)
 =================================
