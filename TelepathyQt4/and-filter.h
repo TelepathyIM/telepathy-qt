@@ -47,7 +47,7 @@ public:
     inline virtual bool isValid() const
     {
         Q_FOREACH (const SharedPtr<const Filter<T> > &filter, mFilters) {
-            if (!filter->isValid()) {
+            if (!filter || !filter->isValid()) {
                 return false;
             }
         }
@@ -56,6 +56,10 @@ public:
 
     inline virtual bool matches(const SharedPtr<T> &t) const
     {
+        if (!isValid()) {
+            return false;
+        }
+
         Q_FOREACH (const SharedPtr<const Filter<T> > &filter, mFilters) {
             if (!filter->matches(t)) {
                 return false;
