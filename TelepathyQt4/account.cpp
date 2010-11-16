@@ -527,7 +527,7 @@ AccountPtr Account::create(const QString &busName, const QString &objectPath,
         const ContactFactoryConstPtr &contactFactory)
 {
     return AccountPtr(new Account(QDBusConnection::sessionBus(), busName, objectPath,
-                connectionFactory, channelFactory, contactFactory));
+                connectionFactory, channelFactory, contactFactory, Account::FeatureCore));
 }
 
 /**
@@ -552,7 +552,7 @@ AccountPtr Account::create(const QDBusConnection &bus,
         const ContactFactoryConstPtr &contactFactory)
 {
     return AccountPtr(new Account(bus, busName, objectPath, connectionFactory, channelFactory,
-                contactFactory));
+                contactFactory, Account::FeatureCore));
 }
 
 /**
@@ -568,13 +568,16 @@ AccountPtr Account::create(const QDBusConnection &bus,
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
+ * \param coreFeature The core feature of the Account subclass. The corresponding introspectable
+ * should depend on Account::FeatureCore.
  */
 Account::Account(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath,
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
-        const ContactFactoryConstPtr &contactFactory)
-    : StatelessDBusProxy(bus, busName, objectPath, FeatureCore),
+        const ContactFactoryConstPtr &contactFactory,
+        const Feature &coreFeature)
+    : StatelessDBusProxy(bus, busName, objectPath, coreFeature),
       OptionalInterfaceFactory<Account>(this),
       mPriv(new Private(this, connectionFactory, channelFactory, contactFactory))
 {

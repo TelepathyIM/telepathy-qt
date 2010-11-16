@@ -557,6 +557,11 @@ void TextChannel::Private::contactFound(ContactPtr contact)
  */
 
 /**
+ * A placeholder for "core functionality" which is currently just the same as Channel::FeatureCore.
+ */
+const Feature TextChannel::FeatureCore = Feature(QLatin1String(Channel::staticMetaObject.className()), 0, true);
+
+/**
  * Feature used in order to access the message queue info.
  *
  * Se message queue methods' documentation for more details.
@@ -647,7 +652,7 @@ TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return TextChannelPtr(new TextChannel(connection, objectPath,
-                immutableProperties));
+                immutableProperties, TextChannel::FeatureCore));
 }
 
 /**
@@ -657,11 +662,14 @@ TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
  *                   service.
  * \param objectPath The object path of this channel.
  * \param immutableProperties The immutable properties of this channel.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ * depend on TextChannel::FeatureCore.
  */
 TextChannel::TextChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : Channel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : Channel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
 }

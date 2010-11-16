@@ -91,7 +91,7 @@ Q_SIGNALS:
 
 protected:
     ContactSearchChannel(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties);
+            const QVariantMap &immutableProperties, const Feature &coreFeature);
 
 private Q_SLOTS:
     void gotProperties(QDBusPendingCallWatcher *watcher);

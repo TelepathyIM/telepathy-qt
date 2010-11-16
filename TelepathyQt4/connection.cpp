@@ -940,7 +940,8 @@ ConnectionPtr Connection::create(const QString &busName,
         const ContactFactoryConstPtr &contactFactory)
 {
     return ConnectionPtr(new Connection(QDBusConnection::sessionBus(),
-                busName, objectPath, channelFactory, contactFactory));
+                busName, objectPath, channelFactory, contactFactory,
+                Connection::FeatureCore));
 }
 
 /**
@@ -961,7 +962,8 @@ ConnectionPtr Connection::create(const QDBusConnection &bus,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory)
 {
-    return ConnectionPtr(new Connection(bus, busName, objectPath, channelFactory, contactFactory));
+    return ConnectionPtr(new Connection(bus, busName, objectPath, channelFactory, contactFactory,
+                Connection::FeatureCore));
 }
 
 /**
@@ -975,13 +977,16 @@ ConnectionPtr Connection::create(const QDBusConnection &bus,
  * \param objectPath The connection object path.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
+ * \param coreFeature The core feature of the Connection subclass. The corresponding introspectable
+ * should depend on Connection::FeatureCore.
  */
 Connection::Connection(const QDBusConnection &bus,
         const QString &busName,
         const QString &objectPath,
         const ChannelFactoryConstPtr &channelFactory,
-        const ContactFactoryConstPtr &contactFactory)
-    : StatefulDBusProxy(bus, busName, objectPath, FeatureCore),
+        const ContactFactoryConstPtr &contactFactory,
+        const Feature &coreFeature)
+    : StatefulDBusProxy(bus, busName, objectPath, coreFeature),
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(this, channelFactory, contactFactory))
 {

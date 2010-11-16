@@ -82,14 +82,12 @@ IncomingFileTransferChannel::Private::~Private()
  * Feature representing the core that needs to become ready to make the
  * IncomingFileTransferChannel object usable.
  *
- * Note that this feature must be enabled in order to use most
- * IncomingFileTransferChannel methods.
- * See specific methods documentation for more details.
+ * This is currently the same as FileTransferChannel::FeatureCore, but may change to include more.
  *
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Feature IncomingFileTransferChannel::FeatureCore = Feature(QLatin1String(IncomingFileTransferChannel::staticMetaObject.className()), 0);
+const Feature IncomingFileTransferChannel::FeatureCore = Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0);
 
 /**
  * Create a new InconmingFileTransferChannel object.
@@ -116,11 +114,14 @@ IncomingFileTransferChannelPtr IncomingFileTransferChannel::create(
  *                   service.
  * \param objectPath The object path of this channel.
  * \param immutableProperties The immutable properties of this channel.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ * depend on IncomingFileTransferChannel::FeatureCore.
  */
 IncomingFileTransferChannel::IncomingFileTransferChannel(
         const ConnectionPtr &connection, const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : FileTransferChannel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : FileTransferChannel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
 }

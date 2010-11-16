@@ -142,6 +142,7 @@ class TELEPATHY_QT4_EXPORT StreamedMediaChannel : public Channel
     Q_ENUMS(StateChangeReason)
 
 public:
+    static const Feature FeatureCore;
     static const Feature FeatureStreams;
     static const Feature FeatureLocalHoldState;
 
@@ -193,7 +194,8 @@ Q_SIGNALS:
 
 protected:
     StreamedMediaChannel(const ConnectionPtr &connection,
-            const QString &objectPath, const QVariantMap &immutableProperties);
+            const QString &objectPath, const QVariantMap &immutableProperties,
+            const Feature &coreFeature = StreamedMediaChannel::FeatureCore);
 
 private Q_SLOTS:
     void onStreamReady(Tp::PendingOperation *op);

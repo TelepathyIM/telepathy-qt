@@ -72,7 +72,8 @@ Q_SIGNALS:
 
 protected:
     FileTransferChannel(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties);
+            const QVariantMap &immutableProperties,
+            const Feature &coreFeature = FileTransferChannel::FeatureCore);
 
     SupportedSocketMap availableSocketTypes() const;
 

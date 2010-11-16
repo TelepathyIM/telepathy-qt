@@ -69,6 +69,7 @@ class TELEPATHY_QT4_EXPORT TextChannel : public Channel
     Q_DISABLE_COPY(TextChannel)
 
 public:
+    static const Feature FeatureCore;
     static const Feature FeatureMessageQueue;
     static const Feature FeatureMessageCapabilities;
     static const Feature FeatureMessageSentSignal;
@@ -132,7 +133,8 @@ Q_SIGNALS:
 
 protected:
     TextChannel(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties);
+            const QVariantMap &immutableProperties,
+            const Feature &coreFeature = TextChannel::FeatureCore);
 
 private Q_SLOTS:
     void onContactsFinished(Tp::PendingOperation *);

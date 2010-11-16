@@ -179,7 +179,8 @@ protected:
     Connection(const QDBusConnection &bus, const QString &busName,
             const QString &objectPath,
             const ChannelFactoryConstPtr &channelFactory,
-            const ContactFactoryConstPtr &contactFactory);
+            const ContactFactoryConstPtr &contactFactory,
+            const Feature &coreFeature);
 
     Client::ConnectionInterface *baseInterface() const;
 

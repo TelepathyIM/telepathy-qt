@@ -83,14 +83,12 @@ OutgoingFileTransferChannel::Private::~Private()
  * Feature representing the core that needs to become ready to make the
  * OutgoingFileTransferChannel object usable.
  *
- * Note that this feature must be enabled in order to use most
- * OutgoingFileTransferChannel methods.
- * See specific methods documentation for more details.
+ * This is currently the same as FileTransferChannel::FeatureCore, but may change to include more.
  *
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Feature OutgoingFileTransferChannel::FeatureCore = Feature(QLatin1String(OutgoingFileTransferChannel::staticMetaObject.className()), 0);
+const Feature OutgoingFileTransferChannel::FeatureCore = Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0);
 
 /**
  * Create a new OutgoingFileTransferChannel object.
@@ -99,8 +97,8 @@ const Feature OutgoingFileTransferChannel::FeatureCore = Feature(QLatin1String(O
  *                   service.
  * \param objectPath The object path of this channel.
  * \param immutableProperties The immutable properties of this channel.
- * \return A StreamedMediaChannelPtr object pointing to the newly created
- *         StreamedMediaChannel object.
+ * \return An OutgoingFileTransferChannelPtr object pointing to the newly created
+ *         OutgoingFileTransferChannel object.
  */
 OutgoingFileTransferChannelPtr OutgoingFileTransferChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
@@ -116,12 +114,15 @@ OutgoingFileTransferChannelPtr OutgoingFileTransferChannel::create(const Connect
  * \param connection Connection owning this channel, and specifying the service.
  * \param objectPath Path to the object on the service.
  * \param immutableProperties The immutable properties of the channel.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ * depend on OutgoingFileTransferChannel::FeatureCore.
  */
 OutgoingFileTransferChannel::OutgoingFileTransferChannel(
         const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : FileTransferChannel(connection, objectPath, immutableProperties),
+        const QVariantMap &immutableProperties,
+        const Feature &coreFeature)
+    : FileTransferChannel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
 }

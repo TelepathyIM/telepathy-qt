@@ -188,11 +188,12 @@ void TestContactSearchChan::testContactSearch()
 {
     mChan1 = ContactSearchChannel::create(mConn, mChan1Path, QVariantMap());
     mChan = mChan1;
-    QVERIFY(connect(mChan1->becomeReady(ContactSearchChannel::FeatureCore),
+    // becomeReady with no args should implicitly enable ContactSearchChannel::FeatureCore
+    QVERIFY(connect(mChan1->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan1->isReady(), true);
+    QCOMPARE(mChan1->isReady(ContactSearchChannel::FeatureCore), true);
 
     QCOMPARE(mChan1->searchState(), ChannelContactSearchStateNotStarted);
     QCOMPARE(mChan1->limit(), static_cast<uint>(0));
