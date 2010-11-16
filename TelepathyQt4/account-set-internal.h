@@ -31,23 +31,22 @@ struct AccountSet::Private
     class AccountWrapper;
 
     Private(AccountSet *parent, const AccountManagerPtr &accountManager,
-            const QList<AccountFilterConstPtr> &filters);
+            const AccountFilterConstPtr &filter);
     Private(AccountSet *parent, const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
 
     void init();
-    bool checkFilters();
     void connectSignals();
     void insertAccounts();
     void insertAccount(const AccountPtr &account);
     void removeAccount(const AccountPtr &account);
     void wrapAccount(const AccountPtr &account);
     void filterAccount(const AccountPtr &account);
-    bool accountMatchFilters(AccountWrapper *account);
+    bool accountMatchFilter(AccountWrapper *account);
 
     AccountSet *parent;
     AccountManagerPtr accountManager;
-    QList<AccountFilterConstPtr> filters;
+    AccountFilterConstPtr filter;
     QHash<QString, AccountWrapper *> wrappers;
     QHash<QString, AccountPtr> accounts;
     bool filterValid;

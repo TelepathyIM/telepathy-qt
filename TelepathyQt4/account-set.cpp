@@ -38,10 +38,10 @@ namespace Tp
 
 AccountSet::Private::Private(AccountSet *parent,
         const AccountManagerPtr &accountManager,
-        const QList<AccountFilterConstPtr> &filters)
+        const AccountFilterConstPtr &filter)
     : parent(parent),
       accountManager(accountManager),
-      filters(filters),
+      filter(filter),
       ready(false)
 {
     init();
@@ -49,38 +49,27 @@ AccountSet::Private::Private(AccountSet *parent,
 
 AccountSet::Private::Private(AccountSet *parent,
         const AccountManagerPtr &accountManager,
-        const QVariantMap &filter)
+        const QVariantMap &filterMap)
     : parent(parent),
       accountManager(accountManager),
       ready(false)
 {
-    AccountPropertyFilterPtr filterObj = AccountPropertyFilter::create();
-    for (QVariantMap::const_iterator i = filter.constBegin();
-            i != filter.constEnd(); ++i) {
-        filterObj->addProperty(i.key(), i.value());
+    AccountPropertyFilterPtr propertyFilter = AccountPropertyFilter::create();
+    for (QVariantMap::const_iterator i = filterMap.constBegin();
+            i != filterMap.constEnd(); ++i) {
+        propertyFilter->addProperty(i.key(), i.value());
     }
-    filters.append(filterObj);
+    filter = AccountFilterPtr::dynamicCast(propertyFilter);
     init();
 }
 
 void AccountSet::Private::init()
 {
-    if (checkFilters()) {
+    if (filter->isValid()) {
         connectSignals();
         insertAccounts();
         ready = true;
     }
-}
-
-bool AccountSet::Private::checkFilters()
-{
-    foreach (const AccountFilterConstPtr &filter, filters) {
-        if (!filter->isValid()) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 void AccountSet::Private::connectSignals()
@@ -139,7 +128,7 @@ void AccountSet::Private::filterAccount(const AccountPtr &account)
     AccountWrapper *wrapper = wrappers[accountPath];
 
     /* account changed, let's check if it matches filter */
-    if (accountMatchFilters(wrapper)) {
+    if (accountMatchFilter(wrapper)) {
         if (!accounts.contains(account->objectPath())) {
             accounts.insert(account->objectPath(), account);
             if (ready) {
@@ -156,20 +145,13 @@ void AccountSet::Private::filterAccount(const AccountPtr &account)
     }
 }
 
-bool AccountSet::Private::accountMatchFilters(AccountWrapper *wrapper)
+bool AccountSet::Private::accountMatchFilter(AccountWrapper *wrapper)
 {
-    if (filters.isEmpty()) {
+    if (!filter) {
         return true;
     }
 
-    AccountPtr account = wrapper->account();
-    foreach (const AccountFilterConstPtr &filter, filters) {
-        if (!filter->matches(account)) {
-            return false;
-        }
-    }
-
-    return true;
+    return filter->matches(wrapper->account());
 }
 
 AccountSet::Private::AccountWrapper::AccountWrapper(
@@ -300,11 +282,9 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  * {
  *     ...
  *
- *     QList<AccountFilterConstPtr> filters;
  *     AccountPropertyFilterPtr filter = AccountPropertyFilter::create();
  *     filter->addProperty(QLatin1String("protocolName"), QLatin1String("jabber"));
  *     filter->addProperty(QLatin1String("enabled"), true);
- *     filters.append(filter);
  *
  *     AccountSetPtr filteredAccountSet = am->filterAccounts(filter);
  *     // connect to AccountSet::accountAdded/accountRemoved signals
@@ -332,12 +312,12 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  *
  * \param accountManager An account manager object used to filter accounts.
  *                       The account manager object must be ready.
- * \param filters The desired filter.
+ * \param filter The desired filter.
  */
 AccountSet::AccountSet(const AccountManagerPtr &accountManager,
-        const QList<AccountFilterConstPtr> &filters)
+        const AccountFilterConstPtr &filter)
     : Object(),
-      mPriv(new Private(this, accountManager, filters))
+      mPriv(new Private(this, accountManager, filter))
 {
 }
 
@@ -375,9 +355,19 @@ AccountManagerPtr AccountSet::accountManager() const
 }
 
 /**
- * Return a list of account objects that match filters.
+ * Return the filter used to filter accounts.
  *
- * \return A list of account objects that match filters.
+ * \return The filter used to filter accounts.
+ */
+AccountFilterConstPtr AccountSet::filter() const
+{
+    return mPriv->filter;
+}
+
+/**
+ * Return a list of account objects that match filter.
+ *
+ * \return A list of account objects that match filter.
  */
 QList<AccountPtr> AccountSet::accounts() const
 {
@@ -387,7 +377,7 @@ QList<AccountPtr> AccountSet::accounts() const
 /**
  * \fn void AccountSet::accountAdded(const Tp::AccountPtr &account);
  *
- * This signal is emitted whenever an account that matches filters is added to
+ * This signal is emitted whenever an account that matches filter is added to
  * this set.
  *
  * \param account The account that was added to this set.
@@ -396,7 +386,7 @@ QList<AccountPtr> AccountSet::accounts() const
 /**
  * \fn void AccountSet::accountRemoved(const Tp::AccountPtr &account);
  *
- * This signal is emitted whenever an account that matches filters is removed
+ * This signal is emitted whenever an account that matches filter is removed
  * from this set.
  *
  * \param account The account that was removed from this set.

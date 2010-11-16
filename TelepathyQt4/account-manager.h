@@ -106,7 +106,6 @@ public:
     AccountSetPtr accountsByProtocol(const QString &protocolName) const;
 
     AccountSetPtr filterAccounts(const AccountFilterConstPtr &filter) const;
-    AccountSetPtr filterAccounts(const QList<AccountFilterConstPtr> &filters) const;
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
     AccountPtr accountForPath(const QString &path) const;

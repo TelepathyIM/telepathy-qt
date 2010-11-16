@@ -598,7 +598,7 @@ AccountSetPtr AccountManager::textChatAccounts() const
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
             << "which makes Account::FeatureCapabilities ready";
-        return filterAccounts(QList<AccountFilterConstPtr>());
+        return filterAccounts(AccountFilterConstPtr());
     }
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
@@ -622,7 +622,7 @@ AccountSetPtr AccountManager::textChatroomAccounts() const
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
             << "which makes Account::FeatureCapabilities ready";
-        return filterAccounts(QList<AccountFilterConstPtr>());
+        return filterAccounts(AccountFilterConstPtr());
     }
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
@@ -647,7 +647,7 @@ AccountSetPtr AccountManager::streamedMediaCallAccounts() const
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
             << "which makes Account::FeatureCapabilities ready";
-        return filterAccounts(QList<AccountFilterConstPtr>());
+        return filterAccounts(AccountFilterConstPtr());
     }
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
@@ -672,7 +672,7 @@ AccountSetPtr AccountManager::streamedMediaAudioCallAccounts() const
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
             << "which makes Account::FeatureCapabilities ready";
-        return filterAccounts(QList<AccountFilterConstPtr>());
+        return filterAccounts(AccountFilterConstPtr());
     }
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
@@ -697,7 +697,7 @@ AccountSetPtr AccountManager::streamedMediaVideoCallAccounts() const
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
             << "which makes Account::FeatureCapabilities ready";
-        return filterAccounts(QList<AccountFilterConstPtr>());
+        return filterAccounts(AccountFilterConstPtr());
     }
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
@@ -722,7 +722,7 @@ AccountSetPtr AccountManager::streamedMediaVideoCallWithAudioAccounts() const
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
             << "which makes Account::FeatureCapabilities ready";
-        return filterAccounts(QList<AccountFilterConstPtr>());
+        return filterAccounts(AccountFilterConstPtr());
     }
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
@@ -748,7 +748,7 @@ AccountSetPtr AccountManager::fileTransferAccounts() const
     if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
         warning() << "Account filtering by capabilities can only be used with an AccountFactory"
             << "which makes Account::FeatureCapabilities ready";
-        return filterAccounts(QList<AccountFilterConstPtr>());
+        return filterAccounts(AccountFilterConstPtr());
     }
 
     AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
@@ -771,7 +771,7 @@ AccountSetPtr AccountManager::accountsByProtocol(
 {
     if (!isReady(FeatureCore)) {
         warning() << "Account filtering requires AccountManager to be ready";
-        return filterAccounts(QList<AccountFilterConstPtr>());
+        return filterAccounts(AccountFilterConstPtr());
     }
 
     QVariantMap filter;
@@ -796,34 +796,14 @@ AccountSetPtr AccountManager::accountsByProtocol(
  */
 AccountSetPtr AccountManager::filterAccounts(const AccountFilterConstPtr &filter) const
 {
-    return filterAccounts(QList<AccountFilterConstPtr>() << filter);
-}
-
-/**
- * Return a set of accounts containing all accounts that match the given \a
- * filters criteria.
- *
- * For AccountCapabilityFilter filtering, an AccountFactory which makes
- * Account::FeatureCapabilities ready must be used.
- *
- * See AccountSet documentation for more details.
- *
- * This method requires AccountManager::FeatureCore to be enabled.
- *
- * \param filters The desired filters.
- * \return A set of accounts containing all accounts that match the given \a
- *         filters criteria.
- */
-AccountSetPtr AccountManager::filterAccounts(const QList<AccountFilterConstPtr> &filters) const
-{
     if (!isReady(FeatureCore)) {
         warning() << "Account filtering requires AccountManager to be ready";
         return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                        (AccountManager *) this), QList<AccountFilterConstPtr>()));
+                        (AccountManager *) this), AccountFilterConstPtr()));
     }
 
     return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filters));
+                    (AccountManager *) this), filter));
 }
 
 /**
