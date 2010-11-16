@@ -429,7 +429,6 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
  *     ~MyApprover() { }
  *
  *     void addDispatchOperation(const MethodInvocationContextPtr<> &context,
- *             const QList<ChannelPtr> &channels,
  *             const ChannelDispatchOperationPtr &dispatchOperation);
  * };
  *
@@ -440,7 +439,6 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
  *
  * void MyApprover::addDispatchOperation(
  *         const MethodInvocationContextPtr<> &context,
- *         const QList<ChannelPtr> &channels,
  *         const ChannelDispatchOperationPtr &dispatchOperation)
  * {
  *     // do something with dispatchOperation
@@ -513,7 +511,6 @@ ChannelClassSpecList AbstractClientApprover::approverFilter() const
 /**
  * \fn void AbstractClientApprover::addDispatchOperation(
  *                  const MethodInvocationContextPtr<> &context,
- *                  const QList<ChannelPtr> &channels,
  *                  const ChannelDispatchOperationPtr &dispatchOperation);
  *
  * Called by the channel dispatcher when a dispatch operation in which the
@@ -529,21 +526,6 @@ ChannelClassSpecList AbstractClientApprover::approverFilter() const
  *
  * \param context A MethodInvocationContextPtr object that must be used to
  *                indicate whether this method finished processing.
- * \param channels The channels to be dispatched.
- *                 This argument always contains all of the channels in the
- *                 channel dispatch operation, even if not all of them actually
- *                 match the approver filter.
- *                 The actual channels to be dispatched may reduce as channels
- *                 are closed: this is signalled by
- *                 ChannelDispatchOperation::channelLost signal on the received
- *                 \a dispatchOperation object.
- *                 Approvers should connect to
- *                 ChannelDispatchOperation::channelLost() and
- *                 ChannelDispatchOperation::invalidated() signals (if desired)
- *                 before returning from addDispatchOperation, since those
- *                 signals are guaranteed not to be emitted
- *                 until after all addDispatchOperation() calls have returned
- *                 (with success or failure) or timed out.
  * \param dispatchOperation The dispatch operation to be processed.
  */
 
