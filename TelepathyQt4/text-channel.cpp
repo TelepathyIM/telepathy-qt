@@ -559,7 +559,7 @@ void TextChannel::Private::contactFound(ContactPtr contact)
 /**
  * A placeholder for "core functionality" which is currently just the same as Channel::FeatureCore.
  */
-const Feature TextChannel::FeatureCore = Channel::FeatureCore;
+const Feature TextChannel::FeatureCore = Feature(QLatin1String(Channel::staticMetaObject.className()), 0, true);
 
 /**
  * Feature used in order to access the message queue info.

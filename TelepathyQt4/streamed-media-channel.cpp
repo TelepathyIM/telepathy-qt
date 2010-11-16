@@ -847,7 +847,7 @@ void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChanne
  * Placeholder for "core functionality" of a StreamedMediaChannel which is currently considered to
  * be just Channel::FeatureCore.
  */
-const Feature StreamedMediaChannel::FeatureCore = Channel::FeatureCore;
+const Feature StreamedMediaChannel::FeatureCore = Feature(QLatin1String(Channel::staticMetaObject.className()), 0, true);
 
 /**
  * Feature used in order to access media stream specific methods.
