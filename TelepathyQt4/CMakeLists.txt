@@ -254,6 +254,8 @@ set(telepathy_qt4_HEADERS
     message.h
     MethodInvocationContext
     method-invocation-context.h
+    NotFilter
+    not-filter.h
     Object
     object.h
     OptionalInterfaceFactory
