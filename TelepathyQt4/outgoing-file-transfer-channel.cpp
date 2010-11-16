@@ -99,8 +99,8 @@ const Feature OutgoingFileTransferChannel::FeatureCore = FileTransferChannel::Fe
  *                   service.
  * \param objectPath The object path of this channel.
  * \param immutableProperties The immutable properties of this channel.
- * \return A StreamedMediaChannelPtr object pointing to the newly created
- *         StreamedMediaChannel object.
+ * \return An OutgoingFileTransferChannelPtr object pointing to the newly created
+ *         OutgoingFileTransferChannel object.
  */
 OutgoingFileTransferChannelPtr OutgoingFileTransferChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
