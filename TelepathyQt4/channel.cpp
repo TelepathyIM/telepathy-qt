@@ -1364,7 +1364,7 @@ Channel::Channel(const ConnectionPtr &connection,
                  const QVariantMap &immutableProperties,
                  const Feature &coreFeature)
     : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
-            objectPath, FeatureCore),
+            objectPath, coreFeature),
       OptionalInterfaceFactory<Channel>(this),
       mPriv(new Private(this, connection, immutableProperties))
 {
