@@ -82,9 +82,7 @@ IncomingFileTransferChannel::Private::~Private()
  * Feature representing the core that needs to become ready to make the
  * IncomingFileTransferChannel object usable.
  *
- * Note that this feature must be enabled in order to use most
- * IncomingFileTransferChannel methods.
- * See specific methods documentation for more details.
+ * This is currently the same as FileTransferChannel::FeatureCore, but may change to include more.
  *
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
