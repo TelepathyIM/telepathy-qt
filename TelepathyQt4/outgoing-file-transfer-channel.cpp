@@ -90,7 +90,7 @@ OutgoingFileTransferChannel::Private::~Private()
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Feature OutgoingFileTransferChannel::FeatureCore = Feature(QLatin1String(OutgoingFileTransferChannel::staticMetaObject.className()), 0);
+const Feature OutgoingFileTransferChannel::FeatureCore = FileTransferChannel::FeatureCore;
 
 /**
  * Create a new OutgoingFileTransferChannel object.

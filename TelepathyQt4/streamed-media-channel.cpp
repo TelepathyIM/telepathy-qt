@@ -844,6 +844,12 @@ void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChanne
  */
 
 /**
+ * Placeholder for "core functionality" of a StreamedMediaChannel which is currently considered to
+ * be just Channel::FeatureCore.
+ */
+const Feature StreamedMediaChannel::FeatureCore = Channel::FeatureCore;
+
+/**
  * Feature used in order to access media stream specific methods.
  *
  * See media stream specific methods' documentation for more details.

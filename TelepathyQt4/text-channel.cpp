@@ -557,6 +557,11 @@ void TextChannel::Private::contactFound(ContactPtr contact)
  */
 
 /**
+ * A placeholder for "core functionality" which is currently just the same as Channel::FeatureCore.
+ */
+const Feature TextChannel::FeatureCore = Channel::FeatureCore;
+
+/**
  * Feature used in order to access the message queue info.
  *
  * Se message queue methods' documentation for more details.

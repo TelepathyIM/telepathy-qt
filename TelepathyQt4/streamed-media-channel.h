@@ -142,6 +142,7 @@ class TELEPATHY_QT4_EXPORT StreamedMediaChannel : public Channel
     Q_ENUMS(StateChangeReason)
 
 public:
+    static const Feature FeatureCore;
     static const Feature FeatureStreams;
     static const Feature FeatureLocalHoldState;
 
