@@ -27,7 +27,7 @@ if (GIT_BRANCH_CURRENT)
 endif (GIT_BRANCH_CURRENT)
 
 add_custom_target(maintainer-upload-release-docs
-        rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt4/
+        rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt4-0.4.x/
 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 add_dependencies(maintainer-upload-release-docs doxygen-doc _maintainer-upload-release-check)
