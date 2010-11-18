@@ -3489,10 +3489,12 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
     emit conferenceChannelRemoved(channel, GroupMemberChangeDetails(actorContact,
                 info->details));
 
-    for (QHash<uint, ChannelPtr>::const_iterator i = mPriv->conferenceOriginalChannels.constBegin();
-            i != mPriv->conferenceOriginalChannels.constEnd(); ++i) {
+    for (QHash<uint, ChannelPtr>::iterator i = mPriv->conferenceOriginalChannels.begin();
+            i != mPriv->conferenceOriginalChannels.end();) {
         if (i.value() == channel) {
-            mPriv->conferenceOriginalChannels.remove(i.key());
+            i = mPriv->conferenceOriginalChannels.erase(i);
+        } else {
+            ++i;
         }
     }
 
