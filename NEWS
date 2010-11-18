@@ -20,6 +20,8 @@ Fixes:
 * ContactSearchChannel private members not being properly initialized if
   ContactSearchChannel::FeatureCore isn't ready
 * Compile errors with QT_STRICT_ITERATORS
+* Crash using a dangling (const!) iterator when a channel is removed from a
+  conference
 
 telepathy-qt4 0.3.14 (2010-11-05)
 =================================
