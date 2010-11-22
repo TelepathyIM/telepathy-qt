@@ -1193,6 +1193,9 @@ void MediaStream::gotSMDirection(uint direction, uint pendingSend)
         return;
     }
 
+    SendingState oldLocalState = mPriv->localSendingStateFromSMDirection();
+    SendingState oldRemoteState = mPriv->remoteSendingStateFromSMDirection();
+
     mPriv->SMDirection = direction;
     mPriv->SMPendingSend = pendingSend;
 
@@ -1202,14 +1205,18 @@ void MediaStream::gotSMDirection(uint direction, uint pendingSend)
 
     SendingState localSendingState =
         mPriv->localSendingStateFromSMDirection();
-    emit localSendingStateChanged(localSendingState);
+    if (localSendingState != oldLocalState) {
+        emit localSendingStateChanged(localSendingState);
+    }
 
     SendingState remoteSendingState =
         mPriv->remoteSendingStateFromSMDirection();
-    QHash<ContactPtr, SendingState> remoteSendingStates;
-    remoteSendingStates.insert(mPriv->SMContact, remoteSendingState);
-    emit remoteSendingStateChanged(remoteSendingStates);
-    emit remoteSendingStateChanged(remoteSendingState);
+    if (remoteSendingState != oldRemoteState) {
+        QHash<ContactPtr, SendingState> remoteSendingStates;
+        remoteSendingStates.insert(mPriv->SMContact, remoteSendingState);
+        emit remoteSendingStateChanged(remoteSendingStates);
+        emit remoteSendingStateChanged(remoteSendingState);
+    }
 }
 
 void MediaStream::gotSMStreamState(uint state)

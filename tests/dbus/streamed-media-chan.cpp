@@ -55,6 +55,8 @@ protected Q_SLOTS:
     void onStreamDirectionChanged(const Tp::MediaStreamPtr &,
             Tp::MediaStreamDirection,
             Tp::MediaStreamPendingSend);
+    void onLSSChanged(Tp::MediaStream::SendingState);
+    void onRSSChanged(Tp::MediaStream::SendingState);
     void onStreamStateChanged(const Tp::MediaStreamPtr &,
             Tp::MediaStreamState);
     void onChanInvalidated(Tp::DBusProxy *,
@@ -113,6 +115,8 @@ private:
     MediaStreamPtr mSDCStreamReturn;
     Tp::MediaStreamDirection mSDCDirectionReturn;
     Tp::MediaStreamPendingSend mSDCPendingReturn;
+    Tp::MediaStream::SendingState mChangedLSS;
+    Tp::MediaStream::SendingState mChangedRSS;
     MediaStreamPtr mSSCStreamReturn;
     Tp::MediaStreamState mSSCStateReturn;
     QQueue<uint> mLocalHoldStates;
@@ -382,6 +386,20 @@ void TestStreamedMediaChan::onStreamDirectionChanged(const MediaStreamPtr &strea
     mLoop->exit(0);
 }
 
+void TestStreamedMediaChan::onLSSChanged(Tp::MediaStream::SendingState state)
+{
+    qDebug() << "onLSSChanged: " << static_cast<uint>(state);
+    mChangedLSS = state;
+    mLoop->exit(0);
+}
+
+void TestStreamedMediaChan::onRSSChanged(Tp::MediaStream::SendingState state)
+{
+    qDebug() << "onRSSChanged: " << static_cast<uint>(state);
+    mChangedRSS = state;
+    mLoop->exit(0);
+}
+
 void TestStreamedMediaChan::onStreamStateChanged(const MediaStreamPtr &stream,
         Tp::MediaStreamState state)
 {
@@ -589,6 +607,8 @@ void TestStreamedMediaChan::init()
     mSDCDirectionReturn = (Tp::MediaStreamDirection) -1;
     mSDCPendingReturn = (Tp::MediaStreamPendingSend) -1;
     mSSCStateReturn = (Tp::MediaStreamState) -1;
+    mChangedLSS = (Tp::MediaStream::SendingState) -1;
+    mChangedRSS = (Tp::MediaStream::SendingState) -1;
     mSSCStreamReturn.reset();
     mLocalHoldStates.clear();
     mLocalHoldStateReasons.clear();
@@ -764,15 +784,23 @@ void TestStreamedMediaChan::testOutgoingCall()
                     SLOT(onStreamDirectionChanged(const Tp::MediaStreamPtr &,
                                                   Tp::MediaStreamDirection,
                                                   Tp::MediaStreamPendingSend))));
+    QVERIFY(connect(stream.data(),
+                    SIGNAL(localSendingStateChanged(Tp::MediaStream::SendingState)),
+                    SLOT(onLSSChanged(Tp::MediaStream::SendingState))));
+    QVERIFY(connect(stream.data(),
+                    SIGNAL(remoteSendingStateChanged(Tp::MediaStream::SendingState)),
+                    SLOT(onRSSChanged(Tp::MediaStream::SendingState))));
     QVERIFY(connect(stream->requestDirection(Tp::MediaStreamDirectionReceive),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    while (!mSDCStreamReturn || !mSSCStreamReturn) {
+    while (!mSDCStreamReturn || !mSSCStreamReturn || (static_cast<int>(mChangedLSS) == -1)) {
         qDebug() << "re-entering mainloop to wait for stream direction change and state change";
         // wait direction and state changed signal
         QCOMPARE(mLoop->exec(), 0);
     }
+    // If this fails, we also got a remote state change signal, although we shouldn't have
+    QCOMPARE(static_cast<int>(mChangedRSS), -1);
     QCOMPARE(mSDCStreamReturn, stream);
     QVERIFY(mSDCDirectionReturn & Tp::MediaStreamDirectionReceive);
     QVERIFY(stream->direction() & Tp::MediaStreamDirectionReceive);
@@ -1148,15 +1176,23 @@ void TestStreamedMediaChan::testIncomingCall()
                     SLOT(onStreamDirectionChanged(const Tp::MediaStreamPtr &,
                                                   Tp::MediaStreamDirection,
                                                   Tp::MediaStreamPendingSend))));
+    QVERIFY(connect(stream.data(),
+                    SIGNAL(localSendingStateChanged(Tp::MediaStream::SendingState)),
+                    SLOT(onLSSChanged(Tp::MediaStream::SendingState))));
+    QVERIFY(connect(stream.data(),
+                    SIGNAL(remoteSendingStateChanged(Tp::MediaStream::SendingState)),
+                    SLOT(onRSSChanged(Tp::MediaStream::SendingState))));
     QVERIFY(connect(stream->requestDirection(false, true),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    while (!mSDCStreamReturn || !mSSCStreamReturn) {
+    while (!mSDCStreamReturn || !mSSCStreamReturn || (static_cast<int>(mChangedLSS) == -1)) {
         // wait direction and state changed signal
         qDebug() << "re-entering mainloop to wait for stream direction change and state change";
         QCOMPARE(mLoop->exec(), 0);
     }
+    // If this fails, we also got a remote state change signal, although we shouldn't have
+    QCOMPARE(static_cast<int>(mChangedRSS), -1);
     QCOMPARE(mSDCStreamReturn, stream);
     QVERIFY(mSDCDirectionReturn & Tp::MediaStreamDirectionReceive);
     QVERIFY(stream->direction() & Tp::MediaStreamDirectionReceive);
