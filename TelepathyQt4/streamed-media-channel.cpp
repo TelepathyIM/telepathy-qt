@@ -706,6 +706,9 @@ void StreamedMediaStream::gotDirection(uint direction, uint pendingSend)
         return;
     }
 
+    SendingState oldLocalState = mPriv->localSendingStateFromDirection();
+    SendingState oldRemoteState = mPriv->remoteSendingStateFromDirection();
+
     mPriv->direction = direction;
     mPriv->pendingSend = pendingSend;
 
@@ -715,11 +718,15 @@ void StreamedMediaStream::gotDirection(uint direction, uint pendingSend)
 
     SendingState localSendingState =
         mPriv->localSendingStateFromDirection();
-    emit localSendingStateChanged(localSendingState);
+    if (localSendingState != oldLocalState) {
+        emit localSendingStateChanged(localSendingState);
+    }
 
     SendingState remoteSendingState =
         mPriv->remoteSendingStateFromDirection();
-    emit remoteSendingStateChanged(remoteSendingState);
+    if (remoteSendingState != oldRemoteState) {
+        emit remoteSendingStateChanged(remoteSendingState);
+    }
 }
 
 void StreamedMediaStream::gotStreamState(uint state)
