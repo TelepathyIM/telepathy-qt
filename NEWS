@@ -9,6 +9,8 @@ Enhancements:
 Fixes:
  * Crash using a dangling (const!) iterator when a channel is removed from a
    conference
+ * Emitting redundant {local,remote}SendingStateChanged signals from
+   StreamedMediaChannel
 
 telepathy-qt4 0.5.0 (2010-11-16)
 =================================
