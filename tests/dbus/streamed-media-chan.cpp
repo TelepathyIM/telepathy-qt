@@ -386,13 +386,15 @@ void TestStreamedMediaChan::onStreamDirectionChanged(const MediaStreamPtr &strea
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::onLSSChanged(Tp::MediaStream::SendingState state) {
+void TestStreamedMediaChan::onLSSChanged(Tp::MediaStream::SendingState state)
+{
     qDebug() << "onLSSChanged: " << static_cast<uint>(state);
     mChangedLSS = state;
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::onRSSChanged(Tp::MediaStream::SendingState state) {
+void TestStreamedMediaChan::onRSSChanged(Tp::MediaStream::SendingState state)
+{
     qDebug() << "onRSSChanged: " << static_cast<uint>(state);
     mChangedRSS = state;
     mLoop->exit(0);
