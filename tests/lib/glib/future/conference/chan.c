@@ -300,7 +300,10 @@ set_property (GObject *object,
       break;
 
     case PROP_CONFERENCE_INITIAL_CHANNELS:
+      g_ptr_array_free(self->priv->conference_initial_channels, TRUE);
       self->priv->conference_initial_channels = g_value_dup_boxed (value);
+
+      g_ptr_array_free(self->priv->conference_channels, TRUE);
       self->priv->conference_channels = g_value_dup_boxed (value);
       break;
 
