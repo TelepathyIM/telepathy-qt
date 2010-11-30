@@ -154,6 +154,8 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
     QCOMPARE(mContacts[0]->avatarToken(), QString(QLatin1String(avatarToken)));
     QCOMPARE(data, QByteArray(avatarData));
     QCOMPARE(avatar.mimeType, QString(QLatin1String(avatarMimeType)));
+
+    g_array_free(array, TRUE);
 }
 
 #define RAND_STR_LEN 6
