@@ -194,6 +194,7 @@ void TestContactsCapabilities::testCapabilities()
 
     GHashTable *capabilities = createContactCapabilities(handles);
     tp_tests_contacts_connection_change_capabilities(mConnService, capabilities);
+    g_hash_table_destroy(capabilities);
 
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(
             ids, Features() << Contact::FeatureCapabilities);
