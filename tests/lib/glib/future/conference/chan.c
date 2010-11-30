@@ -618,8 +618,6 @@ mergeable_conference_merge (FutureSvcChannelInterfaceMergeableConference *iface 
 
   g_ptr_array_add (self->priv->conference_channels, g_strdup (channel));
 
-  immutable_props = g_hash_table_new (NULL, NULL);
-
   tp_svc_channel_interface_conference_emit_channel_merged (self, channel, 0, immutable_props);
 
   g_hash_table_destroy (immutable_props);
