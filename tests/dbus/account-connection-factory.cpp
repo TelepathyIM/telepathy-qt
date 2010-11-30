@@ -129,6 +129,10 @@ void TestAccountConnectionFactory::onConnectionChanged(const Tp::ConnectionPtr &
 {
     qDebug() << "have connection:" << !conn.isNull();
 
+    if (mReceivedHaveConnection) {
+        delete mReceivedHaveConnection;
+    }
+
     mReceivedHaveConnection = new bool(!conn.isNull());
 }
 
