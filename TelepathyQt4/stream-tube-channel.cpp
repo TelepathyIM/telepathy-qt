@@ -86,22 +86,22 @@ void StreamTubeChannel::Private::init()
     ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableStreamTube(
-        QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        Features() << TubeChannel::FeatureTube,                                 // dependsOnFeatures (core)
-        QStringList(),                                                          // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &StreamTubeChannel::Private::introspectStreamTube,
-        this);
+            QSet<uint>() << 0,                                                      // makesSenseForStatuses
+            Features() << TubeChannel::FeatureTube,                                 // dependsOnFeatures (core)
+            QStringList(),                                                          // dependsOnInterfaces
+            (ReadinessHelper::IntrospectFunc) &StreamTubeChannel::Private::introspectStreamTube,
+            this);
     introspectables[StreamTubeChannel::FeatureStreamTube] = introspectableStreamTube;
 
     ReadinessHelper::Introspectable introspectableConnectionMonitoring(
-        QSet<uint>() << 0,                                                            // makesSenseForStatuses
-        Features() << StreamTubeChannel::FeatureStreamTube,                           // dependsOnFeatures (core)
-        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE), // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc)
-                &StreamTubeChannel::Private::introspectConnectionMonitoring,
-        this);
+            QSet<uint>() << 0,                                                            // makesSenseForStatuses
+            Features() << StreamTubeChannel::FeatureStreamTube,                           // dependsOnFeatures (core)
+            QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE), // dependsOnInterfaces
+            (ReadinessHelper::IntrospectFunc)
+                    &StreamTubeChannel::Private::introspectConnectionMonitoring,
+            this);
     introspectables[StreamTubeChannel::FeatureConnectionMonitoring] =
-                                                        introspectableConnectionMonitoring;
+            introspectableConnectionMonitoring;
 
     readinessHelper->addIntrospectables(introspectables);
 }
@@ -124,19 +124,19 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
     Q_ASSERT(streamTubeInterface);
 
     parent->connect(streamTubeInterface, SIGNAL(ConnectionClosed(uint,QString,QString)),
-                    parent, SLOT(onConnectionClosed(uint,QString,QString)));
+            parent, SLOT(onConnectionClosed(uint,QString,QString)));
 
     // Depending on the base type given by the inheriter, let's connect to some additional signals
     if (self->baseType == OutgoingTubeType) {
         parent->connect(streamTubeInterface, SIGNAL(NewRemoteConnection(uint,QDBusVariant,uint)),
-                        parent, SLOT(onNewRemoteConnection(uint,QDBusVariant,uint)));
+                parent, SLOT(onNewRemoteConnection(uint,QDBusVariant,uint)));
     } else if (self->baseType == IncomingTubeType) {
         parent->connect(streamTubeInterface, SIGNAL(NewLocalConnection(uint)),
-                        parent, SLOT(onNewLocalConnection(uint)));
+                parent, SLOT(onNewLocalConnection(uint)));
     }
 
     self->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureConnectionMonitoring,
-                                                  true);
+                true);
 }
 
 void StreamTubeChannel::Private::introspectStreamTube(
@@ -150,10 +150,10 @@ void StreamTubeChannel::Private::introspectStreamTube(
             parent->interface<Client::DBus::PropertiesInterface>();
 
     QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                properties->GetAll(
-                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE)),
-                parent);
+            new QDBusPendingCallWatcher(
+                    properties->GetAll(
+                            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE)),
+                    parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             parent,
@@ -188,7 +188,7 @@ void StreamTubeChannel::Private::introspectStreamTube(
  * See specific methods documentation for more details.
  */
 const Feature StreamTubeChannel::FeatureStreamTube =
-                        Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0);
+        Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0);
 /**
  * Feature used in order to monitor connections to this tube.
  *
@@ -196,7 +196,7 @@ const Feature StreamTubeChannel::FeatureStreamTube =
  * %connectionClosed will be emitted when an existing connection gets closed
  */
 const Feature StreamTubeChannel::FeatureConnectionMonitoring =
-                        Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 1);
+        Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 1);
 
 // Signals documentation
 /**
@@ -224,7 +224,7 @@ StreamTubeChannelPtr StreamTubeChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return StreamTubeChannelPtr(new StreamTubeChannel(connection, objectPath,
-                immutableProperties, StreamTubeChannel::FeatureStreamTube));
+            immutableProperties, StreamTubeChannel::FeatureStreamTube));
 }
 
 /**
@@ -266,7 +266,7 @@ QString StreamTubeChannel::service() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::service() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return QString();
     }
 
@@ -295,7 +295,7 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::supportsIPv4SocketsOnLocalhost() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return false;
     }
 
@@ -338,7 +338,7 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return false;
     }
 
@@ -370,7 +370,7 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::supportsIPv6SocketsOnLocalhost() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return false;
     }
 
@@ -413,7 +413,7 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return false;
     }
 
@@ -445,7 +445,7 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::supportsUnixSocketsOnLocalhost() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return false;
     }
 
@@ -484,7 +484,7 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::supportsUnixSocketsWithCredentials() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return false;
     }
 
@@ -517,7 +517,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return false;
     }
 
@@ -556,7 +556,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
 {
     if (!isReady(FeatureStreamTube)) {
         warning() << "StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() used with "
-            "FeatureStreamTube not ready";
+                "FeatureStreamTube not ready";
         return false;
     }
 
@@ -576,7 +576,7 @@ UIntList StreamTubeChannel::connections() const
 {
     if (!isReady(FeatureConnectionMonitoring)) {
         warning() << "StreamTubeChannel::connections() used with "
-            "FeatureConnectionMonitoring not ready";
+                "FeatureConnectionMonitoring not ready";
         return UIntList();
     }
 
@@ -675,7 +675,7 @@ void StreamTubeChannel::gotStreamTubeProperties(QDBusPendingCallWatcher *watcher
     }
     else {
         warning().nospace() << "Properties::GetAll(StreamTubeChannel) failed "
-            "with " << reply.error().name() << ": " << reply.error().message();
+                "with " << reply.error().name() << ": " << reply.error().message();
         mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, false,
                 reply.error());
     }

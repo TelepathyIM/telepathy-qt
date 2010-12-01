@@ -49,9 +49,9 @@ public:
     PendingOperation *offerTcpSocket(QTcpServer *server, const QVariantMap &parameters);
 
     PendingOperation *offerUnixSocket(const QString &socketAddress, const QVariantMap &parameters,
-                                      bool requireCredentials = false);
+            bool requireCredentials = false);
     PendingOperation *offerUnixSocket(QLocalServer *server, const QVariantMap &parameters,
-                                      bool requireCredentials = false);
+            bool requireCredentials = false);
 
     QHash< uint, Tp::ContactPtr > contactsForConnections() const;
 

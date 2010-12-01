@@ -65,11 +65,11 @@ void TubeChannel::Private::init()
     ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableTube(
-        QSet<uint>() << 0,                                                          // makesSenseForStatuses
-        Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
-        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE), // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &TubeChannel::Private::introspectTube,
-        this);
+            QSet<uint>() << 0,                                                          // makesSenseForStatuses
+            Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
+            QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE), // dependsOnInterfaces
+            (ReadinessHelper::IntrospectFunc) &TubeChannel::Private::introspectTube,
+            this);
     introspectables[TubeChannel::FeatureTube] = introspectableTube;
 
     readinessHelper->addIntrospectables(introspectables);
@@ -95,18 +95,19 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
     Q_ASSERT(tubeInterface);
 
     parent->connect(tubeInterface, SIGNAL(TubeChannelStateChanged(uint)),
-                    parent, SLOT(onTubeChannelStateChanged(uint)));
+            parent, SLOT(onTubeChannelStateChanged(uint)));
 
     Client::DBus::PropertiesInterface *properties =
             parent->interface<Client::DBus::PropertiesInterface>();
 
     QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                properties->GetAll(
-                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE)),
-                parent);
+            new QDBusPendingCallWatcher(
+                    properties->GetAll(
+                            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE)),
+                    parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
+            parent,
             SLOT(gotTubeProperties(QDBusPendingCallWatcher *)));
 }
 
@@ -139,7 +140,7 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
  * See specific methods documentation for more details.
  */
 const Feature TubeChannel::FeatureTube =
-                           Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
+        Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
 
 // Signals documentation
 /**
@@ -163,7 +164,7 @@ TubeChannelPtr TubeChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return TubeChannelPtr(new TubeChannel(connection, objectPath,
-                immutableProperties));
+            immutableProperties));
 }
 
 /**
@@ -207,7 +208,7 @@ QVariantMap TubeChannel::parameters() const
 {
     if (!isReady(FeatureTube)) {
         warning() << "TubeChannel::parameters() used with "
-            "FeatureTube not ready";
+                "FeatureTube not ready";
         return QVariantMap();
     }
 
@@ -223,7 +224,7 @@ TubeChannelState TubeChannel::tubeState() const
 {
     if (!isReady(FeatureTube)) {
         warning() << "TubeChannel::tubeState() used with "
-            "FeatureTube not ready";
+                "FeatureTube not ready";
         return TubeChannelStateNotOffered;
     }
 
@@ -254,7 +255,7 @@ void TubeChannel::gotTubeProperties(QDBusPendingCallWatcher *watcher)
     }
     else {
         warning().nospace() << "Properties::GetAll(TubeChannel) failed "
-            "with " << reply.error().name() << ": " << reply.error().message();
+                "with " << reply.error().name() << ": " << reply.error().message();
         mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, false,
                 reply.error());
     }

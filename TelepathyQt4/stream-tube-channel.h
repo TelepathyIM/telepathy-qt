@@ -68,7 +68,8 @@ public:
 
 Q_SIGNALS:
     void newConnection(uint connectionId);
-    void connectionClosed(uint connectionId, const QString &error, const QString &message);
+    void connectionClosed(uint connectionId, const QString &error,
+            const QString &message);
 
 protected:
     StreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,

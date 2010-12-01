@@ -186,7 +186,7 @@ IncomingStreamTubeChannelPtr IncomingStreamTubeChannel::create(const ConnectionP
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return IncomingStreamTubeChannelPtr(new IncomingStreamTubeChannel(connection, objectPath,
-                immutableProperties, StreamTubeChannel::FeatureStreamTube));
+            immutableProperties, StreamTubeChannel::FeatureStreamTube));
 }
 
 /**
@@ -317,23 +317,23 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         setAddressType(SocketAddressTypeIPv4);
     } else {
         setAddressType(allowedAddress.protocol() == QAbstractSocket::IPv4Protocol ?
-                       SocketAddressTypeIPv4 :
-                       SocketAddressTypeIPv6);
+                SocketAddressTypeIPv4 :
+                SocketAddressTypeIPv6);
     }
 
     // Fail early if the combination is not supported
-    if ( (accessControl == SocketAccessControlLocalhost &&
-          addressType() == SocketAddressTypeIPv4 &&
-          !supportsIPv4SocketsOnLocalhost()) ||
-         (accessControl == SocketAccessControlPort &&
-          addressType() == SocketAddressTypeIPv4 &&
-          !supportsIPv4SocketsWithSpecifiedAddress()) ||
-         (accessControl == SocketAccessControlLocalhost &&
-          addressType() == SocketAddressTypeIPv6 &&
-          !supportsIPv6SocketsOnLocalhost()) ||
-         (accessControl == SocketAccessControlPort &&
-          addressType() == SocketAddressTypeIPv6 &&
-          !supportsIPv6SocketsWithSpecifiedAddress())) {
+    if ((accessControl == SocketAccessControlLocalhost &&
+            addressType() == SocketAddressTypeIPv4 &&
+            !supportsIPv4SocketsOnLocalhost()) ||
+        (accessControl == SocketAccessControlPort &&
+            addressType() == SocketAddressTypeIPv4 &&
+            !supportsIPv4SocketsWithSpecifiedAddress()) ||
+        (accessControl == SocketAccessControlLocalhost &&
+            addressType() == SocketAddressTypeIPv6 &&
+            !supportsIPv6SocketsOnLocalhost()) ||
+        (accessControl == SocketAccessControlPort &&
+            addressType() == SocketAddressTypeIPv6 &&
+            !supportsIPv6SocketsWithSpecifiedAddress())) {
         warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -438,18 +438,18 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     setAddressType(SocketAddressTypeUnix);
 
     // Fail early if the combination is not supported
-    if ( (accessControl == SocketAccessControlLocalhost &&
-          addressType() == SocketAddressTypeUnix &&
-          !supportsUnixSocketsOnLocalhost()) ||
-         (accessControl == SocketAccessControlCredentials &&
-          addressType() == SocketAddressTypeUnix &&
-          !supportsUnixSocketsWithCredentials()) ||
-         (accessControl == SocketAccessControlLocalhost &&
-          addressType() == SocketAddressTypeAbstractUnix &&
-          !supportsAbstractUnixSocketsOnLocalhost()) ||
-         (accessControl == SocketAccessControlCredentials &&
-          addressType() == SocketAddressTypeAbstractUnix &&
-          !supportsAbstractUnixSocketsWithCredentials())) {
+    if ((accessControl == SocketAccessControlLocalhost &&
+            addressType() == SocketAddressTypeUnix &&
+            !supportsUnixSocketsOnLocalhost()) ||
+        (accessControl == SocketAccessControlCredentials &&
+            addressType() == SocketAddressTypeUnix &&
+            !supportsUnixSocketsWithCredentials()) ||
+        (accessControl == SocketAccessControlLocalhost &&
+            addressType() == SocketAddressTypeAbstractUnix &&
+           !supportsAbstractUnixSocketsOnLocalhost()) ||
+        (accessControl == SocketAccessControlCredentials &&
+           addressType() == SocketAddressTypeAbstractUnix &&
+           !supportsAbstractUnixSocketsWithCredentials())) {
         warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),

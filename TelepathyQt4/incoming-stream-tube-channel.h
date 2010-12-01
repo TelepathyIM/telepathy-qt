@@ -48,7 +48,7 @@ public:
 
     PendingStreamTubeConnection *acceptTubeAsTcpSocket();
     PendingStreamTubeConnection *acceptTubeAsTcpSocket(const QHostAddress &allowedAddress,
-                                                       quint16 allowedPort);
+            quint16 allowedPort);
     PendingStreamTubeConnection *acceptTubeAsUnixSocket(bool requireCredentials = false);
 
     QIODevice *device();

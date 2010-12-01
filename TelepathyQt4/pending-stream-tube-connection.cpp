@@ -208,7 +208,7 @@ void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
         // Build the IO device
         if (mPriv->type == SocketAddressTypeIPv4 || mPriv->type == SocketAddressTypeIPv6) {
             mPriv->tube->setIpAddress(qMakePair< QHostAddress, quint16 >(mPriv->hostAddress,
-                                                                         mPriv->port));
+                    mPriv->port));
             debug() << "Building a QTcpSocket " << mPriv->hostAddress << mPriv->port;
 
             QTcpSocket *socket = new QTcpSocket(mPriv->tube.data());
@@ -241,7 +241,7 @@ void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
     } else if (state != TubeChannelStateLocalPending) {
         // Something happened
         setFinishedWithError(QLatin1String("Connection refused"),
-                      QLatin1String("The connection to this tube was refused"));
+                QLatin1String("The connection to this tube was refused"));
     }
 }
 
@@ -252,7 +252,7 @@ void PendingStreamTubeConnection::onAbstractSocketError(QAbstractSocket::SocketE
     // Failure
     mPriv->device = 0;
     setFinishedWithError(QLatin1String("Error while creating TCP socket"),
-                      QLatin1String("Could not connect to the new socket"));
+            QLatin1String("Could not connect to the new socket"));
 }
 
 void PendingStreamTubeConnection::onLocalSocketError(QLocalSocket::LocalSocketError error)

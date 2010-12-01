@@ -274,7 +274,7 @@ OutgoingStreamTubeChannelPtr OutgoingStreamTubeChannel::create(const ConnectionP
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return OutgoingStreamTubeChannelPtr(new OutgoingStreamTubeChannel(connection, objectPath,
-                immutableProperties, StreamTubeChannel::FeatureStreamTube));
+            immutableProperties, StreamTubeChannel::FeatureStreamTube));
 }
 
 /**
@@ -297,8 +297,10 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
 
     connect(this, SIGNAL(connectionClosed(uint,QString,QString)),
             this, SLOT(onConnectionClosed(uint,QString,QString)));
-    connect(mPriv->queuedContactFactory, SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
-            this, SLOT(onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
+    connect(mPriv->queuedContactFactory,
+            SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
+            this,
+            SLOT(onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
 }
 
 /**
@@ -547,10 +549,10 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
     if (socketAddress.startsWith(QLatin1Char('\0'))) {
         // Abstract Unix socket case
         // Check if the combination type/access control is supported
-        if ( (accessControl == SocketAccessControlLocalhost &&
-              !supportsAbstractUnixSocketsOnLocalhost()) ||
-             (accessControl == SocketAccessControlCredentials &&
-              !supportsAbstractUnixSocketsWithCredentials()) ) {
+        if ((accessControl == SocketAccessControlLocalhost &&
+                !supportsAbstractUnixSocketsOnLocalhost()) ||
+            (accessControl == SocketAccessControlCredentials &&
+                !supportsAbstractUnixSocketsWithCredentials()) ) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -575,12 +577,12 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
     } else {
         // Unix socket case
         // Check if the combination type/access control is supported
-        if ( (accessControl == SocketAccessControlLocalhost &&
-              !supportsUnixSocketsOnLocalhost()) ||
-             (accessControl == SocketAccessControlCredentials &&
-              !supportsUnixSocketsWithCredentials()) ||
-             (accessControl != SocketAccessControlLocalhost &&
-              accessControl != SocketAccessControlCredentials) ) {
+        if ((accessControl == SocketAccessControlLocalhost &&
+                !supportsUnixSocketsOnLocalhost()) ||
+            (accessControl == SocketAccessControlCredentials &&
+                !supportsUnixSocketsWithCredentials()) ||
+            (accessControl != SocketAccessControlLocalhost &&
+                accessControl != SocketAccessControlCredentials) ) {
             warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -662,19 +664,19 @@ QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connect
 {
     if (addressType() != SocketAddressTypeIPv4 && addressType() != SocketAddressTypeIPv6) {
         warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
-            "just when offering a TCP socket";
+                "just when offering a TCP socket";
         return QHash< QPair< QHostAddress, quint16 >, uint >();
     }
 
     if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
         warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
-            "calling connectionsForSourceAddresses";
+            "   calling connectionsForSourceAddresses";
         return QHash< QPair< QHostAddress, quint16 >, uint >();
     }
 
     if (tubeState() != TubeChannelStateOpen) {
         warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
-            "just when the tube is open";
+                "just when the tube is open";
         return QHash< QPair< QHostAddress, quint16 >, uint >();
     }
 
@@ -698,13 +700,13 @@ QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() co
 {
     if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
         warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
-            "calling contactsForConnections";
+                "calling contactsForConnections";
         return QHash< uint, ContactPtr >();
     }
 
     if (tubeState() != TubeChannelStateOpen) {
         warning() << "OutgoingStreamTubeChannel::contactsForConnections() makes sense "
-            "just when the tube is open";
+                "just when the tube is open";
         return QHash< uint, ContactPtr >();
     }
 
@@ -781,7 +783,7 @@ void OutgoingStreamTubeChannel::onConnectionClosed(
     mPriv->contactsForConnections.remove(connectionId);
 
     QHash< QPair< QHostAddress, quint16 >, uint >::iterator i =
-                                    mPriv->connectionsForSourceAddresses.begin();
+            mPriv->connectionsForSourceAddresses.begin();
 
     while (i != mPriv->connectionsForSourceAddresses.end()) {
         if (i.value() == connectionId) {

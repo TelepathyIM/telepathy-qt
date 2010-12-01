@@ -64,9 +64,9 @@ private Q_SLOTS:
 
 private:
     PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,
-                                const SharedPtr<RefCounted> &object);
+            const SharedPtr<RefCounted> &object);
     PendingStreamTubeConnection(const QString &errorName, const QString &errorMessage,
-                                const SharedPtr<RefCounted> &object);
+            const SharedPtr<RefCounted> &object);
 
     struct Private;
     friend struct Private;

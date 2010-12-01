@@ -52,8 +52,8 @@ Q_SIGNALS:
 
 protected:
     TubeChannel(const ConnectionPtr &connection, const QString &objectPath,
-                const QVariantMap &immutableProperties,
-                const Feature &coreFeature = TubeChannel::FeatureCore);
+            const QVariantMap &immutableProperties,
+            const Feature &coreFeature = TubeChannel::FeatureCore);
 
     void setParameters(const QVariantMap &parameters);
 
