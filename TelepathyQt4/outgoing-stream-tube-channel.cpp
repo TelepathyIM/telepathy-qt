@@ -55,11 +55,11 @@ PendingOpenTube::Private::~Private()
 PendingOpenTube::PendingOpenTube(
         PendingVoid *offerOperation,
         const QVariantMap &parameters,
-        const SharedPtr<RefCounted> &object)
+        const OutgoingStreamTubeChannelPtr &object)
     : PendingOperation(object)
     , mPriv(new Private(parameters, this))
 {
-    mPriv->tube = OutgoingStreamTubeChannelPtr::dynamicCast(object);
+    mPriv->tube = object;
 
     if (offerOperation->isFinished()) {
         onOfferFinished(offerOperation);

@@ -27,6 +27,7 @@
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/Types>
 
 #include <QPair>
 #include <QLocalSocket>
@@ -64,9 +65,9 @@ private Q_SLOTS:
 
 private:
     PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,
-            const SharedPtr<RefCounted> &object);
+            const IncomingStreamTubeChannelPtr &object);
     PendingStreamTubeConnection(const QString &errorName, const QString &errorMessage,
-            const SharedPtr<RefCounted> &object);
+            const IncomingStreamTubeChannelPtr &object);
 
     struct Private;
     friend struct Private;

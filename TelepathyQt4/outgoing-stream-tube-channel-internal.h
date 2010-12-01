@@ -36,7 +36,7 @@ class TELEPATHY_QT4_NO_EXPORT PendingOpenTube : public PendingOperation
 public:
     PendingOpenTube(PendingVoid *offerOperation,
             const QVariantMap &parameters,
-            const SharedPtr<RefCounted> &object);
+            const OutgoingStreamTubeChannelPtr &object);
     ~PendingOpenTube();
 
 private Q_SLOTS:

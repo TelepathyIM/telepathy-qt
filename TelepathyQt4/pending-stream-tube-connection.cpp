@@ -67,11 +67,11 @@ PendingStreamTubeConnection::Private::~Private()
 PendingStreamTubeConnection::PendingStreamTubeConnection(
         PendingVariant *acceptOperation,
         SocketAddressType type,
-        const SharedPtr<RefCounted> &object)
+        const IncomingStreamTubeChannelPtr &object)
     : PendingOperation(object)
     , mPriv(new Private(this))
 {
-    mPriv->tube = IncomingStreamTubeChannelPtr::dynamicCast(object);
+    mPriv->tube = object;
     mPriv->type = type;
 
     // Connect the pending void
@@ -94,7 +94,7 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
 PendingStreamTubeConnection::PendingStreamTubeConnection(
         const QString& errorName,
         const QString& errorMessage,
-        const SharedPtr<RefCounted> &object)
+        const IncomingStreamTubeChannelPtr &object)
     : PendingOperation(object)
     , mPriv(new PendingStreamTubeConnection::Private(this))
 {
