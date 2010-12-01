@@ -2271,7 +2271,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  * Start a request to create a stream tube channel with the given
  * contact identifier \a contactIdentifier.
  *
- * \param contactIdentifier The contact identifier of the contact to open a stream tube with.
+ * \param contactIdentifier The identifier of the contact to open a stream tube with.
  * \param properties The desired properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
