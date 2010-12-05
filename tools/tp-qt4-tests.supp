@@ -1,0 +1,10 @@
+# QDBus doesn't call dbus_shutdown, so some D-Bus internal data structures are leaked
+
+{
+    Initial session bus registration message
+    Memcheck:Leak
+    ...
+    fun:dbus_bus_register
+    fun:internal_bus_get
+    fun:_ZN15QDBusConnection12connectToBusENS_7BusTypeERK7QString
+}
