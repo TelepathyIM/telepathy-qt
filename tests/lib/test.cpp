@@ -45,6 +45,8 @@ void Test::cleanupImpl()
 
 void Test::cleanupTestCaseImpl()
 {
+    // To allow for cleanup code to run (e.g. PendingOperation cleanup after they finish)
+    mLoop->processEvents();
 }
 
 void Test::expectSuccessfulCall(PendingOperation *op)
