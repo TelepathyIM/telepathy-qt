@@ -118,6 +118,7 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
 
     tp_tests_contacts_connection_change_avatar_data(mConnService, handle,
         array, avatarMimeType, avatarToken);
+    g_array_unref(array);
 
     Tp::UIntList handles = Tp::UIntList() << handle;
     Features features = Features()
@@ -154,8 +155,6 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
     QCOMPARE(mContacts[0]->avatarToken(), QString(QLatin1String(avatarToken)));
     QCOMPARE(data, QByteArray(avatarData));
     QCOMPARE(avatar.mimeType, QString(QLatin1String(avatarMimeType)));
-
-    g_array_free(array, TRUE);
 }
 
 #define RAND_STR_LEN 6
