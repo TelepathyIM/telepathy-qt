@@ -76,6 +76,9 @@ void TestProfileManager::testProfileManager()
     QCOMPARE(param.value(), QVariant(true));
     QCOMPARE(param.label(), QString());
     QCOMPARE(param.isMandatory(), false);
+
+    // Allow the PendingReadys to delete themselves
+    mLoop->processEvents();
 }
 
 QTEST_MAIN(TestProfileManager)
