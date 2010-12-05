@@ -8,3 +8,23 @@
     fun:internal_bus_get
     fun:_ZN15QDBusConnection12connectToBusENS_7BusTypeERK7QString
 }
+
+{
+    Match rule registration messages
+    Memcheck:Leak
+    ...
+    fun:dbus_message_new_method_call
+    fun:dbus_bus_add_match
+}
+
+# The conference test CM channel object leaks some crazy GValue boxed data which I don't have the
+# energy to investigate how to properly free now - it's not production code anyway.
+
+{
+   Conference test CM channel boxed GValue data
+   Memcheck:Leak
+   ...
+   fun:g_boxed_copy
+   ...
+   fun:_ZN18TestConferenceChan12initTestCaseEv
+}
