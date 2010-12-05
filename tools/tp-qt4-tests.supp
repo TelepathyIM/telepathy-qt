@@ -28,3 +28,14 @@
    ...
    fun:_ZN18TestConferenceChan12initTestCaseEv
 }
+
+# Reported as https://bugs.freedesktop.org/show_bug.cgi?id=32116
+
+{
+    TpBaseConnectionManager legacy protocol objects
+    Memcheck:Leak
+    ...
+    fun:g_object_new
+    ...
+    fun:tp_base_connection_manager_register
+}
