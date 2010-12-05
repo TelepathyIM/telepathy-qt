@@ -1,20 +1,13 @@
-# QDBus doesn't call dbus_shutdown, so some D-Bus internal data structures are leaked
+# QDBus doesn't call dbus_shutdown, so some D-Bus internal data structures are leaked.
+# We never call any low-level dbus message creation functions ourselves - if there are leaks,
+# they're either caused by not calling dbus_shutdown, QDBus bugs or libdbus bugs - neither of which
+# are our problem.
 
 {
     Initial session bus registration message
     Memcheck:Leak
-    ...
-    fun:dbus_bus_register
-    fun:internal_bus_get
-    fun:_ZN15QDBusConnection12connectToBusENS_7BusTypeERK7QString
-}
-
-{
-    Match rule registration messages
-    Memcheck:Leak
-    ...
-    fun:dbus_message_new_method_call
-    fun:dbus_bus_add_match
+    fun:malloc
+    fun:dbus_message_new_empty_header
 }
 
 # The conference test CM channel object leaks some crazy GValue boxed data which I don't have the
