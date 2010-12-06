@@ -338,6 +338,11 @@ void TestDBusProxyFactory::testBogusService()
     // even if after the service appears on the bus
     QCOMPARE(another->object(), bogus->object());
     QVERIFY(another->proxy() != bogus->proxy());
+
+    // The PendingReady itself should finish with failure
+    QVERIFY(connect(another, SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
 }
 
 void TestDBusProxyFactory::cleanup()

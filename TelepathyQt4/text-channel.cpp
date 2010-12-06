@@ -895,7 +895,8 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
     forget(messages);
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            mPriv->textInterface->AcknowledgePendingMessages(ids));
+            mPriv->textInterface->AcknowledgePendingMessages(ids),
+            this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher*)));

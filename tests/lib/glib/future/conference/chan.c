@@ -300,7 +300,10 @@ set_property (GObject *object,
       break;
 
     case PROP_CONFERENCE_INITIAL_CHANNELS:
+      g_ptr_array_free(self->priv->conference_initial_channels, TRUE);
       self->priv->conference_initial_channels = g_value_dup_boxed (value);
+
+      g_ptr_array_free(self->priv->conference_channels, TRUE);
       self->priv->conference_channels = g_value_dup_boxed (value);
       break;
 
@@ -614,8 +617,6 @@ mergeable_conference_merge (FutureSvcChannelInterfaceMergeableConference *iface 
   GHashTable *immutable_props = g_hash_table_new (NULL, NULL);
 
   g_ptr_array_add (self->priv->conference_channels, g_strdup (channel));
-
-  immutable_props = g_hash_table_new (NULL, NULL);
 
   tp_svc_channel_interface_conference_emit_channel_merged (self, channel, 0, immutable_props);
 

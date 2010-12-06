@@ -190,6 +190,9 @@ void TestConferenceChan::initTestCase()
     tp_handle_unref(mContactRepo, handle1);
     tp_handle_unref(mContactRepo, handle2);
     tp_handle_unref(mContactRepo, handle3);
+
+    g_ptr_array_foreach(initialChannels, (GFunc) g_free, NULL);
+    g_ptr_array_free(initialChannels, TRUE);
 }
 
 void TestConferenceChan::init()

@@ -118,6 +118,7 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
 
     tp_tests_contacts_connection_change_avatar_data(mConnService, handle,
         array, avatarMimeType, avatarToken);
+    g_array_unref(array);
 
     Tp::UIntList handles = Tp::UIntList() << handle;
     Features features = Features()

@@ -342,6 +342,7 @@ AccountSet::AccountSet(const AccountManagerPtr &accountManager,
  */
 AccountSet::~AccountSet()
 {
+    delete mPriv;
 }
 
 /**

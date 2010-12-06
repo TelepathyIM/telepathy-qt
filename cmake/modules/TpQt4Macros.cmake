@@ -396,6 +396,8 @@ macro(_tpqt4_add_check_targets _fancyName _name _runnerScript)
                 --num-callers=20
                 --gen-suppressions=all
                 --log-file=${CMAKE_CURRENT_BINARY_DIR}/test-${_fancyName}.memcheck.log
+                --suppressions=${CMAKE_SOURCE_DIR}/tools/tp-qt4-tests.supp
+                --suppressions=${CMAKE_SOURCE_DIR}/tools/telepathy-glib.supp
                 ${ARGN}
         WORKING_DIRECTORY
                 ${CMAKE_CURRENT_BINARY_DIR}

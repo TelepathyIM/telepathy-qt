@@ -256,7 +256,9 @@ void TestContactsInfo::testInfo()
     QCOMPARE(pci->infoFields().allFields()[0].fieldValue[0], QLatin1String("Foo"));
 
     g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_1);
+    g_ptr_array_unref (info_1);
     g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_2);
+    g_ptr_array_unref (info_2);
 }
 
 void TestContactsInfo::cleanup()

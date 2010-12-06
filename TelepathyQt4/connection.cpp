@@ -659,7 +659,7 @@ Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
     }
 
     QDBusPendingCall call = connection->baseInterface()->Connect();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, connection.data());
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
 
     connect(connection.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
@@ -700,6 +700,8 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
                     SLOT(onStatusChanged(Tp::ConnectionStatus)));
         }
     }
+
+    watcher->deleteLater();
 }
 
 void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
