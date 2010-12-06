@@ -32,3 +32,22 @@
     ...
     fun:tp_base_connection_manager_register
 }
+
+# O(number of error domains) leak from dbus_g_method_return_error
+{
+    dbus_g_method_return_error error domain enum class
+    Memcheck:Leak
+    ...
+    fun:g_type_class_ref
+    ...
+    fun:dbus_g_method_return_error
+}
+
+# O(1) leak from tp_base_connection_manager installing the param spec for the dbus-daemon param
+{
+    tp_base_connection_manager dbus-daemon param spec
+    Memcheck:Leak
+    ...
+    fun:g_param_spec_object
+    fun:tp_base_connection_manager_class_intern_init
+}
