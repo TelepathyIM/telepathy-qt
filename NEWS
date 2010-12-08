@@ -1,12 +1,11 @@
-telepathy-qt4 0.4.1 (UNRELEASED)
+telepathy-qt4 0.4.1 (2010-12-08)
 =================================
 
-The "... XXX ..." release.
-
-Enhancements:
- * ...
+The "contractual obligation album" release.
 
 Fixes:
+ * Crash when the an object path for an Account in an account set is quickly
+  reused after it's removed
  * Emitting redundant {local,remote}SendingStateChanged signals from
    StreamedMediaChannel
 
