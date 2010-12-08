@@ -1,17 +1,18 @@
-telepathy-qt4 0.5.1 (UNRELEASED)
+telepathy-qt4 0.5.1 (2010-12-08)
 =================================
 
-The "... XXX ..." release.
-
-Enhancements:
- * ...
+The "lazily evaluated birth" release.
 
 Fixes:
  * fd.o #29731: Memory leaks reported by make check-valgrind
  * Crash using a dangling (const!) iterator when a channel is removed from a
    conference
+ * Crash when the an object path for an Account in an account set is quickly
+   reused after it's removed
  * Emitting redundant {local,remote}SendingStateChanged signals from
    StreamedMediaChannel
+ * ChannelDispatchOperation::channelLost failing to include Tp:: in the signal
+   arg type names, making it a tad hard to connect to
 
 telepathy-qt4 0.5.0 (2010-11-16)
 =================================
