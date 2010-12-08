@@ -7,6 +7,7 @@ Enhancements:
  * ...
 
 Fixes:
+ * fd.o #29731: Memory leaks reported by make check-valgrind
  * Crash using a dangling (const!) iterator when a channel is removed from a
    conference
  * Emitting redundant {local,remote}SendingStateChanged signals from
