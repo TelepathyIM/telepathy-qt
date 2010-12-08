@@ -101,6 +101,7 @@ void AccountSet::Private::removeAccount(const Tp::AccountPtr &account)
     accounts.remove(accountPath);
 
     AccountWrapper *wrapper = wrappers.take(accountPath);
+    Q_ASSERT(wrapper->disconnect(parent));
     wrapper->deleteLater();
 
     emit parent->accountRemoved(account);
