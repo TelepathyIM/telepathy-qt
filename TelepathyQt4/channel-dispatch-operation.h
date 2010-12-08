@@ -77,7 +77,7 @@ public:
     PendingOperation *claim();
 
 Q_SIGNALS:
-    void channelLost(const ChannelPtr &channel, const QString &errorName,
+    void channelLost(const Tp::ChannelPtr &channel, const QString &errorName,
             const QString &errorMessage);
 
 protected:
