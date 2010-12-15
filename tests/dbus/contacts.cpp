@@ -329,16 +329,6 @@ void TestContacts::testForHandles()
     mContacts.clear();
     mLoop->processEvents();
     processDBusQueue(mConn.data());
-
-    // Unref the handles we created service-side
-    tp_handle_unref(serviceRepo, handles[0]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
-    tp_handle_unref(serviceRepo, handles[1]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
-    tp_handle_unref(serviceRepo, handles[2]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
-    tp_handle_unref(serviceRepo, handles[3]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[3], NULL));
 }
 
 void TestContacts::testForIdentifiers()
@@ -417,11 +407,6 @@ void TestContacts::testForIdentifiers()
     mContacts.clear();
     mLoop->processEvents();
     processDBusQueue(mConn.data());
-
-    // Check that their handles are in fact released
-    Q_FOREACH (uint handle, saveHandles) {
-        QVERIFY(!tp_handle_is_valid(serviceRepo, handle, NULL));
-    }
 }
 
 void TestContacts::testFeatures()
@@ -574,14 +559,6 @@ void TestContacts::testFeatures()
     mContacts.clear();
     mLoop->processEvents();
     processDBusQueue(mConn.data());
-
-    // Unref the handles we created service-side
-    tp_handle_unref(serviceRepo, handles[0]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
-    tp_handle_unref(serviceRepo, handles[1]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
-    tp_handle_unref(serviceRepo, handles[2]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
 }
 
 void TestContacts::testFeaturesNotRequested()
@@ -627,14 +604,6 @@ void TestContacts::testFeaturesNotRequested()
     mContacts.clear();
     mLoop->processEvents();
     processDBusQueue(mConn.data());
-
-    // Unref the handles we created service-side
-    tp_handle_unref(serviceRepo, handles[0]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
-    tp_handle_unref(serviceRepo, handles[1]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
-    tp_handle_unref(serviceRepo, handles[2]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
 }
 
 void TestContacts::testUpgrade()
@@ -744,14 +713,6 @@ void TestContacts::testUpgrade()
     mContacts.clear();
     mLoop->processEvents();
     processDBusQueue(mConn.data());
-
-    // Unref the handles we created service-side
-    tp_handle_unref(serviceRepo, handles[0]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
-    tp_handle_unref(serviceRepo, handles[1]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
-    tp_handle_unref(serviceRepo, handles[2]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
 }
 
 void TestContacts::testSelfContactFallback()
