@@ -288,10 +288,6 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         parent->connect(connection.data(),
                         SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                         SLOT(onConnectionInvalidated()));
-
-        parent->connect(connection.data(),
-                        SIGNAL(destroyed()),
-                        SLOT(onConnectionDestroyed()));
     }
     else {
         warning() << "Connection given as the owner for a Channel was "
@@ -2626,14 +2622,6 @@ void Channel::onConnectionInvalidated()
         "changing to closed";
     invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
                QLatin1String("Connection given as the owner of this channel was invalidate"));
-}
-
-void Channel::onConnectionDestroyed()
-{
-    debug() << "Owning connection destroyed, cutting off dangling pointer";
-    mPriv->connection.reset();
-    invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
-               QLatin1String("Connection given as the owner of this channel was destroyed"));
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)

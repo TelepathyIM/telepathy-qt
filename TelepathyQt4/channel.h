@@ -204,7 +204,6 @@ private Q_SLOTS:
 
     void onConnectionReady(Tp::PendingOperation *op);
     void onConnectionInvalidated();
-    void onConnectionDestroyed();
 
     void gotGroupProperties(QDBusPendingCallWatcher *watcher);
     void gotGroupFlags(QDBusPendingCallWatcher *watcher);
