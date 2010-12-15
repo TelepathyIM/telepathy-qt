@@ -8,6 +8,7 @@ include_directories(
 if(ENABLE_TP_GLIB_TESTS)
     add_subdirectory(callable)
     add_subdirectory(contactlist)
+    add_subdirectory(contactlist2)
     add_subdirectory(csh)
     add_subdirectory(echo)
     add_subdirectory(echo2)
