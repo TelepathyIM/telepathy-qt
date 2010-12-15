@@ -20,21 +20,22 @@
  */
 
 #include <TelepathyQt4/Contact>
+
 #include "TelepathyQt4/_gen/contact.moc.hpp"
+
+#include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/AvatarData>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactCapabilities>
-#include <TelepathyQt4/LocationInfo>
 #include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/LocationInfo>
 #include <TelepathyQt4/PendingContactInfo>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/Presence>
 #include <TelepathyQt4/ReferencedHandles>
-
-#include "TelepathyQt4/debug-internal.h"
 
 namespace Tp
 {
@@ -56,6 +57,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     {
     }
 
+    void updateAvatarData();
+
     Contact *parent;
 
     QWeakPointer<ContactManager> manager;
@@ -74,7 +77,6 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     bool isAvatarTokenKnown;
     QString avatarToken;
     AvatarData avatarData;
-    void updateAvatarData();
 
     PresenceState subscriptionState;
     PresenceState publishState;
@@ -82,6 +84,27 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 
     QSet<QString> groups;
 };
+
+void Contact::Private::updateAvatarData()
+{
+    /* If token is NULL, it means that CM doesn't know the token. In that case we
+     * have to request the avatar data to get the token. This happens with XMPP
+     * for offline contacts. We don't want to bypass the avatar cache, so we won't
+     * update avatar. */
+    if (avatarToken.isNull()) {
+        return;
+    }
+
+    /* If token is empty (""), it means the contact has no avatar. */
+    if (avatarToken.isEmpty()) {
+        debug() << "Contact" << parent->id() << "has no avatar";
+        avatarData = AvatarData();
+        emit parent->avatarDataChanged(avatarData);
+        return;
+    }
+
+    parent->manager()->requestContactAvatar(parent);
+}
 
 struct TELEPATHY_QT4_NO_EXPORT Contact::InfoFields::Private : public QSharedData
 {
@@ -142,6 +165,20 @@ const Feature Contact::FeatureCapabilities = Feature(QLatin1String(Contact::stat
 const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaObject.className()), 4, false);
 const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMetaObject.className()), 5, false);
 const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::staticMetaObject.className()), 6, false);
+
+Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
+        const Features &requestedFeatures, const QVariantMap &attributes)
+    : Object(),
+      mPriv(new Private(this, manager, handle))
+{
+    augment(requestedFeatures, attributes);
+}
+
+Contact::~Contact()
+{
+    debug() << "Contact" << id() << "destroyed";
+    delete mPriv;
+}
 
 ContactManagerPtr Contact::manager() const
 {
@@ -445,20 +482,6 @@ PendingOperation *Contact::removeFromGroup(const QString &group)
     return manager()->removeContactsFromGroup(group, QList<ContactPtr>() << self);
 }
 
-Contact::~Contact()
-{
-    debug() << "Contact" << id() << "destroyed";
-    delete mPriv;
-}
-
-Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
-        const Features &requestedFeatures, const QVariantMap &attributes)
-    : Object(),
-      mPriv(new Private(this, manager, handle))
-{
-    augment(requestedFeatures, attributes);
-}
-
 void Contact::augment(const Features &requestedFeatures, const QVariantMap &attributes)
 {
     mPriv->requestedFeatures.unite(requestedFeatures);
@@ -577,6 +600,15 @@ void Contact::receiveAlias(const QString &alias)
     }
 }
 
+void Contact::receiveAvatarToken(const QString &token)
+{
+    setAvatarToken(token);
+
+    if (mPriv->actualFeatures.contains(FeatureAvatarData)) {
+        mPriv->updateAvatarData();
+    }
+}
+
 void Contact::setAvatarToken(const QString &token)
 {
     if (!mPriv->requestedFeatures.contains(FeatureAvatarToken)) {
@@ -589,36 +621,6 @@ void Contact::setAvatarToken(const QString &token)
         mPriv->isAvatarTokenKnown = true;
         mPriv->avatarToken = token;
         emit avatarTokenChanged(mPriv->avatarToken);
-    }
-}
-
-void Contact::Private::updateAvatarData()
-{
-    /* If token is NULL, it means that CM doesn't know the token. In that case we
-     * have to request the avatar data to get the token. This happens with XMPP
-     * for offline contacts. We don't want to bypass the avatar cache, so we won't
-     * update avatar. */
-    if (avatarToken.isNull()) {
-        return;
-    }
-
-    /* If token is empty (""), it means the contact has no avatar. */
-    if (avatarToken.isEmpty()) {
-        debug() << "Contact" << parent->id() << "has no avatar";
-        avatarData = AvatarData();
-        emit parent->avatarDataChanged(avatarData);
-        return;
-    }
-
-    parent->manager()->requestContactAvatar(parent);
-}
-
-void Contact::receiveAvatarToken(const QString &token)
-{
-    setAvatarToken(token);
-
-    if (mPriv->actualFeatures.contains(FeatureAvatarData)) {
-        mPriv->updateAvatarData();
     }
 }
 
