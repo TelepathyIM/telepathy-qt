@@ -622,7 +622,7 @@ void Connection::Private::checkFeatureRosterGroupsReady()
     }
 
     debug() << "FeatureRosterGroups ready";
-    contactManager->setContactListGroupChannels(
+    contactManager->setContactListGroupChannelsFallback(
             contactListGroupChannels);
     readinessHelper->setIntrospectCompleted(
             FeatureRosterGroups, true);
@@ -1712,7 +1712,7 @@ void Connection::contactListChannelReady()
     if (++mPriv->contactListChannelsReady ==
             ContactManager::ContactListChannel::LastType) {
         debug() << "FeatureRoster ready";
-        mPriv->contactManager->setContactListChannels(mPriv->contactListChannels);
+        mPriv->contactManager->setContactListChannelsFallback(mPriv->contactListChannels);
         mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
     }
 }
@@ -1753,7 +1753,7 @@ void Connection::onContactListGroupChannelReady(Tp::PendingOperation *op)
     } else {
         PendingReady *pr = qobject_cast<PendingReady*>(op);
         ChannelPtr channel = ChannelPtr::qObjectCast(pr->proxy());
-        mPriv->contactManager->addContactListGroupChannel(channel);
+        mPriv->contactManager->addContactListGroupChannelFallback(channel);
         mPriv->contactListGroupChannels.removeOne(channel);
     }
 }

@@ -142,39 +142,39 @@ private Q_SLOTS:
     void onLocationUpdated(uint, const QVariantMap &);
     void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
 
-    void onStoredChannelMembersChanged(
+    void onStoredChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onSubscribeChannelMembersChanged(
+    void onSubscribeChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onPublishChannelMembersChanged(
+    void onPublishChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onDenyChannelMembersChanged(
+    void onDenyChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
 
-    void onContactListGroupMembersChanged(
+    void onContactListGroupMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onContactListGroupRemoved(Tp::DBusProxy *,
-        const QString &, const QString &);
+    void onContactListGroupRemovedFallback(Tp::DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage);
 
 private:
     friend class Connection;
@@ -218,11 +218,12 @@ private:
             const Features &features,
             const QVariantMap &attributes);
 
-    void setContactListChannels(
+    void setContactListChannelsFallback(
             const QMap<uint, ContactListChannel> &contactListChannels);
-    void setContactListGroupChannels(
+    void setContactListGroupChannelsFallback(
             const QList<ChannelPtr> &contactListGroupChannels);
-    void addContactListGroupChannel(const ChannelPtr &contactListGroupChannel);
+    void addContactListGroupChannelFallback(
+            const ChannelPtr &contactListGroupChannel);
 
     struct Private;
     friend struct Private;
