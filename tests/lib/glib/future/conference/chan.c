@@ -121,15 +121,15 @@ constructed (GObject *object)
   TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-  DBusGConnection *bus;
+  TpDBusDaemon *bus;
 
   if (chain_up != NULL)
     {
       chain_up (object);
     }
 
-  bus = tp_get_bus ();
-  dbus_g_connection_register_g_object (bus, self->priv->object_path, object);
+  bus = tp_dbus_daemon_dup (NULL);
+  tp_dbus_daemon_register_object (bus, self->priv->object_path, object);
 
   tp_group_mixin_init (object,
       G_STRUCT_OFFSET (TpTestsConferenceChannel, group),
