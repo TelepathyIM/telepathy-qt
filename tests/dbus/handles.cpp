@@ -207,12 +207,6 @@ void TestHandles::testRequestAndRelease()
     handles = ReferencedHandles();
     mLoop->processEvents();
     processDBusQueue(mConn.data());
-
-    // Check that the handles have been released
-    for (int i = 0; i < 3; i++) {
-        uint handle = saveHandles[0];
-        QVERIFY(!tp_handle_is_valid(serviceRepo, handle, NULL));
-    }
 }
 
 void TestHandles::cleanup()
