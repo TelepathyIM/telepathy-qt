@@ -165,6 +165,7 @@ const Feature Contact::FeatureCapabilities = Feature(QLatin1String(Contact::stat
 const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaObject.className()), 4, false);
 const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMetaObject.className()), 5, false);
 const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::staticMetaObject.className()), 6, false);
+const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::staticMetaObject.className()), 7, false);
 
 Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
         const Features &requestedFeatures, const QVariantMap &attributes)
@@ -602,6 +603,10 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                 mPriv->presence.setStatus(ConnectionPresenceTypeUnknown,
                         QLatin1String("unknown"), QLatin1String(""));
             }
+        } else if (feature == FeatureRosterGroups) {
+            QStringList groups = qdbus_cast<QStringList>(attributes.value(
+                        TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
+            mPriv->groups = groups.toSet();
         } else {
             warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
         }

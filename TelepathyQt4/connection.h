@@ -198,6 +198,8 @@ private Q_SLOTS:
     void gotSelfContact(Tp::PendingOperation *op);
     void gotContactListProperties(Tp::PendingOperation *op);
     void gotContactListContacts(QDBusPendingCallWatcher *watcher);
+    void gotContactListGroupsProperties(Tp::PendingOperation *op);
+    void onContactListContactsUpgraded(Tp::PendingOperation *op);
     void onContactListStateChanged(uint state);
     void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
             const Tp::UIntList &removals);

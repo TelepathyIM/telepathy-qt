@@ -59,7 +59,9 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     void ensureTracking(const Feature &feature);
 
     // roster specific methods
+    void processContactListChanges();
     void processContactListUpdates();
+    void processContactListGroupsUpdates();
 
     Contacts allKnownContactsFallback() const;
     void computeKnownContactsChangesFallback(const Contacts &added,
@@ -93,6 +95,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
         QString &avatarFileName, QString &mimeTypeFileName);
 
     struct ContactListUpdateInfo;
+    struct ContactListGroupsUpdateInfo;
 
     ContactManager *parent;
     QWeakPointer<Connection> connection;
@@ -109,8 +112,11 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     // new roster API
     bool canChangeContactList;
     bool contactListRequestUsesMessage;
+    QSet<QString> allKnownGroups;
+    QQueue<void (Private::*)()> contactListChangesQueue;
     QQueue<ContactListUpdateInfo> contactListUpdatesQueue;
-    bool processingContactListUpdates;
+    QQueue<ContactListGroupsUpdateInfo> contactListGroupsUpdatesQueue;
+    bool processingContactListChanges;
 
     // old roster API
     QMap<uint, ContactListChannel> contactListChannels;
@@ -137,13 +143,28 @@ struct ContactManager::Private::ContactListUpdateInfo
     UIntList removals;
 };
 
+struct ContactManager::Private::ContactListGroupsUpdateInfo
+{
+    ContactListGroupsUpdateInfo(const UIntList &contacts,
+            const QStringList &groupsAdded, const QStringList &groupsRemoved)
+        : contacts(contacts),
+          groupsAdded(groupsAdded),
+          groupsRemoved(groupsRemoved)
+    {
+    }
+
+    UIntList contacts;
+    QStringList groupsAdded;
+    QStringList groupsRemoved;
+};
+
 ContactManager::Private::Private(ContactManager *parent, Connection *connection)
     : parent(parent),
       connection(connection),
       fallbackContactList(false),
       canChangeContactList(false),
       contactListRequestUsesMessage(false),
-      processingContactListUpdates(false),
+      processingContactListChanges(false),
       requestAvatarsIdle(false)
 {
 }
@@ -212,6 +233,9 @@ void ContactManager::Private::ensureTracking(const Feature &feature)
                 simplePresenceInterface,
                 SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
                 SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
+    } else if (feature == Contact::FeatureRosterGroups) {
+        // nothing to do here, but we don't want to warn
+        ;
     } else {
         warning() << " Unknown feature" << feature
             << "when trying to figure out how to connect change notification!";
@@ -220,14 +244,19 @@ void ContactManager::Private::ensureTracking(const Feature &feature)
     tracking[feature] = true;
 }
 
-void ContactManager::Private::processContactListUpdates()
+
+void ContactManager::Private::processContactListChanges()
 {
-    if (processingContactListUpdates || contactListUpdatesQueue.isEmpty()) {
+    if (processingContactListChanges || contactListChangesQueue.isEmpty()) {
         return;
     }
 
-    processingContactListUpdates = true;
+    processingContactListChanges = true;
+    (this->*(contactListChangesQueue.dequeue()))();
+}
 
+void ContactManager::Private::processContactListUpdates()
+{
     ContactListUpdateInfo info = contactListUpdatesQueue.head();
 
     // construct Contact objects for all contacts in added to the contact list
@@ -244,10 +273,56 @@ void ContactManager::Private::processContactListUpdates()
         }
     }
 
-    PendingContacts *pc = parent->contactsForHandles(added, Features());
+    Features features;
+    if (parent->connection()->isReady(Connection::FeatureRosterGroups)) {
+        features << Contact::FeatureRosterGroups;
+    }
+    PendingContacts *pc = parent->contactsForHandles(added, features);
     parent->connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onContactListNewContactsConstructed(Tp::PendingOperation*)));
+}
+
+void ContactManager::Private::processContactListGroupsUpdates()
+{
+    ContactListGroupsUpdateInfo info = contactListGroupsUpdatesQueue.dequeue();
+
+    foreach (const QString &group, info.groupsAdded) {
+        Contacts contacts;
+        foreach (uint bareHandle, info.contacts) {
+            ContactPtr contact = parent->lookupContactByHandle(bareHandle);
+            if (!contact) {
+                warning() << "contact with handle" << bareHandle << "was added to a group but "
+                    "never added to the contact list, ignoring";
+                continue;
+            }
+            contacts << contact;
+            contact->setAddedToGroup(group);
+        }
+
+        emit parent->groupMembersChanged(group, contacts,
+                Contacts(), Channel::GroupMemberChangeDetails());
+    }
+
+    foreach (const QString &group, info.groupsRemoved) {
+        Contacts contacts;
+        foreach (uint bareHandle, info.contacts) {
+            ContactPtr contact = parent->lookupContactByHandle(bareHandle);
+            if (!contact) {
+                warning() << "contact with handle" << bareHandle << "was removed from a group but "
+                    "never added to the contact list, ignoring";
+                continue;
+            }
+            contacts << contact;
+            contact->setRemovedFromGroup(group);
+        }
+
+        emit parent->groupMembersChanged(group, Contacts(),
+                contacts, Channel::GroupMemberChangeDetails());
+    }
+
+    processingContactListChanges = false;
+    processContactListChanges();
 }
 
 Contacts ContactManager::Private::allKnownContactsFallback() const
@@ -558,34 +633,6 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
     return true;
 }
 
-namespace
-{
-
-QString featureToInterface(const Feature &feature)
-{
-    if (feature == Contact::FeatureAlias) {
-        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING);
-    } else if (feature == Contact::FeatureAvatarToken) {
-        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
-    } else if (feature == Contact::FeatureAvatarData) {
-        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
-    } else if (feature == Contact::FeatureSimplePresence) {
-        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
-    } else if (feature == Contact::FeatureCapabilities) {
-        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES);
-    } if (feature == Contact::FeatureLocation) {
-        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION);
-    } if (feature == Contact::FeatureInfo) {
-        return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_INFO);
-    } else {
-        warning() << "ContactManager doesn't know which interface corresponds to feature"
-            << feature;
-        return QString();
-    }
-}
-
-}
-
 ContactManager::ContactManager(Connection *connection)
     : Object(),
       mPriv(new Private(this, connection))
@@ -675,8 +722,7 @@ QStringList ContactManager::allKnownGroups() const
         return mPriv->contactListGroupChannels.keys();
     }
 
-    // FIXME: implement for Conn.Iface.ContactList
-    return QStringList();
+    return mPriv->allKnownGroups.toList();
 }
 
 /**
@@ -718,10 +764,16 @@ PendingOperation *ContactManager::addGroup(const QString &group)
         return mPriv->addGroupFallback(group);
     }
 
-    // FIXME: implement for Conn.Iface.ContactList
-    return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-            QLatin1String("Not implemented"),
-            connection());
+    if (!connection()->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Not implemented"),
+                connection());
+    }
+
+    Client::ConnectionInterfaceContactGroupsInterface *iface =
+        connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+    Q_ASSERT(iface);
+    return new PendingVoid(iface->AddToGroup(group, UIntList()), connection());
 }
 
 /**
@@ -757,10 +809,16 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
         return mPriv->removeGroupFallback(group);
     }
 
-    // FIXME: implement for Conn.Iface.ContactList
-    return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-            QLatin1String("Not implemented"),
-            connection());
+    if (!connection()->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Not implemented"),
+                connection());
+    }
+
+    Client::ConnectionInterfaceContactGroupsInterface *iface =
+        connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+    Q_ASSERT(iface);
+    return new PendingVoid(iface->RemoveGroup(group), connection());
 }
 
 /**
@@ -789,8 +847,12 @@ Contacts ContactManager::groupContacts(const QString &group) const
         return channel->groupContacts();
     }
 
-    // FIXME: implement for Conn.Iface.ContactList
-    return Contacts();
+    Contacts ret;
+    foreach (const ContactPtr &contact, allKnownContacts()) {
+        if (contact->groups().contains(group))
+            ret << contact;
+    }
+    return ret;
 }
 
 /**
@@ -821,10 +883,21 @@ PendingOperation *ContactManager::addContactsToGroup(const QString &group,
         return mPriv->addContactsToGroupFallback(group, contacts);
     }
 
-    // FIXME: implement for Conn.Iface.ContactList
-    return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-            QLatin1String("Not implemented"),
-            connection());
+    if (!connection()->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Not implemented"),
+                connection());
+    }
+
+    UIntList handles;
+    foreach (const ContactPtr &contact, contacts) {
+        handles << contact->handle()[0];
+    }
+
+    Client::ConnectionInterfaceContactGroupsInterface *iface =
+        connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+    Q_ASSERT(iface);
+    return new PendingVoid(iface->AddToGroup(group, handles), connection());
 }
 
 /**
@@ -855,10 +928,21 @@ PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
         return mPriv->removeContactsFromGroupFallback(group, contacts);
     }
 
-    // FIXME: implement for Conn.Iface.ContactList
-    return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-            QLatin1String("Not implemented"),
-            connection());
+    if (!connection()->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Not implemented"),
+                connection());
+    }
+
+    UIntList handles;
+    foreach (const ContactPtr &contact, contacts) {
+        handles << contact->handle()[0];
+    }
+
+    Client::ConnectionInterfaceContactGroupsInterface *iface =
+        connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+    Q_ASSERT(iface);
+    return new PendingVoid(iface->RemoveFromGroup(group, handles), connection());
 }
 
 /**
@@ -1690,8 +1774,8 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
 {
     if (op->isError()) {
         mPriv->contactListUpdatesQueue.dequeue();
-        mPriv->processingContactListUpdates = false;
-        mPriv->processContactListUpdates();
+        mPriv->processingContactListChanges = false;
+        mPriv->processContactListChanges();
         return;
     }
 
@@ -1751,8 +1835,48 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
         emit allKnownContactsChanged(added, removed, Channel::GroupMemberChangeDetails());
     }
 
-    mPriv->processingContactListUpdates = false;
-    mPriv->processContactListUpdates();
+    mPriv->processingContactListChanges = false;
+    mPriv->processContactListChanges();
+}
+
+void ContactManager::onContactListGroupsChanged(const Tp::UIntList &contacts,
+        const QStringList &added, const QStringList &removed)
+{
+    Q_ASSERT(mPriv->fallbackContactList == false);
+
+    mPriv->contactListGroupsUpdatesQueue.enqueue(Private::ContactListGroupsUpdateInfo(contacts,
+                added, removed));
+    mPriv->contactListChangesQueue.enqueue(&Private::processContactListGroupsUpdates);
+    mPriv->processContactListChanges();
+}
+
+void ContactManager::onContactListGroupsCreated(const QStringList &names)
+{
+    Q_ASSERT(mPriv->fallbackContactList == false);
+
+    foreach (const QString &name, names) {
+        mPriv->allKnownGroups.insert(name);
+        emit groupAdded(name);
+    }
+}
+
+void ContactManager::onContactListGroupRenamed(const QString &oldName, const QString &newName)
+{
+    Q_ASSERT(mPriv->fallbackContactList == false);
+
+    mPriv->allKnownGroups.remove(oldName);
+    mPriv->allKnownGroups.insert(newName);
+    emit groupRenamed(oldName, newName);
+}
+
+void ContactManager::onContactListGroupsRemoved(const QStringList &names)
+{
+    Q_ASSERT(mPriv->fallbackContactList == false);
+
+    foreach (const QString &name, names) {
+        mPriv->allKnownGroups.remove(name);
+        emit groupRemoved(name);
+    }
 }
 
 void ContactManager::onStoredChannelMembersChangedFallback(
@@ -1976,7 +2100,15 @@ void ContactManager::updateContactListContacts(const ContactSubscriptionMap &cha
     Q_ASSERT(mPriv->fallbackContactList == false);
 
     mPriv->contactListUpdatesQueue.enqueue(Private::ContactListUpdateInfo(changes, removals));
-    mPriv->processContactListUpdates();
+    mPriv->contactListChangesQueue.enqueue(&Private::processContactListUpdates);
+    mPriv->processContactListChanges();
+}
+
+void ContactManager::setContactListGroupsProperties(const QVariantMap &props)
+{
+    Q_ASSERT(mPriv->fallbackContactList == false);
+
+    mPriv->allKnownGroups = qdbus_cast<QStringList>(props[QLatin1String("Groups")]).toSet();
 }
 
 void ContactManager::setContactListChannelsFallback(
@@ -2080,6 +2212,31 @@ void ContactManager::addContactListGroupChannelFallback(
 
     QString id = mPriv->addContactListGroupChannelFallback(contactListGroupChannel);
     emit groupAdded(id);
+}
+
+QString ContactManager::featureToInterface(const Feature &feature)
+{
+    if (feature == Contact::FeatureAlias) {
+        return TP_QT4_IFACE_CONNECTION_INTERFACE_ALIASING;
+    } else if (feature == Contact::FeatureAvatarToken) {
+        return TP_QT4_IFACE_CONNECTION_INTERFACE_AVATARS;
+    } else if (feature == Contact::FeatureAvatarData) {
+        return TP_QT4_IFACE_CONNECTION_INTERFACE_AVATARS;
+    } else if (feature == Contact::FeatureSimplePresence) {
+        return TP_QT4_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
+    } else if (feature == Contact::FeatureCapabilities) {
+        return TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES;
+    } else if (feature == Contact::FeatureLocation) {
+        return TP_QT4_IFACE_CONNECTION_INTERFACE_LOCATION;
+    } else if (feature == Contact::FeatureInfo) {
+        return TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO;
+    } else if (feature == Contact::FeatureRosterGroups) {
+        return TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
+    } else {
+        warning() << "ContactManager doesn't know which interface corresponds to feature"
+            << feature;
+        return QString();
+    }
 }
 
 QString ContactManager::ContactListChannel::identifierForType(Type type)

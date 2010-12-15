@@ -121,6 +121,7 @@ Q_SIGNALS:
         const Tp::Channel::GroupMemberChangeDetails &details);
 
     void groupAdded(const QString &group);
+    void groupRenamed(const QString &oldGroup, const QString &newGroup);
     void groupRemoved(const QString &group);
 
     void groupMembersChanged(const QString &group,
@@ -143,6 +144,11 @@ private Q_SLOTS:
     void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
 
     void onContactListNewContactsConstructed(Tp::PendingOperation *op);
+    void onContactListGroupsChanged(const Tp::UIntList &contacts,
+            const QStringList &added, const QStringList &removed);
+    void onContactListGroupsCreated(const QStringList &names);
+    void onContactListGroupRenamed(const QString &oldName, const QString &newName);
+    void onContactListGroupsRemoved(const QStringList &names);
 
     void onStoredChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
@@ -226,6 +232,7 @@ private:
     void setContactListContacts(const ContactAttributesMap &attrs);
     void updateContactListContacts(const ContactSubscriptionMap &changes,
             const UIntList &removals);
+    void setContactListGroupsProperties(const QVariantMap &props);
 
     void setContactListChannelsFallback(
             const QMap<uint, ContactListChannel> &contactListChannels);
@@ -233,6 +240,8 @@ private:
             const QList<ChannelPtr> &contactListGroupChannels);
     void addContactListGroupChannelFallback(
             const ChannelPtr &contactListGroupChannel);
+
+    static QString featureToInterface(const Feature &feature);
 
     struct Private;
     friend struct Private;

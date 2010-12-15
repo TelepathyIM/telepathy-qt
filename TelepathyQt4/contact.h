@@ -184,6 +184,8 @@ Q_SIGNALS:
     // want to signal that change right away with a handle?
 
 private:
+    static const Feature FeatureRosterGroups;
+
     Contact(ContactManager *manager, const ReferencedHandles &handle,
             const Features &requestedFeatures, const QVariantMap &attributes);
 
@@ -210,6 +212,7 @@ private:
     void setRemovedFromGroup(const QString &group);
 
     struct Private;
+    friend class Connection;
     friend class ContactManager;
     friend struct Private;
     Private *mPriv;
