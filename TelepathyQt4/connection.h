@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008, 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008, 2009 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -196,6 +196,11 @@ private Q_SLOTS:
     void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
     void gotSelfContact(Tp::PendingOperation *op);
+    void gotContactListProperties(Tp::PendingOperation *op);
+    void gotContactListContacts(QDBusPendingCallWatcher *watcher);
+    void onContactListStateChanged(uint state);
+    void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
+            const Tp::UIntList &removals);
     void gotContactListsHandles(Tp::PendingOperation *op);
     void gotContactListChannel(Tp::PendingOperation *op);
     void contactListChannelReady();

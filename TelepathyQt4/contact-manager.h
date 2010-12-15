@@ -142,6 +142,8 @@ private Q_SLOTS:
     void onLocationUpdated(uint, const QVariantMap &);
     void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
 
+    void onContactListNewContactsConstructed(Tp::PendingOperation *op);
+
     void onStoredChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
@@ -217,6 +219,13 @@ private:
     ContactPtr ensureContact(const ReferencedHandles &handle,
             const Features &features,
             const QVariantMap &attributes);
+
+    void setUseFallbackContactList(bool value);
+
+    void setContactListProperties(const QVariantMap &props);
+    void setContactListContacts(const ContactAttributesMap &attrs);
+    void updateContactListContacts(const ContactSubscriptionMap &changes,
+            const UIntList &removals);
 
     void setContactListChannelsFallback(
             const QMap<uint, ContactListChannel> &contactListChannels);

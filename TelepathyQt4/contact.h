@@ -198,6 +198,7 @@ private:
     void receiveLocation(const QVariantMap &location);
     void receiveInfo(const ContactInfoFieldList &info);
 
+    static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
     void setSubscriptionState(PresenceState state, const Channel::GroupMemberChangeDetails &details =
             Channel::GroupMemberChangeDetails());
     void setPublishState(PresenceState state, const Channel::GroupMemberChangeDetails &details =

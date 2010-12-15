@@ -489,6 +489,28 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
     mPriv->id = qdbus_cast<QString>(attributes[
             QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id")]);
 
+    if (attributes.contains(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
+                QLatin1String("/subscribe"))) {
+        uint subscriptionState = qdbus_cast<uint>(attributes.value(
+                     TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/subscribe")));
+        setSubscriptionState(subscriptionStateToPresenceState(subscriptionState));
+    }
+
+    if (attributes.contains(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
+                QLatin1String("/publish"))) {
+        uint publishState = qdbus_cast<uint>(attributes.value(
+                    TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish")));
+        QString publishRequest = qdbus_cast<QString>(attributes.value(
+                    TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish-request")));
+        Channel::GroupMemberChangeDetails publishRequestDetails;
+        if (!publishRequest.isEmpty() && publishState == SubscriptionStateAsk) {
+            QVariantMap detailsMap;
+            detailsMap.insert(QLatin1String("message"), publishRequest);
+            publishRequestDetails = Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap);
+        }
+        setPublishState(subscriptionStateToPresenceState(publishState), publishRequestDetails);
+    }
+
     foreach (const Feature &feature, requestedFeatures) {
         QString maybeAlias;
         SimplePresence maybePresence;
@@ -684,6 +706,18 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
     if (mPriv->info.allFields() != info) {
         mPriv->info = InfoFields(info);
         emit infoFieldsChanged(mPriv->info);
+    }
+}
+
+Contact::PresenceState Contact::subscriptionStateToPresenceState(uint subscriptionState)
+{
+    switch (subscriptionState) {
+        case SubscriptionStateAsk:
+            return PresenceStateAsk;
+        case SubscriptionStateYes:
+            return PresenceStateYes;
+        default:
+            return PresenceStateNo;
     }
 }
 
