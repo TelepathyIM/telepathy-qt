@@ -1772,7 +1772,6 @@ void Connection::gotContactListContacts(QDBusPendingCallWatcher *watcher)
 
     ContactAttributesMap attrs = reply.value();
     mPriv->contactManager->setContactListContacts(attrs);
-    qDebug() << "contacts found" << attrs;
 
     // We may have been in state Failure and then Success, and we are already ready
     if (!isReady(FeatureRoster)) {
