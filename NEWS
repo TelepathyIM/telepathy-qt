@@ -4,7 +4,7 @@ telepathy-qt4 0.5.2 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Added Or/NotFilter classes making it more flexible to use the Filter API.
 
 Fixes:
  * Properly install TelepathyQt4/ConnectionManagerLowLevel.
