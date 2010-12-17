@@ -2042,12 +2042,6 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
 
 void ContactManager::setUseFallbackContactList(bool value)
 {
-    static bool contactListInitialized = false;
-    Q_ASSERT(contactListInitialized == false);
-    if (contactListInitialized) {
-        contactListInitialized = true;
-    }
-
     mPriv->fallbackContactList = value;
 }
 
