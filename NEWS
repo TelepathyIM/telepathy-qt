@@ -7,7 +7,7 @@ Enhancements:
  * ...
 
 Fixes:
- * ...
+ * Properly install TelepathyQt4/ConnectionManagerLowLevel.
 
 telepathy-qt4 0.5.1 (2010-12-08)
 =================================
