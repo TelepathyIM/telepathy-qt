@@ -259,24 +259,19 @@ void ContactManager::Private::processContactListUpdates()
     ContactListUpdateInfo info = contactListUpdatesQueue.head();
 
     // construct Contact objects for all contacts in added to the contact list
-    UIntList added;
+    UIntList contacts;
     ContactSubscriptionMap::const_iterator begin = info.changes.constBegin();
     ContactSubscriptionMap::const_iterator end = info.changes.constEnd();
     for (ContactSubscriptionMap::const_iterator i = begin; i != end; ++i) {
         uint bareHandle = i.key();
-        ContactSubscriptions subscriptions = i.value();
-
-        ContactPtr contact = parent->lookupContactByHandle(bareHandle);
-        if (!contact) {
-            added << bareHandle;
-        }
+        contacts << bareHandle;
     }
 
     Features features;
     if (parent->connection()->isReady(Connection::FeatureRosterGroups)) {
         features << Contact::FeatureRosterGroups;
     }
-    PendingContacts *pc = parent->contactsForHandles(added, features);
+    PendingContacts *pc = parent->contactsForHandles(contacts, features);
     parent->connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onContactListNewContactsConstructed(Tp::PendingOperation*)));
