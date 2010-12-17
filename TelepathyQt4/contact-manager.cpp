@@ -67,6 +67,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     void computeKnownContactsChangesFallback(const Contacts &added,
             const Contacts &pendingAdded, const Contacts &remotePendingAdded,
             const Contacts &removed, const Channel::GroupMemberChangeDetails &details);
+    void updateContactsBlockState();
     void updateContactsPresenceStateFallback();
     PendingOperation *requestPresenceSubscriptionFallback(
             const QList<ContactPtr> &contacts, const QString &message);
@@ -78,8 +79,6 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
             const QList<ContactPtr> &contacts, const QString &message);
     PendingOperation *removeContactsFallback(
             const QList<ContactPtr> &contacts, const QString &message);
-    PendingOperation *blockContactsFallback(
-            const QList<ContactPtr> &contacts, bool value);
 
     // roster group specific methods
     QString addContactListGroupChannelFallback(const ChannelPtr &contactListGroupChannel);
@@ -373,8 +372,28 @@ void ContactManager::Private::computeKnownContactsChangesFallback(const Tp::Cont
     }
 }
 
+void ContactManager::Private::updateContactsBlockState()
+{
+    if (!denyChannel) {
+        return;
+    }
+
+    Contacts denyContacts;
+    if (denyChannel) {
+        denyContacts = denyChannel->groupContacts();
+    }
+
+    foreach (ContactPtr contact, denyContacts) {
+        contact->setBlocked(true);
+    }
+}
+
 void ContactManager::Private::updateContactsPresenceStateFallback()
 {
+    if (!subscribeChannel && !publishChannel) {
+        return;
+    }
+
     Contacts subscribeContacts;
     Contacts subscribeContactsRP;
 
@@ -388,15 +407,6 @@ void ContactManager::Private::updateContactsPresenceStateFallback()
     if (publishChannel) {
         publishContacts = publishChannel->groupContacts();
         publishContactsLP = publishChannel->groupLocalPendingContacts();
-    }
-
-    Contacts denyContacts;
-    if (denyChannel) {
-        denyContacts = denyChannel->groupContacts();
-    }
-
-    if (!subscribeChannel && !publishChannel && !denyChannel) {
-        return;
     }
 
     Contacts contacts = allKnownContactsFallback();
@@ -420,12 +430,6 @@ void ContactManager::Private::updateContactsPresenceStateFallback()
                 contact->setPublishState(Contact::PresenceStateAsk);
             } else {
                 contact->setPublishState(Contact::PresenceStateNo);
-            }
-        }
-
-        if (denyChannel) {
-            if (denyContacts.contains(contact)) {
-                contact->setBlocked(true);
             }
         }
     }
@@ -512,22 +516,6 @@ PendingOperation *ContactManager::Private::removeContactsFallback(
     }
 
     return new PendingComposite(operations, parent->connection());
-}
-
-PendingOperation *ContactManager::Private::blockContactsFallback(
-        const QList<ContactPtr> &contacts, bool value)
-{
-    if (!denyChannel) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Cannot block contacts on this protocol"),
-                parent->connection());
-    }
-
-    if (value) {
-        return denyChannel->groupAddContacts(contacts);
-    } else {
-        return denyChannel->groupRemoveContacts(contacts);
-    }
 }
 
 QString ContactManager::Private::addContactListGroupChannelFallback(
@@ -1455,11 +1443,7 @@ bool ContactManager::canBlockContacts() const
         return false;
     }
 
-    if (mPriv->fallbackContactList) {
-        return (bool) mPriv->denyChannel;
-    }
-
-    return false;
+    return (bool) mPriv->denyChannel;
 }
 
 /**
@@ -1489,14 +1473,17 @@ PendingOperation *ContactManager::blockContacts(
                 connection());
     }
 
-    if (mPriv->fallbackContactList) {
-        return mPriv->blockContactsFallback(contacts, value);
+    if (!mPriv->denyChannel) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Cannot block contacts on this protocol"),
+                connection());
     }
 
-    // FIXME: implement for Conn.Iface.ContactList
-    return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-            QLatin1String("Not implemented"),
-            connection());
+    if (value) {
+        return mPriv->denyChannel->groupAddContacts(contacts);
+    } else {
+        return mPriv->denyChannel->groupRemoveContacts(contacts);
+    }
 }
 
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
@@ -1977,7 +1964,7 @@ void ContactManager::onPublishChannelMembersChangedFallback(
             groupMembersRemoved, details);
 }
 
-void ContactManager::onDenyChannelMembersChangedFallback(
+void ContactManager::onDenyChannelMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
         const Contacts &groupRemotePendingMembersAdded,
@@ -2111,12 +2098,15 @@ void ContactManager::setContactListGroupsProperties(const QVariantMap &props)
     mPriv->allKnownGroups = qdbus_cast<QStringList>(props[QLatin1String("Groups")]).toSet();
 }
 
-void ContactManager::setContactListChannelsFallback(
+void ContactManager::setContactListChannels(
         const QMap<uint, ContactListChannel> &contactListChannels)
 {
-    Q_ASSERT(mPriv->fallbackContactList == true);
+    if (!mPriv->fallbackContactList) {
+        Q_ASSERT(!contactListChannels.contains(ContactListChannel::TypeSubscribe));
+        Q_ASSERT(!contactListChannels.contains(ContactListChannel::TypePublish));
+        Q_ASSERT(!contactListChannels.contains(ContactListChannel::TypeStored));
+    }
 
-    Q_ASSERT(mPriv->contactListChannels.isEmpty());
     mPriv->contactListChannels = contactListChannels;
 
     if (mPriv->contactListChannels.contains(ContactListChannel::TypeSubscribe)) {
@@ -2135,9 +2125,13 @@ void ContactManager::setContactListChannelsFallback(
         mPriv->denyChannel = mPriv->contactListChannels[ContactListChannel::TypeDeny].channel;
     }
 
-    mPriv->updateContactsPresenceStateFallback();
-    // Refresh the cache for the current known contacts
-    mPriv->cachedAllKnownContacts = allKnownContacts();
+    mPriv->updateContactsBlockState();
+
+    if (mPriv->fallbackContactList) {
+        mPriv->updateContactsPresenceStateFallback();
+        // Refresh the cache for the current known contacts
+        mPriv->cachedAllKnownContacts = allKnownContacts();
+    }
 
     uint type;
     ChannelPtr channel;
@@ -2172,7 +2166,7 @@ void ContactManager::setContactListChannelsFallback(
                         Tp::Contacts,
                         Tp::Channel::GroupMemberChangeDetails));
         } else if (type == ContactListChannel::TypeDeny) {
-            method = SLOT(onDenyChannelMembersChangedFallback(
+            method = SLOT(onDenyChannelMembersChanged(
                         Tp::Contacts,
                         Tp::Contacts,
                         Tp::Contacts,

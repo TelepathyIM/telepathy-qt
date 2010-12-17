@@ -168,7 +168,7 @@ private Q_SLOTS:
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onDenyChannelMembersChangedFallback(
+    void onDenyChannelMembersChanged(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
@@ -234,8 +234,9 @@ private:
             const UIntList &removals);
     void setContactListGroupsProperties(const QVariantMap &props);
 
-    void setContactListChannelsFallback(
+    void setContactListChannels(
             const QMap<uint, ContactListChannel> &contactListChannels);
+
     void setContactListGroupChannelsFallback(
             const QList<ChannelPtr> &contactListGroupChannels);
     void addContactListGroupChannelFallback(
