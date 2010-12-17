@@ -14,11 +14,13 @@
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/OrFilter>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/Profile>
+#include <TelepathyQt4/NotFilter>
 
 #include <telepathy-glib/debug.h>
 
@@ -528,6 +530,10 @@ void TestAccountBasics::testBasics()
     filterChain.append(cmNameFilter);
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, AndFilter<Account>::create(filterChain)));
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, NotFilter<Account>::create(AndFilter<Account>::create(filterChain))));
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), false);
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, OrFilter<Account>::create(filterChain)));
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), false);
 
     /* should not match as fixedProperties has more than expected */
     filterChain.clear();

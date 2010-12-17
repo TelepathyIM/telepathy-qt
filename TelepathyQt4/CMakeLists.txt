@@ -255,10 +255,14 @@ set(telepathy_qt4_HEADERS
     message.h
     MethodInvocationContext
     method-invocation-context.h
+    NotFilter
+    not-filter.h
     Object
     object.h
     OptionalInterfaceFactory
     optional-interface-factory.h
+    OrFilter
+    or-filter.h
     OutgoingFileTransferChannel
     outgoing-file-transfer-channel.h
     PeerInterface
