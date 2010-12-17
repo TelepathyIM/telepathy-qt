@@ -198,6 +198,7 @@ set(telepathy_qt4_HEADERS
     connection-manager.h
     connection-manager-lowlevel.h
     ConnectionManagerInterface
+    ConnectionManagerLowlevel
     Constants
     constants.h
     Contact
