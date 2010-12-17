@@ -80,6 +80,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 
     PresenceState subscriptionState;
     PresenceState publishState;
+    Channel::GroupMemberChangeDetails publishStateDetails;
     bool blocked;
 
     QSet<QString> groups;
@@ -400,6 +401,11 @@ Contact::PresenceState Contact::subscriptionState() const
 Contact::PresenceState Contact::publishState() const
 {
     return mPriv->publishState;
+}
+
+Channel::GroupMemberChangeDetails Contact::publishStateDetails() const
+{
+    return mPriv->publishStateDetails;
 }
 
 PendingOperation *Contact::requestPresenceSubscription(const QString &message)
@@ -743,6 +749,7 @@ void Contact::setPublishState(Contact::PresenceState state,
         return;
     }
     mPriv->publishState = state;
+    mPriv->publishStateDetails = details;
     emit publishStateChanged(state, details);
 }
 

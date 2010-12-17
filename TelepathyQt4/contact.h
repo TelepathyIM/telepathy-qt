@@ -133,6 +133,7 @@ public:
      */
     PresenceState subscriptionState() const;
     PresenceState publishState() const;
+    Channel::GroupMemberChangeDetails publishStateDetails() const;
 
     PendingOperation *requestPresenceSubscription(const QString &message = QString());
     PendingOperation *removePresenceSubscription(const QString &message = QString());
