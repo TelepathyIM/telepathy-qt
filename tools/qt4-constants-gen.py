@@ -150,7 +150,7 @@ namespace %s
  * The interface name "%(name)s" as a QLatin1String, usable in QString requiring contexts even when
  * building with Q_NO_CAST_FROM_ASCII defined.
  */
-#define %(DEFINE)s QLatin1String("%(name)s")
+#define %(DEFINE)s (QLatin1String("%(name)s"))
 
 """ % {'name' : iface.getAttribute('name'),
        'DEFINE' : self.define_prefix + 'IFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})

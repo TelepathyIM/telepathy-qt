@@ -288,10 +288,6 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         parent->connect(connection.data(),
                         SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                         SLOT(onConnectionInvalidated()));
-
-        parent->connect(connection.data(),
-                        SIGNAL(destroyed()),
-                        SLOT(onConnectionDestroyed()));
     }
     else {
         warning() << "Connection given as the owner for a Channel was "
@@ -2587,9 +2583,8 @@ void Channel::onClosed()
                 mPriv->groupSelfContactRemoveInfo);
         message = mPriv->groupSelfContactRemoveInfo.message();
     } else {
-        // I think this is the nearest error code we can get at the moment
-        error = QLatin1String(TELEPATHY_ERROR_TERMINATED);
-        message = QLatin1String("Closed");
+        error = TP_QT4_ERROR_CANCELLED;
+        message = QLatin1String("channel closed");
     }
 
     invalidate(error, message);
@@ -2624,16 +2619,8 @@ void Channel::onConnectionInvalidated()
 {
     debug() << "Owning connection died leaving an orphan Channel, "
         "changing to closed";
-    invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
-               QLatin1String("Connection given as the owner of this channel was invalidate"));
-}
-
-void Channel::onConnectionDestroyed()
-{
-    debug() << "Owning connection destroyed, cutting off dangling pointer";
-    mPriv->connection.reset();
-    invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
-               QLatin1String("Connection given as the owner of this channel was destroyed"));
+    invalidate(QLatin1String(TP_QT4_ERROR_ORPHANED),
+               QLatin1String("Connection given as the owner of this channel was invalidated"));
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)
