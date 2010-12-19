@@ -36,7 +36,7 @@ public:
 
 protected Q_SLOTS:
     void expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason);
-    void expectConnInvalidated();
+    void expectInvalidated(const QString &reason);
     void expectPendingHandleFinished(Tp::PendingOperation*);
     void expectCreateChannelFinished(Tp::PendingOperation *);
     void expectEnsureChannelFinished(Tp::PendingOperation *);
@@ -85,8 +85,9 @@ void TestChanBasics::expectConnReady(Tp::ConnectionStatus newStatus,
     }
 }
 
-void TestChanBasics::expectConnInvalidated()
+void TestChanBasics::expectInvalidated(const QString &reason)
 {
+    qDebug() << sender() << "invalidated:" << reason;
     mLoop->exit(0);
 }
 
@@ -234,6 +235,8 @@ void TestChanBasics::initTestCase()
 void TestChanBasics::init()
 {
     initImpl();
+
+    mChan.reset();
 }
 
 void TestChanBasics::testRequestHandle()
@@ -268,31 +271,29 @@ void TestChanBasics::testCreateChannel()
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    if (mChan) {
-        QVERIFY(connect(mChan->becomeReady(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->isReady(), true);
-        QCOMPARE(mChan->isRequested(), true);
-        QCOMPARE(mChan->groupCanAddContacts(), false);
-        QCOMPARE(mChan->groupCanRemoveContacts(), false);
-        QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
-        QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
-        QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
+    Q_ASSERT(!mChan.isNull());
 
-        QStringList ids;
-        Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
-            ids << contact->id();
-        }
-        ids.sort();
-        QStringList toCheck = QStringList() << QLatin1String("me@example.com")
-            << QLatin1String("alice");
-        toCheck.sort();
-        QCOMPARE(ids, toCheck);
+    QVERIFY(connect(mChan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(), true);
+    QCOMPARE(mChan->isRequested(), true);
+    QCOMPARE(mChan->groupCanAddContacts(), false);
+    QCOMPARE(mChan->groupCanRemoveContacts(), false);
+    QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
+    QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
+    QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
 
-        mChan.reset();
+    QStringList ids;
+    Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
+        ids << contact->id();
     }
+    ids.sort();
+    QStringList toCheck = QStringList() << QLatin1String("me@example.com")
+        << QLatin1String("alice");
+    toCheck.sort();
+    QCOMPARE(ids, toCheck);
 }
 
 void TestChanBasics::testEnsureChannel()
@@ -309,37 +310,35 @@ void TestChanBasics::testEnsureChannel()
                     SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    if (mChan) {
-        QVERIFY(connect(mChan->becomeReady(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->isReady(), true);
-        QCOMPARE(mChan->isRequested(), true);
-        QCOMPARE(mChan->groupCanAddContacts(), false);
-        QCOMPARE(mChan->groupCanRemoveContacts(), false);
-        QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
-        QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
-        QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
+    QVERIFY(!mChan.isNull());
 
-        QStringList ids;
-        Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
-            ids << contact->id();
-        }
-        ids.sort();
-        QStringList toCheck = QStringList() << QLatin1String("me@example.com")
-            << QLatin1String("alice");
-        toCheck.sort();
-        QCOMPARE(ids, toCheck);
+    QVERIFY(connect(mChan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(), true);
+    QCOMPARE(mChan->isRequested(), true);
+    QCOMPARE(mChan->groupCanAddContacts(), false);
+    QCOMPARE(mChan->groupCanRemoveContacts(), false);
+    QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
+    QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
+    QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
 
-        QVERIFY(connect(mChan->requestClose(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->isValid(), false);
-
-        mChan.reset();
+    QStringList ids;
+    Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
+        ids << contact->id();
     }
+    ids.sort();
+    QStringList toCheck = QStringList() << QLatin1String("me@example.com")
+        << QLatin1String("alice");
+    toCheck.sort();
+    QCOMPARE(ids, toCheck);
+
+    QVERIFY(connect(mChan->requestClose(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isValid(), false);
 }
 
 void TestChanBasics::cleanup()
@@ -360,7 +359,7 @@ void TestChanBasics::cleanupTestCase()
             QVERIFY(connect(mConn.data(),
                             SIGNAL(invalidated(Tp::DBusProxy *,
                                                const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
+                            SLOT(expectInvalidated(QString))));
             QCOMPARE(mLoop->exec(), 0);
         }
     }
