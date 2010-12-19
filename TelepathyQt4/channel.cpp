@@ -2620,8 +2620,8 @@ void Channel::onConnectionInvalidated()
 {
     debug() << "Owning connection died leaving an orphan Channel, "
         "changing to closed";
-    invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
-               QLatin1String("Connection given as the owner of this channel was invalidate"));
+    invalidate(QLatin1String(TP_QT4_ERROR_ORPHANED),
+               QLatin1String("Connection given as the owner of this channel was invalidated"));
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)

@@ -228,4 +228,15 @@
 #define TP_QT4_ERROR_INCONSISTENT \
     (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Inconsistent"))
 
+/**
+ * \ingroup errorstrconsts
+ *
+ * The error name "org.freedesktop.Telepathy.Qt4.Error.Orphaned" as a QLatin1String.
+ *
+ * This error is used when the "parent" proxy of an object gets invalidated. For example, a Channel
+ * whose corresponding Connection is invalidated invalidates itself with this error.
+ */
+#define TP_QT4_ERROR_ORPHANED \
+    (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Orphaned"))
+
 #endif
