@@ -100,7 +100,7 @@
  * \see Tp::AccountManager
  */
 #define TP_QT4_ACCOUNT_MANAGER_BUS_NAME \
-    QLatin1String("org.freedesktop.Telepathy.AccountManager")
+    (QLatin1String("org.freedesktop.Telepathy.AccountManager"))
 
 /**
  * The object path of the Account Manager object.
@@ -116,7 +116,7 @@
  * \see Tp::AccountManager
  */
 #define TP_QT4_ACCOUNT_MANAGER_OBJECT_PATH \
-    QLatin1String("/org/freedesktop/Telepathy/AccountManager")
+    (QLatin1String("/org/freedesktop/Telepathy/AccountManager"))
 
 /**
  * The prefix for an Account's object path, to which the CM's name (e.g.
@@ -136,7 +136,7 @@
  * \see Tp::Account
  */
 #define TP_QT4_ACCOUNT_OBJECT_PATH_BASE \
-    QLatin1String("/org/freedesktop/Telepathy/Account")
+    (QLatin1String("/org/freedesktop/Telepathy/Account"))
 
 /**
  * @}
@@ -172,7 +172,7 @@
  * exited or crashed).
  */
 #define TP_QT4_DBUS_ERROR_NAME_HAS_NO_OWNER \
-    QLatin1String("org.freedesktop.DBus.Error.NameHasNoOwner")
+    (QLatin1String("org.freedesktop.DBus.Error.NameHasNoOwner"))
 
 /**
  * \ingroup errorstrconsts
@@ -194,7 +194,7 @@
  * known by the object you invoked it on.
  */
 #define TP_QT4_DBUS_ERROR_UNKNOWN_METHOD \
-    QLatin1String("org.freedesktop.DBus.Error.UnknownMethod")
+    (QLatin1String("org.freedesktop.DBus.Error.UnknownMethod"))
 
 /**
  * \ingroup errorstrconsts
@@ -210,7 +210,7 @@
  * The error name "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved" as a QLatin1String.
  */
 #define TP_QT4_ERROR_OBJECT_REMOVED \
-    QLatin1String("org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved")
+    (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved"))
 
 /**
  * \ingroup errorstrconsts
@@ -226,6 +226,6 @@
  * The error name "org.freedesktop.Telepathy.Qt4.Error.Inconsistent" as a QLatin1String.
  */
 #define TP_QT4_ERROR_INCONSISTENT \
-    QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Inconsistent")
+    (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Inconsistent"))
 
 #endif
