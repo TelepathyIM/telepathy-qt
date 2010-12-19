@@ -364,9 +364,17 @@ void TestChanBasics::cleanupTestCase()
         }
     }
 
-    if (mConnService != 0) {
-        g_object_unref(mConnService);
-        mConnService = 0;
+    if (mChan) {
+        if (mChan->isValid()) {
+            QVERIFY(connect(mChan.data(),
+                        SIGNAL(invalidated(Tp::DBusProxy *,
+                                const QString &, const QString &)),
+                        SLOT(expectInvalidated(QString))));
+            QCOMPARE(mLoop->exec(), 0);
+        }
+
+        QVERIFY(mChan->invalidationReason() == TP_QT4_ERROR_CANCELLED ||
+                mChan->invalidationReason() == TP_QT4_ERROR_ORPHANED);
     }
 
     cleanupTestCaseImpl();
