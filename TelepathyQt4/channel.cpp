@@ -2583,9 +2583,8 @@ void Channel::onClosed()
                 mPriv->groupSelfContactRemoveInfo);
         message = mPriv->groupSelfContactRemoveInfo.message();
     } else {
-        // I think this is the nearest error code we can get at the moment
-        error = QLatin1String(TELEPATHY_ERROR_TERMINATED);
-        message = QLatin1String("Closed");
+        error = TP_QT4_ERROR_CANCELLED;
+        message = QLatin1String("channel closed");
     }
 
     invalidate(error, message);
