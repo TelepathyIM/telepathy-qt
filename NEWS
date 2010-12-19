@@ -5,6 +5,9 @@ The "..." release.
 
 Enhancements:
  * Added Or/NotFilter classes making it more flexible to use the Filter API.
+ * Channel invalidation reasons now more accurately describe what happened,
+   including a new error TP_QT4_ERROR_ORPHANED for the corresponding Connection
+   getting invalidated from whichever reason.
 
 Fixes:
  * Properly install TelepathyQt4/ConnectionManagerLowLevel.
