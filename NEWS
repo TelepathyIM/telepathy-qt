@@ -8,6 +8,8 @@ Enhancements:
 
 Fixes:
  * Properly install TelepathyQt4/ConnectionManagerLowLevel.
+ * A race condition causing proxies to be needlessly dropped from the factory
+   cache and hence new proxies built for a future request.
 
 telepathy-qt4 0.5.1 (2010-12-08)
 =================================
