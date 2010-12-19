@@ -255,6 +255,25 @@ void DBusProxyFactory::Cache::put(const SharedPtr<RefCounted> &obj)
 
     SharedPtr<RefCounted> existingProxy = SharedPtr<RefCounted>(proxies.value(key));
     if (!existingProxy || existingProxy != obj) {
+        // Disconnect the invalidated signal from the proxy we're replacing, so it won't uselessly
+        // cause the new (hopefully valid) proxy to be dropped from the cache if it arrives late.
+        //
+        // The window in which this makes a difference is very slim but existent; namely, somebody
+        // must request a proxy from the factory in the same mainloop iteration as an otherwise
+        // matching proxy has invalidated itself. The invalidation signal would be delivered and
+        // processed only during the next mainloop iteration.
+        if (existingProxy) {
+            DBusProxy *casted = dynamic_cast<DBusProxy *>(existingProxy.data());
+            Q_ASSERT(!casted->isValid());
+            casted->disconnect(
+                    SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                    this,
+                    SLOT(onProxyInvalidated(Tp::DBusProxy*)));
+
+            debug() << "Replacing invalidated proxy" << casted << "in cache for name"
+                << casted->busName() << ',' << casted->objectPath();
+        }
+
         connect(proxyProxy,
                 SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                 SLOT(onProxyInvalidated(Tp::DBusProxy*)));
