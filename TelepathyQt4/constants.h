@@ -48,10 +48,22 @@
 #define TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE "org.freedesktop.Telepathy.ConnectionManager."
 
 /**
+ * The prefix for a connection manager's bus name, to which the CM's name (e.g.
+ * "gabble") should be appended.
+ */
+#define TP_QT4_CONNECTION_MANAGER_BUS_NAME_BASE QLatin1String("org.freedesktop.Telepathy.ConnectionManager.")
+
+/**
  * The prefix for a connection manager's object path, to which the CM's name
  * (e.g. "gabble") should be appended.
  */
 #define TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE "/org/freedesktop/Telepathy/ConnectionManager/"
+
+/**
+ * The prefix for a connection manager's object path, to which the CM's name
+ * (e.g. "gabble") should be appended.
+ */
+#define TP_QT4_CONNECTION_MANAGER_OBJECT_PATH_BASE QLatin1String("/org/freedesktop/Telepathy/ConnectionManager/")
 
 /**
  * The prefix for a connection's bus name, to which the CM's name (e.g.
@@ -59,6 +71,13 @@
  * representing the account should be appended.
  */
 #define TELEPATHY_CONNECTION_BUS_NAME_BASE "org.freedesktop.Telepathy.Connection."
+
+/**
+ * The prefix for a connection's bus name, to which the CM's name (e.g.
+ * "gabble"), the protocol (e.g. "jabber") and an element
+ * representing the account should be appended.
+ */
+#define TP_QT4_CONNECTION_BUS_NAME_BASE QLatin1String("org.freedesktop.Telepathy.Connection.")
 
 /**
  * The prefix for a connection's object path, to which the CM's name (e.g.
@@ -76,12 +95,28 @@
     "org.freedesktop.Telepathy.AccountManager"
 
 /**
+ * The well-known bus name of the Account Manager.
+ *
+ * \see Tp::AccountManager
+ */
+#define TP_QT4_ACCOUNT_MANAGER_BUS_NAME \
+    QLatin1String("org.freedesktop.Telepathy.AccountManager")
+
+/**
  * The object path of the Account Manager object.
  *
  * \see Tp::AccountManager
  */
 #define TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH \
     "/org/freedesktop/Telepathy/AccountManager"
+
+/**
+ * The object path of the Account Manager object.
+ *
+ * \see Tp::AccountManager
+ */
+#define TP_QT4_ACCOUNT_MANAGER_OBJECT_PATH \
+    QLatin1String("/org/freedesktop/Telepathy/AccountManager")
 
 /**
  * The prefix for an Account's object path, to which the CM's name (e.g.
@@ -92,6 +127,16 @@
  */
 #define TELEPATHY_ACCOUNT_OBJECT_PATH_BASE \
     "/org/freedesktop/Telepathy/Account"
+
+/**
+ * The prefix for an Account's object path, to which the CM's name (e.g.
+ * "gabble"), the protocol (e.g. "jabber") and an element
+ * identifying the particular account should be appended.
+ *
+ * \see Tp::Account
+ */
+#define TP_QT4_ACCOUNT_OBJECT_PATH_BASE \
+    QLatin1String("/org/freedesktop/Telepathy/Account")
 
 /**
  * @}
@@ -117,6 +162,21 @@
 /**
  * \ingroup errorstrconsts
  *
+ * The error name "org.freedesktop.DBus.Error.NameHasNoOwner" as a QLatin1String.
+ *
+ * Raised by the D-Bus daemon when looking up the owner of a well-known name,
+ * if no process owns that name.
+ *
+ * Also used by DBusProxy to indicate that the owner of a well-known name
+ * has disappeared (usually indicating that the process owning that name
+ * exited or crashed).
+ */
+#define TP_QT4_DBUS_ERROR_NAME_HAS_NO_OWNER \
+    QLatin1String("org.freedesktop.DBus.Error.NameHasNoOwner")
+
+/**
+ * \ingroup errorstrconsts
+ *
  * The error name "org.freedesktop.DBus.Error.UnknownMethod".
  *
  * Raised by the D-Bus daemon when the method name invoked isn't
@@ -124,6 +184,17 @@
  */
 #define TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD \
     "org.freedesktop.DBus.Error.UnknownMethod"
+
+/**
+ * \ingroup errorstrconsts
+ *
+ * The error name "org.freedesktop.DBus.Error.UnknownMethod" as a QLatin1String.
+ *
+ * Raised by the D-Bus daemon when the method name invoked isn't
+ * known by the object you invoked it on.
+ */
+#define TP_QT4_DBUS_ERROR_UNKNOWN_METHOD \
+    QLatin1String("org.freedesktop.DBus.Error.UnknownMethod")
 
 /**
  * \ingroup errorstrconsts
@@ -136,9 +207,25 @@
 /**
  * \ingroup errorstrconsts
  *
+ * The error name "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved" as a QLatin1String.
+ */
+#define TP_QT4_ERROR_OBJECT_REMOVED \
+    QLatin1String("org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved")
+
+/**
+ * \ingroup errorstrconsts
+ *
  * The error name "org.freedesktop.Telepathy.Qt4.Error.Inconsistent".
  */
 #define TELEPATHY_QT4_ERROR_INCONSISTENT \
     "org.freedesktop.Telepathy.Qt4.Error.Inconsistent"
+
+/**
+ * \ingroup errorstrconsts
+ *
+ * The error name "org.freedesktop.Telepathy.Qt4.Error.Inconsistent" as a QLatin1String.
+ */
+#define TP_QT4_ERROR_INCONSISTENT \
+    QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Inconsistent")
 
 #endif
