@@ -62,6 +62,9 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     void processContactListChanges();
     void processContactListUpdates();
     void processContactListGroupsUpdates();
+    void processContactListGroupsCreated();
+    void processContactListGroupRenamed();
+    void processContactListGroupsRemoved();
 
     Contacts allKnownContactsFallback() const;
     void computeKnownContactsChangesFallback(const Contacts &added,
@@ -95,6 +98,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
 
     struct ContactListUpdateInfo;
     struct ContactListGroupsUpdateInfo;
+    struct ContactListGroupRenamedInfo;
 
     ContactManager *parent;
     QWeakPointer<Connection> connection;
@@ -115,6 +119,9 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     QQueue<void (Private::*)()> contactListChangesQueue;
     QQueue<ContactListUpdateInfo> contactListUpdatesQueue;
     QQueue<ContactListGroupsUpdateInfo> contactListGroupsUpdatesQueue;
+    QQueue<QStringList> contactListGroupsCreatedQueue;
+    QQueue<ContactListGroupRenamedInfo> contactListGroupRenamedQueue;
+    QQueue<QStringList> contactListGroupsRemovedQueue;
     bool processingContactListChanges;
 
     // old roster API
@@ -155,6 +162,18 @@ struct ContactManager::Private::ContactListGroupsUpdateInfo
     UIntList contacts;
     QStringList groupsAdded;
     QStringList groupsRemoved;
+};
+
+struct ContactManager::Private::ContactListGroupRenamedInfo
+{
+    ContactListGroupRenamedInfo(const QString &oldName, const QString &newName)
+        : oldName(oldName),
+          newName(newName)
+    {
+    }
+
+    QString oldName;
+    QString newName;
 };
 
 ContactManager::Private::Private(ContactManager *parent, Connection *connection)
@@ -313,6 +332,41 @@ void ContactManager::Private::processContactListGroupsUpdates()
 
         emit parent->groupMembersChanged(group, Contacts(),
                 contacts, Channel::GroupMemberChangeDetails());
+    }
+
+    processingContactListChanges = false;
+    processContactListChanges();
+}
+
+void ContactManager::Private::processContactListGroupsCreated()
+{
+    QStringList names = contactListGroupsCreatedQueue.dequeue();
+    foreach (const QString &name, names) {
+        allKnownGroups.insert(name);
+        emit parent->groupAdded(name);
+    }
+
+    processingContactListChanges = false;
+    processContactListChanges();
+}
+
+void ContactManager::Private::processContactListGroupRenamed()
+{
+    Private::ContactListGroupRenamedInfo info = contactListGroupRenamedQueue.dequeue();
+    allKnownGroups.remove(info.oldName);
+    allKnownGroups.insert(info.newName);
+    emit parent->groupRenamed(info.oldName, info.newName);
+
+    processingContactListChanges = false;
+    processContactListChanges();
+}
+
+void ContactManager::Private::processContactListGroupsRemoved()
+{
+    QStringList names = contactListGroupsRemovedQueue.dequeue();
+    foreach (const QString &name, names) {
+        allKnownGroups.remove(name);
+        emit parent->groupRemoved(name);
     }
 
     processingContactListChanges = false;
@@ -1836,29 +1890,28 @@ void ContactManager::onContactListGroupsCreated(const QStringList &names)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
 
-    foreach (const QString &name, names) {
-        mPriv->allKnownGroups.insert(name);
-        emit groupAdded(name);
-    }
+    mPriv->contactListGroupsCreatedQueue.enqueue(names);
+    mPriv->contactListChangesQueue.enqueue(&Private::processContactListGroupsCreated);
+    mPriv->processContactListChanges();
 }
 
 void ContactManager::onContactListGroupRenamed(const QString &oldName, const QString &newName)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
 
-    mPriv->allKnownGroups.remove(oldName);
-    mPriv->allKnownGroups.insert(newName);
-    emit groupRenamed(oldName, newName);
+    mPriv->contactListGroupRenamedQueue.enqueue(
+            Private::ContactListGroupRenamedInfo(oldName, newName));
+    mPriv->contactListChangesQueue.enqueue(&Private::processContactListGroupRenamed);
+    mPriv->processContactListChanges();
 }
 
 void ContactManager::onContactListGroupsRemoved(const QStringList &names)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
 
-    foreach (const QString &name, names) {
-        mPriv->allKnownGroups.remove(name);
-        emit groupRemoved(name);
-    }
+    mPriv->contactListGroupsRemovedQueue.enqueue(names);
+    mPriv->contactListChangesQueue.enqueue(&Private::processContactListGroupsRemoved);
+    mPriv->processContactListChanges();
 }
 
 void ContactManager::onStoredChannelMembersChangedFallback(
