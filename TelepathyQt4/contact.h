@@ -131,7 +131,11 @@ public:
     /*
      * Filters on exact values of these, but also the "in your contact list at all or not" usecase
      */
+    bool isSubscriptionStateKnown() const;
+    bool isSubscriptionRejected() const;
     PresenceState subscriptionState() const;
+    bool isPublishStateKnown() const;
+    bool isPublishCancelled() const;
     PresenceState publishState() const;
     Channel::GroupMemberChangeDetails publishStateDetails() const;
 
@@ -202,10 +206,10 @@ private:
     void receiveInfo(const ContactInfoFieldList &info);
 
     static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
-    void setSubscriptionState(PresenceState state, const Channel::GroupMemberChangeDetails &details =
-            Channel::GroupMemberChangeDetails());
-    void setPublishState(PresenceState state, const Channel::GroupMemberChangeDetails &details =
-            Channel::GroupMemberChangeDetails());
+    void setSubscriptionState(SubscriptionState state,
+            const Channel::GroupMemberChangeDetails &details = Channel::GroupMemberChangeDetails());
+    void setPublishState(SubscriptionState state,
+            const Channel::GroupMemberChangeDetails &details = Channel::GroupMemberChangeDetails());
     void setBlocked(bool value, const Channel::GroupMemberChangeDetails &details =
             Channel::GroupMemberChangeDetails());
 

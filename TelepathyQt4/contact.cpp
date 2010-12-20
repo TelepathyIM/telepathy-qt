@@ -51,8 +51,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
                    ContactCapabilities(true) :  ContactCapabilities(
                            manager->connection()->capabilities().allClassSpecs(), false)),
           isAvatarTokenKnown(false),
-          subscriptionState(PresenceStateNo),
-          publishState(PresenceStateNo),
+          subscriptionState(SubscriptionStateUnknown),
+          publishState(SubscriptionStateUnknown),
           blocked(false)
     {
     }
@@ -78,8 +78,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     QString avatarToken;
     AvatarData avatarData;
 
-    PresenceState subscriptionState;
-    PresenceState publishState;
+    SubscriptionState subscriptionState;
+    SubscriptionState publishState;
     Channel::GroupMemberChangeDetails publishStateDetails;
     bool blocked;
 
@@ -393,14 +393,36 @@ PendingContactInfo *Contact::requestInfo()
     return new PendingContactInfo(self);
 }
 
+bool Contact::isSubscriptionStateKnown() const
+{
+    return (mPriv->subscriptionState != SubscriptionStateUnknown &&
+        mPriv->subscriptionState != SubscriptionStateRemovedRemotely);
+}
+
+bool Contact::isSubscriptionRejected() const
+{
+    return mPriv->subscriptionState == SubscriptionStateRemovedRemotely;
+}
+
 Contact::PresenceState Contact::subscriptionState() const
 {
-    return mPriv->subscriptionState;
+    return subscriptionStateToPresenceState(mPriv->subscriptionState);
+}
+
+bool Contact::isPublishStateKnown() const
+{
+    return (mPriv->publishState != SubscriptionStateUnknown &&
+        mPriv->publishState != SubscriptionStateRemovedRemotely);
+}
+
+bool Contact::isPublishCancelled() const
+{
+    return mPriv->publishState == SubscriptionStateRemovedRemotely;
 }
 
 Contact::PresenceState Contact::publishState() const
 {
-    return mPriv->publishState;
+    return subscriptionStateToPresenceState(mPriv->publishState);
 }
 
 Channel::GroupMemberChangeDetails Contact::publishStateDetails() const
@@ -500,7 +522,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                 QLatin1String("/subscribe"))) {
         uint subscriptionState = qdbus_cast<uint>(attributes.value(
                      TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/subscribe")));
-        setSubscriptionState(subscriptionStateToPresenceState(subscriptionState));
+        setSubscriptionState((SubscriptionState) subscriptionState);
     }
 
     if (attributes.contains(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
@@ -515,7 +537,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             detailsMap.insert(QLatin1String("message"), publishRequest);
             publishRequestDetails = Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap);
         }
-        setPublishState(subscriptionStateToPresenceState(publishState), publishRequestDetails);
+        setPublishState((SubscriptionState) publishState, publishRequestDetails);
     }
 
     foreach (const Feature &feature, requestedFeatures) {
@@ -732,17 +754,17 @@ Contact::PresenceState Contact::subscriptionStateToPresenceState(uint subscripti
     }
 }
 
-void Contact::setSubscriptionState(Contact::PresenceState state,
+void Contact::setSubscriptionState(SubscriptionState state,
         const Channel::GroupMemberChangeDetails &details)
 {
     if (mPriv->subscriptionState == state) {
         return;
     }
     mPriv->subscriptionState = state;
-    emit subscriptionStateChanged(state, details);
+    emit subscriptionStateChanged(subscriptionStateToPresenceState(state), details);
 }
 
-void Contact::setPublishState(Contact::PresenceState state,
+void Contact::setPublishState(SubscriptionState state,
         const Channel::GroupMemberChangeDetails &details)
 {
     if (mPriv->publishState == state) {
@@ -750,7 +772,7 @@ void Contact::setPublishState(Contact::PresenceState state,
     }
     mPriv->publishState = state;
     mPriv->publishStateDetails = details;
-    emit publishStateChanged(state, details);
+    emit publishStateChanged(subscriptionStateToPresenceState(state), details);
 }
 
 void Contact::setBlocked(bool value, const Channel::GroupMemberChangeDetails &details)

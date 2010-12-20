@@ -463,22 +463,23 @@ void ContactManager::Private::updateContactsPresenceStateFallback()
         if (subscribeChannel) {
             // not in "subscribe" -> No, in "subscribe" lp -> Ask, in "subscribe" current -> Yes
             if (subscribeContacts.contains(contact)) {
-                contact->setSubscriptionState(Contact::PresenceStateYes);
+                contact->setSubscriptionState(SubscriptionStateYes);
             } else if (subscribeContactsRP.contains(contact)) {
-                contact->setSubscriptionState(Contact::PresenceStateAsk);
+                contact->setSubscriptionState(SubscriptionStateAsk);
             } else {
-                contact->setSubscriptionState(Contact::PresenceStateNo);
+                contact->setSubscriptionState(SubscriptionStateNo);
             }
         }
 
         if (publishChannel) {
             // not in "publish" -> No, in "subscribe" rp -> Ask, in "publish" current -> Yes
             if (publishContacts.contains(contact)) {
-                contact->setPublishState(Contact::PresenceStateYes);
+                contact->setPublishState(SubscriptionStateYes);
             } else if (publishContactsLP.contains(contact)) {
-                contact->setPublishState(Contact::PresenceStateAsk);
+                contact->setPublishState(SubscriptionStateAsk,
+                        publishChannel->groupLocalPendingContactChangeInfo(contact));
             } else {
-                contact->setPublishState(Contact::PresenceStateNo);
+                contact->setPublishState(SubscriptionStateNo);
             }
         }
     }
@@ -1837,8 +1838,7 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
             added << contact;
         }
 
-        contact->setSubscriptionState(
-                Contact::subscriptionStateToPresenceState(subscriptions.subscribe));
+        contact->setSubscriptionState((SubscriptionState) subscriptions.subscribe);
         Channel::GroupMemberChangeDetails publishRequestDetails;
         if (!subscriptions.publishRequest.isEmpty() &&
             subscriptions.publish == SubscriptionStateAsk) {
@@ -1848,8 +1848,7 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
 
             emit presencePublicationRequested(Contacts() << contact, publishRequestDetails);
         }
-        contact->setPublishState(Contact::subscriptionStateToPresenceState(subscriptions.publish),
-                publishRequestDetails);
+        contact->setPublishState((SubscriptionState) subscriptions.publish, publishRequestDetails);
     }
 
     foreach (uint bareHandle, info.removals) {
@@ -1861,8 +1860,8 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
 
         Q_ASSERT(mPriv->cachedAllKnownContacts.contains(contact));
 
-        contact->setSubscriptionState(Contact::PresenceStateNo);
-        contact->setPublishState(Contact::PresenceStateNo);
+        contact->setSubscriptionState(SubscriptionStateNo);
+        contact->setPublishState(SubscriptionStateNo);
         mPriv->cachedAllKnownContacts.remove(contact);
         removed << contact;
     }
@@ -1956,17 +1955,17 @@ void ContactManager::onSubscribeChannelMembersChangedFallback(
 
     foreach (ContactPtr contact, groupMembersAdded) {
         debug() << "Contact" << contact->id() << "on subscribe list";
-        contact->setSubscriptionState(Contact::PresenceStateYes, details);
+        contact->setSubscriptionState(SubscriptionStateYes, details);
     }
 
     foreach (ContactPtr contact, groupRemotePendingMembersAdded) {
         debug() << "Contact" << contact->id() << "added to subscribe list";
-        contact->setSubscriptionState(Contact::PresenceStateAsk, details);
+        contact->setSubscriptionState(SubscriptionStateAsk, details);
     }
 
     foreach (ContactPtr contact, groupMembersRemoved) {
         debug() << "Contact" << contact->id() << "removed from subscribe list";
-        contact->setSubscriptionState(Contact::PresenceStateNo, details);
+        contact->setSubscriptionState(SubscriptionStateNo, details);
     }
 
     // Perform the needed computation for allKnownContactsChanged
@@ -1988,17 +1987,17 @@ void ContactManager::onPublishChannelMembersChangedFallback(
 
     foreach (ContactPtr contact, groupMembersAdded) {
         debug() << "Contact" << contact->id() << "on publish list";
-        contact->setPublishState(Contact::PresenceStateYes, details);
+        contact->setPublishState(SubscriptionStateYes, details);
     }
 
     foreach (ContactPtr contact, groupLocalPendingMembersAdded) {
         debug() << "Contact" << contact->id() << "added to publish list";
-        contact->setPublishState(Contact::PresenceStateAsk, details);
+        contact->setPublishState(SubscriptionStateAsk, details);
     }
 
     foreach (ContactPtr contact, groupMembersRemoved) {
         debug() << "Contact" << contact->id() << "removed from publish list";
-        contact->setPublishState(Contact::PresenceStateNo, details);
+        contact->setPublishState(SubscriptionStateNo, details);
     }
 
     if (!groupLocalPendingMembersAdded.isEmpty()) {
