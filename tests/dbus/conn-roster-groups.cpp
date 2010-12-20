@@ -24,12 +24,12 @@
 
 using namespace Tp;
 
-class TestConnRosterGroups2 : public Test
+class TestConnRosterGroups : public Test
 {
     Q_OBJECT
 
 public:
-    TestConnRosterGroups2(QObject *parent = 0)
+    TestConnRosterGroups(QObject *parent = 0)
         : Test(parent), mConnService(0),
           mContactsAddedToGroup(0), mContactsRemovedFromGroup(0)
     { }
@@ -65,38 +65,38 @@ private:
     bool mConnInvalidated;
 };
 
-void TestConnRosterGroups2::onGroupAdded(const QString &group)
+void TestConnRosterGroups::onGroupAdded(const QString &group)
 {
     mGroupAdded = group;
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups2::onGroupRemoved(const QString &group)
+void TestConnRosterGroups::onGroupRemoved(const QString &group)
 {
     mGroupRemoved = group;
     mLoop->exit(0);
 }
 
 
-void TestConnRosterGroups2::onContactAddedToGroup(const QString &group)
+void TestConnRosterGroups::onContactAddedToGroup(const QString &group)
 {
     mContactsAddedToGroup++;
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups2::onContactRemovedFromGroup(const QString &group)
+void TestConnRosterGroups::onContactRemovedFromGroup(const QString &group)
 {
     mContactsRemovedFromGroup++;
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups2::expectConnInvalidated()
+void TestConnRosterGroups::expectConnInvalidated()
 {
     mConnInvalidated = true;
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups2::expectContact(Tp::PendingOperation *op)
+void TestConnRosterGroups::expectContact(Tp::PendingOperation *op)
 {
     PendingContacts *contacts = qobject_cast<PendingContacts *>(op);
     QVERIFY(contacts != 0);
@@ -109,7 +109,7 @@ void TestConnRosterGroups2::expectContact(Tp::PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups2::initTestCase()
+void TestConnRosterGroups::initTestCase()
 {
     initTestCaseImpl();
 
@@ -119,7 +119,7 @@ void TestConnRosterGroups2::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 }
 
-void TestConnRosterGroups2::init()
+void TestConnRosterGroups::init()
 {
     gchar *name;
     gchar *connPath;
@@ -149,7 +149,7 @@ void TestConnRosterGroups2::init()
     mConnInvalidated = false;
 }
 
-void TestConnRosterGroups2::testRosterGroups()
+void TestConnRosterGroups::testRosterGroups()
 {
     mConn = Connection::create(mConnName, mConnPath,
             ChannelFactory::create(QDBusConnection::sessionBus()),
@@ -265,7 +265,7 @@ void TestConnRosterGroups2::testRosterGroups()
  * which led to a great many segfaults, which was especially unfortunate considering the
  * ContactManager methods didn't do much any checks at all.
  */
-void TestConnRosterGroups2::testNotADeathTrap()
+void TestConnRosterGroups::testNotADeathTrap()
 {
     mConn = Connection::create(mConnName, mConnPath,
             ChannelFactory::create(QDBusConnection::sessionBus()),
@@ -577,7 +577,7 @@ void TestConnRosterGroups2::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
 }
 
-void TestConnRosterGroups2::cleanup()
+void TestConnRosterGroups::cleanup()
 {
     mContact.reset();
 
@@ -612,10 +612,10 @@ void TestConnRosterGroups2::cleanup()
     cleanupImpl();
 }
 
-void TestConnRosterGroups2::cleanupTestCase()
+void TestConnRosterGroups::cleanupTestCase()
 {
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestConnRosterGroups2)
-#include "_gen/conn-roster-groups2.cpp.moc.hpp"
+QTEST_MAIN(TestConnRosterGroups)
+#include "_gen/conn-roster-groups.cpp.moc.hpp"
