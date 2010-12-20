@@ -116,6 +116,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     bool canChangeContactList;
     bool contactListRequestUsesMessage;
     QSet<QString> allKnownGroups;
+    bool contactListGroupPropertiesReceived;
     QQueue<void (Private::*)()> contactListChangesQueue;
     QQueue<ContactListUpdateInfo> contactListUpdatesQueue;
     QQueue<ContactListGroupsUpdateInfo> contactListGroupsUpdatesQueue;
@@ -182,6 +183,7 @@ ContactManager::Private::Private(ContactManager *parent, Connection *connection)
       fallbackContactList(false),
       canChangeContactList(false),
       contactListRequestUsesMessage(false),
+      contactListGroupPropertiesReceived(false),
       processingContactListChanges(false),
       requestAvatarsIdle(false)
 {
@@ -1879,6 +1881,10 @@ void ContactManager::onContactListGroupsChanged(const Tp::UIntList &contacts,
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
 
+    if (!mPriv->contactListGroupPropertiesReceived) {
+        return;
+    }
+
     mPriv->contactListGroupsUpdatesQueue.enqueue(Private::ContactListGroupsUpdateInfo(contacts,
                 added, removed));
     mPriv->contactListChangesQueue.enqueue(&Private::processContactListGroupsUpdates);
@@ -1889,6 +1895,10 @@ void ContactManager::onContactListGroupsCreated(const QStringList &names)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
 
+    if (!mPriv->contactListGroupPropertiesReceived) {
+        return;
+    }
+
     mPriv->contactListGroupsCreatedQueue.enqueue(names);
     mPriv->contactListChangesQueue.enqueue(&Private::processContactListGroupsCreated);
     mPriv->processContactListChanges();
@@ -1897,6 +1907,10 @@ void ContactManager::onContactListGroupsCreated(const QStringList &names)
 void ContactManager::onContactListGroupRenamed(const QString &oldName, const QString &newName)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
+
+    if (!mPriv->contactListGroupPropertiesReceived) {
+        return;
+    }
 
     mPriv->contactListGroupRenamedQueue.enqueue(
             Private::ContactListGroupRenamedInfo(oldName, newName));
@@ -1907,6 +1921,10 @@ void ContactManager::onContactListGroupRenamed(const QString &oldName, const QSt
 void ContactManager::onContactListGroupsRemoved(const QStringList &names)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
+
+    if (!mPriv->contactListGroupPropertiesReceived) {
+        return;
+    }
 
     mPriv->contactListGroupsRemovedQueue.enqueue(names);
     mPriv->contactListChangesQueue.enqueue(&Private::processContactListGroupsRemoved);
@@ -2135,8 +2153,10 @@ void ContactManager::updateContactListContacts(const ContactSubscriptionMap &cha
 void ContactManager::setContactListGroupsProperties(const QVariantMap &props)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
+    Q_ASSERT(mPriv->contactListGroupPropertiesReceived == false);
 
     mPriv->allKnownGroups = qdbus_cast<QStringList>(props[QLatin1String("Groups")]).toSet();
+    mPriv->contactListGroupPropertiesReceived = true;
 }
 
 void ContactManager::setContactListChannels(
