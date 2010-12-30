@@ -395,8 +395,7 @@ PendingContactInfo *Contact::requestInfo()
 
 bool Contact::isSubscriptionStateKnown() const
 {
-    return (mPriv->subscriptionState != SubscriptionStateUnknown &&
-        mPriv->subscriptionState != SubscriptionStateRemovedRemotely);
+    return mPriv->subscriptionState != SubscriptionStateUnknown;
 }
 
 bool Contact::isSubscriptionRejected() const
@@ -411,8 +410,7 @@ Contact::PresenceState Contact::subscriptionState() const
 
 bool Contact::isPublishStateKnown() const
 {
-    return (mPriv->publishState != SubscriptionStateUnknown &&
-        mPriv->publishState != SubscriptionStateRemovedRemotely);
+    return mPriv->publishState != SubscriptionStateUnknown;
 }
 
 bool Contact::isPublishCancelled() const
