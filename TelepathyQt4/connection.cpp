@@ -1906,6 +1906,10 @@ void Connection::gotContactListChannel(PendingOperation *op)
             mPriv->contactListChannels[i].handle[0] == handle) {
             Q_ASSERT(!mPriv->contactListChannels[i].channel);
             mPriv->contactListChannels[i].channel = channel;
+            // deref connection refcount here as connection will keep a ref to channel and we don't
+            // want a contact list channel keeping a ref of connection, otherwise connection will
+            // leak, thus the channels.
+            channel->connection()->deref();
             connect(channel->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(contactListChannelReady()));
