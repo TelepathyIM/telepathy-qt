@@ -21,7 +21,6 @@ set(telepathy_qt4_SRCS
     channel.cpp
     channel-class-spec.cpp
     channel-factory.cpp
-    channel-factory.h
     channel-request.cpp
     channel-dispatcher.cpp
     channel-dispatch-operation.cpp
