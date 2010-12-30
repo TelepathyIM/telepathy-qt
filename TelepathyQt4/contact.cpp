@@ -80,7 +80,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 
     SubscriptionState subscriptionState;
     SubscriptionState publishState;
-    Channel::GroupMemberChangeDetails publishStateDetails;
+    QString publishStateMessage;
     bool blocked;
 
     QSet<QString> groups;
@@ -423,9 +423,9 @@ Contact::PresenceState Contact::publishState() const
     return subscriptionStateToPresenceState(mPriv->publishState);
 }
 
-Channel::GroupMemberChangeDetails Contact::publishStateDetails() const
+QString Contact::publishStateMessage() const
 {
-    return mPriv->publishStateDetails;
+    return mPriv->publishStateMessage;
 }
 
 PendingOperation *Contact::requestPresenceSubscription(const QString &message)
@@ -529,13 +529,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                     TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish")));
         QString publishRequest = qdbus_cast<QString>(attributes.value(
                     TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish-request")));
-        Channel::GroupMemberChangeDetails publishRequestDetails;
-        if (!publishRequest.isEmpty() && publishState == SubscriptionStateAsk) {
-            QVariantMap detailsMap;
-            detailsMap.insert(QLatin1String("message"), publishRequest);
-            publishRequestDetails = Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap);
-        }
-        setPublishState((SubscriptionState) publishState, publishRequestDetails);
+        setPublishState((SubscriptionState) publishState, publishRequest);
     }
 
     foreach (const Feature &feature, requestedFeatures) {
@@ -752,34 +746,51 @@ Contact::PresenceState Contact::subscriptionStateToPresenceState(uint subscripti
     }
 }
 
-void Contact::setSubscriptionState(SubscriptionState state,
-        const Channel::GroupMemberChangeDetails &details)
+void Contact::setSubscriptionState(SubscriptionState state)
 {
     if (mPriv->subscriptionState == state) {
         return;
     }
+
     mPriv->subscriptionState = state;
-    emit subscriptionStateChanged(subscriptionStateToPresenceState(state), details);
+
+    // FIXME (API/ABI break) remove signal with details
+    emit subscriptionStateChanged(subscriptionStateToPresenceState(state),
+            Channel::GroupMemberChangeDetails());
+
+    emit subscriptionStateChanged(subscriptionStateToPresenceState(state));
 }
 
-void Contact::setPublishState(SubscriptionState state,
-        const Channel::GroupMemberChangeDetails &details)
+void Contact::setPublishState(SubscriptionState state, const QString &message)
 {
     if (mPriv->publishState == state) {
         return;
     }
+
     mPriv->publishState = state;
-    mPriv->publishStateDetails = details;
-    emit publishStateChanged(subscriptionStateToPresenceState(state), details);
+    mPriv->publishStateMessage = message;
+
+    // FIXME (API/ABI break) remove signal with details
+    QVariantMap detailsMap;
+    detailsMap.insert(QLatin1String("message"), message);
+    emit publishStateChanged(subscriptionStateToPresenceState(state),
+            Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap));
+
+    emit publishStateChanged(subscriptionStateToPresenceState(state), message);
 }
 
-void Contact::setBlocked(bool value, const Channel::GroupMemberChangeDetails &details)
+void Contact::setBlocked(bool value)
 {
     if (mPriv->blocked == value) {
         return;
     }
+
     mPriv->blocked = value;
-    emit blockStatusChanged(value, details);
+
+    // FIXME (API/ABI break) remove signal with details
+    emit blockStatusChanged(value, Channel::GroupMemberChangeDetails());
+
+    emit blockStatusChanged(value);
 }
 
 void Contact::setAddedToGroup(const QString &group)
@@ -814,5 +825,12 @@ void Contact::setRemovedFromGroup(const QString &group)
  * \param InfoFields The new info.
  * \sa infoFields()
  */
+
+void Contact::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails))) == 0) {
+        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails)";
+    }
+}
 
 } // Tp

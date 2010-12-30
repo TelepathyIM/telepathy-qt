@@ -479,7 +479,7 @@ void ContactManager::Private::updateContactsPresenceStateFallback()
                 contact->setPublishState(SubscriptionStateYes);
             } else if (publishContactsLP.contains(contact)) {
                 contact->setPublishState(SubscriptionStateAsk,
-                        publishChannel->groupLocalPendingContactChangeInfo(contact));
+                        publishChannel->groupLocalPendingContactChangeInfo(contact).message());
             } else {
                 contact->setPublishState(SubscriptionStateNo);
             }
@@ -1841,16 +1841,19 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
         }
 
         contact->setSubscriptionState((SubscriptionState) subscriptions.subscribe);
-        Channel::GroupMemberChangeDetails publishRequestDetails;
         if (!subscriptions.publishRequest.isEmpty() &&
             subscriptions.publish == SubscriptionStateAsk) {
+            Channel::GroupMemberChangeDetails publishRequestDetails;
             QVariantMap detailsMap;
             detailsMap.insert(QLatin1String("message"), subscriptions.publishRequest);
             publishRequestDetails = Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap);
-
+            // FIXME (API/ABI break) remove signal with details
             emit presencePublicationRequested(Contacts() << contact, publishRequestDetails);
+
+            emit presencePublicationRequested(Contacts() << contact, subscriptions.publishRequest);
         }
-        contact->setPublishState((SubscriptionState) subscriptions.publish, publishRequestDetails);
+        contact->setPublishState((SubscriptionState) subscriptions.publish,
+                subscriptions.publishRequest);
     }
 
     foreach (uint bareHandle, info.removals) {
@@ -1973,17 +1976,17 @@ void ContactManager::onSubscribeChannelMembersChangedFallback(
 
     foreach (ContactPtr contact, groupMembersAdded) {
         debug() << "Contact" << contact->id() << "on subscribe list";
-        contact->setSubscriptionState(SubscriptionStateYes, details);
+        contact->setSubscriptionState(SubscriptionStateYes);
     }
 
     foreach (ContactPtr contact, groupRemotePendingMembersAdded) {
         debug() << "Contact" << contact->id() << "added to subscribe list";
-        contact->setSubscriptionState(SubscriptionStateAsk, details);
+        contact->setSubscriptionState(SubscriptionStateAsk);
     }
 
     foreach (ContactPtr contact, groupMembersRemoved) {
         debug() << "Contact" << contact->id() << "removed from subscribe list";
-        contact->setSubscriptionState(SubscriptionStateNo, details);
+        contact->setSubscriptionState(SubscriptionStateNo);
     }
 
     // Perform the needed computation for allKnownContactsChanged
@@ -2005,22 +2008,26 @@ void ContactManager::onPublishChannelMembersChangedFallback(
 
     foreach (ContactPtr contact, groupMembersAdded) {
         debug() << "Contact" << contact->id() << "on publish list";
-        contact->setPublishState(SubscriptionStateYes, details);
+        contact->setPublishState(SubscriptionStateYes);
     }
 
     foreach (ContactPtr contact, groupLocalPendingMembersAdded) {
         debug() << "Contact" << contact->id() << "added to publish list";
-        contact->setPublishState(SubscriptionStateAsk, details);
+        contact->setPublishState(SubscriptionStateAsk, details.message());
     }
 
     foreach (ContactPtr contact, groupMembersRemoved) {
         debug() << "Contact" << contact->id() << "removed from publish list";
-        contact->setPublishState(SubscriptionStateNo, details);
+        contact->setPublishState(SubscriptionStateNo);
     }
 
     if (!groupLocalPendingMembersAdded.isEmpty()) {
+        // FIXME (API/ABI break) remove signal with details
         emit presencePublicationRequested(groupLocalPendingMembersAdded,
             details);
+
+        emit presencePublicationRequested(groupLocalPendingMembersAdded,
+            details.message());
     }
 
     // Perform the needed computation for allKnownContactsChanged
@@ -2046,12 +2053,12 @@ void ContactManager::onDenyChannelMembersChanged(
 
     foreach (ContactPtr contact, groupMembersAdded) {
         debug() << "Contact" << contact->id() << "added to deny list";
-        contact->setBlocked(true, details);
+        contact->setBlocked(true);
     }
 
     foreach (ContactPtr contact, groupMembersRemoved) {
         debug() << "Contact" << contact->id() << "removed from deny list";
-        contact->setBlocked(false, details);
+        contact->setBlocked(false);
     }
 }
 
@@ -2321,13 +2328,22 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
 }
 
 /**
- * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts);
- *          const Tp::Channel::GroupMemberChangeDetails &details);
+ * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
+ *          const QString &message);
  *
  * This signal is emitted whenever some contacts request for presence publication.
  *
  * \param contacts A set of contacts which requested presence publication.
- * \param details The request details.
+ * \param message An optional message that was sent by the contacts asking to receive the local
+ *                user's presence.
+ */
+
+/**
+ * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
+ *          const Tp::Channel::GroupMemberChangeDetails &details);
+ *
+ * \deprecated Use presencePublicationRequested(const Tp::Contacts &contact, const QString &message)
+ *             instead.
  */
 
 /**
@@ -2399,6 +2415,17 @@ void PendingContactManagerRemoveContactListGroup::onChannelClosed(PendingOperati
         setFinished();
     } else {
         setFinishedWithError(op->errorName(), op->errorMessage());
+    }
+}
+
+void ContactManager::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails))) == 0) {
+        warning() << "Connecting to deprecated signal subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)";
+    } else if (qstrcmp(signalName, SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails))) == 0) {
+        warning() << "Connecting to deprecated signal publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)";
+    } else if (qstrcmp(signalName, SIGNAL(blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails))) == 0) {
+        warning() << "Connecting to deprecated signal blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails)";
     }
 }
 

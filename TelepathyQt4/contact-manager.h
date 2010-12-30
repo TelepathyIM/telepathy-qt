@@ -117,6 +117,8 @@ public:
     void requestContactAvatar(Contact *contact);
 
 Q_SIGNALS:
+    void presencePublicationRequested(const Tp::Contacts &contacts, const QString &message);
+    // deprecated
     void presencePublicationRequested(const Tp::Contacts &contacts,
         const Tp::Channel::GroupMemberChangeDetails &details);
 
@@ -132,6 +134,10 @@ Q_SIGNALS:
     void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
             const Tp::Contacts &contactsRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
+
+protected:
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);

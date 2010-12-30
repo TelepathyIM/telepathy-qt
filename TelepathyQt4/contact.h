@@ -137,7 +137,7 @@ public:
     bool isPublishStateKnown() const;
     bool isPublishCancelled() const;
     PresenceState publishState() const;
-    Channel::GroupMemberChangeDetails publishStateDetails() const;
+    QString publishStateMessage() const;
 
     PendingOperation *requestPresenceSubscription(const QString &message = QString());
     PendingOperation *removePresenceSubscription(const QString &message = QString());
@@ -173,10 +173,18 @@ Q_SIGNALS:
 
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
+    void subscriptionStateChanged(Tp::Contact::PresenceState state);
+    // deprecated
     void subscriptionStateChanged(Tp::Contact::PresenceState state,
             const Tp::Channel::GroupMemberChangeDetails &details);
+
+    void publishStateChanged(Tp::Contact::PresenceState state, const QString &message);
+    // deprecated
     void publishStateChanged(Tp::Contact::PresenceState state,
             const Tp::Channel::GroupMemberChangeDetails &details);
+
+    void blockStatusChanged(bool blocked);
+    // deprecated
     void blockStatusChanged(bool blocked, const Tp::Channel::GroupMemberChangeDetails &details);
 
     void addedToGroup(const QString &group);
@@ -187,6 +195,10 @@ Q_SIGNALS:
     // void renamedTo(Tp::ContactPtr)
     // with that contact getting the same features requested as the current one. Or would we rather
     // want to signal that change right away with a handle?
+
+protected:
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
 
 private:
     static const Feature FeatureRosterGroups;
@@ -206,12 +218,9 @@ private:
     void receiveInfo(const ContactInfoFieldList &info);
 
     static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
-    void setSubscriptionState(SubscriptionState state,
-            const Channel::GroupMemberChangeDetails &details = Channel::GroupMemberChangeDetails());
-    void setPublishState(SubscriptionState state,
-            const Channel::GroupMemberChangeDetails &details = Channel::GroupMemberChangeDetails());
-    void setBlocked(bool value, const Channel::GroupMemberChangeDetails &details =
-            Channel::GroupMemberChangeDetails());
+    void setSubscriptionState(SubscriptionState state);
+    void setPublishState(SubscriptionState state, const QString &message = QString());
+    void setBlocked(bool value);
 
     void setAddedToGroup(const QString &group);
     void setRemovedFromGroup(const QString &group);
