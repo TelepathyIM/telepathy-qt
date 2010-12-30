@@ -740,7 +740,7 @@ ConnectionPtr ConnectionLowlevel::connection() const
 
 Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
         const Features &requestedFeatures)
-    : PendingReady(connection, requestedFeatures), connection(connection)
+    : PendingReady(connection, requestedFeatures)
 {
     if (!connection) {
         // Called when the connection had already been destroyed
@@ -817,6 +817,8 @@ void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
 
 void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 {
+    ConnectionPtr connection = ConnectionPtr::qObjectCast(proxy());
+
     // We don't care about future disconnects even if they happen before we are destroyed
     // (which happens two mainloop iterations from now)
     connection->disconnect(this,
@@ -843,6 +845,8 @@ void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 void Connection::PendingConnect::onConnInvalidated(Tp::DBusProxy *proxy, const QString &error,
         const QString &message)
 {
+    ConnectionPtr connection = ConnectionPtr::qObjectCast(this->proxy());
+
     Q_ASSERT(proxy == connection.data());
 
     if (!isFinished()) {
