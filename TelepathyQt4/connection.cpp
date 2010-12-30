@@ -1462,6 +1462,10 @@ void Connection::onStatusReady(uint status)
 {
     Q_ASSERT(status == mPriv->pendingStatus);
 
+    if (mPriv->status == status) {
+        return;
+    }
+
     mPriv->status = status;
     mPriv->statusReason = mPriv->pendingStatusReason;
 
