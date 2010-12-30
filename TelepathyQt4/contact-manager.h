@@ -248,6 +248,8 @@ private:
     void addContactListGroupChannelFallback(
             const ChannelPtr &contactListGroupChannel);
 
+    void resetContactListChannels();
+
     static QString featureToInterface(const Feature &feature);
 
     struct Private;

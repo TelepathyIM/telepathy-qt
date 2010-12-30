@@ -327,6 +327,8 @@ Connection::Private::Private(Connection *parent,
 
 Connection::Private::~Private()
 {
+    contactManager->resetContactListChannels();
+
     // Clear selfContact so its handle will be released cleanly before the
     // handleContext
     selfContact.reset();
@@ -1950,6 +1952,10 @@ void Connection::onNewChannels(const Tp::ChannelDetailsList &channelDetailsList)
         ChannelPtr channel = Channel::create(ConnectionPtr(this),
                 channelDetails.channel.path(), channelDetails.properties);
         mPriv->contactListGroupChannels.append(channel);
+        // deref connection refcount here as connection will keep a ref to channel and we don't
+        // want a contact list group channel keeping a ref of connection, otherwise connection will
+        // leak, thus the channels.
+        channel->connection()->deref();
         connect(channel->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onContactListGroupChannelReady(Tp::PendingOperation*)));

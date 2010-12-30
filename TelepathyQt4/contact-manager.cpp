@@ -132,6 +132,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     ChannelPtr storedChannel;
     ChannelPtr denyChannel;
     QMap<QString, ChannelPtr> contactListGroupChannels;
+    QList<ChannelPtr> removedContactListGroupChannels;
 
     // avatar
     UIntList requestAvatarsQueue;
@@ -2098,6 +2099,8 @@ void ContactManager::onContactListGroupRemovedFallback(Tp::DBusProxy *proxy,
     QString id = contactListGroupChannel->immutableProperties().value(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
     mPriv->contactListGroupChannels.remove(id);
+    mPriv->removedContactListGroupChannels.append(contactListGroupChannel);
+    disconnect(contactListGroupChannel.data(), 0, 0, 0);
     emit groupRemoved(id);
 }
 
@@ -2274,6 +2277,17 @@ void ContactManager::addContactListGroupChannelFallback(
 
     QString id = mPriv->addContactListGroupChannelFallback(contactListGroupChannel);
     emit groupAdded(id);
+}
+
+void ContactManager::resetContactListChannels()
+{
+    mPriv->contactListChannels.clear();
+    mPriv->subscribeChannel.reset();
+    mPriv->publishChannel.reset();
+    mPriv->storedChannel.reset();
+    mPriv->denyChannel.reset();
+    mPriv->contactListGroupChannels.clear();
+    mPriv->removedContactListGroupChannels.clear();
 }
 
 QString ContactManager::featureToInterface(const Feature &feature)
