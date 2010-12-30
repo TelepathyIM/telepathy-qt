@@ -75,6 +75,8 @@ public:
     ContactPtr initiatorContact() const;
 
     PendingOperation *requestClose();
+    PendingOperation *requestLeave(const QString &message = QString(),
+            ChannelGroupChangeReason reason = ChannelGroupChangeReasonNone);
 
     ChannelGroupFlags groupFlags() const;
 

@@ -1556,6 +1556,52 @@ PendingOperation *Channel::requestClose()
 }
 
 /**
+ * Start an asynchronous request to leave this channel as gracefully as possible.
+ *
+ * If leaving any more gracefully is not possible, this will revert to the same as requestClose. In
+ * particular, this will be the case for channels with no Group interface
+ * (TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP not in the list returned by interfaces()).
+ *
+ * The returned PendingOperation object will signal the success or failure
+ * of this request; under normal circumstances, it can be expected to
+ * succeed.
+ *
+ * A message and a reason may be provided along with the request, which will be sent to the server
+ * if supported, which is indicated by ChannelGroupFlagMessageDepart and/or
+ * ChannelGroupFlagMessageReject.
+ *
+ * \param message The message, which can be blank if desired.
+ * \param reason  A reason for leaving.
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChangeReason reason)
+{
+    // Leaving a channel does not make sense if it is already closed,
+    // just silently Return.
+    if (!isValid()) {
+        return new PendingSuccess(ChannelPtr(this));
+    }
+
+    if (!isReady(Channel::FeatureCore)) {
+        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("Channel::FeatureCore must be ready to leave a channel"),
+                ChannelPtr(this));
+    }
+
+    if (!interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP)) {
+        return requestClose();
+    }
+
+    // TODO: use PendingLeave which handles errors correctly by falling back to Close
+    return new PendingVoid(mPriv->group->RemoveMembersWithReason(
+                UIntList() << mPriv->groupSelfHandle,
+                message,
+                reason),
+            ChannelPtr(this));
+}
+
+/**
  * \name Group interface
  *
  * Cached access to state of the group interface on the associated remote
