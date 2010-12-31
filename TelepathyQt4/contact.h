@@ -131,8 +131,13 @@ public:
     /*
      * Filters on exact values of these, but also the "in your contact list at all or not" usecase
      */
+    bool isSubscriptionStateKnown() const;
+    bool isSubscriptionRejected() const;
     PresenceState subscriptionState() const;
+    bool isPublishStateKnown() const;
+    bool isPublishCancelled() const;
     PresenceState publishState() const;
+    QString publishStateMessage() const;
 
     PendingOperation *requestPresenceSubscription(const QString &message = QString());
     PendingOperation *removePresenceSubscription(const QString &message = QString());
@@ -168,10 +173,18 @@ Q_SIGNALS:
 
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
+    void subscriptionStateChanged(Tp::Contact::PresenceState state);
+    // deprecated
     void subscriptionStateChanged(Tp::Contact::PresenceState state,
             const Tp::Channel::GroupMemberChangeDetails &details);
+
+    void publishStateChanged(Tp::Contact::PresenceState state, const QString &message);
+    // deprecated
     void publishStateChanged(Tp::Contact::PresenceState state,
             const Tp::Channel::GroupMemberChangeDetails &details);
+
+    void blockStatusChanged(bool blocked);
+    // deprecated
     void blockStatusChanged(bool blocked, const Tp::Channel::GroupMemberChangeDetails &details);
 
     void addedToGroup(const QString &group);
@@ -183,7 +196,13 @@ Q_SIGNALS:
     // with that contact getting the same features requested as the current one. Or would we rather
     // want to signal that change right away with a handle?
 
+protected:
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private:
+    static const Feature FeatureRosterGroups;
+
     Contact(ContactManager *manager, const ReferencedHandles &handle,
             const Features &requestedFeatures, const QVariantMap &attributes);
 
@@ -198,17 +217,16 @@ private:
     void receiveLocation(const QVariantMap &location);
     void receiveInfo(const ContactInfoFieldList &info);
 
-    void setSubscriptionState(PresenceState state, const Channel::GroupMemberChangeDetails &details =
-            Channel::GroupMemberChangeDetails());
-    void setPublishState(PresenceState state, const Channel::GroupMemberChangeDetails &details =
-            Channel::GroupMemberChangeDetails());
-    void setBlocked(bool value, const Channel::GroupMemberChangeDetails &details =
-            Channel::GroupMemberChangeDetails());
+    static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
+    void setSubscriptionState(SubscriptionState state);
+    void setPublishState(SubscriptionState state, const QString &message = QString());
+    void setBlocked(bool value);
 
     void setAddedToGroup(const QString &group);
     void setRemovedFromGroup(const QString &group);
 
     struct Private;
+    friend class Connection;
     friend class ContactManager;
     friend struct Private;
     Private *mPriv;

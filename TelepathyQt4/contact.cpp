@@ -51,8 +51,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
                    ContactCapabilities(true) :  ContactCapabilities(
                            manager->connection()->capabilities().allClassSpecs(), false)),
           isAvatarTokenKnown(false),
-          subscriptionState(PresenceStateNo),
-          publishState(PresenceStateNo),
+          subscriptionState(SubscriptionStateUnknown),
+          publishState(SubscriptionStateUnknown),
           blocked(false)
     {
     }
@@ -78,8 +78,9 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     QString avatarToken;
     AvatarData avatarData;
 
-    PresenceState subscriptionState;
-    PresenceState publishState;
+    SubscriptionState subscriptionState;
+    SubscriptionState publishState;
+    QString publishStateMessage;
     bool blocked;
 
     QSet<QString> groups;
@@ -165,6 +166,7 @@ const Feature Contact::FeatureCapabilities = Feature(QLatin1String(Contact::stat
 const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaObject.className()), 4, false);
 const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMetaObject.className()), 5, false);
 const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::staticMetaObject.className()), 6, false);
+const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::staticMetaObject.className()), 7, false);
 
 Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
         const Features &requestedFeatures, const QVariantMap &attributes)
@@ -391,14 +393,39 @@ PendingContactInfo *Contact::requestInfo()
     return new PendingContactInfo(self);
 }
 
+bool Contact::isSubscriptionStateKnown() const
+{
+    return mPriv->subscriptionState != SubscriptionStateUnknown;
+}
+
+bool Contact::isSubscriptionRejected() const
+{
+    return mPriv->subscriptionState == SubscriptionStateRemovedRemotely;
+}
+
 Contact::PresenceState Contact::subscriptionState() const
 {
-    return mPriv->subscriptionState;
+    return subscriptionStateToPresenceState(mPriv->subscriptionState);
+}
+
+bool Contact::isPublishStateKnown() const
+{
+    return mPriv->publishState != SubscriptionStateUnknown;
+}
+
+bool Contact::isPublishCancelled() const
+{
+    return mPriv->publishState == SubscriptionStateRemovedRemotely;
 }
 
 Contact::PresenceState Contact::publishState() const
 {
-    return mPriv->publishState;
+    return subscriptionStateToPresenceState(mPriv->publishState);
+}
+
+QString Contact::publishStateMessage() const
+{
+    return mPriv->publishStateMessage;
 }
 
 PendingOperation *Contact::requestPresenceSubscription(const QString &message)
@@ -488,6 +515,22 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
 
     mPriv->id = qdbus_cast<QString>(attributes[
             QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id")]);
+
+    if (attributes.contains(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
+                QLatin1String("/subscribe"))) {
+        uint subscriptionState = qdbus_cast<uint>(attributes.value(
+                     TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/subscribe")));
+        setSubscriptionState((SubscriptionState) subscriptionState);
+    }
+
+    if (attributes.contains(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
+                QLatin1String("/publish"))) {
+        uint publishState = qdbus_cast<uint>(attributes.value(
+                    TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish")));
+        QString publishRequest = qdbus_cast<QString>(attributes.value(
+                    TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish-request")));
+        setPublishState((SubscriptionState) publishState, publishRequest);
+    }
 
     foreach (const Feature &feature, requestedFeatures) {
         QString maybeAlias;
@@ -580,6 +623,10 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                 mPriv->presence.setStatus(ConnectionPresenceTypeUnknown,
                         QLatin1String("unknown"), QLatin1String(""));
             }
+        } else if (feature == FeatureRosterGroups) {
+            QStringList groups = qdbus_cast<QStringList>(attributes.value(
+                        TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
+            mPriv->groups = groups.toSet();
         } else {
             warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
         }
@@ -687,33 +734,63 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
     }
 }
 
-void Contact::setSubscriptionState(Contact::PresenceState state,
-        const Channel::GroupMemberChangeDetails &details)
+Contact::PresenceState Contact::subscriptionStateToPresenceState(uint subscriptionState)
+{
+    switch (subscriptionState) {
+        case SubscriptionStateAsk:
+            return PresenceStateAsk;
+        case SubscriptionStateYes:
+            return PresenceStateYes;
+        default:
+            return PresenceStateNo;
+    }
+}
+
+void Contact::setSubscriptionState(SubscriptionState state)
 {
     if (mPriv->subscriptionState == state) {
         return;
     }
+
     mPriv->subscriptionState = state;
-    emit subscriptionStateChanged(state, details);
+
+    // FIXME (API/ABI break) remove signal with details
+    emit subscriptionStateChanged(subscriptionStateToPresenceState(state),
+            Channel::GroupMemberChangeDetails());
+
+    emit subscriptionStateChanged(subscriptionStateToPresenceState(state));
 }
 
-void Contact::setPublishState(Contact::PresenceState state,
-        const Channel::GroupMemberChangeDetails &details)
+void Contact::setPublishState(SubscriptionState state, const QString &message)
 {
     if (mPriv->publishState == state) {
         return;
     }
+
     mPriv->publishState = state;
-    emit publishStateChanged(state, details);
+    mPriv->publishStateMessage = message;
+
+    // FIXME (API/ABI break) remove signal with details
+    QVariantMap detailsMap;
+    detailsMap.insert(QLatin1String("message"), message);
+    emit publishStateChanged(subscriptionStateToPresenceState(state),
+            Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap));
+
+    emit publishStateChanged(subscriptionStateToPresenceState(state), message);
 }
 
-void Contact::setBlocked(bool value, const Channel::GroupMemberChangeDetails &details)
+void Contact::setBlocked(bool value)
 {
     if (mPriv->blocked == value) {
         return;
     }
+
     mPriv->blocked = value;
-    emit blockStatusChanged(value, details);
+
+    // FIXME (API/ABI break) remove signal with details
+    emit blockStatusChanged(value, Channel::GroupMemberChangeDetails());
+
+    emit blockStatusChanged(value);
 }
 
 void Contact::setAddedToGroup(const QString &group)
@@ -748,5 +825,61 @@ void Contact::setRemovedFromGroup(const QString &group)
  * \param InfoFields The new info.
  * \sa infoFields()
  */
+
+/**
+ * \fn void Contact::subscriptionStateChanged(Tp::Contact::PresenceState state)
+ *
+ * This signal is emitted whenever the value of subscriptionState() changes.
+ *
+ * \param state The new subscription state.
+ */
+
+/**
+ * \fn void Contact::subscriptionStateChanged(Tp::Contact::PresenceState state,
+ *          const Tp::Channel::GroupMemberChangeDetails &details)
+ *
+ * \deprecated Use subscriptionStateChanged(Tp::Contact::PresenceState state) instead.
+ */
+
+/**
+ * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state)
+ *
+ * This signal is emitted whenever the value of publishState() changes.
+ *
+ * \param state The new publish state.
+ */
+
+/**
+ * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state,
+ *          const Tp::Channel::GroupMemberChangeDetails &details)
+ *
+ * \deprecated Use publishStateChanged(Tp::Contact::PresenceState state) instead.
+ */
+
+/**
+ * \fn void Contact::blockStatusChanged(bool blocked)
+ *
+ * This signal is emitted whenever the value of isBlocked() changes.
+ *
+ * \param status The new block status.
+ */
+
+/**
+ * \fn void Contact::blockStatusChanged(bool blocked,
+ *          const Tp::Channel::GroupMemberChangeDetails &details)
+ *
+ * \deprecated Use blockStatusChanged(bool blocked) instead.
+ */
+
+void Contact::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails))) == 0) {
+        warning() << "Connecting to deprecated signal subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)";
+    } else if (qstrcmp(signalName, SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails))) == 0) {
+        warning() << "Connecting to deprecated signal publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)";
+    } else if (qstrcmp(signalName, SIGNAL(blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails))) == 0) {
+        warning() << "Connecting to deprecated signal blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails)";
+    }
+}
 
 } // Tp

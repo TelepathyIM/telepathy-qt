@@ -19,17 +19,17 @@
 
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/glib/contactlist2/conn.h>
+#include <tests/lib/glib/contactlist/conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
 
-class TestConnRosterGroups : public Test
+class TestConnRosterGroupsLegacy : public Test
 {
     Q_OBJECT
 
 public:
-    TestConnRosterGroups(QObject *parent = 0)
+    TestConnRosterGroupsLegacy(QObject *parent = 0)
         : Test(parent), mConnService(0),
           mContactsAddedToGroup(0), mContactsRemovedFromGroup(0)
     { }
@@ -65,38 +65,38 @@ private:
     bool mConnInvalidated;
 };
 
-void TestConnRosterGroups::onGroupAdded(const QString &group)
+void TestConnRosterGroupsLegacy::onGroupAdded(const QString &group)
 {
     mGroupAdded = group;
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups::onGroupRemoved(const QString &group)
+void TestConnRosterGroupsLegacy::onGroupRemoved(const QString &group)
 {
     mGroupRemoved = group;
     mLoop->exit(0);
 }
 
 
-void TestConnRosterGroups::onContactAddedToGroup(const QString &group)
+void TestConnRosterGroupsLegacy::onContactAddedToGroup(const QString &group)
 {
     mContactsAddedToGroup++;
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups::onContactRemovedFromGroup(const QString &group)
+void TestConnRosterGroupsLegacy::onContactRemovedFromGroup(const QString &group)
 {
     mContactsRemovedFromGroup++;
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups::expectConnInvalidated()
+void TestConnRosterGroupsLegacy::expectConnInvalidated()
 {
     mConnInvalidated = true;
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups::expectContact(Tp::PendingOperation *op)
+void TestConnRosterGroupsLegacy::expectContact(Tp::PendingOperation *op)
 {
     PendingContacts *contacts = qobject_cast<PendingContacts *>(op);
     QVERIFY(contacts != 0);
@@ -109,7 +109,7 @@ void TestConnRosterGroups::expectContact(Tp::PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestConnRosterGroups::initTestCase()
+void TestConnRosterGroupsLegacy::initTestCase()
 {
     initTestCaseImpl();
 
@@ -119,7 +119,7 @@ void TestConnRosterGroups::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 }
 
-void TestConnRosterGroups::init()
+void TestConnRosterGroupsLegacy::init()
 {
     gchar *name;
     gchar *connPath;
@@ -149,7 +149,7 @@ void TestConnRosterGroups::init()
     mConnInvalidated = false;
 }
 
-void TestConnRosterGroups::testRosterGroups()
+void TestConnRosterGroupsLegacy::testRosterGroups()
 {
     mConn = Connection::create(mConnName, mConnPath,
             ChannelFactory::create(QDBusConnection::sessionBus()),
@@ -178,6 +178,50 @@ void TestConnRosterGroups::testRosterGroups()
     QStringList groups = contactManager->allKnownGroups();
     groups.sort();
     QCOMPARE(groups, expectedGroups);
+
+    // Cambridge
+    {
+        QStringList expectedContacts;
+        expectedContacts << QLatin1String("geraldine@example.com")
+            << QLatin1String("helen@example.com")
+            << QLatin1String("guillaume@example.com")
+            << QLatin1String("sjoerd@example.com");
+        expectedContacts.sort();
+        QStringList contacts;
+        Q_FOREACH (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Cambridge"))) {
+            contacts << contact->id();
+        }
+        contacts.sort();
+        QCOMPARE(contacts, expectedContacts);
+    }
+
+    // Francophones
+    {
+        QStringList expectedContacts;
+        expectedContacts << QLatin1String("olivier@example.com")
+            << QLatin1String("geraldine@example.com")
+            << QLatin1String("guillaume@example.com");
+        expectedContacts.sort();
+        QStringList contacts;
+        Q_FOREACH (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Francophones"))) {
+            contacts << contact->id();
+        }
+        contacts.sort();
+        QCOMPARE(contacts, expectedContacts);
+    }
+
+    // Montreal
+    {
+        QStringList expectedContacts;
+        expectedContacts << QLatin1String("olivier@example.com");
+        expectedContacts.sort();
+        QStringList contacts;
+        Q_FOREACH (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Montreal"))) {
+            contacts << contact->id();
+        }
+        contacts.sort();
+        QCOMPARE(contacts, expectedContacts);
+    }
 
     QString group(QLatin1String("foo"));
     QVERIFY(contactManager->groupContacts(group).isEmpty());
@@ -265,7 +309,7 @@ void TestConnRosterGroups::testRosterGroups()
  * which led to a great many segfaults, which was especially unfortunate considering the
  * ContactManager methods didn't do much any checks at all.
  */
-void TestConnRosterGroups::testNotADeathTrap()
+void TestConnRosterGroupsLegacy::testNotADeathTrap()
 {
     mConn = Connection::create(mConnName, mConnPath,
             ChannelFactory::create(QDBusConnection::sessionBus()),
@@ -343,6 +387,11 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
+    QVERIFY(connect(mConn->contactManager()->blockContacts(QList<ContactPtr>() << mContact, true),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
     // Now, make Roster ready
     Features features = Features() << Connection::FeatureRoster;
     QVERIFY(connect(mConn->becomeReady(features),
@@ -383,6 +432,8 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+
+    // The test CM doesn't support block, so it will never be successful
 
     // ... but still not the RosterGroup ones
     QVERIFY(connect(mConn->contactManager()->addGroup(QLatin1String("Those who failed")),
@@ -465,6 +516,8 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+
+    // The test CM doesn't support block, so it will never be successful
 
     QVERIFY(connect(mConn->contactManager()->addGroup(QLatin1String("My successful entourage")),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -554,6 +607,11 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
+    QVERIFY(connect(mConn->contactManager()->blockContacts(QList<ContactPtr>() << mContact, true),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
     QVERIFY(connect(mConn->contactManager()->addGroup(QLatin1String("Future failures")),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
@@ -577,7 +635,7 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
 }
 
-void TestConnRosterGroups::cleanup()
+void TestConnRosterGroupsLegacy::cleanup()
 {
     mContact.reset();
 
@@ -612,10 +670,10 @@ void TestConnRosterGroups::cleanup()
     cleanupImpl();
 }
 
-void TestConnRosterGroups::cleanupTestCase()
+void TestConnRosterGroupsLegacy::cleanupTestCase()
 {
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestConnRosterGroups)
-#include "_gen/conn-roster-groups.cpp.moc.hpp"
+QTEST_MAIN(TestConnRosterGroupsLegacy)
+#include "_gen/conn-roster-groups-legacy.cpp.moc.hpp"

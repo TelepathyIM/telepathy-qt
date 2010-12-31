@@ -241,6 +241,7 @@ public:
 
 private:
     // For access to the "prime" constructor
+    friend class ContactManager;
     friend class PendingContactAttributes;
     friend class PendingContacts;
     friend class PendingHandles;

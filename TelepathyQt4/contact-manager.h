@@ -117,10 +117,13 @@ public:
     void requestContactAvatar(Contact *contact);
 
 Q_SIGNALS:
+    void presencePublicationRequested(const Tp::Contacts &contacts, const QString &message);
+    // deprecated
     void presencePublicationRequested(const Tp::Contacts &contacts,
         const Tp::Channel::GroupMemberChangeDetails &details);
 
     void groupAdded(const QString &group);
+    void groupRenamed(const QString &oldGroup, const QString &newGroup);
     void groupRemoved(const QString &group);
 
     void groupMembersChanged(const QString &group,
@@ -132,6 +135,10 @@ Q_SIGNALS:
             const Tp::Contacts &contactsRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
 
+protected:
+    // FIXME: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);
     void doRequestAvatars();
@@ -142,19 +149,26 @@ private Q_SLOTS:
     void onLocationUpdated(uint, const QVariantMap &);
     void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
 
-    void onStoredChannelMembersChanged(
+    void onContactListNewContactsConstructed(Tp::PendingOperation *op);
+    void onContactListGroupsChanged(const Tp::UIntList &contacts,
+            const QStringList &added, const QStringList &removed);
+    void onContactListGroupsCreated(const QStringList &names);
+    void onContactListGroupRenamed(const QString &oldName, const QString &newName);
+    void onContactListGroupsRemoved(const QStringList &names);
+
+    void onStoredChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onSubscribeChannelMembersChanged(
+    void onSubscribeChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onPublishChannelMembersChanged(
+    void onPublishChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
@@ -167,14 +181,14 @@ private Q_SLOTS:
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
 
-    void onContactListGroupMembersChanged(
+    void onContactListGroupMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onContactListGroupRemoved(Tp::DBusProxy *,
-        const QString &, const QString &);
+    void onContactListGroupRemovedFallback(Tp::DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage);
 
 private:
     friend class Connection;
@@ -218,11 +232,23 @@ private:
             const Features &features,
             const QVariantMap &attributes);
 
+    void setUseFallbackContactList(bool value);
+
+    void setContactListProperties(const QVariantMap &props);
+    void setContactListContacts(const ContactAttributesMap &attrs);
+    void updateContactListContacts(const ContactSubscriptionMap &changes,
+            const UIntList &removals);
+    void setContactListGroupsProperties(const QVariantMap &props);
+
     void setContactListChannels(
             const QMap<uint, ContactListChannel> &contactListChannels);
-    void setContactListGroupChannels(
+
+    void setContactListGroupChannelsFallback(
             const QList<ChannelPtr> &contactListGroupChannels);
-    void addContactListGroupChannel(const ChannelPtr &contactListGroupChannel);
+    void addContactListGroupChannelFallback(
+            const ChannelPtr &contactListGroupChannel);
+
+    static QString featureToInterface(const Feature &feature);
 
     struct Private;
     friend struct Private;

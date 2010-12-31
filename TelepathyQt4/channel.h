@@ -131,6 +131,8 @@ public:
 
     private:
         friend class Channel;
+        friend class Contact;
+        friend class ContactManager;
 
         GroupMemberChangeDetails(const ContactPtr &actor, const QVariantMap &details);
 

@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008, 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008, 2009 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,7 @@
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingVariantMap>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/ReferencedHandles>
 
@@ -76,6 +77,8 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     static void introspectSelfContact(Private *self);
     static void introspectSimplePresence(Private *self);
     static void introspectRoster(Private *self);
+    void introspectContactList();
+    void introspectContactListContacts();
     static void introspectRosterGroups(Private *self);
     static void introspectBalance(Private *self);
 
@@ -139,6 +142,10 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     SimpleStatusSpecMap simplePresenceStatuses;
 
     // FeatureRoster
+    // new roster API
+    uint contactListState;
+
+    // old roster API
     QMap<uint, ContactManager::ContactListChannel> contactListChannels;
     uint contactListChannelsReady;
 
@@ -217,6 +224,7 @@ Connection::Private::Private(Connection *parent,
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
       contactManager(ContactManagerPtr(new ContactManager(parent))),
+      contactListState((uint) -1),
       contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
       handleContext(0)
@@ -492,47 +500,130 @@ void Connection::Private::introspectSimplePresence(Connection::Private *self)
 
 void Connection::Private::introspectRoster(Connection::Private *self)
 {
-    debug() << "Requesting handles for contact lists";
+    if (self->parent->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
+        self->contactManager->setUseFallbackContactList(false);
 
-    for (uint i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
-        self->contactListChannels.insert(i,
-                ContactManager::ContactListChannel(
-                    (ContactManager::ContactListChannel::Type) i));
+        debug() << "Introspecting deny channel";
+
+        self->contactListChannels.insert(ContactManager::ContactListChannel::TypeDeny,
+                ContactManager::ContactListChannel(ContactManager::ContactListChannel::TypeDeny));
 
         PendingHandles *pending = self->parent->lowlevel()->requestHandles(
                 HandleTypeList,
                 QStringList() << ContactManager::ContactListChannel::identifierForType(
-                    (ContactManager::ContactListChannel::Type) i));
+                    ContactManager::ContactListChannel::TypeDeny));
         self->parent->connect(pending,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(gotContactListsHandles(Tp::PendingOperation*)));
+    } else {
+        debug() << "Requesting handles for contact lists channels";
+
+        self->contactManager->setUseFallbackContactList(true);
+
+        for (uint i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
+            self->contactListChannels.insert(i,
+                    ContactManager::ContactListChannel(
+                        (ContactManager::ContactListChannel::Type) i));
+
+            PendingHandles *pending = self->parent->lowlevel()->requestHandles(
+                    HandleTypeList,
+                    QStringList() << ContactManager::ContactListChannel::identifierForType(
+                        (ContactManager::ContactListChannel::Type) i));
+            self->parent->connect(pending,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(gotContactListsHandles(Tp::PendingOperation*)));
+        }
     }
+}
+
+void Connection::Private::introspectContactList()
+{
+    debug() << "Requesting contact list properties";
+
+    Client::ConnectionInterfaceContactListInterface *iface =
+        parent->interface<Client::ConnectionInterfaceContactListInterface>();
+
+    parent->connect(iface,
+            SIGNAL(ContactListStateChanged(uint)),
+            SLOT(onContactListStateChanged(uint)));
+    parent->connect(iface,
+            SIGNAL(ContactsChanged(Tp::ContactSubscriptionMap,Tp::UIntList)),
+            SLOT(onContactListContactsChanged(Tp::ContactSubscriptionMap,Tp::UIntList)));
+
+    PendingVariantMap *pvm = iface->requestAllProperties();
+    parent->connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotContactListProperties(Tp::PendingOperation*)));
+}
+
+void Connection::Private::introspectContactListContacts()
+{
+    Client::ConnectionInterfaceContactListInterface *iface =
+        parent->interface<Client::ConnectionInterfaceContactListInterface>();
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            iface->GetContactListAttributes(
+                QStringList() << QLatin1String(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST),
+                true), parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotContactListContacts(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectRosterGroups(Connection::Private *self)
 {
-    debug() << "Introspecting roster groups";
+    if (self->parent->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
+        if (!self->parent->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+            self->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
+                    TP_QT4_ERROR_NOT_IMPLEMENTED, QLatin1String("Roster groups not supported"));
+            return;
+        }
 
-    ++self->featureRosterGroupsTodo; // decremented in gotChannels
+        debug() << "Introspecting contact list groups";
 
-    // we already checked if requests interface exists, so bypass requests
-    // interface checking
-    Client::ConnectionInterfaceRequestsInterface *iface =
-        self->parent->interface<Client::ConnectionInterfaceRequestsInterface>();
+        Client::ConnectionInterfaceContactGroupsInterface *iface =
+            self->parent->interface<Client::ConnectionInterfaceContactGroupsInterface>();
 
-    debug() << "Connecting to Requests.NewChannels";
-    self->parent->connect(iface,
-            SIGNAL(NewChannels(Tp::ChannelDetailsList)),
-            SLOT(onNewChannels(Tp::ChannelDetailsList)));
+        self->contactManager->connect(iface,
+                SIGNAL(GroupsChanged(Tp::UIntList,QStringList,QStringList)),
+                SLOT(onContactListGroupsChanged(Tp::UIntList,QStringList,QStringList)));
+        self->contactManager->connect(iface,
+                SIGNAL(GroupsCreated(QStringList)),
+                SLOT(onContactListGroupsCreated(QStringList)));
+        self->contactManager->connect(iface,
+                SIGNAL(GroupRenamed(QString,QString)),
+                SLOT(onContactListGroupRenamed(QString,QString)));
+        self->contactManager->connect(iface,
+                SIGNAL(GroupsRemoved(QStringList)),
+                SLOT(onContactListGroupsRemoved(QStringList)));
 
-    debug() << "Retrieving channels";
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            self->properties->Get(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),
-                QLatin1String("Channels")), self->parent);
-    self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotChannels(QDBusPendingCallWatcher*)));
+        PendingVariantMap *pvm = iface->requestAllProperties();
+        self->parent->connect(pvm,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(gotContactListGroupsProperties(Tp::PendingOperation*)));
+    } else {
+        debug() << "Introspecting contact list group channels";
+
+        ++self->featureRosterGroupsTodo; // decremented in gotChannels
+
+        // we already checked if requests interface exists, so bypass requests
+        // interface checking
+        Client::ConnectionInterfaceRequestsInterface *iface =
+            self->parent->interface<Client::ConnectionInterfaceRequestsInterface>();
+
+        debug() << "Connecting to Requests.NewChannels";
+        self->parent->connect(iface,
+                SIGNAL(NewChannels(Tp::ChannelDetailsList)),
+                SLOT(onNewChannels(Tp::ChannelDetailsList)));
+
+        debug() << "Retrieving channels";
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                self->properties->Get(
+                    QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),
+                    QLatin1String("Channels")), self->parent);
+        self->parent->connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotChannels(QDBusPendingCallWatcher*)));
+    }
 }
 
 void Connection::Private::introspectBalance(Connection::Private *self)
@@ -622,10 +713,8 @@ void Connection::Private::checkFeatureRosterGroupsReady()
     }
 
     debug() << "FeatureRosterGroups ready";
-    contactManager->setContactListGroupChannels(
-            contactListGroupChannels);
-    readinessHelper->setIntrospectCompleted(
-            FeatureRosterGroups, true);
+    contactManager->setContactListGroupChannelsFallback(contactListGroupChannels);
+    readinessHelper->setIntrospectCompleted(FeatureRosterGroups, true);
     contactListGroupChannels.clear();
 }
 
@@ -1643,6 +1732,110 @@ void Connection::gotSelfContact(PendingOperation *op)
     }
 }
 
+void Connection::gotContactListProperties(PendingOperation *op)
+{
+    if (op->isError()) {
+        // We may have been in state Failure and then Success, and we are already ready
+        if (!isReady(FeatureRoster)) {
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, false,
+                    op->errorName(), op->errorMessage());
+        }
+        return;
+    }
+
+    debug() << "Got contact list properties";
+    PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+
+    QVariantMap props = pvm->result();
+
+    // only update the status if we did not get it from ContactListStateChanged
+    if (mPriv->contactListState == (uint) -1) {
+        uint state = qdbus_cast<uint>(props[QLatin1String("ContactListState")]);
+        onContactListStateChanged(state);
+    }
+
+    mPriv->contactManager->setContactListProperties(props);
+}
+
+void Connection::gotContactListContacts(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<ContactAttributesMap> reply = *watcher;
+
+    if (watcher->isError()) {
+        // We may have been in state Failure and then Success, and we are already ready
+        if (!isReady(FeatureRoster)) {
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, false,
+                    reply.error());
+        }
+        return;
+    }
+
+    ContactAttributesMap attrs = reply.value();
+    mPriv->contactManager->setContactListContacts(attrs);
+
+    // We may have been in state Failure and then Success, and we are already ready
+    if (!isReady(FeatureRoster)) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
+    }
+}
+
+void Connection::gotContactListGroupsProperties(PendingOperation *op)
+{
+    if (op->isError()) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
+                op->errorName(), op->errorMessage());
+        return;
+    }
+
+    debug() << "Got contact list groups properties";
+    PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+
+    QVariantMap props = pvm->result();
+    mPriv->contactManager->setContactListGroupsProperties(props);
+
+    PendingContacts *pc = mPriv->contactManager->upgradeContacts(
+            mPriv->contactManager->allKnownContacts().toList(),
+            Contact::FeatureRosterGroups);
+    connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContactListContactsUpgraded(Tp::PendingOperation*)));
+}
+
+void Connection::onContactListContactsUpgraded(PendingOperation *op)
+{
+    if (op->isError()) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
+                op->errorName(), op->errorMessage());
+        return;
+    }
+
+    debug() << "Contact list groups ready";
+    mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, true);
+}
+
+void Connection::onContactListStateChanged(uint state)
+{
+    if (mPriv->contactListState == state) {
+        // ignore redundant state changes
+        return;
+    }
+
+    mPriv->contactListState = state;
+
+    if (state == ContactListStateSuccess) {
+        mPriv->introspectContactListContacts();
+    } else if (state == ContactListStateFailure) {
+        // Consider it ready here as the state may go from Failure to Success afterwards, in which
+        // case the contacts will appear in ContactManager.
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
+    }
+}
+
+void Connection::onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
+        const Tp::UIntList &removals)
+{
+    mPriv->contactManager->updateContactListContacts(changes, removals);
+}
 
 void Connection::gotContactListsHandles(PendingOperation *op)
 {
@@ -1675,7 +1868,11 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     ReferencedHandles handle = pending->handles();
     uint type = ContactManager::ContactListChannel::typeForIdentifier(
             pending->namesRequested().first());
-    Q_ASSERT(type != (uint) -1 && type < ContactManager::ContactListChannel::LastType);
+    if (hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
+        Q_ASSERT(type == ContactManager::ContactListChannel::TypeDeny);
+    } else {
+        Q_ASSERT(type != (uint) -1 && type < ContactManager::ContactListChannel::LastType);
+    }
     mPriv->contactListChannels[type].handle = handle;
     request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle[0];
     connect(lowlevel()->ensureChannel(request),
@@ -1696,7 +1893,8 @@ void Connection::gotContactListChannel(PendingOperation *op)
     Q_ASSERT(channel);
     Q_ASSERT(handle);
     for (int i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
-        if (mPriv->contactListChannels[i].handle.size() > 0 &&
+        if (mPriv->contactListChannels.contains(i) &&
+            mPriv->contactListChannels[i].handle.size() > 0 &&
             mPriv->contactListChannels[i].handle[0] == handle) {
             Q_ASSERT(!mPriv->contactListChannels[i].channel);
             mPriv->contactListChannels[i].channel = channel;
@@ -1709,8 +1907,10 @@ void Connection::gotContactListChannel(PendingOperation *op)
 
 void Connection::contactListChannelReady()
 {
-    if (++mPriv->contactListChannelsReady ==
-            ContactManager::ContactListChannel::LastType) {
+    if (hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
+        mPriv->contactManager->setContactListChannels(mPriv->contactListChannels);
+        mPriv->introspectContactList();
+    } else if (++mPriv->contactListChannelsReady == ContactManager::ContactListChannel::LastType) {
         debug() << "FeatureRoster ready";
         mPriv->contactManager->setContactListChannels(mPriv->contactListChannels);
         mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
@@ -1753,7 +1953,7 @@ void Connection::onContactListGroupChannelReady(Tp::PendingOperation *op)
     } else {
         PendingReady *pr = qobject_cast<PendingReady*>(op);
         ChannelPtr channel = ChannelPtr::qObjectCast(pr->proxy());
-        mPriv->contactManager->addContactListGroupChannel(channel);
+        mPriv->contactManager->addContactListGroupChannelFallback(channel);
         mPriv->contactListGroupChannels.removeOne(channel);
     }
 }

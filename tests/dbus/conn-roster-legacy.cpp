@@ -20,17 +20,17 @@
 
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/glib/contactlist2/conn.h>
+#include <tests/lib/glib/contactlist/conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
 
-class TestConnRoster : public Test
+class TestConnRosterLegacy : public Test
 {
     Q_OBJECT
 
 public:
-    TestConnRoster(QObject *parent = 0)
+    TestConnRosterLegacy(QObject *parent = 0)
         : Test(parent), mConnService(0)
     { }
 
@@ -59,12 +59,12 @@ private:
     bool mGotPresenceStateChanged;
 };
 
-void TestConnRoster::expectConnInvalidated()
+void TestConnRosterLegacy::expectConnInvalidated()
 {
     mLoop->exit(0);
 }
 
-void TestConnRoster::expectPendingContactsFinished(PendingOperation *op)
+void TestConnRosterLegacy::expectPendingContactsFinished(PendingOperation *op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -92,7 +92,7 @@ void TestConnRoster::expectPendingContactsFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, const Tp::Contacts& removed,
+void TestConnRosterLegacy::expectAllKnownContactsChanged(const Tp::Contacts& added, const Tp::Contacts& removed,
         const Tp::Channel::GroupMemberChangeDetails &details)
 {
     qDebug() << added.size() << " contacts added, " << removed.size() << " contacts removed";
@@ -112,12 +112,12 @@ void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, co
     }
 }
 
-void TestConnRoster::expectPresenceStateChanged(Contact::PresenceState state)
+void TestConnRosterLegacy::expectPresenceStateChanged(Contact::PresenceState state)
 {
     mGotPresenceStateChanged = true;
 }
 
-void TestConnRoster::initTestCase()
+void TestConnRosterLegacy::initTestCase()
 {
     initTestCaseImpl();
 
@@ -151,7 +151,7 @@ void TestConnRoster::initTestCase()
     g_free(connPath);
 }
 
-void TestConnRoster::init()
+void TestConnRosterLegacy::init()
 {
     initImpl();
 
@@ -167,7 +167,7 @@ void TestConnRoster::init()
     QCOMPARE(mConn->status(), ConnectionStatusConnected);
 }
 
-void TestConnRoster::testRoster()
+void TestConnRosterLegacy::testRoster()
 {
     Features features = Features() << Connection::FeatureRoster;
     QVERIFY(connect(mConn->becomeReady(features),
@@ -341,7 +341,7 @@ void TestConnRoster::testRoster()
     }
 }
 
-void TestConnRoster::cleanup()
+void TestConnRosterLegacy::cleanup()
 {
     if (mConn) {
         // Disconnect and wait for the readiness change
@@ -362,7 +362,7 @@ void TestConnRoster::cleanup()
     cleanupImpl();
 }
 
-void TestConnRoster::cleanupTestCase()
+void TestConnRosterLegacy::cleanupTestCase()
 {
     if (mConnService != 0) {
         g_object_unref(mConnService);
@@ -372,5 +372,5 @@ void TestConnRoster::cleanupTestCase()
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestConnRoster)
-#include "_gen/conn-roster.cpp.moc.hpp"
+QTEST_MAIN(TestConnRosterLegacy)
+#include "_gen/conn-roster-legacy.cpp.moc.hpp"

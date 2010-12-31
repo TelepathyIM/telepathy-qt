@@ -1,0 +1,23 @@
+[ConnectionManager]
+Interfaces=
+
+[Protocol example]
+Interfaces=
+ConnectionInterfaces=org.freedesktop.Telepathy.Connection.Interface.Requests;org.freedesktop.Telepathy.Connection.Interface.Contacts;org.freedesktop.Telepathy.Connection.Interface.Presence;org.freedesktop.Telepathy.Connection.Interface.SimplePresence;
+param-account=s required register
+param-simulation-delay=u
+default-simulation-delay=1000
+RequestableChannelClasses=contactlist;contactgroup;
+VCardField=x-telepathy-example
+EnglishName=Example with a contact list
+Icon=face-smile
+
+[contactlist]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.ContactList
+org.freedesktop.Telepathy.Channel.TargetHandleType u=3
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+
+[contactgroup]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.ContactList
+org.freedesktop.Telepathy.Channel.TargetHandleType u=4
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
