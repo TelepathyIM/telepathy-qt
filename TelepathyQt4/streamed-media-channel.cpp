@@ -1087,7 +1087,7 @@ PendingStreamedMediaStreams *StreamedMediaChannel::requestStreams(
  */
 PendingOperation *StreamedMediaChannel::hangupCall()
 {
-    return requestClose();
+    return requestLeave();
 }
 
 /**
