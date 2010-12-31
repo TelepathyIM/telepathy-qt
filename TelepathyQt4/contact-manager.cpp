@@ -2420,12 +2420,8 @@ void PendingContactManagerRemoveContactListGroup::onChannelClosed(PendingOperati
 
 void ContactManager::connectNotify(const char *signalName)
 {
-    if (qstrcmp(signalName, SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails))) == 0) {
-        warning() << "Connecting to deprecated signal subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)";
-    } else if (qstrcmp(signalName, SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails))) == 0) {
-        warning() << "Connecting to deprecated signal publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)";
-    } else if (qstrcmp(signalName, SIGNAL(blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails))) == 0) {
-        warning() << "Connecting to deprecated signal blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails)";
+    if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails))) == 0) {
+        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails)";
     }
 }
 
