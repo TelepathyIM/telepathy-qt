@@ -2191,8 +2191,10 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  */
 Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
 {
-    if (!isReady()) {
-        warning() << "Channel::groupSelfContactRemoveInfo() used channel not ready";
+    // Oftentimes, the channel will be closed as a result from being left - so checking a channel's
+    // self remove info when it has been closed and hence invalidated is valid
+    if (isValid() && !isReady(Channel::FeatureCore)) {
+        warning() << "Channel::groupSelfContactRemoveInfo() used before Channel::FeatureCore is ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupSelfContactRemoveInfo() used with "
             "no group interface";
