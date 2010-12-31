@@ -1570,6 +1570,9 @@ PendingOperation *Channel::requestClose()
  * if supported, which is indicated by ChannelGroupFlagMessageDepart and/or
  * ChannelGroupFlagMessageReject.
  *
+ * Attempting to leave again when we have already left, either by our request or forcibly, will be a
+ * no-op, with the returned PendingOperation immediately finishing successfully.
+ *
  * \param message The message, which can be blank if desired.
  * \param reason  A reason for leaving.
  * \return A PendingOperation, which will emit PendingOperation::finished
@@ -1591,6 +1594,12 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
 
     if (!interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP)) {
         return requestClose();
+    }
+
+    if (mPriv->groupSelfContactRemoveInfo.isValid()) {
+        debug() << "Channel::requestLeave() called for " << objectPath() <<
+            "which has already been left";
+        return new PendingSuccess(ChannelPtr(this));
     }
 
     // TODO: use PendingLeave which handles errors correctly by falling back to Close
@@ -2090,7 +2099,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  * the user hasn't been removed from the group, an object for which
  * GroupMemberChangeDetails::isValid() Return <code>false</code> is returned.
  *
- * This method should be called only after the channel has been closed.
+ * This method should be called only after you've left the channel.
  * This is useful for getting the remove information after missing the
  * corresponding groupMembersChanged() signal, as the local user being
  * removed usually causes the remote Channel to be closed.
