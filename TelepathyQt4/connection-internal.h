@@ -46,8 +46,6 @@ private Q_SLOTS:
 
 private:
     friend class ConnectionLowlevel;
-
-    ConnectionPtr connection;
 };
 
 class ConnectionHelper

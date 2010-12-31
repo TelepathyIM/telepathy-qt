@@ -327,6 +327,8 @@ Connection::Private::Private(Connection *parent,
 
 Connection::Private::~Private()
 {
+    contactManager->resetContactListChannels();
+
     // Clear selfContact so its handle will be released cleanly before the
     // handleContext
     selfContact.reset();
@@ -740,7 +742,7 @@ ConnectionPtr ConnectionLowlevel::connection() const
 
 Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
         const Features &requestedFeatures)
-    : PendingReady(connection, requestedFeatures), connection(connection)
+    : PendingReady(connection, requestedFeatures)
 {
     if (!connection) {
         // Called when the connection had already been destroyed
@@ -817,6 +819,8 @@ void Connection::PendingConnect::onStatusChanged(ConnectionStatus newStatus)
 
 void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 {
+    ConnectionPtr connection = ConnectionPtr::qObjectCast(proxy());
+
     // We don't care about future disconnects even if they happen before we are destroyed
     // (which happens two mainloop iterations from now)
     connection->disconnect(this,
@@ -843,6 +847,8 @@ void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 void Connection::PendingConnect::onConnInvalidated(Tp::DBusProxy *proxy, const QString &error,
         const QString &message)
 {
+    ConnectionPtr connection = ConnectionPtr::qObjectCast(this->proxy());
+
     Q_ASSERT(proxy == connection.data());
 
     if (!isFinished()) {
@@ -1462,6 +1468,10 @@ void Connection::onStatusReady(uint status)
 {
     Q_ASSERT(status == mPriv->pendingStatus);
 
+    if (mPriv->status == status) {
+        return;
+    }
+
     mPriv->status = status;
     mPriv->statusReason = mPriv->pendingStatusReason;
 
@@ -1898,6 +1908,10 @@ void Connection::gotContactListChannel(PendingOperation *op)
             mPriv->contactListChannels[i].handle[0] == handle) {
             Q_ASSERT(!mPriv->contactListChannels[i].channel);
             mPriv->contactListChannels[i].channel = channel;
+            // deref connection refcount here as connection will keep a ref to channel and we don't
+            // want a contact list channel keeping a ref of connection, otherwise connection will
+            // leak, thus the channels.
+            channel->connection()->deref();
             connect(channel->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(contactListChannelReady()));
@@ -1938,6 +1952,10 @@ void Connection::onNewChannels(const Tp::ChannelDetailsList &channelDetailsList)
         ChannelPtr channel = Channel::create(ConnectionPtr(this),
                 channelDetails.channel.path(), channelDetails.properties);
         mPriv->contactListGroupChannels.append(channel);
+        // deref connection refcount here as connection will keep a ref to channel and we don't
+        // want a contact list group channel keeping a ref of connection, otherwise connection will
+        // leak, thus the channels.
+        channel->connection()->deref();
         connect(channel->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onContactListGroupChannelReady(Tp::PendingOperation*)));
