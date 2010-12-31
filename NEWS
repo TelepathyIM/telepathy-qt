@@ -8,11 +8,21 @@ Enhancements:
  * Channel invalidation reasons now more accurately describe what happened,
    including a new error TP_QT4_ERROR_ORPHANED for the corresponding Connection
    getting invalidated from whichever reason.
+ * Added support for ContactList and ContactGroups interfaces improving
+   performance of Connection::FeatureRoster/Groups when the CM supports the new
+   interfaces.
+ * Deprecated Contact/ContactManager signals carrying a
+   Channel::GroupMemberChangeDetails param for publish/subscription/block state
+   changes and added new signals that should be used in new code.
 
 Fixes:
  * Properly install TelepathyQt4/ConnectionManagerLowLevel.
  * A race condition causing proxies to be needlessly dropped from the factory
    cache and hence new proxies built for a future request.
+ * Memory leaks when using Connection::FeatureRoster/RosterGroups where the
+   connection and roster channels were leaking.
+ * fd.o#29728 - ContactManager::addGroup and removeGroup are confusing/broken.
+ * fd.o#29735 - Roster API semantics are error / race condition prone.
 
 telepathy-qt4 0.5.1 (2010-12-08)
 =================================
