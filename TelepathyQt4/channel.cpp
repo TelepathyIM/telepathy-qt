@@ -20,10 +20,13 @@
  */
 
 #include <TelepathyQt4/Channel>
+#include "TelepathyQt4/channel-internal.h"
 
 #include "TelepathyQt4/_gen/cli-channel-body.hpp"
 #include "TelepathyQt4/_gen/cli-channel.moc.hpp"
 #include "TelepathyQt4/_gen/channel.moc.hpp"
+#include "TelepathyQt4/_gen/channel-internal.moc.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include "TelepathyQt4/future-internal.h"
@@ -1555,6 +1558,84 @@ PendingOperation *Channel::requestClose()
     return new PendingVoid(mPriv->baseInterface->Close(), ChannelPtr(this));
 }
 
+Channel::PendingLeave::PendingLeave(const ChannelPtr &chan, const QString &message,
+        ChannelGroupChangeReason reason)
+    : PendingOperation(chan)
+{
+    Q_ASSERT(chan->mPriv->group != NULL);
+
+    QDBusPendingCall call =
+        chan->mPriv->group->RemoveMembersWithReason(
+                UIntList() << chan->mPriv->groupSelfHandle,
+                message,
+                reason);
+
+    connect(chan.data(),
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            this,
+            SLOT(onChanInvalidated(Tp::DBusProxy*)));
+
+    connect(new PendingVoid(call, chan),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            this,
+            SLOT(onRemoveFinished(Tp::PendingOperation*)));
+}
+
+void Channel::PendingLeave::onChanInvalidated(Tp::DBusProxy *proxy)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    debug() << "Finishing PendingLeave successfully as the channel was invalidated";
+
+    setFinished();
+}
+
+void Channel::PendingLeave::onRemoveFinished(Tp::PendingOperation *op)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    ChannelPtr chan = ChannelPtr::staticCast(object());
+
+    if (op->isValid()) {
+        debug() << "We left the channel" << chan->objectPath();
+        setFinished();
+        return;
+    }
+
+    debug() << "Leave RemoveMembersWithReason failed with " << op->errorName() << op->errorMessage()
+        << "- falling back to Close";
+
+    // If the channel has been closed or otherwise invalidated already in this mainloop iteration,
+    // the requestClose() operation will early-succeed
+    connect(chan->requestClose(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            this,
+            SLOT(onCloseFinished(Tp::PendingOperation*)));
+}
+
+void Channel::PendingLeave::onCloseFinished(Tp::PendingOperation *op)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    ChannelPtr chan = ChannelPtr::staticCast(object());
+
+    if (op->isError()) {
+        warning() << "Closing the channel" << chan->objectPath()
+            << "as a fallback for leaving it failed with"
+            << op->errorName() << op->errorMessage() << "- so didn't leave";
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    } else {
+        debug() << "We left (by closing) the channel" << chan->objectPath();
+        setFinished();
+    }
+}
+
 /**
  * Start an asynchronous request to leave this channel as gracefully as possible.
  *
@@ -1603,11 +1684,7 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
     }
 
     // TODO: use PendingLeave which handles errors correctly by falling back to Close
-    return new PendingVoid(mPriv->group->RemoveMembersWithReason(
-                UIntList() << mPriv->groupSelfHandle,
-                message,
-                reason),
-            ChannelPtr(this));
+    return new PendingLeave(ChannelPtr(this), message, reason);
 }
 
 /**

@@ -238,6 +238,9 @@ private Q_SLOTS:
     void gotConferenceChannelRemovedActorContact(Tp::PendingOperation *op);
 
 private:
+    class PendingLeave;
+    friend class PendingLeave;
+
     struct Private;
     friend struct Private;
     Private *mPriv;
