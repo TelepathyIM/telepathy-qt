@@ -39,6 +39,8 @@ public:
 private Q_SLOTS:
     void onChanInvalidated(Tp::DBusProxy *proxy);
     void onRemoveFinished(Tp::PendingOperation *);
+    void onMembersChanged(const Tp::Contacts &, const Tp::Contacts &, const Tp::Contacts &,
+            const Tp::Contacts &);
     void onCloseFinished(Tp::PendingOperation *);
 };
 

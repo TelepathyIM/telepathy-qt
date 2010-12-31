@@ -1602,7 +1602,22 @@ void Channel::PendingLeave::onRemoveFinished(Tp::PendingOperation *op)
 
     if (op->isValid()) {
         debug() << "We left the channel" << chan->objectPath();
-        setFinished();
+
+        ContactPtr c = chan->groupSelfContact();
+
+        if (chan->groupContacts().contains(c)
+                || chan->groupLocalPendingContacts().contains(c)
+                || chan->groupRemotePendingContacts().contains(c)) {
+            debug() << "Waiting for self remove to be picked up";
+            connect(chan.data(),
+                    SIGNAL(groupMembersChanged(Tp::Contacts,Tp::Contacts,Tp::Contacts,Tp::Contacts,
+                            Tp::Channel::GroupMemberChangeDetails)),
+                    this,
+                    SLOT(onMembersChanged(Tp::Contacts,Tp::Contacts,Tp::Contacts,Tp::Contacts)));
+        } else {
+            setFinished();
+        }
+
         return;
     }
 
@@ -1615,6 +1630,22 @@ void Channel::PendingLeave::onRemoveFinished(Tp::PendingOperation *op)
             SIGNAL(finished(Tp::PendingOperation*)),
             this,
             SLOT(onCloseFinished(Tp::PendingOperation*)));
+}
+
+void Channel::PendingLeave::onMembersChanged(const Tp::Contacts &, const Tp::Contacts &,
+        const Tp::Contacts &, const Tp::Contacts &removed)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    ChannelPtr chan = ChannelPtr::staticCast(object());
+    ContactPtr c = chan->groupSelfContact();
+
+    if (removed.contains(c)) {
+        debug() << "Leave event picked up for" << chan->objectPath();
+        setFinished();
+    }
 }
 
 void Channel::PendingLeave::onCloseFinished(Tp::PendingOperation *op)

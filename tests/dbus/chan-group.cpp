@@ -430,29 +430,15 @@ void TestChanGroup::testLeave()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
+    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+
     QString leaveMessage(QLatin1String("I'm sick of this lot"));
     QVERIFY(connect(mChan->requestLeave(leaveMessage),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    if (!mChan->groupSelfContactRemoveInfo().isValid()) {
-        // Wait for the group to pick up the self remove
-        QVERIFY(connect(mChan.data(),
-                    SIGNAL(groupMembersChanged(
-                            const Tp::Contacts &,
-                            const Tp::Contacts &,
-                            const Tp::Contacts &,
-                            const Tp::Contacts &,
-                            const Tp::Channel::GroupMemberChangeDetails &)),
-                    SLOT(onGroupMembersChanged(
-                            const Tp::Contacts &,
-                            const Tp::Contacts &,
-                            const Tp::Contacts &,
-                            const Tp::Contacts &,
-                            const Tp::Channel::GroupMemberChangeDetails &))));
-        QCOMPARE(mLoop->exec(), 0);
-    }
+    QVERIFY(!mChan->groupContacts().contains(mConn->selfContact()));
 
     // We left gracefully, which we have details for.
     // Unfortunately, the test CM used here ignores the message and the reason specified, so can't
