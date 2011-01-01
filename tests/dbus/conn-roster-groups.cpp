@@ -483,15 +483,6 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    qDebug() << "waiting for group to be added";
-
-    // FIXME: Remove this once fd.o #29728 is fixed
-    while (!mConn->contactManager()->allKnownGroups().contains(QLatin1String("My successful entourage"))) {
-        mLoop->processEvents();
-    }
-
-    qDebug() << "group has been added";
-
     QVERIFY(connect(mConn->contactManager()->addContactsToGroup(QLatin1String("My successful entourage"),
                     QList<ContactPtr>() << mContact),
                 SIGNAL(finished(Tp::PendingOperation*)),
