@@ -448,6 +448,12 @@ void TestChanGroup::testLeave()
     QVERIFY(mChan->groupSelfContactRemoveInfo().isValid());
     QVERIFY(mChan->groupSelfContactRemoveInfo().hasActor());
     QVERIFY(mChan->groupSelfContactRemoveInfo().actor() == mConn->selfContact());
+
+    // Another leave should no-op succeed, because we aren't a member
+    QVERIFY(connect(mChan->requestLeave(leaveMessage),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
 }
 
 void TestChanGroup::testLeaveWithFallback()

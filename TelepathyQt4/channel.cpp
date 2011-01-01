@@ -1708,13 +1708,15 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
         return requestClose();
     }
 
-    if (mPriv->groupSelfContactRemoveInfo.isValid()) {
+    ContactPtr self = groupSelfContact();
+
+    if (!groupContacts().contains(self) && !groupLocalPendingContacts().contains(self)
+            && !groupRemotePendingContacts().contains(self)) {
         debug() << "Channel::requestLeave() called for " << objectPath() <<
-            "which has already been left";
+            "which we aren't a member of";
         return new PendingSuccess(ChannelPtr(this));
     }
 
-    // TODO: use PendingLeave which handles errors correctly by falling back to Close
     return new PendingLeave(ChannelPtr(this), message, reason);
 }
 
