@@ -508,6 +508,11 @@ void TestChanGroup::cleanup()
         mChanService = 0;
     }
 
+    // Avoid D-Bus event leak from one test case to another - I've seen this with the
+    // testCreateChannel groupMembersChanged leaking at least
+    processDBusQueue(mConn.data());
+    mChan.reset();
+
     cleanupImpl();
 }
 
