@@ -361,6 +361,12 @@ void TestConnRosterGroups::testNotADeathTrap()
 
     QVERIFY(mContact->subscriptionState() != Contact::PresenceStateNo);
 
+    // Bah... The test CM fails to cancel its "accept auth request" synthesized event even if we
+    // cancel the subscription request, and that event may screw up the rest of the test. So, wait
+    // for the event here.
+    while (mContact->subscriptionState() != Contact::PresenceStateYes)
+        mLoop->processEvents();
+
     QVERIFY(connect(mConn->contactManager()->removePresenceSubscription(
                     QList<ContactPtr>() << mContact,
                     QLatin1String("Please don't fail")),
@@ -442,6 +448,12 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(mContact->subscriptionState() != Contact::PresenceStateNo);
+
+    // Bah... The test CM fails to cancel its "accept auth request" synthesized event even if we
+    // cancel the subscription request, and that event may screw up the rest of the test. So, wait
+    // for the event here.
+    while (mContact->subscriptionState() != Contact::PresenceStateYes)
+        mLoop->processEvents();
 
     QVERIFY(connect(mConn->contactManager()->removePresenceSubscription(
                     QList<ContactPtr>() << mContact,
