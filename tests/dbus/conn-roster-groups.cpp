@@ -68,7 +68,8 @@ private:
     bool mConnInvalidated;
 };
 
-void TestConnRosterGroups::causeCongestion(const ConnectionPtr &conn, const ContactPtr &contact) {
+void TestConnRosterGroups::causeCongestion(const ConnectionPtr &conn, const ContactPtr &contact)
+{
     // Cause some congestion in the roster events queue so we can check that it doesn't cause
     // inconsistent event reordering
     for (int i = 0; i < 5; i++) {
