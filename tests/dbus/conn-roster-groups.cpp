@@ -34,6 +34,9 @@ public:
           mContactsAddedToGroup(0), mContactsRemovedFromGroup(0)
     { }
 
+private:
+    void causeCongestion(const ConnectionPtr &conn, const ContactPtr &contact);
+
 protected Q_SLOTS:
     void onGroupAdded(const QString &group);
     void onGroupRemoved(const QString &group);
@@ -65,29 +68,53 @@ private:
     bool mConnInvalidated;
 };
 
+void TestConnRosterGroups::causeCongestion(const ConnectionPtr &conn, const ContactPtr &contact) {
+    // Cause some congestion in the roster events queue so we can check that it doesn't cause
+    // inconsistent event reordering
+    for (int i = 0; i < 100; i++) {
+        QString name = QString(QLatin1String("Rush%1")).arg(i);
+        conn->contactManager()->addGroup(name);
+        conn->contactManager()->addContactsToGroup(name, QList<ContactPtr>() << contact);
+        contact->requestPresenceSubscription();
+        contact->removePresenceSubscription();
+        conn->contactManager()->removeGroup(name);
+    }
+}
+
 void TestConnRosterGroups::onGroupAdded(const QString &group)
 {
+    if (group.startsWith(QLatin1String("Rush"))) {
+        return;
+    }
+
     mGroupAdded = group;
-    mLoop->exit(0);
 }
 
 void TestConnRosterGroups::onGroupRemoved(const QString &group)
 {
-    mGroupRemoved = group;
-    mLoop->exit(0);
-}
+    if (group.startsWith(QLatin1String("Rush"))) {
+        return;
+    }
 
+    mGroupRemoved = group;
+}
 
 void TestConnRosterGroups::onContactAddedToGroup(const QString &group)
 {
+    if (group.startsWith(QLatin1String("Rush"))) {
+        return;
+    }
+
     mContactsAddedToGroup++;
-    mLoop->exit(0);
 }
 
 void TestConnRosterGroups::onContactRemovedFromGroup(const QString &group)
 {
+    if (group.startsWith(QLatin1String("Rush"))) {
+        return;
+    }
+
     mContactsRemovedFromGroup++;
-    mLoop->exit(0);
 }
 
 void TestConnRosterGroups::expectConnInvalidated()
@@ -162,7 +189,8 @@ void TestConnRosterGroups::testRosterGroups()
     QCOMPARE(mConn->isReady(), true);
     QCOMPARE(mConn->status(), ConnectionStatusConnected);
 
-    Features features = Features() << Connection::FeatureRoster << Connection::FeatureRosterGroups;
+    Features features = Features() << Connection::FeatureRoster << Connection::FeatureRosterGroups
+        << Connection::FeatureSelfContact;
     QVERIFY(connect(mConn->becomeReady(features),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -182,17 +210,20 @@ void TestConnRosterGroups::testRosterGroups()
     QString group(QLatin1String("foo"));
     QVERIFY(contactManager->groupContacts(group).isEmpty());
 
+    causeCongestion(mConn, mConn->selfContact());
+
     // add group foo
     QVERIFY(connect(contactManager.data(),
                     SIGNAL(groupAdded(const QString&)),
                     SLOT(onGroupAdded(const QString&))));
+
+    causeCongestion(mConn, mConn->selfContact());
+
     QVERIFY(connect(contactManager->addGroup(group),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    while (mGroupAdded.isEmpty()) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
+    QVERIFY(!mGroupAdded.isEmpty());
     QCOMPARE(mGroupAdded, group);
 
     expectedGroups << group;
@@ -201,6 +232,8 @@ void TestConnRosterGroups::testRosterGroups()
     groups.sort();
     QCOMPARE(groups, expectedGroups);
 
+    causeCongestion(mConn, mConn->selfContact());
+
     // add Montreal contacts to group foo
     Contacts contacts = contactManager->groupContacts(QLatin1String("Montreal"));
     Q_FOREACH (const ContactPtr &contact, contacts) {
@@ -208,16 +241,19 @@ void TestConnRosterGroups::testRosterGroups()
                         SIGNAL(addedToGroup(const QString&)),
                         SLOT(onContactAddedToGroup(const QString&))));
     }
+
+    causeCongestion(mConn, mConn->selfContact());
+
     QVERIFY(connect(contactManager->addContactsToGroup(group, contacts.toList()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    while (mContactsAddedToGroup != contacts.size()) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
+    QCOMPARE(mContactsAddedToGroup, contacts.size());
     Q_FOREACH (const ContactPtr &contact, contacts) {
         QVERIFY(contact->groups().contains(group));
     }
+
+    causeCongestion(mConn, mConn->selfContact());
 
     // remove all contacts from group foo
     contacts = contactManager->groupContacts(group);
@@ -226,28 +262,32 @@ void TestConnRosterGroups::testRosterGroups()
                         SIGNAL(removedFromGroup(const QString&)),
                         SLOT(onContactRemovedFromGroup(const QString&))));
     }
+
+    causeCongestion(mConn, mConn->selfContact());
+
     QVERIFY(connect(contactManager->removeContactsFromGroup(group, contacts.toList()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    while (mContactsRemovedFromGroup != contacts.size()) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
+    QCOMPARE(mContactsRemovedFromGroup, contacts.size());
     Q_FOREACH (const ContactPtr &contact, contacts) {
         QVERIFY(!contact->groups().contains(group));
     }
 
-    // add group foo
+    causeCongestion(mConn, mConn->selfContact());
+
+    // remove group foo
     QVERIFY(connect(contactManager.data(),
                     SIGNAL(groupRemoved(const QString&)),
                     SLOT(onGroupRemoved(const QString&))));
+
+    causeCongestion(mConn, mConn->selfContact());
+
     QVERIFY(connect(contactManager->removeGroup(group),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    while (mGroupRemoved.isEmpty()) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
+    QVERIFY(!mGroupRemoved.isEmpty());
     QCOMPARE(mGroupRemoved, group);
 
     expectedGroups.removeOne(group);
@@ -351,6 +391,8 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
+    causeCongestion(mConn, mContact);
+
     // The roster functions should work now
     QVERIFY(connect(mConn->contactManager()->requestPresenceSubscription(
                     QList<ContactPtr>() << mContact,
@@ -361,11 +403,7 @@ void TestConnRosterGroups::testNotADeathTrap()
 
     QVERIFY(mContact->subscriptionState() != Contact::PresenceStateNo);
 
-    // Bah... The test CM fails to cancel its "accept auth request" synthesized event even if we
-    // cancel the subscription request, and that event may screw up the rest of the test. So, wait
-    // for the event here.
-    while (mContact->subscriptionState() != Contact::PresenceStateYes)
-        mLoop->processEvents();
+    causeCongestion(mConn, mContact);
 
     QVERIFY(connect(mConn->contactManager()->removePresenceSubscription(
                     QList<ContactPtr>() << mContact,
@@ -376,12 +414,16 @@ void TestConnRosterGroups::testNotADeathTrap()
 
     QCOMPARE(mContact->subscriptionState(), Contact::PresenceStateNo);
 
+    causeCongestion(mConn, mContact);
+
     QVERIFY(connect(mConn->contactManager()->authorizePresencePublication(
                     QList<ContactPtr>() << mContact,
                     QLatin1String("Please don't fail")),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+
+    causeCongestion(mConn, mContact);
 
     QVERIFY(connect(mConn->contactManager()->removePresencePublication(
                     QList<ContactPtr>() << mContact,
@@ -440,6 +482,8 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
+    causeCongestion(mConn, mContact);
+
     QVERIFY(connect(mConn->contactManager()->requestPresenceSubscription(
                     QList<ContactPtr>() << mContact,
                     QLatin1String("Please don't fail")),
@@ -449,11 +493,7 @@ void TestConnRosterGroups::testNotADeathTrap()
 
     QVERIFY(mContact->subscriptionState() != Contact::PresenceStateNo);
 
-    // Bah... The test CM fails to cancel its "accept auth request" synthesized event even if we
-    // cancel the subscription request, and that event may screw up the rest of the test. So, wait
-    // for the event here.
-    while (mContact->subscriptionState() != Contact::PresenceStateYes)
-        mLoop->processEvents();
+    causeCongestion(mConn, mContact);
 
     QVERIFY(connect(mConn->contactManager()->removePresenceSubscription(
                     QList<ContactPtr>() << mContact,
@@ -478,10 +518,16 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
+    causeCongestion(mConn, mContact);
+
     QVERIFY(connect(mConn->contactManager()->addGroup(QLatin1String("My successful entourage")),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(mConn->contactManager()->allKnownGroups().contains(QLatin1String("My successful entourage")));
+
+    causeCongestion(mConn, mContact);
 
     QVERIFY(connect(mConn->contactManager()->addContactsToGroup(QLatin1String("My successful entourage"),
                     QList<ContactPtr>() << mContact),
@@ -489,16 +535,28 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
+    QVERIFY(mConn->contactManager()->
+        groupContacts(QLatin1String("My successful entourage")).contains(mContact));
+
+    causeCongestion(mConn, mContact);
+
     QVERIFY(connect(mConn->contactManager()->removeContactsFromGroup(QLatin1String("My successful entourage"),
                     QList<ContactPtr>() << mContact),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
+    QVERIFY(!mConn->contactManager()->
+        groupContacts(QLatin1String("My successful entourage")).contains(mContact));
+
+    causeCongestion(mConn, mContact);
+
     QVERIFY(connect(mConn->contactManager()->removeGroup(QLatin1String("My successful entourage")),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(!mConn->contactManager()->allKnownGroups().contains(QLatin1String("My successful entourage")));
 
     // Now, invalidate the connection by disconnecting it
     QVERIFY(connect(mConn.data(),
