@@ -156,6 +156,9 @@ private Q_SLOTS:
     void onContactListGroupRenamed(const QString &oldName, const QString &newName);
     void onContactListGroupsRemoved(const QStringList &names);
 
+    void onModifyFinished(Tp::PendingOperation *op);
+    void onModifyFinishSignaled();
+
     void onStoredChannelMembersChangedFallback(
         const Tp::Contacts &groupMembersAdded,
         const Tp::Contacts &groupLocalPendingMembersAdded,

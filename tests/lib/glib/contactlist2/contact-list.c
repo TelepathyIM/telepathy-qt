@@ -883,6 +883,10 @@ receive_authorized (gpointer p)
   if (d->subscribe)
     return FALSE;
 
+  /* DITTO, if our subscription request was cancelled in the meantime */
+  if (!d->subscribe_requested)
+    return FALSE;
+
   d->subscribe_requested = FALSE;
   d->subscribe_rejected = FALSE;
   d->subscribe = TRUE;

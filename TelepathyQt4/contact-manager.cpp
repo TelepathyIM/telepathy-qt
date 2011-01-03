@@ -65,6 +65,9 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     void processContactListGroupsCreated();
     void processContactListGroupRenamed();
     void processContactListGroupsRemoved();
+    void processFinishedModify();
+
+    PendingOperation *queuedFinishVoid(const QDBusPendingCall &call);
 
     Contacts allKnownContactsFallback() const;
     void computeKnownContactsChangesFallback(const Contacts &added,
@@ -124,6 +127,9 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     QQueue<ContactListGroupRenamedInfo> contactListGroupRenamedQueue;
     QQueue<QStringList> contactListGroupsRemovedQueue;
     bool processingContactListChanges;
+
+    QMap<Tp::PendingOperation * /* actual */, Tp::RosterModifyFinishOp *> returnedModifyOps;
+    QQueue<RosterModifyFinishOp *> modifyFinishQueue;
 
     // old roster API
     QMap<uint, ContactListChannel> contactListChannels;
@@ -374,6 +380,36 @@ void ContactManager::Private::processContactListGroupsRemoved()
 
     processingContactListChanges = false;
     processContactListChanges();
+}
+
+void ContactManager::Private::processFinishedModify()
+{
+    RosterModifyFinishOp *op = modifyFinishQueue.dequeue();
+    // Only continue processing changes (and thus, emitting change signals) when the op has signaled
+    // finish (it'll only do this after we've returned to the mainloop)
+    connect(op,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            parent,
+            SLOT(onModifyFinishSignaled()));
+    op->finish();
+}
+
+PendingOperation *ContactManager::Private::queuedFinishVoid(const QDBusPendingCall &call)
+{
+    PendingOperation *actual = new PendingVoid(call, parent->connection());
+    connect(actual,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            parent,
+            SLOT(onModifyFinished(Tp::PendingOperation*)));
+    RosterModifyFinishOp *toReturn = new RosterModifyFinishOp(parent->connection());
+    returnedModifyOps.insert(actual, toReturn);
+    return toReturn;
+}
+
+void ContactManager::onModifyFinishSignaled()
+{
+    mPriv->processingContactListChanges = false;
+    mPriv->processContactListChanges();
 }
 
 Contacts ContactManager::Private::allKnownContactsFallback() const
@@ -814,7 +850,7 @@ PendingOperation *ContactManager::addGroup(const QString &group)
     Client::ConnectionInterfaceContactGroupsInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->AddToGroup(group, UIntList()), connection());
+    return mPriv->queuedFinishVoid(iface->AddToGroup(group, UIntList()));
 }
 
 /**
@@ -859,7 +895,7 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
     Client::ConnectionInterfaceContactGroupsInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->RemoveGroup(group), connection());
+    return mPriv->queuedFinishVoid(iface->RemoveGroup(group));
 }
 
 /**
@@ -938,7 +974,7 @@ PendingOperation *ContactManager::addContactsToGroup(const QString &group,
     Client::ConnectionInterfaceContactGroupsInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->AddToGroup(group, handles), connection());
+    return mPriv->queuedFinishVoid(iface->AddToGroup(group, handles));
 }
 
 /**
@@ -983,7 +1019,7 @@ PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
     Client::ConnectionInterfaceContactGroupsInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->RemoveFromGroup(group, handles), connection());
+    return mPriv->queuedFinishVoid(iface->RemoveFromGroup(group, handles));
 }
 
 /**
@@ -1088,7 +1124,7 @@ PendingOperation *ContactManager::requestPresenceSubscription(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->RequestSubscription(handles, message), connection());
+    return mPriv->queuedFinishVoid(iface->RequestSubscription(handles, message));
 }
 
 /**
@@ -1226,7 +1262,8 @@ PendingOperation *ContactManager::removePresenceSubscription(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->Unsubscribe(handles), connection());
+
+    return mPriv->queuedFinishVoid(iface->Unsubscribe(handles));
 }
 
 /**
@@ -1318,7 +1355,7 @@ PendingOperation *ContactManager::authorizePresencePublication(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->AuthorizePublication(handles), connection());
+    return mPriv->queuedFinishVoid(iface->AuthorizePublication(handles));
 }
 
 /**
@@ -1443,7 +1480,7 @@ PendingOperation *ContactManager::removePresencePublication(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->Unpublish(handles), connection());
+    return mPriv->queuedFinishVoid(iface->Unpublish(handles));
 }
 
 /**
@@ -1482,7 +1519,7 @@ PendingOperation *ContactManager::removeContacts(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->RemoveContacts(handles), connection());
+    return mPriv->queuedFinishVoid(iface->RemoveContacts(handles));
 }
 
 /**
@@ -1932,6 +1969,22 @@ void ContactManager::onContactListGroupsRemoved(const QStringList &names)
 
     mPriv->contactListGroupsRemovedQueue.enqueue(names);
     mPriv->contactListChangesQueue.enqueue(&Private::processContactListGroupsRemoved);
+    mPriv->processContactListChanges();
+}
+
+void ContactManager::onModifyFinished(Tp::PendingOperation *op)
+{
+    RosterModifyFinishOp *returned = mPriv->returnedModifyOps.take(op);
+
+    // Finished twice, or we didn't add the returned op at all?
+    Q_ASSERT(returned);
+
+    if (op->isError()) {
+        returned->setError(op->errorName(), op->errorMessage());
+    }
+
+    mPriv->modifyFinishQueue.enqueue(returned);
+    mPriv->contactListChangesQueue.enqueue(&Private::processFinishedModify);
     mPriv->processContactListChanges();
 }
 
@@ -2429,6 +2482,31 @@ void PendingContactManagerRemoveContactListGroup::onChannelClosed(PendingOperati
         setFinished();
     } else {
         setFinishedWithError(op->errorName(), op->errorMessage());
+    }
+}
+
+RosterModifyFinishOp::RosterModifyFinishOp(const ConnectionPtr &conn)
+    : PendingOperation(conn)
+{
+}
+
+void RosterModifyFinishOp::setError(const QString &errorName, const QString &errorMessage)
+{
+    Q_ASSERT(this->errorName.isEmpty());
+    Q_ASSERT(this->errorMessage.isEmpty());
+
+    Q_ASSERT(!errorName.isEmpty());
+
+    this->errorName = errorName;
+    this->errorMessage = errorMessage;
+}
+
+void RosterModifyFinishOp::finish()
+{
+    if (errorName.isEmpty()) {
+        setFinished();
+    } else {
+        setFinishedWithError(errorName, errorMessage);
     }
 }
 
