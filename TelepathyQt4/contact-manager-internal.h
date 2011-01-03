@@ -41,6 +41,21 @@ private Q_SLOTS:
     void onChannelClosed(Tp::PendingOperation *);
 };
 
+class TELEPATHY_QT4_NO_EXPORT RosterModifyFinishOp : public PendingOperation
+{
+    Q_OBJECT
+
+public:
+    RosterModifyFinishOp(const ConnectionPtr &conn);
+    ~RosterModifyFinishOp() {};
+
+    void setError(const QString &errorName, const QString &errorMessage);
+    void finish();
+
+private:
+    QString errorName, errorMessage;
+};
+
 } // Tp
 
 #endif

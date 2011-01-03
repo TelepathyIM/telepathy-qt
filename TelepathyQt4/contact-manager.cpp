@@ -65,6 +65,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     void processContactListGroupsCreated();
     void processContactListGroupRenamed();
     void processContactListGroupsRemoved();
+    void processFinishedModify();
 
     Contacts allKnownContactsFallback() const;
     void computeKnownContactsChangesFallback(const Contacts &added,
@@ -124,6 +125,9 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     QQueue<ContactListGroupRenamedInfo> contactListGroupRenamedQueue;
     QQueue<QStringList> contactListGroupsRemovedQueue;
     bool processingContactListChanges;
+
+    QMap<Tp::PendingOperation * /* actual */, Tp::RosterModifyFinishOp *> returnedModifyOps;
+    QQueue<RosterModifyFinishOp *> modifyFinishQueue;
 
     // old roster API
     QMap<uint, ContactListChannel> contactListChannels;
@@ -374,6 +378,24 @@ void ContactManager::Private::processContactListGroupsRemoved()
 
     processingContactListChanges = false;
     processContactListChanges();
+}
+
+void ContactManager::Private::processFinishedModify()
+{
+    RosterModifyFinishOp *op = modifyFinishQueue.dequeue();
+    // Only continue processing changes (and thus, emitting change signals) when the op has signaled
+    // finish (it'll only do this after we've returned to the mainloop)
+    connect(op,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            parent,
+            SLOT(onModifyFinishSignaled()));
+    op->finish();
+}
+
+void ContactManager::onModifyFinishSignaled()
+{
+    mPriv->processingContactListChanges = false;
+    mPriv->processContactListChanges();
 }
 
 Contacts ContactManager::Private::allKnownContactsFallback() const
@@ -1226,7 +1248,16 @@ PendingOperation *ContactManager::removePresenceSubscription(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->Unsubscribe(handles), connection());
+
+    // TODO: generalize and make other modify ops use this mechanism too
+    PendingOperation *actual = new PendingVoid(iface->Unsubscribe(handles), connection());
+    connect(actual,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            this,
+            SLOT(onModifyFinished(Tp::PendingOperation*)));
+    RosterModifyFinishOp *toReturn = new RosterModifyFinishOp(connection());
+    mPriv->returnedModifyOps.insert(actual, toReturn);
+    return toReturn;
 }
 
 /**
@@ -1935,6 +1966,22 @@ void ContactManager::onContactListGroupsRemoved(const QStringList &names)
     mPriv->processContactListChanges();
 }
 
+void ContactManager::onModifyFinished(Tp::PendingOperation *op)
+{
+    RosterModifyFinishOp *returned = mPriv->returnedModifyOps.take(op);
+
+    // Finished twice, or we didn't add the returned op at all?
+    Q_ASSERT(returned);
+
+    if (op->isError()) {
+        returned->setError(op->errorName(), op->errorMessage());
+    }
+
+    mPriv->modifyFinishQueue.enqueue(returned);
+    mPriv->contactListChangesQueue.enqueue(&Private::processFinishedModify);
+    mPriv->processContactListChanges();
+}
+
 void ContactManager::onStoredChannelMembersChangedFallback(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -2429,6 +2476,31 @@ void PendingContactManagerRemoveContactListGroup::onChannelClosed(PendingOperati
         setFinished();
     } else {
         setFinishedWithError(op->errorName(), op->errorMessage());
+    }
+}
+
+RosterModifyFinishOp::RosterModifyFinishOp(const ConnectionPtr &conn)
+    : PendingOperation(conn)
+{
+}
+
+void RosterModifyFinishOp::setError(const QString &errorName, const QString &errorMessage)
+{
+    Q_ASSERT(this->errorName.isEmpty());
+    Q_ASSERT(this->errorMessage.isEmpty());
+
+    Q_ASSERT(!errorName.isEmpty());
+
+    this->errorName = errorName;
+    this->errorMessage = errorMessage;
+}
+
+void RosterModifyFinishOp::finish()
+{
+    if (errorName.isEmpty()) {
+        setFinished();
+    } else {
+        setFinishedWithError(errorName, errorMessage);
     }
 }
 
