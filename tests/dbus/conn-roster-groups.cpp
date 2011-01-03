@@ -361,6 +361,12 @@ void TestConnRosterGroups::testNotADeathTrap()
 
     QVERIFY(mContact->subscriptionState() != Contact::PresenceStateNo);
 
+    // Bah... The test CM fails to cancel its "accept auth request" synthesized event even if we
+    // cancel the subscription request, and that event may screw up the rest of the test. So, wait
+    // for the event here.
+    while (mContact->subscriptionState() != Contact::PresenceStateYes)
+        mLoop->processEvents();
+
     QVERIFY(connect(mConn->contactManager()->removePresenceSubscription(
                     QList<ContactPtr>() << mContact,
                     QLatin1String("Please don't fail")),
@@ -443,6 +449,12 @@ void TestConnRosterGroups::testNotADeathTrap()
 
     QVERIFY(mContact->subscriptionState() != Contact::PresenceStateNo);
 
+    // Bah... The test CM fails to cancel its "accept auth request" synthesized event even if we
+    // cancel the subscription request, and that event may screw up the rest of the test. So, wait
+    // for the event here.
+    while (mContact->subscriptionState() != Contact::PresenceStateYes)
+        mLoop->processEvents();
+
     QVERIFY(connect(mConn->contactManager()->removePresenceSubscription(
                     QList<ContactPtr>() << mContact,
                     QLatin1String("Please don't fail")),
@@ -470,15 +482,6 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-
-    qDebug() << "waiting for group to be added";
-
-    // FIXME: Remove this once fd.o #29728 is fixed
-    while (!mConn->contactManager()->allKnownGroups().contains(QLatin1String("My successful entourage"))) {
-        mLoop->processEvents();
-    }
-
-    qDebug() << "group has been added";
 
     QVERIFY(connect(mConn->contactManager()->addContactsToGroup(QLatin1String("My successful entourage"),
                     QList<ContactPtr>() << mContact),
