@@ -67,6 +67,8 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     void processContactListGroupsRemoved();
     void processFinishedModify();
 
+    PendingOperation *queuedFinishVoid(const QDBusPendingCall &call);
+
     Contacts allKnownContactsFallback() const;
     void computeKnownContactsChangesFallback(const Contacts &added,
             const Contacts &pendingAdded, const Contacts &remotePendingAdded,
@@ -390,6 +392,18 @@ void ContactManager::Private::processFinishedModify()
             parent,
             SLOT(onModifyFinishSignaled()));
     op->finish();
+}
+
+PendingOperation *ContactManager::Private::queuedFinishVoid(const QDBusPendingCall &call)
+{
+    PendingOperation *actual = new PendingVoid(call, parent->connection());
+    connect(actual,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            parent,
+            SLOT(onModifyFinished(Tp::PendingOperation*)));
+    RosterModifyFinishOp *toReturn = new RosterModifyFinishOp(parent->connection());
+    returnedModifyOps.insert(actual, toReturn);
+    return toReturn;
 }
 
 void ContactManager::onModifyFinishSignaled()
@@ -836,7 +850,7 @@ PendingOperation *ContactManager::addGroup(const QString &group)
     Client::ConnectionInterfaceContactGroupsInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->AddToGroup(group, UIntList()), connection());
+    return mPriv->queuedFinishVoid(iface->AddToGroup(group, UIntList()));
 }
 
 /**
@@ -881,7 +895,7 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
     Client::ConnectionInterfaceContactGroupsInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->RemoveGroup(group), connection());
+    return mPriv->queuedFinishVoid(iface->RemoveGroup(group));
 }
 
 /**
@@ -960,7 +974,7 @@ PendingOperation *ContactManager::addContactsToGroup(const QString &group,
     Client::ConnectionInterfaceContactGroupsInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->AddToGroup(group, handles), connection());
+    return mPriv->queuedFinishVoid(iface->AddToGroup(group, handles));
 }
 
 /**
@@ -1005,7 +1019,7 @@ PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
     Client::ConnectionInterfaceContactGroupsInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactGroupsInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->RemoveFromGroup(group, handles), connection());
+    return mPriv->queuedFinishVoid(iface->RemoveFromGroup(group, handles));
 }
 
 /**
@@ -1110,7 +1124,7 @@ PendingOperation *ContactManager::requestPresenceSubscription(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->RequestSubscription(handles, message), connection());
+    return mPriv->queuedFinishVoid(iface->RequestSubscription(handles, message));
 }
 
 /**
@@ -1249,15 +1263,7 @@ PendingOperation *ContactManager::removePresenceSubscription(
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
 
-    // TODO: generalize and make other modify ops use this mechanism too
-    PendingOperation *actual = new PendingVoid(iface->Unsubscribe(handles), connection());
-    connect(actual,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            this,
-            SLOT(onModifyFinished(Tp::PendingOperation*)));
-    RosterModifyFinishOp *toReturn = new RosterModifyFinishOp(connection());
-    mPriv->returnedModifyOps.insert(actual, toReturn);
-    return toReturn;
+    return mPriv->queuedFinishVoid(iface->Unsubscribe(handles));
 }
 
 /**
@@ -1349,7 +1355,7 @@ PendingOperation *ContactManager::authorizePresencePublication(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->AuthorizePublication(handles), connection());
+    return mPriv->queuedFinishVoid(iface->AuthorizePublication(handles));
 }
 
 /**
@@ -1474,7 +1480,7 @@ PendingOperation *ContactManager::removePresencePublication(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->Unpublish(handles), connection());
+    return mPriv->queuedFinishVoid(iface->Unpublish(handles));
 }
 
 /**
@@ -1513,7 +1519,7 @@ PendingOperation *ContactManager::removeContacts(
     Client::ConnectionInterfaceContactListInterface *iface =
         connection()->interface<Client::ConnectionInterfaceContactListInterface>();
     Q_ASSERT(iface);
-    return new PendingVoid(iface->RemoveContacts(handles), connection());
+    return mPriv->queuedFinishVoid(iface->RemoveContacts(handles));
 }
 
 /**
