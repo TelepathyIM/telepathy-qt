@@ -20,10 +20,13 @@
  */
 
 #include <TelepathyQt4/Channel>
+#include "TelepathyQt4/channel-internal.h"
 
 #include "TelepathyQt4/_gen/cli-channel-body.hpp"
 #include "TelepathyQt4/_gen/cli-channel.moc.hpp"
 #include "TelepathyQt4/_gen/channel.moc.hpp"
+#include "TelepathyQt4/_gen/channel-internal.moc.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include "TelepathyQt4/future-internal.h"
@@ -1555,6 +1558,168 @@ PendingOperation *Channel::requestClose()
     return new PendingVoid(mPriv->baseInterface->Close(), ChannelPtr(this));
 }
 
+Channel::PendingLeave::PendingLeave(const ChannelPtr &chan, const QString &message,
+        ChannelGroupChangeReason reason)
+    : PendingOperation(chan)
+{
+    Q_ASSERT(chan->mPriv->group != NULL);
+
+    QDBusPendingCall call =
+        chan->mPriv->group->RemoveMembersWithReason(
+                UIntList() << chan->mPriv->groupSelfHandle,
+                message,
+                reason);
+
+    connect(chan.data(),
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            this,
+            SLOT(onChanInvalidated(Tp::DBusProxy*)));
+
+    connect(new PendingVoid(call, chan),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            this,
+            SLOT(onRemoveFinished(Tp::PendingOperation*)));
+}
+
+void Channel::PendingLeave::onChanInvalidated(Tp::DBusProxy *proxy)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    debug() << "Finishing PendingLeave successfully as the channel was invalidated";
+
+    setFinished();
+}
+
+void Channel::PendingLeave::onRemoveFinished(Tp::PendingOperation *op)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    ChannelPtr chan = ChannelPtr::staticCast(object());
+
+    if (op->isValid()) {
+        debug() << "We left the channel" << chan->objectPath();
+
+        ContactPtr c = chan->groupSelfContact();
+
+        if (chan->groupContacts().contains(c)
+                || chan->groupLocalPendingContacts().contains(c)
+                || chan->groupRemotePendingContacts().contains(c)) {
+            debug() << "Waiting for self remove to be picked up";
+            connect(chan.data(),
+                    SIGNAL(groupMembersChanged(Tp::Contacts,Tp::Contacts,Tp::Contacts,Tp::Contacts,
+                            Tp::Channel::GroupMemberChangeDetails)),
+                    this,
+                    SLOT(onMembersChanged(Tp::Contacts,Tp::Contacts,Tp::Contacts,Tp::Contacts)));
+        } else {
+            setFinished();
+        }
+
+        return;
+    }
+
+    debug() << "Leave RemoveMembersWithReason failed with " << op->errorName() << op->errorMessage()
+        << "- falling back to Close";
+
+    // If the channel has been closed or otherwise invalidated already in this mainloop iteration,
+    // the requestClose() operation will early-succeed
+    connect(chan->requestClose(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            this,
+            SLOT(onCloseFinished(Tp::PendingOperation*)));
+}
+
+void Channel::PendingLeave::onMembersChanged(const Tp::Contacts &, const Tp::Contacts &,
+        const Tp::Contacts &, const Tp::Contacts &removed)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    ChannelPtr chan = ChannelPtr::staticCast(object());
+    ContactPtr c = chan->groupSelfContact();
+
+    if (removed.contains(c)) {
+        debug() << "Leave event picked up for" << chan->objectPath();
+        setFinished();
+    }
+}
+
+void Channel::PendingLeave::onCloseFinished(Tp::PendingOperation *op)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    ChannelPtr chan = ChannelPtr::staticCast(object());
+
+    if (op->isError()) {
+        warning() << "Closing the channel" << chan->objectPath()
+            << "as a fallback for leaving it failed with"
+            << op->errorName() << op->errorMessage() << "- so didn't leave";
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    } else {
+        debug() << "We left (by closing) the channel" << chan->objectPath();
+        setFinished();
+    }
+}
+
+/**
+ * Start an asynchronous request to leave this channel as gracefully as possible.
+ *
+ * If leaving any more gracefully is not possible, this will revert to the same as requestClose. In
+ * particular, this will be the case for channels with no Group interface
+ * (TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP not in the list returned by interfaces()).
+ *
+ * The returned PendingOperation object will signal the success or failure
+ * of this request; under normal circumstances, it can be expected to
+ * succeed.
+ *
+ * A message and a reason may be provided along with the request, which will be sent to the server
+ * if supported, which is indicated by ChannelGroupFlagMessageDepart and/or
+ * ChannelGroupFlagMessageReject.
+ *
+ * Attempting to leave again when we have already left, either by our request or forcibly, will be a
+ * no-op, with the returned PendingOperation immediately finishing successfully.
+ *
+ * \param message The message, which can be blank if desired.
+ * \param reason  A reason for leaving.
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChangeReason reason)
+{
+    // Leaving a channel does not make sense if it is already closed,
+    // just silently Return.
+    if (!isValid()) {
+        return new PendingSuccess(ChannelPtr(this));
+    }
+
+    if (!isReady(Channel::FeatureCore)) {
+        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("Channel::FeatureCore must be ready to leave a channel"),
+                ChannelPtr(this));
+    }
+
+    if (!interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP)) {
+        return requestClose();
+    }
+
+    ContactPtr self = groupSelfContact();
+
+    if (!groupContacts().contains(self) && !groupLocalPendingContacts().contains(self)
+            && !groupRemotePendingContacts().contains(self)) {
+        debug() << "Channel::requestLeave() called for " << objectPath() <<
+            "which we aren't a member of";
+        return new PendingSuccess(ChannelPtr(this));
+    }
+
+    return new PendingLeave(ChannelPtr(this), message, reason);
+}
+
 /**
  * \name Group interface
  *
@@ -2044,7 +2209,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  * the user hasn't been removed from the group, an object for which
  * GroupMemberChangeDetails::isValid() Return <code>false</code> is returned.
  *
- * This method should be called only after the channel has been closed.
+ * This method should be called only after you've left the channel.
  * This is useful for getting the remove information after missing the
  * corresponding groupMembersChanged() signal, as the local user being
  * removed usually causes the remote Channel to be closed.
@@ -2059,8 +2224,10 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  */
 Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
 {
-    if (!isReady()) {
-        warning() << "Channel::groupSelfContactRemoveInfo() used channel not ready";
+    // Oftentimes, the channel will be closed as a result from being left - so checking a channel's
+    // self remove info when it has been closed and hence invalidated is valid
+    if (isValid() && !isReady(Channel::FeatureCore)) {
+        warning() << "Channel::groupSelfContactRemoveInfo() used before Channel::FeatureCore is ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupSelfContactRemoveInfo() used with "
             "no group interface";

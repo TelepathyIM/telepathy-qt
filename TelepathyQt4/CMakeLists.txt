@@ -20,11 +20,11 @@ set(telepathy_qt4_SRCS
     capabilities-base.cpp
     channel.cpp
     channel-class-spec.cpp
-    channel-factory.cpp
-    channel-factory.h
-    channel-request.cpp
     channel-dispatcher.cpp
     channel-dispatch-operation.cpp
+    channel-factory.cpp
+    channel-internal.h
+    channel-request.cpp
     client.cpp
     client-registrar.cpp
     client-registrar-internal.h
@@ -368,6 +368,7 @@ set(telepathy_qt4_MOC_SRCS
     account-set-internal.h
     channel.h
     channel-dispatch-operation.h
+    channel-internal.h
     channel-request.h
     client-registrar.h
     client-registrar-internal.h

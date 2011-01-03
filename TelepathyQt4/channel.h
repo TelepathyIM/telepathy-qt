@@ -75,6 +75,8 @@ public:
     ContactPtr initiatorContact() const;
 
     PendingOperation *requestClose();
+    PendingOperation *requestLeave(const QString &message = QString(),
+            ChannelGroupChangeReason reason = ChannelGroupChangeReasonNone);
 
     ChannelGroupFlags groupFlags() const;
 
@@ -236,6 +238,9 @@ private Q_SLOTS:
     void gotConferenceChannelRemovedActorContact(Tp::PendingOperation *op);
 
 private:
+    class PendingLeave;
+    friend class PendingLeave;
+
     struct Private;
     friend struct Private;
     Private *mPriv;

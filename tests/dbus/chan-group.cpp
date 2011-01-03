@@ -57,6 +57,8 @@ private Q_SLOTS:
     void testCreateChannel();
     void testMCDGroup();
     void testPropertylessGroup();
+    void testLeave();
+    void testLeaveWithFallback();
 
     void cleanup();
     void cleanupTestCase();
@@ -214,7 +216,7 @@ void TestChanGroup::initTestCase()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
+    QVERIFY(connect(mConn->lowlevel()->requestConnect(Connection::FeatureSelfContact),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -401,12 +403,121 @@ void TestChanGroup::commonTest(gboolean properties)
     QCOMPARE(mChan->groupContacts().count(), 3);
 }
 
+void TestChanGroup::testLeave()
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeGroup);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   QLatin1String("Cambridge"));
+
+    QVERIFY(connect(mConn->lowlevel()->ensureChannel(request),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan);
+
+    QVERIFY(connect(mChan->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(), true);
+
+    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->selfContact()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+
+    QString leaveMessage(QLatin1String("I'm sick of this lot"));
+    QVERIFY(connect(mChan->requestLeave(leaveMessage),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(!mChan->groupContacts().contains(mConn->selfContact()));
+
+    // We left gracefully, which we have details for.
+    // Unfortunately, the test CM used here ignores the message and the reason specified, so can't
+    // verify those. When the leave code was originally written however, it was able to carry out
+    // the almost-impossible mission of delivering the message and reason to the CM admirably, as
+    // verified by dbus-monitor.
+    QVERIFY(mChan->groupSelfContactRemoveInfo().isValid());
+    QVERIFY(mChan->groupSelfContactRemoveInfo().hasActor());
+    QVERIFY(mChan->groupSelfContactRemoveInfo().actor() == mConn->selfContact());
+
+    // Another leave should no-op succeed, because we aren't a member
+    QVERIFY(connect(mChan->requestLeave(leaveMessage),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+}
+
+void TestChanGroup::testLeaveWithFallback()
+{
+    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQt4LeaveTestFallback"))
+        .arg(mConn->objectPath());
+    QByteArray chanPathLatin1(mChanObjectPath.toLatin1());
+
+    // The text channel doesn't support removing, so will trigger the fallback
+    mChanService = TP_TESTS_TEXT_CHANNEL_GROUP(g_object_new(
+                TP_TESTS_TYPE_TEXT_CHANNEL_GROUP,
+                "connection", mConnService,
+                "object-path", chanPathLatin1.data(),
+                "detailed", TRUE,
+                "properties", TRUE,
+                NULL));
+    QVERIFY(mChanService != 0);
+
+    TpIntSet *members = tp_intset_sized_new(1);
+    tp_intset_add(members, mConn->selfHandle());
+
+    QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be there or be []",
+                members, NULL, NULL, NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
+
+    tp_intset_destroy(members);
+
+    mChan = Channel::create(mConn, mChanObjectPath, QVariantMap());
+    QVERIFY(mChan);
+
+    // Should fail, because not ready (and thus we can't know how to leave)
+    QVERIFY(connect(mChan->requestLeave(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mChan->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(), true);
+
+    // Should now work
+    QString leaveMessage(QLatin1String("I'm sick of this lot"));
+    QVERIFY(connect(mChan->requestLeave(leaveMessage),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // The Close fallback was triggered, so we weren't removed gracefully and the details were
+    // lost
+    QVERIFY(!mChan->groupSelfContactRemoveInfo().hasMessage());
+}
+
 void TestChanGroup::cleanup()
 {
     if (mChanService) {
         g_object_unref(mChanService);
         mChanService = 0;
     }
+
+    // Avoid D-Bus event leak from one test case to another - I've seen this with the
+    // testCreateChannel groupMembersChanged leaking at least
+    processDBusQueue(mConn.data());
+    mChan.reset();
 
     cleanupImpl();
 }

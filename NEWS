@@ -18,7 +18,8 @@ Enhancements:
 Fixes:
  * Properly install TelepathyQt4/ConnectionManagerLowLevel.
  * A race condition causing proxies to be needlessly dropped from the factory
-   cache and hence new proxies built for a future request.
+   cache and hence new proxies built for a future request, and eventually
+   hitting an assert in onProxyInvalidated as a result
  * Memory leaks when using Connection::FeatureRoster/RosterGroups where the
    connection and roster channels were leaking.
  * fd.o#29728 - ContactManager::addGroup and removeGroup are confusing/broken.
