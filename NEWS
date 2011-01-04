@@ -1,12 +1,13 @@
-telepathy-qt4 0.4.2 (UNRELEASED)
+telepathy-qt4 0.4.2 (2011-01-03)
 =================================
 
-The "..." release.
+The "Encore: Rocks the 80" release.
 
 Enhancements:
- * ...
+ * Tests now work with tp-glib implementing immortal handles.
 
 Fixes:
+ * Do not use deprecated tp_get_bus on test cms.
  * A race condition causing proxies to be needlessly dropped from the factory
    cache and hence new proxies built for a future request.
 
