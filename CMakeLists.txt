@@ -125,7 +125,7 @@ macro_log_feature(QT4_GLIB_SUPPORT "Qt4 Glib Support"
                   "Needed, together with Telepathy-Glib, to build most of the unit tests")
 
 # Check for operator== in QDBusVariant
-SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTDBUS_LIBRARY})
+SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY})
 CHECK_CXX_SOURCE_COMPILES("
 #include <QtDBus>
 int main()
@@ -175,6 +175,7 @@ macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
 find_package(GLIB2)
 find_package(GObject)
 find_package(DBus)
+find_package(DBusGLib)
 find_package(LibXml2)
 
 # Find tp-farsight
