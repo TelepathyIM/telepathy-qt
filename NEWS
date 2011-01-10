@@ -4,7 +4,8 @@ telepathy-qt4 0.5.3 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Added Tp::Contact::requestAvatarData()
+ * Added Tp::Contact::isContactInfoKnown()
 
 Fixes:
  * Build failures on systems using GNU gold or the
