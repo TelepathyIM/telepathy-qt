@@ -7,7 +7,8 @@ Enhancements:
  * ...
 
 Fixes:
- * ...
+ * Build failures on systems using GNU gold or the
+    --no-add-needed/--no-copy-dt-needed-entries linker flags
 
 telepathy-qt4 0.5.2 (2011-01-03)
 =================================
