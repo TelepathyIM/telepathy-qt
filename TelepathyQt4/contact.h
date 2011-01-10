@@ -106,6 +106,7 @@ public:
     bool isAvatarTokenKnown() const;
     QString avatarToken() const;
     AvatarData avatarData() const;
+    void requestAvatarData();
 
     /*
      * TODO filter:

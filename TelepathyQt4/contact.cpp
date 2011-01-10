@@ -255,6 +255,28 @@ AvatarData Contact::avatarData() const
     return mPriv->avatarData;
 }
 
+/**
+ * Request avatar image
+ *
+ * Force the request of the avatar data. This method returns directly, emitting
+ * avatarTokenChanged and avatarDataChanged signals once the token and data are
+ * fetched from server.
+ *
+ * This is only useful if the avatar token is unknown; see isAvatarTokenKnown().
+ * It happens in the case of offline XMPP contacts, because the server does not
+ * send the token for them and an explicit request of the avatar data is needed.
+ */
+void Contact::requestAvatarData()
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAvatarData)) {
+        warning() << "Contact::requestAvatarData() used on" << this
+            << "for which FeatureAvatarData hasn't been requested - returning \"\"";
+        return;
+    }
+
+    manager()->requestContactAvatar(this);
+}
+
 Presence Contact::presence() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {

@@ -1691,12 +1691,12 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
 
 void ContactManager::requestContactAvatar(Contact *contact)
 {
-    QString token = contact->avatarToken();
     QString avatarFileName;
     QString mimeTypeFileName;
 
-    bool success = mPriv->buildAvatarFileName(token, false, avatarFileName,
-        mimeTypeFileName);
+    bool success = (contact->isAvatarTokenKnown() &&
+        mPriv->buildAvatarFileName(contact->avatarToken(), false,
+            avatarFileName, mimeTypeFileName));
 
     /* Check if the avatar is already in the cache */
     if (success && QFile::exists(avatarFileName)) {
