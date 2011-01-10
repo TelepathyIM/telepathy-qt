@@ -40,15 +40,19 @@ if(ENABLE_TP_GLIB_TESTS)
         util.c
         util.h)
     add_library(tp-glib-tests SHARED ${tp_glib_tests_SRCS})
-    target_link_libraries(tp-glib-tests ${TELEPATHY_GLIB_LIBRARIES}
-                          example-cm-callable
-                          example-cm-contactlist
-                          example-cm-csh
-                          example-cm-echo
-                          example-cm-echo2
-                          tp-glib-tests-future-extensions
-                          future-example-cm-call
-                          future-example-cm-conference
-                          future-example-cm-conference-draft)
+    target_link_libraries(tp-glib-tests
+        ${TELEPATHY_GLIB_LIBRARIES}
+        ${GOBJECT_LIBRARIES}
+        ${GLIB2_LIBRARIES}
+        ${DBUS_GLIB_LIBRARIES}
+        example-cm-callable
+        example-cm-contactlist
+        example-cm-csh
+        example-cm-echo
+        example-cm-echo2
+        tp-glib-tests-future-extensions
+        future-example-cm-call
+        future-example-cm-conference
+        future-example-cm-conference-draft)
 
 endif(ENABLE_TP_GLIB_TESTS)
