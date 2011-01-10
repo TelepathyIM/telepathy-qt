@@ -87,6 +87,14 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     compiler_warnings(CMAKE_C_FLAGS_WARNINGS c ${NOT_RELEASE} "${desired_c}" "${undesired_c}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_WARNINGS}")
 
+    # Link development builds with -Wl,--no-add-needed
+    # TODO: binutils 2.21 renames the flag to --no-copy-dt-needed-entries, though it keeps the old
+    # one as a deprecated alias.
+    if(${NOT_RELEASE} EQUAL 1)
+        set(CMAKE_EXE_LINKER_FLAGS            "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-add-needed")
+        set(CMAKE_SHARED_LINKER_FLAGS         "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-add-needed")
+    endif(${NOT_RELEASE} EQUAL 1)
+
     if(CMAKE_SYSTEM_NAME MATCHES Linux)
         add_definitions(-D_BSD_SOURCE)
     endif(CMAKE_SYSTEM_NAME MATCHES Linux)

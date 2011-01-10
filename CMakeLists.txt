@@ -175,6 +175,7 @@ macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
 find_package(GLIB2)
 find_package(GObject)
 find_package(DBus)
+find_package(DBusGLib)
 find_package(LibXml2)
 
 # Find tp-farsight

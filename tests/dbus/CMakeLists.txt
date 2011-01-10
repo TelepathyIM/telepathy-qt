@@ -30,9 +30,11 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt4_add_dbus_unit_test(ConnectionCapabilities conn-capabilities tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionRequests conn-requests tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionRosterLegacy conn-roster-legacy tp-glib-tests)
-    tpqt4_add_dbus_unit_test(ConnectionRoster conn-roster example-cm-contactlist2 ${TELEPATHY_GLIB_LIBRARIES})
+    tpqt4_add_dbus_unit_test(ConnectionRoster conn-roster example-cm-contactlist2
+        ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${TELEPATHY_GLIB_LIBRARIES})
     tpqt4_add_dbus_unit_test(ConnectionRosterGroupsLegacy conn-roster-groups-legacy tp-glib-tests)
-    tpqt4_add_dbus_unit_test(ConnectionRosterGroups conn-roster-groups example-cm-contactlist2 ${TELEPATHY_GLIB_LIBRARIES})
+    tpqt4_add_dbus_unit_test(ConnectionRosterGroups conn-roster-groups example-cm-contactlist2
+        ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${TELEPATHY_GLIB_LIBRARIES})
     tpqt4_add_dbus_unit_test(Contacts contacts tp-glib-tests)
     tpqt4_add_dbus_unit_test(ContactsAvatar contacts-avatar tp-glib-tests)
     tpqt4_add_dbus_unit_test(ContactsCapabilities contacts-capabilities tp-glib-tests)
