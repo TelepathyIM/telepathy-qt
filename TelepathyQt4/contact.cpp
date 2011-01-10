@@ -50,7 +50,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
           caps(manager->supportedFeatures().contains(Contact::FeatureCapabilities) ?
                    ContactCapabilities(true) :  ContactCapabilities(
                            manager->connection()->capabilities().allClassSpecs(), false)),
-          isAvatarTokenKnown(false),
+          isContactInfoKnown(false), isAvatarTokenKnown(false),
           subscriptionState(SubscriptionStateUnknown),
           publishState(SubscriptionStateUnknown),
           blocked(false)
@@ -72,6 +72,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     Presence presence;
     ContactCapabilities caps;
     LocationInfo location;
+
+    bool isContactInfoKnown;
     InfoFields info;
 
     bool isAvatarTokenKnown;
@@ -336,6 +338,27 @@ LocationInfo Contact::location() const
     }
 
     return mPriv->location;
+}
+
+/**
+ * Return whether the information for this contact has been received
+ *
+ * With some protocols (notably XMPP) information is not pushed from the server
+ * and must be requested explicitely using refreshInfo() or requestInfo(). This
+ * method can be used to know if the information is received from the server
+ * or if an explicit request is needed.
+ *
+ * \return true if the information is known; false otherwise.
+ */
+bool Contact::isContactInfoKnown() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
+        warning() << "Contact::isContactInfoKnown() used on" << this
+            << "for which FeatureInfo hasn't been requested - returning false";
+        return false;
+    }
+
+    return mPriv->isContactInfoKnown;
 }
 
 /**
@@ -749,6 +772,7 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
     }
 
     mPriv->actualFeatures.insert(FeatureInfo);
+    mPriv->isContactInfoKnown = true;
 
     if (mPriv->info.allFields() != info) {
         mPriv->info = InfoFields(info);

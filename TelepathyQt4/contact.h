@@ -125,6 +125,7 @@ public:
 
     // TODO filter: having a specific field, having ANY field,
     // (field: exact, contents: exact/prefix/substring)
+    bool isContactInfoKnown() const;
     InfoFields infoFields() const;
     PendingOperation *refreshInfo();
     PendingContactInfo *requestInfo();
