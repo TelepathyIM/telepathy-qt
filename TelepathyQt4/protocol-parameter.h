@@ -78,6 +78,8 @@ typedef QList<ProtocolParameter> ProtocolParameterList;
 
 } // Tp
 
+uint qHash(const Tp::ProtocolParameter &parameter);
+
 Q_DECLARE_METATYPE(Tp::ProtocolParameter);
 Q_DECLARE_METATYPE(Tp::ProtocolParameterList);
 

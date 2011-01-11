@@ -159,3 +159,8 @@ bool ProtocolParameter::isRequiredForRegistration() const
 }
 
 } // Tp
+
+uint qHash(const Tp::ProtocolParameter& parameter)
+{
+    return qHash(parameter.name());
+}
