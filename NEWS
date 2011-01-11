@@ -6,6 +6,7 @@ The "..." release.
 Enhancements:
  * Added Tp::Contact::requestAvatarData()
  * Added Tp::Contact::isContactInfoKnown()
+ * Added Tp::ProtocolParameter operator< and qHash support.
 
 Fixes:
  * Build failures on systems using GNU gold or the
