@@ -90,6 +90,11 @@ bool ProtocolParameter::operator==(const QString &name) const
     return (mPriv->name == name);
 }
 
+bool ProtocolParameter::operator<(const Tp::ProtocolParameter& other) const
+{
+    return mPriv->name < other.name();
+}
+
 QString ProtocolParameter::name() const
 {
     if (!isValid()) {

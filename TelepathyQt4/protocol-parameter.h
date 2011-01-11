@@ -49,6 +49,7 @@ public:
     ProtocolParameter &operator=(const ProtocolParameter &other);
     bool operator==(const ProtocolParameter &other) const;
     bool operator==(const QString &name) const;
+    bool operator<(const ProtocolParameter &other) const;
 
     QString name() const;
     QDBusSignature dbusSignature() const;
