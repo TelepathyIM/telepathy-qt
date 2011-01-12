@@ -96,6 +96,85 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     ReferencedHandles handlesToInspect;
 };
 
+PendingContacts::PendingContacts(const ContactManagerPtr &manager,
+        const UIntList &handles, const Features &features,
+        const QStringList &interfaces,
+        const QMap<uint, ContactPtr> &satisfyingContacts,
+        const QSet<uint> &otherContacts,
+        const QString &errorName,
+        const QString &errorMessage)
+    : PendingOperation(manager),
+      mPriv(new Private(manager, handles, features, satisfyingContacts))
+{
+    if (!errorName.isEmpty()) {
+        setFinishedWithError(errorName, errorMessage);
+        return;
+    }
+
+    if (!otherContacts.isEmpty()) {
+        ConnectionPtr conn = manager->connection();
+        if (conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+            PendingContactAttributes *attributes =
+                conn->lowlevel()->contactAttributes(otherContacts.toList(),
+                        interfaces, true);
+
+            connect(attributes,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onAttributesFinished(Tp::PendingOperation*)));
+        } else {
+            // fallback to just create the contacts
+            PendingHandles *handles = conn->lowlevel()->referenceHandles(HandleTypeContact,
+                    otherContacts.toList());
+            connect(handles,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onReferenceHandlesFinished(Tp::PendingOperation*)));
+        }
+    } else {
+        allAttributesFetched();
+    }
+}
+
+PendingContacts::PendingContacts(const ContactManagerPtr &manager,
+        const QStringList &identifiers, const Features &features,
+        const QString &errorName, const QString &errorMessage)
+    : PendingOperation(manager),
+      mPriv(new Private(manager, identifiers, features))
+{
+    if (!errorName.isEmpty()) {
+        setFinishedWithError(errorName, errorMessage);
+        return;
+    }
+
+    ConnectionPtr conn = manager->connection();
+    PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, identifiers);
+
+    connect(handles,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
+}
+
+PendingContacts::PendingContacts(const ContactManagerPtr &manager,
+        const QList<ContactPtr> &contacts, const Features &features,
+        const QString &errorName, const QString &errorMessage)
+    : PendingOperation(manager),
+      mPriv(new Private(manager, contacts, features))
+{
+    if (!errorName.isEmpty()) {
+        setFinishedWithError(errorName, errorMessage);
+        return;
+    }
+
+    UIntList handles;
+    foreach (const ContactPtr &contact, contacts) {
+        handles.push_back(contact->handle()[0]);
+    }
+
+    mPriv->nested = manager->contactsForHandles(handles, features);
+    connect(mPriv->nested,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onNestedFinished(Tp::PendingOperation*)));
+}
+
 /**
  * Class destructor.
  */
@@ -142,6 +221,11 @@ QStringList PendingContacts::identifiers() const
     return mPriv->identifiers;
 }
 
+bool PendingContacts::isUpgrade() const
+{
+    return mPriv->requestType == Private::Upgrade;
+}
+
 QList<ContactPtr> PendingContacts::contactsToUpgrade() const
 {
     if (!isUpgrade()) {
@@ -149,11 +233,6 @@ QList<ContactPtr> PendingContacts::contactsToUpgrade() const
     }
 
     return mPriv->contactsToUpgrade;
-}
-
-bool PendingContacts::isUpgrade() const
-{
-    return mPriv->requestType == Private::Upgrade;
 }
 
 QList<ContactPtr> PendingContacts::contacts() const
@@ -332,85 +411,6 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
     allAttributesFetched();
 
     watcher->deleteLater();
-}
-
-PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const UIntList &handles, const Features &features,
-        const QStringList &interfaces,
-        const QMap<uint, ContactPtr> &satisfyingContacts,
-        const QSet<uint> &otherContacts,
-        const QString &errorName,
-        const QString &errorMessage)
-    : PendingOperation(manager),
-      mPriv(new Private(manager, handles, features, satisfyingContacts))
-{
-    if (!errorName.isEmpty()) {
-        setFinishedWithError(errorName, errorMessage);
-        return;
-    }
-
-    if (!otherContacts.isEmpty()) {
-        ConnectionPtr conn = manager->connection();
-        if (conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
-            PendingContactAttributes *attributes =
-                conn->lowlevel()->contactAttributes(otherContacts.toList(),
-                        interfaces, true);
-
-            connect(attributes,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(onAttributesFinished(Tp::PendingOperation*)));
-        } else {
-            // fallback to just create the contacts
-            PendingHandles *handles = conn->lowlevel()->referenceHandles(HandleTypeContact,
-                    otherContacts.toList());
-            connect(handles,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(onReferenceHandlesFinished(Tp::PendingOperation*)));
-        }
-    } else {
-        allAttributesFetched();
-    }
-}
-
-PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const QStringList &identifiers, const Features &features,
-        const QString &errorName, const QString &errorMessage)
-    : PendingOperation(manager),
-      mPriv(new Private(manager, identifiers, features))
-{
-    if (!errorName.isEmpty()) {
-        setFinishedWithError(errorName, errorMessage);
-        return;
-    }
-
-    ConnectionPtr conn = manager->connection();
-    PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, identifiers);
-
-    connect(handles,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
-}
-
-PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const QList<ContactPtr> &contacts, const Features &features,
-        const QString &errorName, const QString &errorMessage)
-    : PendingOperation(manager),
-      mPriv(new Private(manager, contacts, features))
-{
-    if (!errorName.isEmpty()) {
-        setFinishedWithError(errorName, errorMessage);
-        return;
-    }
-
-    UIntList handles;
-    foreach (const ContactPtr &contact, contacts) {
-        handles.push_back(contact->handle()[0]);
-    }
-
-    mPriv->nested = manager->contactsForHandles(handles, features);
-    connect(mPriv->nested,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onNestedFinished(Tp::PendingOperation*)));
 }
 
 void PendingContacts::allAttributesFetched()
