@@ -25,6 +25,7 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingContactAttributes>
 #include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/ReferencedHandles>
@@ -43,10 +44,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
         Upgrade
     };
 
-    Private(const ContactManagerPtr &manager, const UIntList &handles,
+    Private(PendingContacts *parent, const ContactManagerPtr &manager, const UIntList &handles,
             const Features &features,
             const QMap<uint, ContactPtr> &satisfyingContacts)
-        : manager(manager),
+        : parent(parent),
+          manager(manager),
           features(features),
           satisfyingContacts(satisfyingContacts),
           requestType(ForHandles),
@@ -55,9 +57,10 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     {
     }
 
-    Private(const ContactManagerPtr &manager, const QStringList &identifiers,
+    Private(PendingContacts *parent, const ContactManagerPtr &manager, const QStringList &identifiers,
             const Features &features)
-        : manager(manager),
+        : parent(parent),
+          manager(manager),
           features(features),
           requestType(ForIdentifiers),
           identifiers(identifiers),
@@ -65,15 +68,22 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     {
     }
 
-    Private(const ContactManagerPtr &manager, const QList<ContactPtr> &contactsToUpgrade,
+    Private(PendingContacts *parent,
+            const ContactManagerPtr &manager, const QList<ContactPtr> &contactsToUpgrade,
             const Features &features)
-        : manager(manager),
+        : parent(parent),
+          manager(manager),
           features(features),
           requestType(Upgrade),
           contactsToUpgrade(contactsToUpgrade),
           nested(0)
     {
     }
+
+    void prepare(const QList<ContactPtr> &contacts);
+
+    // Public object
+    PendingContacts *parent;
 
     // Generic parameters
     ContactManagerPtr manager;
@@ -96,6 +106,21 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     ReferencedHandles handlesToInspect;
 };
 
+void PendingContacts::Private::prepare(const QList<ContactPtr> &contacts)
+{
+    ConnectionPtr connection = manager->connection();
+    ContactFactoryConstPtr contactFactory = connection->contactFactory();
+
+    PendingOperation *op = contactFactory->prepare(contacts);
+    if (op) {
+        parent->connect(op,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onPrepareFinished(Tp::PendingOperation*)));
+    } else {
+        parent->setFinished();
+    }
+}
+
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const UIntList &handles, const Features &features,
         const QStringList &interfaces,
@@ -104,7 +129,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const QString &errorName,
         const QString &errorMessage)
     : PendingOperation(manager),
-      mPriv(new Private(manager, handles, features, satisfyingContacts))
+      mPriv(new Private(this, manager, handles, features, satisfyingContacts))
 {
     if (!errorName.isEmpty()) {
         setFinishedWithError(errorName, errorMessage);
@@ -138,7 +163,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const QStringList &identifiers, const Features &features,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager),
-      mPriv(new Private(manager, identifiers, features))
+      mPriv(new Private(this, manager, identifiers, features))
 {
     if (!errorName.isEmpty()) {
         setFinishedWithError(errorName, errorMessage);
@@ -157,7 +182,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const QList<ContactPtr> &contacts, const Features &features,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager),
-      mPriv(new Private(manager, contacts, features))
+      mPriv(new Private(this, manager, contacts, features))
 {
     if (!errorName.isEmpty()) {
         setFinishedWithError(errorName, errorMessage);
@@ -381,7 +406,7 @@ void PendingContacts::onNestedFinished(PendingOperation *operation)
 
     mPriv->contacts = mPriv->nested->contacts();
     mPriv->nested = 0;
-    setFinished();
+    mPriv->prepare(mPriv->contacts);
 }
 
 void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
@@ -413,6 +438,16 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
+void PendingContacts::onPrepareFinished(PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    setFinished();
+}
+
 void PendingContacts::allAttributesFetched()
 {
     foreach (uint handle, mPriv->handles) {
@@ -421,7 +456,7 @@ void PendingContacts::allAttributesFetched()
         }
     }
 
-    setFinished();
+    mPriv->prepare(mPriv->contacts);
 }
 
 } // Tp

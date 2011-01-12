@@ -73,6 +73,7 @@ private Q_SLOTS:
     void onReferenceHandlesFinished(Tp::PendingOperation *);
     void onNestedFinished(Tp::PendingOperation *);
     void onInspectHandlesFinished(QDBusPendingCallWatcher *);
+    void onPrepareFinished(Tp::PendingOperation *);
 
 private:
     friend class ContactManager;
