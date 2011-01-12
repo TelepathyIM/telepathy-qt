@@ -24,19 +24,22 @@
 namespace Tp
 {
 
+struct TELEPATHY_QT4_NO_EXPORT ContactFactory::Private
+{
+    Features features;
+};
+
 /**
  * \class ContactFactory
  * \headerfile TelepathyQt4/contact-factory.h <TelepathyQt4/ContactFactory>
  *
- * \brief Constructs Contact objects according to application-defined settings
- *
- * \todo Actually implement it. Currently it's just a placeholder.
+ * \brief Constructs contacts according to application-defined settings
  */
 
 /**
  * Creates a new ContactFactory.
  *
- * \param features The features to make ready on constructed Contacts.
+ * \param features The features to make ready on constructed contacts.
  * \returns A pointer to the created factory.
  */
 ContactFactoryPtr ContactFactory::create(const Features &features)
@@ -47,10 +50,12 @@ ContactFactoryPtr ContactFactory::create(const Features &features)
 /**
  * Class constructor.
  *
- * \param features The features to make ready on constructed Contacts.
+ * \param features The features to make ready on constructed contacts.
  */
 ContactFactory::ContactFactory(const Features &features)
+    : mPriv(new Private)
 {
+    addFeatures(features);
 }
 
 /**
@@ -58,26 +63,85 @@ ContactFactory::ContactFactory(const Features &features)
  */
 ContactFactory::~ContactFactory()
 {
+    delete mPriv;
+}
+
+/**
+ * Gets the features this factory will make ready on constructed contacts.
+ *
+ * \return The set of features.
+ */
+Features ContactFactory::features() const
+{
+    return mPriv->features;
+}
+
+/**
+ * Adds a single feature this factory will make ready on further constructed contacts.
+ *
+ * No feature removal is provided, to guard against uncooperative modules removing features other
+ * modules have set and depend on.
+ *
+ * \param feature The feature to add.
+ */
+void ContactFactory::addFeature(const Feature &feature)
+{
+    addFeatures(Features(feature));
+}
+
+/**
+ * Adds a set of features this factory will make ready on further constructed contacts.
+ *
+ * No feature removal is provided, to guard against uncooperative modules removing features other
+ * modules have set and depend on.
+ *
+ * \param features The features to add.
+ */
+void ContactFactory::addFeatures(const Features &features)
+{
+    mPriv->features.unite(features);
 }
 
 /**
  * Can be used by subclasses to override the Contact subclass constructed by the factory.
  *
- * \todo implement it...
- * \return A pointer to the constructed Contact object.
+ * The default implementation constructs Tp::Contact objects.
+ *
+ * \param manager The contact manager this contact belongs.
+ * \param handle The contact handle.
+ * \param features The desired contact features.
+ * \param attributes The desired contact attributes.
+ * \return A pointer to the constructed contact.
  */
 ContactPtr ContactFactory::construct(Tp::ContactManager *manager, const ReferencedHandles &handle,
         const Features &features, const QVariantMap &attributes) const
 {
-    return ContactPtr();
+    ContactPtr contact = ContactPtr(new Contact(manager, handle, features, attributes));
+    return contact;
 }
 
 /**
  * Can be used by subclasses to do arbitrary manipulation on constructed Contact objects.
  *
- * \todo implement it...
+ * The default implementation calls prepare(const QList<ContactPtr> &contacts).
+ *
+ * \param contact The contact to be prepared.
+ * \return A PendingOperation used to prepare the contact or NULL if there is nothing to prepare.
  */
 PendingOperation *ContactFactory::prepare(const ContactPtr &contact) const
+{
+    return prepare(QList<ContactPtr>() << contact);
+}
+
+/**
+ * Can be used by subclasses to do arbitrary manipulation on constructed Contact objects.
+ *
+ * The default implementation does nothing.
+ *
+ * \param contact The contact to be prepared.
+ * \return A PendingOperation used to prepare the contact or NULL if there is nothing to prepare.
+ */
+PendingOperation *ContactFactory::prepare(const QList<ContactPtr> &contacts) const
 {
     return NULL;
 }

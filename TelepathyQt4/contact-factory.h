@@ -42,25 +42,33 @@ class ReferencedHandles;
 
 class TELEPATHY_QT4_EXPORT ContactFactory : public RefCounted
 {
-    Q_DISABLE_COPY(ContactFactory);
+    Q_DISABLE_COPY(ContactFactory)
 
 public:
     static ContactFactoryPtr create(const Features &features = Features());
 
     virtual ~ContactFactory();
 
-    // Nothing useful...
+    Features features() const;
+
+    void addFeature(const Feature &feature);
+    void addFeatures(const Features &features);
 
 protected:
     ContactFactory(const Features &features);
 
-    virtual ContactPtr construct(Tp::ContactManager *manager, const ReferencedHandles &handle,
+    virtual ContactPtr construct(ContactManager *manager, const ReferencedHandles &handle,
             const Features &features, const QVariantMap &attributes) const;
     virtual PendingOperation *prepare(const ContactPtr &contact) const;
+    virtual PendingOperation *prepare(const QList<ContactPtr> &contacts) const;
 
 private:
+    friend class ContactManager;
+    friend class PendingContacts;
+
     struct Private;
-    Private *mPriv; // Currently unused, just for future-proofing
+    friend struct Private;
+    Private *mPriv;
 };
 
 } // Tp
