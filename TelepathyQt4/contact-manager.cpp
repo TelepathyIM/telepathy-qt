@@ -30,6 +30,7 @@
 #include <TelepathyQt4/AvatarData>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContactAttributes>
 #include <TelepathyQt4/PendingContacts>
@@ -2164,7 +2165,7 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
     ContactPtr contact = lookupContactByHandle(bareHandle);
 
     if (!contact) {
-        contact = ContactPtr(new Contact(this, handle, features, attributes));
+        contact = connection()->contactFactory()->construct(this, handle, features, attributes);
         mPriv->contacts.insert(bareHandle, contact.data());
     } else {
         contact->augment(features, attributes);
