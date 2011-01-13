@@ -48,7 +48,7 @@ public:
     static const Feature FeatureCore;
     static const Feature FeatureFakeProfiles;
 
-    static ProfileManagerPtr create(const QDBusConnection &bus);
+    static ProfileManagerPtr create(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
     ~ProfileManager();
 
