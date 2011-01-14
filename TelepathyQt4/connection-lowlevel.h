@@ -71,6 +71,8 @@ private:
 
     ConnectionLowlevel(Connection *parent);
 
+    bool hasImmortalHandles() const;
+
     struct Private;
     friend struct Private;
     Private *mPriv;

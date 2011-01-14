@@ -338,7 +338,7 @@ Connection::Private::~Private()
     QMutexLocker locker(&handleContextsLock);
     // All handle contexts locked, so safe
     if (!--handleContext->refcount) {
-        if (!parent->hasImmortalHandles()) {
+        if (!immortalHandles) {
             debug() << "Destroying HandleContext";
 
             foreach (uint handleType, handleContext->types.keys()) {
@@ -1170,16 +1170,6 @@ ConnectionStatus Connection::status() const
 ConnectionStatusReason Connection::statusReason() const
 {
     return (ConnectionStatusReason) mPriv->statusReason;
-}
-
-/**
- * Return whether the handles last for the whole lifetime of the connection.
- *
- * \return \c true if handles are immortal, \c false otherwise.
- */
-bool Connection::hasImmortalHandles() const
-{
-    return mPriv->immortalHandles;
 }
 
 struct Connection::ErrorDetails::Private : public QSharedData
@@ -2215,7 +2205,7 @@ PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const 
     }
 
     ConnectionPtr conn(mPriv->conn);
-    if (!conn->hasImmortalHandles()) {
+    if (!hasImmortalHandles()) {
         Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
         handleContext->types[handleType].requestsInFlight++;
@@ -2269,7 +2259,7 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
     ConnectionPtr conn(mPriv->conn);
     UIntList alreadyHeld;
     UIntList notYetHeld;
-    if (!conn->hasImmortalHandles()) {
+    if (!hasImmortalHandles()) {
         Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
 
@@ -2420,7 +2410,7 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &
         return pending;
     }
 
-    if (!conn->hasImmortalHandles()) {
+    if (!hasImmortalHandles()) {
         Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
         handleContext->types[HandleTypeContact].requestsInFlight++;
@@ -2457,6 +2447,18 @@ QStringList ConnectionLowlevel::contactAttributeInterfaces() const
 }
 
 /**
+ * Return whether the handles last for the whole lifetime of the connection.
+ *
+ * \return \c true if handles are immortal, \c false otherwise.
+ */
+bool ConnectionLowlevel::hasImmortalHandles() const
+{
+    ConnectionPtr conn(mPriv->conn);
+
+    return conn->mPriv->immortalHandles;
+}
+
+/**
  * Return the ContactManager object for this connection.
  *
  * The contact manager is responsible for all contact handling in this
@@ -2481,7 +2483,7 @@ ConnectionLowlevelConstPtr Connection::lowlevel() const
 
 void Connection::refHandle(HandleType handleType, uint handle)
 {
-    if (hasImmortalHandles()) {
+    if (mPriv->immortalHandles) {
         return;
     }
 
@@ -2497,7 +2499,7 @@ void Connection::refHandle(HandleType handleType, uint handle)
 
 void Connection::unrefHandle(HandleType handleType, uint handle)
 {
-    if (hasImmortalHandles()) {
+    if (mPriv->immortalHandles) {
         return;
     }
 
@@ -2526,7 +2528,7 @@ void Connection::unrefHandle(HandleType handleType, uint handle)
 
 void Connection::doReleaseSweep(uint handleType)
 {
-    if (hasImmortalHandles()) {
+    if (mPriv->immortalHandles) {
         return;
     }
 
@@ -2557,7 +2559,7 @@ void Connection::doReleaseSweep(uint handleType)
 
 void Connection::handleRequestLanded(HandleType handleType)
 {
-    if (hasImmortalHandles()) {
+    if (mPriv->immortalHandles) {
         return;
     }
 
