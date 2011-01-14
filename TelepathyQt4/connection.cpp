@@ -336,30 +336,31 @@ Connection::Private::~Private()
     selfContact.reset();
 
     QMutexLocker locker(&handleContextsLock);
-
     // All handle contexts locked, so safe
     if (!--handleContext->refcount) {
-        debug() << "Destroying HandleContext";
+        if (!parent->hasImmortalHandles()) {
+            debug() << "Destroying HandleContext";
 
-        foreach (uint handleType, handleContext->types.keys()) {
-            HandleContext::Type type = handleContext->types[handleType];
+            foreach (uint handleType, handleContext->types.keys()) {
+                HandleContext::Type type = handleContext->types[handleType];
 
-            if (!type.refcounts.empty()) {
-                debug() << " Still had references to" <<
-                    type.refcounts.size() << "handles, releasing now";
-                baseInterface->ReleaseHandles(handleType, type.refcounts.keys());
+                if (!type.refcounts.empty()) {
+                    debug() << " Still had references to" <<
+                        type.refcounts.size() << "handles, releasing now";
+                    baseInterface->ReleaseHandles(handleType, type.refcounts.keys());
+                }
+
+                if (!type.toRelease.empty()) {
+                    debug() << " Was going to release" <<
+                        type.toRelease.size() << "handles, doing that now";
+                    baseInterface->ReleaseHandles(handleType, type.toRelease.toList());
+                }
             }
 
-            if (!type.toRelease.empty()) {
-                debug() << " Was going to release" <<
-                    type.toRelease.size() << "handles, doing that now";
-                baseInterface->ReleaseHandles(handleType, type.toRelease.toList());
-            }
+            handleContexts.remove(qMakePair(baseInterface->connection().name(),
+                        parent->objectPath()));
+            delete handleContext;
         }
-
-        handleContexts.remove(qMakePair(baseInterface->connection().name(),
-                    parent->objectPath()));
-        delete handleContext;
     } else {
         Q_ASSERT(handleContext->refcount > 0);
     }
@@ -2214,8 +2215,7 @@ PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const 
     }
 
     ConnectionPtr conn(mPriv->conn);
-
-    {
+    if (!conn->hasImmortalHandles()) {
         Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
         handleContext->types[handleType].requestsInFlight++;
@@ -2267,10 +2267,9 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
     }
 
     ConnectionPtr conn(mPriv->conn);
-
     UIntList alreadyHeld;
     UIntList notYetHeld;
-    {
+    if (!conn->hasImmortalHandles()) {
         Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
 
@@ -2283,10 +2282,12 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
                 notYetHeld.push_back(handle);
             }
         }
-    }
 
-    debug() << " Already holding" << alreadyHeld.size() <<
-        "of the handles -" << notYetHeld.size() << "to go";
+        debug() << " Already holding" << alreadyHeld.size() <<
+            "of the handles -" << notYetHeld.size() << "to go";
+    } else {
+        notYetHeld = handles;
+    }
 
     PendingHandles *pending =
         new PendingHandles(conn, handleType, handles, alreadyHeld, notYetHeld);
@@ -2419,7 +2420,7 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &
         return pending;
     }
 
-    {
+    if (!conn->hasImmortalHandles()) {
         Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
         handleContext->types[HandleTypeContact].requestsInFlight++;
@@ -2480,6 +2481,10 @@ ConnectionLowlevelConstPtr Connection::lowlevel() const
 
 void Connection::refHandle(HandleType handleType, uint handle)
 {
+    if (hasImmortalHandles()) {
+        return;
+    }
+
     Private::HandleContext *handleContext = mPriv->handleContext;
     QMutexLocker locker(&handleContext->lock);
 
@@ -2492,6 +2497,10 @@ void Connection::refHandle(HandleType handleType, uint handle)
 
 void Connection::unrefHandle(HandleType handleType, uint handle)
 {
+    if (hasImmortalHandles()) {
+        return;
+    }
+
     Private::HandleContext *handleContext = mPriv->handleContext;
     QMutexLocker locker(&handleContext->lock);
 
@@ -2517,6 +2526,10 @@ void Connection::unrefHandle(HandleType handleType, uint handle)
 
 void Connection::doReleaseSweep(uint handleType)
 {
+    if (hasImmortalHandles()) {
+        return;
+    }
+
     Private::HandleContext *handleContext = mPriv->handleContext;
     QMutexLocker locker(&handleContext->lock);
 
@@ -2544,6 +2557,10 @@ void Connection::doReleaseSweep(uint handleType)
 
 void Connection::handleRequestLanded(HandleType handleType)
 {
+    if (hasImmortalHandles()) {
+        return;
+    }
+
     Private::HandleContext *handleContext = mPriv->handleContext;
     QMutexLocker locker(&handleContext->lock);
 
