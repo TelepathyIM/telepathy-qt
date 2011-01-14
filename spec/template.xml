@@ -22,7 +22,7 @@
 
   <interface name="org.freedesktop.Telepathy.Foo.DRAFT"
     tp:causes-havoc="experimental">
-    <tp:added version="0.19.UNRELEASED">(draft 1)</tp:added>
+    <tp:added version="0.21.UNRELEASED">(draft 1)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Foo.</p>

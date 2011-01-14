@@ -33,6 +33,29 @@
         API or ABI guarantees.</p>
     </tp:docstring>
 
+    <property name="BypassObservers" tp:name-for-bindings="Bypass_Observers"
+      type="b" access="read">
+      <tp:added version="0.21.2"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If true, channels destined for this handler are not passed to
+          observers for observing.</p>
+
+        <tp:rationale>
+          <p>This is useful in use-cases where the handler doesn't want anyone
+            observing the channel - for example, because channels it handles
+            shouldn't be logged.</p>
+        </tp:rationale>
+
+        <p>For service-activatable handlers, this property should be specified
+          in the handler's <tt>.client</tt> file as follows:</p>
+
+<pre>
+[org.freedesktop.Telepathy.Client.Handler]
+BypassObservers=true
+</pre>
+      </tp:docstring>
+    </property>
+
     <property name="RelatedConferencesBypassApproval"
       tp:name-for-bindings="Related_Conferences_Bypass_Approval"
       type="b" access="read">

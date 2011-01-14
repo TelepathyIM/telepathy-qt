@@ -47,6 +47,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         or the XEP-0080-derived
         <a href="http://geoclue.freedesktop.org/">Geoclue</a> API where
         possible.</p>
+
+      <p>Clients of this interface SHOULD register an interest in it by calling
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          >Connection.AddClientInterest</tp:dbus-ref> with an argument
+        containing the name of this interface,
+        before calling any Location method. If they do so, they SHOULD also call
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          >Connection.RemoveClientInterest</tp:dbus-ref> after use to allow
+        the CM to release resources associated with this interface.</p>
     </tp:docstring>
 
     <!-- Potentially to be reinstated later:
@@ -250,19 +259,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:mapping>
 
     <method name="GetLocations" tp:name-for-bindings="Get_Locations">
-      <tp:docstring>
-        Return the current locations of the given contacts, if they are
-        already known. If any of the given contacts' locations are not known,
-        request their current locations, but return immediately without waiting
-        for a reply; if a reply with a non-empty location is later received
-        for those contacts, the <tp:member-ref>LocationUpdated</tp:member-ref>
-        signal will be emitted for them.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Return the current locations of the given contacts, if they are
+          already known. If any of the given contacts' locations are not known,
+          request their current locations, but return immediately without waiting
+          for a reply; if a reply with a non-empty location is later received
+          for those contacts, the <tp:member-ref>LocationUpdated</tp:member-ref>
+          signal will be emitted for them.</p>
 
         <tp:rationale>
-          This method is appropriate for "lazy" location finding, for instance
-          displaying the location (if available) of everyone in your contact
-          list.
+          <p>This method is appropriate for "lazy" location finding, for instance
+            displaying the location (if available) of everyone in your contact
+            list.</p>
         </tp:rationale>
+
+        <p>For backwards compatibility, if this method is called by a client
+          whose "interest count" for this interface, as defined by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
+            >Connection.AddClientInterest</tp:dbus-ref>, is zero, the
+          Connection SHOULD behave as if AddClientInterest had been called for
+          this interface just before that method call. Clients that do not
+          explicitly call AddClientInterest SHOULD NOT call <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
+            >Connection.RemoveClientInterest</tp:dbus-ref> either.</p>
       </tp:docstring>
 
       <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
@@ -426,6 +445,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:member-ref>GetLocations</tp:member-ref> for this contact.
           Omitted from the result if the contact's location
           is not known.</p>
+
+        <p>For backwards compatibility, if contact attributes that include
+          this interface are requested
+          by a client whose "interest count" for this interface, as defined by
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Connection.AddClientInterest</tp:dbus-ref>, is zero, the
+          Connection SHOULD behave as if AddClientInterest was called for this
+          interface just before that request. Clients that do not explicitly
+          call AddClientInterest SHOULD NOT call <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
+            >Connection.RemoveClientInterest</tp:dbus-ref> either.</p>
       </tp:docstring>
     </tp:contact-attribute>
 

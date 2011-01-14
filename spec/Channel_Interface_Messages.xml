@@ -95,13 +95,16 @@ USA.</p>
     </tp:docstring>
 
     <property name="SupportedContentTypes" type="as" access="read"
-      tp:name-for-bindings="Supported_Content_Types">
+      tp:name-for-bindings="Supported_Content_Types"
+      tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of MIME types supported by this channel, with more preferred
           MIME types appearing earlier in the list. The list MAY include "*/*"
           to indicate that attachments with arbitrary MIME types can be sent.
           This list MUST NOT be empty, since all Messages implementations
           MUST accept messages containing a single "text/plain" part.</p>
+
+        <p>Items in this list MUST be normalized to lower-case.</p>
 
         <p>Some examples of how this property interacts with the
           <tp:member-ref>MessagePartSupportFlags</tp:member-ref>:</p>
@@ -141,9 +144,24 @@ USA.</p>
       </tp:docstring>
     </property>
 
+    <property name="MessageTypes" type="au"
+      tp:type="Channel_Text_Message_Type[]" access="read"
+      tp:name-for-bindings="Message_Types"
+      tp:immutable="yes">
+      <tp:added version="0.21.5">
+        This supersedes <tp:dbus-ref namespace="ofdT.Channel.Type.Text"
+          >GetMessageTypes</tp:dbus-ref>; fall back to that method for
+        compatibility with older connection managers.
+      </tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of message types which may be sent on this channel.</p>
+      </tp:docstring>
+    </property>
+
     <property name="MessagePartSupportFlags" type="u"
       tp:type="Message_Part_Support_Flags" access="read"
-      tp:name-for-bindings="Message_Part_Support_Flags">
+      tp:name-for-bindings="Message_Part_Support_Flags"
+      tp:immutable="yes">
       <tp:docstring>
         Flags indicating the level of support for message parts on this
         channel.
@@ -285,6 +303,17 @@ USA.</p>
           <p>A client that does not understand HTML, displaying the same
             message, should display the plain-text part, followed by the JPEG
             image.</p>
+        </tp:rationale>
+
+        <p>Connection managers, clients and extensions to this specification
+          SHOULD NOT include <tp:type>Handle</tp:type>s as values in a
+          Message_Part, except for <code>message-sender</code> in the
+          header.</p>
+
+        <tp:rationale>
+          <p>Reference-counting handles in clients becomes problematic if
+            the channel proxy cannot know whether particular map values
+            are handles or not.</p>
         </tp:rationale>
 
         <h4>Example messages</h4>
@@ -489,6 +518,12 @@ USA.</p>
 
     <tp:simple-type type="s" name="Message_Header_Key">
       <tp:added version="0.19.8"/>
+      <tp:changed version="0.21.5">
+        Removed <tt>protocol-token</tt>—which had never been implemented—and
+        respecified <tt>message-token</tt> not to have unimplementable
+        uniqueness guarantees.
+      </tp:changed>
+
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Well-known keys for the first <tp:type>Message_Part</tp:type> of a
           message, which contains metadata about the message as a whole, along
@@ -497,39 +532,37 @@ USA.</p>
           one or the other.</p>
 
           <dl>
-            <dt>message-token (s)</dt>
+            <dt>message-token (s -
+              <tp:type>Protocol_Message_Token</tp:type>)
+            </dt>
             <dd>
-              <p>An opaque, globally-unique identifier for the entire message.
-                This MAY be treated as if it were a MIME Message-ID, e.g. for
-                the mid: and cid: URI schemes. If omitted, there is no suitable
-                token; the protocol-token key SHOULD be provided if the protocol
-                identifies messages in some less unique way.</p>
-            </dd>
+              <p>An opaque identifier for the message, as used by the
+                underlying protocol. For outgoing messages, this SHOULD be
+                globally unique; for incoming messages, this is <em>not</em>
+                guaranteed to uniquely identify a message, <em>even within the
+                scope of a single channel or contact</em>; the only guarantee
+                made is that two messages with different <tt>message-token</tt>
+                headers are different messages.</p>
 
-            <dt>protocol-token (s - <tp:type>Protocol_Message_Token</tp:type>)</dt>
-            <dd>
-              <p>An opaque token for the entire message, with whatever uniqueness
-                guarantee is provided by the underlying protocol. As described
-                for the Protocol_Message_Token type, this token is <em>not</em>
-                guaranteed to be unique between contacts, or even within the
-                scope of a Channel.</p>
+              <p>Clients wishing to determine whether a new message with the
+                <tt>scrollback</tt> header matches a previously-logged message
+                with the same <tt>message-token</tt> SHOULD compare the
+                message's sender, contents, <tt>message-sent</tt> or
+                <tt>message-received</tt> timestamp, etc. Note that, in XMPP,
+                the server only supplies a timestamp for scrollback messages,
+                not for messages received while you are in a room; thus,
+                non-scrollback messages will lack a <tt>message-sent</tt>
+                timestamp.</p>
 
               <tp:rationale>
-                <p>In practice, in most protocols there is no token with the
-                  uniqueness guarantees demanded for message-token; the
-                  definition of message-token was inappropriate, but must now
-                  be preserved for the benefit of clients that rely on it, at
-                  least until Telepathy breaks backwards compatibility.</p>
-              </tp:rationale>
+                <p>In practice, most protocols do not provide globally-unique
+                  identifiers for messages. Connection managers, being
+                  stateless, do not have the necessary information — namely, IM
+                  logs — to generate reliable unique tokens for messages.</p>
 
-              <p>The message-token and protocol-token SHOULD NOT both be present;
-                clients requiring an identifier with the semantics of the
-                protocol-token SHOULD look for the message-token first, falling
-                back to the protocol-token.</p>
-
-              <tp:rationale>
-                <p>This is for compatibility with CMs older than the
-                  protocol-token key.</p>
+                <p>For instance, some XMPP clients (including Gabble) stamp
+                  messages they send with unique identifiers, but others number
+                  outgoing messages in a conversation from 1 upwards.</p>
               </tp:rationale>
             </dd>
 
@@ -546,6 +579,13 @@ USA.</p>
             <dt>message-sender (u - <tp:type>Contact_Handle</tp:type>)</dt>
             <dd>The contact who sent the message. If 0 or omitted, the contact
               who sent the message could not be determined.</dd>
+
+            <dt>message-sender-id (s)</dt>
+            <dd>The identifier of the contact who sent the message,
+              i.e. the result of calling <tp:dbus-ref
+                namespace="ofdT.Connection">InspectHandles</tp:dbus-ref>
+              on <code>message-sender</code>. If omitted, clients MUST
+              fall back to looking at <code>message-sender</code>.</dd>
 
             <dt>sender-nickname (s)</dt>
             <dd>The nickname chosen by the sender of the message, which can be
@@ -599,7 +639,8 @@ USA.</p>
               does not make sense on outgoing messages, and SHOULD NOT
               appear there.</dd>
           </dl>
-          </tp:docstring>
+
+      </tp:docstring>
     </tp:simple-type>
 
     <tp:simple-type type="s" name="Message_Body_Key">
@@ -650,6 +691,12 @@ USA.</p>
 
               <p>Clients MUST ignore parts without a 'content-type' key, which
                 are reserved for future expansion.</p>
+
+              <p>When sending messages, clients SHOULD normalize the
+                content-type to lower case, but connection managers SHOULD NOT
+                rely on this. When signalling sent or received messages,
+                connection managers MUST normalize the content-type to lower
+                case.</p>
             </dd>
 
             <dt>lang (s)</dt>
@@ -701,16 +748,19 @@ USA.</p>
             <dt>needs-retrieval (b)</dt>
             <dd>If false or omitted, the connection
               manager already holds this part in memory. If present and true,
-              this part will be retrieved on demand (like MIME's
-              message/external-body), so clients should expect retrieval to
-              take time; if this specification is later extended to provide a
-              streaming version of GetPendingMessageContent, clients should
-              use it for parts with this flag.</dd>
+              this part must be retrieved on demand (like MIME's
+              <tt>message/external-body</tt>) by a mechanism to be defined later.
+
+              <tp:rationale>The mechanism was meant to be
+                <tp:member-ref>GetPendingMessageContent</tp:member-ref>, but
+                that didn't work out. It's worth leaving the header in in
+                preparation for a future mechanism.
+              </tp:rationale>
+            </dd>
 
             <dt>truncated (b)</dt>
-            <dd>The content available via the 'content' key or
-              GetPendingMessageContent has been truncated by the server
-              or connection manager (equivalent to
+            <dd>The content available via the 'content' key has been truncated
+              by the server or connection manager (equivalent to
               Channel_Text_Message_Flag_Truncated in the Text interface).
             </dd>
 
@@ -824,20 +874,6 @@ USA.</p>
                 the sender. This is sometimes the only way to match it
                 against the sent message, so we include it here.
               </tp:rationale>
-
-              <p>Unlike in the Messages interface, content not visible
-                in the value for this key cannot be retrieved by another
-                means, so the connection manager SHOULD be more
-                aggressive about including (possibly truncated) message
-                content in the 'content' key.</p>
-
-              <tp:rationale>
-                The Messages interface needs to allow all content to be
-                retrieved, but in this interface, the content we provide is
-                merely a hint; so some is better than none, and it doesn't
-                seem worth providing an API as complex as Messages'
-                GetPendingMessageContent for the echoed message.
-              </tp:rationale>
             </dd>
 
           </dl>
@@ -846,6 +882,11 @@ USA.</p>
 
     <tp:simple-type type="u" name="Message_Part_Index"
       array-name="Message_Part_Index_List">
+      <tp:deprecated version="0.21.5">
+        This type is only used by
+        <tp:member-ref>GetPendingMessageContent</tp:member-ref>, which is
+        unimplemented and deprecated.
+      </tp:deprecated>
       <tp:added version="0.17.17"/>
       <tp:docstring>
         The index of a message part within a message.
@@ -854,6 +895,11 @@ USA.</p>
 
     <tp:mapping name="Message_Part_Content_Map">
       <tp:added version="0.17.17"/>
+      <tp:deprecated version="0.21.5">
+        This structure is only used by
+        <tp:member-ref>GetPendingMessageContent</tp:member-ref>, which is
+        unimplemented and deprecated.
+      </tp:deprecated>
       <tp:docstring>
         A mapping from message part indexes to their content, as returned by
         <tp:member-ref>GetPendingMessageContent</tp:member-ref>.
@@ -886,7 +932,7 @@ USA.</p>
           is no particular identification for a message.</p>
 
         <p>CM implementations SHOULD use an identifier expected to be unique,
-          such as a UUID, if possible.</p>
+          such as a UUID, for outgoing messages (if possible).</p>
 
         <p>Some protocols can only track a limited number of messages
           in a small message-ID space (SMS messages are identified by a single
@@ -944,12 +990,27 @@ USA.</p>
         <p>If this method fails, message submission to the server has failed
           and no signal on this interface (or the Text interface) is
           emitted.</p>
+
+        <p>If this method succeeds, message submission to the server has
+          succeeded, but the message has not necessarily reached its intended
+          recipient. If a delivery failure is detected later, this is
+          signalled by receiving a message whose <code>message-type</code>
+          header maps to
+          <tp:type>Channel_Text_Message_Type</tp:type>_Delivery_Report.
+          Similarly, if delivery is detected to have been successful
+          (which is not possible in all protocols), a successful delivery
+          report will be signalled.</p>
       </tp:docstring>
 
       <arg direction="in" type="aa{sv}" tp:type="Message_Part[]"
         name="Message">
         <tp:docstring>
-          The message content, including any attachments or alternatives
+          The message content, including any attachments or alternatives.
+          This MUST NOT include the following headers, or any others that
+          do not make sense for a client to specify:
+          <code>message-sender</code>, <code>message-sender-id</code>,
+          <code>message-sent</code>, <code>message-received</code>,
+          <code>pending-message-id</code>.
         </tp:docstring>
       </arg>
       <arg direction="in" name="Flags" type="u"
@@ -1059,6 +1120,14 @@ USA.</p>
             part to generate a <tt>text/plain</tt> alternative which is also
             included in this signal argument.</p>
 
+          <p>The connection manager SHOULD include the
+            <code>message-sender</code>, <code>message-sender-id</code> and
+            <code>message-sent</code> headers in the representation of the
+            message that is signalled here. If the channel has
+            channel-specific handles, the <code>message-sender</code> and
+            <code>message-sender-id</code> SHOULD reflect the sender that
+            other contacts will see.</p>
+
           <p>If the connection manager can predict that the message will be
             altered during transmission, this argument SHOULD reflect what
             other contacts will receive, rather than being a copy of the
@@ -1087,15 +1156,19 @@ USA.</p>
 
     <property name="PendingMessages" type="aaa{sv}" access="read"
       tp:type="Message_Part[][]" tp:name-for-bindings="Pending_Messages">
-      <tp:docstring>
-        A list of incoming messages that have neither been acknowledged nor
-        rejected. This list is a more detailed version of the one returned
-        by <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Type">Text.ListPendingMessages</tp:dbus-ref>,
-        and contains the same messages, uniquely identified by the same
-        pending message IDs. Its items can be removed using
-        <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Type">Text.AcknowledgePendingMessages</tp:dbus-ref>.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of incoming messages that have neither been acknowledged nor
+          rejected. This list is a more detailed version of the one returned
+          by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">Text.ListPendingMessages</tp:dbus-ref>,
+          and contains the same messages, uniquely identified by the same
+          pending message IDs. Its items can be removed using
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">Text.AcknowledgePendingMessages</tp:dbus-ref>.</p>
+
+        <p>Change notification is via
+          <tp:member-ref>MessageReceived</tp:member-ref> and
+          <tp:member-ref>PendingMessagesRemoved</tp:member-ref>.</p>
       </tp:docstring>
     </property>
 
@@ -1122,6 +1195,14 @@ USA.</p>
 
     <method name="GetPendingMessageContent"
       tp:name-for-bindings="Get_Pending_Message_Content">
+      <tp:deprecated version='0.21.5'
+                     xmlns="http://www.w3.org/1999/xhtml">
+        This method has never been implemented, and in any case would have been
+        impossible to use correctly when multiple clients (such as a logger and
+        the handler) are interested in a text channel. See <a
+          href='https://bugs.freedesktop.org/show_bug.cgi?id=26417'>freedesktop.org
+        bug #26417</a> for more details.
+      </tp:deprecated>
       <tp:docstring>
         Retrieve the content of one or more parts of a pending message.
         Note that this function may take a considerable amount of time
@@ -1340,7 +1421,8 @@ USA.</p>
 
     <property name="DeliveryReportingSupport" access="read"
       tp:type="Delivery_Reporting_Support_Flags" type="u"
-      tp:name-for-bindings="Delivery_Reporting_Support">
+      tp:name-for-bindings="Delivery_Reporting_Support"
+      tp:immutable="yes">
       <tp:docstring>
         A bitfield indicating features supported by this channel.
       </tp:docstring>

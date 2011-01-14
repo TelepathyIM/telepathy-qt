@@ -355,7 +355,7 @@
     </signal>
 
     <property name="InitialChannels" tp:name-for-bindings="Initial_Channels"
-      access="read" type="ao">
+      access="read" type="ao" tp:immutable="yes" tp:requestable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The initial value of <tp:member-ref>Channels</tp:member-ref>.</p>
 
@@ -413,14 +413,13 @@
             we arbitrarily mandate that it SHOULD choose the first channel in
             the list as the one to continue.</p>
         </tp:rationale>
-
-        <p>This property is immutable.</p>
       </tp:docstring>
     </property>
 
     <property name="InitialInviteeHandles"
       tp:name-for-bindings="Initial_Invitee_Handles"
-      access="read" type="au" tp:type="Contact_Handle[]">
+      access="read" type="au" tp:type="Contact_Handle[]" tp:immutable="yes"
+      tp:requestable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of additional contacts invited to this conference when it
           was created.</p>
@@ -460,8 +459,6 @@
           property, together with any other contacts invited at the same time
           (if that information is known).</p>
 
-        <p>This property is immutable.</p>
-
         <p>InitialInviteeHandles, InitialInviteeIDs and InitialChannels MAY be
           combined in a single request.</p>
 
@@ -496,7 +493,7 @@
 
     <property name="InitialInviteeIDs"
       tp:name-for-bindings="Initial_Invitee_IDs"
-      access="read" type="as">
+      access="read" type="as" tp:immutable="yes" tp:requestable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of additional contacts invited to this conference when it
           was created.</p>
@@ -512,13 +509,11 @@
           means that the value of InitialInviteeIDs will include the TargetID
           of each channel in InitialChannels, and the ID corresponding to each
           handle in InitialInviteeHandles.</p>
-
-        <p>This property is immutable.</p>
       </tp:docstring>
     </property>
 
     <property name="InvitationMessage" tp:name-for-bindings="Invitation_Message"
-      access="read" type="s">
+      access="read" type="s" tp:immutable="yes" tp:requestable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The message that was sent to the
           <tp:member-ref>InitialInviteeHandles</tp:member-ref> when they were
@@ -539,8 +534,6 @@
         <p>If the local user was not the initiator of this channel, the
           message with which they were invited (if any) SHOULD appear in the
           value of this property.</p>
-
-        <p>This property is immutable.</p>
       </tp:docstring>
     </property>
 

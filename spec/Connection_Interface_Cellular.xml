@@ -30,7 +30,8 @@
     </tp:docstring>
 
     <property name="MessageValidityPeriod" tp:name-for-bindings="Message_Validity_Period"
-      type="u" access="readwrite">
+      type="u" access="readwrite"
+      tp:is-connection-parameter='yup'>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Define how long should the service centre try message delivery before
           giving up, failing delivery and deleting the message. A value of 0
@@ -40,32 +41,13 @@
           implementations may round the value up (eg. to a minute or hour
           precision). The maximum validity period may vary depending on
           protocol or provider.</p>
-
-        <p>Connections with this interface SHOULD provide this property as a
-          parameter of the same (fully-qualified) name to <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy"
-            >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
-          <code>DBus_Property</code> flag. For connections managed by the
-          <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager as follows:</p>
-
-        <blockquote>
-          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
-            >UpdateParameters</tp:dbus-ref>({
-              "org.freedesktop.Telepathy.Connection.Interface.Cellular.MessageValidityPeriod": <var>new_validity_period</var>
-              }, [])</code>
-        </blockquote>
-
-        <p>The AccountManager provides change-notification, as long as all
-          other clients cooperate by using it instead of setting this property
-          directly.</p>
       </tp:docstring>
     </property>
 
     <property name="OverrideMessageServiceCentre"
         tp:name-for-bindings="Override_Message_Service_Centre"
-        type="b" access="readwrite">
+        type="b" access="readwrite"
+        tp:is-connection-parameter='can i get a hell yeah?'>
       <tp:added version='0.19.12'>Previously, as an undocumented
         feature, setting <tp:member-ref>MessageServiceCentre</tp:member-ref>
         to the empty string caused the SIM's default SMSC to be used.</tp:added>
@@ -82,31 +64,12 @@
             by Mission Control, rather than the UI needing to save it elsewhere
             to be restored if the user wants to reactivate it.</p>
         </tp:rationale>
-
-        <p>Connections with this interface SHOULD provide this property as a
-          parameter of the same (fully-qualified) name to <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy"
-            >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
-          <code>DBus_Property</code> flag. For connections managed by the
-          <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager as follows:</p>
-
-        <blockquote>
-          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
-            >UpdateParameters</tp:dbus-ref>({
-              "org.freedesktop.Telepathy.Connection.Interface.Cellular.OverrideMessageServiceCentre": True
-              }, [])</code>
-        </blockquote>
-
-        <p>The AccountManager provides change-notification, as long as all
-          other clients cooperate by using it instead of setting this property
-          directly.</p>
       </tp:docstring>
     </property>
 
     <property name="MessageServiceCentre" tp:name-for-bindings="Message_Service_Centre"
-      type="s" access="readwrite">
+      type="s" access="readwrite"
+      tp:is-connection-parameter='HELL YEAH!!!'>
       <tp:changed version='0.19.12'>This property's value is now
         ignored unless
         <tp:member-ref>OverrideMessageServiceCentre</tp:member-ref> is
@@ -120,26 +83,6 @@
           <tp:member-ref>OverrideMessageServiceCentre</tp:member-ref> is
           <code>False</code>, this property's value should be ignored by the CM
           in favour of the SIM's default SMSC.</p>
-
-        <p>Connections with this interface SHOULD provide this property as a
-          parameter of the same (fully-qualified) name to <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy"
-            >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
-          <code>DBus_Property</code> flag. For connections managed by the
-          <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager as follows:</p>
-
-        <blockquote>
-          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
-            >UpdateParameters</tp:dbus-ref>({
-              "org.freedesktop.Telepathy.Connection.Interface.Cellular.MessageServiceCentre": <var>new_smsc_address</var>
-              }, [])</code>
-        </blockquote>
-
-        <p>The AccountManager provides change-notification, as long as all
-          other clients cooperate by using it instead of setting this property
-          directly.</p>
       </tp:docstring>
     </property>
 
@@ -171,7 +114,8 @@
 
     <property name="MessageReducedCharacterSet"
       tp:name-for-bindings="Message_Reduced_Character_Set"
-      type="b" access="readwrite">
+      type="b" access="readwrite"
+      tp:is-connection-parameter='no... just kidding! yes!'>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Determines whether SMSes containing characters that do not fit into
           a 7‐bit GSM character set should be sent as UCS‐2, or lossily
@@ -180,26 +124,6 @@
           financial cost of using twice as many SMSes); if <code>True</code>,
           the message will be recoded in an implementation‐specific way to fit
           into a country‐specific GSM reduced character set.</p>
-
-        <p>Connections with this interface SHOULD provide this property as a
-          parameter of the same (fully-qualified) name to <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy"
-            >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
-          <code>DBus_Property</code> flag. For connections managed by the
-          <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager as follows:</p>
-
-        <blockquote>
-          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
-            >UpdateParameters</tp:dbus-ref>({
-              "org.freedesktop.Telepathy.Connection.Interface.Cellular.MessageReducedCharacterSet": <var>new_value</var>
-              }, [])</code>
-        </blockquote>
-
-        <p>The AccountManager provides change-notification, as long as all
-          other clients cooperate by using it instead of setting this property
-          directly.</p>
       </tp:docstring>
     </property>
   </interface>

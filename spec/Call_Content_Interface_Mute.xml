@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
   <interface name="org.freedesktop.Telepathy.Call.Content.Interface.Mute.DRAFT" tp:causes-havoc="experimental">
     <tp:added version="0.19.6">(draft version, not API-stable)</tp:added>
+    <tp:requires interface="org.freedesktop.Telepathy.Call.Content.DRAFT"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Interface for calls which may be muted.  This only makes sense
@@ -31,22 +32,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <p>Although it's client's responsibility to actually mute the microphone
         or turn off the camera, using this interface the client can also
         inform the CM and other clients of that fact.</p>
-        <tp:rationale>
-          <p>For some protocols, the fact that the content is muted needs to be
-          transmitted to the peer; for others, the notification to the peer is
-          only informational (eg. XMPP), and some protocols may have no notion
-          of muting at all.</p>
-        </tp:rationale>
+
+      <tp:rationale>
+        For some protocols, the fact that the content is muted needs
+        to be transmitted to the peer; for others, the notification
+        to the peer is only informational (eg. XMPP), and some
+        protocols may have no notion of muting at all.
+      </tp:rationale>
     </tp:docstring>
 
-   <signal name="MuteStateChanged" tp:name-for-bindings="Mute_State_Changed">
+    <signal name="MuteStateChanged" tp:name-for-bindings="Mute_State_Changed">
       <tp:docstring>
         Emitted to indicate that the mute state has changed for this call content.
         This may occur as a consequence of the client calling
-        <tp:member-ref>Muted</tp:member-ref>, or as an indication that another
+        <tp:member-ref>SetMuted</tp:member-ref>, or as an indication that another
         client has (un)muted the content.
       </tp:docstring>
-
       <arg name="MuteState" type="b">
         <tp:docstring>
           True if the content is now muted.
@@ -61,16 +62,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <method name="Muted" tp:name-for-bindings="Muted">
+    <method name="SetMuted" tp:name-for-bindings="Set_Muted">
+      <tp:changed version="0.21.2">renamed from SetMuted to Mute</tp:changed>
+      <tp:changed version="0.21.3">renamed back from Mute to SetMuted</tp:changed>
       <arg direction="in" name="Muted" type="b">
         <tp:docstring>
           True if the client has muted the content.
         </tp:docstring>
       </arg>
-
       <tp:docstring>
         <p>Inform the CM that the call content has been muted or unmuted by
-          che client.</p>
+          the client.</p>
 
         <p>It is the client's responsibility to actually mute or unmute the
           microphone or camera used for the content. However, the client

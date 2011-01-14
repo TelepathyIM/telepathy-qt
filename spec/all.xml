@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.21.1</tp:version>
+<tp:version>0.21.8</tp:version>
 
 <tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2010 Nokia Corporation</tp:copyright>
@@ -40,35 +40,72 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <tp:section name="Connection Object">
   <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
    <p>
-    Connections represent active protocol sessions.
+    Connections represent active protocol sessions. There are a number of core
+    interfaces which all connections should implement, and a number of optional
+    interfaces which provide various functionality related to contacts and to
+    the connection itself.
    </p>
   </tp:docstring>
   <xi:include href="Connection.xml"/>
   <xi:include href="Connection_Future.xml"/>
-  <xi:include href="Connection_Interface_Addressing.xml"/>
-  <xi:include href="Connection_Interface_Aliasing.xml"/>
-  <xi:include href="Connection_Interface_Anonymity.xml"/>
-  <xi:include href="Connection_Interface_Avatars.xml"/>
-  <xi:include href="Connection_Interface_Balance.xml"/>
-  <xi:include href="Connection_Interface_Capabilities.xml"/>
-  <xi:include href="Connection_Interface_Cellular.xml"/>
-  <xi:include href="Connection_Interface_Client_Types.xml"/>
-  <xi:include href="Connection_Interface_Communication_Policy.xml"/>
-  <xi:include href="Connection_Interface_Contact_Capabilities.xml"/>
-  <xi:include href="Connection_Interface_Contact_Groups.xml"/>
-  <xi:include href="Connection_Interface_Contact_Info.xml"/>
-  <xi:include href="Connection_Interface_Contact_List.xml"/>
   <xi:include href="Connection_Interface_Contacts.xml"/>
-  <xi:include href="Connection_Interface_Forwarding.xml"/>
-  <xi:include href="Connection_Interface_Location.xml"/>
-  <xi:include href="Connection_Interface_Mail_Notification.xml"/>
-  <xi:include href="Connection_Interface_Power_Saving.xml"/>
-  <xi:include href="Connection_Interface_Presence.xml"/>
-  <xi:include href="Connection_Interface_Renaming.xml"/>
-  <xi:include href="Connection_Interface_Resources.xml"/>
   <xi:include href="Connection_Interface_Requests.xml"/>
-  <xi:include href="Connection_Interface_Service_Point.xml"/>
-  <xi:include href="Connection_Interface_Simple_Presence.xml"/>
+
+  <tp:section name="Contact list interfaces">
+   <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+    <p>
+     On protocols that support contact lists, these interface expose the user's
+     contact lists, along with presence subscription information and contact
+     list groups (if supported).
+    </p>
+   </tp:docstring>
+
+   <xi:include href="Connection_Interface_Contact_List.xml"/>
+   <xi:include href="Connection_Interface_Contact_Groups.xml"/>
+  </tp:section>
+
+  <tp:section name="Contact metadata interfaces">
+   <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+    <p>
+     These optional Connection interfaces expose metadata about contacts on
+     this connection—from their current presence through to the type of client
+     they're connected with—and allow the local user to publish such metadata
+     back to their contacts.
+    </p>
+   </tp:docstring>
+
+   <xi:include href="Connection_Interface_Aliasing.xml"/>
+   <xi:include href="Connection_Interface_Avatars.xml"/>
+   <xi:include href="Connection_Interface_Capabilities.xml"/>
+   <xi:include href="Connection_Interface_Client_Types.xml"/>
+   <xi:include href="Connection_Interface_Contact_Capabilities.xml"/>
+   <xi:include href="Connection_Interface_Contact_Info.xml"/>
+   <xi:include href="Connection_Interface_Location.xml"/>
+   <xi:include href="Connection_Interface_Presence.xml"/>
+   <xi:include href="Connection_Interface_Renaming.xml"/>
+   <xi:include href="Connection_Interface_Resources.xml"/>
+   <xi:include href="Connection_Interface_Simple_Presence.xml"/>
+  </tp:section>
+
+  <tp:section name="Connection feature interfaces">
+   <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+    <p>
+     These optional Connection interfaces expose protocol-specific features,
+     and allow configuring the running connection.
+    </p>
+   </tp:docstring>
+
+   <xi:include href="Connection_Interface_Addressing.xml"/>
+   <xi:include href="Connection_Interface_Anonymity.xml"/>
+   <xi:include href="Connection_Interface_Balance.xml"/>
+   <xi:include href="Connection_Interface_Cellular.xml"/>
+   <xi:include href="Connection_Interface_Communication_Policy.xml"/>
+   <xi:include href="Connection_Interface_Forwarding.xml"/>
+   <xi:include href="Connection_Interface_Keepalive.xml"/>
+   <xi:include href="Connection_Interface_Mail_Notification.xml"/>
+   <xi:include href="Connection_Interface_Power_Saving.xml"/>
+   <xi:include href="Connection_Interface_Service_Point.xml"/>
+  </tp:section>
  </tp:section>
 
  <xi:include href="Channel_Bundle.xml"/>
@@ -101,6 +138,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Type_DBus_Tube.xml"/>
    <xi:include href="Channel_Type_File_Transfer.xml"/>
    <xi:include href="Channel_Type_Room_List.xml"/>
+   <xi:include href="Channel_Type_Server_Authentication.xml"/>
    <xi:include href="Channel_Type_Server_TLS_Connection.xml"/>
    <xi:include href="Channel_Type_Stream_Tube.xml"/>
    <xi:include href="Channel_Type_Streamed_Media.xml"/>
@@ -112,28 +150,65 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
     <p>
      A Channel may also implement one or more of the following interfaces,
-     depending on its type:
+     depending on its type. Some interfaces are only applicable to particular
+     channel types, while others may (in principle) appear on any type of
+     channel.
     </p>
    </tp:docstring>
+
    <xi:include href="Channel_Interface_Addressing.xml"/>
    <xi:include href="Channel_Interface_Anonymity.xml"/>
-   <xi:include href="Channel_Interface_Call_State.xml"/>
-   <xi:include href="Channel_Interface_Chat_State.xml"/>
-   <xi:include href="Channel_Interface_Conference.xml"/>
-   <xi:include href="Channel_Interface_DTMF.xml"/>
    <xi:include href="Channel_Interface_Destroyable.xml"/>
    <xi:include href="Channel_Interface_Group.xml"/>
-   <xi:include href="Channel_Interface_HTML.xml"/>
-   <xi:include href="Channel_Interface_Hold.xml"/>
-   <xi:include href="Channel_Interface_Media_Signalling.xml"/>
-   <xi:include href="Channel_Interface_Mergeable_Conference.xml"/>
-   <xi:include href="Channel_Interface_Messages.xml"/>
    <xi:include href="Channel_Interface_Password.xml"/>
    <xi:include href="Channel_Interface_Room.xml"/>
-   <xi:include href="Channel_Interface_SMS.xml"/>
+   <xi:include href="Channel_Interface_SASL_Authentication.xml"/>
+   <xi:include href="Channel_Interface_Securable.xml"/>
    <xi:include href="Channel_Interface_Service_Point.xml"/>
-   <xi:include href="Channel_Interface_Splittable.xml"/>
    <xi:include href="Channel_Interface_Tube.xml"/>
+
+   <tp:section name="Text-specific interfaces">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>These interfaces may only appear on channels of type <tp:dbus-ref
+        namespace='ofdT.Channel.Type'>Text</tp:dbus-ref>.</p>
+    </tp:docstring>
+
+    <xi:include href="Channel_Interface_Chat_State.xml"/>
+    <xi:include href="Channel_Interface_HTML.xml"/>
+    <xi:include href="Channel_Interface_Messages.xml"/>
+    <xi:include href="Channel_Interface_SMS.xml"/>
+   </tp:section>
+
+   <tp:section name="Streamed Media-related interfaces">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+     <p>These interfaces are only applicable to channels of type <tp:dbus-ref
+       namespace='ofdT.Channel.Type'>StreamedMedia</tp:dbus-ref>, with the
+       exception of the <tp:dbus-ref
+       namespace='ofdT.Channel.Interface'>Hold</tp:dbus-ref> interface, which
+       may also appear on <tp:dbus-ref
+       namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref> channels.</p>
+    </tp:docstring>
+
+    <xi:include href="Channel_Interface_Call_State.xml"/>
+    <xi:include href="Channel_Interface_DTMF.xml"/>
+    <xi:include href="Channel_Interface_Hold.xml"/>
+    <xi:include href="Channel_Interface_Media_Signalling.xml"/>
+   </tp:section>
+
+   <tp:section name="Conference-related interfaces">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+     <p>These interfaces provide functionality for ad-hoc conference calls and
+       chat rooms. They are primarily intended for <tp:dbus-ref
+       namespace='ofdT.Channel.Type'>Text</tp:dbus-ref>, <tp:dbus-ref
+       namespace='ofdT.Channel.Type'>StreamedMedia</tp:dbus-ref> and
+       <tp:dbus-ref namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref>
+       channels, but may also appear on other types of channel.</p>
+    </tp:docstring>
+
+    <xi:include href="Channel_Interface_Conference.xml"/>
+    <xi:include href="Channel_Interface_Splittable.xml"/>
+    <xi:include href="Channel_Interface_Mergeable_Conference.xml"/>
+   </tp:section>
   </tp:section>
  </tp:section>
 
@@ -179,9 +254,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  </tp:docstring>
  <xi:include href="Account_Manager.xml"/>
  <xi:include href="Account.xml"/>
+ <xi:include href="Account_Interface_Addressing.xml"/>
  <xi:include href="Account_Interface_Avatar.xml"/>
  <xi:include href="Account_Interface_Storage.xml"/>
- <xi:include href="Account_Interface_Minimum_Presence.xml"/>
 </tp:section>
 
 <tp:section name="The Channel Dispatcher">
@@ -193,11 +268,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </p>
  </tp:docstring>
  <xi:include href="Channel_Dispatcher.xml"/>
- <xi:include href="Channel_Dispatcher_Future.xml"/>
  <xi:include href="Channel_Dispatcher_Interface_Operation_List.xml"/>
  <xi:include href="Channel_Dispatch_Operation.xml"/>
  <xi:include href="Channel_Request.xml"/>
- <xi:include href="Channel_Request_Future.xml"/>
 </tp:section>
 
 <tp:section name="Clients">

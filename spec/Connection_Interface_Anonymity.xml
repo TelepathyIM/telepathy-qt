@@ -111,60 +111,30 @@
     </property>
 
     <property name="AnonymityMandatory" type="b" access="readwrite"
-      tp:name-for-bindings="Anonymity_Mandatory">
+      tp:name-for-bindings="Anonymity_Mandatory"
+      tp:is-connection-parameter='yeah'>
       <tp:docstring>
         <p>This specifies whether or not the anonymity settings MUST be respected
           by the CM and any intermediaries between the local and remote contacts.
           If this is set to true but anonymity settings cannot be followed, then
           the session MUST be denied with a
-          <code>org.freedesktop.Telepathy.Errors.WouldBreakAnonymity</code>
+          <code>org.freedesktop.Telepathy.Error.<tp:error-ref>WouldBreakAnonymity</tp:error-ref></code>
           error.
           Any client that sets <tp:member-ref>AnonymityModes</tp:member-ref>
           SHOULD also set this property first (rather than accepting the CM's
           default value).</p>
-
-        <p>This property SHOULD also be made available as a parameter of the
-          same (fully-qualified) name to <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ConnectionManager">RequestConnection</tp:dbus-ref>,
-          with the DBus_Property flag in its
-          <tp:type>Conn_Mgr_Param_Flags</tp:type>. For connections managed
-          by the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager as follows:</p>
-
-        <blockquote>
-          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
-            >UpdateParameters</tp:dbus-ref>({
-              "org.freedesktop.Telepathy.Connection.Interface.Anonymity.AnonymityMandatory": <var>new_value</var>
-              }, [])</code>
-        </blockquote>
       </tp:docstring>
     </property>
 
     <property name="AnonymityModes" type="u" tp:type="Anonymity_Mode_Flags"
-      access="readwrite" tp:name-for-bindings="Anonymity_Modes">
+      access="readwrite" tp:name-for-bindings="Anonymity_Modes"
+      tp:is-connection-parameter='yeah'>
       <tp:docstring>
         <p>The currently enabled anonymity modes for the connection. Setting
           has the effect of requesting new modes for the connection, and may
           raise an error if the unsupported modes are set. Successfully changing
           the modes will result in emission of
           <tp:member-ref>AnonymityModesChanged</tp:member-ref> signal.</p>
-
-        <p>This property SHOULD also be made available as a parameter of the
-          same (fully-qualified) name to <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ConnectionManager">RequestConnection</tp:dbus-ref>,
-          with the DBus_Property flag in its
-          <tp:type>Conn_Mgr_Param_Flags</tp:type>. For connections managed
-          by the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager as follows:</p>
-
-        <blockquote>
-          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
-            >UpdateParameters</tp:dbus-ref>({
-              "org.freedesktop.Telepathy.Connection.Interface.Anonymity.AnonymityModes": <var>new_value</var>
-              }, [])</code>
-        </blockquote>
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">

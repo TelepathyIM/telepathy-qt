@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Call_Content_Codec_Offer"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
-  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2009-2010 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009-2010 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
       modify it under the terms of the GNU Lesser General Public
@@ -26,15 +26,27 @@
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       This object represents an offer of a Codec payload mapping.
-      FIXME add Accept and Reject signals ?
     </tp:docstring>
 
     <method name="Accept" tp:name-for-bindings="Accept">
       <arg name="Codecs" direction="in"
-        type="a(usuua{ss})" tp:type="Codec[]" />
+        type="a(usuua{ss})" tp:type="Codec[]">
+        <tp:docstring>
+          The local codec mapping to send to the remote contacts and
+          to use in the <tp:dbus-ref
+          namespace="ofdT.Call">Content.DRAFT</tp:dbus-ref>.
+        </tp:docstring>
+      </arg>
       <tp:docstring>
-        Accept the updated Codec mapping and update the local mapping
+        Accept the updated Codec mapping and update the local mapping.
       </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The codecs given as the argument are invalid in some way.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
     </method>
 
     <method name="Reject" tp:name-for-bindings="Reject">
@@ -44,13 +56,31 @@
       </tp:docstring>
     </method>
 
-    <property name="RemoteContactCodecMap"
-      tp:name-for-bindings="Remote_Contact_Codec_Map"
-      type="a{ua(usuua{ss})}" tp:type="Contact_Codec_Map" access="read">
-      <tp:docstring>
-        A map from remote contacts to the lists of codecs they support.
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      type="as" tp:type="DBus_Interface[]" access="read" tp:immutable="yes">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Extra interfaces provided by this codec offer.  This SHOULD
+          NOT include the CodecOffer interface itself, and cannot change
+          once the content has been created.</p>
       </tp:docstring>
     </property>
+
+    <property name="RemoteContactCodecs"
+      tp:name-for-bindings="Remote_Contact_Codecs"
+      type="a(usuua{ss})" tp:type="Codec[]" access="read"
+      tp:immutable="yes">
+      <tp:docstring>
+        A list of codecs the remote contact supports.
+      </tp:docstring>
+    </property>
+
+    <property name="RemoteContact" tp:name-for-bindings="Remote_Contact"
+      type="u" tp:type="Contact_Handle" access="read" tp:immutable="yes">
+      <tp:docstring>
+        The contact handle that this codec offer applies to.
+      </tp:docstring>
+    </property>
+
 
   </interface>
 </node>

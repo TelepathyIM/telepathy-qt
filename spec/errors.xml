@@ -491,6 +491,59 @@
     </tp:docstring>
   </tp:error>
 
+  <tp:error name="Rejected">
+    <tp:added version="0.21.2"/>
+    <tp:docstring>
+      Raised when an incoming or outgoing <tp:dbus-ref
+      namespace="ofdT.Channel.Type">Call.DRAFT</tp:dbus-ref> is
+      rejected by the the receiver.
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Picked Up Elsewhere">
+    <tp:added version="0.21.3"/>
+    <tp:docstring>
+      Raised when a call was terminated as a result of the local user
+      picking up the call on a different resource.
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Service Confused">
+    <tp:added version="0.21.5"/>
+    <tp:docstring>
+      Raised when a server or other piece of infrastructure indicates an
+      internal error, or when a message that makes no sense is received from
+      a server or other piece of infrastructure.
+
+      <tp:rationale>
+        For instance, this is appropriate for XMPP's
+        <code>internal-server-error</code>, and is also appropriate if
+        you receive sufficiently inconsistent information from a server that
+        you cannot continue.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Confused">
+    <tp:added version="0.21.5"/>
+    <tp:docstring>
+      Raised if a server rejects protocol messages from a connection manager
+      claiming that they do not make sense, two local processes fail to
+      understand each other, or an apparently impossible situation is
+      reached.
+
+      <tp:rationale>
+        For instance, this would be an appropriate mapping for XMPP's
+        errors bad-format, invalid-xml, etc., which can't happen unless
+        the local (or remote) XMPP implementation is faulty. This is
+        also analogous to
+        <tp:type>Media_Stream_Error</tp:type>_Invalid_CM_Behavior,
+        <code>TP_DBUS_ERROR_INCONSISTENT</code> in telepathy-glib, and
+        <code>TELEPATHY_QT4_ERROR_INCONSISTENT</code> in telepathy-qt4.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
   <tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
   <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">

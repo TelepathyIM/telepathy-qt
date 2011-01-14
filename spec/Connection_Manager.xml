@@ -147,13 +147,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:flag>
       <tp:flag suffix="DBus_Property" value="16">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          This parameter is also a D-Bus property on the resulting <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>; a
-          parameter named <code>com.example.Duck.Macaroni</code> with this flag
-          corresponds to the <code>Macaroni</code> property on the
-          <code>com.example.Duck</code> interface.  Its value can be queried
-          and possibly changed on an existing Connection using methods on the
-          <code>org.freedesktop.DBus.Properties</code> interface.
+          <p>This parameter is also a D-Bus property on the resulting
+            <tp:dbus-ref
+              namespace="ofdT">Connection</tp:dbus-ref>; a
+            parameter named <code>com.example.Duck.Macaroni</code> with this
+            flag corresponds to the <code>Macaroni</code> property on the
+            <code>com.example.Duck</code> interface.  Its value can be queried
+            and possibly changed on an existing Connection using methods on the
+            <code>org.freedesktop.DBus.Properties</code> interface.</p>
+
+          <p>When a parameter with this flag is changed with <tp:dbus-ref
+            namespace="ofdT">Account.UpdateParameters</tp:dbus-ref>, the
+            account manager will attempt to update its value on any running
+            connections. Thus, clients generally do not need to directly access
+            or update the connection property; instead, they SHOULD manipulate
+            <tp:dbus-ref namespace="ofdT">Account.Parameters</tp:dbus-ref>.</p>
+
+          <tp:rationale>
+            <p>This allows runtime-configurable options to be stored and
+              maintained by the <tp:dbus-ref
+              namespace='ofdT'>AccountManager</tp:dbus-ref>, without needing to
+              invent a separate account preference for “properties that should
+              be set on the connection as soon as it is created”. It was
+              originally invented to manage <tp:dbus-ref
+                namespace='ofdT.Connection.Interface'>Cellular</tp:dbus-ref>
+              preferences.</p>
+          </tp:rationale>
         </tp:docstring>
         <tp:added version="0.17.16"/>
       </tp:flag>
@@ -273,7 +292,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>
           A dictionary mapping parameter names to values of the appropriate
           type, as indicated by <tp:member-ref>GetParameters</tp:member-ref>
-          and the above well-known list.
+          and the well-known list of names and value types documented on the
+          <tp:type>Connection_Parameter_Name</tp:type> type.
         </tp:docstring>
       </arg>
       <arg direction="out" type="s" tp:type="DBus_Bus_Name" name="Bus_Name">
@@ -307,7 +327,55 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <p>To request values for these parameters from the user, a client must
         have prior knowledge of the meaning of the parameter names, so the
-        following well-known names and types should be used where appropriate:</p>
+        well-known names and types defined by the
+        <tp:type>Connection_Parameter_Name</tp:type> type should be used where
+        appropriate.</p>
+
+        <p>Connection manager authors SHOULD avoid introducing parameters
+          whose default values would not be serializable in a
+          <code>.manager</code> file.</p>
+
+        <tp:rationale>
+          <p>The same serialization format is used in Mission Control
+            to store accounts.</p>
+        </tp:rationale>
+
+        <p>Every successful RequestConnection call will cause the emission of a
+        <tp:member-ref>NewConnection</tp:member-ref> signal for the same newly
+        created connection. The
+        requester can use the returned object path and service name
+        independently of the emission of that signal. In that case this signal
+        emission is most useful for, e.g. other processes that are monitoring
+        the creation of new connections.</p>
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The requested protocol is not supported by this manager
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The requested connection already appears to exist
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            Unrecognised connection parameters
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <tp:simple-type name="Connection_Parameter_Name" type="s">
+      <tp:added version="0.21.2"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Well-known connection parameter names, along with their expected
+          type. Where possible, connection managers should use names and types
+          from this list in the <tp:dbus-ref
+          namespace='ofdT.Protocol'>Parameters</tp:dbus-ref> that may be passed
+          to <tp:member-ref>RequestConnection</tp:member-ref>.</p>
 
         <dl>
           <dt>account (s)</dt>
@@ -354,47 +422,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             significant if the stun-server is also supplied.</dd>
 
           <dt>keepalive-interval (u)</dt>
-          <dd>The time in seconds between pings sent to the server to ensure
-            that the connection is still alive, or <tt>0</tt> to disable such
-            pings.</dd>
+          <dd>
+            <p>The time in seconds between pings sent to the server to ensure
+              that the connection is still alive, or <tt>0</tt> to disable such
+              pings.</p>
+
+            <p>This parameter is superseded by the <tp:dbus-ref
+                namespace='ofdT.Connection.Interface.Keepalive.DRAFT'>KeepaliveInterval</tp:dbus-ref>
+              property, which can be updated on an already-established
+              connection as well as being specified when requesting the
+              connection. Clients SHOULD provide that parameter instead, if
+              allowed; new connection managers SHOULD implement it in
+              preference to this one.</p>
+          </dd>
         </dl>
 
-        <p>Connection manager authors SHOULD avoid introducing parameters
-          whose default values would not be serializable in a
-          <code>.manager</code> file.</p>
+        <p>The following well-known parameter names correspond to D-Bus
+          properties, and thus their <tp:type>Conn_Mgr_Param_Flags</tp:type>
+          should include DBus_Property. See that flag for more details on this
+          kind of parameter.</p>
 
-        <tp:rationale>
-          <p>The same serialization format is used in Mission Control
-            to store accounts.</p>
-        </tp:rationale>
-
-        <p>Every successful RequestConnection call will cause the emission of a
-        <tp:member-ref>NewConnection</tp:member-ref> signal for the same newly
-        created connection. The
-        requester can use the returned object path and service name
-        independently of the emission of that signal. In that case this signal
-        emission is most useful for, e.g. other processes that are monitoring
-        the creation of new connections.</p>
+        <tp:list-dbus-property-parameters/>
       </tp:docstring>
-      <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
-          <tp:docstring>
-            The requested protocol is not supported by this manager
-          </tp:docstring>
-        </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          <tp:docstring>
-            The requested connection already appears to exist
-          </tp:docstring>
-        </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          <tp:docstring>
-            Unrecognised connection parameters
-          </tp:docstring>
-        </tp:error>
-      </tp:possible-errors>
-    </method>
+    </tp:simple-type>
 
     <property name="Interfaces" tp:name-for-bindings="Interfaces"
       type="as" access="read">
