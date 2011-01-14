@@ -1586,6 +1586,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
 
     // FeatureAvatarData depends on FeatureAvatarToken
     Features realFeatures(features);
+    realFeatures.unite(connection()->contactFactory()->features());
     if (realFeatures.contains(Contact::FeatureAvatarData) &&
         !realFeatures.contains(Contact::FeatureAvatarToken)) {
         realFeatures.insert(Contact::FeatureAvatarToken);
@@ -1655,7 +1656,10 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
-    PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), identifiers, features);
+    Features realFeatures(features);
+    realFeatures.unite(connection()->contactFactory()->features());
+    PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), identifiers,
+            realFeatures);
     return contacts;
 }
 
