@@ -92,6 +92,8 @@ public:
     ConnectionStatus status() const;
     ConnectionStatusReason statusReason() const;
 
+    bool hasImmortalHandles() const;
+
     class ErrorDetails
     {
         public:

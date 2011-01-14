@@ -130,6 +130,8 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 
     uint selfHandle;
 
+    bool immortalHandles;
+
     ConnectionCapabilities caps;
 
     ContactManagerPtr contactManager;
@@ -1169,6 +1171,16 @@ ConnectionStatusReason Connection::statusReason() const
     return (ConnectionStatusReason) mPriv->statusReason;
 }
 
+/**
+ * Return whether the handles last for the whole lifetime of the connection.
+ *
+ * \return \c true if handles are immortal, \c false otherwise.
+ */
+bool Connection::hasImmortalHandles() const
+{
+    return mPriv->immortalHandles;
+}
+
 struct Connection::ErrorDetails::Private : public QSharedData
 {
     Private(const QVariantMap &details)
@@ -1583,6 +1595,10 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
     } else {
         mPriv->introspectMainQueue.enqueue(
                 &Private::introspectMainFallbackSelfHandle);
+    }
+
+    if (props.contains(QLatin1String("HasImmortalHandles"))) {
+        mPriv->immortalHandles = qdbus_cast<bool>(props[QLatin1String("HasImmortalHandles")]);
     }
 
     if (hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
