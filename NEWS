@@ -6,7 +6,8 @@ The "..." release.
 Enhancements:
  * Added Tp::Contact::requestAvatarData()
  * Added Tp::Contact::isContactInfoKnown()
- * Added Tp::ProtocolParameter operator< and qHash support.
+ * fd.o#32999 - operator< and qHash are not implemented for
+   Tp::ProtocolParameter.
  * fd.o#33119 - Bind Connection.HasImmortalHandles.
  * ContactFactory is no more a stub class. The features set in the
    ContactFactory will be enabled in all contacts created by ContactManager and
