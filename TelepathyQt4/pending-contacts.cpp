@@ -80,8 +80,6 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     {
     }
 
-    void prepare(const QList<ContactPtr> &contacts);
-
     // Public object
     PendingContacts *parent;
 
@@ -105,21 +103,6 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
 
     ReferencedHandles handlesToInspect;
 };
-
-void PendingContacts::Private::prepare(const QList<ContactPtr> &contacts)
-{
-    ConnectionPtr connection = manager->connection();
-    ContactFactoryConstPtr contactFactory = connection->contactFactory();
-
-    PendingOperation *op = contactFactory->prepare(contacts);
-    if (op) {
-        parent->connect(op,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onPrepareFinished(Tp::PendingOperation*)));
-    } else {
-        parent->setFinished();
-    }
-}
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const UIntList &handles, const Features &features,
@@ -406,7 +389,7 @@ void PendingContacts::onNestedFinished(PendingOperation *operation)
 
     mPriv->contacts = mPriv->nested->contacts();
     mPriv->nested = 0;
-    mPriv->prepare(mPriv->contacts);
+    setFinished();
 }
 
 void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
@@ -438,16 +421,6 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-void PendingContacts::onPrepareFinished(PendingOperation *op)
-{
-    if (op->isError()) {
-        setFinishedWithError(op->errorName(), op->errorMessage());
-        return;
-    }
-
-    setFinished();
-}
-
 void PendingContacts::allAttributesFetched()
 {
     foreach (uint handle, mPriv->handles) {
@@ -456,7 +429,7 @@ void PendingContacts::allAttributesFetched()
         }
     }
 
-    mPriv->prepare(mPriv->contacts);
+    setFinished();
 }
 
 } // Tp
