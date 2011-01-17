@@ -358,10 +358,11 @@ Connection::Private::~Private()
                 }
             }
 
-            handleContexts.remove(qMakePair(baseInterface->connection().name(),
-                        parent->objectPath()));
-            delete handleContext;
         }
+
+        handleContexts.remove(qMakePair(baseInterface->connection().name(),
+                    parent->objectPath()));
+        delete handleContext;
     } else {
         Q_ASSERT(handleContext->refcount > 0);
     }
