@@ -2278,7 +2278,7 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
         debug() << " Already holding" << alreadyHeld.size() <<
             "of the handles -" << notYetHeld.size() << "to go";
     } else {
-        notYetHeld = handles;
+        alreadyHeld = handles;
     }
 
     PendingHandles *pending =
