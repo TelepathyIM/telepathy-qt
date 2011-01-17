@@ -60,7 +60,6 @@ protected:
     virtual ContactPtr construct(ContactManager *manager, const ReferencedHandles &handle,
             const Features &features, const QVariantMap &attributes) const;
     virtual PendingOperation *prepare(const ContactPtr &contact) const;
-    virtual PendingOperation *prepare(const QList<ContactPtr> &contacts) const;
 
 private:
     friend class ContactManager;

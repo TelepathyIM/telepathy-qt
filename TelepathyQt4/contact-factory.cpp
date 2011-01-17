@@ -123,25 +123,12 @@ ContactPtr ContactFactory::construct(Tp::ContactManager *manager, const Referenc
 /**
  * Can be used by subclasses to do arbitrary manipulation on constructed Contact objects.
  *
- * The default implementation calls prepare(const QList<ContactPtr> &contacts).
- *
- * \param contact The contact to be prepared.
- * \return A PendingOperation used to prepare the contact or NULL if there is nothing to prepare.
- */
-PendingOperation *ContactFactory::prepare(const ContactPtr &contact) const
-{
-    return prepare(QList<ContactPtr>() << contact);
-}
-
-/**
- * Can be used by subclasses to do arbitrary manipulation on constructed Contact objects.
- *
  * The default implementation does nothing.
  *
  * \param contact The contact to be prepared.
  * \return A PendingOperation used to prepare the contact or NULL if there is nothing to prepare.
  */
-PendingOperation *ContactFactory::prepare(const QList<ContactPtr> &contacts) const
+PendingOperation *ContactFactory::prepare(const ContactPtr &contact) const
 {
     return NULL;
 }
