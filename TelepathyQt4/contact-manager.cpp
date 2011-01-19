@@ -1884,8 +1884,7 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
         }
 
         contact->setSubscriptionState((SubscriptionState) subscriptions.subscribe);
-        if (!subscriptions.publishRequest.isEmpty() &&
-            subscriptions.publish == SubscriptionStateAsk) {
+        if (subscriptions.publish == SubscriptionStateAsk) {
             Channel::GroupMemberChangeDetails publishRequestDetails;
             QVariantMap detailsMap;
             detailsMap.insert(QLatin1String("message"), subscriptions.publishRequest);
