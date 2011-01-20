@@ -23,6 +23,8 @@
 #include "debug.h"
 #include "debug-internal.h"
 
+#include "config-version.h"
+
 #include <QIODevice>
 
 /**
@@ -104,7 +106,7 @@ void enableWarnings(bool enable)
 QDebug enabledDebug()
 {
     if (debugEnabled) {
-        return qDebug();
+        return qDebug() << "tp-qt4 " PACKAGE_VERSION " DEBUG:";
     } else {
         return QDebug(&discard);
     }
@@ -113,7 +115,7 @@ QDebug enabledDebug()
 QDebug enabledWarning()
 {
     if (warningsEnabled) {
-        return qWarning();
+        return qWarning() << "tp-qt4 " PACKAGE_VERSION " WARN:";
     } else {
         return QDebug(&discard);
     }
