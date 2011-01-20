@@ -24,8 +24,6 @@
 
 #include <QDebug>
 
-#include <config.h>
-
 namespace Tp
 {
 
@@ -38,16 +36,12 @@ TELEPATHY_QT4_EXPORT QDebug enabledWarning();
 
 inline QDebug debug()
 {
-    QDebug debug = enabledDebug();
-    debug.nospace() << "tp-qt4 " PACKAGE_VERSION " DEBUG:";
-    return debug.space();
+    return enabledDebug();
 }
 
 inline QDebug warning()
 {
-    QDebug warning = enabledWarning();
-    warning.nospace() << "tp-qt4 " PACKAGE_VERSION " WARNING:";
-    return warning.space();
+    return enabledWarning();
 }
 
 #else /* #ifdef ENABLE_DEBUG */
