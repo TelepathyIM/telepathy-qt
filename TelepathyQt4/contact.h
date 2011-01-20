@@ -229,6 +229,7 @@ private:
 
     struct Private;
     friend class Connection;
+    friend class ContactFactory;
     friend class ContactManager;
     friend struct Private;
     Private *mPriv;

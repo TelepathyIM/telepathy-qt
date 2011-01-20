@@ -158,9 +158,9 @@ bool ProtocolParameter::isRequiredForRegistration() const
     return mPriv->flags & ConnMgrParamFlagRegister;
 }
 
-} // Tp
-
-uint qHash(const Tp::ProtocolParameter& parameter)
+uint qHash(const ProtocolParameter& parameter)
 {
     return qHash(parameter.name());
 }
+
+} // Tp
