@@ -225,8 +225,9 @@ add_subdirectory(examples)
 add_subdirectory(tests)
 add_subdirectory(tools)
 
-# Generate config.h
+# Generate config.h and config-version.h
 configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
+configure_file(${CMAKE_SOURCE_DIR}/config-version.h.in ${CMAKE_BINARY_DIR}/config-version.h)
 
 # Create the uninstall target
 configure_file(
