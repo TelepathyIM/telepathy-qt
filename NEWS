@@ -4,7 +4,9 @@ telepathy-qt4 0.5.4 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Presence publication requests are now reported more sensibly by the
+   ContactManager::presencePublicationRequested(Contacts) signal, with the
+   per-contact request message, if any, being in Contact::publishStateMessage()
 
 Fixes:
  * ContactManager not emitting presencePublicationRequested if the request
