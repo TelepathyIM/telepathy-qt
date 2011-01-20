@@ -117,8 +117,10 @@ public:
     void requestContactAvatar(Contact *contact);
 
 Q_SIGNALS:
+    void presencePublicationRequested(const Tp::Contacts &contacts);
+    // deprecated - carry redundant data which can be got (meaningfully) from the Contacts
+    // themselves (note: multiple contacts, but just a single message/details!)
     void presencePublicationRequested(const Tp::Contacts &contacts, const QString &message);
-    // deprecated
     void presencePublicationRequested(const Tp::Contacts &contacts,
         const Tp::Channel::GroupMemberChangeDetails &details);
 
