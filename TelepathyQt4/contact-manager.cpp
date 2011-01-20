@@ -1887,6 +1887,8 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
         }
 
         contact->setSubscriptionState((SubscriptionState) subscriptions.subscribe);
+        contact->setPublishState((SubscriptionState) subscriptions.publish,
+                subscriptions.publishRequest);
         if (subscriptions.publish == SubscriptionStateAsk) {
             Channel::GroupMemberChangeDetails publishRequestDetails;
             QVariantMap detailsMap;
@@ -1897,8 +1899,6 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
 
             emit presencePublicationRequested(Contacts() << contact, subscriptions.publishRequest);
         }
-        contact->setPublishState((SubscriptionState) subscriptions.publish,
-                subscriptions.publishRequest);
     }
 
     foreach (uint bareHandle, info.removals) {

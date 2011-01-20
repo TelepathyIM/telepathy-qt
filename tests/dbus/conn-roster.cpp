@@ -117,6 +117,12 @@ void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, co
 void TestConnRoster::expectPresencePublicationRequested(const Tp::Contacts &contacts,
         const QString &message)
 {
+    Q_FOREACH(Tp::ContactPtr contact, contacts) {
+        QCOMPARE(static_cast<uint>(contact->publishState()),
+                 static_cast<uint>(Contact::PresenceStateAsk));
+        QCOMPARE(contact->publishStateMessage(), message);
+    }
+
     mGotPPR = true;
 }
 
