@@ -118,6 +118,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
 
     // new roster API
     bool canChangeContactList;
+    bool gotContactListInitialContacts;
     bool contactListRequestUsesMessage;
     QSet<QString> allKnownGroups;
     bool contactListGroupPropertiesReceived;
@@ -190,6 +191,7 @@ ContactManager::Private::Private(ContactManager *parent, Connection *connection)
       connection(connection),
       fallbackContactList(false),
       canChangeContactList(false),
+      gotContactListInitialContacts(false),
       contactListRequestUsesMessage(false),
       contactListGroupPropertiesReceived(false),
       processingContactListChanges(false),
@@ -275,7 +277,8 @@ void ContactManager::Private::ensureTracking(const Feature &feature)
 
 void ContactManager::Private::processContactListChanges()
 {
-    if (processingContactListChanges || contactListChangesQueue.isEmpty()) {
+    if (processingContactListChanges || contactListChangesQueue.isEmpty() ||
+        !gotContactListInitialContacts) {
         return;
     }
 
@@ -1884,8 +1887,7 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
         }
 
         contact->setSubscriptionState((SubscriptionState) subscriptions.subscribe);
-        if (!subscriptions.publishRequest.isEmpty() &&
-            subscriptions.publish == SubscriptionStateAsk) {
+        if (subscriptions.publish == SubscriptionStateAsk) {
             Channel::GroupMemberChangeDetails publishRequestDetails;
             QVariantMap detailsMap;
             detailsMap.insert(QLatin1String("message"), subscriptions.publishRequest);
@@ -2206,6 +2208,9 @@ void ContactManager::setContactListContacts(const ContactAttributesMap &attrsMap
                 Features(), attrs);
         mPriv->cachedAllKnownContacts.insert(contact);
     }
+
+    mPriv->gotContactListInitialContacts = true;
+    mPriv->processContactListChanges();
 }
 
 void ContactManager::updateContactListContacts(const ContactSubscriptionMap &changes,
