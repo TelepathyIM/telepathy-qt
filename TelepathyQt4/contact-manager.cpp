@@ -1869,6 +1869,8 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
     Tp::Contacts added;
     Tp::Contacts removed;
 
+    Tp::Contacts publishRequested;
+
     ContactSubscriptionMap::const_iterator begin = info.changes.constBegin();
     ContactSubscriptionMap::const_iterator end = info.changes.constEnd();
     for (ContactSubscriptionMap::const_iterator i = begin; i != end; ++i) {
@@ -1894,11 +1896,16 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
             QVariantMap detailsMap;
             detailsMap.insert(QLatin1String("message"), subscriptions.publishRequest);
             publishRequestDetails = Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap);
-            // FIXME (API/ABI break) remove signal with details
+            // FIXME (API/ABI break) remove both of these signals
             emit presencePublicationRequested(Contacts() << contact, publishRequestDetails);
-
             emit presencePublicationRequested(Contacts() << contact, subscriptions.publishRequest);
+
+            publishRequested.insert(contact);
         }
+    }
+
+    if (!publishRequested.empty()) {
+        emit presencePublicationRequested(publishRequested);
     }
 
     foreach (uint bareHandle, info.removals) {
@@ -2083,10 +2090,10 @@ void ContactManager::onPublishChannelMembersChangedFallback(
     }
 
     if (!groupLocalPendingMembersAdded.isEmpty()) {
-        // FIXME (API/ABI break) remove signal with details
+        emit presencePublicationRequested(groupLocalPendingMembersAdded);
+        // FIXME (API/ABI break) remove both of these signals
         emit presencePublicationRequested(groupLocalPendingMembersAdded,
             details);
-
         emit presencePublicationRequested(groupLocalPendingMembersAdded,
             details.message());
     }
@@ -2411,8 +2418,20 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
  * This signal is emitted whenever some contacts request for presence publication.
  *
  * \param contacts A set of contacts which requested presence publication.
+ */
+
+/**
+ * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
+ *          const QString &message);
+ *
+ * This signal is emitted whenever some contacts request for presence publication.
+ *
+ * \param contacts A set of contacts which requested presence publication.
  * \param message An optional message that was sent by the contacts asking to receive the local
  *                user's presence.
+ * \deprecated Turned out this didn't make sense at all. There can be multiple contacts, but this
+ * signal carries just a single message. Use presencePublicationRequested(const Tp::Contacts &)
+ * instead, and extract the messages from the individual Tp::Contact objects instead.
  */
 
 /**
@@ -2524,6 +2543,8 @@ void ContactManager::connectNotify(const char *signalName)
 {
     if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails))) == 0) {
         warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails)";
+    } else if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts,QString))) == 0) {
+        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts,QString)";
     }
 }
 

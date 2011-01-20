@@ -37,7 +37,7 @@ public:
 protected Q_SLOTS:
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
-    void expectPresencePublicationRequested(const Tp::Contacts &, const QString &);
+    void expectPresencePublicationRequested(const Tp::Contacts &);
     void expectPresenceStateChanged(Tp::Contact::PresenceState);
     void expectAllKnownContactsChanged(const Tp::Contacts &added, const Tp::Contacts &removed,
             const Tp::Channel::GroupMemberChangeDetails &details);
@@ -114,13 +114,11 @@ void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, co
     }
 }
 
-void TestConnRoster::expectPresencePublicationRequested(const Tp::Contacts &contacts,
-        const QString &message)
+void TestConnRoster::expectPresencePublicationRequested(const Tp::Contacts &contacts)
 {
     Q_FOREACH(Tp::ContactPtr contact, contacts) {
         QCOMPARE(static_cast<uint>(contact->publishState()),
                  static_cast<uint>(Contact::PresenceStateAsk));
-        QCOMPARE(contact->publishStateMessage(), message);
     }
 
     mGotPPR = true;
@@ -232,8 +230,8 @@ void TestConnRoster::testRoster()
     int i = 0;
 
     QVERIFY(connect(mConn->contactManager().data(),
-                    SIGNAL(presencePublicationRequested(const Tp::Contacts &, const QString &)),
-                    SLOT(expectPresencePublicationRequested(const Tp::Contacts &, const QString &))));
+                    SIGNAL(presencePublicationRequested(Tp::Contacts,QString)),
+                    SLOT(expectPresencePublicationRequested(Tp::Contacts))));
 
     Q_FOREACH (const ContactPtr &contact, mContacts) {
         mGotPresenceStateChanged = false;
