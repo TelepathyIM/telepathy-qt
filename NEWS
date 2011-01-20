@@ -7,7 +7,10 @@ Enhancements:
  * ...
 
 Fixes:
- * ...
+ * ContactManager not emitting presencePublicationRequested if the request
+   message is empty.
+ * ContactManager sometimes crashing when contacts are removed using the new
+   ContactList interface.
 
 telepathy-qt4 0.5.3 (2011-01-17)
 =================================
