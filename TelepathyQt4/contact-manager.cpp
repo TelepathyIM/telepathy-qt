@@ -1915,7 +1915,11 @@ void ContactManager::onContactListNewContactsConstructed(Tp::PendingOperation *o
             continue;
         }
 
-        Q_ASSERT(mPriv->cachedAllKnownContacts.contains(contact));
+        if (!mPriv->cachedAllKnownContacts.contains(contact)) {
+            warning() << "Contact" << contact->id() << "removed from ContactList but not cached, "
+                "ignoring.";
+            continue;
+        }
 
         contact->setSubscriptionState(SubscriptionStateNo);
         contact->setPublishState(SubscriptionStateNo);
@@ -2217,13 +2221,17 @@ void ContactManager::setContactListContacts(const ContactAttributesMap &attrsMap
     }
 
     mPriv->gotContactListInitialContacts = true;
-    mPriv->processContactListChanges();
 }
 
 void ContactManager::updateContactListContacts(const ContactSubscriptionMap &changes,
         const UIntList &removals)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
+
+    if (!mPriv->gotContactListInitialContacts) {
+        debug() << "Ignoring ContactList changes until initial contacts are retrieved";
+        return;
+    }
 
     mPriv->contactListUpdatesQueue.enqueue(Private::ContactListUpdateInfo(changes, removals));
     mPriv->contactListChangesQueue.enqueue(&Private::processContactListUpdates);

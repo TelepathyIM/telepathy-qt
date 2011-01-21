@@ -1789,6 +1789,8 @@ void Connection::gotContactListContacts(QDBusPendingCallWatcher *watcher)
         return;
     }
 
+    debug() << "Got initial ContactList contacts";
+
     ContactAttributesMap attrs = reply.value();
     mPriv->contactManager->setContactListContacts(attrs);
 
@@ -1853,6 +1855,9 @@ void Connection::onContactListStateChanged(uint state)
 void Connection::onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
         const Tp::UIntList &removals)
 {
+    debug() << "Got ContactList.ContactsChanged with" << changes.size() <<
+        "changes and" << removals.size() << "removals";
+
     mPriv->contactManager->updateContactListContacts(changes, removals);
 }
 
