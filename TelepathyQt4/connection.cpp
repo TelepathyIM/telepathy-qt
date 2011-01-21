@@ -90,7 +90,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     // Should always be used instead of directly using baseclass invalidate()
     void invalidateResetCaps(const QString &errorName, const QString &errorMessage);
 
-    void checkFeatureRosterGroupsReady();
+    void checkFeatureRosterGroupsFallbackReady();
 
     struct HandleContext;
 
@@ -146,6 +146,8 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     // FeatureRoster
     // new roster API
     uint contactListState;
+    bool gotContactListInitialContacts;
+    bool rosterGroupsReintrospectionRequired;
 
     // old roster API
     QMap<uint, ContactManager::ContactListChannel> contactListChannels;
@@ -228,6 +230,8 @@ Connection::Private::Private(Connection *parent,
       immortalHandles(false),
       contactManager(ContactManagerPtr(new ContactManager(parent))),
       contactListState((uint) -1),
+      gotContactListInitialContacts(false),
+      rosterGroupsReintrospectionRequired(false),
       contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
       handleContext(0)
@@ -580,8 +584,18 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
 {
     if (self->parent->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
         if (!self->parent->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
-            self->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
-                    TP_QT4_ERROR_NOT_IMPLEMENTED, QLatin1String("Roster groups not supported"));
+            if (!self->parent->isReady(FeatureRosterGroups)) {
+                self->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
+                        TP_QT4_ERROR_NOT_IMPLEMENTED, QLatin1String("Roster groups not supported"));
+            }
+            return;
+        }
+
+        if (!self->gotContactListInitialContacts) {
+            debug() << "FeatureRosterGroups requested but initial ContactList contacts not "
+                "retrieved. Postponing introspection";
+            self->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, true);
+            self->rosterGroupsReintrospectionRequired = true;
             return;
         }
 
@@ -713,7 +727,7 @@ void Connection::Private::invalidateResetCaps(const QString &error, const QStrin
     parent->invalidate(error, message);
 }
 
-void Connection::Private::checkFeatureRosterGroupsReady()
+void Connection::Private::checkFeatureRosterGroupsFallbackReady()
 {
     if (featureRosterGroupsTodo != 0) {
         return;
@@ -1791,6 +1805,8 @@ void Connection::gotContactListContacts(QDBusPendingCallWatcher *watcher)
 
     debug() << "Got initial ContactList contacts";
 
+    mPriv->gotContactListInitialContacts = true;
+
     ContactAttributesMap attrs = reply.value();
     mPriv->contactManager->setContactListContacts(attrs);
 
@@ -1798,14 +1814,20 @@ void Connection::gotContactListContacts(QDBusPendingCallWatcher *watcher)
     if (!isReady(FeatureRoster)) {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
     }
+
+    if (mPriv->rosterGroupsReintrospectionRequired) {
+        mPriv->introspectRosterGroups(mPriv);
+    }
 }
 
 void Connection::gotContactListGroupsProperties(PendingOperation *op)
 {
     if (op->isError()) {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
-                op->errorName(), op->errorMessage());
-        return;
+        if (!isReady(FeatureRosterGroups)) {
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
+                    op->errorName(), op->errorMessage());
+            return;
+        }
     }
 
     debug() << "Got contact list groups properties";
@@ -1825,13 +1847,17 @@ void Connection::gotContactListGroupsProperties(PendingOperation *op)
 void Connection::onContactListContactsUpgraded(PendingOperation *op)
 {
     if (op->isError()) {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
-                op->errorName(), op->errorMessage());
+        if (!isReady(FeatureRosterGroups)) {
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, false,
+                    op->errorName(), op->errorMessage());
+        }
         return;
     }
 
     debug() << "Contact list groups ready";
-    mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, true);
+    if (!isReady(FeatureRosterGroups)) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureRosterGroups, true);
+    }
 }
 
 void Connection::onContactListStateChanged(uint state)
@@ -1857,6 +1883,11 @@ void Connection::onContactListContactsChanged(const Tp::ContactSubscriptionMap &
 {
     debug() << "Got ContactList.ContactsChanged with" << changes.size() <<
         "changes and" << removals.size() << "removals";
+
+    if (!mPriv->gotContactListInitialContacts) {
+        debug() << "Ignoring ContactList changes until initial contacts are retrieved";
+        return;
+    }
 
     mPriv->contactManager->updateContactListContacts(changes, removals);
 }
@@ -1981,7 +2012,7 @@ void Connection::onContactListGroupChannelReady(Tp::PendingOperation *op)
     --mPriv->featureRosterGroupsTodo; // incremented in onNewChannels
 
     if (!isReady(FeatureRosterGroups)) {
-        mPriv->checkFeatureRosterGroupsReady();
+        mPriv->checkFeatureRosterGroupsFallbackReady();
     } else {
         PendingReady *pr = qobject_cast<PendingReady*>(op);
         ChannelPtr channel = ChannelPtr::qObjectCast(pr->proxy());
@@ -2004,7 +2035,7 @@ void Connection::gotChannels(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ":" << reply.error().message();
     }
 
-    mPriv->checkFeatureRosterGroupsReady();
+    mPriv->checkFeatureRosterGroupsFallbackReady();
 
     watcher->deleteLater();
 }

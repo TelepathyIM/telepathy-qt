@@ -118,7 +118,6 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
 
     // new roster API
     bool canChangeContactList;
-    bool gotContactListInitialContacts;
     bool contactListRequestUsesMessage;
     QSet<QString> allKnownGroups;
     bool contactListGroupPropertiesReceived;
@@ -191,7 +190,6 @@ ContactManager::Private::Private(ContactManager *parent, Connection *connection)
       connection(connection),
       fallbackContactList(false),
       canChangeContactList(false),
-      gotContactListInitialContacts(false),
       contactListRequestUsesMessage(false),
       contactListGroupPropertiesReceived(false),
       processingContactListChanges(false),
@@ -277,8 +275,7 @@ void ContactManager::Private::ensureTracking(const Feature &feature)
 
 void ContactManager::Private::processContactListChanges()
 {
-    if (processingContactListChanges || contactListChangesQueue.isEmpty() ||
-        !gotContactListInitialContacts) {
+    if (processingContactListChanges || contactListChangesQueue.isEmpty()) {
         return;
     }
 
@@ -2219,19 +2216,12 @@ void ContactManager::setContactListContacts(const ContactAttributesMap &attrsMap
                 Features(), attrs);
         mPriv->cachedAllKnownContacts.insert(contact);
     }
-
-    mPriv->gotContactListInitialContacts = true;
 }
 
 void ContactManager::updateContactListContacts(const ContactSubscriptionMap &changes,
         const UIntList &removals)
 {
     Q_ASSERT(mPriv->fallbackContactList == false);
-
-    if (!mPriv->gotContactListInitialContacts) {
-        debug() << "Ignoring ContactList changes until initial contacts are retrieved";
-        return;
-    }
 
     mPriv->contactListUpdatesQueue.enqueue(Private::ContactListUpdateInfo(changes, removals));
     mPriv->contactListChangesQueue.enqueue(&Private::processContactListUpdates);
