@@ -73,7 +73,14 @@ ContactFactory::~ContactFactory()
  */
 Features ContactFactory::features() const
 {
-    return mPriv->features;
+    Features features = mPriv->features;
+    // FeatureAvatarData depends on FeatureAvatarToken
+    if (features.contains(Contact::FeatureAvatarData) &&
+        !features.contains(Contact::FeatureAvatarToken)) {
+        features.insert(Contact::FeatureAvatarToken);
+    }
+
+    return features;
 }
 
 /**
