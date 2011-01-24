@@ -853,13 +853,8 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<uint> otherContacts;
     Features missingFeatures;
 
-    // FeatureAvatarData depends on FeatureAvatarToken
     Features realFeatures(features);
     realFeatures.unite(connection()->contactFactory()->features());
-    if (realFeatures.contains(Contact::FeatureAvatarData) &&
-        !realFeatures.contains(Contact::FeatureAvatarToken)) {
-        realFeatures.insert(Contact::FeatureAvatarToken);
-    }
 
     if (!connection()->isValid()) {
         return new PendingContacts(ContactManagerPtr(this), handles, realFeatures, QStringList(),
