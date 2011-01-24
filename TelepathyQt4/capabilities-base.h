@@ -53,8 +53,9 @@ public:
     bool streamedMediaVideoCallsWithAudio() const;
     bool upgradingStreamedMediaCalls() const;
 
+    bool fileTransfers() const;
+
     // later: FIXME TODO why not now?
-    // bool fileTransfers() const;
     // QList<FileHashType> fileTransfersRequireHash() const;
     //
     // bool streamTubes() const;

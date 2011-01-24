@@ -328,4 +328,20 @@ bool CapabilitiesBase::upgradingStreamedMediaCalls() const
     return false;
 }
 
+/**
+ * Return whether file transfer can be established by providing a contact identifier
+ *
+ * \return \c true if file transfers can be expected to work,
+ *         \c false otherwise.
+ */
+bool CapabilitiesBase::fileTransfers() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::fileTransfer())) {
+            return true;
+        }
+    }
+    return false;
+}
+
 } // Tp
