@@ -163,6 +163,7 @@ private:
             const Features &features,
             const QVariantMap &attributes);
 
+    void ensureTracking(const Feature &feature);
     static QString featureToInterface(const Feature &feature);
 
     PendingOperation *introspectRoster();
