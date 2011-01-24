@@ -169,7 +169,7 @@ void TestConnRoster::init()
 
     mConn = Connection::create(mConnName, mConnPath,
             ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
+            ContactFactory::create(Contact::FeatureAlias));
 
     QVERIFY(connect(mConn->lowlevel()->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -203,6 +203,7 @@ void TestConnRoster::testRoster()
     QList<ContactPtr> pendingPublish;
     Q_FOREACH (const ContactPtr &contact,
             mConn->contactManager()->allKnownContacts()) {
+        QVERIFY(contact->requestedFeatures().contains(Contact::FeatureAlias));
         qDebug() << " contact:" << contact->id() <<
             "- subscription:" << contact->subscriptionState() <<
             "- publish:" << contact->publishState();
