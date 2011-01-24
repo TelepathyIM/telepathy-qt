@@ -27,6 +27,7 @@
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingFailure>
@@ -682,10 +683,9 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
         uint bareHandle = i.key();
         QVariantMap attrs = i.value();
 
-        // FIXME Features+attrs
         ContactPtr contact = contactManager->ensureContact(ReferencedHandles(conn,
                     HandleTypeContact, UIntList() << bareHandle),
-                Features(), attrs);
+                conn->contactFactory()->features(), attrs);
         cachedAllKnownContacts.insert(contact);
     }
 
@@ -1309,10 +1309,22 @@ void ContactManager::Roster::introspectContactListContacts()
 
     Client::ConnectionInterfaceContactListInterface *iface =
         conn->interface<Client::ConnectionInterfaceContactListInterface>();
+
+    Features features(conn->contactFactory()->features());
+    Features supportedFeatures(contactManager->supportedFeatures());
+    QSet<QString> interfaces;
+    foreach (const Feature &feature, features) {
+        contactManager->ensureTracking(feature);
+
+        if (supportedFeatures.contains(feature)) {
+            // Only query interfaces which are reported as supported to not get an error
+            interfaces.insert(contactManager->featureToInterface(feature));
+        }
+    }
+    interfaces.insert(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST);
+
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            iface->GetContactListAttributes(
-                QStringList() << QLatin1String(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST),
-                true), contactManager);
+            iface->GetContactListAttributes(interfaces.toList(), true), contactManager);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotContactListContacts(QDBusPendingCallWatcher*)));
