@@ -1018,8 +1018,7 @@ void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op
     cachedAllKnownGroups = qdbus_cast<QStringList>(props[QLatin1String("Groups")]).toSet();
     contactListGroupPropertiesReceived = true;
 
-    // FIXME - Events should not be ignored now that we have groups, add the upgradeContacts call to
-    //         the event queue
+    processingContactListChanges = true;
     PendingContacts *pc = contactManager->upgradeContacts(
             contactManager->allKnownContacts().toList(),
             Contact::FeatureRosterGroups);
@@ -1030,14 +1029,19 @@ void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op
 
 void ContactManager::Roster::onContactListContactsUpgraded(PendingOperation *op)
 {
+    processingContactListChanges = false;
+
     if (op->isError()) {
         introspectGroupsPendingOp->setFinishedWithError(
                 op->errorName(), op->errorMessage());
         introspectGroupsPendingOp = 0;
+        processContactListChanges();
+        return;
     }
 
     introspectGroupsPendingOp->setFinished();
     introspectGroupsPendingOp = 0;
+    processContactListChanges();
 }
 
 void ContactManager::Roster::onNewChannels(const Tp::ChannelDetailsList &channelDetailsList)
