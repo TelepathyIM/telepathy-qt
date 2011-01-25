@@ -1,13 +1,18 @@
-telepathy-qt4 0.5.5 (UNRELEASED)
+telepathy-qt4 0.5.5 (2011-01-25)
 =================================
 
-The "..." release.
+The "I wish I had less contacts" release.
 
 Enhancements:
- * ...
+ * CapabilitiesBase: Added method to check if file transfer is supported.
 
 Fixes:
- * ...
+ * Contact list contacts are now guaranteed to contain the features set on
+   ContactFactory.
+ * Contact list groups are now automatically reintrospected when needed.
+ * Another attempt to fix a crash when contacts are removed from contact list
+   while the introspection is still running.
+ * fd.o#33457 - tp-qt4 uses non-atomic file write in avatar cache.
 
 telepathy-qt4 0.5.4 (2011-01-20)
 =================================
