@@ -74,9 +74,11 @@ private Q_SLOTS:
     void emitFinished();
 
 private:
+    friend class ContactManager;
+    friend class ReadinessHelper;
+
     struct Private;
     friend struct Private;
-    friend class ReadinessHelper;
     Private *mPriv;
 };
 

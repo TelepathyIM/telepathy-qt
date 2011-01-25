@@ -38,6 +38,7 @@ set(telepathy_qt4_SRCS
     contact-capabilities.cpp
     contact-factory.cpp
     contact-manager.cpp
+    contact-manager-roster.cpp
     contact-search-channel.cpp
     dbus.cpp
     dbus-proxy.cpp

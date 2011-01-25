@@ -196,19 +196,9 @@ private Q_SLOTS:
     void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
     void gotSelfContact(Tp::PendingOperation *op);
-    void gotContactListProperties(Tp::PendingOperation *op);
-    void gotContactListContacts(QDBusPendingCallWatcher *watcher);
-    void gotContactListGroupsProperties(Tp::PendingOperation *op);
-    void onContactListContactsUpgraded(Tp::PendingOperation *op);
-    void onContactListStateChanged(uint state);
-    void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
-            const Tp::UIntList &removals);
-    void gotContactListsHandles(Tp::PendingOperation *op);
-    void gotContactListChannel(Tp::PendingOperation *op);
-    void contactListChannelReady();
-    void onNewChannels(const Tp::ChannelDetailsList &channelDetailsList);
-    void onContactListGroupChannelReady(Tp::PendingOperation *op);
-    void gotChannels(QDBusPendingCallWatcher *watcher);
+
+    void onIntrospectRosterFinished(Tp::PendingOperation *op);
+    void onIntrospectRosterGroupsFinished(Tp::PendingOperation *op);
 
     void doReleaseSweep(uint handleType);
 

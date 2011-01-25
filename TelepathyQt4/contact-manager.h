@@ -118,7 +118,7 @@ public:
 
 Q_SIGNALS:
     void presencePublicationRequested(const Tp::Contacts &contacts);
-    // deprecated - carry redundant data which can be got (meaningfully) from the Contacts
+    // deprecated - carry redundant data which can be retrieved (meaningfully) from the Contacts
     // themselves (note: multiple contacts, but just a single message/details!)
     void presencePublicationRequested(const Tp::Contacts &contacts, const QString &message);
     void presencePublicationRequested(const Tp::Contacts &contacts,
@@ -151,85 +151,11 @@ private Q_SLOTS:
     void onLocationUpdated(uint, const QVariantMap &);
     void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
 
-    void onContactListNewContactsConstructed(Tp::PendingOperation *op);
-    void onContactListGroupsChanged(const Tp::UIntList &contacts,
-            const QStringList &added, const QStringList &removed);
-    void onContactListGroupsCreated(const QStringList &names);
-    void onContactListGroupRenamed(const QString &oldName, const QString &newName);
-    void onContactListGroupsRemoved(const QStringList &names);
-
-    void onModifyFinished(Tp::PendingOperation *op);
-    void onModifyFinishSignaled();
-
-    void onStoredChannelMembersChangedFallback(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-    void onSubscribeChannelMembersChangedFallback(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-    void onPublishChannelMembersChangedFallback(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-    void onDenyChannelMembersChanged(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-
-    void onContactListGroupMembersChangedFallback(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-    void onContactListGroupRemovedFallback(Tp::DBusProxy *proxy,
-        const QString &errorName, const QString &errorMessage);
-
 private:
+    class Roster;
     friend class Connection;
     friend class PendingContacts;
-
-    struct ContactListChannel
-    {
-        enum Type {
-            TypeSubscribe = 0,
-            TypePublish,
-            TypeStored,
-            TypeDeny,
-            LastType
-        };
-
-        ContactListChannel()
-            : type((Type) -1)
-        {
-        }
-
-        ContactListChannel(Type type)
-            : type(type)
-        {
-        }
-
-        ~ContactListChannel()
-        {
-        }
-
-        static QString identifierForType(Type type);
-        static uint typeForIdentifier(const QString &identifier);
-
-        Type type;
-        ReferencedHandles handle;
-        ChannelPtr channel;
-    };
+    friend class Roster;
 
     ContactManager(Connection *parent);
 
@@ -237,25 +163,12 @@ private:
             const Features &features,
             const QVariantMap &attributes);
 
-    void setUseFallbackContactList(bool value);
-
-    void setContactListProperties(const QVariantMap &props);
-    void setContactListContacts(const ContactAttributesMap &attrs);
-    void updateContactListContacts(const ContactSubscriptionMap &changes,
-            const UIntList &removals);
-    void setContactListGroupsProperties(const QVariantMap &props);
-
-    void setContactListChannels(
-            const QMap<uint, ContactListChannel> &contactListChannels);
-
-    void setContactListGroupChannelsFallback(
-            const QList<ChannelPtr> &contactListGroupChannels);
-    void addContactListGroupChannelFallback(
-            const ChannelPtr &contactListGroupChannel);
-
-    void resetContactListChannels();
-
+    void ensureTracking(const Feature &feature);
     static QString featureToInterface(const Feature &feature);
+
+    PendingOperation *introspectRoster();
+    PendingOperation *introspectRosterGroups();
+    void resetRoster();
 
     struct Private;
     friend struct Private;
