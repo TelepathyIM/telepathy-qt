@@ -127,6 +127,7 @@ PendingOperation *ContactManager::Roster::introspectGroups()
 
         if (!gotContactListInitialContacts) {
             debug() << "Initial ContactList contacts not retrieved. Postponing introspection";
+            groupsReintrospectionRequired = true;
             po->setFinished();
             return po;
         }
@@ -178,8 +179,10 @@ PendingOperation *ContactManager::Roster::introspectGroups()
                 SLOT(gotChannels(QDBusPendingCallWatcher*)));
     }
 
-    introspectGroupsPendingOp = po;
-    return introspectGroupsPendingOp;
+    if (!groupsReintrospectionRequired) {
+        introspectGroupsPendingOp = po;
+    }
+    return po;
 }
 
 void ContactManager::Roster::reset()
