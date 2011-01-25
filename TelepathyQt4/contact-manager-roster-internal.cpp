@@ -774,7 +774,9 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
         contact->setSubscriptionState((SubscriptionState) subscriptions.subscribe);
         contact->setPublishState((SubscriptionState) subscriptions.publish,
                 subscriptions.publishRequest);
-        if (subscriptions.publish == SubscriptionStateAsk) {
+        if (subscriptions.publish == SubscriptionStateAsk
+                && (contact->publishState() != Contact::PresenceStateAsk
+                    || subscriptions.publishRequest != contact->publishStateMessage())) {
             Channel::GroupMemberChangeDetails publishRequestDetails;
             QVariantMap detailsMap;
             detailsMap.insert(QLatin1String("message"), subscriptions.publishRequest);

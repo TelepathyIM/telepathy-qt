@@ -809,7 +809,7 @@ void Contact::setSubscriptionState(SubscriptionState state)
 
 void Contact::setPublishState(SubscriptionState state, const QString &message)
 {
-    if (mPriv->publishState == state) {
+    if (mPriv->publishState == state && mPriv->publishStateMessage == message) {
         return;
     }
 
