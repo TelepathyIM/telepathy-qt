@@ -114,13 +114,10 @@ PendingOperation *ContactManager::Roster::introspectGroups()
 
     Q_ASSERT(!introspectGroupsPendingOp);
 
-    PendingOperation *po = new PendingOperation(conn);
-
     if (conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
         if (!conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
-            po->setFinishedWithError(
-                    TP_QT4_ERROR_NOT_IMPLEMENTED, QLatin1String("Roster groups not supported"));
-            return po;
+            return new PendingFailure(TP_QT4_ERROR_NOT_IMPLEMENTED,
+                    QLatin1String("Roster groups not supported"), conn);
         }
 
         debug() << "Connection.ContactGroups found, using it";
@@ -128,8 +125,7 @@ PendingOperation *ContactManager::Roster::introspectGroups()
         if (!gotContactListInitialContacts) {
             debug() << "Initial ContactList contacts not retrieved. Postponing introspection";
             groupsReintrospectionRequired = true;
-            po->setFinished();
-            return po;
+            return new PendingSuccess(conn);
         }
 
         Client::ConnectionInterfaceContactGroupsInterface *iface =
@@ -179,10 +175,13 @@ PendingOperation *ContactManager::Roster::introspectGroups()
                 SLOT(gotChannels(QDBusPendingCallWatcher*)));
     }
 
-    if (!groupsReintrospectionRequired) {
-        introspectGroupsPendingOp = po;
+    if (groupsReintrospectionRequired) {
+        return NULL;
     }
-    return po;
+
+    Q_ASSERT(!introspectGroupsPendingOp);
+    introspectGroupsPendingOp = new PendingOperation(conn);
+    return introspectGroupsPendingOp;
 }
 
 void ContactManager::Roster::reset()
