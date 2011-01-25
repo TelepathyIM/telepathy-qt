@@ -20,7 +20,7 @@
  */
 
 #include <TelepathyQt4/ContactManager>
-#include "TelepathyQt4/contact-manager-roster-internal.h"
+#include "TelepathyQt4/contact-manager-internal.h"
 
 #include "TelepathyQt4/_gen/contact-manager.moc.hpp"
 
