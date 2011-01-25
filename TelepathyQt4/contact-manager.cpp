@@ -1783,20 +1783,21 @@ void ContactManager::onAvatarRetrieved(uint handle, const QString &token,
         mimeTypeFileName);
 
     if (success) {
-        QFile mimeTypeFile(mimeTypeFileName);
-        QFile avatarFile(avatarFileName);
-
         debug() << "Write avatar in cache for handle" << handle;
         debug() << "Filename:" << avatarFileName;
         debug() << "MimeType:" << mimeType;
 
-        mimeTypeFile.open(QIODevice::WriteOnly);
+        QTemporaryFile mimeTypeFile(QLatin1String("tpqt4-avatar-mimetype."));
+        mimeTypeFile.open();
         mimeTypeFile.write(mimeType.toLatin1());
-        mimeTypeFile.close();
+        mimeTypeFile.setAutoRemove(false);
+        mimeTypeFile.rename(mimeTypeFileName);
 
-        avatarFile.open(QIODevice::WriteOnly);
+        QTemporaryFile avatarFile(QLatin1String("tpqt4-avatar-data."));
+        avatarFile.open();
         avatarFile.write(data);
-        avatarFile.close();
+        avatarFile.setAutoRemove(false);
+        avatarFile.rename(avatarFileName);
     }
 
     ContactPtr contact = lookupContactByHandle(handle);
