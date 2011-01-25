@@ -778,6 +778,11 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
 
     Features realFeatures(features);
     realFeatures.unite(connection()->contactFactory()->features());
+    // FeatureAvatarData depends on FeatureAvatarToken
+    if (realFeatures.contains(Contact::FeatureAvatarData) &&
+        !realFeatures.contains(Contact::FeatureAvatarToken)) {
+        realFeatures.insert(Contact::FeatureAvatarToken);
+    }
 
     if (!connection()->isValid()) {
         return new PendingContacts(ContactManagerPtr(this), handles, realFeatures, QStringList(),
