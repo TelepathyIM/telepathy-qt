@@ -788,8 +788,10 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         ProtocolPropertiesMap::const_iterator i = protocolsMap.constBegin();
         ProtocolPropertiesMap::const_iterator end = protocolsMap.constEnd();
         while (i != end) {
+            QString escapedProtocolName = i.key();
+            escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
             QString protocolPath = QString(
-                    QLatin1String("%1/%2")).arg(objectPath()).arg(i.key());
+                    QLatin1String("%1/%2")).arg(objectPath()).arg(escapedProtocolName);
             SharedPtr<Private::ProtocolWrapper> wrapper = SharedPtr<Private::ProtocolWrapper>(
                     new Private::ProtocolWrapper(
                         dbusConnection(), busName(), protocolPath,
