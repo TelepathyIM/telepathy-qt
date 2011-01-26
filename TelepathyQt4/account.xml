@@ -6,6 +6,7 @@
 
 <xi:include href="../spec/Account.xml"/>
 
+<xi:include href="../spec/Account_Interface_Addressing.xml"/>
 <xi:include href="../spec/Account_Interface_Avatar.xml"/>
 
 </tp:spec>
