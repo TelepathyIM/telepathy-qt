@@ -11,6 +11,8 @@ Fixes:
  * Properly escape protocol name with "-" when constructing protocol object
    path.
  * Properly link against QtXml.
+ * Properly emit presencePublicationRequested if the contact current publish
+   state changes to PresenceStateAsk.
 
 telepathy-qt4 0.5.5 (2011-01-25)
 =================================
