@@ -1,7 +1,7 @@
-telepathy-qt4 0.5.6 (UNRELEASED)
+telepathy-qt4 0.5.6 (2011-01-27)
 =================================
 
-The "..." release.
+The "accept/decline" release.
 
 Enhancements:
  * Update to spec 0.21.8.
