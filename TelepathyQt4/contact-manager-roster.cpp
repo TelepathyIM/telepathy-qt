@@ -771,12 +771,14 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             added << contact;
         }
 
+        Contact::PresenceState oldContactPublishState = contact->publishState();
+        QString oldContactPublishStateMessage = contact->publishStateMessage();
         contact->setSubscriptionState((SubscriptionState) subscriptions.subscribe);
         contact->setPublishState((SubscriptionState) subscriptions.publish,
                 subscriptions.publishRequest);
-        if (subscriptions.publish == SubscriptionStateAsk
-                && (contact->publishState() != Contact::PresenceStateAsk
-                    || subscriptions.publishRequest != contact->publishStateMessage())) {
+        if (subscriptions.publish == SubscriptionStateAsk &&
+            (oldContactPublishState != Contact::PresenceStateAsk ||
+             oldContactPublishStateMessage != contact->publishStateMessage())) {
             Channel::GroupMemberChangeDetails publishRequestDetails;
             QVariantMap detailsMap;
             detailsMap.insert(QLatin1String("message"), subscriptions.publishRequest);
