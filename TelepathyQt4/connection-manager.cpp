@@ -44,6 +44,33 @@
 #include <QStringList>
 #include <QTimer>
 
+namespace
+{
+
+bool checkValidProtocolName(const QString &protocolName)
+{
+    if (!protocolName[0].isLetter()) {
+        return false;
+    }
+
+    int length = protocolName.length();
+    if (length <= 1) {
+        return true;
+    }
+
+    QChar ch;
+    for (int i = 1; i < length; ++i) {
+        ch = protocolName[i];
+        if (!ch.isLetterOrNumber() && ch != QLatin1Char('-')) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+}
+
 namespace Tp
 {
 
@@ -788,12 +815,20 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         ProtocolPropertiesMap::const_iterator i = protocolsMap.constBegin();
         ProtocolPropertiesMap::const_iterator end = protocolsMap.constEnd();
         while (i != end) {
+            QString protocolName = i.key();
+            if (!checkValidProtocolName(protocolName)) {
+                warning() << "Protocol has an invalid name" << protocolName << "- ignoring";
+                continue;
+            }
+
+            QString escapedProtocolName = protocolName;
+            escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
             QString protocolPath = QString(
-                    QLatin1String("%1/%2")).arg(objectPath()).arg(i.key());
+                    QLatin1String("%1/%2")).arg(objectPath()).arg(escapedProtocolName);
             SharedPtr<Private::ProtocolWrapper> wrapper = SharedPtr<Private::ProtocolWrapper>(
                     new Private::ProtocolWrapper(
                         dbusConnection(), busName(), protocolPath,
-                        mPriv->name, i.key(), i.value()));
+                        mPriv->name, protocolName, i.value()));
             connect(wrapper->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(onProtocolReady(Tp::PendingOperation*)));
