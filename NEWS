@@ -10,6 +10,7 @@ Fixes:
  * Properly ignore protocol with invalid names.
  * Properly escape protocol name with "-" when constructing protocol object
    path.
+ * Properly link against QtXml.
 
 telepathy-qt4 0.5.5 (2011-01-25)
 =================================
