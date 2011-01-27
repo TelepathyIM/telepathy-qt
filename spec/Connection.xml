@@ -222,6 +222,9 @@ USA.</p>
     </method>
 
     <method name="HoldHandles" tp:name-for-bindings="Hold_Handles">
+      <tp:changed version="0.21.6">If
+        <tp:member-ref>HasImmortalHandles</tp:member-ref> is true,
+        this method no longer does anything.</tp:changed>
       <arg direction="in" name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           The type of handle to be held
@@ -235,7 +238,13 @@ USA.</p>
       </arg>
 
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Notify the connection manger that your client is holding a copy
+        <p>If <tp:member-ref>HasImmortalHandles</tp:member-ref> is true,
+          which SHOULD always be the case in this version of telepathy-spec,
+          this method does nothing and returns successfully, unless
+          the given handle type or any of the given handles is invalid.</p>
+
+        <p>In older connection managers, this method
+        notifies the connection manger that your client is holding a copy
         of handles which may not be in use in any existing channel or
         list, and were not obtained by using the
         <tp:member-ref>RequestHandles</tp:member-ref> method. For
@@ -390,6 +399,9 @@ USA.</p>
     </signal>
 
     <method name="ReleaseHandles" tp:name-for-bindings="Release_Handles">
+      <tp:changed version="0.21.6">If
+        <tp:member-ref>HasImmortalHandles</tp:member-ref> is true,
+        this method no longer does anything.</tp:changed>
       <arg direction="in" name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           An integer handle type (as defined in RequestHandle)
@@ -403,10 +415,17 @@ USA.</p>
       </arg>
 
       <tp:docstring>
-        Explicitly notify the connection manager that your client is no
+        <p>If <tp:member-ref>HasImmortalHandles</tp:member-ref> is true,
+          which SHOULD always be the case in this version of telepathy-spec,
+          this method does nothing and returns successfully, unless
+          the given handle type or any of the given handles is invalid.</p>
+
+        <p>In older connection managers, this method
+        explicitly notifies the connection manager that your client is no
         longer holding any references to the given handles, and that they
         may be deallocated if they are not held by any other clients or
-        referenced by any existing channels. See HoldHandles for notes.
+        referenced by any existing channels. See
+        <tp:member-ref>HoldHandles</tp:member-ref> for notes.</p>
       </tp:docstring>
 
       <tp:possible-errors>
@@ -419,11 +438,6 @@ USA.</p>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
           <tp:docstring>
             One of the given handles is not valid
-          </tp:docstring>
-        </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          <tp:docstring>
-            One of the given handles is not held by this client
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>
@@ -622,6 +636,9 @@ USA.</p>
     </tp:simple-type>
 
     <method name="RequestHandles" tp:name-for-bindings="Request_Handles">
+      <tp:changed version="0.21.6">If
+        <tp:member-ref>HasImmortalHandles</tp:member-ref> is true,
+        this method no longer has its reference-counting effect.</tp:changed>
       <arg direction="in" name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           The type of handle required
@@ -641,17 +658,23 @@ USA.</p>
         </tp:docstring>
       </arg>
 
-      <tp:docstring>
-        Request several handles from the connection manager which represent a
-        number of contacts, rooms or server-stored lists on the service. The
-        connection manager should record that these handles are in use by the
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request several handles from the connection manager which represent a
+          number of contacts, rooms or server-stored lists on the service.</p>
+
+        <p>If <tp:member-ref>HasImmortalHandles</tp:member-ref> is true,
+          which SHOULD always be the case in this version of telepathy-spec,
+          the handles remain valid until the connection disconnects.</p>
+
+        <p>The implementation of this method in older connection managers
+        must record that these handles are in use by the
         client who invokes this method, and must not deallocate the handles
         until the client disconnects from the bus or calls the
         <tp:member-ref>ReleaseHandles</tp:member-ref>
         method. Where the identifier refers to an entity that already has a
         handle in this connection manager, this handle should be returned
         instead. The handle number 0 must not be returned by the connection
-        manager.
+        manager.</p>
       </tp:docstring>
 
       <tp:possible-errors>
@@ -722,7 +745,7 @@ USA.</p>
             reasons SHOULD be treated like this reason.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>org.freedesktop.Telepathy.Error.Disconnected</code>.</p>
+            <code>org.freedesktop.Telepathy.Error.<tp:error-ref>Disconnected</tp:error-ref></code>.</p>
         </tp:docstring>
       </tp:enumvalue>
 
@@ -985,7 +1008,7 @@ USA.</p>
           <tp:type>Connection_Status_Reason</tp:type>, or may be a more
           specific Telepathy error
           (such as
-          <code>org.freedesktop.Telepathy.Errors.ConnectionRefused</code>
+          <code>org.freedesktop.Telepathy.Error.ConnectionRefused</code>
           for Connection_Status_Reason_Network_Error)
           or a protocol-specific or connection-manager-specific error in a
           suitable namespace.
@@ -1049,6 +1072,137 @@ USA.</p>
           whether it was explicitly requested or not.</p>
       </tp:docstring>
     </tp:contact-attribute>
+
+    <method name="AddClientInterest" tp:name-for-bindings="Add_Client_Interest">
+      <tp:added version="0.21.3"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Register a client's interest in notifications related to one or
+          more interfaces.</p>
+
+        <p>Groups of notifications are identified by a token which is either
+          a D-Bus interface name, or a string that starts with a D-Bus
+          interface name. The meaning of each token is given by that D-Bus
+          interface, which MUST define it in its documentation.</p>
+
+        <tp:rationale>
+          <p>Initially, all interests are in entire interface, but allowing
+            other strings allows subscription to part of an interface; for
+            instance, an interest in ...MailNotification/count could track
+            the number of messages without caring about their detailed
+            content.</p>
+        </tp:rationale>
+
+        <p>For each token with which this method interacts, the
+          Connection tracks an "interest count" (like a reference count) for
+          each unique bus name that has called this method. When a client
+          calls this method, for each token, the interest count for its
+          unique bus name is incremented; when
+          <tp:member-ref>RemoveClientInterest</tp:member-ref> is called,
+          all interest counts for that unique bus name are decremented.
+          If the unique bus name leaves the bus (for instance, if the
+          client crashes or exits), all interest counts for that unique bus
+          name are set to zero.</p>
+
+        <p>The Connection can then use these reference counts to
+          avoid subscribing to protocol-level notifications unless at least
+          one client has a non-zero interest count for the relevant
+          token.</p>
+
+        <tp:rationale>
+          <p>This method exists to reduce memory and network overhead when
+            there is no active subscription.</p>
+
+          <p>One situation where this is useful is <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Connection.Interface"
+              >Location</tp:dbus-ref>: on XMPP, location updates are received
+            over PEP. If the Connection advertises the
+            <code>geoloc+notify</code> capability, it will be sent location
+            updates for all contacts. To avoid consuming resources for this,
+            the connection should avoid advertising that capability until
+            a client has expressed an interest in contacts' locations.</p>
+
+          <p>Another example of a protocol that benefits from this method is
+            the Google XMPP Mail Notification extension, which can be used
+            to implement <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Connection.Interface"
+              >MailNotification</tp:dbus-ref>. In this protocol, the CM
+            receives a notification that something has changed, but to get
+            more information, the CM must request this information. Knowing
+            that nobody is currently interested in this information, the CM
+            can avoid generating useless network traffic. Similarly, the CM
+            may free the list of unread messages to reduce memory overhead.</p>
+        </tp:rationale>
+
+        <p>If this method is called for an interface that might require
+          protocol-level subscription, but the connection cannot set up
+          that subscription yet (for instance because the
+          <tp:member-ref>Status</tp:member-ref> is not Connected yet), the
+          Connection MUST remember the client's interest, and attempt to
+          subscribe to the appropriate protocol feature when this becomes
+          possible.</p>
+
+        <p>Clients MAY ignore any errors raised by this method; it is intended
+          to be called with the reply ignored.</p>
+
+        <tp:rationale>
+          <p>The only reason it could fail is if it's unimplemented, in which
+            case the only thing the client can usefully do is to proceed as if
+            it had succeeded.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Tokens" type="as" direction="in">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Interfaces or parts of interfaces in which to register an
+            interest, represented by either a
+            <tp:type>DBus_Interface</tp:type>, or a string prefixed with a
+            <tp:type>DBus_Interface</tp:type>.</p>
+
+          <p>If the Connection does not support one of these tokens, this
+            is not considered to be an error; the unsupported token is
+            simply ignored.</p>
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <method name="RemoveClientInterest"
+      tp:name-for-bindings="Remove_Client_Interest">
+      <tp:added version="0.21.3"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Release an interest registered using
+          <tp:member-ref>AddClientInterest</tp:member-ref>. See that
+          method's documentation for details.</p>
+
+        <p>Clients MAY ignore any errors raised by this method; it is intended
+          to be called with the reply ignored.</p>
+
+        <tp:rationale>
+          <p>The only reasons it could fail are if it's unimplemented, or if
+            the client's reference-counting is wrong and it has tried to
+            remove a client interest that it did not add. In both cases,
+            there's nothing the client could do about it.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Tokens" type="as" direction="in">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Interfaces or parts of interfaces that were previously passed to
+            <tp:member-ref>AddClientInterest</tp:member-ref>.</p>
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <property name="HasImmortalHandles"
+      tp:name-for-bindings="Has_Immortal_Handles"
+      access="read" type="b">
+      <tp:added version="0.21.6"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>True if handles last for the whole lifetime of the Connection.
+          This SHOULD be the case in all connection managers, but clients
+          MUST interoperate with older connection managers
+          (which reference-count handles).</p>
+      </tp:docstring>
+    </property>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This models a connection to a single user account on a communication

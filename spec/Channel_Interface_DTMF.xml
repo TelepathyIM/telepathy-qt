@@ -19,7 +19,10 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Channel.Interface.DTMF">
-    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+    <tp:xor-requires>
+      <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+      <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT"/>
+    </tp:xor-requires>
     <tp:changed version="0.19.6">The <tp:type>Stream_ID</tp:type>s in this
       interface should now be ignored by CMs. This is primarily to allow this
       interface to be used with <tp:dbus-ref
@@ -126,22 +129,47 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="MultipleTones" tp:name-for-bindings="Multiple_Tones">
       <tp:added version="0.19.6" />
+      <tp:changed version="0.21.3">The characters [pPxXwW,] must
+        also be supported.</tp:changed>
       <arg direction="in" name="Tones" type="s">
-        <tp:docstring>A string representation of one or more DTMF
-          events.</tp:docstring>
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A string representation of one or more DTMF
+            events. Implementations of this method MUST support all of the
+            following characters in this string:</p>
+
+          <ul>
+            <li>the digits 0-9, letters A-D and a-d, and symbols '*' and '#'
+              correspond to the members of <tp:type>DTMF_Event</tp:type></li>
+
+            <li>any of 'p', 'P', 'x', 'X' or ',' (comma) results in an
+              implementation-defined pause, typically for 3 seconds</li>
+
+            <li>'w' or 'W' waits for the user to continue, by stopping
+              interpretation of the string, and if there is more to be played,
+              emitting the <tp:member-ref>TonesDeferred</tp:member-ref> signal
+              with the rest of the string as its argument: see that signal
+              for details</li>
+          </ul>
+        </tp:docstring>
       </arg>
       <tp:docstring>
         <p>Send multiple DTMF events to all eligible streams in the channel.
-        Each character in the Tones string must be a valid DTMF event
-        (as defined by
-        <a href="http://www.rfc-editor.org/rfc/rfc4733.txt">RFC4733</a>).
-        Each tone will be played for a pre-defined number of milliseconds,
-        followed by a pause before the next tone is played.  The
-        duration/pause is defined by the protocol or connection manager.</p>
+        Each tone will be played for an implementation-defined number of
+        milliseconds (typically 250ms), followed by a gap before the next tone
+        is played (typically 100ms). The
+        duration and gap are defined by the protocol or connection manager.</p>
+
         <tp:rationale>
-          In cases where the client knows in advance the tone sequence it wants
-          to send, it's easier to use this method than manually start and stop
-          each tone in the sequence.
+          <p>In cases where the client knows in advance the tone sequence it
+            wants to send, it's easier to use this method than manually start
+            and stop each tone in the sequence.</p>
+
+          <p>The tone and gap lengths may need to vary for interoperability,
+            according to the protocol and other implementations' ability to
+            recognise tones. At the time of writing, GStreamer uses a
+            minimum of 250ms tones and 100ms gaps when playing in-band DTMF
+            in the normal audio stream, or 70ms tones and 50ms gaps when
+            encoding DTMF as <code>audio/telephone-event</code>.</p>
         </tp:rationale>
 
         <p>Tone overlaping or queueing is not supported, so this method can only
@@ -190,6 +218,47 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>This property is immutable (cannot change).</p>
       </tp:docstring>
     </property>
+
+    <property name="DeferredTones" tp:name-for-bindings="Deferred_Tones"
+        type="s" access="read">
+      <tp:added version="0.21.3" />
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The tones waiting for the user to continue, if any.</p>
+
+        <p>When this property is set to a non-empty value,
+          <tp:member-ref>TonesDeferred</tp:member-ref> is emitted.
+          When any tones are played (i.e. whenever
+          <tp:member-ref>SendingTones</tp:member-ref> is emitted),
+          this property is reset to the empty string.</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="TonesDeferred" tp:name-for-bindings="Tones_Deferred">
+      <tp:added version="0.21.3" />
+      <arg name="Tones" type="s">
+        <tp:docstring>The new non-empty value of
+          <tp:member-ref>DeferredTones</tp:member-ref>.</tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when 'w' or 'W', indicating "wait for the user to continue",
+          is encountered while playing a DTMF string queued by
+          <tp:member-ref>MultipleTones</tp:member-ref> or
+          <tp:member-ref>InitialTones</tp:member-ref>. Any queued DTMF events
+          after the 'w', which have not yet been played, are placed in the
+          <tp:member-ref>DeferredTones</tp:member-ref> property and copied
+          into this signal's argument.</p>
+
+        <p>When the channel handler is ready to continue, it MAY pass the
+          value of <tp:member-ref>DeferredTones</tp:member-ref> to
+          <tp:member-ref>MultipleTones</tp:member-ref>, to resume sending.
+          Alternatively, it MAY ignore the deferred tones, or even play
+          different tones instead. Any deferred tones are discarded the next
+          time a tone is played.</p>
+
+        <p>This signal SHOULD NOT be emitted if there is nothing left to play,
+          i.e. if the 'w' was the last character in the DTMF string.</p>
+      </tp:docstring>
+    </signal>
 
     <signal name="SendingTones" tp:name-for-bindings="Sending_Tones">
       <tp:added version="0.19.6" />

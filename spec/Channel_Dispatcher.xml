@@ -101,6 +101,165 @@
 
     <method name="CreateChannel" tp:name-for-bindings="Create_Channel">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Equivalent to calling
+          <tp:member-ref>CreateChannelWithHints</tp:member-ref> with an empty
+          <var>Hints</var> parameter.</p>
+      </tp:docstring>
+
+      <arg direction="in" name="Account" type="o">
+        <tp:docstring>
+          The
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>
+          for which the new channel is to be created.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Requested_Properties" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A dictionary containing desirable properties.</p>
+
+          <p>This parameter is used in the same way as the corresponding
+            parameter to
+            <tp:member-ref>CreateChannelWithHints</tp:member-ref>.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="User_Action_Time" type="x"
+        tp:type="User_Action_Timestamp">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The time at which user action occurred, or 0 if this channel
+            request is for some reason not involving user action.</p>
+
+          <p>This parameter is used in the same way as the corresponding
+            parameter to
+            <tp:member-ref>CreateChannelWithHints</tp:member-ref>.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Preferred_Handler" type="s"
+        tp:type="DBus_Well_Known_Name">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Either the well-known bus name (starting with
+            <code>org.freedesktop.Telepathy.Client.</code>)
+            of the preferred handler for this
+            channel, or an empty string to indicate that any handler would be
+            acceptable.</p>
+
+          <p>This parameter is used in the same way as the corresponding
+            parameter to
+            <tp:member-ref>CreateChannelWithHints</tp:member-ref>.</p>
+        </tp:docstring>
+        <tp:changed version="0.19.0">
+          Previously, the spec didn't say that this should disregard the
+          handler's filter. This has been implemented since
+          telepathy-mission-control 5.3.2.
+        </tp:changed>
+      </arg>
+
+      <arg direction="out" name="Request" type="o">
+        <tp:docstring>
+          A
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
+          object.
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The Preferred_Handler is syntactically invalid or does
+            not start with <code>org.freedesktop.Telepathy.Client.</code>,
+            the Account does not exist, or one of the Requested_Properties
+            is invalid
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+
+    </method>
+
+    <method name="EnsureChannel" tp:name-for-bindings="Ensure_Channel">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Equivalent to calling
+          <tp:member-ref>EnsureChannelWithHints</tp:member-ref> with an empty
+          <var>Hints</var> parameter.</p>
+      </tp:docstring>
+
+      <arg direction="in" name="Account" type="o">
+        <tp:docstring>
+          The
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>
+          for which the new channel is to be created.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Requested_Properties" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A dictionary containing desirable properties.</p>
+
+          <p>This parameter is used in the same way as the corresponding
+            parameter to
+            <tp:member-ref>CreateChannelWithHints</tp:member-ref>.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="User_Action_Time" type="x"
+        tp:type="User_Action_Timestamp">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The time at which user action occurred, or 0 if this channel
+            request is for some reason not involving user action.</p>
+
+          <p>This parameter is used in the same way as the corresponding
+            parameter to
+            <tp:member-ref>CreateChannelWithHints</tp:member-ref>.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Preferred_Handler" type="s"
+        tp:type="DBus_Well_Known_Name">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Either the well-known bus name (starting with
+            <code>org.freedesktop.Telepathy.Client.</code>)
+            of the preferred handler for this
+            channel, or an empty string to indicate that any handler would be
+            acceptable. The behaviour and rationale are the same as for the
+            corresponding parameter to
+            <tp:member-ref>EnsureChannelWithHints</tp:member-ref>.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" name="Request" type="o">
+        <tp:docstring>
+          A
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
+          object.
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The Preferred_Handler is syntactically invalid or does
+            not start with <code>org.freedesktop.Telepathy.Client.</code>,
+            the Account does not exist, or one of the Requested_Properties
+            is invalid
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+
+    </method>
+
+    <method name="CreateChannelWithHints"
+            tp:name-for-bindings="Create_Channel_With_Hints">
+      <tp:added version="0.21.5">
+        Support for this method is indicated by the
+        <tp:member-ref>SupportsRequestHints</tp:member-ref> property.
+        Clients MUST recover from this method being unsupported by falling back
+        to <tp:dbus-ref
+          namespace="ofdT.ChannelDispatcher">CreateChannel</tp:dbus-ref>.
+      </tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Start a request to create a channel. This initially just creates a
           <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
           object, which can be used to continue the request and track its
@@ -235,6 +394,19 @@
         </tp:changed>
       </arg>
 
+      <arg direction="in" name="Hints" type="a{sv}">
+        <tp:docstring>
+          <p>Additional information about the channel request, which will be
+            used as the value for the resulting request's <tp:dbus-ref
+              namespace="ofdT.ChannelRequest">Hints</tp:dbus-ref>
+            property.</p>
+
+          <tp:rationale>
+            <p>See the Hints property's documentation for rationale.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
       <arg direction="out" name="Request" type="o">
         <tp:docstring>
           A
@@ -256,7 +428,15 @@
 
     </method>
 
-    <method name="EnsureChannel" tp:name-for-bindings="Ensure_Channel">
+    <method name="EnsureChannelWithHints"
+            tp:name-for-bindings="Ensure_Channel_With_Hints">
+      <tp:added version="0.21.5">
+        Support for this method is indicated by the
+        <tp:member-ref>SupportsRequestHints</tp:member-ref> property.
+        Clients MUST recover from this method being unsupported by falling back
+        to <tp:dbus-ref
+          namespace="ofdT.ChannelDispatcher">EnsureChannel</tp:dbus-ref>.
+      </tp:added>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Start a request to ensure that a channel exists, creating it if
           necessary.  This initially just creates a <tp:dbus-ref
@@ -275,7 +455,7 @@
 
         <tp:rationale>
           <p>The rationale is as for <tp:dbus-ref
-              namespace='org.freedesktop.Telepathy.ChannelDispatcher'>CreateChannel</tp:dbus-ref>.</p>
+              namespace='org.freedesktop.Telepathy.ChannelDispatcher'>CreateChannelWithHints</tp:dbus-ref>.</p>
         </tp:rationale>
       </tp:docstring>
 
@@ -311,7 +491,8 @@
             request is for some reason not involving user action.</p>
 
           <p>This parameter is used in the same way as the corresponding
-            parameter to <tp:member-ref>CreateChannel</tp:member-ref>.</p>
+            parameter to
+            <tp:member-ref>CreateChannelWithHints</tp:member-ref>.</p>
         </tp:docstring>
       </arg>
 
@@ -324,8 +505,8 @@
             channel, or an empty string to indicate that any handler would be
             acceptable. The behaviour and rationale are the same as for the
             corresponding parameter to
-            <tp:member-ref>CreateChannel</tp:member-ref>, except as noted
-            here.</p>
+            <tp:member-ref>CreateChannelWithHints</tp:member-ref>, except
+            as noted here.</p>
 
           <p>If any new channels are created in response to this
             request, the channel dispatcher SHOULD dispatch as many as
@@ -359,6 +540,14 @@
         </tp:docstring>
       </arg>
 
+      <arg direction="in" name="Hints" type="a{sv}">
+        <tp:docstring>
+          Additional information about the channel request, which will be used
+          as the value for the resulting request's <tp:dbus-ref
+          namespace="ofdT.ChannelRequest">Hints</tp:dbus-ref>
+          property.</tp:docstring>
+      </arg>
+
       <arg direction="out" name="Request" type="o">
         <tp:docstring>
           A
@@ -379,6 +568,27 @@
       </tp:possible-errors>
 
     </method>
+
+    <property name="SupportsRequestHints"
+              tp:name-for-bindings="Supports_Request_Hints"
+              type="b" access="read">
+      <tp:added version="0.21.5"/>
+      <tp:docstring>
+        If <code>True</code>, the channel dispatcher is new enough to support
+        <tp:member-ref>CreateChannelWithHints</tp:member-ref> and
+        <tp:member-ref>EnsureChannelWithHints</tp:member-ref>, in addition
+        to the older <tp:dbus-ref
+          namespace="ofdT.ChannelDispatcher">CreateChannel</tp:dbus-ref>
+        and <tp:dbus-ref
+          namespace="ofdT.ChannelDispatcher">EnsureChannel</tp:dbus-ref>
+        methods, and also new enough to emit <tp:dbus-ref
+          namespace="ofdT.ChannelRequest">SucceededWithChannel</tp:dbus-ref>
+        before the older <tp:dbus-ref
+          namespace="ofdT.ChannelRequest">Succeeded</tp:dbus-ref> signal.
+        If <code>False</code> or missing, only the metadata-less
+        variants are supported.
+      </tp:docstring>
+    </property>
 
   </interface>
 </node>

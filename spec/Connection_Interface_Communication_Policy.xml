@@ -146,13 +146,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:rationale>
       </tp:docstring>
       <tp:member type="as" tp:type="DBus_Interface[]"
-        name="Chanel_Types">
+        name="Channel_Types">
         <tp:docstring>
           A list of channel interfaces that support these policies.
         </tp:docstring>
       </tp:member>
       <tp:member type="au" tp:type="Access_Control_Type[]"
-        name="Supported Policies">
+        name="Supported_Policies">
         <tp:docstring>
           A list of supported policies.
         </tp:docstring>

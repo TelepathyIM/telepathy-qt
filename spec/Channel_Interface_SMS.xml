@@ -27,9 +27,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       documentation tidied up.</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>This interface contains SMS-specific properties for text channels.
-        This currently only includes whether the SMSes received on the channel
-        should be displayed immediately to the user, without prompting.</p>
+      <p>This interface contains SMS-specific properties for text
+        channels.</p>
+
+      <p>The presence of this interface on a channel does not imply that
+        messages will be delivered via SMS.</p>
+
+      <p>This interface MAY appear in the
+        <tp:dbus-ref namespace="ofdT.Channel">Interfaces</tp:dbus-ref> property
+        of channels where <tp:member-ref>SMSChannel</tp:member-ref> would be
+        immutable and false. It SHOULD appear on channels where
+        <tp:member-ref>SMSChannel</tp:member-ref> is immutable and true, and
+        also on channels where <tp:member-ref>SMSChannel</tp:member-ref> is
+        mutable (i.e. channels that might fall back to sending SMS at any
+        time, such as on MSN).</p>
 
       <h4>Handler filters</h4>
 
@@ -51,7 +62,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </tp:docstring>
 
     <property name="Flash" tp:name-for-bindings="Flash"
-      type="b" access="read" >
+      type="b" access="read" tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>If <code>True</code>, then this channel is exclusively for
           receiving class 0 SMSes (and no SMSes can be sent using <tp:dbus-ref
@@ -89,5 +100,80 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:rationale>
       </tp:docstring>
     </property>
+
+    <property name="SMSChannel"
+              tp:name-for-bindings="SMS_Channel"
+              type="b"
+              access="read" tp:requestable="yes" tp:immutable="sometimes">
+      <tp:added version="0.21.7"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If TRUE, messages sent and received on this channel are transmitted
+          via SMS.</p>
+
+        <p>If this property is included in the channel request, the
+          Connection Manager MUST return an appropriate channel (i.e. if TRUE
+          the channel must be for SMSes, if FALSE it must not), or else fail
+          to provide the requested channel with the
+          <tp:error-ref>NotCapable</tp:error-ref>
+          error.</p>
+
+        <p>For example, to explicitly request an SMS channel to a contact.
+          You might construct a channel request like:</p>
+
+        <blockquote><pre>{
+  Channel.Type: Channel.Type.Text,
+  Channel.TargetHandleType: Handle_Type_Contact,
+  Channel.TargetID: escher.cat,
+  Channel.Interface.SMS.SMSChannel: True,
+}</pre></blockquote>
+
+        <tp:rationale>
+          Some protocols allow us to send SMSes to a remote contact, without
+          knowing the phone number to which those SMSes will be sent. This
+          provides a mechanism to request such channels.
+        </tp:rationale>
+
+        <p>If this property is not included in the channel request, the
+          Connection Manager MAY return an SMS channel if that is the most
+          appropriate medium (i.e. if the channel target is a phone
+          number).</p>
+
+        <tp:rationale>
+          To some types of identifiers (i.e. phone numbers) it only makes
+          sense to return an SMS channel, this is what happens currently with
+          telepathy-ring. We don't want to break this behaviour when we are
+          not explicit about the type of channel we want. Alternatively, for
+          protocols where there is an SMS fallback for IM messages, it's
+          possible that we don't care what sort of channel we get, and simply
+          want notification of the transport.
+        </tp:rationale>
+
+        <p>Some protocols have a fallback to deliver IM messages via SMS.
+          On these protocols, the Connection Manager SHOULD set the property
+          value as appropriate, and notify its change with
+          <tp:member-ref>SMSChannelChanged</tp:member-ref>.</p>
+
+        <tp:rationale>
+          Protocols such as MSN can fall back to delivering IM messages via
+          SMS. Where possible we want clients to be able to inform the user
+          that their messages are going to be redirected to the remote
+          contact's phone.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <signal name="SMSChannelChanged"
+            tp:name-for-bindings="SMS_Channel_Changed">
+      <tp:added version="0.21.7"/>
+      <arg name="SMSChannel" type="b">
+        <tp:docstring>
+          The new value for <tp:member-ref>SMSChannel</tp:member-ref>.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        This signal indicates a change in the
+        <tp:member-ref>SMSChannel</tp:member-ref> property.
+      </tp:docstring>
+    </signal>
   </interface>
 </node>

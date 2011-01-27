@@ -19,10 +19,16 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
   <interface
-    name="org.freedesktop.Telepathy.Connection.Interface.MailNotification.DRAFT"
-    tp:causes-havoc="experimental">
+    name="org.freedesktop.Telepathy.Connection.Interface.MailNotification">
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
-    <tp:added version="0.19.1">(as draft 1)</tp:added>
+    <tp:added version="0.21.3">(as stable API)</tp:added>
+
+    <tp:client-interest>
+      <tp:docstring>
+        A client MUST notify interest in this feature before it will be
+        enabled.
+      </tp:docstring>
+    </tp:client-interest>
 
     <tp:flags name="Mail_Notification_Flags" value-prefix="Mail_Notification_Flag" type="u" >
       <tp:flag suffix="Supports_Unread_Mail_Count" value="1">
@@ -470,65 +476,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <method name="Subscribe"
-        tp:name-for-bindings="Subscribe">
-      <tp:docstring>
-        <p>This method subscribes a client to the notification interface. This
-          MUST be called by clients before using this interface.</p>
-
-        <p>The Connection tracks a subscription count (like a refcount) for
-          each unique bus name that has called Subscribe(). When a client calls
-          Unsubscribe(), it releases one "reference". If a client exits
-          (or crashes), the Connection releases all "references" held on its
-          behalf.</p>
-
-        <tp:rationale>
-          <p>The reference count imposed on the subscription simplifies
-            implementation of client running in the same process
-            (e.g. plug-ins): two plug-ins interested in mail notification can
-            call Subscribe and Unsubscribe independently without interfering
-            with each other.</p>
-
-          <p>This method exists to reduce memory and network overhead when
-            there is no active subscription. An example of a protocol that
-            benefits from this method is the Google XMPP Mail Notification
-            extension: in this protocol, the CM receives a notification
-            that something has changed, but to get more information, the CM
-            must request this information. Knowing that nobody is currently
-            interested in this information, the CM can avoid generating
-            useless network traffic. Similarly, the CM may free
-            the list of unread messages to reduce memory overhead.</p>
-        </tp:rationale>
-
-      </tp:docstring>
-      <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented"/>
-      </tp:possible-errors>
-    </method>
-
-    <method name="Unsubscribe"
-        tp:name-for-bindings="Unsubscribe">
-      <tp:docstring>
-        This method unsubscribes a client from the notification interface.
-        This SHOULD be called by each client that has successfully called
-        Subscribe when it no longer needs the mail notification interface.
-
-        <tp:rationale>
-          See <tp:member-ref>Subscribe</tp:member-ref> for rationale.
-        </tp:rationale>
-      </tp:docstring>
-      <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          <tp:docstring>
-            Raised if the client calling this method has no references to
-            release.
-          </tp:docstring>
-        </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented"/>
-      </tp:possible-errors>
-    </method>
-
     <method name="RequestInboxURL"
       tp:name-for-bindings="Request_Inbox_URL">
       <arg direction="out" name="URL" type="(sua(ss))" tp:type="Mail_URL" >
@@ -606,13 +553,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         connection manager to provide the necessary information for clients
         to open a web-based mail client without having to re-authenticate.</p>
 
-      <p>To use this interface, a client MUST first subscribe using the
-        <tp:member-ref>Subscribe</tp:member-ref> method. The subscription
+      <p>To use this interface, a client MUST first subscribe by passing the
+        name of this interface to the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy"
+          >Connection.AddClientInterest</tp:dbus-ref> method. The subscription
         mechanic aims at reducing network traffic and memory footprint in the
         situation where nobody is currently interesting in provided
         information. When done with this interface, clients SHOULD call
-        <tp:member-ref>Unsubscribe</tp:member-ref> to release resources in
-        the CM.</p>
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          >Connection.RemoveClientInterest</tp:dbus-ref> to allow the CM to
+        release resources.</p>
 
       <p>Protocols have various different levels of Mail Notification support.
         To describe the level of support, the interface provides a property

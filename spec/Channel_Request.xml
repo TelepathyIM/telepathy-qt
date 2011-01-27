@@ -209,6 +209,92 @@
       </tp:docstring>
     </signal>
 
+    <property name="Hints" tp:name-for-bindings="Hints"
+      type="a{sv}" access="read">
+      <tp:added version="0.21.5"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A dictionary of metadata provided by the channel
+          requester, which the handler and other clients MAY choose to
+          interpret.  Currently no standard keys are defined; clients MAY
+          choose to use platform-specific keys for their own purposes, but MUST
+          ignore unknown keys and MUST cope with expected keys being
+          missing. Clients SHOULD namespace hint names by having them
+          start with a reversed domain name, in the same way as D-Bus
+          interface names.</p>
+
+        <tp:rationale>This property might be used to pass a contact ID for a
+          telephone number shared between two contacts from the address book to
+          the call UI, so that if you try to call “Mum”, the call UI knows this
+          rather than having to guess or show “Calling Mum or Dad”. The format
+          of these contact IDs would be platform-specific, so we leave the
+          definition of the dictionary entry up to the platform in question.
+          But third-party channel requesters might not include the contact ID,
+          so the call UI has to be able to deal with it not being
+          there.</tp:rationale>
+
+        <p>The channel dispatcher does not currently interpret any of these
+          hints: they are solely for communication between cooperating
+          clients. If hints that do affect the channel dispatcher are added in
+          future, their names will start with an appropriate reversed domain
+          name (e.g. <code>org.freedesktop.Telepathy</code> for hints defined
+          by this specification, or an appropriate vendor name for third-party
+          plugins).</p>
+
+        <p>This property may be set when the channel request is created, and
+          can never change. Since it is immutable, it SHOULD be included in the
+          dictionary of properties passed to <tp:dbus-ref
+          namespace="ofdT.Client.Interface.Requests">AddRequest</tp:dbus-ref>
+          by the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">ChannelDispatcher</tp:dbus-ref>.</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="SucceededWithChannel" tp:name-for-bindings="Succeeded_With_Channel">
+      <tp:added version="0.21.5"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Variant of the <tp:dbus-ref
+            namespace="ofdT.ChannelRequest">Succeeded</tp:dbus-ref> signal
+        allowing to get the channel which has been created.</p>
+
+        <p>This signal MUST be emitted if the
+          <tp:dbus-ref namespace="ofdT">ChannelDispatcher</tp:dbus-ref>'s
+          <tp:dbus-ref
+            namespace="ofdT.ChannelDispatcher">SupportsRequestHints</tp:dbus-ref>
+          property is true. If supported, it MUST be emitted before
+          the <tp:member-ref>Succeeded</tp:member-ref> signal.</p>
+      </tp:docstring>
+
+      <arg name="Connection" type="o">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The Connection owning the channel.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Connection_Properties" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A subset of the Connection's properties, currently unused.
+            This parameter may be used in future.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Channel" type="o">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The channel which has been created.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Channel_Properties" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The same immutable properties of the Channel that would appear
+            in a <tp:dbus-ref namespace="ofdT.Connection.Interface.Requests"
+              >NewChannels</tp:dbus-ref> signal.</p>
+        </tp:docstring>
+      </arg>
+
+    </signal>
+
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

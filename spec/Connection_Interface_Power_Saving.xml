@@ -2,7 +2,7 @@
 <node name="/Connection_Interface_Power_Saving"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
   >
-  <tp:copyright> Copyright (C) 2007 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright © 2007-2010 Collabora Limited </tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -19,9 +19,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
   <interface
-    name="org.freedesktop.Telepathy.Connection.Interface.PowerSaving.DRAFT"
-    tp:causes-havoc="experimental">
-    <tp:added version="0.19.12"/>
+    name="org.freedesktop.Telepathy.Connection.Interface.PowerSaving">
+    <tp:added version="0.21.5">(as stable API)</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Some protocols support mechanisms for reducing bandwidth usage—and
         hence power usage, on mobile devices—when the user is not directly

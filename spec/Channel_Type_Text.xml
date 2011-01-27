@@ -20,6 +20,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Channel.Type.Text">
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:requires
+    interface="org.freedesktop.Telepathy.Channel.Interface.Messages"/>
+    <tp:changed version="0.21.5">The Messages interface is now
+      mandatory</tp:changed>
 
     <tp:simple-type name="Message_ID" type="u" array-name="Message_ID_List">
       <tp:docstring>
@@ -31,6 +35,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:simple-type>
 
     <tp:struct name="Pending_Text_Message" array-name="Pending_Text_Message_List">
+      <tp:deprecated version="0.21.5">New APIs should use
+        an array of <tp:type>Message_Part</tp:type> instead.</tp:deprecated>
       <tp:docstring>A struct (message ID, timestamp in seconds since
         1970-01-01 00:00 UTC, sender's handle, message type, flags, text)
         representing a pending text message, as returned by
@@ -67,6 +73,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <method name="GetMessageTypes" tp:name-for-bindings="Get_Message_Types">
+      <tp:deprecated version="0.21.5">Consulting
+        <tp:dbus-ref namespace="ofdT.Channel.Interface.Messages"
+          >MessageTypes</tp:dbus-ref> is preferred.
+      </tp:deprecated>
       <arg direction="out" type="au" tp:type="Channel_Text_Message_Type[]"
         name="Available_Types">
         <tp:docstring>
@@ -81,6 +91,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="ListPendingMessages"
       tp:name-for-bindings="List_Pending_Messages">
+      <tp:deprecated version="0.21.5">Consulting
+        <tp:dbus-ref namespace="ofdT.Channel.Interface.Messages"
+          >PendingMessages</tp:dbus-ref> is preferred.
+      </tp:deprecated>
       <arg direction="in" name="Clear" type="b">
         <tp:docstring>
           If true, behave as if
@@ -114,6 +128,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <signal name="LostMessage" tp:name-for-bindings="Lost_Message">
+      <tp:deprecated version="0.21.5">In practice, this signal
+        was not emitted, and does not have useful semantics.</tp:deprecated>
       <tp:docstring>
         This signal is emitted to indicate that an incoming message was
         not able to be stored and forwarded by the connection manager
@@ -122,6 +138,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <signal name="Received" tp:name-for-bindings="Received">
+      <tp:deprecated version="0.21.5">The
+        <tp:dbus-ref namespace="ofdT.Channel.Interface.Messages"
+          >MessageReceived</tp:dbus-ref> signal is more informative.
+      </tp:deprecated>
       <arg name="ID" type="u">
         <tp:docstring>
           A numeric identifier for acknowledging the message
@@ -162,6 +182,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <method name="Send" tp:name-for-bindings="Send">
+      <tp:deprecated version="0.21.5">The
+        <tp:dbus-ref namespace="ofdT.Channel.Interface.Messages"
+          >SendMessage</tp:dbus-ref> method is more flexible.
+      </tp:deprecated>
       <arg direction="in" name="Type" type="u" tp:type="Channel_Text_Message_Type">
         <tp:docstring>
           An integer indicating the type of the message
@@ -231,6 +255,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:enum>
 
     <signal name="SendError" tp:name-for-bindings="Send_Error">
+      <tp:deprecated version="0.21.5">Delivery reporting is now
+        provided by the <tp:dbus-ref namespace="ofdT.Channel.Interface"
+          >Messages</tp:dbus-ref> interface.
+      </tp:deprecated>
       <arg name="Error" type="u" tp:type="Channel_Text_Send_Error">
         <tp:docstring>
           The error that occurred
@@ -266,6 +294,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <signal name="Sent" tp:name-for-bindings="Sent">
+      <tp:deprecated version="0.21.5">The
+        <tp:dbus-ref namespace="ofdT.Channel.Interface.Messages"
+          >MessageSent</tp:dbus-ref> signal is more informative.
+      </tp:deprecated>
       <arg name="Timestamp" type="u" tp:type="Unix_Timestamp">
         <tp:docstring>
           Unix timestamp indicating when the message was sent
@@ -335,6 +367,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:enum>
 
     <tp:flags name="Channel_Text_Message_Flags" value-prefix="Channel_Text_Message_Flag" type="u">
+      <tp:deprecated version="0.21.5">The
+        <tp:dbus-ref namespace="ofdT.Channel.Interface"
+          >Messages</tp:dbus-ref> interface has an extensible data structure
+        including separate booleans for most of these flags.
+      </tp:deprecated>
       <tp:flag suffix="Truncated" value="1">
         <tp:docstring>
         The incoming message was truncated to a shorter length by the
@@ -480,77 +517,98 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:property>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>A channel type for sending and receiving messages in plain text,
-        with no formatting. In future specifications, channels for sending
-        and receiving messages that can be reduced to plain text (i.e.
-        formatted text) should also have this type.</p>
+      <p>A channel type for sending and receiving messages. This channel type
+        is primarily used for textual messages, but can also be used for
+        formatted text, text with "attachments", or binary messages on some
+        protocols.</p>
+
+      <p>Most of the methods and signals on this interface are deprecated,
+        since they only support plain-text messages with limited metadata.
+        See the mandatory <tp:dbus-ref
+          namespace="ofdT.Channel.Interface">Messages</tp:dbus-ref>
+        interface for the modern equivalents.</p>
 
       <p>When a message is received, an identifier is assigned and a
-        <tp:member-ref>Received</tp:member-ref> signal emitted, and the message
-        placed in a pending queue which can be inspected with
-        <tp:member-ref>ListPendingMessages</tp:member-ref>. A client which has
-        handled the message by showing it to the user (or equivalent) should
-        acknowledge the receipt using the
-        <tp:member-ref>AcknowledgePendingMessages</tp:member-ref> method,
-        and the message will then be removed from the pending queue. Numeric
-        identifiers for received messages may be reused over the lifetime of
-        the channel.</p>
-
-      <p>Each message has an associated 'type' value, which should be one
-        of the values allowed by
-        <tp:type>Channel_Text_Message_Type</tp:type>.</p>
-
-      <p>Each message also has a flags value, which is a bitwise OR of the
-        flags given in <tp:type>Channel_Text_Message_Flags</tp:type>.</p>
+        <tp:dbus-ref namespace="ofdT.Channel.Interface.Messages"
+          >MessageReceived</tp:dbus-ref> signal emitted, and the message
+        is placed in a pending queue represented by the
+        <tp:dbus-ref namespace="ofdT.Channel.Interface.Messages"
+          >PendingMessages</tp:dbus-ref> property.
+        When the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client">Handler</tp:dbus-ref>
+        for a channel has handled the message by showing it to the user
+        (or equivalent), it should acknowledge the receipt of that message
+        using the <tp:member-ref>AcknowledgePendingMessages</tp:member-ref>
+        method, and the message will then be removed from the pending queue.
+        Numeric identifiers for received messages may be reused over the
+        lifetime of the channel.</p>
 
       <p>Sending messages can be requested using the
-        <tp:member-ref>Send</tp:member-ref> method, which will return
-        successfully and emit the <tp:member-ref>Sent</tp:member-ref> signal
-        when the message has been delivered to the server, or return an error
-        with no signal emission if there is a failure. If a message is sent but
-        delivery of the message later fails, this is indicated with the
-        <tp:member-ref>SendError</tp:member-ref> signal.</p>
+        <tp:dbus-ref namespace="ofdT.Channel.Interface.Messages"
+          >SendMessage</tp:dbus-ref> method, which will return
+        successfully when the message has been submitted for sending, or
+        return an error with no signal emission if there is an immediate
+        failure. If a message is submitted for sending but delivery of the
+        message later fails, this is indicated by a delivery report, which
+        is received in the same way as an incoming message.</p>
 
-      <p>On protocols where additional contacts cannot be invited into
-        a one-to-one chat, or where a one-to-one chat is just a series of
-        individual personal messages rather than being represented by some
-        object on the server (i.e. most protocols), one-to-one chats should be
-        represented by a Text channel with <tp:type>Handle_Type</tp:type>
-        CONTACT.</p>
+      <p>Simple one-to-one chats (such as streams of private messages in
+        XMPP or IRC) should be represented by a Text channel whose
+        <tp:dbus-ref namespace="ofdT.Channel">TargetHandleType</tp:dbus-ref>
+        is <tp:type>Handle_Type</tp:type>_Contact. The expected way to
+        request such a channel is to set the ChannelType, TargetHandleType,
+        and either TargetHandle or TargetID in a call to EnsureChannel.</p>
 
       <p>Named chat rooms whose identity can be saved and used again later
         (IRC channels, Jabber MUCs) are expected to be represented by Text
-        channels with <tp:type>Handle_Type</tp:type> ROOM and the <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy.Channel.Interface">Group</tp:dbus-ref>
-        interface; they should usually also have the Properties interface.</p>
+        channels with <tp:type>Handle_Type</tp:type>_Room and the <tp:dbus-ref
+          namespace="ofdT.Channel.Interface">Group</tp:dbus-ref>
+        interface. In protocols where a chatroom can be used as a continuation
+        of one or more one-to-one chats, these channels should also have the
+        <tp:dbus-ref namespace="ofdT.Channel.Interface">Conference</tp:dbus-ref>
+        interface.</p>
 
-      <p>Unnamed, transient chat rooms defined only by their members (e.g. on
-        MSN) are expected to be represented by Text channels with handle type
-        0, handle 0, the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Interface">Group</tp:dbus-ref>
-        interface, and optionally the Properties interface.</p>
+      <p>Unnamed, transient chat rooms which cannot be rejoined by their
+        unique identifier (e.g. a conversation on MSN which has, or once had,
+        three or more participants) are expected to be represented by Text
+        channels with Handle_Type_None (and hence TargetHandle 0), the
+        <tp:dbus-ref namespace="ofdT.Channel.Interface">Group</tp:dbus-ref>
+        interface, and optionally the
+        <tp:dbus-ref namespace="ofdT.Channel.Interface">Conference</tp:dbus-ref>
+        interface.</p>
 
-      <p>On protocols where a conversation with a user is actually just
-        a nameless chat room starting with exactly two members, to which
-        more members can be invited, calling
-        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">RequestChannel</tp:dbus-ref>
-        with type Text
-        and handle type CONTACT should continue to succeed, but may return
-        a channel with handle type 0, handle 0, the group interface,
-        and the local and remote contacts in its members.</p>
+      <p>On protocols like MSN where a conversation with a user is actually
+        just a nameless chat room starting with exactly two members, to which
+        more members can be invited, the initial one-to-one conversation
+        SHOULD be represented with Handle_Type_Contact. If a third participant
+        joins or is invited, this SHOULD be represented by signalling
+        a new <tp:dbus-ref
+          namespace="ofdT.Channel.Interface">Conference</tp:dbus-ref> channel
+        with the one-to-one channel in its <tp:dbus-ref
+          namespace="ofdT.Channel.Interface.Conference"
+          >InitialChannels</tp:dbus-ref>, migrating the underlying protocol
+        object from the one-to-one channel to the Conference channel,
+        and creating a new protocol-level conversation if the one-to-one
+        channel is re-used. See the Conference interface for more details.</p>
+
+      <tp:rationale>
+        <p>This keeps the presentation of all one-to-one conversations
+          uniform, and makes it easier to hand over a conversation from a
+          1-1-specific UI to a more elaborate multi-user UI; while it does
+          require UIs to understand Conference to follow the
+          upgrade, UIs that will deal with XMPP need to understand Conference
+          anyway.</p>
+      </tp:rationale>
 
       <p>If a channel of type Text is closed while it has pending messages,
-        the connection manager MUST allow this, but SHOULD open a new,
-        identical channel to deliver those messages, signalling it as a new
-        channel with the
-        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">NewChannel</tp:dbus-ref>
-        signal (with the suppress_handler parameter set to FALSE).</p>
-
-      <p>If messages were sent on the old channel but the
-        <tp:member-ref>Sent</tp:member-ref>signal has not yet been emitted
-        for those messages, the new channel SHOULD emit Sent for those
-        messages when appropriate - it behaves like a continuation of the
-        old channel.</p>
+        the connection manager MUST allow this, but SHOULD open a new channel
+        to deliver those messages, signalling it as a new channel with the
+        <tp:dbus-ref
+          namespace="ofdT.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+        signal. The new channel should resemble the old channel, but have
+        Requested = FALSE regardless of its previous value; the InitiatorHandle
+        and InitiatorID should correspond to the sender of one of the pending
+        messages.</p>
 
       <tp:rationale>
         <p>In effect, this turns this situation, in which a client
@@ -573,16 +631,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <li>UI calls Close on text channel</li>
           <li>text channel emits Closed and closes</li>
           <li>message arrives</li>
-          <li>new text channel is created, connection emits NewChannel</li>
+          <li>new text channel is created, connection emits NewChannels</li>
           <li>(the same or a different) UI handles it</li>
         </ul>
 
-        <p>suppress_handler must be set to FALSE so the replacement channel
+        <p>Requested must be set to FALSE so the replacement channel
           will be handled by something.</p>
+
+        <p>In practice, connection managers usually implement this by keeping
+          the same internal object that represented the old channel, adjusting
+          its properties, signalling that it was closed, then immediately
+          re-signalling it as a new channel.</p>
       </tp:rationale>
 
       <p>As a result, Text channels SHOULD implement <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">Channel.Interface.Destroyable</tp:dbus-ref>.</p>
+          namespace="ofdT">Channel.Interface.Destroyable</tp:dbus-ref>.</p>
 
       <tp:rationale>
         <p>This "respawning" behaviour becomes problematic if there is no

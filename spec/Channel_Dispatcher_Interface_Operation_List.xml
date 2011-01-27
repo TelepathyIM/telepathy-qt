@@ -66,7 +66,7 @@
 
           <tp:rationale>
             <p>The rationale is the same as for
-              <tp:type-ref>Channel_Details</tp:type-ref>.</p>
+              <tp:type>Channel_Details</tp:type>.</p>
           </tp:rationale>
 
           <p>Each dictionary MUST contain at least the following keys:</p>
@@ -108,7 +108,7 @@
         type="a{sv}" tp:type="Qualified_Property_Value_Map">
         <tp:docstring>
           The same properties that would appear in the Properties member of
-          <tp:type-ref>Dispatch_Operation_Details</tp:type-ref>.
+          <tp:type>Dispatch_Operation_Details</tp:type>.
         </tp:docstring>
       </arg>
     </signal>

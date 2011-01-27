@@ -337,6 +337,53 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         has been discovered and streaming is in progress.
       </tp:docstring>
     </method>
+    <method name="NewActiveTransportPair"
+      tp:name-for-bindings="New_Active_Transport_Pair">
+      <arg direction="in" name="Native_Candidate_ID" type="s"/>
+      <arg direction="in" name="Native_Transport" type="(usuussduss)"
+        tp:type="Media_Stream_Handler_Transport"/>
+      <arg direction="in" name="Remote_Candidate_ID" type="s"/>
+      <arg direction="in" name="Remote_Transport" type="(usuussduss)"
+        tp:type="Media_Stream_Handler_Transport"/>
+      <tp:docstring>
+        <p>Informs the connection manager that a valid transport pair
+          has been discovered and streaming is in progress. Component
+          id MUST be the same for both transports and the pair is
+          only valid for that component.</p>
+
+        <tp:rationale>
+          <p>The connection manager might need to send the details of
+            the active transport pair (e.g. c and o parameters of SDP
+            body need to contain address of selected native RTP transport
+            as stipulated by RFC 5245). However, the candidate ID might
+            not be enough to determine these info if the transport was
+            found after <tp:member-ref>NativeCandidatesPrepared</tp:member-ref>
+            has been called (e.g. peer reflexive ICE candidate). </p>
+        </tp:rationale>
+
+        <p>This method must be called before
+          <tp:member-ref>NewActiveCandidatePair</tp:member-ref>.</p>
+
+        <tp:rationale>
+          <p>This way, connection managers supporting this method can
+            safely ignore subsequent
+            <tp:member-ref>NewActiveCandidatePair</tp:member-ref> call.</p>
+        </tp:rationale>
+
+        <p>Connection managers SHOULD NOT implement this method unless
+          they need to inform the peer about selected transports. As a
+          result, streaming implementations MUST NOT treat errors raised
+          by this method as fatal.</p>
+
+        <tp:rationale>
+          <p>Usually, connection managers only need to do one answer/offer
+            round-trip. However, some protocols give the possibility to
+            to send an updated offer (e.g. ICE defines such mechanism to
+            avoid some race conditions and to properly set the state of
+            gateway devices).</p>
+        </tp:rationale>
+      </tp:docstring>
+    </method>
     <tp:enum name="Media_Stream_Base_Proto" type="u">
       <tp:enumvalue suffix="UDP" value="0">
         <tp:docstring>UDP (User Datagram Protocol)</tp:docstring>
@@ -513,14 +560,52 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
     <signal name="StartTelephonyEvent"
       tp:name-for-bindings="Start_Telephony_Event">
-      <arg name="Event" type="y">
+      <arg name="Event" type="y" tp:type="DTMF_Event">
+        <tp:docstring>
+          A telephony event code.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Request that a telephony event (as defined by RFC 4733) is transmitted
+        over this stream until StopTelephonyEvent is called.
+      </tp:docstring>
+    </signal>
+    <signal name="StartNamedTelephonyEvent"
+      tp:name-for-bindings="Start_Named_Telephony_Event">
+      <tp:added version="0.21.2"/>
+      <arg name="Event" type="y" tp:type="DTMF_Event">
+        <tp:docstring>
+          A telephony event code as defined by RFC 4733.
+        </tp:docstring>
+      </arg>
+     <arg name="Codec_ID" type="u">
+        <tp:docstring>
+          The payload type to use when sending events. The value 0xFFFFFFFF
+	  means to send with the already configured event type instead of using
+	  the specified one.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Request that a telephony event (as defined by RFC 4733) is transmitted
+        over this stream until StopTelephonyEvent is called. This differs from
+        StartTelephonyEvent in that you force the event to be transmitted
+	as a RFC 4733 named event, not as sound. You can also force a specific
+	Codec ID.
+      </tp:docstring>
+    </signal>
+    <signal name="StartSoundTelephonyEvent"
+      tp:name-for-bindings="Start_Sound_Telephony_Event">
+      <tp:added version="0.21.2"/>
+      <arg name="Event" type="y" tp:type="DTMF_Event">
         <tp:docstring>
           A telephony event code as defined by RFC 4733.
         </tp:docstring>
       </arg>
       <tp:docstring>
         Request that a telephony event (as defined by RFC 4733) is transmitted
-        over this stream until StopTelephonyEvent is called.
+        over this stream until StopTelephonyEvent is called. This differs from
+        StartTelephonyEvent in that you force the event to be transmitted
+	as sound instead of as a named event.
       </tp:docstring>
     </signal>
     <signal name="StopTelephonyEvent"

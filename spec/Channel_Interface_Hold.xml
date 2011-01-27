@@ -20,7 +20,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
 
   <interface name="org.freedesktop.Telepathy.Channel.Interface.Hold">
-    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+    <tp:xor-requires>
+      <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+      <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT"/>
+    </tp:xor-requires>
     <tp:changed version="0.17.4">first API-stable version</tp:changed>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

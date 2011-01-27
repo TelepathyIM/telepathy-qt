@@ -87,10 +87,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           property.</p>
 
         <p>This is fixed for the lifetime of the channel, so channels which
-          could potentially be used to communicate with multiple contacts
-          (such as streamed media calls defined by their members, or ad-hoc
-          chatrooms like MSN switchboards) must have TargetHandleType set
-          to Handle_Type_None and TargetHandle set to 0.</p>
+          could potentially be used to communicate with multiple contacts,
+          and do not have an identity of their own (such as a Handle_Type_Room
+          handle), must have TargetHandleType set to Handle_Type_None and
+          TargetHandle set to 0.</p>
 
         <p>Unlike in the telepathy-spec 0.16 API, there is no particular
           uniqueness guarantee - there can be many channels with the same

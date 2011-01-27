@@ -470,6 +470,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             any parameters may be used.</p>
         </tp:docstring>
       </tp:flag>
+
+      <tp:flag suffix="Overwritten_By_Nickname" value="2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Indicates that this field will be overwritten when the user's alias
+            is changed with <tp:dbus-ref
+              namespace="ofdT.Connection.Interface.Aliasing">SetAliases</tp:dbus-ref>
+            or when the Account's <tp:dbus-ref
+              namespace="ofdT.Account">Nickname</tp:dbus-ref>
+            is updated.  Clients that allow the editing of the Alias and the
+            ContactInfo in the same location should hide fields with this flag.</p>
+          <tp:rationale>
+            <p>If a client allowed the user to edit both the nickname and the
+              ContactInfo field at the same time, the user could set them to two
+              different values even though they map to the same property.  This
+              would result in surprising behavior where the second value would
+              win over the first.</p>
+          </tp:rationale>
+          <p>In addition to hiding this field when editing ContactInfo together
+            with the user's nickname, it is recommended that clients call
+            <tp:member-ref>SetContactInfo</tp:member-ref> before setting the
+            user's nickname.</p>
+          <tp:rationale>
+            <p>This ensures that if the user changes the nickname, the correct
+              value will get set even if the stale nickname is mistakenly sent
+              along with <tp:member-ref>SetContactInfo</tp:member-ref>.</p>
+          </tp:rationale>
+          <p>If used, this flag typically appears on either the 'nickname' or
+            'fn' field.</p>
+        </tp:docstring>
+      </tp:flag>
     </tp:flags>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

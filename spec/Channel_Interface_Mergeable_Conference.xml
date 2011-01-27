@@ -82,19 +82,19 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Errors.InvalidArgument">
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
           <tp:docstring>
             The given channel isn't suitable for merging into this one: for
             instance, it might have the wrong channel type or handle type.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Errors.NotImplemented">
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
           <tp:docstring>
             It will never be possible to merge channels into this particular
             conference.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Errors.NotAvailable">
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
             The given channel is theoretically suitable for merging into this
             one, but that's not currently possible for some reason (for

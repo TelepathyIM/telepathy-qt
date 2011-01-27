@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Call_Content"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
-  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2009-2010 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009-2010 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
       modify it under the terms of the GNU Lesser General Public
@@ -25,65 +25,147 @@
     <tp:added version="0.19.0">(draft 1)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      This object represents one Content inside a Call. For example in an
-      audio/video call there would be one audio and one video content. Each
-      content has one or more <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy.Call">Stream.DRAFT</tp:dbus-ref>
-      objects which represent the actual transport to one or more contacts.
-
+      This object represents one Content inside a <tp:dbus-ref
+      namespace="ofdT.Channel.Type">Call.DRAFT</tp:dbus-ref>. For
+      example, in an audio/video call there would be one audio content
+      and one video content. Each content has one or more <tp:dbus-ref
+      namespace="ofdT.Call">Stream.DRAFT</tp:dbus-ref> objects which
+      represent the actual transport to one or more remote contacts.
     </tp:docstring>
 
+    <tp:enum name="Content_Removal_Reason" type="u">
+      <tp:added version="0.21.2"/>
+      <tp:docstring>
+        A representation of the reason for a content to be removed,
+        which may be used by simple clients, or used as a fallback
+        when the DBus_Reason is not understood. This enum will be
+        extended with future reasons as and when appropriate, so
+        clients SHOULD keep up to date with its values, but also be
+        happy to fallback to the Unknown value when an unknown value
+        is encountered.
+      </tp:docstring>
+
+      <tp:enumvalue suffix="Unknown" value="0">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          We just don't know. Unknown values of this enum SHOULD also be
+          treated like this.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="User_Requested" value="1">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The local user requests that this content is removed
+            from the call.</p>
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Error" value="2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>There is an error with the content which means that it
+            has to be removed from the call.</p>
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Unsupported" value="3">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Some aspect of the content is unsupported so has to be
+            removed from the call.</p>
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
     <method name="Remove" tp:name-for-bindings="Remove">
-      <tp:docstring>Remove the content from the call.</tp:docstring>
+      <tp:changed version="0.21.2">previously there were no
+        arguments</tp:changed>
+      <tp:docstring>
+        Remove the content from the call.
+      </tp:docstring>
+
+      <arg direction="in" name="Reason" type="u"
+        tp:type="Content_Removal_Reason">
+        <tp:docstring>
+          A generic hangup reason.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Detailed_Removal_Reason" type="s"
+        tp:type="DBus_Error_Name">
+        <tp:docstring>
+          A more specific reason for the content removal, if one is
+          available, or an empty string.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Message" type="s">
+        <tp:docstring>
+          A human-readable message for the reason of removing the
+          content, such as "Fatal streaming failure" or "no codec
+          intersection". This property can be left empty if no reason
+          is to be given.
+        </tp:docstring>
+      </arg>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError">
-        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError" />
         <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
           <tp:docstring>
-            Raised when a Call doesn't support removing contents (e.g. a Google Talk video call)
+            Raised when a Call doesn't support removing contents
+            (e.g. a Google Talk video call).
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
 
+    <signal name="Removed" tp:name-for-bindings="Removed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when the content is removed from the call. This
+          is the same as the <tp:dbus-ref
+          namespace="ofdT.Channel.Type">Call.DRAFT.ContentRemoved</tp:dbus-ref>
+          signal.</p>
+      </tp:docstring>
+    </signal>
+
     <property name="Interfaces" tp:name-for-bindings="Interfaces"
-      type="as" tp:type="DBus_Interface[]" access="read">
+      type="as" tp:type="DBus_Interface[]" access="read" tp:immutable="yes">
       <tp:added version="0.19.11"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Extra interfaces provided by this content, such as <tp:dbus-ref
-            namespace="ofdT.Call">Content.Interface.Media.DRAFT</tp:dbus-ref> or
-          <tp:dbus-ref
-            namespace="ofdT.Call">Content.Interface.Mute.DRAFT</tp:dbus-ref>.
+          namespace="ofdT.Call">Content.Interface.Media.DRAFT</tp:dbus-ref> or
+          <tp:dbus-ref namespace="ofdT.Call">Content.Interface.Mute.DRAFT</tp:dbus-ref>.
           This SHOULD NOT include the Content interface itself, and cannot
           change once the content has been created.</p>
       </tp:docstring>
     </property>
 
-    <property name="Name" tp:name-for-bindings="Name" type="s" access="read">
+    <property name="Name" tp:name-for-bindings="Name" type="s" access="read"
+      tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The name of the content.
-          [FIXME: rationale?]</p>
+        <p>The name of the content.</p>
+
+        <tp:rationale>
+          The content name property should be meaningful, so should be
+          given a name which is significant to the user. The name
+          could be the "audio" or "video" string localized, or perhaps
+          include some string identifying the source, such as a webcam
+          identifier.
+        </tp:rationale>
       </tp:docstring>
     </property>
 
     <property name="Type" tp:name-for-bindings="Type"
-        type="u" tp:type="Media_Stream_Type" access="read">
+        type="u" tp:type="Media_Stream_Type" access="read" tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The media type of this content</p>
-      </tp:docstring>
-    </property>
-
-    <property name="Creator" tp:name-for-bindings="Creator"
-        type="u" tp:type="Contact_Handle" access="read">
-      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The creator of this content</p>
+        <p>The media type of this content.</p>
       </tp:docstring>
     </property>
 
     <tp:enum name="Call_Content_Disposition" type="u">
       <tp:docstring>
-        [FIXME]
+        The disposition of this content, which defines whether to
+        automatically start sending data on the streams when
+        <tp:dbus-ref
+        namespace="ofdT.Channel.Type">Call.DRAFT</tp:dbus-ref> is
+        called on the channel.
       </tp:docstring>
 
       <tp:enumvalue suffix="None" value="0">
@@ -92,52 +174,57 @@
         </tp:docstring>
       </tp:enumvalue>
 
-      <tp:enumvalue suffix="Early_Media" value="1">
+      <tp:enumvalue suffix="Initial" value="1">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          [FIXME: what does this mean?]
-        </tp:docstring>
-      </tp:enumvalue>
-
-      <tp:enumvalue suffix="Initial" value="2">
-        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The content was initially part of the call. When <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT"
-              >Accept</tp:dbus-ref> is called on the channel, all streams of
-            this content where the self-handle's sending state in <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Call.Stream.DRAFT"
-              >Senders</tp:dbus-ref> is Sending_State_Pending_Send
-            will be moved to Sending_State_Sending as if <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Call.Stream.DRAFT"
-              >SetSending</tp:dbus-ref>(TRUE) had been called.</p>
+          <p>The content was initially part of the call. When
+          <tp:dbus-ref
+          namespace="ofdT.Channel.Type.Call.DRAFT">Accept</tp:dbus-ref>
+          is called on the channel, all streams of this content with
+          <tp:dbus-ref
+          namespace="ofdT.Call.Stream.DRAFT">LocalSendingState</tp:dbus-ref>
+          set to <tp:type>Sending_State</tp:type>_Pending_Send will be
+          moved to <tp:type>Sending_State</tp:type>_Sending as if
+          <tp:dbus-ref
+          namespace="ofdT.Call.Stream.DRAFT">SetSending</tp:dbus-ref>
+          (True) had been called.</p>
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
 
     <property name="Disposition" tp:name-for-bindings="Disposition"
-        type="u" tp:type="Call_Content_Disposition" access="read">
+        type="u" tp:type="Call_Content_Disposition" access="read"
+        tp:immutable="yes">
       <tp:docstring>
-        The disposition of this content. This property cannot change.
+        The disposition of this content.
       </tp:docstring>
     </property>
 
-    <signal name="StreamAdded" tp:name-for-bindings="Stream_Added">
+    <signal name="StreamsAdded" tp:name-for-bindings="Streams_Added">
+      <tp:changed version="0.21.2">plural version, renamed from
+        StreamAdded</tp:changed>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-         <p>Emitted when a stream is added to a call</p>
+         <p>Emitted when streams are added to a call.</p>
       </tp:docstring>
-      <arg name="Stream" type="o">
+      <arg name="Streams" type="ao">
          <tp:docstring>
-           The stream which was added
+           The <tp:dbus-ref
+           namespace="ofdT.Call">Stream.DRAFT</tp:dbus-ref>s which were
+           added.
          </tp:docstring>
        </arg>
     </signal>
 
-    <signal name="StreamRemoved" tp:name-for-bindings="Stream_Removed">
+    <signal name="StreamsRemoved" tp:name-for-bindings="Streams_Removed">
+      <tp:changed version="0.21.2">plural version, renamed from
+        StreamRemoved</tp:changed>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-         <p>Emitted when a stream is added to a call</p>
+         <p>Emitted when streams are removed from a call</p>
       </tp:docstring>
-      <arg name="Stream" type="o">
+      <arg name="Streams" type="ao">
          <tp:docstring>
-           The stream which was removed
+           The <tp:dbus-ref
+           namespace="ofdT.Call">Stream.DRAFT</tp:dbus-ref>s which were
+           removed.
          </tp:docstring>
        </arg>
     </signal>
@@ -145,22 +232,58 @@
     <property name="Streams" tp:name-for-bindings="Streams"
       type="ao" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The list of
-           <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Call">Stream.DRAFT</tp:dbus-ref>
-           objects that exist in this content.</p>
+        <p>The list of <tp:dbus-ref namespace="ofdT.Call"
+          >Stream.DRAFT</tp:dbus-ref> objects that exist in this
+          content.</p>
 
         <tp:rationale>
-          <p>In a conference call multiple parties can share one media content
-            (say, audio), but the streaming of that media can either be shared
-            or separate. For example, in a multicast conference all contacts
-            would share one stream, while in a Muji conference there would be
-            a stream for each participant.</p>
+          In a conference call multiple parties can share one media
+          content (say, audio), but the streaming of that media can
+          either be shared or separate. For example, in a multicast
+          conference all contacts would share one stream, while in a
+          Muji conference there would be a stream for each
+          participant.
         </tp:rationale>
 
-        <p>Change notification is via
-          <tp:member-ref>StreamAdded</tp:member-ref> and
-          <tp:member-ref>StreamRemoved</tp:member-ref>.</p>
+        <p>Change notification is through the
+          <tp:member-ref>StreamsAdded</tp:member-ref> and
+          <tp:member-ref>StreamsRemoved</tp:member-ref> signals.</p>
+      </tp:docstring>
+    </property>
+
+    <tp:enum name="Call_Content_Packetization_Type" type="u">
+      <tp:added version="0.21.2"/>
+      <tp:docstring>
+        A packetization method that can be used for a content.
+      </tp:docstring>
+
+      <tp:enumvalue suffix="RTP" value="0">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Real-time Transport Protocol, as documented by RFC 3550.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Raw" value="1">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Raw media.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="MSN_Webcam" value="2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          MSN webcam. This is the video-only one-way type which was
+          used in earlier versions of WLM. Although no longer used,
+          modern WLM clients still support the MSN webcam protocol.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <property name="Packetization" tp:name-for-bindings="Packetization"
+      type="u" tp:type="Call_Content_Packetization_Type" access="read"
+      tp:immutable="yes">
+      <tp:added version="0.21.2"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The packetization method in use for this content.</p>
       </tp:docstring>
     </property>
   </interface>

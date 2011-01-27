@@ -113,6 +113,8 @@ set(telepathy_qt4_HEADERS
     AccountFilter
     account-filter.h
     AccountInterface
+    AccountInterfaceAddressingInterface
+    AccountInterfaceAvatarInterface
     AccountManager
     account-manager.h
     AccountManagerInterface
@@ -140,20 +142,29 @@ set(telepathy_qt4_HEADERS
     channel-factory.h
     channel.h
     ChannelInterface
+    ChannelInterfaceAnonymityInterface
     ChannelInterfaceCallStateInterface
     ChannelInterfaceChatStateInterface
+    ChannelInterfaceConferenceInterface
     ChannelInterfaceDTMFInterface
     ChannelInterfaceGroupInterface
     ChannelInterfaceHoldInterface
     ChannelInterfaceMediaSignallingInterface
+    ChannelInterfaceMessagesInterface
     ChannelInterfacePasswordInterface
+    ChannelInterfaceSASLAuthenticationInterface
+    ChannelInterfaceSecurableInterface
+    ChannelInterfaceServicePointInterface
+    ChannelInterfaceTubeInterface
     ChannelRequest
     channel-request.h
     ChannelRequestInterface
     ChannelTypeContactListInterface
     ChannelTypeContactSearchInterface
-    ChannelTypeServerTLSConnectionInterface
+    ChannelTypeFileTransferInterface
     ChannelTypeRoomListInterface
+    ChannelTypeServerAuthenticationInterface
+    ChannelTypeServerTLSConnectionInterface
     ChannelTypeStreamedMediaInterface
     ChannelTypeStreamTubeInterface
     ChannelTypeTextInterface
@@ -189,6 +200,7 @@ set(telepathy_qt4_HEADERS
     ConnectionInterfaceContactList
     ConnectionInterfaceContactsInterface
     ConnectionInterfaceLocationInterface
+    ConnectionInterfaceMailNotificationInterface
     ConnectionInterfacePowerSaving
     ConnectionInterfacePresenceInterface
     ConnectionInterfaceRequestsInterface
@@ -573,3 +585,4 @@ if(FARSIGHT_COMPONENTS_FOUND)
 endif(FARSIGHT_COMPONENTS_FOUND)
 
 add_subdirectory(Farsight)
+

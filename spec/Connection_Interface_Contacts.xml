@@ -152,13 +152,16 @@
       </arg>
 
       <arg direction="in" name="Hold" type="b">
-        <tp:docstring>
-          If true, all handles in the result have been held on behalf of the
-          calling process, as if by a call to
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.HoldHandles</tp:dbus-ref>.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>If true, all handles that appear as keys in the result have been
+            held on behalf of the calling process, as if by a call to
+            <tp:dbus-ref namespace="ofdT">Connection.HoldHandles</tp:dbus-ref>.
+            (If <tp:dbus-ref namespace="ofdT.Connection"
+              >HasImmortalHandles</tp:dbus-ref> is true, which SHOULD be the
+            case in all new connection managers, this has no effect.)</p>
 
           <tp:rationale>
-            For further round-trip avoidance.
+            <p>For further round-trip avoidance.</p>
           </tp:rationale>
         </tp:docstring>
       </arg>

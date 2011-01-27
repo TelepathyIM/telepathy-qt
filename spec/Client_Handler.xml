@@ -103,8 +103,7 @@
             <code>/org/freedesktop/Telepathy/Client/Empathy/_1/_42/Bundle1</code>
             with BypassApproval = TRUE,
             whose <tp:member-ref>HandlerChannelFilter</tp:member-ref>
-            matches closely related Text channels by their Bundle property.
-            (This is use-case dis5)</p>
+            matches closely related Text channels by their Bundle property.</p>
         </tp:rationale>
 
         <p>For service-activatable handlers, this property should be specified

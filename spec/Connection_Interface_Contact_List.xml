@@ -173,10 +173,12 @@
 
       <arg direction="in" name="Hold" type="b">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>Whether to hold the handles on behalf of the calling process.
-            Equivalent to the corresponding argument to <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection.Interface.Contacts"
-              >GetContactAttributes</tp:dbus-ref>.</p>
+          <p>If true, all handles that appear as keys in the result have been
+            held on behalf of the calling process, as if by a call to
+            <tp:dbus-ref namespace="ofdT">Connection.HoldHandles</tp:dbus-ref>.
+            (If <tp:dbus-ref namespace="ofdT.Connection"
+              >HasImmortalHandles</tp:dbus-ref> is true, which SHOULD be the
+            case in all new connection managers, this has no effect.)</p>
         </tp:docstring>
       </arg>
 
@@ -574,8 +576,9 @@
       </tp:member>
     </tp:mapping>
 
-    <signal name="ContactsChanged"
-      tp:name-for-bindings="Contacts_Changed">
+    <signal name="ContactsChangedWithID"
+      tp:name-for-bindings="Contacts_Changed_With_ID">
+      <tp:added version="0.21.8"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Emitted when the contact list becomes available, when contacts'
           basic stored properties change, when new contacts are added to the
@@ -611,13 +614,53 @@
         </tp:docstring>
       </arg>
 
-      <arg name="Removals" type="au" tp:type="Contact_Handle[]">
-        <tp:docstring>
+      <arg name="Identifiers" type="a{us}" tp:type="Handle_Identifier_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The identifiers of the contacts in the <var>Changes</var> map.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Removals" type="a{us}" tp:type="Handle_Identifier_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           The contacts that have been removed from the list that would be
           returned by
           <tp:member-ref>GetContactListAttributes</tp:member-ref>.
           This also implies that they have subscribe = No and publish = No;
-          contacts MUST NOT be listed both here and in Changes.
+          contacts MUST NOT be listed both here and in <var>Changes</var>.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="ContactsChanged"
+      tp:name-for-bindings="Contacts_Changed">
+      <tp:deprecated version="0.21.8">Connection managers MUST still
+        emit this signal, but clients SHOULD listen for the
+        <tp:member-ref>ContactsChangedWithID</tp:member-ref> signal in
+        addition, and ignore this signal after ContactsChangedWithID has been
+        emitted at least once.
+      </tp:deprecated>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted immediately after
+          <tp:member-ref>ContactsChangedWithID</tp:member-ref>, under the same
+          circumstances.</p>
+
+        <p>If clients receive this signal without first receiving a
+          corresponding <tp:member-ref>ContactsChangedWithID</tp:member-ref>,
+          they MUST assume that only this signal will be emitted.</p>
+      </tp:docstring>
+
+      <arg type="a{u(uus)}" name="Changes" tp:type="Contact_Subscription_Map">
+        <tp:docstring>
+          The same as the corresponding argument to
+          <tp:member-ref>ContactsChangedWithID</tp:member-ref>.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Removals" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          The same as the corresponding argument to
+          <tp:member-ref>ContactsChangedWithID</tp:member-ref>, except that it
+          only includes handles and not identifiers.
         </tp:docstring>
       </arg>
     </signal>
@@ -652,15 +695,27 @@
           subscribe to their presence, i.e. that their subscribe attribute
           becomes Yes.</p>
 
+        <p>Connection managers SHOULD NOT attempt to enforce a
+          mutual-subscription policy (i.e. when this method is called, they
+          should not automatically allow the contacts to see the local user's
+          presence). User interfaces that require mutual subscription
+          MAY call <tp:member-ref>AuthorizePublication</tp:member-ref>
+          at the same time as this method.</p>
+
+        <tp:rationale>
+          <p>Whether to enforce mutual subscription is a matter of policy,
+            so it is left to the user interface and/or the server.</p>
+        </tp:rationale>
+
         <p>Before calling this method on a connection where <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface.Aliasing"
             >GetAliasFlags</tp:dbus-ref> returns the <code>User_Set</code> flag,
           user interfaces SHOULD obtain, from the user, an alias to
           identify the contact in future, and store it using <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface.Aliasing"
-            >SetAliases</tp:dbus-ref>.
+            >SetAliases</tp:dbus-ref>.</p>
 
-          The user MAY be
+        <p>The user MAY be
           prompted using the contact's current self-assigned nickname, or
           something derived from the contact's (presumably self-assigned)
           identifier, as a default, but these names chosen by the contact
@@ -792,6 +847,19 @@
         <p>For each of the given contacts, request that the local user's
           presence is sent to that contact, i.e. that their publish attribute
           becomes Yes.</p>
+
+        <p>Connection managers SHOULD NOT attempt to enforce a
+          mutual-subscription policy (i.e. when this method is called, they
+          should not automatically request that the contacts allow the user to
+          subscribe to their presence). User interfaces that require mutual
+          subscription MAY call
+          <tp:member-ref>RequestSubscription</tp:member-ref> at the same time
+          as this method.</p>
+
+        <tp:rationale>
+          <p>Whether to enforce mutual subscription is a matter of policy,
+            so it is left to the user interface and/or the server.</p>
+        </tp:rationale>
 
         <p>For contacts with publish=Yes, this method has no effect; it
           MUST return successfully if all contacts given have this state.</p>

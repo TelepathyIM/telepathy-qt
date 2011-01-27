@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Call_Stream_Endpoint"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
-  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2009-2010 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009-2010 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
       modify it under the terms of the GNU Lesser General Public
@@ -21,73 +21,160 @@
   </tp:license>
 
   <interface name="org.freedesktop.Telepathy.Call.Stream.Endpoint.DRAFT"
-      tp:causes-havoc="experimental">
+    tp:causes-havoc="experimental">
     <tp:added version="0.19.0">(draft 1)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      This object represents a set of candidates of one end-point.
+      <p>This object represents an endpoint for a stream. In a one-to-one
+        call, there will be one (bidirectional) stream per content and
+        one endpoint per stream (as there is only one remote
+        contact). In a multi-user call there is a stream for each remote
+        contact and each stream has one endpoint as it refers to the one
+        physical machine on the other end of the stream.</p>
+
+      <p>The multiple endpoint use case appears when SIP call forking
+        is used. Unlike jingle call forking (which is just making
+        multiple jingle calls to different resources appear as one
+        call), SIP call forking is actually done at the server so you
+        have one stream to the remote contact and then and endpoint for
+        each SIP client to be called.</p>
     </tp:docstring>
 
     <property name="RemoteCredentials"
       tp:name-for-bindings="Remote_Credentials"
       type="(ss)" tp:type="Stream_Credentials" access="read">
+      <tp:docstring>
+        The ICE credentials used for all candidates. If each candidate
+        has different credentials, then this property SHOULD be ("",
+        ""). Per-candidate credentials are set in the
+        <tp:type>Candidate</tp:type>'s
+        <tp:type>Candidate_Info</tp:type> a{sv}.
+      </tp:docstring>
     </property>
 
     <signal name="RemoteCredentialsSet"
-        tp:name-for-bindings="Remote_Credentials_Set">
-      <arg name="Username" type="s" />
-      <arg name="Password" type="s" />
+      tp:name-for-bindings="Remote_Credentials_Set">
+      <arg name="Username" type="s">
+        <tp:docstring>
+          The username set.
+        </tp:docstring>
+      </arg>
+      <arg name="Password" type="s">
+        <tp:docstring>
+          The password set.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when the remote ICE credentials for the endpoint are
+        set. If each candidate has different credentials, then this
+        signal will never be fired.
+      </tp:docstring>
     </signal>
 
     <property name="RemoteCandidates" tp:name-for-bindings="Remote_Candidates"
       type="a(usqa{sv})" tp:type="Candidate[]" access="read">
+      <tp:docstring>
+        A list of candidates for this endpoint.
+      </tp:docstring>
     </property>
 
     <signal name="RemoteCandidatesAdded"
-        tp:name-for-bindings="Remote_Candidates_Added">
+      tp:name-for-bindings="Remote_Candidates_Added">
+      <tp:docstring>
+        Emitted when remote candidates are added to the
+        <tp:member-ref>RemoteCandidates</tp:member-ref> property.
+      </tp:docstring>
       <arg name="Candidates"
-        type="a(usqa{sv})" tp:type="Candidate[]"/>
+        type="a(usqa{sv})" tp:type="Candidate[]">
+        <tp:docstring>
+          The candidates that were added.
+        </tp:docstring>
+      </arg>
     </signal>
 
     <signal name="CandidateSelected"
-        tp:name-for-bindings="Candidate_Selected">
+      tp:name-for-bindings="Candidate_Selected">
+      <tp:docstring>
+        Emitted when a candidate is selected for use in the stream.
+      </tp:docstring>
       <arg name="Candidate"
-        type="(usqa{sv})" tp:type="Candidate"/>
+        type="(usqa{sv})" tp:type="Candidate">
+        <tp:docstring>
+          The candidate that has been selected.
+        </tp:docstring>
+      </arg>
     </signal>
 
     <property name="SelectedCandidate"
-        tp:name-for-bindings="Selected_Candidate"
+      tp:name-for-bindings="Selected_Candidate"
       type="(usqa{sv})" tp:type="Candidate" access="read">
+      <tp:docstring>
+        The candidate that has been selected for use to stream packets
+        to the remote contact. Change notification is given via the
+        the <tp:member-ref>CandidateSelected</tp:member-ref> signal.
+      </tp:docstring>
     </property>
 
     <method name="SetSelectedCandidate"
-        tp:name-for-bindings="Set_Selected_Candidate">
+      tp:name-for-bindings="Set_Selected_Candidate">
+      <tp:docstring>
+        Set the value of
+        <tp:member-ref>CandidateSelected</tp:member-ref>.
+      </tp:docstring>
       <arg name="Candidate"
         type="(usqa{sv})" tp:type="Candidate" direction="in">
         <tp:docstring>
+          The candidate that has been selected.
         </tp:docstring>
       </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
+      </tp:possible-errors>
     </method>
 
     <property name="StreamState" tp:name-for-bindings="Stream_State"
       type="u" tp:type="Media_Stream_State"
       access="read">
+      <tp:docstring>
+        The stream state of the endpoint.
+      </tp:docstring>
     </property>
 
     <signal name="StreamStateChanged"
-        tp:name-for-bindings="Stream_State_Changed">
-      <arg name="state"
-      type="u" tp:type="Media_Stream_State"/>
+      tp:name-for-bindings="Stream_State_Changed">
+      <tp:docstring>
+        Emitted when the <tp:member-ref>StreamState</tp:member-ref>
+        property changes.
+      </tp:docstring>
+      <arg name="state" type="u" tp:type="Media_Stream_State">
+        <tp:docstring>
+          The new <tp:member-ref>StreamState</tp:member-ref> value.
+        </tp:docstring>
+      </arg>
     </signal>
 
     <method name="SetStreamState"
-        tp:name-for-bindings="Set_Stream_State">
-      <arg name="State" type="u" tp:type="Media_Stream_State"
-        direction="in" />
+      tp:name-for-bindings="Set_Stream_State">
+      <tp:docstring>
+        Change the <tp:member-ref>StreamState</tp:member-ref> of the
+        endpoint.
+      </tp:docstring>
+      <arg direction="in" name="State" type="u" tp:type="Media_Stream_State">
+        <tp:docstring>
+          The requested stream state.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+      </tp:possible-errors>
     </method>
 
     <property name="Transport" tp:name-for-bindings="Transport"
-        type="u" tp:type="Stream_Transport_Type" access="read">
+      type="u" tp:type="Stream_Transport_Type" access="read">
+      <tp:docstring>
+        The transport type for the stream endpoint.
+      </tp:docstring>
     </property>
 
   </interface>

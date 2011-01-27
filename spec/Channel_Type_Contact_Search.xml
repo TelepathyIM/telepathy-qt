@@ -31,7 +31,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>A channel type for searching server-stored user directories. A new
         channel should be requested by a client for each search attempt, and
         closed when the search is completed or the required result has been
-        found.</p>
+        found. Channels of this type should have <tp:dbus-ref
+        namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref>
+        <code>None</code> (and hence <tp:dbus-ref
+        namespace='ofdT.Channel'>TargetHandle</tp:dbus-ref> <code>0</code> and
+        <tp:dbus-ref namespace='ofdT.Channel'>TargetID</tp:dbus-ref>
+        <code>""</code>). Requests for channels of this type need only
+        optionally specify the <tp:member-ref>Server</tp:member-ref> property
+        (if it is an allowed property in the connection's <tp:dbus-ref
+        namespace='ofdT.Connection.Interface.Requests'>RequestableChannelClasses</tp:dbus-ref>).</p>
 
       <p>Before searching, the
         <tp:member-ref>AvailableSearchKeys</tp:member-ref> property should be
@@ -240,8 +248,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </tp:simple-type>
 
-    <property name="Limit" type="u" access="read"
-      tp:name-for-bindings="Limit">
+    <property name="Limit" type="u" access="read" tp:name-for-bindings="Limit"
+      tp:immutable='yes' tp:requestable='sometimes'>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>If supported by the protocol, the maximum number of results that
           should be returned, where <code>0</code> represents no limit. If the
@@ -254,23 +262,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <code>2</code>, the search service SHOULD only return <i>Antonius</i>
           and <i>Bridget</i>.</p>
 
-        <p>This property cannot change during the lifetime of the channel.
-          This property SHOULD be in the Allowed_Properties of a
-          <tp:type>Requestable_Channel_Class</tp:type> if and only if the
-          protocol supports specifying a limit; implementations SHOULD use
+        <p>This property SHOULD be requestable if and only if the protocol
+          supports specifying a limit; implementations SHOULD use
           <code>0</code> as the default if possible, or a protocol-specific
           sensible default otherwise.</p>
       </tp:docstring>
     </property>
 
     <property name="AvailableSearchKeys" type="as" access="read"
-      tp:name-for-bindings="Available_Search_Keys">
+      tp:name-for-bindings="Available_Search_Keys" tp:immutable='yes'>
       <tp:docstring>
         The set of search keys supported by this channel. Example values
         include [""] (for protocols where several address fields are
         implicitly searched) or ["x-n-given", "x-n-family", "nickname",
         "email"] (for XMPP XEP-0055, without extensibility via Data Forms).
-        This property cannot change during the lifetime of a channel.
 
         <tp:rationale>
           It can be in the <tp:dbus-ref
@@ -352,7 +357,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           while the SearchState is In_Progress,
           <tp:member-ref>SearchStateChanged</tp:member-ref> will be emitted,
           with the state Failed and the error
-          <code>org.freedesktop.Telepathy.Errors.Cancelled</code>.</p>
+          <code>org.freedesktop.Telepathy.Error.<tp:error-ref>Cancelled</tp:error-ref></code>.</p>
 
         <p>Calling this method on a search in state Completed or Failed
           succeeds, but has no effect.</p>
@@ -426,7 +431,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <property name="Server" tp:name-for-bindings="Server"
-      type="s" access="read">
+      type="s" access="read" tp:requestable='sometimes' tp:immutable='yes'>
       <tp:docstring>
         <p>For protocols which support searching for contacts on multiple
           servers with different DNS names (like XMPP), the DNS name of the
@@ -439,9 +444,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             User Directory").</p>
         </tp:rationale>
 
-        <p>This property cannot change during the lifetime of the channel.
-          This property SHOULD be in the Allowed_Properties of a
-          <tp:type>Requestable_Channel_Class</tp:type> if and only if the
+        <p>This property SHOULD be requestable if and only if the
           protocol supports querying multiple different servers;
           implementations SHOULD use a sensible default if possible if this
           property is not specified in a channel request.</p>

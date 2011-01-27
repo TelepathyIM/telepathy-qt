@@ -53,12 +53,12 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Errors.InvalidArgument">
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
           <tp:docstring>
             This channel isn't in a conference.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Errors.NotAvailable">
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
             This channel is in a conference but can't currently be split away
             from it.
