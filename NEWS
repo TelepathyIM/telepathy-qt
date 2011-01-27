@@ -4,7 +4,10 @@ telepathy-qt4 0.5.6 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Update to spec 0.21.8.
+  - Added auto generated classes for Account.Addressing,
+    Channel.ServerAuthentication, Channel.SASLAuthentication,
+    Channel.Securable and Conn.MainNotification.
 
 Fixes:
  * Properly ignore protocol with invalid names.
@@ -13,6 +16,7 @@ Fixes:
  * Properly link against QtXml.
  * Properly emit presencePublicationRequested if the contact current publish
    state changes to PresenceStateAsk.
+ * Added missing fancy-headers for generated classes.
 
 telepathy-qt4 0.5.5 (2011-01-25)
 =================================
