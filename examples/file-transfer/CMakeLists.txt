@@ -12,6 +12,7 @@ add_executable(receiver ${receiver_SRCS} ${receiver_MOC_SRCS})
 target_link_libraries(receiver
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     telepathy-qt4)
 
@@ -27,5 +28,6 @@ add_executable(sender ${sender_SRCS} ${sender_MOC_SRCS})
 target_link_libraries(sender
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     telepathy-qt4)

@@ -13,5 +13,6 @@ add_executable(protocols ${protocols_SRCS} ${protocols_MOC_SRCS})
 target_link_libraries(protocols
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     telepathy-qt4)

@@ -15,6 +15,7 @@ add_executable(roster ${roster_SRCS} ${roster_MOC_SRCS})
 target_link_libraries(roster
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     telepathy-qt4)
 
@@ -28,5 +29,6 @@ add_library(telepathy-qt4-examples-roster ${telepathy_qt4_examples_roster_SRCS})
 target_link_libraries(telepathy-qt4-examples-roster
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     telepathy-qt4)
