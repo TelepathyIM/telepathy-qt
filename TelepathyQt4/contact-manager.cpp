@@ -71,7 +71,8 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
 ContactManager::Private::Private(ContactManager *parent, Connection *connection)
     : parent(parent),
       connection(connection),
-      roster(new ContactManager::Roster(parent))
+      roster(new ContactManager::Roster(parent)),
+      requestAvatarsIdle(false)
 {
 }
 
