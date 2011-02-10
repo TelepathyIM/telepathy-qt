@@ -366,10 +366,6 @@ set(telepathy_qt4_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-stream-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-properties.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-channel.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-misc.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 
 # Headers file moc will be run on
@@ -457,6 +453,7 @@ tpqt4_types_gen(future-typesgen ${gen_future_spec_xml}
 # Add the generated types to the library's sources
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp)
+list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h)
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h)
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp)
 
@@ -493,6 +490,7 @@ foreach(spec ${FUTURE_SPECS})
     tpqt4_xincludator(${spec}-future-xincludator  ${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
                       DEPENDS stable-typesgen future-typesgen)
     set(NEW_FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp)
     list(APPEND telepathy_qt4_SRCS ${NEW_FILES})
