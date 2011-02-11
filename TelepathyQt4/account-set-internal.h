@@ -50,7 +50,6 @@ struct AccountSet::Private
     QList<AccountFilterConstPtr> filters;
     QHash<QString, AccountWrapper *> wrappers;
     QHash<QString, AccountPtr> accounts;
-    bool filterValid;
     bool ready;
 };
 
