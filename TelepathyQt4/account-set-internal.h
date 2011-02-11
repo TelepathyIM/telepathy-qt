@@ -49,7 +49,6 @@ struct AccountSet::Private
     AccountFilterConstPtr filter;
     QHash<QString, AccountWrapper *> wrappers;
     QHash<QString, AccountPtr> accounts;
-    bool filterValid;
     bool ready;
 };
 
