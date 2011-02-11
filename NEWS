@@ -9,6 +9,8 @@ Enhancements:
 Fixes:
  * Unstable generated future-* headers being installed (although nothing
    declared in them was ever exported in the library)
+ * Possible crashes in Channel internal updateContacts function when just the
+   self handle changed
 
 telepathy-qt4 0.5.6 (2011-01-27)
 =================================
