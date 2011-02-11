@@ -1047,7 +1047,8 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
         uint handle = contact->handle()[0];
         if (groupLocalPendingContactsChangeInfo.contains(handle)) {
             groupLocalPendingContactsChangeInfo[handle] =
-                GroupMemberChangeDetails(actorContact, currentGroupMembersChangedInfo->details);
+                GroupMemberChangeDetails(actorContact,
+                        currentGroupMembersChangedInfo ? currentGroupMembersChangedInfo->details : QVariantMap());
         }
     }
 
@@ -1092,9 +1093,10 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
         !groupContactsRemoved.isEmpty()) {
         GroupMemberChangeDetails details(
                 actorContact,
-                currentGroupMembersChangedInfo->details);
+                currentGroupMembersChangedInfo ? currentGroupMembersChangedInfo->details : QVariantMap());
 
-        if (currentGroupMembersChangedInfo->removed.contains(groupSelfHandle)) {
+        if (currentGroupMembersChangedInfo
+                && currentGroupMembersChangedInfo->removed.contains(groupSelfHandle)) {
             // Update groupSelfContactRemoveInfo with the proper actor in case
             // the actor was not available by the time onMembersChangedDetailed
             // was called.
