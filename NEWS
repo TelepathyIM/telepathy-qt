@@ -7,7 +7,8 @@ Enhancements:
  * ...
 
 Fixes:
- * ...
+ * Possible crashes in Channel internal updateContacts function when just the
+   self handle changed
 
 telepathy-qt4 0.4.3 (2011-01-17)
 =================================
