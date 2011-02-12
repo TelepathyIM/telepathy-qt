@@ -27,19 +27,88 @@
 namespace Tp
 {
 
+class TELEPATHY_QT4_EXPORT Debug
+{
+public:
+    inline Debug() : debug(0) { }
+    inline Debug(const QDebug &debug) : debug(new QDebug(debug)) { }
+
+    inline Debug(const Debug &a) : debug(a.debug ? new QDebug(*(a.debug)) : 0) { }
+
+    inline Debug &operator=(const Debug &a)
+    {
+        if (this != &a) {
+            delete debug;
+            debug = 0;
+
+            if (a.debug) {
+                debug = new QDebug(*(a.debug));
+            }
+        }
+
+        return *this;
+    }
+
+    inline ~Debug()
+    {
+        delete debug;
+    }
+
+    inline Debug &space()
+    {
+        if (debug) {
+            debug->space();
+        }
+        
+        return *this;
+    }
+
+    inline Debug &nospace()
+    {
+        if (debug) {
+            debug->nospace();
+        }
+            
+        return *this;
+    }
+
+    inline Debug &maybeSpace()
+    {
+        if (debug) {
+            debug->maybeSpace();
+        }
+        
+        return *this;
+    }
+
+    template <typename T>
+    inline Debug &operator<<(T a)
+    {
+        if (debug) {
+            (*debug) << a;
+        }
+
+        return *this;
+    }
+
+private:
+
+    QDebug *debug;
+};
+
 // The telepathy-farsight Qt 4 binding links to these - they're not API outside
 // this source tarball, but they *are* ABI
-TELEPATHY_QT4_EXPORT QDebug enabledDebug();
-TELEPATHY_QT4_EXPORT QDebug enabledWarning();
+TELEPATHY_QT4_EXPORT Debug enabledDebug();
+TELEPATHY_QT4_EXPORT Debug enabledWarning();
 
 #ifdef ENABLE_DEBUG
 
-inline QDebug debug()
+inline Debug debug()
 {
     return enabledDebug();
 }
 
-inline QDebug warning()
+inline Debug warning()
 {
     return enabledWarning();
 }
