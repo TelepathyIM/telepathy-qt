@@ -103,21 +103,21 @@ void enableWarnings(bool enable)
     warningsEnabled = enable;
 }
 
-QDebug enabledDebug()
+Debug enabledDebug()
 {
     if (debugEnabled) {
-        return qDebug() << "tp-qt4 " PACKAGE_VERSION " DEBUG:";
+        return Debug(qDebug() << "tp-qt4 " PACKAGE_VERSION " DEBUG:");
     } else {
-        return QDebug(&discard);
+        return Debug();
     }
 }
 
-QDebug enabledWarning()
+Debug enabledWarning()
 {
     if (warningsEnabled) {
-        return qWarning() << "tp-qt4 " PACKAGE_VERSION " WARN:";
+        return Debug(qWarning() << "tp-qt4 " PACKAGE_VERSION " WARN:");
     } else {
-        return QDebug(&discard);
+        return Debug();
     }
 }
 
@@ -131,14 +131,14 @@ void enableWarnings(bool enable)
 {
 }
 
-QDebug enabledDebug()
+Debug enabledDebug()
 {
-    return QDebug(&discard);
+    return Debug();
 }
 
-QDebug enabledWarning()
+Debug enabledWarning()
 {
-    return QDebug(&discard);
+    return Debug();
 }
 
 #endif /* !defined(ENABLE_DEBUG) */
