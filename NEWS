@@ -4,7 +4,8 @@ telepathy-qt4 0.4.4 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Make the debug subsystem as no-op as possible when debugging is disabled at
+   runtime with Tp::enableDebug(false) and Tp::enableWarnings(false)
 
 Fixes:
  * Possible crashes in Channel internal updateContacts function when just the
