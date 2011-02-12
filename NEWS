@@ -4,7 +4,8 @@ telepathy-qt4 0.5.7 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Make the debug subsystem as no-op as possible when debugging is disabled at
+   runtime with Tp::enableDebug(false) and Tp::enableWarnings(false)
 
 Fixes:
  * Unstable generated future-* headers being installed (although nothing
