@@ -73,10 +73,10 @@ private:
     ProtocolInfo(const QString &cmName, const QString &name);
 
     void addParameter(const ParamSpec &spec);
-    void setRequestableChannelClasses(const RequestableChannelClassList &caps);
     void setVCardField(const QString &vcardField);
     void setEnglishName(const QString &englishName);
     void setIconName(const QString &iconName);
+    void setRequestableChannelClasses(const RequestableChannelClassList &caps);
 
     struct Private;
     friend struct Private;
