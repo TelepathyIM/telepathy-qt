@@ -311,6 +311,7 @@ set(telepathy_qt4_HEADERS
     PendingVoid
     Presence
     presence.h
+    PresenceSpec
     Profile
     profile.h
     ProfileManager

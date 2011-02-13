@@ -164,4 +164,76 @@ SimplePresence Presence::barePresence() const
     return mPriv->sp;
 }
 
+struct TELEPATHY_QT4_NO_EXPORT PresenceSpec::Private : public QSharedData
+{
+    Private(const QString &status, const SimpleStatusSpec &spec)
+        : presence(Presence((ConnectionPresenceType) spec.type, status, QString())),
+          spec(spec)
+    {
+    }
+
+    Presence presence;
+    SimpleStatusSpec spec;
+};
+
+PresenceSpec::PresenceSpec()
+{
+}
+
+PresenceSpec::PresenceSpec(const QString &status, const SimpleStatusSpec &spec)
+    : mPriv(new Private(status, spec))
+{
+}
+
+PresenceSpec::PresenceSpec(const PresenceSpec &other)
+    : mPriv(other.mPriv)
+{
+}
+
+PresenceSpec::~PresenceSpec()
+{
+}
+
+PresenceSpec &PresenceSpec::operator=(const PresenceSpec &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+Presence PresenceSpec::presence() const
+{
+    if (!isValid()) {
+        return Presence();
+    }
+
+    return mPriv->presence;
+}
+
+bool PresenceSpec::maySetOnSelf() const
+{
+    if (!isValid()) {
+        return false;
+    }
+
+    return mPriv->spec.maySetOnSelf;
+}
+
+bool PresenceSpec::canHaveMessage() const
+{
+    if (!isValid()) {
+        return false;
+    }
+
+    return mPriv->spec.canHaveMessage;
+}
+
+SimpleStatusSpec PresenceSpec::bareSpec() const
+{
+    if (!isValid()) {
+        return SimpleStatusSpec();
+    }
+
+    return mPriv->spec;
+}
+
 } // Tp
