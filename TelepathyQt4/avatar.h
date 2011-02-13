@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2010 Nokia Corporation
+ * Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2010-2011 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,12 +26,15 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 #include <QString>
+#include <QMetaType>
 
 namespace Tp
 {
 
-struct AvatarData
+struct TELEPATHY_QT4_EXPORT AvatarData
 {
 public:
     inline AvatarData(const QString &fileName, const QString &mimeType)
@@ -43,5 +46,7 @@ public:
 };
 
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::AvatarData);
 
 #endif
