@@ -140,12 +140,15 @@ private:
     static void introspectMain(ProtocolWrapper *self);
     void introspectPresence();
 
+    void continueIntrospection();
+
     void fillRCCs();
     bool receiveProperties(const QVariantMap &props);
 
     ReadinessHelper *mReadinessHelper;
     ProtocolInfo mInfo;
     QVariantMap mImmutableProps;
+    QQueue<void (ProtocolWrapper::*)()> introspectQueue;
 };
 
 } // Tp

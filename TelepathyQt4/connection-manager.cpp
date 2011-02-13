@@ -176,11 +176,12 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
             self->info().name();
 
         if (self->hasInterface(TP_QT4_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
-            self->introspectPresence();
+            self->introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
         } else {
             debug() << "Full functionality requires CM support for the Protocol.Presence interface";
-            self->mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
         }
+
+        self->continueIntrospection();
         return;
     }
 
@@ -206,6 +207,15 @@ void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotPresenceProperties(QDBusPendingCallWatcher*)));
+}
+
+void ConnectionManager::Private::ProtocolWrapper::continueIntrospection()
+{
+    if (introspectQueue.isEmpty()) {
+        mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
+    } else {
+        (this->*(introspectQueue.dequeue()))();
+    }
 }
 
 void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
@@ -235,11 +245,12 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
     }
 
     if (hasInterface(TP_QT4_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
-        introspectPresence();
+        introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
     } else {
         debug() << "Full functionality requires CM support for the Protocol.Presence interface";
-        mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
+
+    continueIntrospection();
 
     watcher->deleteLater();
 }
@@ -262,7 +273,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotPresenceProperties(
         warning() << "  Full functionality requires CM support for the Protocol.Presence interface";
     }
 
-    mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
+    continueIntrospection();
 
     watcher->deleteLater();
 }
