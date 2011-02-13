@@ -28,7 +28,9 @@
 
 #include <TelepathyQt4/Global>
 
+#include <QSharedDataPointer>
 #include <QString>
+#include <QStringList>
 #include <QMetaType>
 
 namespace Tp
@@ -45,8 +47,39 @@ public:
     QString mimeType;
 };
 
+class TELEPATHY_QT4_EXPORT AvatarSpec
+{
+public:
+    AvatarSpec();
+    AvatarSpec(const QStringList &supportedMimeTypes,
+            uint minHeight, uint maxHeight, uint recommendedHeight,
+            uint minWidth, uint maxWidth, uint recommendedWidth,
+            uint maxBytes);
+    AvatarSpec(const AvatarSpec &other);
+    ~AvatarSpec();
+
+    bool isValid() const { return mPriv.constData() != 0; }
+
+    AvatarSpec &operator=(const AvatarSpec &other);
+
+    QStringList supportedMimeTypes() const;
+    uint minimumHeight() const;
+    uint maximumHeight() const;
+    uint recommendedHeight() const;
+    uint minimumWidth() const;
+    uint maximumWidth() const;
+    uint recommendedWidth() const;
+    uint maximumBytes() const;
+
+private:
+    struct Private;
+    friend struct Private;
+    QSharedDataPointer<Private> mPriv;
+};
+
 } // Tp
 
 Q_DECLARE_METATYPE(Tp::AvatarData);
+Q_DECLARE_METATYPE(Tp::AvatarSpec);
 
 #endif
