@@ -387,6 +387,7 @@ bool ConnectionManager::Private::parseConfigFile()
         info.setVCardField(f.vcardField(protocol));
         info.setEnglishName(f.englishName(protocol));
         info.setIconName(f.iconName(protocol));
+        info.setAllowedPresenceStatuses(f.allowedPresenceStatuses(protocol));
 
         protocols.append(info);
     }
