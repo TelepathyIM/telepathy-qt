@@ -143,7 +143,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
             keyFile.setGroup(group);
 
             ParamSpecList paramSpecList;
-            PresenceSpecList statuses;
+            SimpleStatusSpecMap statuses;
             QString param;
             QStringList params = keyFile.keys();
             foreach (param, params) {
@@ -211,11 +211,16 @@ bool ManagerFile::Private::parse(const QString &fileName)
                         status.canHaveMessage = false;
                     }
 
-                    statuses.append(PresenceSpec(statusName, status));
+                    if (statuses.contains(statusName)) {
+                        warning() << "status" << statusName << "defined more than once, "
+                            "replacing it";
+                    }
+
+                    statuses.insert(statusName, status);
                 }
             }
 
-            protocolsMap.insert(protocol, ProtocolInfo(paramSpecList, statuses));
+            protocolsMap.insert(protocol, ProtocolInfo(paramSpecList, PresenceSpecList(statuses)));
 
             /* now that we have all param-* created, let's find their default values */
             foreach (param, params) {
