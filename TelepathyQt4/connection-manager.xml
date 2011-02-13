@@ -6,6 +6,7 @@
 
 <xi:include href="../spec/Connection_Manager.xml"/>
 <xi:include href="../spec/Protocol.xml"/>
+<xi:include href="../spec/Protocol_Interface_Avatars.xml"/>
 <xi:include href="../spec/Protocol_Interface_Presence.xml"/>
 
 </tp:spec>
