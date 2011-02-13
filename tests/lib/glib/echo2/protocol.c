@@ -53,6 +53,7 @@ new_status_spec (const gchar *name,
   if (can_have_message)
     {
       args[0].name = g_strdup ("message");
+      args[0].dtype = g_strdup ("s");
     }
   ret.optional_arguments = args;
 
@@ -87,6 +88,7 @@ example_echo_2_protocol_finalize (GObject *object)
 
       for (; arg->name != NULL; arg++) {
           g_free ((gpointer) arg->name);
+          g_free ((gpointer) arg->dtype);
       }
 
       g_free ((gpointer) status->name);
