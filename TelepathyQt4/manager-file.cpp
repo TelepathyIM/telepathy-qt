@@ -183,9 +183,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
                     }
 
                     paramSpecList.append(spec);
-                }
-
-                if (param.startsWith(QLatin1String("status-"))) {
+                } else if (param.startsWith(QLatin1String("status-"))) {
                     QString statusName = param.right(param.length() - 7);
 
                     if (values.length() == 0) {
