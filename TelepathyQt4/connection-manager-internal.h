@@ -133,10 +133,12 @@ public:
     }
 
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *);
+    void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    void gotPresenceProperties(QDBusPendingCallWatcher *watcher);
 
 private:
     static void introspectMain(ProtocolWrapper *self);
+    void introspectPresence();
 
     void fillRCCs();
     bool receiveProperties(const QVariantMap &props);

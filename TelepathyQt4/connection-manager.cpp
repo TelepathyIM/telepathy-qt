@@ -174,19 +174,38 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
     if (self->receiveProperties(self->mImmutableProps)) {
         debug() << "Got everything we want from the immutable props for" <<
             self->info().name();
-        self->mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
+
+        if (self->hasInterface(TP_QT4_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
+            self->introspectPresence();
+        } else {
+            debug() << "Full functionality requires CM support for the Protocol.Presence interface";
+            self->mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
+        }
         return;
     }
 
     debug() << "Not enough immutable properties, calling Properties::GetAll(Protocol) for" <<
         self->info().name();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(
-                QLatin1String(TELEPATHY_INTERFACE_PROTOCOL)),
+            properties->GetAll(TP_QT4_IFACE_PROTOCOL),
             self);
     self->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+}
+
+void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
+{
+    Client::DBus::PropertiesInterface *properties = propertiesInterface();
+    Q_ASSERT(properties != 0);
+
+    debug() << "Calling Properties::GetAll(Protocol.Presence)";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            properties->GetAll(TP_QT4_IFACE_PROTOCOL_INTERFACE_PRESENCE),
+            this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotPresenceProperties(QDBusPendingCallWatcher*)));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
@@ -203,7 +222,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         foreach (QString unqualified, unqualifiedProps.keys()) {
             qualifiedProps.insert(
                     QString(QLatin1String("%1.%2")).
-                        arg(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL)).
+                        arg(TP_QT4_IFACE_PROTOCOL).
                         arg(unqualified),
                     unqualifiedProps.value(unqualified));
         }
@@ -213,6 +232,34 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
             "Properties.GetAll(Protocol) failed: " <<
             reply.error().name() << ": " << reply.error().message();
         warning() << "  Full functionality requires CM support for the Protocol interface";
+    }
+
+    if (hasInterface(TP_QT4_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
+        introspectPresence();
+    } else {
+        debug() << "Full functionality requires CM support for the Protocol.Presence interface";
+        mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
+
+    watcher->deleteLater();
+}
+
+void ConnectionManager::Private::ProtocolWrapper::gotPresenceProperties(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties.GetAll(Protocol.Presence)";
+
+        mInfo.setAllowedPresenceStatuses(qdbus_cast<SimpleStatusSpecMap>(
+                props[QLatin1String("Statuses")]));
+    } else {
+        warning().nospace() <<
+            "Properties.GetAll(Protocol.Presence) failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+        warning() << "  Full functionality requires CM support for the Protocol.Presence interface";
     }
 
     mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
