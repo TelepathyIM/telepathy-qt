@@ -336,7 +336,8 @@ bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVaria
         props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".EnglishName")) &&
         props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Icon"));
 
-    setInterfaces(qdbus_cast<QStringList>(props[QLatin1String(".Interfaces")]));
+    setInterfaces(qdbus_cast<QStringList>(
+                props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Interfaces")]));
     mReadinessHelper->setInterfaces(interfaces());
 
     ParamSpecList parameters = qdbus_cast<ParamSpecList>(
