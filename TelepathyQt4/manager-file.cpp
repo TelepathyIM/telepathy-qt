@@ -454,7 +454,7 @@ ParamSpecList ManagerFile::parameters(const QString &protocol) const
  */
 QString ManagerFile::vcardField(const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].vcardField;
+    return mPriv->protocolsMap.value(protocol).vcardField;
 }
 
 /**
@@ -471,7 +471,7 @@ QString ManagerFile::vcardField(const QString &protocol) const
  */
 QString ManagerFile::englishName(const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].englishName;
+    return mPriv->protocolsMap.value(protocol).englishName;
 }
 
 /**
@@ -485,7 +485,7 @@ QString ManagerFile::englishName(const QString &protocol) const
  */
 QString ManagerFile::iconName(const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].iconName;
+    return mPriv->protocolsMap.value(protocol).iconName;
 }
 
 /**
@@ -500,7 +500,7 @@ QString ManagerFile::iconName(const QString &protocol) const
 RequestableChannelClassList ManagerFile::requestableChannelClasses(
         const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].rccs;
+    return mPriv->protocolsMap.value(protocol).rccs;
 }
 
 /**
@@ -514,7 +514,7 @@ RequestableChannelClassList ManagerFile::requestableChannelClasses(
  */
 PresenceSpecList ManagerFile::allowedPresenceStatuses(const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].statuses;
+    return mPriv->protocolsMap.value(protocol).statuses;
 }
 
 /**
@@ -527,7 +527,7 @@ PresenceSpecList ManagerFile::allowedPresenceStatuses(const QString &protocol) c
  */
 AvatarSpec ManagerFile::avatarRequirements(const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].avatarRequirements;
+    return mPriv->protocolsMap.value(protocol).avatarRequirements;
 }
 
 QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
