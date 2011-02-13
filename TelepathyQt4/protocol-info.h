@@ -67,6 +67,8 @@ public:
 
     QString iconName() const;
 
+    SimpleStatusSpecMap allowedPresenceStatuses() const;
+
 private:
     friend class ConnectionManager;
 
@@ -77,6 +79,7 @@ private:
     void setEnglishName(const QString &englishName);
     void setIconName(const QString &iconName);
     void setRequestableChannelClasses(const RequestableChannelClassList &caps);
+    void setAllowedPresenceStatuses(const SimpleStatusSpecMap &statuses);
 
     struct Private;
     friend struct Private;

@@ -46,6 +46,7 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private : public QSharedData
     QString vcardField;
     QString englishName;
     QString iconName;
+    SimpleStatusSpecMap statuses;
 };
 
 /**
@@ -259,6 +260,15 @@ QString ProtocolInfo::iconName() const
     return mPriv->iconName;
 }
 
+SimpleStatusSpecMap ProtocolInfo::allowedPresenceStatuses() const
+{
+    if (!isValid()) {
+        return SimpleStatusSpecMap();
+    }
+
+    return mPriv->statuses;
+}
+
 void ProtocolInfo::addParameter(const ParamSpec &spec)
 {
     if (!isValid()) {
@@ -317,6 +327,15 @@ void ProtocolInfo::setRequestableChannelClasses(
     }
 
     mPriv->caps.updateRequestableChannelClasses(caps);
+}
+
+void ProtocolInfo::setAllowedPresenceStatuses(const SimpleStatusSpecMap &statuses)
+{
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
+    mPriv->statuses = statuses;
 }
 
 } // Tp
