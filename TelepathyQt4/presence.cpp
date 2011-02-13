@@ -21,6 +21,8 @@
 
 #include <TelepathyQt4/Presence>
 
+#include "TelepathyQt4/debug-internal.h"
+
 namespace Tp
 {
 
@@ -167,12 +169,12 @@ SimplePresence Presence::barePresence() const
 struct TELEPATHY_QT4_NO_EXPORT PresenceSpec::Private : public QSharedData
 {
     Private(const QString &status, const SimpleStatusSpec &spec)
-        : presence(Presence((ConnectionPresenceType) spec.type, status, QString())),
+        : status(status),
           spec(spec)
     {
     }
 
-    Presence presence;
+    QString status;
     SimpleStatusSpec spec;
 };
 
@@ -200,13 +202,17 @@ PresenceSpec &PresenceSpec::operator=(const PresenceSpec &other)
     return *this;
 }
 
-Presence PresenceSpec::presence() const
+Presence PresenceSpec::presence(const QString &statusMessage) const
 {
     if (!isValid()) {
         return Presence();
     }
 
-    return mPriv->presence;
+    if (!canHaveMessage() && !statusMessage.isEmpty()) {
+        warning() << "Passing a status message to PresenceSpec with canHaveMessage() being false";
+    }
+
+    return Presence((ConnectionPresenceType) mPriv->spec.type, mPriv->status, statusMessage);
 }
 
 bool PresenceSpec::maySetOnSelf() const

@@ -80,7 +80,7 @@ public:
 
     PresenceSpec &operator=(const PresenceSpec &other);
 
-    Presence presence() const;
+    Presence presence(const QString &statusMessage = QString()) const;
     bool maySetOnSelf() const;
     bool canHaveMessage() const;
 
