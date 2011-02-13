@@ -54,6 +54,7 @@ public:
     QString iconName(const QString &protocol) const;
     RequestableChannelClassList requestableChannelClasses(
             const QString &protocol) const;
+    SimpleStatusSpecMap allowedPresenceStatuses(const QString &protocol) const;
 
     static QVariant::Type variantTypeFromDBusSignature(
             const QString &dbusSignature);

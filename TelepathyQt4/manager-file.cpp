@@ -54,8 +54,9 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
     struct ProtocolInfo
     {
         ProtocolInfo() {}
-        ProtocolInfo(const ParamSpecList &params)
-            : params(params)
+        ProtocolInfo(const ParamSpecList &params, const SimpleStatusSpecMap &statuses)
+            : params(params),
+              statuses(statuses)
         {
         }
 
@@ -64,6 +65,7 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
         QString englishName;
         QString iconName;
         RequestableChannelClassList rccs;
+        SimpleStatusSpecMap statuses;
     };
 
     QString cmName;
@@ -140,39 +142,81 @@ bool ManagerFile::Private::parse(const QString &fileName)
             keyFile.setGroup(group);
 
             ParamSpecList paramSpecList;
+            SimpleStatusSpecMap statuses;
             QString param;
             QStringList params = keyFile.keys();
             foreach (param, params) {
                 ParamSpec spec;
+                SimpleStatusSpec status;
                 spec.flags = 0;
+
+                QStringList values = keyFile.value(param).split(QLatin1String(" "));
+
                 if (param.startsWith(QLatin1String("param-"))) {
                     spec.name = param.right(param.length() - 6);
+
+                    if (values.length() == 0) {
+                        warning() << "param" << spec.name << "set but no signature defined";
+                        return false;
+                    }
 
                     if (spec.name.endsWith(QLatin1String("password"))) {
                         spec.flags |= ConnMgrParamFlagSecret;
                     }
 
-                    QStringList values = keyFile.value(param).split(QLatin1String(" "));
-
                     spec.signature = values[0];
+
                     if (values.contains(QLatin1String("secret"))) {
                         spec.flags |= ConnMgrParamFlagSecret;
                     }
+
                     if (values.contains(QLatin1String("dbus-property"))) {
                         spec.flags |= ConnMgrParamFlagDBusProperty;
                     }
+
                     if (values.contains(QLatin1String("required"))) {
                         spec.flags |= ConnMgrParamFlagRequired;
                     }
+
                     if (values.contains(QLatin1String("register"))) {
                         spec.flags |= ConnMgrParamFlagRegister;
                     }
 
                     paramSpecList.append(spec);
                 }
+
+                if (param.startsWith(QLatin1String("status-"))) {
+                    QString statusName = param.right(param.length() - 7);
+
+                    if (values.length() == 0) {
+                        warning() << "status" << statusName << "set but no type defined";
+                        return false;
+                    }
+
+                    bool ok;
+                    status.type = values[0].toUInt(&ok);
+                    if (!ok) {
+                        warning() << "status" << statusName << "set but type is not an uint";
+                        return false;
+                    }
+
+                    if (values.contains(QLatin1String("settable"))) {
+                        status.maySetOnSelf = true;
+                    } else {
+                        status.maySetOnSelf = false;
+                    }
+
+                    if (values.contains(QLatin1String("message"))) {
+                        status.canHaveMessage = true;
+                    } else {
+                        status.canHaveMessage = false;
+                    }
+
+                    statuses.insert(statusName, status);
+                }
             }
 
-            protocolsMap.insert(protocol, ProtocolInfo(paramSpecList));
+            protocolsMap.insert(protocol, ProtocolInfo(paramSpecList, statuses));
 
             /* now that we have all param-* created, let's find their default values */
             foreach (param, params) {
@@ -442,6 +486,20 @@ RequestableChannelClassList ManagerFile::requestableChannelClasses(
         const QString &protocol) const
 {
     return mPriv->protocolsMap[protocol].rccs;
+}
+
+/**
+ * Return SimpleStatusSpecMap instance representing the possible presence statuses
+ * from a connection to the given \a protocol.
+ *
+ * \param protocol Name of the protocol to look for.
+ * \return A SimpleStatusSpecMap instance representing the possible presence statuses
+ *         from a connection to the given \a protocol or a default constructed
+ *         SimpleStatusSpecMap instance if the protocol is not defined.
+ */
+SimpleStatusSpecMap ManagerFile::allowedPresenceStatuses(const QString &protocol) const
+{
+    return mPriv->protocolsMap[protocol].statuses;
 }
 
 QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
