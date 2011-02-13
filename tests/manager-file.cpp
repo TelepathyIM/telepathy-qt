@@ -137,6 +137,20 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(spec.maySetOnSelf(), true);
     QCOMPARE(spec.canHaveMessage(), true);
 
+    AvatarSpec avatarReqs = managerFile.avatarRequirements(QLatin1String("foo"));
+    QStringList supportedMimeTypes = avatarReqs.supportedMimeTypes();
+    supportedMimeTypes.sort();
+    QCOMPARE(supportedMimeTypes,
+             QStringList() << QLatin1String("image/gif") << QLatin1String("image/jpeg") <<
+                              QLatin1String("image/png"));
+    QCOMPARE(avatarReqs.minimumHeight(), (uint) 32);
+    QCOMPARE(avatarReqs.maximumHeight(), (uint) 96);
+    QCOMPARE(avatarReqs.recommendedHeight(), (uint) 64);
+    QCOMPARE(avatarReqs.minimumWidth(), (uint) 32);
+    QCOMPARE(avatarReqs.maximumWidth(), (uint) 96);
+    QCOMPARE(avatarReqs.recommendedWidth(), (uint) 64);
+    QCOMPARE(avatarReqs.maximumBytes(), (uint) 8192);
+
     params = managerFile.parameters(QLatin1String("somewhat-pathological"));
     QCOMPARE(containsParam(params, "foo"), true);
     QCOMPARE(containsParam(params, "semicolons"), true);

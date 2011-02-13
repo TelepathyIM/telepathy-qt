@@ -8,9 +8,19 @@ param-server-list = as
 default-account = foo@default
 default-port = 1234
 default-server-list = foo;bar;
+
 status-offline=1
 status-dnd=6 settable
 status-available=2 settable message
+
+SupportedAvatarMIMETypes=image/png;image/jpeg;image/gif;
+MinimumAvatarHeight=32
+RecommendedAvatarHeight=64
+MaximumAvatarHeight=96
+MinimumAvatarWidth=32
+RecommendedAvatarWidth=64
+MaximumAvatarWidth=96
+MaximumAvatarBytes=8192
 
 VCardField=x-foo
 EnglishName=Foo
