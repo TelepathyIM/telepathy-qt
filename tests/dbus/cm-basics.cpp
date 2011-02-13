@@ -171,6 +171,20 @@ void TestCmBasics::testBasics()
     QCOMPARE(spec.maySetOnSelf(), true);
     QCOMPARE(spec.canHaveMessage(), true);
 
+    AvatarSpec avatarReqs = info.avatarRequirements();
+    QStringList supportedMimeTypes = avatarReqs.supportedMimeTypes();
+    supportedMimeTypes.sort();
+    QCOMPARE(supportedMimeTypes,
+             QStringList() << QLatin1String("image/gif") << QLatin1String("image/jpeg") <<
+                              QLatin1String("image/png"));
+    QCOMPARE(avatarReqs.minimumHeight(), (uint) 32);
+    QCOMPARE(avatarReqs.maximumHeight(), (uint) 96);
+    QCOMPARE(avatarReqs.recommendedHeight(), (uint) 64);
+    QCOMPARE(avatarReqs.minimumWidth(), (uint) 32);
+    QCOMPARE(avatarReqs.maximumWidth(), (uint) 96);
+    QCOMPARE(avatarReqs.recommendedWidth(), (uint) 64);
+    QCOMPARE(avatarReqs.maximumBytes(), (uint) 37748736);
+
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
 
