@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/AvatarSpec>
 #include <TelepathyQt4/Global>
 #include <TelepathyQt4/PresenceSpec>
 #include <TelepathyQt4/ProtocolParameter>
@@ -70,6 +71,8 @@ public:
 
     PresenceSpecList allowedPresenceStatuses() const;
 
+    AvatarSpec avatarRequirements() const;
+
 private:
     friend class ConnectionManager;
 
@@ -81,6 +84,7 @@ private:
     void setIconName(const QString &iconName);
     void setRequestableChannelClasses(const RequestableChannelClassList &caps);
     void setAllowedPresenceStatuses(const PresenceSpecList &statuses);
+    void setAvatarRequirements(const AvatarSpec &avatarRequirements);
 
     struct Private;
     friend struct Private;

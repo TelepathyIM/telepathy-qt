@@ -47,6 +47,7 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private : public QSharedData
     QString englishName;
     QString iconName;
     PresenceSpecList statuses;
+    AvatarSpec avatarRequirements;
 };
 
 /**
@@ -276,6 +277,21 @@ PresenceSpecList ProtocolInfo::allowedPresenceStatuses() const
     return mPriv->statuses;
 }
 
+/**
+ * Return the avatar requirements (size limits, supported MIME types, etc)
+ * from a connection to this protocol.
+ *
+ * \return The avatar requirements from a connection to this protocol.
+ */
+AvatarSpec ProtocolInfo::avatarRequirements() const
+{
+    if (!isValid()) {
+        return AvatarSpec();
+    }
+
+    return mPriv->avatarRequirements;
+}
+
 void ProtocolInfo::addParameter(const ParamSpec &spec)
 {
     if (!isValid()) {
@@ -343,6 +359,15 @@ void ProtocolInfo::setAllowedPresenceStatuses(const PresenceSpecList &statuses)
     }
 
     mPriv->statuses = statuses;
+}
+
+void ProtocolInfo::setAvatarRequirements(const AvatarSpec &avatarRequirements)
+{
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
+    mPriv->avatarRequirements = avatarRequirements;
 }
 
 } // Tp
