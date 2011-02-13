@@ -252,7 +252,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotPresenceProperties(
 
     if (!reply.isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol.Presence)";
-
+        props = reply.value();
         mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<SimpleStatusSpecMap>(
                 props[QLatin1String("Statuses")])));
     } else {
