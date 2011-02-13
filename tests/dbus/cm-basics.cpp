@@ -152,26 +152,24 @@ void TestCmBasics::testBasics()
     QCOMPARE(info.englishName(), QLatin1String("Echo II example"));
     QCOMPARE(info.iconName(), QLatin1String("im-icq"));
 
-    // FIXME: For some reason the Interfaces immutable property in the Protocol is always empty,
-    // hence Protocol.Presence is never introspected. Uncomment code bellow when this is fixed.
-    //PresenceSpecList statuses = info.allowedPresenceStatuses();
-    //QCOMPARE(statuses.size(), 3);
-    //PresenceSpec spec;
-    //spec = getPresenceSpec(statuses, QLatin1String("offline"));
-    //QCOMPARE(spec.isValid(), true);
-    //QVERIFY(spec.presence().type() == ConnectionPresenceTypeOffline);
-    //QCOMPARE(spec.maySetOnSelf(), false);
-    //QCOMPARE(spec.canHaveMessage(), false);
-    //spec = getPresenceSpec(statuses, QLatin1String("dnd"));
-    //QCOMPARE(spec.isValid(), true);
-    //QVERIFY(spec.presence().type() == ConnectionPresenceTypeBusy);
-    //QCOMPARE(spec.maySetOnSelf(), true);
-    //QCOMPARE(spec.canHaveMessage(), false);
-    //spec = getPresenceSpec(statuses, QLatin1String("available"));
-    //QCOMPARE(spec.isValid(), true);
-    //QVERIFY(spec.presence().type() == ConnectionPresenceTypeAvailable);
-    //QCOMPARE(spec.maySetOnSelf(), true);
-    //QCOMPARE(spec.canHaveMessage(), true);
+    PresenceSpecList statuses = info.allowedPresenceStatuses();
+    QCOMPARE(statuses.size(), 3);
+    PresenceSpec spec;
+    spec = getPresenceSpec(statuses, QLatin1String("offline"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeOffline);
+    QCOMPARE(spec.maySetOnSelf(), false);
+    QCOMPARE(spec.canHaveMessage(), false);
+    spec = getPresenceSpec(statuses, QLatin1String("dnd"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeBusy);
+    QCOMPARE(spec.maySetOnSelf(), true);
+    QCOMPARE(spec.canHaveMessage(), false);
+    spec = getPresenceSpec(statuses, QLatin1String("available"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeAvailable);
+    QCOMPARE(spec.maySetOnSelf(), true);
+    QCOMPARE(spec.canHaveMessage(), true);
 
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
