@@ -136,6 +136,23 @@ void TestCmBasics::testBasics()
     QCOMPARE(info.englishName(), QLatin1String("Echo II example"));
     QCOMPARE(info.iconName(), QLatin1String("im-icq"));
 
+    // FIXME: For some reason the Interfaces immutable property in the Protocol is always empty,
+    // hence Protocol.Presence is never introspected. Uncomment code bellow when this is fixed.
+    //SimpleStatusSpecMap statuses = info.allowedPresenceStatuses();
+    //QCOMPARE(statuses.size(), 3);
+    //QVERIFY(statuses.contains(QLatin1String("offline")));
+    //QVERIFY(statuses[QLatin1String("offline")].type == ConnectionPresenceTypeOffline);
+    //QVERIFY(statuses[QLatin1String("offline")].maySetOnSelf == false);
+    //QVERIFY(statuses[QLatin1String("offline")].canHaveMessage == false);
+    //QVERIFY(statuses.contains(QLatin1String("dnd")));
+    //QVERIFY(statuses[QLatin1String("dnd")].type == ConnectionPresenceTypeBusy);
+    //QVERIFY(statuses[QLatin1String("dnd")].maySetOnSelf == true);
+    //QVERIFY(statuses[QLatin1String("dnd")].canHaveMessage == false);
+    //QVERIFY(statuses.contains(QLatin1String("available")));
+    //QVERIFY(statuses[QLatin1String("available")].type == ConnectionPresenceTypeAvailable);
+    //QVERIFY(statuses[QLatin1String("available")].maySetOnSelf == true);
+    //QVERIFY(statuses[QLatin1String("available")].canHaveMessage == true);
+
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
 
