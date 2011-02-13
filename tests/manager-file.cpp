@@ -1,6 +1,7 @@
 #include <QtTest/QtTest>
 
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Debug>
 #include <TelepathyQt4/ManagerFile>
 
 using namespace Tp;
@@ -12,9 +13,19 @@ class TestManagerFile : public QObject
 {
     Q_OBJECT
 
+public:
+    TestManagerFile(QObject *parent = 0);
+
 private Q_SLOTS:
     void testManagerFile();
 };
+
+TestManagerFile::TestManagerFile(QObject *parent)
+    : QObject(parent)
+{
+    Tp::enableDebug(true);
+    Tp::enableWarnings(true);
+}
 
 void TestManagerFile::testManagerFile()
 {
@@ -73,6 +84,21 @@ void TestManagerFile::testManagerFile()
     param = getParam(params, QLatin1String("encryption-key"));
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagSecret);
     QCOMPARE(param->signature, QString(QLatin1String("s")));
+
+    SimpleStatusSpecMap statuses = managerFile.allowedPresenceStatuses(QLatin1String("foo"));
+    QCOMPARE(statuses.size(), 3);
+    QVERIFY(statuses.contains(QLatin1String("offline")));
+    QVERIFY(statuses[QLatin1String("offline")].type == ConnectionPresenceTypeOffline);
+    QVERIFY(statuses[QLatin1String("offline")].maySetOnSelf == false);
+    QVERIFY(statuses[QLatin1String("offline")].canHaveMessage == false);
+    QVERIFY(statuses.contains(QLatin1String("dnd")));
+    QVERIFY(statuses[QLatin1String("dnd")].type == ConnectionPresenceTypeBusy);
+    QVERIFY(statuses[QLatin1String("dnd")].maySetOnSelf == true);
+    QVERIFY(statuses[QLatin1String("dnd")].canHaveMessage == false);
+    QVERIFY(statuses.contains(QLatin1String("available")));
+    QVERIFY(statuses[QLatin1String("available")].type == ConnectionPresenceTypeAvailable);
+    QVERIFY(statuses[QLatin1String("available")].maySetOnSelf == true);
+    QVERIFY(statuses[QLatin1String("available")].canHaveMessage == true);
 
     params = managerFile.parameters(QLatin1String("somewhat-pathological"));
     QCOMPARE(containsParam(params, "foo"), true);

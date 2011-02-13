@@ -8,6 +8,9 @@ param-server-list = as
 default-account = foo@default
 default-port = 1234
 default-server-list = foo;bar;
+status-offline=1
+status-dnd=6 settable
+status-available=2 settable message
 
 VCardField=x-foo
 EnglishName=Foo
