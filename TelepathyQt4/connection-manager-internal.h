@@ -134,10 +134,12 @@ public:
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    void gotAvatarsProperties(QDBusPendingCallWatcher *watcher);
     void gotPresenceProperties(QDBusPendingCallWatcher *watcher);
 
 private:
     static void introspectMain(ProtocolWrapper *self);
+    void introspectAvatars();
     void introspectPresence();
 
     void continueIntrospection();
