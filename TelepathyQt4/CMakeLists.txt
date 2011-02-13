@@ -125,7 +125,7 @@ set(telepathy_qt4_HEADERS
     AndFilter
     and-filter.h
     AvatarData
-    avatar-data.h
+    avatar.h
     CapabilitiesBase
     capabilities-base.h
     Channel
