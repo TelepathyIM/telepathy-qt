@@ -10,6 +10,7 @@
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
+#include <TelepathyQt4/PresenceSpec>
 
 #include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
@@ -19,6 +20,21 @@
 #include <tests/lib/test.h>
 
 using namespace Tp;
+
+namespace
+{
+
+PresenceSpec getPresenceSpec(const PresenceSpecList &specs, const QString &status)
+{
+    Q_FOREACH (const PresenceSpec &spec, specs) {
+        if (spec.presence().status() == status) {
+            return spec;
+        }
+    }
+    return PresenceSpec();
+}
+
+}
 
 class TestCmBasics : public Test
 {
@@ -138,20 +154,24 @@ void TestCmBasics::testBasics()
 
     // FIXME: For some reason the Interfaces immutable property in the Protocol is always empty,
     // hence Protocol.Presence is never introspected. Uncomment code bellow when this is fixed.
-    //SimpleStatusSpecMap statuses = info.allowedPresenceStatuses();
+    //PresenceSpecList statuses = info.allowedPresenceStatuses();
     //QCOMPARE(statuses.size(), 3);
-    //QVERIFY(statuses.contains(QLatin1String("offline")));
-    //QVERIFY(statuses[QLatin1String("offline")].type == ConnectionPresenceTypeOffline);
-    //QVERIFY(statuses[QLatin1String("offline")].maySetOnSelf == false);
-    //QVERIFY(statuses[QLatin1String("offline")].canHaveMessage == false);
-    //QVERIFY(statuses.contains(QLatin1String("dnd")));
-    //QVERIFY(statuses[QLatin1String("dnd")].type == ConnectionPresenceTypeBusy);
-    //QVERIFY(statuses[QLatin1String("dnd")].maySetOnSelf == true);
-    //QVERIFY(statuses[QLatin1String("dnd")].canHaveMessage == false);
-    //QVERIFY(statuses.contains(QLatin1String("available")));
-    //QVERIFY(statuses[QLatin1String("available")].type == ConnectionPresenceTypeAvailable);
-    //QVERIFY(statuses[QLatin1String("available")].maySetOnSelf == true);
-    //QVERIFY(statuses[QLatin1String("available")].canHaveMessage == true);
+    //PresenceSpec spec;
+    //spec = getPresenceSpec(statuses, QLatin1String("offline"));
+    //QCOMPARE(spec.isValid(), true);
+    //QVERIFY(spec.presence().type() == ConnectionPresenceTypeOffline);
+    //QCOMPARE(spec.maySetOnSelf(), false);
+    //QCOMPARE(spec.canHaveMessage(), false);
+    //spec = getPresenceSpec(statuses, QLatin1String("dnd"));
+    //QCOMPARE(spec.isValid(), true);
+    //QVERIFY(spec.presence().type() == ConnectionPresenceTypeBusy);
+    //QCOMPARE(spec.maySetOnSelf(), true);
+    //QCOMPARE(spec.canHaveMessage(), false);
+    //spec = getPresenceSpec(statuses, QLatin1String("available"));
+    //QCOMPARE(spec.isValid(), true);
+    //QVERIFY(spec.presence().type() == ConnectionPresenceTypeAvailable);
+    //QCOMPARE(spec.maySetOnSelf(), true);
+    //QCOMPARE(spec.canHaveMessage(), true);
 
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }

@@ -46,7 +46,7 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private : public QSharedData
     QString vcardField;
     QString englishName;
     QString iconName;
-    SimpleStatusSpecMap statuses;
+    PresenceSpecList statuses;
 };
 
 /**
@@ -260,10 +260,17 @@ QString ProtocolInfo::iconName() const
     return mPriv->iconName;
 }
 
-SimpleStatusSpecMap ProtocolInfo::allowedPresenceStatuses() const
+/**
+ * Return a list of PresenceSpec representing the possible presence statuses
+ * from a connection to this protocol.
+ *
+ * \return A list of PresenceSpec representing the possible presence statuses
+ *         from a connection to this protocol.
+ */
+PresenceSpecList ProtocolInfo::allowedPresenceStatuses() const
 {
     if (!isValid()) {
-        return SimpleStatusSpecMap();
+        return PresenceSpecList();
     }
 
     return mPriv->statuses;
@@ -329,7 +336,7 @@ void ProtocolInfo::setRequestableChannelClasses(
     mPriv->caps.updateRequestableChannelClasses(caps);
 }
 
-void ProtocolInfo::setAllowedPresenceStatuses(const SimpleStatusSpecMap &statuses)
+void ProtocolInfo::setAllowedPresenceStatuses(const PresenceSpecList &statuses)
 {
     if (!isValid()) {
         mPriv = new Private;

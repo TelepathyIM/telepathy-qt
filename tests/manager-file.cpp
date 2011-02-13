@@ -6,8 +6,40 @@
 
 using namespace Tp;
 
-bool containsParam(const ParamSpecList &params, const char *name);
-const ParamSpec *getParam(const ParamSpecList &params, const QString &name);
+namespace
+{
+
+bool containsParam(const ParamSpecList &params, const char *name)
+{
+    Q_FOREACH (const ParamSpec &param, params) {
+        if (param.name == QLatin1String(name)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const ParamSpec *getParam(const ParamSpecList &params, const QString &name)
+{
+    Q_FOREACH (const ParamSpec &param, params) {
+        if (param.name == name) {
+            return &param;
+        }
+    }
+    return NULL;
+}
+
+PresenceSpec getPresenceSpec(const PresenceSpecList &specs, const QString &status)
+{
+    foreach (const PresenceSpec &spec, specs) {
+        if (spec.presence().status() == status) {
+            return spec;
+        }
+    }
+    return PresenceSpec();
+}
+
+}
 
 class TestManagerFile : public QObject
 {
@@ -85,20 +117,25 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagSecret);
     QCOMPARE(param->signature, QString(QLatin1String("s")));
 
-    SimpleStatusSpecMap statuses = managerFile.allowedPresenceStatuses(QLatin1String("foo"));
+    PresenceSpecList statuses = managerFile.allowedPresenceStatuses(QLatin1String("foo"));
     QCOMPARE(statuses.size(), 3);
-    QVERIFY(statuses.contains(QLatin1String("offline")));
-    QVERIFY(statuses[QLatin1String("offline")].type == ConnectionPresenceTypeOffline);
-    QVERIFY(statuses[QLatin1String("offline")].maySetOnSelf == false);
-    QVERIFY(statuses[QLatin1String("offline")].canHaveMessage == false);
-    QVERIFY(statuses.contains(QLatin1String("dnd")));
-    QVERIFY(statuses[QLatin1String("dnd")].type == ConnectionPresenceTypeBusy);
-    QVERIFY(statuses[QLatin1String("dnd")].maySetOnSelf == true);
-    QVERIFY(statuses[QLatin1String("dnd")].canHaveMessage == false);
-    QVERIFY(statuses.contains(QLatin1String("available")));
-    QVERIFY(statuses[QLatin1String("available")].type == ConnectionPresenceTypeAvailable);
-    QVERIFY(statuses[QLatin1String("available")].maySetOnSelf == true);
-    QVERIFY(statuses[QLatin1String("available")].canHaveMessage == true);
+
+    PresenceSpec spec;
+    spec = getPresenceSpec(statuses, QLatin1String("offline"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeOffline);
+    QCOMPARE(spec.maySetOnSelf(), false);
+    QCOMPARE(spec.canHaveMessage(), false);
+    spec = getPresenceSpec(statuses, QLatin1String("dnd"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeBusy);
+    QCOMPARE(spec.maySetOnSelf(), true);
+    QCOMPARE(spec.canHaveMessage(), false);
+    spec = getPresenceSpec(statuses, QLatin1String("available"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeAvailable);
+    QCOMPARE(spec.maySetOnSelf(), true);
+    QCOMPARE(spec.canHaveMessage(), true);
 
     params = managerFile.parameters(QLatin1String("somewhat-pathological"));
     QCOMPARE(containsParam(params, "foo"), true);
@@ -144,26 +181,6 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(param->signature, QString(QLatin1String("as")));
     QCOMPARE(param->defaultValue.variant().toStringList(),
              QStringList() << QString());
-}
-
-bool containsParam(const ParamSpecList &params, const char *name)
-{
-    Q_FOREACH (const ParamSpec &param, params) {
-        if (param.name == QLatin1String(name)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-const ParamSpec *getParam(const ParamSpecList &params, const QString &name)
-{
-    Q_FOREACH (const ParamSpec &param, params) {
-        if (param.name == name) {
-            return &param;
-        }
-    }
-    return NULL;
 }
 
 QTEST_MAIN(TestManagerFile)

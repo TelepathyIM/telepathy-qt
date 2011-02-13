@@ -27,6 +27,7 @@
 #endif
 
 #include <TelepathyQt4/Global>
+#include <TelepathyQt4/PresenceSpec>
 #include <TelepathyQt4/ProtocolParameter>
 #include <TelepathyQt4/Types>
 
@@ -67,7 +68,7 @@ public:
 
     QString iconName() const;
 
-    SimpleStatusSpecMap allowedPresenceStatuses() const;
+    PresenceSpecList allowedPresenceStatuses() const;
 
 private:
     friend class ConnectionManager;
@@ -79,7 +80,7 @@ private:
     void setEnglishName(const QString &englishName);
     void setIconName(const QString &iconName);
     void setRequestableChannelClasses(const RequestableChannelClassList &caps);
-    void setAllowedPresenceStatuses(const SimpleStatusSpecMap &statuses);
+    void setAllowedPresenceStatuses(const PresenceSpecList &statuses);
 
     struct Private;
     friend struct Private;

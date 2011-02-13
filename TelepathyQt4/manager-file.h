@@ -27,6 +27,7 @@
 #endif
 
 #include <TelepathyQt4/Types>
+#include <TelepathyQt4/PresenceSpec>
 
 #include <QMetaType>
 #include <QVariant>
@@ -54,7 +55,7 @@ public:
     QString iconName(const QString &protocol) const;
     RequestableChannelClassList requestableChannelClasses(
             const QString &protocol) const;
-    SimpleStatusSpecMap allowedPresenceStatuses(const QString &protocol) const;
+    PresenceSpecList allowedPresenceStatuses(const QString &protocol) const;
 
     static QVariant::Type variantTypeFromDBusSignature(
             const QString &dbusSignature);

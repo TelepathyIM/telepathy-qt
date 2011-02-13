@@ -54,7 +54,7 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
     struct ProtocolInfo
     {
         ProtocolInfo() {}
-        ProtocolInfo(const ParamSpecList &params, const SimpleStatusSpecMap &statuses)
+        ProtocolInfo(const ParamSpecList &params, const PresenceSpecList &statuses)
             : params(params),
               statuses(statuses)
         {
@@ -65,7 +65,7 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
         QString englishName;
         QString iconName;
         RequestableChannelClassList rccs;
-        SimpleStatusSpecMap statuses;
+        PresenceSpecList statuses;
     };
 
     QString cmName;
@@ -142,7 +142,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
             keyFile.setGroup(group);
 
             ParamSpecList paramSpecList;
-            SimpleStatusSpecMap statuses;
+            PresenceSpecList statuses;
             QString param;
             QStringList params = keyFile.keys();
             foreach (param, params) {
@@ -212,7 +212,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
                         status.canHaveMessage = false;
                     }
 
-                    statuses.insert(statusName, status);
+                    statuses.append(PresenceSpec(statusName, status));
                 }
             }
 
@@ -489,15 +489,15 @@ RequestableChannelClassList ManagerFile::requestableChannelClasses(
 }
 
 /**
- * Return SimpleStatusSpecMap instance representing the possible presence statuses
+ * Return a list of PresenceSpec representing the possible presence statuses
  * from a connection to the given \a protocol.
  *
  * \param protocol Name of the protocol to look for.
- * \return A SimpleStatusSpecMap instance representing the possible presence statuses
- *         from a connection to the given \a protocol or a default constructed
- *         SimpleStatusSpecMap instance if the protocol is not defined.
+ * \return A list of PresenceSpec representing the possible presence statuses
+ *         from a connection to the given \a protocol or an empty list
+ *         if the protocol is not defined.
  */
-SimpleStatusSpecMap ManagerFile::allowedPresenceStatuses(const QString &protocol) const
+PresenceSpecList ManagerFile::allowedPresenceStatuses(const QString &protocol) const
 {
     return mPriv->protocolsMap[protocol].statuses;
 }
