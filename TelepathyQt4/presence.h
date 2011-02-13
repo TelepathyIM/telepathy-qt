@@ -82,7 +82,7 @@ public:
 
     Presence presence(const QString &statusMessage = QString()) const;
     bool maySetOnSelf() const;
-    bool canHaveMessage() const;
+    bool canHaveStatusMessage() const;
 
     SimpleStatusSpec bareSpec() const;
 

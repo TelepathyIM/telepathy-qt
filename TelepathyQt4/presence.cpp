@@ -208,8 +208,9 @@ Presence PresenceSpec::presence(const QString &statusMessage) const
         return Presence();
     }
 
-    if (!canHaveMessage() && !statusMessage.isEmpty()) {
-        warning() << "Passing a status message to PresenceSpec with canHaveMessage() being false";
+    if (!canHaveStatusMessage() && !statusMessage.isEmpty()) {
+        warning() << "Passing a status message to PresenceSpec with "
+            "canHaveStatusMessage() being false";
     }
 
     return Presence((ConnectionPresenceType) mPriv->spec.type, mPriv->status, statusMessage);
@@ -224,7 +225,7 @@ bool PresenceSpec::maySetOnSelf() const
     return mPriv->spec.maySetOnSelf;
 }
 
-bool PresenceSpec::canHaveMessage() const
+bool PresenceSpec::canHaveStatusMessage() const
 {
     if (!isValid()) {
         return false;

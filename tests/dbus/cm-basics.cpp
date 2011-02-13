@@ -159,17 +159,17 @@ void TestCmBasics::testBasics()
     QCOMPARE(spec.isValid(), true);
     QVERIFY(spec.presence().type() == ConnectionPresenceTypeOffline);
     QCOMPARE(spec.maySetOnSelf(), false);
-    QCOMPARE(spec.canHaveMessage(), false);
+    QCOMPARE(spec.canHaveStatusMessage(), false);
     spec = getPresenceSpec(statuses, QLatin1String("dnd"));
     QCOMPARE(spec.isValid(), true);
     QVERIFY(spec.presence().type() == ConnectionPresenceTypeBusy);
     QCOMPARE(spec.maySetOnSelf(), true);
-    QCOMPARE(spec.canHaveMessage(), false);
+    QCOMPARE(spec.canHaveStatusMessage(), false);
     spec = getPresenceSpec(statuses, QLatin1String("available"));
     QCOMPARE(spec.isValid(), true);
     QVERIFY(spec.presence().type() == ConnectionPresenceTypeAvailable);
     QCOMPARE(spec.maySetOnSelf(), true);
-    QCOMPARE(spec.canHaveMessage(), true);
+    QCOMPARE(spec.canHaveStatusMessage(), true);
 
     AvatarSpec avatarReqs = info.avatarRequirements();
     QStringList supportedMimeTypes = avatarReqs.supportedMimeTypes();
