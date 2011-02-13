@@ -66,6 +66,7 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
         QString iconName;
         RequestableChannelClassList rccs;
         PresenceSpecList statuses;
+        AvatarSpec avatarRequirements;
     };
 
     QString cmName;
@@ -259,6 +260,22 @@ bool ManagerFile::Private::parse(const QString &fileName)
             if (info.iconName.isEmpty()) {
                 info.iconName = QString(QLatin1String("im-%1")).arg(protocol);
             }
+
+            QStringList supportedMimeTypes = keyFile.valueAsStringList(
+                    QLatin1String("SupportedAvatarMIMETypes"));
+            uint minHeight = keyFile.value(QLatin1String("MinimumAvatarHeight")).toUInt();
+            uint maxHeight = keyFile.value(QLatin1String("MaximumAvatarHeight")).toUInt();
+            uint recommendedHeight = keyFile.value(
+                    QLatin1String("RecommendedAvatarHeight")).toUInt();
+            uint minWidth = keyFile.value(QLatin1String("MinimumAvatarWidth")).toUInt();
+            uint maxWidth = keyFile.value(QLatin1String("MaximumAvatarWidth")).toUInt();
+            uint recommendedWidth = keyFile.value(
+                    QLatin1String("RecommendedAvatarWidth")).toUInt();
+            uint maxBytes = keyFile.value(QLatin1String("MaximumAvatarBytes")).toUInt();
+            info.avatarRequirements = AvatarSpec(supportedMimeTypes,
+                    minHeight, maxHeight, recommendedHeight,
+                    minWidth, maxWidth, recommendedWidth,
+                    maxBytes);
 
             QStringList rccGroups = keyFile.valueAsStringList(
                     QLatin1String("RequestableChannelClasses"));
@@ -498,6 +515,19 @@ RequestableChannelClassList ManagerFile::requestableChannelClasses(
 PresenceSpecList ManagerFile::allowedPresenceStatuses(const QString &protocol) const
 {
     return mPriv->protocolsMap[protocol].statuses;
+}
+
+/**
+ * Return the avatar requirements (size limits, supported MIME types, etc)
+ * from a connection to the given \a protocol.
+ *
+ * \param protocol Name of the protocol to look for.
+ * \return The avatar requirements from a connection to the given \a protocol or an invalid
+ *         AvatarSpec if the protocol is not defined.
+ */
+AvatarSpec ManagerFile::avatarRequirements(const QString &protocol) const
+{
+    return mPriv->protocolsMap[protocol].avatarRequirements;
 }
 
 QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
