@@ -15,12 +15,15 @@
 #include "conn.h"
 #include "im-manager.h"
 
+#include <string.h>
+
 G_DEFINE_TYPE (ExampleEcho2Protocol,
     example_echo_2_protocol,
     TP_TYPE_BASE_PROTOCOL)
 
 const gchar * const protocol_interfaces[] = {
   TP_IFACE_PROTOCOL_INTERFACE_AVATARS,
+  TP_IFACE_PROTOCOL_INTERFACE_PRESENCE,
   NULL };
 
 const gchar * const supported_avatar_mime_types[] = {
@@ -29,10 +32,68 @@ const gchar * const supported_avatar_mime_types[] = {
   "image/gif",
   NULL };
 
+struct _ExampleEcho2ProtocolPrivate
+{
+  TpPresenceStatusSpec *statuses;
+};
+
+static TpPresenceStatusSpec
+new_status_spec (const gchar *name,
+                 TpConnectionPresenceType type,
+                 gboolean settable,
+                 gboolean can_have_message)
+{
+  TpPresenceStatusSpec ret;
+  TpPresenceStatusOptionalArgumentSpec *args = g_new0 (TpPresenceStatusOptionalArgumentSpec, 2);
+
+  memset (&ret, 0, sizeof (TpPresenceStatusSpec));
+  ret.name = g_strdup (name);
+  ret.presence_type = type;
+  ret.self = settable;
+  if (can_have_message)
+    {
+      args[0].name = g_strdup ("message");
+    }
+  ret.optional_arguments = args;
+
+  return ret;
+}
+
 static void
 example_echo_2_protocol_init (
     ExampleEcho2Protocol *self)
 {
+  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, EXAMPLE_TYPE_ECHO_2_PROTOCOL,
+      ExampleEcho2ProtocolPrivate);
+
+  self->priv->statuses = g_new0 (TpPresenceStatusSpec, 4);
+  self->priv->statuses[0] = new_status_spec ("offline", TP_CONNECTION_PRESENCE_TYPE_OFFLINE,
+      FALSE, FALSE);
+  self->priv->statuses[1] = new_status_spec ("dnd", TP_CONNECTION_PRESENCE_TYPE_BUSY,
+      TRUE, FALSE);
+  self->priv->statuses[2] = new_status_spec ("available", TP_CONNECTION_PRESENCE_TYPE_AVAILABLE,
+      TRUE, TRUE);
+}
+
+static void
+example_echo_2_protocol_finalize (GObject *object)
+{
+  ExampleEcho2Protocol *self = EXAMPLE_ECHO_2_PROTOCOL (object);
+  TpPresenceStatusSpec *status = self->priv->statuses;
+
+  for (; status->name != NULL; status++) {
+      TpPresenceStatusOptionalArgumentSpec *arg =
+        (TpPresenceStatusOptionalArgumentSpec *) status->optional_arguments;
+
+      for (; arg->name != NULL; arg++) {
+          g_free ((gpointer) arg->name);
+      }
+
+      g_free ((gpointer) status->name);
+      g_free ((gpointer) status->optional_arguments);
+  }
+
+  ((GObjectClass *) example_echo_2_protocol_parent_class)->finalize (object);
 }
 
 static const TpCMParamSpec example_echo_2_example_params[] = {
@@ -198,12 +259,25 @@ get_avatar_details (TpBaseProtocol *self,
     *max_bytes = 37748736;
 }
 
+static const TpPresenceStatusSpec *
+get_statuses (TpBaseProtocol *object)
+{
+  ExampleEcho2Protocol *self = EXAMPLE_ECHO_2_PROTOCOL (object);
+
+  return self->priv->statuses;
+}
+
 static void
 example_echo_2_protocol_class_init (
     ExampleEcho2ProtocolClass *klass)
 {
+  GObjectClass *object_class = (GObjectClass *) klass;
   TpBaseProtocolClass *base_class =
       (TpBaseProtocolClass *) klass;
+
+  g_type_class_add_private (klass, sizeof (ExampleEcho2ProtocolPrivate));
+
+  object_class->finalize = example_echo_2_protocol_finalize;
 
   base_class->get_parameters = get_parameters;
   base_class->new_connection = new_connection;
@@ -213,4 +287,5 @@ example_echo_2_protocol_class_init (
   base_class->get_interfaces = get_interfaces;
   base_class->get_connection_details = get_connection_details;
   base_class->get_avatar_details = get_avatar_details;
+  base_class->get_statuses = get_statuses;
 }
