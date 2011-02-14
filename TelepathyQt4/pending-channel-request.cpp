@@ -93,7 +93,7 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
     QDBusPendingCallWatcher *watcher = 0;
     if (create) {
         if (!hints.isEmpty()) {
-            if (true /* account->supportsRequestHints() */) {
+            if (account->supportsRequestHints()) {
                 watcher = new QDBusPendingCallWatcher(
                     channelDispatcherInterface->CreateChannelWithHints(
                         QDBusObjectPath(account->objectPath()),
@@ -116,7 +116,7 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
         }
     } else {
         if (!hints.isEmpty()) {
-            if (true /* account->supportsRequestHints() */) {
+            if (account->supportsRequestHints()) {
                 watcher = new QDBusPendingCallWatcher(
                     channelDispatcherInterface->CreateChannelWithHints(
                         QDBusObjectPath(account->objectPath()),
