@@ -88,10 +88,7 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
         QString(QLatin1String("/%1")).arg(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER));
     channelDispatcherObjectPath.replace(QLatin1String("."), QLatin1String("/"));
     Client::ChannelDispatcherInterface *channelDispatcherInterface =
-        new Client::ChannelDispatcherInterface(mPriv->dbusConnection,
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
-                channelDispatcherObjectPath,
-                this);
+        account->dispatcherInterface();
 
     QDBusPendingCallWatcher *watcher = 0;
     if (create) {

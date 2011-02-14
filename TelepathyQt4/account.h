@@ -33,6 +33,7 @@
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ChannelFactory>
+#include <TelepathyQt4/ChannelDispatcherInterface>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
@@ -446,6 +447,8 @@ Q_SIGNALS:
     void connectionChanged(const Tp::ConnectionPtr &connection);
 
 protected:
+    friend class PendingChannelRequest; // to access dispatcherInterface()
+
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
@@ -454,6 +457,7 @@ protected:
             const Feature &coreFeature);
 
     Client::AccountInterface *baseInterface() const;
+    Client::ChannelDispatcherInterface *dispatcherInterface() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);

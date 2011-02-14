@@ -31,6 +31,7 @@
 
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelDispatcherInterface>
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingChannelRequest>
@@ -45,6 +46,7 @@
 
 #include <QQueue>
 #include <QRegExp>
+#include <QSharedPointer>
 #include <QTimer>
 
 #include <string.h>
@@ -137,6 +139,30 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     Presence requestedPresence;
     bool usingConnectionCaps;
     ConnectionCapabilities customCaps;
+
+    // The contexts should never be removed from the map, to guarantee O(1) CD introspections per bus
+    struct DispatcherContext;
+    static QMap<QString, QSharedPointer<DispatcherContext> > dispatcherContexts;
+    QSharedPointer<DispatcherContext> dispatcherContext;
+};
+
+struct Account::Private::DispatcherContext
+{
+    DispatcherContext(const QDBusConnection &bus)
+        : iface(new Client::ChannelDispatcherInterface(bus, TP_QT4_CHANNEL_DISPATCHER_BUS_NAME, TP_QT4_CHANNEL_DISPATCHER_OBJECT_PATH))
+    {
+    }
+
+    ~DispatcherContext()
+    {
+        delete iface;
+    }
+
+    Client::ChannelDispatcherInterface *iface;
+
+private:
+    DispatcherContext(const DispatcherContext &);
+    void operator=(const DispatcherContext &);
 };
 
 Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
@@ -157,7 +183,8 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       coreFinished(false),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified),
-      usingConnectionCaps(false)
+      usingConnectionCaps(false),
+      dispatcherContext(dispatcherContexts.value(parent->dbusConnection().name()))
 {
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
@@ -233,6 +260,11 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
     if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
         warning() << "  The D-Bus connection in the channel factory is not the proxy connection for"
             << parent->objectPath();
+    }
+
+    if (!dispatcherContext) {
+        dispatcherContext = QSharedPointer<DispatcherContext>(new DispatcherContext(parent->dbusConnection()));
+        dispatcherContexts.insert(parent->dbusConnection().name(), dispatcherContext);
     }
 
     init();
@@ -342,6 +374,8 @@ QString Account::Private::connectionObjectPath() const
 {
     return !connection.isNull() ? connection->objectPath() : QString();
 }
+
+QMap<QString, QSharedPointer<Account::Private::DispatcherContext> > Account::Private::dispatcherContexts;
 
 /**
  * \class Account
@@ -2676,6 +2710,22 @@ PendingChannelRequest *Account::ensureChannel(
 Client::AccountInterface *Account::baseInterface() const
 {
     return mPriv->baseInterface;
+}
+
+/**
+ * Return the Client::ChannelDispatcherInterface interface proxy object to use for requesting
+ * channels on this account.
+ *
+ * This method is protected since the convenience methods provided by this
+ * class should generally be used instead of calling D-Bus methods
+ * directly.
+ *
+ * \return A pointer to the existing Client::ChannelDispatcherInterface object for this
+ *         Account object.
+ */
+Client::ChannelDispatcherInterface *Account::dispatcherInterface() const
+{
+    return mPriv->dispatcherContext->iface;
 }
 
 /**** Private ****/
