@@ -17,6 +17,7 @@ set(telepathy_qt4_SRCS
     account-property-filter.cpp
     account-set.cpp
     account-set-internal.h
+    avatar.cpp
     capabilities-base.cpp
     channel.cpp
     channel-class-spec.cpp
@@ -125,7 +126,8 @@ set(telepathy_qt4_HEADERS
     AndFilter
     and-filter.h
     AvatarData
-    avatar-data.h
+    AvatarSpec
+    avatar.h
     CapabilitiesBase
     capabilities-base.h
     Channel
@@ -311,6 +313,7 @@ set(telepathy_qt4_HEADERS
     PendingVoid
     Presence
     presence.h
+    PresenceSpec
     Profile
     profile.h
     ProfileManager

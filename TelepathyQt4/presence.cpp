@@ -21,6 +21,8 @@
 
 #include <TelepathyQt4/Presence>
 
+#include "TelepathyQt4/debug-internal.h"
+
 namespace Tp
 {
 
@@ -162,6 +164,83 @@ SimplePresence Presence::barePresence() const
     }
 
     return mPriv->sp;
+}
+
+struct TELEPATHY_QT4_NO_EXPORT PresenceSpec::Private : public QSharedData
+{
+    Private(const QString &status, const SimpleStatusSpec &spec)
+        : status(status),
+          spec(spec)
+    {
+    }
+
+    QString status;
+    SimpleStatusSpec spec;
+};
+
+PresenceSpec::PresenceSpec()
+{
+}
+
+PresenceSpec::PresenceSpec(const QString &status, const SimpleStatusSpec &spec)
+    : mPriv(new Private(status, spec))
+{
+}
+
+PresenceSpec::PresenceSpec(const PresenceSpec &other)
+    : mPriv(other.mPriv)
+{
+}
+
+PresenceSpec::~PresenceSpec()
+{
+}
+
+PresenceSpec &PresenceSpec::operator=(const PresenceSpec &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+Presence PresenceSpec::presence(const QString &statusMessage) const
+{
+    if (!isValid()) {
+        return Presence();
+    }
+
+    if (!canHaveStatusMessage() && !statusMessage.isEmpty()) {
+        warning() << "Passing a status message to PresenceSpec with "
+            "canHaveStatusMessage() being false";
+    }
+
+    return Presence((ConnectionPresenceType) mPriv->spec.type, mPriv->status, statusMessage);
+}
+
+bool PresenceSpec::maySetOnSelf() const
+{
+    if (!isValid()) {
+        return false;
+    }
+
+    return mPriv->spec.maySetOnSelf;
+}
+
+bool PresenceSpec::canHaveStatusMessage() const
+{
+    if (!isValid()) {
+        return false;
+    }
+
+    return mPriv->spec.canHaveMessage;
+}
+
+SimpleStatusSpec PresenceSpec::bareSpec() const
+{
+    if (!isValid()) {
+        return SimpleStatusSpec();
+    }
+
+    return mPriv->spec;
 }
 
 } // Tp

@@ -46,6 +46,8 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private : public QSharedData
     QString vcardField;
     QString englishName;
     QString iconName;
+    PresenceSpecList statuses;
+    AvatarSpec avatarRequirements;
 };
 
 /**
@@ -63,8 +65,8 @@ ProtocolInfo::ProtocolInfo()
 /**
  * Construct a new ProtocolInfo object.
  *
- * \param cmName Name of the connection manager.
- * \param name Name of the protocol.
+ * \param cmName Connection manager name.
+ * \param name Protocol name.
  */
 ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
     : mPriv(new Private(cmName, name))
@@ -90,9 +92,9 @@ ProtocolInfo &ProtocolInfo::operator=(const ProtocolInfo &other)
 }
 
 /**
- * Return the short name of the connection manager (e.g. "gabble").
+ * Return the short name of the connection manager (e.g. "gabble") for this protocol.
  *
- * \return The name of the connection manager.
+ * \return The name of the connection manager for this protocol.
  */
 QString ProtocolInfo::cmName() const
 {
@@ -104,13 +106,13 @@ QString ProtocolInfo::cmName() const
 }
 
 /**
- * Return the string identifying the protocol as described in the Telepathy
+ * Return the string identifying this protocol as described in the Telepathy
  * D-Bus API Specification (e.g. "jabber").
  *
  * This identifier is not intended to be displayed to users directly; user
  * interfaces are responsible for mapping them to localized strings.
  *
- * \return A string identifying the protocol.
+ * \return A string identifying this protocol.
  */
 QString ProtocolInfo::name() const
 {
@@ -122,12 +124,12 @@ QString ProtocolInfo::name() const
 }
 
 /**
- * Return all supported parameters. The parameters' names
+ * Return all supported parameters for this protocol. The parameters' names
  * may either be the well-known strings specified by the Telepathy D-Bus
  * API Specification (e.g. "account" and "password"), or
  * implementation-specific strings.
  *
- * \return A list of parameters.
+ * \return A list of parameters for this protocol.
  */
 ProtocolParameterList ProtocolInfo::parameters() const
 {
@@ -222,16 +224,16 @@ QString ProtocolInfo::vcardField() const
 }
 
 /**
- * Return the English-language name of the protocol, such as "AIM" or "Yahoo!".
+ * Return the English-language name of this protocol, such as "AIM" or "Yahoo!".
  *
- * The name can be used as a fallback if an application doesn't have a localized name for the
+ * The name can be used as a fallback if an application doesn't have a localized name for this
  * protocol.
  *
- * If the manager file or the CM service doesn't specify the english name, it is inferred from the
+ * If the manager file or the CM service doesn't specify the english name, it is inferred from this
  * protocol name, such that for example "google-talk" becomes "Google Talk", but "local-xmpp"
  * becomes "Local Xmpp".
  *
- * \return An English-language name for the protocol.
+ * \return An English-language name for this protocol.
  */
 QString ProtocolInfo::englishName() const
 {
@@ -243,12 +245,12 @@ QString ProtocolInfo::englishName() const
 }
 
 /**
- * Return the name of an icon for the protocol in the system's icon theme, such as "im-msn".
+ * Return the name of an icon for this protocol in the system's icon theme, such as "im-msn".
  *
  * If the manager file or the CM service doesn't specify the icon name, "im-<protocolname>" is
  * assumed.
  *
- * \return The likely name of an icon for the given \a protocol.
+ * \return The likely name of an icon for this protocol.
  */
 QString ProtocolInfo::iconName() const
 {
@@ -257,6 +259,37 @@ QString ProtocolInfo::iconName() const
     }
 
     return mPriv->iconName;
+}
+
+/**
+ * Return a list of PresenceSpec representing the possible presence statuses
+ * from a connection to this protocol.
+ *
+ * \return A list of PresenceSpec representing the possible presence statuses
+ *         from a connection to this protocol.
+ */
+PresenceSpecList ProtocolInfo::allowedPresenceStatuses() const
+{
+    if (!isValid()) {
+        return PresenceSpecList();
+    }
+
+    return mPriv->statuses;
+}
+
+/**
+ * Return the avatar requirements (size limits, supported MIME types, etc)
+ * from a connection to this protocol.
+ *
+ * \return The avatar requirements from a connection to this protocol.
+ */
+AvatarSpec ProtocolInfo::avatarRequirements() const
+{
+    if (!isValid()) {
+        return AvatarSpec();
+    }
+
+    return mPriv->avatarRequirements;
 }
 
 void ProtocolInfo::addParameter(const ParamSpec &spec)
@@ -317,6 +350,24 @@ void ProtocolInfo::setRequestableChannelClasses(
     }
 
     mPriv->caps.updateRequestableChannelClasses(caps);
+}
+
+void ProtocolInfo::setAllowedPresenceStatuses(const PresenceSpecList &statuses)
+{
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
+    mPriv->statuses = statuses;
+}
+
+void ProtocolInfo::setAvatarRequirements(const AvatarSpec &avatarRequirements)
+{
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
+    mPriv->avatarRequirements = avatarRequirements;
 }
 
 } // Tp

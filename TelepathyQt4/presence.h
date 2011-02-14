@@ -68,8 +68,53 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
+class TELEPATHY_QT4_EXPORT PresenceSpec
+{
+public:
+    PresenceSpec();
+    PresenceSpec(const QString &status, const SimpleStatusSpec &spec);
+    PresenceSpec(const PresenceSpec &other);
+    ~PresenceSpec();
+
+    bool isValid() const { return mPriv.constData() != 0; }
+
+    PresenceSpec &operator=(const PresenceSpec &other);
+
+    Presence presence(const QString &statusMessage = QString()) const;
+    bool maySetOnSelf() const;
+    bool canHaveStatusMessage() const;
+
+    SimpleStatusSpec bareSpec() const;
+
+private:
+    struct Private;
+    friend struct Private;
+    QSharedDataPointer<Private> mPriv;
+};
+
+class TELEPATHY_QT4_EXPORT PresenceSpecList : public QList<PresenceSpec>
+{
+public:
+    PresenceSpecList() { }
+    PresenceSpecList(const SimpleStatusSpecMap &specMap)
+    {
+        SimpleStatusSpecMap::const_iterator i = specMap.constBegin();
+        SimpleStatusSpecMap::const_iterator end = specMap.end();
+        for (; i != end; ++i) {
+            QString status = i.key();
+            SimpleStatusSpec spec = i.value();
+            append(PresenceSpec(status, spec));
+        }
+    }
+    PresenceSpecList(const QList<PresenceSpec> &other)
+        : QList<PresenceSpec>(other)
+    {
+    }
+};
+
 } // Tp
 
 Q_DECLARE_METATYPE(Tp::Presence);
+Q_DECLARE_METATYPE(Tp::PresenceSpec);
 
 #endif

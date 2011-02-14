@@ -1,20 +1,63 @@
 #include <QtTest/QtTest>
 
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Debug>
 #include <TelepathyQt4/ManagerFile>
 
 using namespace Tp;
 
-bool containsParam(const ParamSpecList &params, const char *name);
-const ParamSpec *getParam(const ParamSpecList &params, const QString &name);
+namespace
+{
+
+bool containsParam(const ParamSpecList &params, const char *name)
+{
+    Q_FOREACH (const ParamSpec &param, params) {
+        if (param.name == QLatin1String(name)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const ParamSpec *getParam(const ParamSpecList &params, const QString &name)
+{
+    Q_FOREACH (const ParamSpec &param, params) {
+        if (param.name == name) {
+            return &param;
+        }
+    }
+    return NULL;
+}
+
+PresenceSpec getPresenceSpec(const PresenceSpecList &specs, const QString &status)
+{
+    foreach (const PresenceSpec &spec, specs) {
+        if (spec.presence().status() == status) {
+            return spec;
+        }
+    }
+    return PresenceSpec();
+}
+
+}
 
 class TestManagerFile : public QObject
 {
     Q_OBJECT
 
+public:
+    TestManagerFile(QObject *parent = 0);
+
 private Q_SLOTS:
     void testManagerFile();
 };
+
+TestManagerFile::TestManagerFile(QObject *parent)
+    : QObject(parent)
+{
+    Tp::enableDebug(true);
+    Tp::enableWarnings(true);
+}
 
 void TestManagerFile::testManagerFile()
 {
@@ -74,6 +117,40 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagSecret);
     QCOMPARE(param->signature, QString(QLatin1String("s")));
 
+    PresenceSpecList statuses = managerFile.allowedPresenceStatuses(QLatin1String("foo"));
+    QCOMPARE(statuses.size(), 3);
+
+    PresenceSpec spec;
+    spec = getPresenceSpec(statuses, QLatin1String("offline"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeOffline);
+    QCOMPARE(spec.maySetOnSelf(), false);
+    QCOMPARE(spec.canHaveStatusMessage(), false);
+    spec = getPresenceSpec(statuses, QLatin1String("dnd"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeBusy);
+    QCOMPARE(spec.maySetOnSelf(), true);
+    QCOMPARE(spec.canHaveStatusMessage(), false);
+    spec = getPresenceSpec(statuses, QLatin1String("available"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeAvailable);
+    QCOMPARE(spec.maySetOnSelf(), true);
+    QCOMPARE(spec.canHaveStatusMessage(), true);
+
+    AvatarSpec avatarReqs = managerFile.avatarRequirements(QLatin1String("foo"));
+    QStringList supportedMimeTypes = avatarReqs.supportedMimeTypes();
+    supportedMimeTypes.sort();
+    QCOMPARE(supportedMimeTypes,
+             QStringList() << QLatin1String("image/gif") << QLatin1String("image/jpeg") <<
+                              QLatin1String("image/png"));
+    QCOMPARE(avatarReqs.minimumHeight(), (uint) 32);
+    QCOMPARE(avatarReqs.maximumHeight(), (uint) 96);
+    QCOMPARE(avatarReqs.recommendedHeight(), (uint) 64);
+    QCOMPARE(avatarReqs.minimumWidth(), (uint) 32);
+    QCOMPARE(avatarReqs.maximumWidth(), (uint) 96);
+    QCOMPARE(avatarReqs.recommendedWidth(), (uint) 64);
+    QCOMPARE(avatarReqs.maximumBytes(), (uint) 8192);
+
     params = managerFile.parameters(QLatin1String("somewhat-pathological"));
     QCOMPARE(containsParam(params, "foo"), true);
     QCOMPARE(containsParam(params, "semicolons"), true);
@@ -118,26 +195,6 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(param->signature, QString(QLatin1String("as")));
     QCOMPARE(param->defaultValue.variant().toStringList(),
              QStringList() << QString());
-}
-
-bool containsParam(const ParamSpecList &params, const char *name)
-{
-    Q_FOREACH (const ParamSpec &param, params) {
-        if (param.name == QLatin1String(name)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-const ParamSpec *getParam(const ParamSpecList &params, const QString &name)
-{
-    Q_FOREACH (const ParamSpec &param, params) {
-        if (param.name == name) {
-            return &param;
-        }
-    }
-    return NULL;
 }
 
 QTEST_MAIN(TestManagerFile)

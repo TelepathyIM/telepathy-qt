@@ -15,14 +15,87 @@
 #include "conn.h"
 #include "im-manager.h"
 
+#include <string.h>
+
 G_DEFINE_TYPE (ExampleEcho2Protocol,
     example_echo_2_protocol,
     TP_TYPE_BASE_PROTOCOL)
+
+const gchar * const protocol_interfaces[] = {
+  TP_IFACE_PROTOCOL_INTERFACE_AVATARS,
+  TP_IFACE_PROTOCOL_INTERFACE_PRESENCE,
+  NULL };
+
+const gchar * const supported_avatar_mime_types[] = {
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  NULL };
+
+struct _ExampleEcho2ProtocolPrivate
+{
+  TpPresenceStatusSpec *statuses;
+};
+
+static TpPresenceStatusSpec
+new_status_spec (const gchar *name,
+                 TpConnectionPresenceType type,
+                 gboolean settable,
+                 gboolean can_have_message)
+{
+  TpPresenceStatusSpec ret;
+  TpPresenceStatusOptionalArgumentSpec *args = g_new0 (TpPresenceStatusOptionalArgumentSpec, 2);
+
+  memset (&ret, 0, sizeof (TpPresenceStatusSpec));
+  ret.name = g_strdup (name);
+  ret.presence_type = type;
+  ret.self = settable;
+  if (can_have_message)
+    {
+      args[0].name = g_strdup ("message");
+      args[0].dtype = g_strdup ("s");
+    }
+  ret.optional_arguments = args;
+
+  return ret;
+}
 
 static void
 example_echo_2_protocol_init (
     ExampleEcho2Protocol *self)
 {
+  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, EXAMPLE_TYPE_ECHO_2_PROTOCOL,
+      ExampleEcho2ProtocolPrivate);
+
+  self->priv->statuses = g_new0 (TpPresenceStatusSpec, 4);
+  self->priv->statuses[0] = new_status_spec ("offline", TP_CONNECTION_PRESENCE_TYPE_OFFLINE,
+      FALSE, FALSE);
+  self->priv->statuses[1] = new_status_spec ("dnd", TP_CONNECTION_PRESENCE_TYPE_BUSY,
+      TRUE, FALSE);
+  self->priv->statuses[2] = new_status_spec ("available", TP_CONNECTION_PRESENCE_TYPE_AVAILABLE,
+      TRUE, TRUE);
+}
+
+static void
+example_echo_2_protocol_finalize (GObject *object)
+{
+  ExampleEcho2Protocol *self = EXAMPLE_ECHO_2_PROTOCOL (object);
+  TpPresenceStatusSpec *status = self->priv->statuses;
+
+  for (; status->name != NULL; status++) {
+      TpPresenceStatusOptionalArgumentSpec *arg =
+        (TpPresenceStatusOptionalArgumentSpec *) status->optional_arguments;
+
+      for (; arg->name != NULL; arg++) {
+          g_free ((gpointer) arg->name);
+          g_free ((gpointer) arg->dtype);
+      }
+
+      g_free ((gpointer) status->name);
+      g_free ((gpointer) status->optional_arguments);
+  }
+
+  ((GObjectClass *) example_echo_2_protocol_parent_class)->finalize (object);
 }
 
 static const TpCMParamSpec example_echo_2_example_params[] = {
@@ -49,7 +122,6 @@ new_connection (TpBaseProtocol *protocol,
 {
   ExampleEcho2Connection *conn;
   const gchar *account;
-  gchar *protocol_name;
 
   account = tp_asv_get_string (asv, "account");
 
@@ -60,16 +132,11 @@ new_connection (TpBaseProtocol *protocol,
       return NULL;
     }
 
-  g_object_get (protocol,
-      "name", &protocol_name,
-      NULL);
-
   conn = EXAMPLE_ECHO_2_CONNECTION (
       g_object_new (EXAMPLE_TYPE_ECHO_2_CONNECTION,
         "account", account,
-        "protocol", protocol_name,
+        "protocol", tp_base_protocol_get_name (protocol),
         NULL));
-  g_free (protocol_name);
 
   return (TpBaseConnection *) conn;
 }
@@ -113,7 +180,7 @@ identify_account (TpBaseProtocol *self G_GNUC_UNUSED,
 static GStrv
 get_interfaces (TpBaseProtocol *self)
 {
-  return NULL;
+  return g_strdupv ((GStrv) protocol_interfaces);
 }
 
 static void
@@ -159,11 +226,60 @@ get_connection_details (TpBaseProtocol *self G_GNUC_UNUSED,
 }
 
 static void
+get_avatar_details (TpBaseProtocol *self,
+    GStrv *supported_mime_types,
+    guint *min_height,
+    guint *min_width,
+    guint *recommended_height,
+    guint *recommended_width,
+    guint *max_height,
+    guint *max_width,
+    guint *max_bytes)
+{
+  if (supported_mime_types != NULL)
+    *supported_mime_types = g_strdupv ((GStrv) supported_avatar_mime_types);
+
+  if (min_height != NULL)
+    *min_height = 32;
+
+  if (min_width != NULL)
+    *min_width = 32;
+
+  if (recommended_height != NULL)
+    *recommended_height = 64;
+
+  if (recommended_width != NULL)
+    *recommended_width = 64;
+
+  if (max_height != NULL)
+    *max_height = 96;
+
+  if (max_width != NULL)
+    *max_width = 96;
+
+  if (max_bytes != NULL)
+    *max_bytes = 37748736;
+}
+
+static const TpPresenceStatusSpec *
+get_statuses (TpBaseProtocol *object)
+{
+  ExampleEcho2Protocol *self = EXAMPLE_ECHO_2_PROTOCOL (object);
+
+  return self->priv->statuses;
+}
+
+static void
 example_echo_2_protocol_class_init (
     ExampleEcho2ProtocolClass *klass)
 {
+  GObjectClass *object_class = (GObjectClass *) klass;
   TpBaseProtocolClass *base_class =
       (TpBaseProtocolClass *) klass;
+
+  g_type_class_add_private (klass, sizeof (ExampleEcho2ProtocolPrivate));
+
+  object_class->finalize = example_echo_2_protocol_finalize;
 
   base_class->get_parameters = get_parameters;
   base_class->new_connection = new_connection;
@@ -172,4 +288,6 @@ example_echo_2_protocol_class_init (
   base_class->identify_account = identify_account;
   base_class->get_interfaces = get_interfaces;
   base_class->get_connection_details = get_connection_details;
+  base_class->get_avatar_details = get_avatar_details;
+  base_class->get_statuses = get_statuses;
 }

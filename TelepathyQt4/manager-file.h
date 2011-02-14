@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/AvatarSpec>
+#include <TelepathyQt4/PresenceSpec>
 #include <TelepathyQt4/Types>
 
 #include <QMetaType>
@@ -54,6 +56,8 @@ public:
     QString iconName(const QString &protocol) const;
     RequestableChannelClassList requestableChannelClasses(
             const QString &protocol) const;
+    PresenceSpecList allowedPresenceStatuses(const QString &protocol) const;
+    AvatarSpec avatarRequirements(const QString &protocol) const;
 
     static QVariant::Type variantTypeFromDBusSignature(
             const QString &dbusSignature);

@@ -10,6 +10,7 @@
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
+#include <TelepathyQt4/PresenceSpec>
 
 #include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
@@ -19,6 +20,21 @@
 #include <tests/lib/test.h>
 
 using namespace Tp;
+
+namespace
+{
+
+PresenceSpec getPresenceSpec(const PresenceSpecList &specs, const QString &status)
+{
+    Q_FOREACH (const PresenceSpec &spec, specs) {
+        if (spec.presence().status() == status) {
+            return spec;
+        }
+    }
+    return PresenceSpec();
+}
+
+}
 
 class TestCmBasics : public Test
 {
@@ -135,6 +151,39 @@ void TestCmBasics::testBasics()
     QCOMPARE(info.vcardField(), QLatin1String("x-telepathy-example"));
     QCOMPARE(info.englishName(), QLatin1String("Echo II example"));
     QCOMPARE(info.iconName(), QLatin1String("im-icq"));
+
+    PresenceSpecList statuses = info.allowedPresenceStatuses();
+    QCOMPARE(statuses.size(), 3);
+    PresenceSpec spec;
+    spec = getPresenceSpec(statuses, QLatin1String("offline"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeOffline);
+    QCOMPARE(spec.maySetOnSelf(), false);
+    QCOMPARE(spec.canHaveStatusMessage(), false);
+    spec = getPresenceSpec(statuses, QLatin1String("dnd"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeBusy);
+    QCOMPARE(spec.maySetOnSelf(), true);
+    QCOMPARE(spec.canHaveStatusMessage(), false);
+    spec = getPresenceSpec(statuses, QLatin1String("available"));
+    QCOMPARE(spec.isValid(), true);
+    QVERIFY(spec.presence().type() == ConnectionPresenceTypeAvailable);
+    QCOMPARE(spec.maySetOnSelf(), true);
+    QCOMPARE(spec.canHaveStatusMessage(), true);
+
+    AvatarSpec avatarReqs = info.avatarRequirements();
+    QStringList supportedMimeTypes = avatarReqs.supportedMimeTypes();
+    supportedMimeTypes.sort();
+    QCOMPARE(supportedMimeTypes,
+             QStringList() << QLatin1String("image/gif") << QLatin1String("image/jpeg") <<
+                              QLatin1String("image/png"));
+    QCOMPARE(avatarReqs.minimumHeight(), (uint) 32);
+    QCOMPARE(avatarReqs.maximumHeight(), (uint) 96);
+    QCOMPARE(avatarReqs.recommendedHeight(), (uint) 64);
+    QCOMPARE(avatarReqs.minimumWidth(), (uint) 32);
+    QCOMPARE(avatarReqs.maximumWidth(), (uint) 96);
+    QCOMPARE(avatarReqs.recommendedWidth(), (uint) 64);
+    QCOMPARE(avatarReqs.maximumBytes(), (uint) 37748736);
 
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }

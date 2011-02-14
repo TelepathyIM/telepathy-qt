@@ -54,8 +54,9 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
     struct ProtocolInfo
     {
         ProtocolInfo() {}
-        ProtocolInfo(const ParamSpecList &params)
-            : params(params)
+        ProtocolInfo(const ParamSpecList &params, const PresenceSpecList &statuses)
+            : params(params),
+              statuses(statuses)
         {
         }
 
@@ -64,6 +65,8 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
         QString englishName;
         QString iconName;
         RequestableChannelClassList rccs;
+        PresenceSpecList statuses;
+        AvatarSpec avatarRequirements;
     };
 
     QString cmName;
@@ -140,39 +143,84 @@ bool ManagerFile::Private::parse(const QString &fileName)
             keyFile.setGroup(group);
 
             ParamSpecList paramSpecList;
+            SimpleStatusSpecMap statuses;
             QString param;
             QStringList params = keyFile.keys();
             foreach (param, params) {
                 ParamSpec spec;
+                SimpleStatusSpec status;
                 spec.flags = 0;
+
+                QStringList values = keyFile.value(param).split(QLatin1String(" "));
+
                 if (param.startsWith(QLatin1String("param-"))) {
                     spec.name = param.right(param.length() - 6);
+
+                    if (values.length() == 0) {
+                        warning() << "param" << spec.name << "set but no signature defined";
+                        return false;
+                    }
 
                     if (spec.name.endsWith(QLatin1String("password"))) {
                         spec.flags |= ConnMgrParamFlagSecret;
                     }
 
-                    QStringList values = keyFile.value(param).split(QLatin1String(" "));
-
                     spec.signature = values[0];
+
                     if (values.contains(QLatin1String("secret"))) {
                         spec.flags |= ConnMgrParamFlagSecret;
                     }
+
                     if (values.contains(QLatin1String("dbus-property"))) {
                         spec.flags |= ConnMgrParamFlagDBusProperty;
                     }
+
                     if (values.contains(QLatin1String("required"))) {
                         spec.flags |= ConnMgrParamFlagRequired;
                     }
+
                     if (values.contains(QLatin1String("register"))) {
                         spec.flags |= ConnMgrParamFlagRegister;
                     }
 
                     paramSpecList.append(spec);
+                } else if (param.startsWith(QLatin1String("status-"))) {
+                    QString statusName = param.right(param.length() - 7);
+
+                    if (values.length() == 0) {
+                        warning() << "status" << statusName << "set but no type defined";
+                        return false;
+                    }
+
+                    bool ok;
+                    status.type = values[0].toUInt(&ok);
+                    if (!ok) {
+                        warning() << "status" << statusName << "set but type is not an uint";
+                        return false;
+                    }
+
+                    if (values.contains(QLatin1String("settable"))) {
+                        status.maySetOnSelf = true;
+                    } else {
+                        status.maySetOnSelf = false;
+                    }
+
+                    if (values.contains(QLatin1String("message"))) {
+                        status.canHaveMessage = true;
+                    } else {
+                        status.canHaveMessage = false;
+                    }
+
+                    if (statuses.contains(statusName)) {
+                        warning() << "status" << statusName << "defined more than once, "
+                            "replacing it";
+                    }
+
+                    statuses.insert(statusName, status);
                 }
             }
 
-            protocolsMap.insert(protocol, ProtocolInfo(paramSpecList));
+            protocolsMap.insert(protocol, ProtocolInfo(paramSpecList, PresenceSpecList(statuses)));
 
             /* now that we have all param-* created, let's find their default values */
             foreach (param, params) {
@@ -217,6 +265,22 @@ bool ManagerFile::Private::parse(const QString &fileName)
             if (info.iconName.isEmpty()) {
                 info.iconName = QString(QLatin1String("im-%1")).arg(protocol);
             }
+
+            QStringList supportedMimeTypes = keyFile.valueAsStringList(
+                    QLatin1String("SupportedAvatarMIMETypes"));
+            uint minHeight = keyFile.value(QLatin1String("MinimumAvatarHeight")).toUInt();
+            uint maxHeight = keyFile.value(QLatin1String("MaximumAvatarHeight")).toUInt();
+            uint recommendedHeight = keyFile.value(
+                    QLatin1String("RecommendedAvatarHeight")).toUInt();
+            uint minWidth = keyFile.value(QLatin1String("MinimumAvatarWidth")).toUInt();
+            uint maxWidth = keyFile.value(QLatin1String("MaximumAvatarWidth")).toUInt();
+            uint recommendedWidth = keyFile.value(
+                    QLatin1String("RecommendedAvatarWidth")).toUInt();
+            uint maxBytes = keyFile.value(QLatin1String("MaximumAvatarBytes")).toUInt();
+            info.avatarRequirements = AvatarSpec(supportedMimeTypes,
+                    minHeight, maxHeight, recommendedHeight,
+                    minWidth, maxWidth, recommendedWidth,
+                    maxBytes);
 
             QStringList rccGroups = keyFile.valueAsStringList(
                     QLatin1String("RequestableChannelClasses"));
@@ -395,7 +459,7 @@ ParamSpecList ManagerFile::parameters(const QString &protocol) const
  */
 QString ManagerFile::vcardField(const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].vcardField;
+    return mPriv->protocolsMap.value(protocol).vcardField;
 }
 
 /**
@@ -412,7 +476,7 @@ QString ManagerFile::vcardField(const QString &protocol) const
  */
 QString ManagerFile::englishName(const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].englishName;
+    return mPriv->protocolsMap.value(protocol).englishName;
 }
 
 /**
@@ -426,7 +490,7 @@ QString ManagerFile::englishName(const QString &protocol) const
  */
 QString ManagerFile::iconName(const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].iconName;
+    return mPriv->protocolsMap.value(protocol).iconName;
 }
 
 /**
@@ -441,7 +505,34 @@ QString ManagerFile::iconName(const QString &protocol) const
 RequestableChannelClassList ManagerFile::requestableChannelClasses(
         const QString &protocol) const
 {
-    return mPriv->protocolsMap[protocol].rccs;
+    return mPriv->protocolsMap.value(protocol).rccs;
+}
+
+/**
+ * Return a list of PresenceSpec representing the possible presence statuses
+ * from a connection to the given \a protocol.
+ *
+ * \param protocol Name of the protocol to look for.
+ * \return A list of PresenceSpec representing the possible presence statuses
+ *         from a connection to the given \a protocol or an empty list
+ *         if the protocol is not defined.
+ */
+PresenceSpecList ManagerFile::allowedPresenceStatuses(const QString &protocol) const
+{
+    return mPriv->protocolsMap.value(protocol).statuses;
+}
+
+/**
+ * Return the avatar requirements (size limits, supported MIME types, etc)
+ * from a connection to the given \a protocol.
+ *
+ * \param protocol Name of the protocol to look for.
+ * \return The avatar requirements from a connection to the given \a protocol or an invalid
+ *         AvatarSpec if the protocol is not defined.
+ */
+AvatarSpec ManagerFile::avatarRequirements(const QString &protocol) const
+{
+    return mPriv->protocolsMap.value(protocol).avatarRequirements;
 }
 
 QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
