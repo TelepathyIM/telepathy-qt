@@ -1132,9 +1132,23 @@ void Profile::Presence::setIconName(const QString &iconName)
 }
 
 /**
- * Return the default text delivered with this presence.
+ * Return whether user-defined text-message can be attached to this presence.
  *
- * \return The default text delivered with this presence.
+ * \return \c true if user-defined text-message can be attached to this presence, \c false
+ *         otherwise.
+ */
+bool Profile::Presence::canHaveStatusMessage() const
+{
+    if (mPriv->message == QLatin1String("1") ||
+        mPriv->message == QLatin1String("true")) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * \deprecated Use canHaveStatusMessage() instead.
  */
 QString Profile::Presence::message() const
 {
