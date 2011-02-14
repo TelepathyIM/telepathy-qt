@@ -74,6 +74,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QString displayName READ displayName NOTIFY displayNameChanged)
     Q_PROPERTY(QString iconName READ iconName NOTIFY iconNameChanged)
     Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
+    Q_PROPERTY(AvatarSpec avatarRequirements READ avatarRequirements)
     Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
     Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
     Q_PROPERTY(ProtocolInfo protocolInfo READ protocolInfo)
@@ -142,6 +143,7 @@ public:
     QString nickname() const;
     PendingOperation *setNickname(const QString &value);
 
+    AvatarSpec avatarRequirements() const;
     // TODO: We probably want to expose the avatar file name once we have the avatar token and MC
     //       starts sharing the cache used by tp-qt4 and tp-glib and use Tp::AvatarData to represent
     //       it as used in Tp::Contact

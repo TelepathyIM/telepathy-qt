@@ -278,10 +278,10 @@ PresenceSpecList ProtocolInfo::allowedPresenceStatuses() const
 }
 
 /**
- * Return the avatar requirements (size limits, supported MIME types, etc)
- * from a connection to this protocol.
+ * Return the requirements (size limits, supported MIME types, etc)
+ * for avatars used on to this protocol.
  *
- * \return The avatar requirements from a connection to this protocol.
+ * \return The requirements for avatars used on this protocol.
  */
 AvatarSpec ProtocolInfo::avatarRequirements() const
 {
