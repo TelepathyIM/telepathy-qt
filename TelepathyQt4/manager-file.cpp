@@ -523,11 +523,11 @@ PresenceSpecList ManagerFile::allowedPresenceStatuses(const QString &protocol) c
 }
 
 /**
- * Return the avatar requirements (size limits, supported MIME types, etc)
- * from a connection to the given \a protocol.
+ * Return the requirements (size limits, supported MIME types, etc)
+ * for avatars used on the given \a protocol.
  *
  * \param protocol Name of the protocol to look for.
- * \return The avatar requirements from a connection to the given \a protocol or an invalid
+ * \return The requirements for avatars used on the given \a protocol or an invalid
  *         AvatarSpec if the protocol is not defined.
  */
 AvatarSpec ManagerFile::avatarRequirements(const QString &protocol) const
