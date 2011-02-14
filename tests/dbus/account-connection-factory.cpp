@@ -11,6 +11,7 @@
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/Debug>
+#include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Types>
 
@@ -103,6 +104,7 @@ private Q_SLOTS:
     void initTestCase();
     void init();
 
+    void testIntrospectSeveralAccounts();
     void testCreateAndIntrospect();
     void testDefaultFactoryInitialConn();
     void testReadifyingFactoryInitialConn();
@@ -224,6 +226,35 @@ void TestAccountConnectionFactory::init()
     QDBusConnection bus = QDBusConnection::sessionBus();
     QVERIFY(bus.registerService(mAccountBusName));
     QVERIFY(bus.registerObject(mAccountPath, mDispatcher));
+}
+
+// If this test fails, probably the code which tries to introspect the CD just once and then
+// continue with Account introspection has a bug
+void TestAccountConnectionFactory::testIntrospectSeveralAccounts()
+{
+    QList<PendingOperation *> ops;
+    for (int i = 0; i < 10; i++) {
+        AccountPtr acc = Account::create(mAccountBusName, mAccountPath);
+
+        // This'll get the CD introspected in the middle (but won't finish any of the pending ops,
+        // as they'll only finish in a singleShot in the next iter)
+        //
+        // One iteration to get readinessHelper to start introspecting,
+        // the second    to download the CD property
+        // the third     to get PendingVariant to actually emit the finished signal for it
+        if (i == 5) {
+            mLoop->processEvents();
+            mLoop->processEvents();
+            mLoop->processEvents();
+        }
+        
+        ops.push_back(acc->becomeReady());
+    }
+
+    QVERIFY(connect(new PendingComposite(ops, SharedPtr<RefCounted>()),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
 }
 
 // If this test fails, probably the mini-Account implements too little for the Account proxy to work
