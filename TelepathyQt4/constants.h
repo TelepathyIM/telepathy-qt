@@ -119,6 +119,18 @@
     (QLatin1String("/org/freedesktop/Telepathy/AccountManager"))
 
 /**
+ * The well-known bus name of the Channel Dispatcher.
+ */
+#define TP_QT4_CHANNEL_DISPATCHER_BUS_NAME \
+    (QLatin1String("org.freedesktop.Telepathy.ChannelDispatcher"))
+
+/**
+ * The object path of the Channel Dispatcherr object.
+ */
+#define TP_QT4_CHANNEL_DISPATCHER_OBJECT_PATH \
+    (QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher"))
+
+/**
  * The prefix for an Account's object path, to which the CM's name (e.g.
  * "gabble"), the protocol (e.g. "jabber") and an element
  * identifying the particular account should be appended.
