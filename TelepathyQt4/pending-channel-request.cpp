@@ -80,7 +80,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
  */
 PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
         const QVariantMap &requestedProperties, const QDateTime &userActionTime,
-        const QString &preferredHandler, bool create)
+        const QString &preferredHandler, bool create, const QVariantMap &hints)
     : PendingOperation(account),
       mPriv(new Private(account->dbusConnection()))
 {
@@ -92,27 +92,59 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
                 channelDispatcherObjectPath,
                 this);
-    QDBusPendingCallWatcher *watcher;
+
+    QDBusPendingCallWatcher *watcher = 0;
     if (create) {
-        watcher = new QDBusPendingCallWatcher(
-                channelDispatcherInterface->CreateChannel(
-                    QDBusObjectPath(account->objectPath()),
-                    requestedProperties,
-                    userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
-                    preferredHandler), this);
-    }
-    else {
-        watcher = new QDBusPendingCallWatcher(
-                channelDispatcherInterface->EnsureChannel(
-                    QDBusObjectPath(account->objectPath()),
-                    requestedProperties,
-                    userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
-                    preferredHandler), this);
+        if (!hints.isEmpty()) {
+            if (true /* account->supportsRequestHints() */) {
+                watcher = new QDBusPendingCallWatcher(
+                    channelDispatcherInterface->CreateChannelWithHints(
+                        QDBusObjectPath(account->objectPath()),
+                        requestedProperties,
+                        userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+                        preferredHandler, hints), this);
+            } else {
+                warning() << "Hints passed to channel request won't have an effect"
+                    << "because the Channel Dispatcher service in use is too old";
+            }
+        }
+        
+        if (!watcher) {
+            watcher = new QDBusPendingCallWatcher(
+                    channelDispatcherInterface->CreateChannel(
+                        QDBusObjectPath(account->objectPath()),
+                        requestedProperties,
+                        userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+                        preferredHandler), this);
+        }
+    } else {
+        if (!hints.isEmpty()) {
+            if (true /* account->supportsRequestHints() */) {
+                watcher = new QDBusPendingCallWatcher(
+                    channelDispatcherInterface->CreateChannelWithHints(
+                        QDBusObjectPath(account->objectPath()),
+                        requestedProperties,
+                        userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+                        preferredHandler, hints), this);
+            } else {
+                warning() << "Hints passed to channel request won't have an effect"
+                    << "because the Channel Dispatcher service in use is too old";
+            }
+        }
+
+        if (!watcher) {
+            watcher = new QDBusPendingCallWatcher(
+                    channelDispatcherInterface->EnsureChannel(
+                        QDBusObjectPath(account->objectPath()),
+                        requestedProperties,
+                        userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+                        preferredHandler), this);
+        }
     }
 
-    // FIXME: This is a Qt bug fixed upstream, should be in the next Qt release.
-    //        We should not need to check watcher->isFinished() here, remove the
-    //        check when a fixed Qt version is released.
+    // TODO: This is a Qt bug fixed upstream, should be in the next Qt release.
+    //       We should not need to check watcher->isFinished() here, remove the
+    //       check when we depend on the fixed Qt version.
     if (watcher->isFinished()) {
         onWatcherFinished(watcher);
     } else {

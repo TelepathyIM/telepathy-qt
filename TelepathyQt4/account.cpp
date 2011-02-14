@@ -1419,6 +1419,17 @@ PendingOperation *Account::remove()
 }
 
 /**
+ * Same as \c ensureTextChat(contactIdentifier, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureTextChat(
+        const QString &contactIdentifier,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureTextChat(contactIdentifier, userActionTime, preferredHandler, QVariantMap());
+}
+
+/**
  * Start a request to ensure that a text channel with the given
  * contact \a contactIdentifier exists, creating it if necessary.
  *
@@ -1432,6 +1443,7 @@ PendingOperation *Account::remove()
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1439,7 +1451,8 @@ PendingOperation *Account::remove()
 PendingChannelRequest *Account::ensureTextChat(
         const QString &contactIdentifier,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1449,7 +1462,18 @@ PendingChannelRequest *Account::ensureTextChat(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c ensureTextChat(contact, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureTextChat(
+        const ContactPtr &contact,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureTextChat(contact, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1466,6 +1490,7 @@ PendingChannelRequest *Account::ensureTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1473,7 +1498,8 @@ PendingChannelRequest *Account::ensureTextChat(
 PendingChannelRequest *Account::ensureTextChat(
         const ContactPtr &contact,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1483,7 +1509,18 @@ PendingChannelRequest *Account::ensureTextChat(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c ensureTextChatroom(roomName, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureTextChatroom(
+        const QString &roomName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureTextChatroom(roomName, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1500,6 +1537,7 @@ PendingChannelRequest *Account::ensureTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1507,7 +1545,8 @@ PendingChannelRequest *Account::ensureTextChat(
 PendingChannelRequest *Account::ensureTextChatroom(
         const QString &roomName,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1517,7 +1556,18 @@ PendingChannelRequest *Account::ensureTextChatroom(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    roomName);
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureStreamedMediaCall(
+        const QString &contactIdentifier,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1534,6 +1584,7 @@ PendingChannelRequest *Account::ensureTextChatroom(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1541,7 +1592,8 @@ PendingChannelRequest *Account::ensureTextChatroom(
 PendingChannelRequest *Account::ensureStreamedMediaCall(
         const QString &contactIdentifier,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1551,7 +1603,18 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c ensureStreamedMediaCall(contact, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureStreamedMediaCall(
+        const ContactPtr &contact,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaCall(contact, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1568,6 +1631,7 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1575,7 +1639,8 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
 PendingChannelRequest *Account::ensureStreamedMediaCall(
         const ContactPtr &contact,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1585,7 +1650,18 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
+        const QString &contactIdentifier,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1605,14 +1681,16 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const QString &contactIdentifier,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1624,7 +1702,18 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
+        const ContactPtr &contact,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1644,14 +1733,16 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const ContactPtr &contact,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1663,7 +1754,19 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
+        const QString &contactIdentifier,
+        bool withAudio,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1685,6 +1788,7 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1692,8 +1796,9 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
 PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         const QString &contactIdentifier,
         bool withAudio,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1711,7 +1816,19 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
     }
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
+        const ContactPtr &contact,
+        bool withAudio,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1733,6 +1850,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1740,8 +1858,9 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
 PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         const ContactPtr &contact,
         bool withAudio,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1759,7 +1878,19 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
     }
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
+}
+
+/**
+ * Same as \c createFileTransfer(contactIdentifier, properties, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createFileTransfer(
+        const QString &contactIdentifier,
+        const FileTransferChannelCreationProperties &properties,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createFileTransfer(contactIdentifier, properties, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1776,6 +1907,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1784,7 +1916,8 @@ PendingChannelRequest *Account::createFileTransfer(
         const QString &contactIdentifier,
         const FileTransferChannelCreationProperties &properties,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1820,7 +1953,19 @@ PendingChannelRequest *Account::createFileTransfer(
     }
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createFileTransfer(contact, properties, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createFileTransfer(
+        const ContactPtr &contact,
+        const FileTransferChannelCreationProperties &properties,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createFileTransfer(contact, properties, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1836,6 +1981,7 @@ PendingChannelRequest *Account::createFileTransfer(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1844,7 +1990,8 @@ PendingChannelRequest *Account::createFileTransfer(
         const ContactPtr &contact,
         const FileTransferChannelCreationProperties &properties,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1880,7 +2027,19 @@ PendingChannelRequest *Account::createFileTransfer(
     }
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createConferenceStreamedMediaCall(
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1898,6 +2057,7 @@ PendingChannelRequest *Account::createFileTransfer(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1906,7 +2066,8 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QList<ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     mPriv->addConferenceRequestParameters(
@@ -1915,7 +2076,19 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
             channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createConferenceStreamedMediaCall(channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createConferenceStreamedMediaCall(
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createConferenceStreamedMediaCall(channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1933,6 +2106,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1941,7 +2115,8 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QList<ChannelPtr> &channels,
         const QList<ContactPtr> &initialInviteeContacts,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
@@ -1952,7 +2127,19 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
             channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createConferenceTextChat(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createConferenceTextChat(
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createConferenceTextChat(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1970,6 +2157,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1978,7 +2166,8 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QList<ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     mPriv->addConferenceRequestParameters(
@@ -1987,7 +2176,19 @@ PendingChannelRequest *Account::createConferenceTextChat(
             channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createConferenceTextChat(channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createConferenceTextChat(
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createConferenceTextChat(channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -1995,7 +2196,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
  * channels \a channels.
  *
  * \param channels The conference channels.
- * \param initialInviteeContactsIdentifiers A list of additional contacts
+ * \param initialInviteeContacts list of additional contacts
  *                                          to be invited to this
  *                                          conference when it is created.
  * \param userActionTime The time at which user action occurred, or QDateTime()
@@ -2013,7 +2214,8 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QList<ChannelPtr> &channels,
         const QList<ContactPtr> &initialInviteeContacts,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     mPriv->addConferenceRequestParameters(
@@ -2022,7 +2224,20 @@ PendingChannelRequest *Account::createConferenceTextChat(
             channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createConferenceTextChatroom(roomName, channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createConferenceTextChatRoom(
+        const QString &roomName,
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createConferenceTextChatroom(roomName, channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -2041,16 +2256,18 @@ PendingChannelRequest *Account::createConferenceTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::createConferenceTextChatRoom(
+PendingChannelRequest *Account::createConferenceTextChatroom(
         const QString &roomName,
         const QList<ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -2061,7 +2278,20 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
             channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createConferenceTextChatroom(roomName, channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createConferenceTextChatRoom(
+        const QString &roomName,
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createConferenceTextChatroom(roomName, channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -2080,16 +2310,18 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest *Account::createConferenceTextChatRoom(
+PendingChannelRequest *Account::createConferenceTextChatroom(
         const QString &roomName,
         const QList<ChannelPtr> &channels,
         const QList<ContactPtr> &initialInviteeContacts,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -2100,7 +2332,19 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
             channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createContactSearch(server, limit, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createContactSearch(
+        const QString &server,
+        uint limit,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createContactSearch(server, limit, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -2120,6 +2364,7 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa createChannel()
@@ -2128,7 +2373,8 @@ PendingChannelRequest *Account::createContactSearch(
         const QString &server,
         uint limit,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -2138,7 +2384,18 @@ PendingChannelRequest *Account::createContactSearch(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), limit);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c createChannel(request, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::createChannel(
+        const QVariantMap &request,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return createChannel(request, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -2158,15 +2415,28 @@ PendingChannelRequest *Account::createContactSearch(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \sa createChannel()
  */
 PendingChannelRequest *Account::createChannel(
         const QVariantMap &request,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, true);
+            preferredHandler, true, hints);
+}
+
+/**
+ * Same as \c ensureChannel(request, userActionTime, preferredHandler, QVariantMap())
+ */
+PendingChannelRequest *Account::ensureChannel(
+        const QVariantMap &request,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    return ensureChannel(request, userActionTime, preferredHandler, QVariantMap());
 }
 
 /**
@@ -2186,15 +2456,17 @@ PendingChannelRequest *Account::createChannel(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported.
  * \sa createChannel()
  */
 PendingChannelRequest *Account::ensureChannel(
         const QVariantMap &request,
         const QDateTime &userActionTime,
-        const QString &preferredHandler)
+        const QString &preferredHandler,
+        const QVariantMap &hints)
 {
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
-            preferredHandler, false);
+            preferredHandler, false, hints);
 }
 
 /**
