@@ -917,6 +917,25 @@ PendingOperation *Account::setNickname(const QString &value)
 }
 
 /**
+ * Return a AvatarSpec representing the avatar requirements (size limits, supported MIME types, etc)
+ * for avatars passed to setAvatar().
+ *
+ * For now this method will only return the avatar requirements found in protocolInfo() if
+ * FeatureProtocolInfo is ready.
+ *
+ * \return The avatar requirements for avatars passed to setAvatar().
+ */
+AvatarSpec Account::avatarRequirements() const
+{
+    // TODO Once connection has support for avatar requirements use it if the connection is usable
+    ProtocolInfo pi = protocolInfo();
+    if (pi.isValid()) {
+        return pi.avatarRequirements();
+    }
+    return AvatarSpec();
+}
+
+/**
  * Return the avatar of this account.
  *
  * This method requires Account::FeatureAvatar to be enabled.
