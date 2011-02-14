@@ -1316,104 +1316,75 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
         SimpleStatusSpecMap::const_iterator i = connectionAllowedPresences.constBegin();
         SimpleStatusSpecMap::const_iterator end = connectionAllowedPresences.constEnd();
         for (; i != end; ++i) {
-            PresenceSpec spec = PresenceSpec(i.key(), i.value());
-            specMap.insert(i.key(), spec);
+            PresenceSpec presence = PresenceSpec(i.key(), i.value());
+            specMap.insert(i.key(), presence);
         }
     } else {
         ProtocolInfo pi = protocolInfo();
+        if (pi.isValid()) {
+            // add all ProtocolInfo presences to the returned map
+            foreach (const PresenceSpec &piPresence, pi.allowedPresenceStatuses()) {
+                QString piStatus = piPresence.presence().status();
+                specMap.insert(piStatus, piPresence);
+            }
+        }
+
         ProfilePtr pr = profile();
-
         if (pr) {
-            if (pi.isValid()) {
-                if (pr->allowOtherPresences()) {
-                    // as profile specifices that it supports other presences, merge the presences
-                    // from Profile and ProtocolInfo
-
-                    // get all ProtocolInfo presences that are not disabled in the Profile
-                    foreach (const PresenceSpec &piPresence, pi.allowedPresenceStatuses()) {
-                        bool ok = true;
-                        QString piStatus = piPresence.presence().status();
-                        foreach (const Profile::Presence &prPresence, pr->presences()) {
-                            QString prStatus = prPresence.id();
-                            if (piStatus == prStatus && prPresence.isDisabled()) {
-                                ok = false;
-                                break;
-                            }
-                        }
-
-                        if (ok) {
-                            specMap.insert(piStatus, piPresence);
-                        }
-                    }
-
-                    // get all Profile presences that are not disabled and could not be found in
-                    // ProtocolInfo
-                    foreach (const Profile::Presence &prPresence, pr->presences()) {
-                        QString prStatus = prPresence.id();
-                        if (prPresence.isDisabled() || specMap.contains(prStatus)) {
-                            continue;
-                        }
-
-                        specMap.insert(prStatus, presenceSpecForStatus(prStatus,
-                                    prPresence.canHaveStatusMessage()));
+            // add all Profile presences to the returned map
+            foreach (const Profile::Presence &prPresence, pr->presences()) {
+                QString prStatus = prPresence.id();
+                if (specMap.contains(prStatus)) {
+                    // we already got the presence from ProtocolInfo, just update
+                    // canHaveStatusMessage if needed
+                    PresenceSpec presence = specMap.value(prStatus);
+                    if (presence.canHaveStatusMessage() != prPresence.canHaveStatusMessage()) {
+                        SimpleStatusSpec spec;
+                        spec.type = presence.presence().type();
+                        spec.maySetOnSelf = presence.maySetOnSelf();
+                        spec.canHaveMessage = prPresence.canHaveStatusMessage();
+                        specMap.insert(prStatus, PresenceSpec(prStatus, spec));
                     }
                 } else {
-                    // as profile specifices that it does not support other presences, use only
-                    // the presences from Profile
-
-                    // get Profile presences only, using the already known PresenceSpec from
-                    // ProtocolInfo if the presence status matches.
-                    foreach (const Profile::Presence &prPresence, pr->presences()) {
-                        if (prPresence.isDisabled()) {
-                            continue;
-                        }
-
-                        QString prStatus = prPresence.id();
-                        PresenceSpec spec;
-                        foreach (const PresenceSpec &piPresence, pi.allowedPresenceStatuses()) {
-                            QString piStatus = piPresence.presence().status();
-                            if (prStatus == piStatus) {
-                                spec = piPresence;
-                                break;
-                            }
-                        }
-
-                        if (!spec.isValid()) {
-                            spec = presenceSpecForStatus(prStatus,
-                                    prPresence.canHaveStatusMessage());
-                        }
-                        specMap.insert(spec.presence().status(), spec);
-                    }
-                }
-            } else {
-                // ProtocolInfo is unknown, use only the presences from Profile
-
-                foreach (const Profile::Presence &prPresence, pr->presences()) {
-                    if (prPresence.isDisabled()) {
-                        continue;
-                    }
-
-                    QString prStatus = prPresence.id();
+                    // presence not found in ProtocolInfo, adding it
                     specMap.insert(prStatus, presenceSpecForStatus(prStatus,
                                 prPresence.canHaveStatusMessage()));
                 }
             }
-        } else {
-            if (pi.isValid()) {
-                // Profile is unknown and ProtocolInfo is valid, use it
 
-                specMap = pi.allowedPresenceStatuses().toMap();
+            // now remove all presences that are not in the Profile, if it does
+            // not allow other presences, and the ones that are disabled
+            QMap<QString, PresenceSpec>::iterator i = specMap.begin();
+            QMap<QString, PresenceSpec>::iterator end = specMap.end();
+            while (i != end) {
+                PresenceSpec presence = i.value();
+                QString status = presence.presence().status();
+                bool hasPresence = pr->hasPresence(status);
+                Profile::Presence prPresence = pr->presence(status);
+                if ((!hasPresence && !pr->allowOtherPresences()) || (hasPresence && prPresence.isDisabled())) {
+                     i = specMap.erase(i);
+                } else {
+                     ++i;
+                }
             }
         }
     }
 
-    PresenceSpecList ret;
-    foreach (const PresenceSpec &spec, specMap) {
-        if (includeAllStatuses || spec.maySetOnSelf()) {
-            ret.append(spec);
+    // filter out presences that may not be set on self if includeAllStatuses is false
+    if (!includeAllStatuses) {
+        QMap<QString, PresenceSpec>::iterator i = specMap.begin();
+        QMap<QString, PresenceSpec>::iterator end = specMap.end();
+        while (i != end) {
+            PresenceSpec presence = i.value();
+            if (!presence.maySetOnSelf()) {
+                i = specMap.erase(i);
+            } else {
+                ++i;
+            }
         }
     }
-    return ret;
+
+    return specMap.values();
 }
 
 /**
