@@ -6,6 +6,8 @@ The "..." release.
 Enhancements:
  * Make the debug subsystem as no-op as possible when debugging is disabled at
    runtime with Tp::enableDebug(false) and Tp::enableWarnings(false)
+ * fd.o#33123 - Bind Protocol.Avatars.
+ * fd.o#33124 - Bind Protocol.Presence.
 
 Fixes:
  * Unstable generated future-* headers being installed (although nothing
