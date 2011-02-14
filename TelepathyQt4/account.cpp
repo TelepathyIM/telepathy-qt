@@ -38,6 +38,7 @@
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
+#include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/Profile>
 #include <TelepathyQt4/ReferencedHandles>
@@ -48,6 +49,7 @@
 #include <QRegExp>
 #include <QSharedPointer>
 #include <QTimer>
+#include <QWeakPointer>
 
 #include <string.h>
 
@@ -149,7 +151,8 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 struct Account::Private::DispatcherContext
 {
     DispatcherContext(const QDBusConnection &bus)
-        : iface(new Client::ChannelDispatcherInterface(bus, TP_QT4_CHANNEL_DISPATCHER_BUS_NAME, TP_QT4_CHANNEL_DISPATCHER_OBJECT_PATH))
+        : iface(new Client::ChannelDispatcherInterface(bus, TP_QT4_CHANNEL_DISPATCHER_BUS_NAME, TP_QT4_CHANNEL_DISPATCHER_OBJECT_PATH)),
+          introspected(false), supportsHints(false)
     {
     }
 
@@ -159,6 +162,9 @@ struct Account::Private::DispatcherContext
     }
 
     Client::ChannelDispatcherInterface *iface;
+
+    bool introspected, supportsHints;
+    QWeakPointer<PendingVariant> introspectOp;
 
 private:
     DispatcherContext(const DispatcherContext &);
@@ -1453,6 +1459,18 @@ PendingOperation *Account::remove()
 }
 
 /**
+ * Return whether passing hints on channel requests on this account is known to be supported.
+ *
+ * The return value is undefined unless Account::FeatureCore is ready on this account proxy.
+ *
+ * \return \c true if supported, \c false if not.
+ */
+bool Account::supportsRequestHints() const
+{
+    return mPriv->dispatcherContext->supportsHints;
+}
+
+/**
  * Same as \c ensureTextChat(contactIdentifier, userActionTime, preferredHandler, QVariantMap())
  */
 PendingChannelRequest *Account::ensureTextChat(
@@ -1477,7 +1495,8 @@ PendingChannelRequest *Account::ensureTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1524,7 +1543,8 @@ PendingChannelRequest *Account::ensureTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1571,7 +1591,8 @@ PendingChannelRequest *Account::ensureTextChatroom(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1618,7 +1639,8 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1665,7 +1687,8 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1715,7 +1738,8 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1767,7 +1791,8 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1822,7 +1847,8 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1884,7 +1910,8 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -1941,7 +1968,8 @@ PendingChannelRequest *Account::createFileTransfer(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -2015,7 +2043,8 @@ PendingChannelRequest *Account::createFileTransfer(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -2091,7 +2120,8 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -2140,7 +2170,8 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -2191,7 +2222,8 @@ PendingChannelRequest *Account::createConferenceTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -2290,7 +2322,8 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -2344,7 +2377,8 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
@@ -2398,7 +2432,8 @@ PendingChannelRequest *Account::createContactSearch(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the call has finished.
  * \sa createChannel()
@@ -2449,7 +2484,8 @@ PendingChannelRequest *Account::createChannel(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \sa createChannel()
  */
 PendingChannelRequest *Account::createChannel(
@@ -2490,7 +2526,8 @@ PendingChannelRequest *Account::ensureChannel(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \sa createChannel()
  */
 PendingChannelRequest *Account::ensureChannel(
@@ -2745,13 +2782,21 @@ void Account::Private::init()
 
 void Account::Private::introspectMain(Account::Private *self)
 {
-    debug() << "Calling Properties::GetAll(Account)";
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            self->properties->GetAll(
-                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT)), self->parent);
-    self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    if (self->dispatcherContext->introspected) {
+        self->parent->onDispatcherIntrospected(0);
+        return;
+    }
+
+    if (!self->dispatcherContext->introspectOp) {
+        debug() << "Discovering if the Channel Dispatcher supports request hints";
+        self->dispatcherContext->introspectOp =
+            self->dispatcherContext->iface->requestPropertySupportsRequestHints();
+    }
+
+    connect(self->dispatcherContext->introspectOp.data(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            self->parent,
+            SLOT(onDispatcherIntrospected(Tp::PendingOperation*)));
 }
 
 void Account::Private::introspectAvatar(Account::Private *self)
@@ -3106,6 +3151,38 @@ bool Account::Private::processConnQueue()
     }
 
     return true;
+}
+
+void Account::onDispatcherIntrospected(Tp::PendingOperation *op)
+{
+    if (!mPriv->dispatcherContext->introspected) {
+        Tp::PendingVariant *pv = static_cast<Tp::PendingVariant *>(op);
+        Q_ASSERT(pv != NULL);
+
+        // Only the first Account for a given dispatcher will enter this branch, and will
+        // immediately make further created accounts skip the whole waiting for CD to get
+        // introspected part entirely
+        mPriv->dispatcherContext->introspected = true;
+
+        if (pv->isValid()) {
+            mPriv->dispatcherContext->supportsHints = qdbus_cast<bool>(pv->result());
+            debug() << "Discovered channel dispatcher support for request hints: "
+                << mPriv->dispatcherContext->supportsHints;
+        } else {
+            warning() << "(Too old?) Channel Dispatcher failed to tell us whether"
+                << "it supports request hints, assuming it doesn't:"
+                << pv->errorName() << ':' << pv->errorMessage();
+            mPriv->dispatcherContext->supportsHints = false;
+        }
+    }
+
+    debug() << "Calling Properties::GetAll(Account) on " << objectPath();
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            mPriv->properties->GetAll(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT)), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void Account::gotMainProperties(QDBusPendingCallWatcher *watcher)

@@ -193,6 +193,8 @@ public:
 
     PendingOperation *remove();
 
+    bool supportsRequestHints() const;
+
     // TODO ABI break: collapse all of the overloads without a hints arg with the corresponding
     // hints versions and add a default param for the hints args
 
@@ -460,6 +462,7 @@ protected:
     Client::ChannelDispatcherInterface *dispatcherInterface() const;
 
 private Q_SLOTS:
+    void onDispatcherIntrospected(Tp::PendingOperation *op);
     void gotMainProperties(QDBusPendingCallWatcher *);
     void gotAvatar(QDBusPendingCallWatcher *);
     void onAvatarChanged();
