@@ -8,6 +8,8 @@ Enhancements:
    runtime with Tp::enableDebug(false) and Tp::enableWarnings(false)
  * fd.o#33123 - Bind Protocol.Avatars.
  * fd.o#33124 - Bind Protocol.Presence.
+ * fd.o#33116 - Added support for passing hints to channel requests, also making
+   channel requests marginally more efficient CPU and memory wise in the process
 
 Fixes:
  * Unstable generated future-* headers being installed (although nothing
