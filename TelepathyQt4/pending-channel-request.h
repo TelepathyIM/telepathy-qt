@@ -68,7 +68,7 @@ private:
 
     PendingChannelRequest(const AccountPtr &account,
             const QVariantMap &requestedProperties, const QDateTime &userActionTime,
-            const QString &preferredHandler, bool create);
+            const QString &preferredHandler, bool create, const QVariantMap &hints);
 
     struct Private;
     friend struct Private;

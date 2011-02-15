@@ -33,6 +33,7 @@
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ChannelFactory>
+#include <TelepathyQt4/ChannelDispatcherInterface>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
@@ -192,37 +193,80 @@ public:
 
     PendingOperation *remove();
 
+    bool supportsRequestHints() const;
+
+    // TODO ABI break: collapse all of the overloads without a hints arg with the corresponding
+    // hints versions and add a default param for the hints args
+
     PendingChannelRequest *ensureTextChat(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureTextChat(
+            const QString &contactIdentifier,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
+
+    PendingChannelRequest *ensureTextChat(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *ensureTextChat(
+            const ContactPtr &contact,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
     PendingChannelRequest *ensureTextChatroom(
             const QString &roomName,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *ensureTextChatroom(
+            const QString &roomName,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
     PendingChannelRequest *ensureStreamedMediaCall(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureStreamedMediaCall(
+            const QString &contactIdentifier,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
+
+    PendingChannelRequest *ensureStreamedMediaCall(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *ensureStreamedMediaCall(
+            const ContactPtr &contact,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
     PendingChannelRequest *ensureStreamedMediaAudioCall(
             const QString &contactIdentifier,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureStreamedMediaAudioCall(
+            const QString &contactIdentifier,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
+
+    PendingChannelRequest *ensureStreamedMediaAudioCall(
             const ContactPtr &contact,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *ensureStreamedMediaAudioCall(
+            const ContactPtr &contact,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
     PendingChannelRequest *ensureStreamedMediaVideoCall(
             const QString &contactIdentifier,
@@ -230,10 +274,23 @@ public:
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureStreamedMediaVideoCall(
+            const QString &contactIdentifier,
+            bool withAudio,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
+
+    PendingChannelRequest *ensureStreamedMediaVideoCall(
             const ContactPtr &contact,
             bool withAudio = true,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *ensureStreamedMediaVideoCall(
+            const ContactPtr &contact,
+            bool withAudio,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
     PendingChannelRequest *createFileTransfer(
             const QString &contactIdentifier,
@@ -241,10 +298,23 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *createFileTransfer(
+            const QString &contactIdentifier,
+            const FileTransferChannelCreationProperties &properties,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
+
+    PendingChannelRequest *createFileTransfer(
             const ContactPtr &contact,
             const FileTransferChannelCreationProperties &properties,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *createFileTransfer(
+            const ContactPtr &contact,
+            const FileTransferChannelCreationProperties &properties,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
     PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
@@ -253,9 +323,22 @@ public:
             const QString &preferredHandler = QString());
     PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
+            const QStringList &initialInviteeContactsIdentifiers,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
+
+    PendingChannelRequest *createConferenceStreamedMediaCall(
+            const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *createConferenceStreamedMediaCall(
+            const QList<ChannelPtr> &channels,
+            const QList<ContactPtr> &initialInviteeContacts,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
     PendingChannelRequest *createConferenceTextChat(
             const QList<ChannelPtr> &channels,
@@ -264,38 +347,83 @@ public:
             const QString &preferredHandler = QString());
     PendingChannelRequest *createConferenceTextChat(
             const QList<ChannelPtr> &channels,
+            const QList<ContactPtr> &initialInviteeContacts,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
+
+    PendingChannelRequest *createConferenceTextChat(
+            const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *createConferenceTextChat(
+            const QList<ChannelPtr> &channels,
+            const QStringList &initialInviteeContactsIdentifiers,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
-    PendingChannelRequest *createConferenceTextChatRoom(
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
             const QString &roomName,
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
-    PendingChannelRequest *createConferenceTextChatRoom(
+    PendingChannelRequest *createConferenceTextChatroom(
+            const QString &roomName,
+            const QList<ChannelPtr> &channels,
+            const QStringList &initialInviteeContactsIdentifiers = QStringList(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const QVariantMap &hints = QVariantMap());
+
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
             const QString &roomName,
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *createConferenceTextChatroom(
+            const QString &roomName,
+            const QList<ChannelPtr> &channels,
+            const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const QVariantMap &hints = QVariantMap());
 
     PendingChannelRequest *createContactSearch(
             const QString &server = QString(),
             uint limit = 0,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *createContactSearch(
+            const QString &server,
+            uint limit,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
     // advanced
     PendingChannelRequest *createChannel(
             const QVariantMap &requestedProperties,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *createChannel(
+            const QVariantMap &requestedProperties,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
+
     PendingChannelRequest *ensureChannel(
             const QVariantMap &requestedProperties,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
+    PendingChannelRequest *ensureChannel(
+            const QVariantMap &requestedProperties,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            const QVariantMap &hints);
 
 Q_SIGNALS:
     void removed();
@@ -321,6 +449,8 @@ Q_SIGNALS:
     void connectionChanged(const Tp::ConnectionPtr &connection);
 
 protected:
+    friend class PendingChannelRequest; // to access dispatcherInterface()
+
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
@@ -329,8 +459,10 @@ protected:
             const Feature &coreFeature);
 
     Client::AccountInterface *baseInterface() const;
+    Client::ChannelDispatcherInterface *dispatcherInterface() const;
 
 private Q_SLOTS:
+    void onDispatcherIntrospected(Tp::PendingOperation *op);
     void gotMainProperties(QDBusPendingCallWatcher *);
     void gotAvatar(QDBusPendingCallWatcher *);
     void onAvatarChanged();
