@@ -977,13 +977,13 @@ void ContactManager::onAvatarRetrieved(uint handle, const QString &token,
         debug() << "Filename:" << avatarFileName;
         debug() << "MimeType:" << mimeType;
 
-        QTemporaryFile mimeTypeFile(QLatin1String("tpqt4-avatar-mimetype."));
+        QTemporaryFile mimeTypeFile(mimeTypeFileName);
         mimeTypeFile.open();
         mimeTypeFile.write(mimeType.toLatin1());
         mimeTypeFile.setAutoRemove(false);
         mimeTypeFile.rename(mimeTypeFileName);
 
-        QTemporaryFile avatarFile(QLatin1String("tpqt4-avatar-data."));
+        QTemporaryFile avatarFile(avatarFileName);
         avatarFile.open();
         avatarFile.write(data);
         avatarFile.setAutoRemove(false);
