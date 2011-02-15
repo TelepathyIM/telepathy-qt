@@ -120,7 +120,8 @@ public:
         QString id() const;
         QString label() const;
         QString iconName() const;
-        QString message() const;
+        bool canHaveStatusMessage() const;
+        TELEPATHY_QT4_DEPRECATED QString message() const;
 
         bool isDisabled() const;
 

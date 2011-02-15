@@ -33,6 +33,7 @@
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelDispatcherInterface>
 #include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingChannelRequest>
 #include <TelepathyQt4/PendingFailure>
@@ -52,6 +53,54 @@
 #include <QWeakPointer>
 
 #include <string.h>
+
+namespace
+{
+
+struct PresenceStatusInfo
+{
+    QString name;
+    Tp::SimpleStatusSpec spec;
+};
+
+Tp::ConnectionPresenceType presenceTypeForStatus(const QString &status, bool &maySetOnSelf)
+{
+    static PresenceStatusInfo statuses[] = {
+        { QLatin1String("available"), { Tp::ConnectionPresenceTypeAvailable, true, true } },
+        { QLatin1String("chat"), { Tp::ConnectionPresenceTypeAvailable, true, true } },
+        { QLatin1String("chatty"), { Tp::ConnectionPresenceTypeAvailable, true, true } },
+        { QLatin1String("away"), { Tp::ConnectionPresenceTypeAway, true, true } },
+        { QLatin1String("brb"), { Tp::ConnectionPresenceTypeAway, true, true } },
+        { QLatin1String("out-to-lunch"), { Tp::ConnectionPresenceTypeAway, true, true } },
+        { QLatin1String("xa"), { Tp::ConnectionPresenceTypeExtendedAway, true, true } },
+        { QLatin1String("hidden"), { Tp::ConnectionPresenceTypeHidden, true, true } },
+        { QLatin1String("invisible"), { Tp::ConnectionPresenceTypeHidden, true, true } },
+        { QLatin1String("offline"), { Tp::ConnectionPresenceTypeOffline, true, false } },
+        { QLatin1String("unknown"), { Tp::ConnectionPresenceTypeUnknown, false, false } },
+        { QLatin1String("error"), { Tp::ConnectionPresenceTypeError, false, false } }
+    };
+
+    for (uint i = 0; i < sizeof(statuses) / sizeof(PresenceStatusInfo); ++i) {
+        if (status == statuses[i].name) {
+            maySetOnSelf = statuses[i].spec.maySetOnSelf;
+            return (Tp::ConnectionPresenceType) statuses[i].spec.type;
+        }
+    }
+
+    // fallback to type away if we don't know status
+    maySetOnSelf = true;
+    return Tp::ConnectionPresenceTypeAway;
+}
+
+Tp::PresenceSpec presenceSpecForStatus(const QString &status, bool canHaveStatusMessage)
+{
+    Tp::SimpleStatusSpec spec;
+    spec.type = presenceTypeForStatus(status, spec.maySetOnSelf);
+    spec.canHaveMessage = canHaveStatusMessage;
+    return Tp::PresenceSpec(status, spec);
+}
+
+}
 
 namespace Tp
 {
@@ -1144,7 +1193,6 @@ ConnectionCapabilities Account::capabilities() const
         }
         if (!unsupported) {
             classSpecs.append(piClassSpec);
-        } else {
         }
     }
     mPriv->customCaps = ConnectionCapabilities(classSpecs);
@@ -1299,6 +1347,103 @@ ConnectionPtr Account::connection() const
 bool Account::isChangingPresence() const
 {
     return mPriv->changingPresence;
+}
+
+/**
+ * Return a list of presences allowed by a connection to this account.
+ *
+ * Full functionality requires FeatureProtocolInfo and FeatureProfile to be ready as well as
+ * Connection with Connection::FeatureSimplePresence enabled. If the connection is online and
+ * Connection::FeatureSimplePresence is enabled, it will return the connection allowed statuses,
+ * otherwise it will return a list os statuses based on profile() and protocolInfo() information
+ * if the corresponding features are enabled.
+ *
+ * \param includeAllStatuses Whether the returned list will include all statuses or just the ones
+ *                           that can are settable using setRequestedPresence().
+ * \return A list of presences allowed by a connection to this account.
+ */
+PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
+{
+    QMap<QString, PresenceSpec> specMap;
+
+    // if the connection is online and ready use it
+    if (mPriv->connection &&
+        mPriv->connection->status() == ConnectionStatusConnected &&
+        mPriv->connection->actualFeatures().contains(Connection::FeatureSimplePresence)) {
+        SimpleStatusSpecMap connectionAllowedPresences =
+            mPriv->connection->lowlevel()->allowedPresenceStatuses();
+        SimpleStatusSpecMap::const_iterator i = connectionAllowedPresences.constBegin();
+        SimpleStatusSpecMap::const_iterator end = connectionAllowedPresences.constEnd();
+        for (; i != end; ++i) {
+            PresenceSpec presence = PresenceSpec(i.key(), i.value());
+            specMap.insert(i.key(), presence);
+        }
+    } else {
+        ProtocolInfo pi = protocolInfo();
+        if (pi.isValid()) {
+            // add all ProtocolInfo presences to the returned map
+            foreach (const PresenceSpec &piPresence, pi.allowedPresenceStatuses()) {
+                QString piStatus = piPresence.presence().status();
+                specMap.insert(piStatus, piPresence);
+            }
+        }
+
+        ProfilePtr pr = profile();
+        if (pr) {
+            // add all Profile presences to the returned map
+            foreach (const Profile::Presence &prPresence, pr->presences()) {
+                QString prStatus = prPresence.id();
+                if (specMap.contains(prStatus)) {
+                    // we already got the presence from ProtocolInfo, just update
+                    // canHaveStatusMessage if needed
+                    PresenceSpec presence = specMap.value(prStatus);
+                    if (presence.canHaveStatusMessage() != prPresence.canHaveStatusMessage()) {
+                        SimpleStatusSpec spec;
+                        spec.type = presence.presence().type();
+                        spec.maySetOnSelf = presence.maySetOnSelf();
+                        spec.canHaveMessage = prPresence.canHaveStatusMessage();
+                        specMap.insert(prStatus, PresenceSpec(prStatus, spec));
+                    }
+                } else {
+                    // presence not found in ProtocolInfo, adding it
+                    specMap.insert(prStatus, presenceSpecForStatus(prStatus,
+                                prPresence.canHaveStatusMessage()));
+                }
+            }
+
+            // now remove all presences that are not in the Profile, if it does
+            // not allow other presences, and the ones that are disabled
+            QMap<QString, PresenceSpec>::iterator i = specMap.begin();
+            QMap<QString, PresenceSpec>::iterator end = specMap.end();
+            while (i != end) {
+                PresenceSpec presence = i.value();
+                QString status = presence.presence().status();
+                bool hasPresence = pr->hasPresence(status);
+                Profile::Presence prPresence = pr->presence(status);
+                if ((!hasPresence && !pr->allowOtherPresences()) || (hasPresence && prPresence.isDisabled())) {
+                     i = specMap.erase(i);
+                } else {
+                     ++i;
+                }
+            }
+        }
+    }
+
+    // filter out presences that may not be set on self if includeAllStatuses is false
+    if (!includeAllStatuses) {
+        QMap<QString, PresenceSpec>::iterator i = specMap.begin();
+        QMap<QString, PresenceSpec>::iterator end = specMap.end();
+        while (i != end) {
+            PresenceSpec presence = i.value();
+            if (!presence.maySetOnSelf()) {
+                i = specMap.erase(i);
+            } else {
+                ++i;
+            }
+        }
+    }
+
+    return specMap.values();
 }
 
 /**

@@ -110,6 +110,15 @@ public:
         : QList<PresenceSpec>(other)
     {
     }
+
+    QMap<QString, PresenceSpec> toMap() const
+    {
+        QMap<QString, PresenceSpec> ret;
+        Q_FOREACH (const PresenceSpec &spec, *this) {
+            ret.insert(spec.presence().status(), spec);
+        }
+        return ret;
+    }
 };
 
 } // Tp

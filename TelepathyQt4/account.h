@@ -40,6 +40,7 @@
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
 #include <TelepathyQt4/OptionalInterfaceFactory>
 #include <TelepathyQt4/Presence>
+#include <TelepathyQt4/PresenceSpec>
 #include <TelepathyQt4/ProtocolInfo>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/Types>
@@ -172,6 +173,8 @@ public:
     ConnectionPtr connection() const;
 
     bool isChangingPresence() const;
+
+    PresenceSpecList allowedPresenceStatuses(bool includeAllStatuses = false) const;
 
     // TODO: Add overload methods to set presence from a Profile::Presence
     // TODO: Add usablePresences() that would return a list of presences that could be set on the
