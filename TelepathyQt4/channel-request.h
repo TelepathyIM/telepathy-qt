@@ -73,6 +73,7 @@ public:
     QDateTime userActionTime() const;
     QString preferredHandler() const;
     QualifiedPropertyValueMapList requests() const;
+    ChannelRequestHints hints() const;
 
     QVariantMap immutableProperties() const;
 

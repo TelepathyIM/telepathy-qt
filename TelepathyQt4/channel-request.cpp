@@ -76,6 +76,7 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
     QDateTime userActionTime;
     QString preferredHandler;
     QualifiedPropertyValueMapList requests;
+    ChannelRequestHints hints;
     bool propertiesDone;
 };
 
@@ -224,6 +225,10 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
 
     parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
     readinessHelper->setInterfaces(parent->interfaces());
+
+    if (props.contains(QLatin1String("Hints"))) {
+        hints = qdbus_cast<QVariantMap>(props.value(QLatin1String("Hints")));
+    }
 
     if (lastCall) {
         propertiesDone = true;
@@ -451,6 +456,24 @@ QString ChannelRequest::preferredHandler() const
 QualifiedPropertyValueMapList ChannelRequest::requests() const
 {
     return mPriv->requests;
+}
+
+/**
+ * Return the dictionary of metadata provided by the channel requester when requesting the channel.
+ *
+ * This property is set when the channel request is created, and can never change.
+ *
+ * This method can be used even before the ChannelRequest is ready: in this case, the requested
+ * channel properties from the immutable properties, if any, are returned. This is useful for e.g.
+ * matching ChannelRequests from ClientHandlerInterface::addRequest() with existing requests in the
+ * application (by the target ID or handle, most likely).
+ *
+ * \sa Account::supportsRequestHints()
+ * \return The hints in the request, if any.
+ */
+ChannelRequestHints ChannelRequest::hints() const
+{
+    return mPriv->hints;
 }
 
 /**
