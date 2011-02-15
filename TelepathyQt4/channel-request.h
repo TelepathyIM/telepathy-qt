@@ -37,6 +37,7 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/SharedPtr>
 
+#include <QSharedDataPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -44,6 +45,7 @@
 namespace Tp
 {
 
+class ChannelRequestHints;
 class PendingOperation;
 
 class TELEPATHY_QT4_EXPORT ChannelRequest : public StatefulDBusProxy,
@@ -71,14 +73,18 @@ public:
     QDateTime userActionTime() const;
     QString preferredHandler() const;
     QualifiedPropertyValueMapList requests() const;
+    ChannelRequestHints hints() const;
 
     QVariantMap immutableProperties() const;
 
     PendingOperation *cancel();
 
+    ChannelPtr channel() const;
+
 Q_SIGNALS:
     void failed(const QString &errorName, const QString &errorMessage);
-    void succeeded();
+    void succeeded(); // TODO API/ABI break: remove
+    void succeeded(const Tp::ChannelPtr &channel);
 
 protected:
     ChannelRequest(const QDBusConnection &bus,
@@ -93,9 +99,18 @@ protected:
 
     Client::ChannelRequestInterface *baseInterface() const;
 
+protected:
+    // TODO: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void onAccountReady(Tp::PendingOperation *op);
+
+    void onLegacySucceeded();
+    void onSucceededWithChannel(const QDBusObjectPath &connPath, const QVariantMap &connProps,
+            const QDBusObjectPath &chanPath, const QVariantMap &chanProps);
+    void onChanBuilt(Tp::PendingOperation *op);
 
 private:
     friend class PendingChannelRequest;
@@ -107,6 +122,33 @@ private:
     Private *mPriv;
 };
 
+class TELEPATHY_QT4_EXPORT ChannelRequestHints
+{
+public:
+
+    ChannelRequestHints();
+    ChannelRequestHints(const QVariantMap &hints);
+    ChannelRequestHints(const ChannelRequestHints &other);
+    ~ChannelRequestHints();
+
+    ChannelRequestHints &operator=(const ChannelRequestHints &other);
+
+    bool isValid() const;
+
+    bool hasHint(const QString &reversedDomain, const QString &localName) const;
+    QVariant hint(const QString &reversedDomain, const QString &localName) const;
+    void setHint(const QString &reversedDomain, const QString &localName, const QVariant &value);
+
+    QVariantMap allHints() const;
+
+private:
+    struct Private;
+    friend struct Private;
+    QSharedDataPointer<Private> mPriv;
+};
+
 } // Tp
+
+Q_DECLARE_METATYPE(Tp::ChannelRequestHints);
 
 #endif

@@ -9,7 +9,9 @@
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/ChannelRequest>
+#include <TelepathyQt4/ChannelRequestHints>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingChannelRequest>
@@ -37,13 +39,20 @@ class ChannelRequestAdaptor : public QDBusAbstractAdaptor
 "    <property name=\"PreferredHandler\" type=\"s\" access=\"read\" />\n"
 "    <property name=\"Requests\" type=\"aa{sv}\" access=\"read\" />\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
+"    <property name=\"Hints\" type=\"a{sv}\" access=\"read\" />\n"
 "    <method name=\"Proceed\" />\n"
 "    <method name=\"Cancel\" />\n"
 "    <signal name=\"Failed\" >\n"
 "      <arg name=\"Error\" type=\"s\" />\n"
 "      <arg name=\"Message\" type=\"s\" />\n"
 "    </signal>\n"
-"    <signal name=\"Succeeded\" />"
+"    <signal name=\"Succeeded\" />\n"
+"    <signal name=\"SucceededWithChannel\" >\n"
+"      <arg name=\"Connection\" type=\"o\" />\n"
+"      <arg name=\"ConnectionProperties\" type=\"a{sv}\" />\n"
+"      <arg name=\"Channel\" type=\"o\" />\n"
+"      <arg name=\"ChannelProperties\" type=\"a{sv}\" />\n"
+"    </signal>\n"
 "  </interface>\n"
         "")
 
@@ -52,6 +61,7 @@ class ChannelRequestAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QString PreferredHandler READ PreferredHandler)
     Q_PROPERTY(QualifiedPropertyValueMapList Requests READ Requests)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
+    Q_PROPERTY(QVariantMap Hints READ Hints)
 
 public:
     ChannelRequestAdaptor(QDBusObjectPath account,
@@ -61,17 +71,27 @@ public:
             QStringList interfaces,
             bool shouldFail,
             bool proceedNoop,
+            QVariantMap hints,
             QObject *parent)
         : QDBusAbstractAdaptor(parent),
           mAccount(account), mUserActionTime(userActionTime),
           mPreferredHandler(preferredHandler), mRequests(requests),
           mInterfaces(interfaces), mShouldFail(shouldFail),
-          mProceedNoop(false)
+          mProceedNoop(false), mHints(hints)
     {
     }
 
     virtual ~ChannelRequestAdaptor()
     {
+    }
+
+    void setChan(const QString &connPath, const QVariantMap &connProps,
+            const QString &chanPath, const QVariantMap &chanProps)
+    {
+        this->mConnPath = connPath;
+        this->mConnProps = connProps;
+        this->mChanPath = chanPath;
+        this->mChanProps = chanProps;
     }
 
 public: // Properties
@@ -100,6 +120,11 @@ public: // Properties
         return mInterfaces;
     }
 
+    inline QVariantMap Hints() const
+    {
+        return mHints;
+    }
+
 public Q_SLOTS: // Methods
     void Proceed()
     {
@@ -110,7 +135,7 @@ public Q_SLOTS: // Methods
         if (mShouldFail) {
             QTimer::singleShot(0, this, SLOT(fail()));
         } else {
-            QTimer::singleShot(0, this, SIGNAL(Succeeded()));
+            QTimer::singleShot(0, this, SLOT(succeed()));
         }
     }
 
@@ -122,11 +147,23 @@ public Q_SLOTS: // Methods
 Q_SIGNALS: // Signals
     void Failed(const QString &error, const QString &message);
     void Succeeded();
+    void SucceededWithChannel(const QDBusObjectPath &connPath, const QVariantMap &connProps,
+            const QDBusObjectPath &chanPath, const QVariantMap &chanProps);
 
 private Q_SLOTS:
     void fail()
     {
         Q_EMIT Failed(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE), QLatin1String("Not available"));
+    }
+
+    void succeed()
+    {
+        if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) {
+            Q_EMIT SucceededWithChannel(QDBusObjectPath(mConnPath), mConnProps,
+                    QDBusObjectPath(mChanPath), mChanProps);
+        }
+
+        Q_EMIT Succeeded();
     }
 
 private:
@@ -137,6 +174,9 @@ private:
     QStringList mInterfaces;
     bool mShouldFail;
     bool mProceedNoop;
+    QVariantMap mHints;
+    QString mConnPath, mChanPath;
+    QVariantMap mConnProps, mChanProps;
 };
 
 class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
@@ -146,6 +186,7 @@ class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"org.freedesktop.Telepathy.ChannelDispatcher\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
+"    <property name=\"SupportsRequestHints\" type=\"b\" access=\"read\" />\n"
 "    <method name=\"CreateChannel\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"Requested_Properties\" type=\"a{sv}\" direction=\"in\" />\n"
@@ -160,14 +201,31 @@ class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
 "      <arg name=\"Preferred_Handler\" type=\"s\" direction=\"in\" />\n"
 "      <arg name=\"Channel_Object_Path\" type=\"o\" direction=\"out\" />\n"
 "    </method>\n"
+"    <method name=\"CreateChannelWithHints\" >\n"
+"      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Requested_Properties\" type=\"a{sv}\" direction=\"in\" />\n"
+"      <arg name=\"User_Action_Time\" type=\"x\" direction=\"in\" />\n"
+"      <arg name=\"Preferred_Handler\" type=\"s\" direction=\"in\" />\n"
+"      <arg name=\"Hints\" type=\"a{sv}\" direction=\"in\" />\n"
+"      <arg name=\"Channel_Object_Path\" type=\"o\" direction=\"out\" />\n"
+"    </method>\n"
+"    <method name=\"EnsureChannelWithHints\" >\n"
+"      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Requested_Properties\" type=\"a{sv}\" direction=\"in\" />\n"
+"      <arg name=\"User_Action_Time\" type=\"x\" direction=\"in\" />\n"
+"      <arg name=\"Preferred_Handler\" type=\"s\" direction=\"in\" />\n"
+"      <arg name=\"Hints\" type=\"a{sv}\" direction=\"in\" />\n"
+"      <arg name=\"Channel_Object_Path\" type=\"o\" direction=\"out\" />\n"
+"    </method>\n"
 "  </interface>\n"
         "")
 
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
+    Q_PROPERTY(bool SupportsRequestHints READ SupportsRequestHints)
 
 public:
     ChannelDispatcherAdaptor(const QDBusConnection &bus, QObject *parent)
-        : QDBusAbstractAdaptor(parent), mBus(bus),
+        : QDBusAbstractAdaptor(parent), mCurRequest(0), mBus(bus),
           mRequests(0), mChannelRequestShouldFail(false),
           mChannelRequestProceedNoop(false)
     {
@@ -177,10 +235,17 @@ public:
     {
     }
 
+    ChannelRequestAdaptor *mCurRequest;
+
 public: // Properties
     inline QStringList Interfaces() const
     {
         return QStringList();
+    }
+
+    inline bool SupportsRequestHints() const
+    {
+        return true;
     }
 
 public Q_SLOTS: // Methods
@@ -200,15 +265,31 @@ public Q_SLOTS: // Methods
                 userActionTime, preferredHandler);
     }
 
+    QDBusObjectPath CreateChannelWithHints(const QDBusObjectPath &account,
+            const QVariantMap &requestedProperties, qlonglong userActionTime,
+            const QString &preferredHandler, const QVariantMap &hints)
+    {
+        return createChannel(account, requestedProperties,
+                userActionTime, preferredHandler, hints);
+    }
+
+    QDBusObjectPath EnsureChannelWithHints(const QDBusObjectPath &account,
+            const QVariantMap &requestedProperties, qlonglong userActionTime,
+            const QString &preferredHandler, const QVariantMap &hints)
+    {
+        return createChannel(account, requestedProperties,
+                userActionTime, preferredHandler, hints);
+    }
+
 private:
     friend class TestAccountChannelDispatcher;
 
-    QDBusObjectPath createChannel(const QDBusObjectPath& account,
-            const QVariantMap& requestedProperties, qlonglong userActionTime,
-            const QString& preferredHandler)
+    QDBusObjectPath createChannel(const QDBusObjectPath &account,
+            const QVariantMap &requestedProperties, qlonglong userActionTime,
+            const QString &preferredHandler, const QVariantMap &hints = QVariantMap())
     {
         QObject *request = new QObject(this);
-        new ChannelRequestAdaptor(
+        mCurRequest = new ChannelRequestAdaptor(
                 account,
                 userActionTime,
                 preferredHandler,
@@ -216,6 +297,7 @@ private:
                 QStringList(),
                 mChannelRequestShouldFail,
                 mChannelRequestProceedNoop,
+                hints,
                 request);
         QString channelRequestPath =
             QString(QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/_%1"))
@@ -280,6 +362,9 @@ private:
     bool mChannelRequestFinished;
     bool mChannelRequestFinishedWithError;
     QString mChannelRequestFinishedErrorName;
+    ChannelRequestHints mHints;
+    QString mConnPath, mChanPath;
+    QVariantMap mConnProps, mChanProps;
 };
 
 void TestAccountChannelDispatcher::onPendingChannelRequestFinished(
@@ -299,6 +384,15 @@ void TestAccountChannelDispatcher::initTestCase()
     g_set_prgname("account-channel-dispatcher");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+
+    // Create the CD first, because Accounts try to introspect it
+    QDBusConnection bus = QDBusConnection::sessionBus();
+    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
+    QObject *dispatcher = new QObject(this);
+    mChannelDispatcherAdaptor = new ChannelDispatcherAdaptor(bus, dispatcher);
+    QVERIFY(bus.registerService(channelDispatcherBusName));
+    QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
 
     mAM = AccountManager::create();
     QVERIFY(connect(mAM->becomeReady(),
@@ -323,13 +417,8 @@ void TestAccountChannelDispatcher::initTestCase()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAccount->isReady(), true);
 
-    QDBusConnection bus = mAccount->dbusConnection();
-    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
-    QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
-    QObject *dispatcher = new QObject(this);
-    mChannelDispatcherAdaptor = new ChannelDispatcherAdaptor(bus, dispatcher);
-    QVERIFY(bus.registerService(channelDispatcherBusName));
-    QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
+    QCOMPARE(mAccount->supportsRequestHints(), true);
+    QCOMPARE(mAccount->requestsSucceedWithChannel(), true);
 }
 
 void TestAccountChannelDispatcher::init()
@@ -341,29 +430,52 @@ void TestAccountChannelDispatcher::init()
     mChannelRequestFinishedWithError = false;
     mChannelRequestFinishedErrorName = QString();
     QDateTime mUserActionTime = QDateTime::currentDateTime();
+    mHints = ChannelRequestHints();
+
+    mConnPath.clear();
+    mConnProps.clear();
+    mChanPath.clear();
+    mChanProps.clear();
 }
 
 void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
 {
+    if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) {
+        mChannelDispatcherAdaptor->mCurRequest->setChan(mConnPath, mConnProps, mChanPath, mChanProps);
+    }
+
     QVERIFY(connect(pcr,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(onPendingChannelRequestFinished(Tp::PendingOperation *))));
     mLoop->exec(0);
 
     mChannelRequest = pcr->channelRequest();
+
+    if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) {
+        QVERIFY(!mChannelRequest->channel().isNull());
+        QCOMPARE(mChannelRequest->channel()->connection()->objectPath(), mConnPath);
+        QCOMPARE(mChannelRequest->channel()->objectPath(), mChanPath);
+        QCOMPARE(mChannelRequest->channel()->immutableProperties(), mChanProps);
+    } else {
+        QVERIFY(mChannelRequest->channel().isNull());
+    }
+
     QVERIFY(connect(mChannelRequest->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     mLoop->exec(0);
     QCOMPARE(mChannelRequest->userActionTime(), mUserActionTime);
     QCOMPARE(mChannelRequest->account().data(), mAccount.data());
+
+    QVERIFY(mChannelRequest->hints().isValid());
+    QCOMPARE(mChannelRequest->hints().allHints(), mHints.allHints());
 }
 
 #define TEST_ENSURE_CHANNEL_SPECIFIC(method_name, shouldFail, proceedNoop, expectedError) \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
     PendingChannelRequest *pcr = mAccount->method_name(QLatin1String("foo@bar"), \
-            mUserActionTime, QString()); \
+            mUserActionTime, QString(), mHints); \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) {\
@@ -381,7 +493,7 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
     PendingChannelRequest *pcr = mAccount->method_name(request, \
-            mUserActionTime, QString()); \
+            mUserActionTime, QString(), mHints); \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) {\
@@ -405,6 +517,7 @@ void TestAccountChannelDispatcher::testEnsureTextChatCancel()
 
 void TestAccountChannelDispatcher::testEnsureTextChatroom()
 {
+    mHints.setHint(QLatin1String("uk.co.willthompson"), QLatin1String("MomOrDad"), QString::fromLatin1("Mommy"));
     TEST_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, false, false, "");
 }
 
@@ -420,6 +533,10 @@ void TestAccountChannelDispatcher::testEnsureTextChatroomCancel()
 
 void TestAccountChannelDispatcher::testEnsureMediaCall()
 {
+    mConnPath = QLatin1String("/org/freedesktop/Telepathy/Connection/cmname/proto/account");
+    mChanPath = mConnPath + QLatin1String("/channel");
+    mChanProps = ChannelClassSpec::streamedMediaCall().allProperties();
+
     TEST_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, false, false, "");
 }
 

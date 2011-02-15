@@ -34,6 +34,7 @@
 #include <TelepathyQt4/PendingVoid>
 
 #include <QDateTime>
+#include <QSharedData>
 
 namespace Tp
 {
@@ -75,7 +76,11 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
     QDateTime userActionTime;
     QString preferredHandler;
     QualifiedPropertyValueMapList requests;
+    ChannelRequestHints hints;
     bool propertiesDone;
+
+    bool gotSWC;
+    ChannelPtr chan;
 };
 
 ChannelRequest::Private::Private(ChannelRequest *parent,
@@ -93,7 +98,8 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       immutableProperties(immutableProperties),
       readinessHelper(parent->readinessHelper()),
-      propertiesDone(false)
+      propertiesDone(false),
+      gotSWC(false)
 {
     debug() << "Creating new ChannelRequest:" << parent->objectPath();
 
@@ -102,7 +108,10 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
             SIGNAL(failed(QString,QString)));
     parent->connect(baseInterface,
             SIGNAL(Succeeded()),
-            SIGNAL(succeeded()));
+            SLOT(onLegacySucceeded()));
+    parent->connect(baseInterface,
+            SIGNAL(SucceededWithChannel(QDBusObjectPath,QVariantMap,QDBusObjectPath,QVariantMap)),
+            SLOT(onSucceededWithChannel(QDBusObjectPath,QVariantMap,QDBusObjectPath,QVariantMap)));
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -223,6 +232,10 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
 
     parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
     readinessHelper->setInterfaces(parent->interfaces());
+
+    if (props.contains(QLatin1String("Hints"))) {
+        hints = qdbus_cast<QVariantMap>(props.value(QLatin1String("Hints")));
+    }
 
     if (lastCall) {
         propertiesDone = true;
@@ -453,6 +466,24 @@ QualifiedPropertyValueMapList ChannelRequest::requests() const
 }
 
 /**
+ * Return the dictionary of metadata provided by the channel requester when requesting the channel.
+ *
+ * This property is set when the channel request is created, and can never change.
+ *
+ * This method can be used even before the ChannelRequest is ready: in this case, the requested
+ * channel properties from the immutable properties, if any, are returned. This is useful for e.g.
+ * matching ChannelRequests from ClientHandlerInterface::addRequest() with existing requests in the
+ * application (by the target ID or handle, most likely).
+ *
+ * \sa Account::supportsRequestHints()
+ * \return The hints in the request, if any.
+ */
+ChannelRequestHints ChannelRequest::hints() const
+{
+    return mPriv->hints;
+}
+
+/**
  * Return all of the immutable properties passed to this object when created.
  *
  * This is useful for e.g. getting to domain-specific properties of channel requests.
@@ -508,6 +539,20 @@ PendingOperation *ChannelRequest::cancel()
 }
 
 /**
+ * Returns the Channel which this request succeeded with, if any.
+ *
+ * This will only ever be populated if Account::requestsSucceedWithChannel() is \c true, and
+ * succeeded() has already been emitted on this ChannelRequest. Note that a PendingChannelRequest
+ * being successfully finished already implies succeeded() has been emitted.
+ *
+ * \return Pointer to the channel proxy, or NULL if there isn't any.
+ */
+ChannelPtr ChannelRequest::channel() const
+{
+    return mPriv->chan;
+}
+
+/**
  * Proceed with the channel request.
  *
  * The client that created this object calls this method when it has connected
@@ -552,6 +597,25 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
  *
  * This signals is emitted when the channel request has succeeded. No further
  * methods must not be called on it.
+ *
+ * \deprecated Use ChannelRequest::succeeded(const ChannelPtr &) instead.
+ */
+
+/**
+ * \fn void ChannelRequest::succeeded(const ChannelPtr &channel);
+ *
+ * This signals is emitted when the channel request has succeeded. No further
+ * methods must not be called on it.
+ *
+ * The \a channel parameter can be used to observe the channel resulting from the request (e.g. for
+ * it getting closed). The pointer may be NULL if the Channel Dispatcher implementation is too old.
+ * Whether a non-NULL channel can be expected can be checked with
+ * Account::requestsSucceedWithChannel().
+ *
+ * If there is a channel, it will be of the subclass determined by and made ready (or not) according
+ * to the settings of the ChannelFactory on the Account the request was made through.
+ *
+ * \param channel Pointer to a proxy for the resulting channel, if the Channel Dispatcher reported it.
  */
 
 void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
@@ -586,6 +650,143 @@ void ChannelRequest::onAccountReady(PendingOperation *op)
     if (mPriv->propertiesDone && !isReady()) {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
+}
+
+void ChannelRequest::onLegacySucceeded()
+{
+    if (mPriv->gotSWC) {
+        return;
+    }
+
+    emit succeeded(); // API/ABI break TODO: don't
+    emit succeeded(ChannelPtr());
+}
+
+void ChannelRequest::onSucceededWithChannel(
+        const QDBusObjectPath &connPath,
+        const QVariantMap &connProps,
+        const QDBusObjectPath &chanPath,
+        const QVariantMap &chanProps)
+{
+    if (mPriv->gotSWC) {
+        warning().nospace() << "Got SucceededWithChannel again for CR(" << objectPath() << ")!";
+        return;
+    }
+
+    mPriv->gotSWC = true;
+
+    QList<PendingOperation *> readyOps;
+
+    QString connBusName = connPath.path().mid(1).replace(
+            QLatin1String("/"), QLatin1String("."));
+    PendingReady *connReady = mPriv->connFact->proxy(connBusName, connPath.path(),
+            mPriv->chanFact, mPriv->contactFact);
+    ConnectionPtr conn = ConnectionPtr::qObjectCast(connReady->proxy());
+    readyOps.append(connReady);
+
+    PendingReady *chanReady = mPriv->chanFact->proxy(conn, chanPath.path(), chanProps);
+    mPriv->chan = ChannelPtr::qObjectCast(chanReady->proxy());
+    readyOps.append(chanReady);
+
+    connect(new PendingComposite(readyOps, ChannelRequestPtr(this)),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onChanBuilt(Tp::PendingOperation*)));
+}
+
+void ChannelRequest::onChanBuilt(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        warning() << "Failed to build Channel which the ChannelRequest succeeded with,"
+            << "succeeding with NULL channel:" << op->errorName() << ',' << op->errorMessage();
+        mPriv->chan.reset();
+    }
+
+    emit succeeded(); // API/ABI break TODO: don't
+    emit succeeded(mPriv->chan);
+}
+
+void ChannelRequest::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(succeeded())) == 0) {
+        warning() << "Connecting to deprecated signal ChannelRequest::succeeded()";
+    }
+}
+
+struct TELEPATHY_QT4_NO_EXPORT ChannelRequestHints::Private : public QSharedData
+{
+    Private() {}
+    Private(const QVariantMap &hints) : hints(hints) {}
+
+    QVariantMap hints;
+};
+
+ChannelRequestHints::ChannelRequestHints()
+{
+}
+
+ChannelRequestHints::ChannelRequestHints(const QVariantMap &hints)
+    : mPriv(new Private(hints))
+{
+}
+
+ChannelRequestHints::ChannelRequestHints(const ChannelRequestHints &crh)
+    : mPriv(crh.mPriv)
+{
+}
+
+ChannelRequestHints::~ChannelRequestHints()
+{
+}
+
+ChannelRequestHints &ChannelRequestHints::operator=(const ChannelRequestHints &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+bool ChannelRequestHints::isValid() const
+{
+    return mPriv.constData() != 0;
+}
+
+bool ChannelRequestHints::hasHint(const QString &reversedDomain, const QString &localName) const
+{
+    if (!isValid()) {
+        return false;
+    }
+
+    const QString qualifiedName = reversedDomain + QLatin1Char('.') + localName;
+    return mPriv->hints.contains(qualifiedName);
+}
+
+QVariant ChannelRequestHints::hint(const QString &reversedDomain, const QString &localName) const
+{
+    if (!isValid()) {
+        return QVariant();
+    }
+
+    const QString qualifiedName = reversedDomain + QLatin1Char('.') + localName;
+    return mPriv->hints.value(qualifiedName);
+}
+
+void ChannelRequestHints::setHint(const QString &reversedDomain, const QString &localName, const QVariant &value)
+{
+    const QString qualifiedName = reversedDomain + QLatin1Char('.') + localName;
+
+    if (!isValid()) {
+        mPriv = new Private();
+    }
+
+    mPriv->hints.insert(qualifiedName, value);
+}
+
+QVariantMap ChannelRequestHints::allHints() const
+{
+    return isValid() ? mPriv->hints : QVariantMap();
 }
 
 } // Tp
