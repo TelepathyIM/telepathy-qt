@@ -146,6 +146,7 @@ class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"org.freedesktop.Telepathy.ChannelDispatcher\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
+"    <property name=\"SupportsRequestHints\" type=\"b\" access=\"read\" />\n"
 "    <method name=\"CreateChannel\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"Requested_Properties\" type=\"a{sv}\" direction=\"in\" />\n"
@@ -164,6 +165,7 @@ class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
         "")
 
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
+    Q_PROPERTY(bool SupportsRequestHints READ SupportsRequestHints)
 
 public:
     ChannelDispatcherAdaptor(const QDBusConnection &bus, QObject *parent)
@@ -181,6 +183,11 @@ public: // Properties
     inline QStringList Interfaces() const
     {
         return QStringList();
+    }
+
+    inline bool SupportsRequestHints() const
+    {
+        return true;
     }
 
 public Q_SLOTS: // Methods
@@ -300,6 +307,15 @@ void TestAccountChannelDispatcher::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
+    // Create the CD first, because Accounts try to introspect it
+    QDBusConnection bus = QDBusConnection::sessionBus();
+    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
+    QObject *dispatcher = new QObject(this);
+    mChannelDispatcherAdaptor = new ChannelDispatcherAdaptor(bus, dispatcher);
+    QVERIFY(bus.registerService(channelDispatcherBusName));
+    QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
+
     mAM = AccountManager::create();
     QVERIFY(connect(mAM->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -323,13 +339,7 @@ void TestAccountChannelDispatcher::initTestCase()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAccount->isReady(), true);
 
-    QDBusConnection bus = mAccount->dbusConnection();
-    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
-    QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
-    QObject *dispatcher = new QObject(this);
-    mChannelDispatcherAdaptor = new ChannelDispatcherAdaptor(bus, dispatcher);
-    QVERIFY(bus.registerService(channelDispatcherBusName));
-    QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
+    QCOMPARE(mAccount->supportsRequestHints(), true);
 }
 
 void TestAccountChannelDispatcher::init()
