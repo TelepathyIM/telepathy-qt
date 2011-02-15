@@ -5,20 +5,22 @@ The "fit for galoshes" release.
 
 Enhancements:
  * Make the debug subsystem as no-op as possible when debugging is disabled at
-   runtime with Tp::enableDebug(false) and Tp::enableWarnings(false)
+   runtime with Tp::enableDebug(false) and Tp::enableWarnings(false).
  * fd.o#33123 - Bind Protocol.Avatars.
  * fd.o#33124 - Bind Protocol.Presence.
  * fd.o#33116 - Added support for passing hints to channel requests, also making
-   channel requests marginally more efficient CPU and memory wise in the process
- * fd.o#33117 - Added support for extracting hints from ChannelRequests
+   channel requests marginally more efficient CPU and memory wise in the
+   process.
+ * fd.o#33117 - Added support for extracting hints from ChannelRequests.
  * fd.o#33117 - Added support for ChannelRequests reporting the channel created
-   for them on success, for further observation
+   for them on success, for further observation.
 
 Fixes:
+ * fd.o#34131 - Writing avatar cache into $HOME with scratchbox.
  * Unstable generated future-* headers being installed (although nothing
-   declared in them was ever exported in the library)
+   declared in them was ever exported in the library).
  * Possible crashes in Channel internal updateContacts function when just the
-   self handle changed
+   self handle changed.
 
 telepathy-qt4 0.5.6 (2011-01-27)
 =================================
