@@ -10,6 +10,7 @@
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/ChannelRequest>
+#include <TelepathyQt4/ChannelRequestHints>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingChannelRequest>
@@ -37,6 +38,7 @@ class ChannelRequestAdaptor : public QDBusAbstractAdaptor
 "    <property name=\"PreferredHandler\" type=\"s\" access=\"read\" />\n"
 "    <property name=\"Requests\" type=\"aa{sv}\" access=\"read\" />\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
+"    <property name=\"Hints\" type=\"a{sv}\" access=\"read\" />\n"
 "    <method name=\"Proceed\" />\n"
 "    <method name=\"Cancel\" />\n"
 "    <signal name=\"Failed\" >\n"
@@ -52,6 +54,7 @@ class ChannelRequestAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QString PreferredHandler READ PreferredHandler)
     Q_PROPERTY(QualifiedPropertyValueMapList Requests READ Requests)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
+    Q_PROPERTY(QVariantMap Hints READ Hints)
 
 public:
     ChannelRequestAdaptor(QDBusObjectPath account,
@@ -61,12 +64,13 @@ public:
             QStringList interfaces,
             bool shouldFail,
             bool proceedNoop,
+            QVariantMap hints,
             QObject *parent)
         : QDBusAbstractAdaptor(parent),
           mAccount(account), mUserActionTime(userActionTime),
           mPreferredHandler(preferredHandler), mRequests(requests),
           mInterfaces(interfaces), mShouldFail(shouldFail),
-          mProceedNoop(false)
+          mProceedNoop(false), mHints(hints)
     {
     }
 
@@ -98,6 +102,11 @@ public: // Properties
     inline QStringList Interfaces() const
     {
         return mInterfaces;
+    }
+
+    inline QVariantMap Hints() const
+    {
+        return mHints;
     }
 
 public Q_SLOTS: // Methods
@@ -137,6 +146,7 @@ private:
     QStringList mInterfaces;
     bool mShouldFail;
     bool mProceedNoop;
+    QVariantMap mHints;
 };
 
 class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
@@ -159,6 +169,22 @@ class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
 "      <arg name=\"Requested_Properties\" type=\"a{sv}\" direction=\"in\" />\n"
 "      <arg name=\"User_Action_Time\" type=\"x\" direction=\"in\" />\n"
 "      <arg name=\"Preferred_Handler\" type=\"s\" direction=\"in\" />\n"
+"      <arg name=\"Channel_Object_Path\" type=\"o\" direction=\"out\" />\n"
+"    </method>\n"
+"    <method name=\"CreateChannelWithHints\" >\n"
+"      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Requested_Properties\" type=\"a{sv}\" direction=\"in\" />\n"
+"      <arg name=\"User_Action_Time\" type=\"x\" direction=\"in\" />\n"
+"      <arg name=\"Preferred_Handler\" type=\"s\" direction=\"in\" />\n"
+"      <arg name=\"Hints\" type=\"a{sv}\" direction=\"in\" />\n"
+"      <arg name=\"Channel_Object_Path\" type=\"o\" direction=\"out\" />\n"
+"    </method>\n"
+"    <method name=\"EnsureChannelWithHints\" >\n"
+"      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Requested_Properties\" type=\"a{sv}\" direction=\"in\" />\n"
+"      <arg name=\"User_Action_Time\" type=\"x\" direction=\"in\" />\n"
+"      <arg name=\"Preferred_Handler\" type=\"s\" direction=\"in\" />\n"
+"      <arg name=\"Hints\" type=\"a{sv}\" direction=\"in\" />\n"
 "      <arg name=\"Channel_Object_Path\" type=\"o\" direction=\"out\" />\n"
 "    </method>\n"
 "  </interface>\n"
@@ -207,12 +233,28 @@ public Q_SLOTS: // Methods
                 userActionTime, preferredHandler);
     }
 
+    QDBusObjectPath CreateChannelWithHints(const QDBusObjectPath &account,
+            const QVariantMap &requestedProperties, qlonglong userActionTime,
+            const QString &preferredHandler, const QVariantMap &hints)
+    {
+        return createChannel(account, requestedProperties,
+                userActionTime, preferredHandler, hints);
+    }
+
+    QDBusObjectPath EnsureChannelWithHints(const QDBusObjectPath &account,
+            const QVariantMap &requestedProperties, qlonglong userActionTime,
+            const QString &preferredHandler, const QVariantMap &hints)
+    {
+        return createChannel(account, requestedProperties,
+                userActionTime, preferredHandler, hints);
+    }
+
 private:
     friend class TestAccountChannelDispatcher;
 
-    QDBusObjectPath createChannel(const QDBusObjectPath& account,
-            const QVariantMap& requestedProperties, qlonglong userActionTime,
-            const QString& preferredHandler)
+    QDBusObjectPath createChannel(const QDBusObjectPath &account,
+            const QVariantMap &requestedProperties, qlonglong userActionTime,
+            const QString &preferredHandler, const QVariantMap &hints = QVariantMap())
     {
         QObject *request = new QObject(this);
         new ChannelRequestAdaptor(
@@ -223,6 +265,7 @@ private:
                 QStringList(),
                 mChannelRequestShouldFail,
                 mChannelRequestProceedNoop,
+                hints,
                 request);
         QString channelRequestPath =
             QString(QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/_%1"))
@@ -287,6 +330,7 @@ private:
     bool mChannelRequestFinished;
     bool mChannelRequestFinishedWithError;
     QString mChannelRequestFinishedErrorName;
+    ChannelRequestHints mHints;
 };
 
 void TestAccountChannelDispatcher::onPendingChannelRequestFinished(
@@ -351,6 +395,7 @@ void TestAccountChannelDispatcher::init()
     mChannelRequestFinishedWithError = false;
     mChannelRequestFinishedErrorName = QString();
     QDateTime mUserActionTime = QDateTime::currentDateTime();
+    mHints = ChannelRequestHints();
 }
 
 void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
@@ -367,13 +412,16 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
     mLoop->exec(0);
     QCOMPARE(mChannelRequest->userActionTime(), mUserActionTime);
     QCOMPARE(mChannelRequest->account().data(), mAccount.data());
+
+    QVERIFY(mChannelRequest->hints().isValid());
+    QCOMPARE(mChannelRequest->hints().allHints(), mHints.allHints());
 }
 
 #define TEST_ENSURE_CHANNEL_SPECIFIC(method_name, shouldFail, proceedNoop, expectedError) \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
     PendingChannelRequest *pcr = mAccount->method_name(QLatin1String("foo@bar"), \
-            mUserActionTime, QString()); \
+            mUserActionTime, QString(), mHints); \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) {\
@@ -391,7 +439,7 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
     PendingChannelRequest *pcr = mAccount->method_name(request, \
-            mUserActionTime, QString()); \
+            mUserActionTime, QString(), mHints); \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) {\
@@ -415,6 +463,7 @@ void TestAccountChannelDispatcher::testEnsureTextChatCancel()
 
 void TestAccountChannelDispatcher::testEnsureTextChatroom()
 {
+    mHints.setHint(QLatin1String("uk.co.willthompson"), QLatin1String("MomOrDad"), QString::fromLatin1("Mommy"));
     TEST_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, false, false, "");
 }
 
