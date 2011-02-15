@@ -1471,6 +1471,23 @@ bool Account::supportsRequestHints() const
 }
 
 /**
+ * Return whether the ChannelRequest::succeeded(const Tp::ChannelPtr &) signal is expected to be
+ * emitted with a non-NULL \a channel parameter for requests made using this account.
+ *
+ * This can be used as a run-time check for the Channel Dispatcher implementation being new enough.
+ * In particular, similarly old Channel Dispatchers don't support request hints either, so the return
+ * value for this function and Account::supportsRequestHints() will bet he same.
+ *
+ * The return value is undefined unless Account::FeatureCore is ready on this account proxy.
+ *
+ * \return \c true if supported, \c false if not.
+ */
+bool Account::requestsSucceedWithChannel() const
+{
+    return supportsRequestHints();
+}
+
+/**
  * Same as \c ensureTextChat(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureTextChat(

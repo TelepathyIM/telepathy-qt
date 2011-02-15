@@ -221,7 +221,7 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
                     SIGNAL(failed(QString,QString)),
                     SLOT(setFinishedWithError(QString,QString)));
             connect(mPriv->channelRequest.data(),
-                    SIGNAL(succeeded()),
+                    SIGNAL(succeeded(Tp::ChannelPtr)),
                     SLOT(setFinished()));
 
             connect(mPriv->channelRequest->proceed(),

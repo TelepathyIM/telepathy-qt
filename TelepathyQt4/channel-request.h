@@ -79,9 +79,12 @@ public:
 
     PendingOperation *cancel();
 
+    ChannelPtr channel() const;
+
 Q_SIGNALS:
     void failed(const QString &errorName, const QString &errorMessage);
-    void succeeded();
+    void succeeded(); // TODO API/ABI break: remove
+    void succeeded(const Tp::ChannelPtr &channel);
 
 protected:
     ChannelRequest(const QDBusConnection &bus,
@@ -96,9 +99,18 @@ protected:
 
     Client::ChannelRequestInterface *baseInterface() const;
 
+protected:
+    // TODO: (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void onAccountReady(Tp::PendingOperation *op);
+
+    void onLegacySucceeded();
+    void onSucceededWithChannel(const QDBusObjectPath &connPath, const QVariantMap &connProps,
+            const QDBusObjectPath &chanPath, const QVariantMap &chanProps);
+    void onChanBuilt(Tp::PendingOperation *op);
 
 private:
     friend class PendingChannelRequest;

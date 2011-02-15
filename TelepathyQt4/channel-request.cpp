@@ -78,6 +78,9 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
     QualifiedPropertyValueMapList requests;
     ChannelRequestHints hints;
     bool propertiesDone;
+
+    bool gotSWC;
+    ChannelPtr chan;
 };
 
 ChannelRequest::Private::Private(ChannelRequest *parent,
@@ -95,7 +98,8 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       immutableProperties(immutableProperties),
       readinessHelper(parent->readinessHelper()),
-      propertiesDone(false)
+      propertiesDone(false),
+      gotSWC(false)
 {
     debug() << "Creating new ChannelRequest:" << parent->objectPath();
 
@@ -104,7 +108,10 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
             SIGNAL(failed(QString,QString)));
     parent->connect(baseInterface,
             SIGNAL(Succeeded()),
-            SIGNAL(succeeded()));
+            SLOT(onLegacySucceeded()));
+    parent->connect(baseInterface,
+            SIGNAL(SucceededWithChannel(QDBusObjectPath,QVariantMap,QDBusObjectPath,QVariantMap)),
+            SLOT(onSucceededWithChannel(QDBusObjectPath,QVariantMap,QDBusObjectPath,QVariantMap)));
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -532,6 +539,20 @@ PendingOperation *ChannelRequest::cancel()
 }
 
 /**
+ * Returns the Channel which this request succeeded with, if any.
+ *
+ * This will only ever be populated if Account::requestsSucceedWithChannel() is \c true, and
+ * succeeded() has already been emitted on this ChannelRequest. Note that a PendingChannelRequest
+ * being successfully finished already implies succeeded() has been emitted.
+ *
+ * \return Pointer to the channel proxy, or NULL if there isn't any.
+ */
+ChannelPtr ChannelRequest::channel() const
+{
+    return mPriv->chan;
+}
+
+/**
  * Proceed with the channel request.
  *
  * The client that created this object calls this method when it has connected
@@ -576,6 +597,25 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
  *
  * This signals is emitted when the channel request has succeeded. No further
  * methods must not be called on it.
+ *
+ * \deprecated Use ChannelRequest::succeeded(const ChannelPtr &) instead.
+ */
+
+/**
+ * \fn void ChannelRequest::succeeded(const ChannelPtr &channel);
+ *
+ * This signals is emitted when the channel request has succeeded. No further
+ * methods must not be called on it.
+ *
+ * The \a channel parameter can be used to observe the channel resulting from the request (e.g. for
+ * it getting closed). The pointer may be NULL if the Channel Dispatcher implementation is too old.
+ * Whether a non-NULL channel can be expected can be checked with
+ * Account::requestsSucceedWithChannel().
+ *
+ * If there is a channel, it will be of the subclass determined by and made ready (or not) according
+ * to the settings of the ChannelFactory on the Account the request was made through.
+ *
+ * \param channel Pointer to a proxy for the resulting channel, if the Channel Dispatcher reported it.
  */
 
 void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
@@ -609,6 +649,66 @@ void ChannelRequest::onAccountReady(PendingOperation *op)
 
     if (mPriv->propertiesDone && !isReady()) {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
+}
+
+void ChannelRequest::onLegacySucceeded()
+{
+    if (mPriv->gotSWC) {
+        return;
+    }
+
+    emit succeeded(); // API/ABI break TODO: don't
+    emit succeeded(ChannelPtr());
+}
+
+void ChannelRequest::onSucceededWithChannel(
+        const QDBusObjectPath &connPath,
+        const QVariantMap &connProps,
+        const QDBusObjectPath &chanPath,
+        const QVariantMap &chanProps)
+{
+    if (mPriv->gotSWC) {
+        warning().nospace() << "Got SucceededWithChannel again for CR(" << objectPath() << ")!";
+        return;
+    }
+
+    mPriv->gotSWC = true;
+
+    QList<PendingOperation *> readyOps;
+
+    QString connBusName = connPath.path().mid(1).replace(
+            QLatin1String("/"), QLatin1String("."));
+    PendingReady *connReady = mPriv->connFact->proxy(connBusName, connPath.path(),
+            mPriv->chanFact, mPriv->contactFact);
+    ConnectionPtr conn = ConnectionPtr::qObjectCast(connReady->proxy());
+    readyOps.append(connReady);
+
+    PendingReady *chanReady = mPriv->chanFact->proxy(conn, chanPath.path(), chanProps);
+    mPriv->chan = ChannelPtr::qObjectCast(chanReady->proxy());
+    readyOps.append(chanReady);
+
+    connect(new PendingComposite(readyOps, ChannelRequestPtr(this)),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onChanBuilt(Tp::PendingOperation*)));
+}
+
+void ChannelRequest::onChanBuilt(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        warning() << "Failed to build Channel which the ChannelRequest succeeded with,"
+            << "succeeding with NULL channel:" << op->errorName() << ',' << op->errorMessage();
+        mPriv->chan.reset();
+    }
+
+    emit succeeded(); // API/ABI break TODO: don't
+    emit succeeded(mPriv->chan);
+}
+
+void ChannelRequest::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(succeeded())) == 0) {
+        warning() << "Connecting to deprecated signal ChannelRequest::succeeded()";
     }
 }
 

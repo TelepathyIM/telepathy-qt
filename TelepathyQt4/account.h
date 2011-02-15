@@ -195,6 +195,7 @@ public:
     PendingOperation *remove();
 
     bool supportsRequestHints() const;
+    bool requestsSucceedWithChannel() const;
 
     // TODO ABI break: collapse all of the overloads without a hints arg with the corresponding
     // hints versions and add a default param for the hints args
