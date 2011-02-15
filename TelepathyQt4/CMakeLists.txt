@@ -159,6 +159,7 @@ set(telepathy_qt4_HEADERS
     ChannelInterfaceServicePointInterface
     ChannelInterfaceTubeInterface
     ChannelRequest
+    ChannelRequestHints
     channel-request.h
     ChannelRequestInterface
     ChannelTypeContactListInterface
