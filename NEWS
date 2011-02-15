@@ -1,7 +1,7 @@
 telepathy-qt4 0.5.7 (UNRELEASED)
 =================================
 
-The "..." release.
+The "fit for galoshes" release.
 
 Enhancements:
  * Make the debug subsystem as no-op as possible when debugging is disabled at
@@ -10,6 +10,9 @@ Enhancements:
  * fd.o#33124 - Bind Protocol.Presence.
  * fd.o#33116 - Added support for passing hints to channel requests, also making
    channel requests marginally more efficient CPU and memory wise in the process
+ * fd.o#33117 - Added support for extracting hints from ChannelRequests
+ * fd.o#33117 - Added support for ChannelRequests reporting the channel created
+   for them on success, for further observation
 
 Fixes:
  * Unstable generated future-* headers being installed (although nothing
