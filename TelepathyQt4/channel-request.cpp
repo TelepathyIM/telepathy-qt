@@ -34,6 +34,7 @@
 #include <TelepathyQt4/PendingVoid>
 
 #include <QDateTime>
+#include <QSharedData>
 
 namespace Tp
 {
@@ -586,6 +587,83 @@ void ChannelRequest::onAccountReady(PendingOperation *op)
     if (mPriv->propertiesDone && !isReady()) {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
+}
+
+struct TELEPATHY_QT4_NO_EXPORT ChannelRequestHints::Private : public QSharedData
+{
+    Private() {}
+    Private(const QVariantMap &hints) : hints(hints) {}
+
+    QVariantMap hints;
+};
+
+ChannelRequestHints::ChannelRequestHints()
+{
+}
+
+ChannelRequestHints::ChannelRequestHints(const QVariantMap &hints)
+    : mPriv(new Private(hints))
+{
+}
+
+ChannelRequestHints::ChannelRequestHints(const ChannelRequestHints &crh)
+    : mPriv(crh.mPriv)
+{
+}
+
+ChannelRequestHints::~ChannelRequestHints()
+{
+}
+
+ChannelRequestHints &ChannelRequestHints::operator=(const ChannelRequestHints &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+bool ChannelRequestHints::isValid() const
+{
+    return mPriv.constData() != 0;
+}
+
+bool ChannelRequestHints::hasHint(const QString &reversedDomain, const QString &localName) const
+{
+    if (!isValid()) {
+        return false;
+    }
+
+    const QString qualifiedName = reversedDomain + QLatin1Char('.') + localName;
+    return mPriv->hints.contains(qualifiedName);
+}
+
+QVariant ChannelRequestHints::hint(const QString &reversedDomain, const QString &localName) const
+{
+    if (!isValid()) {
+        return QVariant();
+    }
+
+    const QString qualifiedName = reversedDomain + QLatin1Char('.') + localName;
+    return mPriv->hints.value(qualifiedName);
+}
+
+void ChannelRequestHints::setHint(const QString &reversedDomain, const QString &localName, const QVariant &value)
+{
+    const QString qualifiedName = reversedDomain + QLatin1Char('.') + localName;
+
+    if (!isValid()) {
+        mPriv = new Private();
+    }
+
+    mPriv->hints.insert(qualifiedName, value);
+}
+
+QVariantMap ChannelRequestHints::allHints() const
+{
+    return isValid() ? mPriv->hints : QVariantMap();
 }
 
 } // Tp

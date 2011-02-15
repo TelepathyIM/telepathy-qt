@@ -37,6 +37,7 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/SharedPtr>
 
+#include <QSharedDataPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -44,6 +45,7 @@
 namespace Tp
 {
 
+class ChannelRequestHints;
 class PendingOperation;
 
 class TELEPATHY_QT4_EXPORT ChannelRequest : public StatefulDBusProxy,
@@ -105,6 +107,31 @@ private:
     struct Private;
     friend struct Private;
     Private *mPriv;
+};
+
+class TELEPATHY_QT4_EXPORT ChannelRequestHints
+{
+public:
+
+    ChannelRequestHints();
+    ChannelRequestHints(const QVariantMap &hints);
+    ChannelRequestHints(const ChannelRequestHints &other);
+    ~ChannelRequestHints();
+
+    ChannelRequestHints &operator=(const ChannelRequestHints &other);
+
+    bool isValid() const;
+
+    bool hasHint(const QString &reversedDomain, const QString &localName) const;
+    QVariant hint(const QString &reversedDomain, const QString &localName) const;
+    void setHint(const QString &reversedDomain, const QString &localName, const QVariant &value);
+
+    QVariantMap allHints() const;
+
+private:
+    struct Private;
+    friend struct Private;
+    QSharedDataPointer<Private> mPriv;
 };
 
 } // Tp
