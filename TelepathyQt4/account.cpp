@@ -1471,14 +1471,14 @@ bool Account::supportsRequestHints() const
 }
 
 /**
- * Same as \c ensureTextChat(contactIdentifier, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureTextChat(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureTextChat(
         const QString &contactIdentifier,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return ensureTextChat(contactIdentifier, userActionTime, preferredHandler, QVariantMap());
+    return ensureTextChat(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1505,7 +1505,7 @@ PendingChannelRequest *Account::ensureTextChat(
         const QString &contactIdentifier,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1519,14 +1519,14 @@ PendingChannelRequest *Account::ensureTextChat(
 }
 
 /**
- * Same as \c ensureTextChat(contact, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureTextChat(contact, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureTextChat(
         const ContactPtr &contact,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return ensureTextChat(contact, userActionTime, preferredHandler, QVariantMap());
+    return ensureTextChat(contact, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1553,7 +1553,7 @@ PendingChannelRequest *Account::ensureTextChat(
         const ContactPtr &contact,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1567,14 +1567,14 @@ PendingChannelRequest *Account::ensureTextChat(
 }
 
 /**
- * Same as \c ensureTextChatroom(roomName, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureTextChatroom(roomName, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureTextChatroom(
         const QString &roomName,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return ensureTextChatroom(roomName, userActionTime, preferredHandler, QVariantMap());
+    return ensureTextChatroom(roomName, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1601,7 +1601,7 @@ PendingChannelRequest *Account::ensureTextChatroom(
         const QString &roomName,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1615,14 +1615,14 @@ PendingChannelRequest *Account::ensureTextChatroom(
 }
 
 /**
- * Same as \c ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureStreamedMediaCall(
         const QString &contactIdentifier,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler, QVariantMap());
+    return ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1649,7 +1649,7 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
         const QString &contactIdentifier,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1663,14 +1663,14 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
 }
 
 /**
- * Same as \c ensureStreamedMediaCall(contact, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureStreamedMediaCall(contact, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureStreamedMediaCall(
         const ContactPtr &contact,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return ensureStreamedMediaCall(contact, userActionTime, preferredHandler, QVariantMap());
+    return ensureStreamedMediaCall(contact, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1697,7 +1697,7 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
         const ContactPtr &contact,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1711,14 +1711,14 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
 }
 
 /**
- * Same as \c ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const QString &contactIdentifier,
         QDateTime userActionTime,
         const QString &preferredHandler)
 {
-    return ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler, QVariantMap());
+    return ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1748,7 +1748,7 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const QString &contactIdentifier,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1764,14 +1764,14 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
 }
 
 /**
- * Same as \c ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const ContactPtr &contact,
         QDateTime userActionTime,
         const QString &preferredHandler)
 {
-    return ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler, QVariantMap());
+    return ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1801,7 +1801,7 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const ContactPtr &contact,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1817,7 +1817,7 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
 }
 
 /**
- * Same as \c ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         const QString &contactIdentifier,
@@ -1825,7 +1825,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         QDateTime userActionTime,
         const QString &preferredHandler)
 {
-    return ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler, QVariantMap());
+    return ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1858,7 +1858,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         bool withAudio,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1880,7 +1880,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
 }
 
 /**
- * Same as \c ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         const ContactPtr &contact,
@@ -1888,7 +1888,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         QDateTime userActionTime,
         const QString &preferredHandler)
 {
-    return ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler, QVariantMap());
+    return ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1921,7 +1921,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         bool withAudio,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -1943,7 +1943,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
 }
 
 /**
- * Same as \c createFileTransfer(contactIdentifier, properties, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createFileTransfer(contactIdentifier, properties, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createFileTransfer(
         const QString &contactIdentifier,
@@ -1951,7 +1951,7 @@ PendingChannelRequest *Account::createFileTransfer(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createFileTransfer(contactIdentifier, properties, userActionTime, preferredHandler, QVariantMap());
+    return createFileTransfer(contactIdentifier, properties, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -1979,7 +1979,7 @@ PendingChannelRequest *Account::createFileTransfer(
         const FileTransferChannelCreationProperties &properties,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -2019,7 +2019,7 @@ PendingChannelRequest *Account::createFileTransfer(
 }
 
 /**
- * Same as \c createFileTransfer(contact, properties, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createFileTransfer(contact, properties, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createFileTransfer(
         const ContactPtr &contact,
@@ -2027,7 +2027,7 @@ PendingChannelRequest *Account::createFileTransfer(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createFileTransfer(contact, properties, userActionTime, preferredHandler, QVariantMap());
+    return createFileTransfer(contact, properties, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2054,7 +2054,7 @@ PendingChannelRequest *Account::createFileTransfer(
         const FileTransferChannelCreationProperties &properties,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -2094,7 +2094,7 @@ PendingChannelRequest *Account::createFileTransfer(
 }
 
 /**
- * Same as \c createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QList<ChannelPtr> &channels,
@@ -2102,7 +2102,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap());
+    return createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2131,7 +2131,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QStringList &initialInviteeContactsIdentifiers,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     mPriv->addConferenceRequestParameters(
@@ -2144,7 +2144,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
 }
 
 /**
- * Same as \c createConferenceStreamedMediaCall(channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createConferenceStreamedMediaCall(channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QList<ChannelPtr> &channels,
@@ -2152,7 +2152,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createConferenceStreamedMediaCall(channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap());
+    return createConferenceStreamedMediaCall(channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2181,7 +2181,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QList<ContactPtr> &initialInviteeContacts,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
@@ -2196,7 +2196,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
 }
 
 /**
- * Same as \c createConferenceTextChat(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createConferenceTextChat(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createConferenceTextChat(
         const QList<ChannelPtr> &channels,
@@ -2204,7 +2204,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createConferenceTextChat(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap());
+    return createConferenceTextChat(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2233,7 +2233,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QStringList &initialInviteeContactsIdentifiers,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     mPriv->addConferenceRequestParameters(
@@ -2246,7 +2246,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
 }
 
 /**
- * Same as \c createConferenceTextChat(channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createConferenceTextChat(channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createConferenceTextChat(
         const QList<ChannelPtr> &channels,
@@ -2254,7 +2254,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createConferenceTextChat(channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap());
+    return createConferenceTextChat(channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2281,7 +2281,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QList<ContactPtr> &initialInviteeContacts,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     mPriv->addConferenceRequestParameters(
@@ -2294,7 +2294,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
 }
 
 /**
- * Same as \c createConferenceTextChatroom(roomName, channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createConferenceTextChatroom(roomName, channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QString &roomName,
@@ -2303,7 +2303,7 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createConferenceTextChatroom(roomName, channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, QVariantMap());
+    return createConferenceTextChatroom(roomName, channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2334,7 +2334,7 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
         const QStringList &initialInviteeContactsIdentifiers,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -2349,7 +2349,7 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
 }
 
 /**
- * Same as \c createConferenceTextChatroom(roomName, channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createConferenceTextChatroom(roomName, channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QString &roomName,
@@ -2358,7 +2358,7 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createConferenceTextChatroom(roomName, channels, initialInviteeContacts, userActionTime, preferredHandler, QVariantMap());
+    return createConferenceTextChatroom(roomName, channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2389,7 +2389,7 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
         const QList<ContactPtr> &initialInviteeContacts,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -2404,7 +2404,7 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
 }
 
 /**
- * Same as \c createContactSearch(server, limit, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createContactSearch(server, limit, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createContactSearch(
         const QString &server,
@@ -2412,7 +2412,7 @@ PendingChannelRequest *Account::createContactSearch(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createContactSearch(server, limit, userActionTime, preferredHandler, QVariantMap());
+    return createContactSearch(server, limit, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2443,7 +2443,7 @@ PendingChannelRequest *Account::createContactSearch(
         uint limit,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -2457,14 +2457,14 @@ PendingChannelRequest *Account::createContactSearch(
 }
 
 /**
- * Same as \c createChannel(request, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c createChannel(request, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createChannel(
         const QVariantMap &request,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return createChannel(request, userActionTime, preferredHandler, QVariantMap());
+    return createChannel(request, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2492,21 +2492,21 @@ PendingChannelRequest *Account::createChannel(
         const QVariantMap &request,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
 }
 
 /**
- * Same as \c ensureChannel(request, userActionTime, preferredHandler, QVariantMap())
+ * Same as \c ensureChannel(request, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::ensureChannel(
         const QVariantMap &request,
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return ensureChannel(request, userActionTime, preferredHandler, QVariantMap());
+    return ensureChannel(request, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2534,7 +2534,7 @@ PendingChannelRequest *Account::ensureChannel(
         const QVariantMap &request,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
-        const QVariantMap &hints)
+        const ChannelRequestHints &hints)
 {
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);

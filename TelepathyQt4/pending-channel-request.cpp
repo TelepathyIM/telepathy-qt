@@ -32,6 +32,7 @@
 #include <TelepathyQt4/ChannelDispatcher>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ChannelRequest>
+#include <TelepathyQt4/ChannelRequestHints>
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingFailure>
@@ -80,7 +81,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
  */
 PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
         const QVariantMap &requestedProperties, const QDateTime &userActionTime,
-        const QString &preferredHandler, bool create, const QVariantMap &hints)
+        const QString &preferredHandler, bool create, const ChannelRequestHints &hints)
     : PendingOperation(account),
       mPriv(new Private(account->dbusConnection()))
 {
@@ -92,14 +93,14 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
 
     QDBusPendingCallWatcher *watcher = 0;
     if (create) {
-        if (!hints.isEmpty()) {
+        if (hints.isValid()) {
             if (account->supportsRequestHints()) {
                 watcher = new QDBusPendingCallWatcher(
                     channelDispatcherInterface->CreateChannelWithHints(
                         QDBusObjectPath(account->objectPath()),
                         requestedProperties,
                         userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
-                        preferredHandler, hints), this);
+                        preferredHandler, hints.allHints()), this);
             } else {
                 warning() << "Hints passed to channel request won't have an effect"
                     << "because the Channel Dispatcher service in use is too old";
@@ -115,14 +116,14 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
                         preferredHandler), this);
         }
     } else {
-        if (!hints.isEmpty()) {
+        if (hints.isValid()) {
             if (account->supportsRequestHints()) {
                 watcher = new QDBusPendingCallWatcher(
                     channelDispatcherInterface->CreateChannelWithHints(
                         QDBusObjectPath(account->objectPath()),
                         requestedProperties,
                         userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
-                        preferredHandler, hints), this);
+                        preferredHandler, hints.allHints()), this);
             } else {
                 warning() << "Hints passed to channel request won't have an effect"
                     << "because the Channel Dispatcher service in use is too old";
