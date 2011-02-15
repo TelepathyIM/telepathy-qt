@@ -121,8 +121,20 @@
 /**
  * The well-known bus name of the Channel Dispatcher.
  */
+#define TELEPATHY_CHANNEL_DISPATCHER_BUS_NAME \
+    "org.freedesktop.Telepathy.ChannelDispatcher"
+
+/**
+ * The well-known bus name of the Channel Dispatcher.
+ */
 #define TP_QT4_CHANNEL_DISPATCHER_BUS_NAME \
     (QLatin1String("org.freedesktop.Telepathy.ChannelDispatcher"))
+
+/**
+ * The object path of the Channel Dispatcherr object.
+ */
+#define TELEPATHY_CHANNEL_DISPATCHER_OBJECT_PATH \
+    "/org/freedesktop/Telepathy/ChannelDispatcher"
 
 /**
  * The object path of the Channel Dispatcherr object.
