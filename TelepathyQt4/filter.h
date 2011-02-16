@@ -49,7 +49,12 @@ public:
 
     virtual bool isValid() const { return false; }
 
-    virtual bool matches(const SharedPtr<T> &t) const { return false; }
+    virtual bool matches(const SharedPtr<T> &t) const
+    {
+        Q_UNUSED(t);
+
+        return false;
+    }
 
 protected:
     Filter() {}
