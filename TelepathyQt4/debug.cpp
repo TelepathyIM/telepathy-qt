@@ -69,22 +69,6 @@ namespace Tp
  * \param enable Whether warnings should be enabled or not.
  */
 
-namespace
-{
-struct DiscardDevice : public QIODevice
-{
-    qint64 readData(char* data, qint64 maxSize)
-    {
-        return 0;
-    }
-
-    qint64 writeData(const char* data, qint64 maxsize)
-    {
-        return maxsize;
-    }
-} discard;
-}
-
 #ifdef ENABLE_DEBUG
 
 namespace
