@@ -25,8 +25,6 @@
 
 #include "config-version.h"
 
-#include <QIODevice>
-
 /**
  * \defgroup debug Common debug support
  *
