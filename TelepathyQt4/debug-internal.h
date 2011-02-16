@@ -59,7 +59,7 @@ public:
         if (debug) {
             debug->space();
         }
-        
+
         return *this;
     }
 
@@ -68,7 +68,7 @@ public:
         if (debug) {
             debug->nospace();
         }
-            
+
         return *this;
     }
 
@@ -77,7 +77,7 @@ public:
         if (debug) {
             debug->maybeSpace();
         }
-        
+
         return *this;
     }
 
