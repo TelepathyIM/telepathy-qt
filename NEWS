@@ -1,15 +1,15 @@
-telepathy-qt4 0.4.4 (UNRELEASED)
+telepathy-qt4 0.4.4 (2011-02-15)
 =================================
 
-The "..." release.
+The "nothing big" release.
 
 Enhancements:
  * Make the debug subsystem as no-op as possible when debugging is disabled at
-   runtime with Tp::enableDebug(false) and Tp::enableWarnings(false)
+   runtime with Tp::enableDebug(false) and Tp::enableWarnings(false).
 
 Fixes:
  * Possible crashes in Channel internal updateContacts function when just the
-   self handle changed
+   self handle changed.
 
 telepathy-qt4 0.4.3 (2011-01-17)
 =================================
