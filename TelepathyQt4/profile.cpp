@@ -436,7 +436,7 @@ void Profile::Private::setFileName(const QString &fileName)
     QFileInfo fi(fileName);
     serviceName = fi.baseName();
 
-    debug() << "Loading profile" << fileName << "for service" << serviceName;
+    debug() << "Loading profile file" << fileName;
 
     QFile file(fileName);
     if (!file.exists()) {
@@ -452,7 +452,9 @@ void Profile::Private::setFileName(const QString &fileName)
         return;
     }
 
-    parse(&file);
+    if (parse(&file)) {
+        debug() << "Profile file" << fileName << "loaded successfully";
+    }
 }
 
 void Profile::Private::lookupProfile()
