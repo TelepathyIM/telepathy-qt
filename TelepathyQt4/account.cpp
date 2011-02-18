@@ -3331,9 +3331,13 @@ void Account::onDispatcherIntrospected(Tp::PendingOperation *op)
             debug() << "Discovered channel dispatcher support for request hints: "
                 << mPriv->dispatcherContext->supportsHints;
         } else {
-            warning() << "(Too old?) Channel Dispatcher failed to tell us whether"
-                << "it supports request hints, assuming it doesn't:"
-                << pv->errorName() << ':' << pv->errorMessage();
+            if (pv->errorName() == TP_QT4_ERROR_NOT_IMPLEMENTED) {
+                debug() << "Channel Dispatcher does not implement support for request hints";
+            } else {
+                warning() << "(Too old?) Channel Dispatcher failed to tell us whether"
+                    << "it supports request hints, assuming it doesn't:"
+                    << pv->errorName() << ':' << pv->errorMessage();
+            }
             mPriv->dispatcherContext->supportsHints = false;
         }
     }
