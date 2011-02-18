@@ -1,5 +1,6 @@
 #include <QtTest/QtTest>
 
+#include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Profile>
 
 using namespace Tp;
@@ -8,9 +9,19 @@ class TestProfile : public QObject
 {
     Q_OBJECT
 
+public:
+    TestProfile(QObject *parent = 0);
+
 private Q_SLOTS:
     void testProfile();
 };
+
+TestProfile::TestProfile(QObject *parent)
+    : QObject(parent)
+{
+    Tp::enableDebug(true);
+    Tp::enableWarnings(true);
+}
 
 void TestProfile::testProfile()
 {
