@@ -47,9 +47,8 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Private
     void setFileName(const QString &fileName);
 
     void lookupProfile();
-    bool parse(const QString &fileName);
-
-    void setError(const QString &errorMessage);
+    bool parse(QFile *file);
+    void invalidate();
 
     struct Data
     {
@@ -422,6 +421,8 @@ Profile::Private::Private()
 
 void Profile::Private::setServiceName(const QString &serviceName_)
 {
+    invalidate();
+
     allowNonIMType = false;
     serviceName = serviceName_;
     lookupProfile();
@@ -429,57 +430,79 @@ void Profile::Private::setServiceName(const QString &serviceName_)
 
 void Profile::Private::setFileName(const QString &fileName)
 {
+    invalidate();
+
     allowNonIMType = true;
     QFileInfo fi(fileName);
     serviceName = fi.baseName();
-    parse(fileName);
+
+    debug() << "Loading profile" << fileName << "for service" << serviceName;
+
+    QFile file(fileName);
+    if (!file.exists()) {
+        warning() << QString(QLatin1String("Error parsing profile file %1: file does not exist"))
+            .arg(file.fileName());
+        return;
+    }
+
+    if (!file.open(QFile::ReadOnly)) {
+        warning() << QString(QLatin1String("Error parsing profile file %1: "
+                    "cannot open file for readonly access"))
+            .arg(file.fileName());
+        return;
+    }
+
+    parse(&file);
 }
 
 void Profile::Private::lookupProfile()
 {
-    QStringList searchDirs = Profile::searchDirs();
+    debug() << "Searching profile for service" << serviceName;
 
+    QStringList searchDirs = Profile::searchDirs();
+    bool found = false;
     foreach (const QString searchDir, searchDirs) {
         QString fileName = searchDir + serviceName + QLatin1String(".profile");
-        if (parse(fileName)) {
-            return;
+
+        QFile file(fileName);
+        if (!file.exists()) {
+            continue;
         }
+
+        if (!file.open(QFile::ReadOnly)) {
+            continue;
+        }
+
+        if (parse(&file)) {
+            debug() << "Profile for service" << serviceName << "found:" << fileName;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        debug() << "Cannot find valid profile for service" << serviceName;
     }
 }
 
-bool Profile::Private::parse(const QString &fileName)
+bool Profile::Private::parse(QFile *file)
 {
-    data.clear();
-    valid = false;
+    invalidate();
+
     fake = false;
-
-    QFile file(fileName);
-    if (!file.exists()) {
-        setError(QString(QLatin1String("Error parsing profile file %1: "
-                        "file does not exist"))
-                .arg(file.fileName()));
-        return false;
-    }
-
-    if (!file.open(QFile::ReadOnly)) {
-        setError(QString(QLatin1String("Error parsing profile file %1: "
-                        "cannot open file for readonly access"))
-                .arg(file.fileName()));
-        return false;
-    }
-
-    QFileInfo fi(file.fileName());
+    QFileInfo fi(file->fileName());
     XmlHandler xmlHandler(serviceName, allowNonIMType, &data);
 
     QXmlSimpleReader xmlReader;
     xmlReader.setContentHandler(&xmlHandler);
     xmlReader.setErrorHandler(&xmlHandler);
 
-    QXmlInputSource xmlInputSource(&file);
+    QXmlInputSource xmlInputSource(file);
     if (!xmlReader.parse(xmlInputSource)) {
-        setError(QString(QLatin1String("Error parsing profile file %1: %2"))
-                .arg(file.fileName())
-                .arg(xmlHandler.errorString()));
+        warning() << QString(QLatin1String("Error parsing profile file %1: %2"))
+            .arg(file->fileName())
+            .arg(xmlHandler.errorString());
+        invalidate();
         return false;
     }
 
@@ -487,9 +510,8 @@ bool Profile::Private::parse(const QString &fileName)
     return true;
 }
 
-void Profile::Private::setError(const QString &errorMessage)
+void Profile::Private::invalidate()
 {
-    warning() << errorMessage;
     valid = false;
     data.clear();
 }
