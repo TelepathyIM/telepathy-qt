@@ -251,7 +251,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
 
     if (rx.exactMatch(parent->objectPath())) {
         cmName = rx.cap(1);
-        protocolName = rx.cap(2);
+        protocolName = rx.cap(2).replace(QLatin1Char('_'), QLatin1Char('-'));
     } else {
         warning() << "Account object path is not spec-compliant, "
             "trying again with a different account-specific part check";
@@ -263,7 +263,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
                     ));
         if (rx.exactMatch(parent->objectPath())) {
             cmName = rx.cap(1);
-            protocolName = rx.cap(2);
+            protocolName = rx.cap(2).replace(QLatin1Char('_'), QLatin1Char('-'));
         } else {
             warning() << "Not a valid Account object path:" <<
                 parent->objectPath();
