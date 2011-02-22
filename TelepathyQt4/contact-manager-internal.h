@@ -45,6 +45,8 @@ public:
     Roster(ContactManager *manager);
     virtual ~Roster();
 
+    ContactListState state() const;
+
     PendingOperation *introspect();
     PendingOperation *introspectGroups();
     void reset();
@@ -184,6 +186,7 @@ private:
 
     PendingOperation *introspectPendingOp;
     PendingOperation *introspectGroupsPendingOp;
+    uint pendingContactListState;
     uint contactListState;
     bool canChangeContactList;
     bool contactListRequestUsesMessage;

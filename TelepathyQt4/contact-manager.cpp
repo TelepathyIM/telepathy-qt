@@ -164,6 +164,17 @@ Features ContactManager::supportedFeatures() const
 }
 
 /**
+ * Return the progress made in retrieving the contact list.
+ *
+ * Change notification is via stateChanged().
+ * \return The contact list state.
+ */
+ContactListState ContactManager::state() const
+{
+    return mPriv->roster->state();
+}
+
+/**
  * Return a list of relevant contacts (a reasonable guess as to what should
  * be displayed as "the contact list").
  *
