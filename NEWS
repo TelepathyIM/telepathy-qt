@@ -4,10 +4,17 @@ telepathy-qt4 0.5.8 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Account won't try to build a Connection object anymore if the connection
+   object path hasn't changed.
+ * Connection::FeatureRoster will now fail introspection if ContactList
+   interface is not supported, neither fallback roster channels.
+ * ContactManager now has a state() accessor and a corresponding stateChanged()
+   signal to keep track of the progress made in retrieving the contact list.
+ * Made Profile/Account/ContactManager debug output a bit cleaner.
+ * Cleaned up debug classes by removing unused code.
 
 Fixes:
- * ...
+ * Properly replace "_" with "-" on Account::protocolName().
 
 telepathy-qt4 0.5.7 (2011-02-15)
 =================================
