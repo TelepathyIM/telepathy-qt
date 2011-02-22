@@ -985,6 +985,14 @@ void ContactManager::Roster::onContactListChannelReady()
 
         introspectContactList();
     } else if (++contactListChannelsReady == ChannelInfo::LastType) {
+        if (contactListChannels.isEmpty()) {
+            Q_ASSERT(introspectPendingOp);
+            introspectPendingOp->setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
+                    QLatin1String("Roster not supported"));
+            introspectPendingOp = 0;
+            return;
+        }
+
         setContactListChannelsReady();
 
         updateContactsBlockState();
