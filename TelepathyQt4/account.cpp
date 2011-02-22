@@ -3305,7 +3305,7 @@ bool Account::Private::processConnQueue()
             if (connection && connection->objectPath() == path) {
                 debug() << "  Connection already built";
                 connObjPathQueue.dequeue();
-                return true;
+                continue;
             }
 
             QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
