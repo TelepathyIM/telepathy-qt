@@ -733,11 +733,14 @@ void ContactManager::Roster::onContactListStateChanged(uint state)
     }
 
     contactListState = state;
-    emit contactManager->stateChanged((Tp::ContactListState) state);
 
     if (state == ContactListStateFailure) {
         debug() << "State changed to failure, finishing roster introspection";
+    }
 
+    emit contactManager->stateChanged((Tp::ContactListState) state);
+
+    if (state == ContactListStateFailure) {
         // Consider it done here as the state may go from Failure to Success afterwards, in which
         // case the contacts will appear.
         Q_ASSERT(introspectPendingOp);
@@ -1011,9 +1014,9 @@ void ContactManager::Roster::onContactListChannelReady()
     } else if (++contactListChannelsReady == ChannelInfo::LastType) {
         if (contactListChannels.isEmpty()) {
             contactListState = ContactListStateFailure;
+            debug() << "State is failure, roster not supported";
             emit contactManager->stateChanged((Tp::ContactListState) contactListState);
 
-            debug() << "State is failure, roster not supported";
             Q_ASSERT(introspectPendingOp);
             introspectPendingOp->setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Roster not supported"));
