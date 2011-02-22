@@ -3302,6 +3302,12 @@ bool Account::Private::processConnQueue()
         } else {
             debug() << "Building connection" << path << "for account" << parent->objectPath();
 
+            if (connection && connection->objectPath() == path) {
+                debug() << "  Connection already built";
+                connObjPathQueue.dequeue();
+                continue;
+            }
+
             QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
             parent->connect(connFactory->proxy(busName, path, chanFactory, contactFactory),
                     SIGNAL(finished(Tp::PendingOperation*)),

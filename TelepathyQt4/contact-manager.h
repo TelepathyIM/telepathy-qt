@@ -58,6 +58,8 @@ public:
 
     Features supportedFeatures() const;
 
+    ContactListState state() const;
+
     Contacts allKnownContacts() const;
     QStringList allKnownGroups() const;
 
@@ -117,6 +119,8 @@ public:
     void requestContactAvatar(Contact *contact);
 
 Q_SIGNALS:
+    void stateChanged(Tp::ContactListState state);
+
     void presencePublicationRequested(const Tp::Contacts &contacts);
     // deprecated - carry redundant data which can be retrieved (meaningfully) from the Contacts
     // themselves (note: multiple contacts, but just a single message/details!)

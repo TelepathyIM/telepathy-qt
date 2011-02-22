@@ -45,6 +45,7 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
       usingFallbackContactList(false),
       introspectPendingOp(0),
       introspectGroupsPendingOp(0),
+      pendingContactListState((uint) -1),
       contactListState((uint) -1),
       canChangeContactList(false),
       contactListRequestUsesMessage(false),
@@ -59,6 +60,11 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
 
 ContactManager::Roster::~Roster()
 {
+}
+
+ContactListState ContactManager::Roster::state() const
+{
+    return (Tp::ContactListState) contactListState;
 }
 
 PendingOperation *ContactManager::Roster::introspect()
@@ -653,7 +659,7 @@ void ContactManager::Roster::gotContactListProperties(PendingOperation *op)
     contactListRequestUsesMessage = qdbus_cast<uint>(props[QLatin1String("RequestUsesMessage")]);
 
     // only update the status if we did not get it from ContactListStateChanged
-    if (contactListState == (uint) -1) {
+    if (pendingContactListState == (uint) -1) {
         uint state = qdbus_cast<uint>(props[QLatin1String("ContactListState")]);
         onContactListStateChanged(state);
     }
@@ -664,6 +670,12 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
     QDBusPendingReply<ContactAttributesMap> reply = *watcher;
 
     if (watcher->isError()) {
+        warning() << "Failed introspecting ContactList contacts";
+
+        contactListState = ContactListStateFailure;
+        debug() << "Setting state to failure";
+        emit contactManager->stateChanged((Tp::ContactListState) contactListState);
+
         // We may have been in state Failure and then Success, and FeatureRoster is already ready
         if (introspectPendingOp) {
             introspectPendingOp->setFinishedWithError(
@@ -692,6 +704,10 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
     }
 
     // We may have been in state Failure and then Success, and FeatureRoster is already ready
+    contactListState = pendingContactListState;
+    debug() << "State is now success";
+    emit contactManager->stateChanged((Tp::ContactListState) contactListState);
+
     if (introspectPendingOp) {
         introspectPendingOp->setFinished();
         introspectPendingOp = 0;
@@ -704,16 +720,27 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
 
 void ContactManager::Roster::onContactListStateChanged(uint state)
 {
-    if (contactListState == state) {
+    if (pendingContactListState == state) {
         // ignore redundant state changes
+        return;
+    }
+
+    pendingContactListState = state;
+
+    if (state == ContactListStateSuccess) {
+        introspectContactListContacts();
         return;
     }
 
     contactListState = state;
 
-    if (state == ContactListStateSuccess) {
-        introspectContactListContacts();
-    } else if (state == ContactListStateFailure) {
+    if (state == ContactListStateFailure) {
+        debug() << "State changed to failure, finishing roster introspection";
+    }
+
+    emit contactManager->stateChanged((Tp::ContactListState) state);
+
+    if (state == ContactListStateFailure) {
         // Consider it done here as the state may go from Failure to Success afterwards, in which
         // case the contacts will appear.
         Q_ASSERT(introspectPendingOp);
@@ -985,6 +1012,18 @@ void ContactManager::Roster::onContactListChannelReady()
 
         introspectContactList();
     } else if (++contactListChannelsReady == ChannelInfo::LastType) {
+        if (contactListChannels.isEmpty()) {
+            contactListState = ContactListStateFailure;
+            debug() << "State is failure, roster not supported";
+            emit contactManager->stateChanged((Tp::ContactListState) contactListState);
+
+            Q_ASSERT(introspectPendingOp);
+            introspectPendingOp->setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
+                    QLatin1String("Roster not supported"));
+            introspectPendingOp = 0;
+            return;
+        }
+
         setContactListChannelsReady();
 
         updateContactsBlockState();
@@ -1001,6 +1040,10 @@ void ContactManager::Roster::onContactListChannelReady()
         }
 
         updateContactsPresenceState();
+
+        contactListState = ContactListStateSuccess;
+        debug() << "State is now success";
+        emit contactManager->stateChanged((Tp::ContactListState) contactListState);
 
         Q_ASSERT(introspectPendingOp);
         introspectPendingOp->setFinished();
