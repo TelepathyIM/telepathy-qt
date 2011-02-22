@@ -1,7 +1,7 @@
-telepathy-qt4 0.5.8 (UNRELEASED)
+telepathy-qt4 0.5.8 (2011-02-22)
 =================================
 
-The "..." release.
+The "where are my contacts?" release.
 
 Enhancements:
  * Account won't try to build a Connection object anymore if the connection
