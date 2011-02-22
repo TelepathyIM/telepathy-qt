@@ -712,8 +712,12 @@ void ContactManager::Roster::onContactListStateChanged(uint state)
     contactListState = state;
 
     if (state == ContactListStateSuccess) {
+        debug() << "ContactList state changed to success";
+
         introspectContactListContacts();
     } else if (state == ContactListStateFailure) {
+        debug() << "ContactList state changed to failure, finishing roster introspection";
+
         // Consider it done here as the state may go from Failure to Success afterwards, in which
         // case the contacts will appear.
         Q_ASSERT(introspectPendingOp);
