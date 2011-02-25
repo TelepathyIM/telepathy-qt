@@ -267,12 +267,6 @@ void ReadinessHelper::Private::iterateIntrospection()
         return;
     }
 
-    if (!supportedStatuses.contains(currentStatus)) {
-        debug() << "ignoring iterate introspection for status" << currentStatus;
-        // don't do anything just now to avoid spurious becomeReady finishes
-        return;
-    }
-
     // take care to flag anything with dependencies in missing, and the
     // stuff depending on them, as missing
     for (Introspectables::const_iterator i = introspectables.constBegin();
