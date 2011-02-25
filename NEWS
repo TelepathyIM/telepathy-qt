@@ -7,7 +7,9 @@ Enhancements:
  * ...
 
 Fixes:
- * ...
+ * Fixed bug in the introspection code avoiding approvers/handlers to handle
+   ServerAuthentication channels which have connection state Connecting, causing
+   the proxy objects to timeout while introspecting.
 
 telepathy-qt4 0.5.8 (2011-02-22)
 =================================
