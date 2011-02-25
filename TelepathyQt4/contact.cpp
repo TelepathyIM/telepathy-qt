@@ -718,8 +718,10 @@ void Contact::setAvatarToken(const QString &token)
 
 void Contact::receiveAvatarData(const AvatarData &avatar)
 {
-    mPriv->avatarData = avatar;
-    emit avatarDataChanged(mPriv->avatarData);
+    if (mPriv->avatarData.fileName != avatar.fileName) {
+        mPriv->avatarData = avatar;
+        emit avatarDataChanged(mPriv->avatarData);
+    }
 }
 
 void Contact::receiveSimplePresence(const SimplePresence &presence)
