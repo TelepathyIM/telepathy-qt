@@ -4,12 +4,14 @@ telepathy-qt4 0.5.9 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Account::allowedPresenceStatuses() now has fallbacks to include "available"
+   and "offline" when that makes sense
 
 Fixes:
- * Fixed bug in the introspection code avoiding approvers/handlers to handle
-   ServerAuthentication channels which have connection state Connecting, causing
-   the proxy objects to timeout while introspecting.
+ * Connection::becomeReady() never finishing in state Connecting, which for
+   example prevents handling ServerAuthentication channels. NOTE: any code
+   incorrectly relying on the old buggy behavior of becomeReady() only finishing
+   once the connection goes Connected or Disconnected may need adjustment.
 
 telepathy-qt4 0.5.8 (2011-02-22)
 =================================
