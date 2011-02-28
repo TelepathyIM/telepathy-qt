@@ -1352,11 +1352,31 @@ bool Account::isChangingPresence() const
 /**
  * Return a list of presences allowed by a connection to this account.
  *
+ * In particular, for the statuses reported here it can be assumed that setting them as the
+ * requested presence via setRequestedPresence() will eventually result in currentPresence()
+ * changing to exactly said presence. Other statuses are only guaranteed to be matched as closely as
+ * possible.
+ *
+ * The statuses can be also used for the automatic presence, as set by setAutomaticPresence(), with
+ * the exception of any status specifications for which Presence::type() is
+ * Tp::ConnectionPresenceTypeOffline for the Presence returned by PresenceSpec::presence().
+ *
+ * However, the optional parameter can be used to allow reporting also other possible presence
+ * statuses on this protocol besides the others that can be set on yourself. These are purely
+ * informatory, for e.g. adjusting an UI to allow all possible remote contact statuses to be
+ * displayed.
+ *
  * Full functionality requires FeatureProtocolInfo and FeatureProfile to be ready as well as
  * Connection with Connection::FeatureSimplePresence enabled. If the connection is online and
  * Connection::FeatureSimplePresence is enabled, it will return the connection allowed statuses,
  * otherwise it will return a list os statuses based on profile() and protocolInfo() information
  * if the corresponding features are enabled.
+ *
+ * If there's a mismatch between the presence status info provided in the .profile file and/or the
+ * .manager file and what an online Connection actually reports (for example, the said data files
+ * are missing or too old to include presence information), the returned value can change, in
+ * particular when connectionChanged() is emitted with a connection for which connection->status()
+ * == Tp::ConnectionStatusConnected.
  *
  * \param includeAllStatuses Whether the returned list will include all statuses or just the ones
  *                           that can are settable using setRequestedPresence().
