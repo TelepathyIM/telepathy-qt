@@ -1366,6 +1366,9 @@ bool Account::isChangingPresence() const
  * informatory, for e.g. adjusting an UI to allow all possible remote contact statuses to be
  * displayed.
  *
+ * An offline presence status is always included, because it's always valid to make an account
+ * offline by setting the requested presence to an offline status.
+ *
  * Full functionality requires FeatureProtocolInfo and FeatureProfile to be ready as well as
  * Connection with Connection::FeatureSimplePresence enabled. If the connection is online and
  * Connection::FeatureSimplePresence is enabled, it will return the connection allowed statuses,
@@ -1461,6 +1464,23 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
                 ++i;
             }
         }
+    }
+
+    if (!specMap.size()) {
+        // If we didn't discover any statuses, either the protocol doesn't really support presence,
+        // or we lack information (e.g. features not enabled or info not provided in the .manager or
+        // .profile files). "available" - just the fact that you're online in the first place, is at
+        // least a valid option for any protocol, so we'll include it as a fallback.
+
+        specMap.insert(QLatin1String("available"),
+                presenceSpecForStatus(QLatin1String("available"), false));
+    }
+
+    // We'll always include "offline". It is always valid to make an account offline via
+    // setRequestedPresence().
+    if (!specMap.contains(QLatin1String("offline"))) {
+        specMap.insert(QLatin1String("offline"),
+                presenceSpecForStatus(QLatin1String("offline"), false));
     }
 
     return specMap.values();
