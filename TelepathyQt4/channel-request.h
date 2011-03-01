@@ -125,7 +125,6 @@ private:
 class TELEPATHY_QT4_EXPORT ChannelRequestHints
 {
 public:
-
     ChannelRequestHints();
     ChannelRequestHints(const QVariantMap &hints);
     ChannelRequestHints(const ChannelRequestHints &other);
