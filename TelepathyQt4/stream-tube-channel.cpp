@@ -198,18 +198,6 @@ const Feature StreamTubeChannel::FeatureStreamTube =
 const Feature StreamTubeChannel::FeatureConnectionMonitoring =
         Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 1);
 
-// Signals documentation
-/**
- * \fn void StreamTubeChannel::connectionClosed(uint connectionId,
- *             const QString &error, const QString &message)
- *
- * Emitted when a connection has been closed.
- *
- * \param connectionId The unique ID associated with this connection.
- * \param error The error occurred
- * \param message A debug message
- */
-
 /**
  * Create a new StreamTubeChannel channel.
  *
@@ -680,5 +668,17 @@ void StreamTubeChannel::gotStreamTubeProperties(QDBusPendingCallWatcher *watcher
                 reply.error());
     }
 }
+
+// Signals documentation
+/**
+ * \fn void StreamTubeChannel::connectionClosed(uint connectionId,
+ *             const QString &error, const QString &message)
+ *
+ * Emitted when a connection has been closed.
+ *
+ * \param connectionId The unique ID associated with this connection.
+ * \param error The error occurred
+ * \param message A debug message
+ */
 
 } // Tp

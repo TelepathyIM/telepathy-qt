@@ -142,14 +142,6 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
 const Feature TubeChannel::FeatureTube =
         Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
 
-// Signals documentation
-/**
- * \fn void TubeChannel::tubeStateChanged(Tp::TubeChannelState state)
- *
- * Emitted when the state of the tube has changed, if
- * FeatureTube has been enabled.
- */
-
 /**
  * Create a new TubeChannel channel.
  *
@@ -260,5 +252,13 @@ void TubeChannel::gotTubeProperties(QDBusPendingCallWatcher *watcher)
                 reply.error());
     }
 }
+
+// Signals documentation
+/**
+ * \fn void TubeChannel::tubeStateChanged(Tp::TubeChannelState state)
+ *
+ * Emitted when the state of the tube has changed, if
+ * FeatureTube has been enabled.
+ */
 
 } // Tp

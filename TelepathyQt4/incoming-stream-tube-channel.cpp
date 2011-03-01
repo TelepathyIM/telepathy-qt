@@ -159,15 +159,6 @@ IncomingStreamTubeChannel::Private::~Private()
  * See \ref async_model, \ref shared_ptr
  */
 
-// Signals documentation
-/**
- * \fn void StreamTubeChannel::newLocalConnection(uint connectionId)
- *
- * Emitted when the tube application connects to ConnectionManager's socket
- *
- * \param connectionId The unique ID associated with this connection.
- */
-
 /**
  * Create a new IncomingStreamTubeChannel channel.
  *
@@ -497,5 +488,14 @@ void IncomingStreamTubeChannel::onNewLocalConnection(uint connectionId)
 
     emit newConnection(connectionId);
 }
+
+// Signals documentation
+/**
+ * \fn void StreamTubeChannel::newLocalConnection(uint connectionId)
+ *
+ * Emitted when the tube application connects to ConnectionManager's socket
+ *
+ * \param connectionId The unique ID associated with this connection.
+ */
 
 }
