@@ -63,7 +63,7 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
 
     BaseTubeType baseType;
 
-    QPair< QHostAddress, quint16 > ipAddress;
+    QPair<QHostAddress, quint16> ipAddress;
     QString unixAddress;
     SocketAddressType addressType;
 };
@@ -608,10 +608,10 @@ QString StreamTubeChannel::localAddress() const
  *
  * \sa addressType
  */
-QPair< QHostAddress, quint16 > StreamTubeChannel::ipAddress() const
+QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 {
     if (tubeState() != TubeChannelStateOpen) {
-        return qMakePair< QHostAddress, quint16 >(QHostAddress::Null, 0);
+        return qMakePair<QHostAddress, quint16>(QHostAddress::Null, 0);
     }
 
     return mPriv->ipAddress;
@@ -645,7 +645,7 @@ void StreamTubeChannel::setAddressType(SocketAddressType type)
     mPriv->addressType = type;
 }
 
-void StreamTubeChannel::setIpAddress(const QPair< QHostAddress, quint16 > &address)
+void StreamTubeChannel::setIpAddress(const QPair<QHostAddress, quint16> &address)
 {
     mPriv->ipAddress = address;
 }

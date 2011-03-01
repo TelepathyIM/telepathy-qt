@@ -84,8 +84,8 @@ IncomingStreamTubeChannel::Private::~Private()
  * void MyChannelManager::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
  *                               const Tp::AccountPtr &account,
  *                               const Tp::ConnectionPtr &connection,
- *                               const QList< Tp::ChannelPtr > &channels,
- *                               const QList< Tp::ChannelRequestPtr > &requestsSatisfied,
+ *                               const QList<Tp::ChannelPtr> &channels,
+ *                               const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
  *                               const QDateTime &userActionTime,
  *                               const QVariantMap &handlerInfo)
  * {
@@ -149,7 +149,7 @@ IncomingStreamTubeChannel::Private::~Private()
  *     }
  *
  *     PendingStreamTubeConnection *pendingConnection =
- *                                              qobject_cast< PendingStreamTubeConnection* >(op);
+ *                                              qobject_cast<PendingStreamTubeConnection*>(op);
  *
  *     QIODevice *mySocketReadyToBeUsed = pendingConnection->device();
  *     // Do some stuff here
@@ -483,7 +483,7 @@ QIODevice *IncomingStreamTubeChannel::device()
 
 void IncomingStreamTubeChannel::onAcceptTubeFinished(PendingOperation *op)
 {
-    PendingStreamTubeConnection *pendingDevice = qobject_cast< PendingStreamTubeConnection* >(op);
+    PendingStreamTubeConnection *pendingDevice = qobject_cast<PendingStreamTubeConnection*>(op);
 
     mPriv->device = pendingDevice->device();
 }

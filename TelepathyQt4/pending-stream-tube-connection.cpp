@@ -156,7 +156,7 @@ QString PendingStreamTubeConnection::localAddress() const
  *
  * \see addressType
  */
-QPair< QHostAddress, quint16 > PendingStreamTubeConnection::ipAddress() const
+QPair<QHostAddress, quint16> PendingStreamTubeConnection::ipAddress() const
 {
     return mPriv->tube->ipAddress();
 }
@@ -207,7 +207,7 @@ void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
         // The tube is ready
         // Build the IO device
         if (mPriv->type == SocketAddressTypeIPv4 || mPriv->type == SocketAddressTypeIPv6) {
-            mPriv->tube->setIpAddress(qMakePair< QHostAddress, quint16 >(mPriv->hostAddress,
+            mPriv->tube->setIpAddress(qMakePair<QHostAddress, quint16>(mPriv->hostAddress,
                     mPriv->port));
             debug() << "Building a QTcpSocket " << mPriv->hostAddress << mPriv->port;
 

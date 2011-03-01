@@ -54,9 +54,9 @@ public:
     PendingOperation *offerUnixSocket(QLocalServer *server, const QVariantMap &parameters,
             bool requireCredentials = false);
 
-    QHash< uint, Tp::ContactPtr > contactsForConnections() const;
+    QHash<uint, Tp::ContactPtr> contactsForConnections() const;
 
-    QHash< QPair< QHostAddress, quint16 >, uint > connectionsForSourceAddresses() const;
+    QHash<QPair<QHostAddress,quint16>,uint> connectionsForSourceAddresses() const;
 
 protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,

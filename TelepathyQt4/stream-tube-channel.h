@@ -80,7 +80,7 @@ protected:
     void setBaseTubeType(uint type);
     void setAddressType(SocketAddressType type);
     void setConnections(UIntList connections);
-    void setIpAddress(const QPair< QHostAddress, quint16 > &address);
+    void setIpAddress(const QPair<QHostAddress, quint16> &address);
     void setLocalAddress(const QString &address);
 
 private Q_SLOTS:

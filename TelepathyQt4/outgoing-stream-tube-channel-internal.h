@@ -62,7 +62,7 @@ public:
     QUuid appendNewRequest(const UIntList &handles);
 
 Q_SIGNALS:
-    void contactsRetrieved(QUuid uuid, QList< Tp::ContactPtr > contacts);
+    void contactsRetrieved(QUuid uuid, QList<Tp::ContactPtr> contacts);
 
 private Q_SLOTS:
     void onPendingContactsFinished(Tp::PendingOperation *operation);
@@ -77,7 +77,7 @@ private:
 
     bool m_isProcessing;
     ContactManagerPtr m_manager;
-    QQueue< Entry > m_queue;
+    QQueue<Entry> m_queue;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
@@ -99,10 +99,10 @@ struct TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannel::Private
 
     OutgoingStreamTubeChannel *parent;
 
-    QHash< uint, Tp::ContactPtr > contactsForConnections;
-    QHash< QPair< QHostAddress, quint16 >, uint > connectionsForSourceAddresses;
+    QHash<uint, Tp::ContactPtr> contactsForConnections;
+    QHash<QPair<QHostAddress, quint16>, uint> connectionsForSourceAddresses;
 
-    QHash< QUuid, QPair< uint, QDBusVariant > > pendingNewConnections;
+    QHash<QUuid, QPair<uint, QDBusVariant> > pendingNewConnections;
 
     QueuedContactFactory *queuedContactFactory;
 };

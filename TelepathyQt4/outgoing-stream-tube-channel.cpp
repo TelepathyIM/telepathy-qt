@@ -156,7 +156,7 @@ QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList &handles)
 
 void QueuedContactFactory::onPendingContactsFinished(PendingOperation *op)
 {
-    PendingContacts *pc = qobject_cast< PendingContacts* >(op);
+    PendingContacts *pc = qobject_cast<PendingContacts*>(op);
 
     QUuid uuid = QUuid(pc->property("__TpQt4__QueuedContactFactoryUuid").toString());
 
@@ -389,7 +389,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         }
 
         setAddressType(SocketAddressTypeIPv4);
-        setIpAddress(qMakePair< QHostAddress, quint16 >(address, port));
+        setIpAddress(qMakePair<QHostAddress, quint16>(address, port));
 
         SocketAddressIPv4 addr;
         addr.address = address.toString();
@@ -424,7 +424,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         }
 
         setAddressType(SocketAddressTypeIPv6);
-        setIpAddress(qMakePair< QHostAddress, quint16 >(address, port));
+        setIpAddress(qMakePair<QHostAddress, quint16>(address, port));
 
         SocketAddressIPv6 addr;
         addr.address = address.toString();
@@ -660,24 +660,24 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
  * \sa StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
  * \sa StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress
  */
-QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
+QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
 {
     if (addressType() != SocketAddressTypeIPv4 && addressType() != SocketAddressTypeIPv6) {
         warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
                 "just when offering a TCP socket";
-        return QHash< QPair< QHostAddress, quint16 >, uint >();
+        return QHash<QPair<QHostAddress, quint16>, uint>();
     }
 
     if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
         warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
             "   calling connectionsForSourceAddresses";
-        return QHash< QPair< QHostAddress, quint16 >, uint >();
+        return QHash<QPair<QHostAddress, quint16>, uint>();
     }
 
     if (tubeState() != TubeChannelStateOpen) {
         warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
                 "just when the tube is open";
-        return QHash< QPair< QHostAddress, quint16 >, uint >();
+        return QHash<QPair<QHostAddress, quint16>, uint>();
     }
 
     return mPriv->connectionsForSourceAddresses;
@@ -696,18 +696,18 @@ QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connect
  * \sa connectionsForSourceAddresses
  * \sa StreamTubeChannel::addressType
  */
-QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() const
+QHash<uint, ContactPtr> OutgoingStreamTubeChannel::contactsForConnections() const
 {
     if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
         warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
                 "calling contactsForConnections";
-        return QHash< uint, ContactPtr >();
+        return QHash<uint, ContactPtr>();
     }
 
     if (tubeState() != TubeChannelStateOpen) {
         warning() << "OutgoingStreamTubeChannel::contactsForConnections() makes sense "
                 "just when the tube is open";
-        return QHash< uint, ContactPtr >();
+        return QHash<uint, ContactPtr>();
     }
 
     return mPriv->contactsForConnections;
@@ -727,7 +727,7 @@ void OutgoingStreamTubeChannel::onNewRemoteConnection(
 
 void OutgoingStreamTubeChannel::onContactsRetrieved(
         const QUuid &uuid,
-        const QList< Tp::ContactPtr > &contacts)
+        const QList<Tp::ContactPtr> &contacts)
 {
     // Retrieve our hash
     if (!mPriv->pendingNewConnections.contains(uuid)) {
@@ -735,7 +735,7 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
         return;
     }
 
-    QPair< uint, QDBusVariant > connectionProperties = mPriv->pendingNewConnections.take(uuid);
+    QPair<uint, QDBusVariant> connectionProperties = mPriv->pendingNewConnections.take(uuid);
 
     // Add the connection to our list
     UIntList connections;
@@ -747,7 +747,7 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
         mPriv->contactsForConnections.insertMulti(connectionProperties.first, contact);
     }
 
-    QPair< QHostAddress, quint16 > address;
+    QPair<QHostAddress, quint16> address;
     address.first = QHostAddress::Null;
 
     // Now let's try to track the parameter
@@ -755,12 +755,12 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
         // Try a qdbus_cast to our address struct: we're shielded from crashes
         // thanks to our specification
         SocketAddressIPv4 addr =
-                qdbus_cast< Tp::SocketAddressIPv4 >(connectionProperties.second.variant());
+                qdbus_cast<Tp::SocketAddressIPv4>(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
     } else if (addressType() == SocketAddressTypeIPv6) {
         SocketAddressIPv6 addr =
-                qdbus_cast< Tp::SocketAddressIPv6 >(connectionProperties.second.variant());
+                qdbus_cast<Tp::SocketAddressIPv6>(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
     }
@@ -782,7 +782,7 @@ void OutgoingStreamTubeChannel::onConnectionClosed(
     // Remove stuff from our hashes
     mPriv->contactsForConnections.remove(connectionId);
 
-    QHash< QPair< QHostAddress, quint16 >, uint >::iterator i =
+    QHash<QPair<QHostAddress, quint16>, uint>::iterator i =
             mPriv->connectionsForSourceAddresses.begin();
 
     while (i != mPriv->connectionsForSourceAddresses.end()) {

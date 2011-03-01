@@ -53,7 +53,7 @@ public:
 
     SocketAddressType addressType() const;
 
-    QPair< QHostAddress, quint16 > ipAddress() const;
+    QPair<QHostAddress, quint16> ipAddress() const;
     QString localAddress() const;
 
 private Q_SLOTS:
