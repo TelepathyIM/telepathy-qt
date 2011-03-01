@@ -58,8 +58,8 @@ protected:
     void setParameters(const QVariantMap &parameters);
 
 private Q_SLOTS:
-    void onTubeChannelStateChanged(uint);
-    void gotTubeProperties(QDBusPendingCallWatcher *);
+    void onTubeChannelStateChanged(uint newstate);
+    void gotTubeProperties(QDBusPendingCallWatcher *watcher);
 
 private:
     struct Private;

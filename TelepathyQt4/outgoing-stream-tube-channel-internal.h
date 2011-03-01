@@ -62,10 +62,10 @@ public:
     QUuid appendNewRequest(const UIntList &handles);
 
 Q_SIGNALS:
-    void contactsRetrieved(QUuid, QList< Tp::ContactPtr >);
+    void contactsRetrieved(QUuid uuid, QList< Tp::ContactPtr > contacts);
 
 private Q_SLOTS:
-    void onPendingContactsFinished(Tp::PendingOperation*);
+    void onPendingContactsFinished(Tp::PendingOperation *operation);
 
 private:
     struct Entry {

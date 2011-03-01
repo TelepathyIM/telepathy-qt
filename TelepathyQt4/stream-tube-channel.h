@@ -84,8 +84,8 @@ protected:
     void setLocalAddress(const QString &address);
 
 private Q_SLOTS:
-    void gotStreamTubeProperties(QDBusPendingCallWatcher *);
-    void onConnectionClosed(uint,const QString &,const QString &);
+    void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
+    void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
 
 private:
     struct Private;

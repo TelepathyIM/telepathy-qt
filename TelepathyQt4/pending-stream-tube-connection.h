@@ -57,11 +57,11 @@ public:
     QString localAddress() const;
 
 private Q_SLOTS:
-    void onAcceptFinished(Tp::PendingOperation *);
-    void onTubeStateChanged(Tp::TubeChannelState);
+    void onAcceptFinished(Tp::PendingOperation *op);
+    void onTubeStateChanged(Tp::TubeChannelState state);
     void onDeviceConnected();
-    void onAbstractSocketError(QAbstractSocket::SocketError);
-    void onLocalSocketError(QLocalSocket::LocalSocketError);
+    void onAbstractSocketError(QAbstractSocket::SocketError error);
+    void onLocalSocketError(QLocalSocket::LocalSocketError error);
 
 private:
     PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,

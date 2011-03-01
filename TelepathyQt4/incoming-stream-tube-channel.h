@@ -61,8 +61,8 @@ protected:
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
 
 private Q_SLOTS:
-    void onAcceptTubeFinished(Tp::PendingOperation*);
-    void onNewLocalConnection(uint);
+    void onAcceptTubeFinished(Tp::PendingOperation *op);
+    void onNewLocalConnection(uint connectionId);
 
 private:
     struct Private;

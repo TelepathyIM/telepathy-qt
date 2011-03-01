@@ -64,9 +64,9 @@ protected:
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
 
 private Q_SLOTS:
-    void onNewRemoteConnection(uint, const QDBusVariant &, uint);
-    void onContactsRetrieved(const QUuid &, const QList<Tp::ContactPtr> &);
-    void onConnectionClosed(uint, const QString &, const QString &);
+    void onNewRemoteConnection(uint contactId, const QDBusVariant &paramenter, uint connectionId);
+    void onContactsRetrieved(const QUuid &uuid, const QList<Tp::ContactPtr> &contacts);
+    void onConnectionClosed(uint connectionId, const QString &, const QString &);
 
 private:
     struct Private;

@@ -481,7 +481,7 @@ QIODevice *IncomingStreamTubeChannel::device()
     }
 }
 
-void IncomingStreamTubeChannel::onAcceptTubeFinished(PendingOperation* op)
+void IncomingStreamTubeChannel::onAcceptTubeFinished(PendingOperation *op)
 {
     PendingStreamTubeConnection *pendingDevice = qobject_cast< PendingStreamTubeConnection* >(op);
 
