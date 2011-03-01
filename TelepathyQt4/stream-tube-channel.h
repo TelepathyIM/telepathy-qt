@@ -28,6 +28,7 @@
 #include <TelepathyQt4/TubeChannel>
 
 class QHostAddress;
+
 namespace Tp
 {
 

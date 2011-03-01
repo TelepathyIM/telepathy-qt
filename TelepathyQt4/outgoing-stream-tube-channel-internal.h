@@ -26,6 +26,7 @@
 
 namespace Tp
 {
+
 class PendingVoid;
 
 class TELEPATHY_QT4_NO_EXPORT PendingOpenTube : public PendingOperation

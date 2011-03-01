@@ -30,6 +30,7 @@
 #include <QtNetwork/QHostAddress>
 
 class QIODevice;
+
 namespace Tp
 {
 
