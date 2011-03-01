@@ -50,13 +50,13 @@ public:
     Message message() const;
 
 private Q_SLOTS:
-    void onTextSent(QDBusPendingCallWatcher *);
-    void onMessageSent(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void onTextSent(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void onMessageSent(QDBusPendingCallWatcher *);
 
 private:
     friend class TextChannel;
 
-    PendingSendMessage(const TextChannelPtr &channel, const Message &message);
+    TELEPATHY_QT4_NO_EXPORT PendingSendMessage(const TextChannelPtr &channel, const Message &message);
 
     struct Private;
     friend struct Private;
@@ -137,22 +137,22 @@ protected:
             const Feature &coreFeature = TextChannel::FeatureCore);
 
 private Q_SLOTS:
-    void onContactsFinished(Tp::PendingOperation *);
-    void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void onContactsFinished(Tp::PendingOperation *);
+    TELEPATHY_QT4_NO_EXPORT void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
 
-    void onMessageSent(const Tp::MessagePartList &, uint,
+    TELEPATHY_QT4_NO_EXPORT void onMessageSent(const Tp::MessagePartList &, uint,
             const QString &);
-    void onMessageReceived(const Tp::MessagePartList &);
-    void onPendingMessagesRemoved(const Tp::UIntList &);
+    TELEPATHY_QT4_NO_EXPORT void onMessageReceived(const Tp::MessagePartList &);
+    TELEPATHY_QT4_NO_EXPORT void onPendingMessagesRemoved(const Tp::UIntList &);
 
-    void onTextSent(uint, uint, const QString &);
-    void onTextReceived(uint, uint, uint, uint, uint, const QString &);
-    void onTextSendError(uint, uint, uint, const QString &);
+    TELEPATHY_QT4_NO_EXPORT void onTextSent(uint, uint, const QString &);
+    TELEPATHY_QT4_NO_EXPORT void onTextReceived(uint, uint, uint, uint, uint, const QString &);
+    TELEPATHY_QT4_NO_EXPORT void onTextSendError(uint, uint, uint, const QString &);
 
-    void gotProperties(QDBusPendingCallWatcher *);
-    void gotPendingMessages(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void gotPendingMessages(QDBusPendingCallWatcher *);
 
-    void onChatStateChanged(uint, uint);
+    TELEPATHY_QT4_NO_EXPORT void onChatStateChanged(uint, uint);
 
 private:
     struct Private;

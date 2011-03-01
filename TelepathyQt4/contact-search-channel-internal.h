@@ -37,9 +37,9 @@ public:
     PendingSearch(const ContactSearchChannelPtr &chan, QDBusPendingCall call);
 
 private Q_SLOTS:
-    void onSearchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,
+    TELEPATHY_QT4_NO_EXPORT void onSearchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,
             const Tp::ContactSearchChannel::SearchStateChangeDetails &details);
-    void watcherFinished(QDBusPendingCallWatcher*);
+    TELEPATHY_QT4_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
     bool mFinished;

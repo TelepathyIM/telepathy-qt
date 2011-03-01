@@ -37,11 +37,11 @@ public:
             ChannelGroupChangeReason reason);
 
 private Q_SLOTS:
-    void onChanInvalidated(Tp::DBusProxy *proxy);
-    void onRemoveFinished(Tp::PendingOperation *);
-    void onMembersChanged(const Tp::Contacts &, const Tp::Contacts &, const Tp::Contacts &,
+    TELEPATHY_QT4_NO_EXPORT void onChanInvalidated(Tp::DBusProxy *proxy);
+    TELEPATHY_QT4_NO_EXPORT void onRemoveFinished(Tp::PendingOperation *);
+    TELEPATHY_QT4_NO_EXPORT void onMembersChanged(const Tp::Contacts &, const Tp::Contacts &, const Tp::Contacts &,
             const Tp::Contacts &);
-    void onCloseFinished(Tp::PendingOperation *);
+    TELEPATHY_QT4_NO_EXPORT void onCloseFinished(Tp::PendingOperation *);
 };
 
 } // Tp

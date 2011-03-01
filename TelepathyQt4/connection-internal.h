@@ -39,10 +39,10 @@ public:
     PendingConnect(const ConnectionPtr &connection, const Features &requestedFeatures);
 
 private Q_SLOTS:
-    void onConnectReply(QDBusPendingCallWatcher *);
-    void onStatusChanged(Tp::ConnectionStatus newStatus);
-    void onBecomeReadyReply(Tp::PendingOperation *);
-    void onConnInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
+    TELEPATHY_QT4_NO_EXPORT void onConnectReply(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void onStatusChanged(Tp::ConnectionStatus newStatus);
+    TELEPATHY_QT4_NO_EXPORT void onBecomeReadyReply(Tp::PendingOperation *);
+    TELEPATHY_QT4_NO_EXPORT void onConnInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
 
 private:
     friend class ConnectionLowlevel;

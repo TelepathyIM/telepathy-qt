@@ -62,16 +62,16 @@ public:
     ChannelPtr channel() const;
 
 private Q_SLOTS:
-    void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);
-    void onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher);
-    void onChannelReady(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onChannelReady(Tp::PendingOperation *op);
 
 private:
     friend class ConnectionLowlevel;
 
-    PendingChannel(const ConnectionPtr &connection,
+    TELEPATHY_QT4_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
             const QString &errorName, const QString &errorMessage);
-    PendingChannel(const ConnectionPtr &connection,
+    TELEPATHY_QT4_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
             const QVariantMap &request, bool create);
 
     struct Private;

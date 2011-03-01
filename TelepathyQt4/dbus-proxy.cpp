@@ -249,7 +249,7 @@ void DBusProxy::emitInvalidated()
 
 // ==== StatefulDBusProxy ==============================================
 
-struct StatefulDBusProxy::Private
+struct TELEPATHY_QT4_NO_EXPORT StatefulDBusProxy::Private
 {
     Private(const QString &originalName)
         : originalName(originalName) {}

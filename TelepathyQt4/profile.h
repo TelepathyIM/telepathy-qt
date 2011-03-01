@@ -89,11 +89,11 @@ public:
     private:
         friend class Profile;
 
-        void setName(const QString &name);
-        void setDBusSignature(const QDBusSignature &dbusSignature);
-        void setValue(const QVariant &value);
-        void setLabel(const QString &label);
-        void setMandatory(bool mandatory);
+        TELEPATHY_QT4_NO_EXPORT void setName(const QString &name);
+        TELEPATHY_QT4_NO_EXPORT void setDBusSignature(const QDBusSignature &dbusSignature);
+        TELEPATHY_QT4_NO_EXPORT void setValue(const QVariant &value);
+        TELEPATHY_QT4_NO_EXPORT void setLabel(const QString &label);
+        TELEPATHY_QT4_NO_EXPORT void setMandatory(bool mandatory);
 
         struct Private;
         friend struct Private;
@@ -130,11 +130,11 @@ public:
     private:
         friend class Profile;
 
-        void setId(const QString &id);
-        void setLabel(const QString &label);
-        void setIconName(const QString &iconName);
-        void setMessage(const QString &message);
-        void setDisabled(bool disabled);
+        TELEPATHY_QT4_NO_EXPORT void setId(const QString &id);
+        TELEPATHY_QT4_NO_EXPORT void setLabel(const QString &label);
+        TELEPATHY_QT4_NO_EXPORT void setIconName(const QString &iconName);
+        TELEPATHY_QT4_NO_EXPORT void setMessage(const QString &message);
+        TELEPATHY_QT4_NO_EXPORT void setDisabled(bool disabled);
 
         struct Private;
         friend struct Private;
@@ -153,14 +153,14 @@ private:
     friend class Account;
     friend class ProfileManager;
 
-    Profile();
-    Profile(const QString &serviceName, const QString &cmName,
+    TELEPATHY_QT4_NO_EXPORT Profile();
+    TELEPATHY_QT4_NO_EXPORT Profile(const QString &serviceName, const QString &cmName,
             const QString &protocolName, const ProtocolInfo &protocolInfo);
 
-    void setServiceName(const QString &serviceName);
-    void setFileName(const QString &fileName);
+    TELEPATHY_QT4_NO_EXPORT void setServiceName(const QString &serviceName);
+    TELEPATHY_QT4_NO_EXPORT void setFileName(const QString &fileName);
 
-    static QStringList searchDirs();
+    TELEPATHY_QT4_NO_EXPORT static QStringList searchDirs();
 
     struct Private;
     friend struct Private;

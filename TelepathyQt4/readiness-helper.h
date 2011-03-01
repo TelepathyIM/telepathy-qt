@@ -113,12 +113,12 @@ Q_SIGNALS:
     void statusReady(uint status);
 
 private Q_SLOTS:
-    void iterateIntrospection();
+    TELEPATHY_QT4_NO_EXPORT void iterateIntrospection();
 
-    void onProxyInvalidated(Tp::DBusProxy *proxy,
+    TELEPATHY_QT4_NO_EXPORT void onProxyInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage);
-    void onOperationFinished(Tp::PendingOperation *op);
-    void onOperationDestroyed(QObject *obj);
+    TELEPATHY_QT4_NO_EXPORT void onOperationFinished(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onOperationDestroyed(QObject *obj);
 
 private:
     struct Private;

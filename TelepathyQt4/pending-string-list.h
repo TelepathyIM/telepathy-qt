@@ -49,7 +49,7 @@ protected:
     void setResult(const QStringList &result);
 
 private Q_SLOTS:
-    void watcherFinished(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     struct Private;

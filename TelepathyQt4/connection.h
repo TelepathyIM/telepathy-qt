@@ -185,27 +185,27 @@ protected:
     Client::ConnectionInterface *baseInterface() const;
 
 private Q_SLOTS:
-    void onStatusReady(uint status);
-    void onStatusChanged(uint status, uint reason);
-    void onConnectionError(const QString &error, const QVariantMap &details);
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void gotStatus(QDBusPendingCallWatcher *watcher);
-    void gotInterfaces(QDBusPendingCallWatcher *watcher);
-    void gotSelfHandle(QDBusPendingCallWatcher *watcher);
-    void gotCapabilities(QDBusPendingCallWatcher *watcher);
-    void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
-    void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
-    void gotSelfContact(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onStatusReady(uint status);
+    TELEPATHY_QT4_NO_EXPORT void onStatusChanged(uint status, uint reason);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionError(const QString &error, const QVariantMap &details);
+    TELEPATHY_QT4_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotStatus(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotInterfaces(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotSelfHandle(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotCapabilities(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotSelfContact(Tp::PendingOperation *op);
 
-    void onIntrospectRosterFinished(Tp::PendingOperation *op);
-    void onIntrospectRosterGroupsFinished(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onIntrospectRosterFinished(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onIntrospectRosterGroupsFinished(Tp::PendingOperation *op);
 
-    void doReleaseSweep(uint handleType);
+    TELEPATHY_QT4_NO_EXPORT void doReleaseSweep(uint handleType);
 
-    void onSelfHandleChanged(uint);
+    TELEPATHY_QT4_NO_EXPORT void onSelfHandleChanged(uint);
 
-    void gotBalance(QDBusPendingCallWatcher *watcher);
-    void onBalanceChanged(const Tp::CurrencyAmount &);
+    TELEPATHY_QT4_NO_EXPORT void gotBalance(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onBalanceChanged(const Tp::CurrencyAmount &);
 
 private:
     class PendingConnect;
@@ -217,9 +217,9 @@ private:
     friend class PendingHandles;
     friend class ReferencedHandles;
 
-    void refHandle(HandleType handleType, uint handle);
-    void unrefHandle(HandleType handleType, uint handle);
-    void handleRequestLanded(HandleType handleType);
+    TELEPATHY_QT4_NO_EXPORT void refHandle(HandleType handleType, uint handle);
+    TELEPATHY_QT4_NO_EXPORT void unrefHandle(HandleType handleType, uint handle);
+    TELEPATHY_QT4_NO_EXPORT void handleRequestLanded(HandleType handleType);
 
     struct Private;
     friend struct Private;

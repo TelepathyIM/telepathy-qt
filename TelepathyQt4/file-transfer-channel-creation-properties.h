@@ -64,20 +64,20 @@ private:
     friend class Account;
 
     /* mandatory parameters */
-    QString suggestedFileName() const;
-    QString contentType() const;
-    qulonglong size() const;
+    TELEPATHY_QT4_NO_EXPORT QString suggestedFileName() const;
+    TELEPATHY_QT4_NO_EXPORT QString contentType() const;
+    TELEPATHY_QT4_NO_EXPORT qulonglong size() const;
 
     /* optional parameters */
-    bool hasContentHash() const;
-    FileHashType contentHashType() const;
-    QString contentHash() const;
+    TELEPATHY_QT4_NO_EXPORT bool hasContentHash() const;
+    TELEPATHY_QT4_NO_EXPORT FileHashType contentHashType() const;
+    TELEPATHY_QT4_NO_EXPORT QString contentHash() const;
 
-    bool hasDescription() const;
-    QString description() const;
+    TELEPATHY_QT4_NO_EXPORT bool hasDescription() const;
+    TELEPATHY_QT4_NO_EXPORT QString description() const;
 
-    bool hasLastModificationTime() const;
-    QDateTime lastModificationTime() const;
+    TELEPATHY_QT4_NO_EXPORT bool hasLastModificationTime() const;
+    TELEPATHY_QT4_NO_EXPORT QDateTime lastModificationTime() const;
 
     struct Private;
     friend struct Private;

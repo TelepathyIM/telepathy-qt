@@ -69,9 +69,9 @@ public:
 private:
     friend class Connection;
 
-    ConnectionLowlevel(Connection *parent);
+    TELEPATHY_QT4_NO_EXPORT ConnectionLowlevel(Connection *parent);
 
-    bool hasImmortalHandles() const;
+    TELEPATHY_QT4_NO_EXPORT bool hasImmortalHandles() const;
 
     struct Private;
     friend struct Private;

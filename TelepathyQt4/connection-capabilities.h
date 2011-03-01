@@ -56,8 +56,8 @@ private:
     friend class Connection;
     friend class ProtocolInfo;
 
-    ConnectionCapabilities(const RequestableChannelClassList &rccs);
-    ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs);
+    TELEPATHY_QT4_NO_EXPORT ConnectionCapabilities(const RequestableChannelClassList &rccs);
+    TELEPATHY_QT4_NO_EXPORT ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs);
 };
 
 } // Tp

@@ -76,15 +76,15 @@ public:
 private:
     friend class ConnectionManager;
 
-    ProtocolInfo(const QString &cmName, const QString &name);
+    TELEPATHY_QT4_NO_EXPORT ProtocolInfo(const QString &cmName, const QString &name);
 
-    void addParameter(const ParamSpec &spec);
-    void setVCardField(const QString &vcardField);
-    void setEnglishName(const QString &englishName);
-    void setIconName(const QString &iconName);
-    void setRequestableChannelClasses(const RequestableChannelClassList &caps);
-    void setAllowedPresenceStatuses(const PresenceSpecList &statuses);
-    void setAvatarRequirements(const AvatarSpec &avatarRequirements);
+    TELEPATHY_QT4_NO_EXPORT void addParameter(const ParamSpec &spec);
+    TELEPATHY_QT4_NO_EXPORT void setVCardField(const QString &vcardField);
+    TELEPATHY_QT4_NO_EXPORT void setEnglishName(const QString &englishName);
+    TELEPATHY_QT4_NO_EXPORT void setIconName(const QString &iconName);
+    TELEPATHY_QT4_NO_EXPORT void setRequestableChannelClasses(const RequestableChannelClassList &caps);
+    TELEPATHY_QT4_NO_EXPORT void setAllowedPresenceStatuses(const PresenceSpecList &statuses);
+    TELEPATHY_QT4_NO_EXPORT void setAvatarRequirements(const AvatarSpec &avatarRequirements);
 
     struct Private;
     friend struct Private;

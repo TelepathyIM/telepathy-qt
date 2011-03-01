@@ -104,13 +104,13 @@ protected:
     void connectNotify(const char *);
 
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void onAccountReady(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onAccountReady(Tp::PendingOperation *op);
 
-    void onLegacySucceeded();
-    void onSucceededWithChannel(const QDBusObjectPath &connPath, const QVariantMap &connProps,
+    TELEPATHY_QT4_NO_EXPORT void onLegacySucceeded();
+    TELEPATHY_QT4_NO_EXPORT void onSucceededWithChannel(const QDBusObjectPath &connPath, const QVariantMap &connProps,
             const QDBusObjectPath &chanPath, const QVariantMap &chanProps);
-    void onChanBuilt(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onChanBuilt(Tp::PendingOperation *op);
 
 private:
     friend class PendingChannelRequest;

@@ -55,16 +55,16 @@ protected:
             const Feature &coreFeature = IncomingFileTransferChannel::FeatureCore);
 
 private Q_SLOTS:
-    void onAcceptFileFinished(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onAcceptFileFinished(Tp::PendingOperation *op);
 
-    void onSocketConnected();
-    void onSocketDisconnected();
-    void onSocketError(QAbstractSocket::SocketError error);
-    void doTransfer();
+    TELEPATHY_QT4_NO_EXPORT void onSocketConnected();
+    TELEPATHY_QT4_NO_EXPORT void onSocketDisconnected();
+    TELEPATHY_QT4_NO_EXPORT void onSocketError(QAbstractSocket::SocketError error);
+    TELEPATHY_QT4_NO_EXPORT void doTransfer();
 
 private:
-    void connectToHost();
-    void setFinished();
+    TELEPATHY_QT4_NO_EXPORT void connectToHost();
+    TELEPATHY_QT4_NO_EXPORT void setFinished();
 
     struct Private;
     friend struct Private;

@@ -26,7 +26,7 @@ namespace Tp
 
 class ConnectionCapabilities;
 
-struct AccountSet::Private
+struct TELEPATHY_QT4_NO_EXPORT AccountSet::Private
 {
     class AccountWrapper;
 
@@ -70,9 +70,9 @@ Q_SIGNALS:
             const Tp::ConnectionCapabilities &capabilities);
 
 private Q_SLOTS:
-    void onAccountRemoved();
-    void onAccountPropertyChanged(const QString &propertyName);
-    void onAccountCapalitiesChanged(const Tp::ConnectionCapabilities &capabilities);
+    TELEPATHY_QT4_NO_EXPORT void onAccountRemoved();
+    TELEPATHY_QT4_NO_EXPORT void onAccountPropertyChanged(const QString &propertyName);
+    TELEPATHY_QT4_NO_EXPORT void onAccountCapalitiesChanged(const Tp::ConnectionCapabilities &capabilities);
 
 private:
     AccountPtr mAccount;

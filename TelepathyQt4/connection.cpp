@@ -1033,7 +1033,7 @@ ConnectionStatusReason Connection::statusReason() const
     return (ConnectionStatusReason) mPriv->statusReason;
 }
 
-struct Connection::ErrorDetails::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT Connection::ErrorDetails::Private : public QSharedData
 {
     Private(const QVariantMap &details)
         : details(details) {}
