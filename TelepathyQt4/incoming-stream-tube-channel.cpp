@@ -45,10 +45,6 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
 
     // Properties
     QIODevice *device;
-
-    // Private slots
-    void onAcceptTubeFinished(Tp::PendingOperation *op);
-    void onNewLocalConnection(uint connectionId);
 };
 
 IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
