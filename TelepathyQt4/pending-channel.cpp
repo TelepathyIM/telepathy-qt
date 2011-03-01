@@ -24,12 +24,17 @@
 #include "TelepathyQt4/_gen/pending-channel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
+#include "TelepathyQt4/simple-handler-internal.h"
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ChannelFactory>
+#include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/HandledChannelNotifier>
+#include <TelepathyQt4/PendingChannelRequest>
 #include <TelepathyQt4/PendingReady>
 
 namespace Tp
@@ -37,12 +42,53 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
 {
+    class FakeAccountFactory;
+
+    ConnectionPtr connection;
     bool yours;
     QString channelType;
     uint handleType;
     uint handle;
     QVariantMap immutableProperties;
     ChannelPtr channel;
+
+    ClientRegistrarPtr cr;
+    SharedPtr<SimpleHandler> handler;
+    HandledChannelNotifier *notifier;
+    static uint numHandlers;
+};
+
+uint PendingChannel::Private::numHandlers = 0;
+
+class TELEPATHY_QT4_NO_EXPORT PendingChannel::Private::FakeAccountFactory : public AccountFactory
+{
+public:
+    static AccountFactoryPtr create(const AccountPtr &account)
+    {
+        return AccountFactoryPtr(new FakeAccountFactory(account));
+    }
+
+    ~FakeAccountFactory() { }
+
+    AccountPtr account() const { return mAccount; }
+
+protected:
+    AccountPtr construct(const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory) const
+    {
+        return mAccount;
+    }
+
+private:
+    FakeAccountFactory(const AccountPtr &account)
+        : AccountFactory(account->dbusConnection(), Features()),
+          mAccount(account)
+    {
+    }
+
+    AccountPtr mAccount;
 };
 
 /**
@@ -67,9 +113,11 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &e
     : PendingOperation(connection),
       mPriv(new Private)
 {
+    mPriv->connection = connection;
     mPriv->yours = false;
     mPriv->handleType = 0;
     mPriv->handle = 0;
+    mPriv->notifier = 0;
 
     setFinishedWithError(errorName, errorMessage);
 }
@@ -86,10 +134,12 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
     : PendingOperation(connection),
       mPriv(new Private)
 {
+    mPriv->connection = connection;
     mPriv->yours = create;
     mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
     mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
     mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+    mPriv->notifier = 0;
 
     Client::ConnectionInterfaceRequestsInterface *requestsInterface =
         connection->interface<Client::ConnectionInterfaceRequestsInterface>();
@@ -98,15 +148,66 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
                 requestsInterface->CreateChannel(request), this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(onCallCreateChannelFinished(QDBusPendingCallWatcher*)));
+                SLOT(onConnectionCreateChannelFinished(QDBusPendingCallWatcher*)));
     }
     else {
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                 requestsInterface->EnsureChannel(request), this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(onCallEnsureChannelFinished(QDBusPendingCallWatcher*)));
+                SLOT(onConnectionEnsureChannelFinished(QDBusPendingCallWatcher*)));
     }
+}
+
+PendingChannel::PendingChannel(const AccountPtr &account,
+        const QVariantMap &request, const QDateTime &userActionTime,
+        const ChannelRequestHints &hints,
+        bool create)
+    : PendingOperation(account),
+      mPriv(new Private)
+{
+    mPriv->yours = false;
+    mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
+    mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
+    mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+
+    mPriv->cr = ClientRegistrar::create(
+            Private::FakeAccountFactory::create(account),
+            account->connectionFactory(),
+            account->channelFactory(),
+            account->contactFactory());
+    mPriv->handler = SimpleHandler::create(account);
+    mPriv->notifier = 0;
+
+    QString handlerName = QString(QLatin1String("x%1.%2"))
+        .arg((intptr_t) mPriv->handler.data(), 0, 16)
+        .arg(Private::numHandlers++);
+    if (!mPriv->cr->registerClient(mPriv->handler, handlerName, false)) {
+        warning() << "Unable to register handler" << handlerName;
+        setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("Unable to register handler"));
+        return;
+    }
+
+    connect(mPriv->handler.data(),
+            SIGNAL(error(QString,QString)),
+            SLOT(onHandlerError(QString,QString)));
+    connect(mPriv->handler.data(),
+            SIGNAL(channelReceived(Tp::ChannelPtr)),
+            SLOT(onHandlerChannelReceived(Tp::Channelptr)));
+
+    handlerName = QString(QLatin1String("org.freedesktop.Telepathy.Client.%1")).arg(handlerName);
+
+    debug() << "Requesting channel through account using handler" << handlerName;
+    PendingChannelRequest *pcr;
+    if (create) {
+        pcr = account->createChannel(request, userActionTime, handlerName, hints);
+    } else {
+        pcr = account->ensureChannel(request, userActionTime, handlerName, hints);
+    }
+    connect(pcr,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onAccountCreateChannelFinished(Tp::PendingOperation*)));
 }
 
 /**
@@ -124,7 +225,7 @@ PendingChannel::~PendingChannel()
  */
 ConnectionPtr PendingChannel::connection() const
 {
-    return ConnectionPtr(qobject_cast<Connection*>((Connection*) object().data()));
+    return mPriv->connection;
 }
 
 /**
@@ -241,8 +342,9 @@ QVariantMap PendingChannel::immutableProperties() const
 
 /**
  * Returns a shared pointer to a Channel high-level proxy object associated
- * with the remote channel resulting from the channel request. If isValid()
- * returns <code>false</code>, the request has not (at least yet) completed
+ * with the remote channel resulting from the channel request.
+ *
+ * If isValid() returns <code>false</code>, the request has not (at least yet) completed
  * successfully, and a null ChannelPtr will be returned.
  *
  * \return Shared pointer to the new Channel object, 0 if an error occurred.
@@ -260,7 +362,29 @@ ChannelPtr PendingChannel::channel() const
     return mPriv->channel;
 }
 
-void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher)
+/**
+ * If this channel request has finished and was created through Account,
+ * return a HandledChannelNotifier object that will keep track of channel() being re-requested.
+ *
+ * If isValid() returns <code>false</code>, the request has not (at least yet) completed
+ * successfully, and a null HandledChannelNotifier will be returned.
+ *
+ * \return A HandledChannelNotifier instance, or 0 if an error occurred.
+ */
+HandledChannelNotifier *PendingChannel::handledChannelNotifier() const
+{
+    if (!isFinished()) {
+        warning() << "PendingChannel::handledChannelNotifier called before finished, returning 0";
+        return 0;
+    } else if (!isValid()) {
+        warning() << "PendingChannel::handledChannelNotifier called when not valid, returning 0";
+        return 0;
+    }
+
+    return mPriv->notifier;
+}
+
+void PendingChannel::onConnectionCreateChannelFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusObjectPath, QVariantMap> reply = *watcher;
 
@@ -291,7 +415,7 @@ void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watche
     watcher->deleteLater();
 }
 
-void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher)
+void PendingChannel::onConnectionEnsureChannelFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<bool, QDBusObjectPath, QVariantMap> reply = *watcher;
 
@@ -332,6 +456,52 @@ void PendingChannel::onChannelReady(PendingOperation *op)
             << ":" << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
     }
+}
+
+void PendingChannel::onHandlerError(const QString &errorName, const QString &errorMessage)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    warning() << "Creating/ensuring channel failed with" << errorName
+        << ":" << errorMessage;
+    setFinishedWithError(errorName, errorMessage);
+}
+
+void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
+{
+    if (isFinished()) {
+        warning() << "Handler received the channel but this operation already finished due "
+            "to failure in the channel request";
+        return;
+    }
+
+    mPriv->connection = channel->connection();
+    mPriv->yours = channel->isRequested();
+    Q_ASSERT(mPriv->channelType == channel->channelType());
+    mPriv->handleType = channel->targetHandleType();
+    mPriv->handle = channel->targetHandle();
+    mPriv->immutableProperties = channel->immutableProperties();
+    mPriv->channel = channel;
+    mPriv->notifier = new HandledChannelNotifier(mPriv->cr, mPriv->handler);
+    setFinished();
+}
+
+void PendingChannel::onAccountCreateChannelFinished(PendingOperation *op)
+{
+    if (isFinished()) {
+        // ignore possible errors when calling create/ensureChannel if we already finished
+        return;
+    }
+
+    if (op->isError()) {
+        warning() << "Creating/ensuring channel failed with" << op->errorName()
+            << ":" << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    }
+
+    // do nothing, we are waiting for the channel to appear in the handler
 }
 
 } // Tp
