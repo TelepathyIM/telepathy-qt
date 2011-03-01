@@ -69,9 +69,9 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
 };
 
 StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
-    : parent(parent)
-    , baseType(NoKnownType)
-    , addressType(SocketAddressTypeUnix)
+    : parent(parent),
+      baseType(NoKnownType),
+      addressType(SocketAddressTypeUnix)
 {
 }
 
@@ -239,8 +239,8 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties,
         const Feature &coreFeature)
-    : TubeChannel(connection, objectPath, immutableProperties, coreFeature)
-    , mPriv(new Private(this))
+    : TubeChannel(connection, objectPath, immutableProperties, coreFeature),
+      mPriv(new Private(this))
 {
     mPriv->init();
 }

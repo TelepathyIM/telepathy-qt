@@ -53,8 +53,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
 };
 
 PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection *parent)
-    : parent(parent)
-    , device(0)
+    : parent(parent),
+      device(0)
 {
 
 }
@@ -68,8 +68,8 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
         PendingVariant *acceptOperation,
         SocketAddressType type,
         const IncomingStreamTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new Private(this))
+    : PendingOperation(object),
+      mPriv(new Private(this))
 {
     mPriv->tube = object;
     mPriv->type = type;
@@ -95,8 +95,8 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
         const QString& errorName,
         const QString& errorMessage,
         const IncomingStreamTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new PendingStreamTubeConnection::Private(this))
+    : PendingOperation(object),
+      mPriv(new PendingStreamTubeConnection::Private(this))
 {
     setFinishedWithError(errorName, errorMessage);
 }

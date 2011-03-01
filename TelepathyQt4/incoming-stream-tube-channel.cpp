@@ -48,8 +48,8 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
 };
 
 IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
-    : parent(parent)
-    , device(0)
+    : parent(parent),
+      device(0)
 {
 }
 
@@ -198,8 +198,8 @@ IncomingStreamTubeChannel::IncomingStreamTubeChannel(const ConnectionPtr &connec
         const QVariantMap &immutableProperties,
         const Feature &coreFeature)
     : StreamTubeChannel(connection, objectPath,
-            immutableProperties, coreFeature)
-    , mPriv(new Private(this))
+            immutableProperties, coreFeature),
+      mPriv(new Private(this))
 {
     setBaseTubeType(2);
 }

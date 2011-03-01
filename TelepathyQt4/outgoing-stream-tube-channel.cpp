@@ -41,8 +41,8 @@ namespace Tp
 {
 
 PendingOpenTube::Private::Private(const QVariantMap &parameters, PendingOpenTube *parent)
-    : parent(parent)
-    , parameters(parameters)
+    : parent(parent),
+      parameters(parameters)
 {
 
 }
@@ -56,8 +56,8 @@ PendingOpenTube::PendingOpenTube(
         PendingVoid *offerOperation,
         const QVariantMap &parameters,
         const OutgoingStreamTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new Private(parameters, this))
+    : PendingOperation(object),
+      mPriv(new Private(parameters, this))
 {
     mPriv->tube = object;
 
@@ -112,9 +112,9 @@ void PendingOpenTube::onTubeStateChanged(TubeChannelState state)
 }
 
 QueuedContactFactory::QueuedContactFactory(Tp::ContactManagerPtr contactManager, QObject* parent)
-    : QObject(parent)
-    , m_isProcessing(false)
-    , m_manager(contactManager)
+    : QObject(parent),
+      m_isProcessing(false),
+      m_manager(contactManager)
 {
 }
 
@@ -170,8 +170,8 @@ void QueuedContactFactory::onPendingContactsFinished(PendingOperation *op)
 }
 
 OutgoingStreamTubeChannel::Private::Private(OutgoingStreamTubeChannel *parent)
-    : parent(parent)
-    , queuedContactFactory(new QueuedContactFactory(parent->connection()->contactManager(), parent))
+    : parent(parent),
+      queuedContactFactory(new QueuedContactFactory(parent->connection()->contactManager(), parent))
 {
 }
 
@@ -290,8 +290,8 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
         const QVariantMap &immutableProperties,
         const Feature &coreFeature)
     : StreamTubeChannel(connection, objectPath,
-                        immutableProperties, coreFeature)
-    , mPriv(new Private(this))
+                        immutableProperties, coreFeature),
+      mPriv(new Private(this))
 {
     setBaseTubeType(1);
 
