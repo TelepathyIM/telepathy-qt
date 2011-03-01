@@ -468,7 +468,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
  *
  * \return A valid QIODevice if the tube is in the \c Open state, 0 otherwise.
  */
-QIODevice *IncomingStreamTubeChannel::device()
+QIODevice *IncomingStreamTubeChannel::device() const
 {
     if (tubeState() == TubeChannelStateOpen) {
         return mPriv->device;

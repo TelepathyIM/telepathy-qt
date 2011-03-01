@@ -49,7 +49,7 @@ class TELEPATHY_QT4_EXPORT PendingStreamTubeConnection : public PendingOperation
 public:
     virtual ~PendingStreamTubeConnection();
 
-    QIODevice *device();
+    QIODevice *device() const;
 
     SocketAddressType addressType() const;
 

@@ -120,7 +120,7 @@ PendingStreamTubeConnection::~PendingStreamTubeConnection()
  * \note This function will return a valid value only after the operation has been
  *       finished successfully.
  */
-QIODevice *PendingStreamTubeConnection::device()
+QIODevice *PendingStreamTubeConnection::device() const
 {
     return mPriv->device;
 }

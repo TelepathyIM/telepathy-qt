@@ -52,7 +52,7 @@ public:
             quint16 allowedPort);
     PendingStreamTubeConnection *acceptTubeAsUnixSocket(bool requireCredentials = false);
 
-    QIODevice *device();
+    QIODevice *device() const;
 
 protected:
     IncomingStreamTubeChannel(const ConnectionPtr &connection,
