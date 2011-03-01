@@ -3159,7 +3159,6 @@ void Account::Private::updateProperties(const QVariantMap &props)
     if (props.contains(QLatin1String("Parameters")) &&
         parameters != qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")])) {
         parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
-        debug() << " Parameters:" << parameters;
         emit parent->parametersChanged(parameters);
         parent->notify("parameters");
     }
