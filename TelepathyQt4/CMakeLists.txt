@@ -53,6 +53,7 @@ set(telepathy_qt4_SRCS
     fixed-feature-factory.cpp
     future.cpp
     future-internal.h
+    handled-channel-notifier.cpp
     incoming-file-transfer-channel.cpp
     key-file.cpp
     location-info.cpp
@@ -254,6 +255,8 @@ set(telepathy_qt4_HEADERS
     generic-property-filter.h
     Global
     global.h
+    HandledChannelNotifier
+    handled-channel-notifier.h
     IncomingFileTransferChannel
     incoming-file-transfer-channel.h
     IntrospectableInterface
@@ -402,6 +405,7 @@ set(telepathy_qt4_MOC_SRCS
     dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
     file-transfer-channel.h
+    handled-channel-notifier.h
     incoming-file-transfer-channel.h
     object.h
     outgoing-file-transfer-channel.h
