@@ -146,14 +146,14 @@ protected:
     void connectNotify(const char *);
 
 private Q_SLOTS:
-    void onAliasesChanged(const Tp::AliasPairList &);
-    void doRequestAvatars();
-    void onAvatarUpdated(uint, const QString &);
-    void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
-    void onPresencesChanged(const Tp::SimpleContactPresences &);
-    void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
-    void onLocationUpdated(uint, const QVariantMap &);
-    void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
+    TELEPATHY_QT4_NO_EXPORT void onAliasesChanged(const Tp::AliasPairList &);
+    TELEPATHY_QT4_NO_EXPORT void doRequestAvatars();
+    TELEPATHY_QT4_NO_EXPORT void onAvatarUpdated(uint, const QString &);
+    TELEPATHY_QT4_NO_EXPORT void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
+    TELEPATHY_QT4_NO_EXPORT void onPresencesChanged(const Tp::SimpleContactPresences &);
+    TELEPATHY_QT4_NO_EXPORT void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
+    TELEPATHY_QT4_NO_EXPORT void onLocationUpdated(uint, const QVariantMap &);
+    TELEPATHY_QT4_NO_EXPORT void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
 
 private:
     class Roster;
@@ -161,18 +161,18 @@ private:
     friend class PendingContacts;
     friend class Roster;
 
-    ContactManager(Connection *parent);
+    TELEPATHY_QT4_NO_EXPORT ContactManager(Connection *parent);
 
-    ContactPtr ensureContact(const ReferencedHandles &handle,
+    TELEPATHY_QT4_NO_EXPORT ContactPtr ensureContact(const ReferencedHandles &handle,
             const Features &features,
             const QVariantMap &attributes);
 
-    void ensureTracking(const Feature &feature);
-    static QString featureToInterface(const Feature &feature);
+    TELEPATHY_QT4_NO_EXPORT void ensureTracking(const Feature &feature);
+    TELEPATHY_QT4_NO_EXPORT static QString featureToInterface(const Feature &feature);
 
-    PendingOperation *introspectRoster();
-    PendingOperation *introspectRosterGroups();
-    void resetRoster();
+    TELEPATHY_QT4_NO_EXPORT PendingOperation *introspectRoster();
+    TELEPATHY_QT4_NO_EXPORT PendingOperation *introspectRosterGroups();
+    TELEPATHY_QT4_NO_EXPORT void resetRoster();
 
     struct Private;
     friend struct Private;

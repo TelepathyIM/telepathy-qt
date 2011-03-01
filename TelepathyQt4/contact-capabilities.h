@@ -45,10 +45,10 @@ public:
 private:
     friend class Contact;
 
-    ContactCapabilities(bool specificToContact);
-    ContactCapabilities(const RequestableChannelClassList &rccs,
+    TELEPATHY_QT4_NO_EXPORT ContactCapabilities(bool specificToContact);
+    TELEPATHY_QT4_NO_EXPORT ContactCapabilities(const RequestableChannelClassList &rccs,
             bool specificToContact);
-    ContactCapabilities(const RequestableChannelClassSpecList &rccSpecs,
+    TELEPATHY_QT4_NO_EXPORT ContactCapabilities(const RequestableChannelClassSpecList &rccSpecs,
             bool specificToContact);
 };
 

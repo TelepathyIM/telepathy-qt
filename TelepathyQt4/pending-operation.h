@@ -71,7 +71,7 @@ protected Q_SLOTS:
     void setFinishedWithError(const QDBusError &error);
 
 private Q_SLOTS:
-    void emitFinished();
+    TELEPATHY_QT4_NO_EXPORT void emitFinished();
 
 private:
     friend class ContactManager;

@@ -64,7 +64,7 @@ private:
     friend class ConnectionManager;
     friend class ProtocolInfo;
 
-    ProtocolParameter(const QString &name,
+    TELEPATHY_QT4_NO_EXPORT ProtocolParameter(const QString &name,
                       const QDBusSignature &dbusSignature,
                       QVariant defaultValue,
                       ConnMgrParamFlag flags);

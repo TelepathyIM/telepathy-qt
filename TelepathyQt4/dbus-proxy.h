@@ -66,7 +66,7 @@ protected:
     void invalidate(const QDBusError &error);
 
 private Q_SLOTS:
-    void emitInvalidated();
+    TELEPATHY_QT4_NO_EXPORT void emitInvalidated();
 
 private:
     friend class TestBackdoors;
@@ -107,7 +107,7 @@ public:
             QString &error, QString &message);
 
 private Q_SLOTS:
-    void onServiceOwnerChanged(const QString &name, const QString &oldOwner,
+    TELEPATHY_QT4_NO_EXPORT void onServiceOwnerChanged(const QString &name, const QString &oldOwner,
             const QString &newOwner);
 
 private:

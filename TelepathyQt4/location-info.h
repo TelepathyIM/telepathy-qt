@@ -80,7 +80,7 @@ public:
 private:
     friend class Contact;
 
-    void updateData(const QVariantMap &location);
+    TELEPATHY_QT4_NO_EXPORT void updateData(const QVariantMap &location);
 
     struct Private;
     friend struct Private;

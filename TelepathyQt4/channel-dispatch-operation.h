@@ -92,11 +92,11 @@ protected:
     Client::ChannelDispatchOperationInterface *baseInterface() const;
 
 private Q_SLOTS:
-    void onFinished();
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void onChannelLost(const QDBusObjectPath &channelObjectPath,
+    TELEPATHY_QT4_NO_EXPORT void onFinished();
+    TELEPATHY_QT4_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onChannelLost(const QDBusObjectPath &channelObjectPath,
         const QString &errorName, const QString &errorMessage);
-    void onProxiesPrepared(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onProxiesPrepared(Tp::PendingOperation *op);
 
 private:
     struct Private;

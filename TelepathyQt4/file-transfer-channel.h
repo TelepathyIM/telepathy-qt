@@ -85,12 +85,12 @@ protected:
     virtual void setFinished();
 
 private Q_SLOTS:
-    void gotProperties(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *watcher);
 
-    void changeState();
-    void onStateChanged(uint state, uint stateReason);
-    void onInitialOffsetDefined(qulonglong initialOffset);
-    void onTransferredBytesChanged(qulonglong count);
+    TELEPATHY_QT4_NO_EXPORT void changeState();
+    TELEPATHY_QT4_NO_EXPORT void onStateChanged(uint state, uint stateReason);
+    TELEPATHY_QT4_NO_EXPORT void onInitialOffsetDefined(qulonglong initialOffset);
+    TELEPATHY_QT4_NO_EXPORT void onTransferredBytesChanged(qulonglong count);
 
 private:
     struct Private;

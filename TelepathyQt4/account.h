@@ -467,15 +467,15 @@ protected:
     Client::ChannelDispatcherInterface *dispatcherInterface() const;
 
 private Q_SLOTS:
-    void onDispatcherIntrospected(Tp::PendingOperation *op);
-    void gotMainProperties(QDBusPendingCallWatcher *);
-    void gotAvatar(QDBusPendingCallWatcher *);
-    void onAvatarChanged();
-    void onConnectionManagerReady(Tp::PendingOperation *);
-    void onConnectionReady(Tp::PendingOperation *);
-    void onPropertyChanged(const QVariantMap &delta);
-    void onRemoved();
-    void onConnectionBuilt(Tp::PendingOperation *);
+    TELEPATHY_QT4_NO_EXPORT void onDispatcherIntrospected(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void gotAvatar(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void onAvatarChanged();
+    TELEPATHY_QT4_NO_EXPORT void onConnectionManagerReady(Tp::PendingOperation *);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionReady(Tp::PendingOperation *);
+    TELEPATHY_QT4_NO_EXPORT void onPropertyChanged(const QVariantMap &delta);
+    TELEPATHY_QT4_NO_EXPORT void onRemoved();
+    TELEPATHY_QT4_NO_EXPORT void onConnectionBuilt(Tp::PendingOperation *);
 
 private:
     struct Private;

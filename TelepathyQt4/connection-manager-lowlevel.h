@@ -51,7 +51,7 @@ public:
 private:
     friend class ConnectionManager;
 
-    ConnectionManagerLowlevel(ConnectionManager *parent);
+    TELEPATHY_QT4_NO_EXPORT ConnectionManagerLowlevel(ConnectionManager *parent);
 
     struct Private;
     friend struct Private;

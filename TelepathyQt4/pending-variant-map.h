@@ -46,7 +46,7 @@ public:
     QVariantMap result() const;
 
 private Q_SLOTS:
-    void watcherFinished(QDBusPendingCallWatcher*);
+    TELEPATHY_QT4_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
     struct Private;
