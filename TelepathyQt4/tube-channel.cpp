@@ -116,7 +116,7 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/tube-channel.h <TelepathyQt4/TubeChannel>
  *
- * \brief A class representing an abstract Tube
+ * A class representing an abstract Tube
  *
  * \c TubeChannel is an high level wrapper for managing Telepathy interface
  * #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE.
@@ -208,6 +208,9 @@ QVariantMap TubeChannel::parameters() const
 }
 
 /**
+ * This methods returns the state of the tube in this channel. It can be used to find out
+ * whether the tube is already opened.
+ *
  * \return The State of the tube in this channel.
  *
  * \note This method requires TubeChannel::FeatureTube to be enabled.

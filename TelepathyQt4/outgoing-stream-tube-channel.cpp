@@ -183,7 +183,7 @@ OutgoingStreamTubeChannel::Private::~Private()
  * \class OutgoingStreamTubeChannel
  * \headerfile TelepathyQt4/outgoing-stream-tube-channel.h <TelepathyQt4/OutgoingStreamTubeChannel>
  *
- * \brief An high level wrapper for managing an outgoing stream tube
+ * An high level wrapper for managing an outgoing stream tube
  *
  * \c OutgoingStreamTubeChannel is an high level wrapper for managing Telepathy interface
  * #TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE.
@@ -312,7 +312,7 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
 }
 
 /**
- * \brief Offer an IPv4/IPv6 socket over the tube
+ * Offer an IPv4/IPv6 socket over the tube
  *
  * This method offers an IPv4/IPv6 socket over this tube. The socket is represented through
  * a QHostAddress. If you are already handling a Tcp logic in your application, you can also
@@ -453,7 +453,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
 
 /**
  * \overload
- * \brief Offer an IPv4/IPv6 socket over the tube
+ * Offer an IPv4/IPv6 socket over the tube
  *
  * This method offers an IPv4/IPv6 socket over this tube through a QTcpServer.
  *
@@ -493,7 +493,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
 }
 
 /**
- * \brief Offer a Unix socket over the tube
+ * Offer a Unix socket over the tube
  *
  * This method offers a Unix socket over this tube. The socket is represented through
  * a QString, which should contain the path to the socket. You can also expose an
@@ -609,7 +609,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
 
 /**
  * \overload
- * \brief Offer a Unix socket over the tube
+ * Offer a Unix socket over the tube
  *
  * This method offers a Unix socket over this tube through a QLocalServer.
  *

@@ -83,7 +83,7 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
  * \class PendingStreamTubeConnection
  * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/IncomingStreamTubeChannel>
  *
- * \brief A pending operation for accepting a stream tube
+ * A pending operation for accepting a stream tube
  *
  * This class represents an asynchronous operation for accepting a stream tube.
  * When the operation is finished, you can access the resulting device
@@ -110,7 +110,15 @@ PendingStreamTubeConnection::~PendingStreamTubeConnection()
 }
 
 /**
+ * This method returns an opened QIODevice representing the opened socket.
+ *
+ * Calling this method when the operation has not been completed or has failed, will cause it
+ * to return 0.
+ *
  * \return The opened QIODevice if the operation is finished and successful, 0 otherwise.
+ *
+ * \note This function will return a valid value only after the operation has been
+ *       finished successfully.
  */
 QIODevice *PendingStreamTubeConnection::device()
 {
@@ -118,6 +126,11 @@ QIODevice *PendingStreamTubeConnection::device()
 }
 
 /**
+ * This method returns the address type of the opened socket.
+ *
+ * Calling this method when the operation has not been completed or has failed, will cause it
+ * to return an unmeaningful value.
+ *
  * \return The type of socket this PendingStreamTubeConnection has created
  *
  * \note This function will return a valid value only after the operation has been
@@ -132,9 +145,16 @@ SocketAddressType PendingStreamTubeConnection::addressType() const
 }
 
 /**
- * \return The local address obtained from this PendingStreamTubeConnection as a QByteArray,
- *          if the connection has been estabilished through a SocketAddressTypeUnix or
- *          a SocketAddressTypeAbstractUnix.
+ * This method returns the local address of the opened socket.
+ *
+ * Calling this method when the operation has not been completed or has failed, will cause it
+ * to return an unmeaningful value. The same will happen if the socket which has been opened has a
+ * different type from SocketAddressTypeUnix or SocketAddressTypeAbstractUnix. Use #ipAddress if
+ * that is the case.
+ *
+ * \return The local address obtained from this PendingStreamTubeConnection as a QString,
+ *         if the connection has been estabilished through a SocketAddressTypeUnix or
+ *         a SocketAddressTypeAbstractUnix.
  *
  * \note This function will return a valid value only after the operation has been
  *       finished successfully.
@@ -147,9 +167,16 @@ QString PendingStreamTubeConnection::localAddress() const
 }
 
 /**
+ * This method returns the IP address of the opened socket.
+ *
+ * Calling this method when the operation has not been completed or has failed, will cause it
+ * to return an unmeaningful value. The same will happen if the socket which has been opened has a
+ * different type from SocketAddressTypeIpv4 or SocketAddressTypeIPv6. Use #localAddress if
+ * that is the case.
+ *
  * \return The IP address and port obtained from this PendingStreamTubeConnection as a QHostAddress,
- *          if the connection has been estabilished through a SocketAddressTypeIpv4 or
- *          a SocketAddressTypeIPv6.
+ *         if the connection has been estabilished through a SocketAddressTypeIpv4 or
+ *         a SocketAddressTypeIPv6.
  *
  * \note This function will return a valid value only after the operation has been
  *       finished successfully.

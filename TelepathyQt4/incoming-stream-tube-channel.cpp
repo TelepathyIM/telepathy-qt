@@ -61,7 +61,7 @@ IncomingStreamTubeChannel::Private::~Private()
  * \class IncomingStreamTubeChannel
  * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/IncomingStreamTubeChannel>
  *
- * \brief An high level wrapper for managing an incoming stream tube
+ * An high level wrapper for managing an incoming stream tube
  *
  * \c IncomingStreamTubeChannel is an high level wrapper for managing Telepathy interface
  * #TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE.
@@ -204,7 +204,7 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
 }
 
 /**
- * \brief Accept an incoming Stream tube as a TCP socket
+ * Accept an incoming Stream tube as a TCP socket
  *
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the \c LocalPending state.
@@ -345,7 +345,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
 }
 
 /**
- * \brief Accept an incoming Stream tube as a TCP socket
+ * Accept an incoming Stream tube as a TCP socket
  *
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the \c LocalPending state.
@@ -374,7 +374,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
 }
 
 /**
- * \brief Accept an incoming Stream tube as a Unix socket
+ * Accept an incoming Stream tube as a Unix socket
  *
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the \c LocalPending state.
@@ -461,6 +461,11 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 }
 
 /**
+ * This method returns an opened QIODevice representing the opened tube.
+ *
+ * Calling this method when the tube has not been opened, will cause it
+ * to return 0.
+ *
  * \return A valid QIODevice if the tube is in the \c Open state, 0 otherwise.
  */
 QIODevice *IncomingStreamTubeChannel::device()

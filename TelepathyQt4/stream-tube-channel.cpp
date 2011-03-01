@@ -164,7 +164,7 @@ void StreamTubeChannel::Private::introspectStreamTube(
  * \class StreamTubeChannel
  * \headerfile TelepathyQt4/stream-tube-channel.h <TelepathyQt4/StreamTubeChannel>
  *
- * \brief A class representing a Stream Tube
+ * A class representing a Stream Tube
  *
  * \c StreamTubeChannel is an high level wrapper for managing Telepathy interface
  * #TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE.
@@ -556,9 +556,9 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
  * been enabled. For this method to return all known connections, you need to make
  * FeatureConnectionMonitoring ready before accepting or offering the tube.
  *
- * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
- *
  * \return A list of active connection ids known to this tube
+ *
+ * \note This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
  */
 UIntList StreamTubeChannel::connections() const
 {
@@ -572,8 +572,13 @@ UIntList StreamTubeChannel::connections() const
 }
 
 /**
+ * This method returns the local address used by this StreamTube as a QString.
+ *
+ * This method will return a meaningful value only if the socket is local, hence when #addressType
+ * returns either SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
+ *
  * \return The local address used by this StreamTube as a QString, if this tube is using
- *          a SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
+ *         a SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
  *
  * \note This function will return a valid value only after the tube has been opened
  *
@@ -589,6 +594,11 @@ QString StreamTubeChannel::localAddress() const
 }
 
 /**
+ * This method returns the IP address/port combination used by this StreamTube as a QHostAddress.
+ *
+ * This method will return a meaningful value only if the socket is an IP socket, hence when
+ * #addressType returns either SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
+ *
  * \return The IP address and port used by this StreamTube as a QHostAddress, if this tube is using
  *         a SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
  *
@@ -606,6 +616,8 @@ QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 }
 
 /**
+ * This method returns the type of socket this StreamTube is using.
+ *
  * \return The type of socket this StreamTube is using
  *
  * \note This function will return a valid value only after the tube has been opened
