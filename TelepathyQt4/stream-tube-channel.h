@@ -92,7 +92,6 @@ private:
     friend struct Private;
 
     Private * const mPriv;
-
 };
 
 }
