@@ -764,7 +764,7 @@ bool Account::isEnabled() const
  *
  * \param value Whether this account should be enabled or disabled.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa stateChanged()
  */
 PendingOperation *Account::setEnabled(bool value)
@@ -825,7 +825,7 @@ QString Account::serviceName() const
  *
  * \param value The service name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa serviceNameChanged()
  */
 PendingOperation *Account::setServiceName(const QString &value)
@@ -905,7 +905,7 @@ QString Account::displayName() const
  *
  * \param value The display name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa displayNameChanged()
  */
 PendingOperation *Account::setDisplayName(const QString &value)
@@ -961,7 +961,7 @@ QString Account::iconName() const
  *
  * \param value The icon name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa iconNameChanged()
  */
 PendingOperation *Account::setIconName(const QString &value)
@@ -992,7 +992,7 @@ QString Account::nickname() const
  *
  * \param value The nickname of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa nicknameChanged()
  */
 PendingOperation *Account::setNickname(const QString &value)
@@ -1048,7 +1048,7 @@ const Avatar &Account::avatar() const
  *
  * \param avatar The avatar of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa avatarChanged()
  */
 PendingOperation *Account::setAvatar(const Avatar &avatar)
@@ -1092,7 +1092,7 @@ QVariantMap Account::parameters() const
  * \param set Parameters to set.
  * \param unset Parameters to unset.
  * \return A PendingStringList which will emit PendingStringList::finished
- *         when the call has finished
+ *         when the request has been made
  * \sa parametersChanged(), reconnect()
  */
 PendingStringList *Account::updateParameters(const QVariantMap &set,
@@ -1221,7 +1221,7 @@ bool Account::connectsAutomatically() const
  * \param value Value indicating if this account should be put online whenever
  *              possible.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa connectsAutomaticallyPropertyChanged()
  */
 PendingOperation *Account::setConnectsAutomatically(bool value)
@@ -1508,7 +1508,7 @@ Presence Account::automaticPresence() const
  * \param presence The presence to set when this account is brought
  *                 online automatically by the account manager.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa automaticPresenceChanged(), setRequestedPresence()
  */
 PendingOperation *Account::setAutomaticPresence(const Presence &presence)
@@ -1556,7 +1556,7 @@ Presence Account::requestedPresence() const
  *
  * \param presence The requested presence.
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa requestedPresenceChanged(), currentPresence(), automaticPresence(), setAutomaticPresence()
  */
 PendingOperation *Account::setRequestedPresence(const Presence &presence)
@@ -1625,7 +1625,7 @@ QString Account::normalizedName() const
  * another. If it is currently disconnected, do nothing.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  */
 PendingOperation *Account::reconnect()
 {
@@ -1636,7 +1636,7 @@ PendingOperation *Account::reconnect()
  * Delete this account.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
+ *         when the request has been made.
  */
 PendingOperation *Account::remove()
 {
@@ -1700,7 +1700,7 @@ PendingChannelRequest *Account::ensureTextChat(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureTextChat(
@@ -1748,7 +1748,7 @@ PendingChannelRequest *Account::ensureTextChat(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureTextChat(
@@ -1796,7 +1796,7 @@ PendingChannelRequest *Account::ensureTextChatroom(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureTextChatroom(
@@ -1844,7 +1844,7 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureStreamedMediaCall(
@@ -1892,7 +1892,7 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureStreamedMediaCall(
@@ -1943,7 +1943,7 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
@@ -1996,7 +1996,7 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
@@ -2052,7 +2052,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
@@ -2115,7 +2115,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
@@ -2173,7 +2173,7 @@ PendingChannelRequest *Account::createFileTransfer(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createFileTransfer(
@@ -2248,7 +2248,7 @@ PendingChannelRequest *Account::createFileTransfer(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createFileTransfer(
@@ -2325,7 +2325,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createConferenceStreamedMediaCall(
@@ -2362,9 +2362,9 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  * channels \a channels.
  *
  * \param channels The conference channels.
- * \param initialInviteeContactsIdentifiers A list of additional contacts
- *                                          to be invited to this
- *                                          conference when it is created.
+ * \param initialInviteeContacts A list of additional contacts
+ *                               to be invited to this
+ *                               conference when it is created.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.
@@ -2375,7 +2375,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createConferenceStreamedMediaCall(
@@ -2427,7 +2427,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createConferenceTextChat(
@@ -2464,9 +2464,9 @@ PendingChannelRequest *Account::createConferenceTextChat(
  * channels \a channels.
  *
  * \param channels The conference channels.
- * \param initialInviteeContacts list of additional contacts
- *                                          to be invited to this
- *                                          conference when it is created.
+ * \param initialInviteeContacts A list of additional contacts
+ *                               to be invited to this
+ *                               conference when it is created.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.
@@ -2475,7 +2475,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createConferenceTextChat(
@@ -2527,7 +2527,7 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createConferenceTextChatroom(
@@ -2569,9 +2569,9 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  *
  * \param roomName The room name.
  * \param channels The conference channels.
- * \param initialInviteeContactsIdentifiers A list of additional contacts
- *                                          to be invited to this
- *                                          conference when it is created.
+ * \param initialInviteeContacts A list of additional contacts
+ *                               to be invited to this
+ *                               conference when it is created.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.
@@ -2582,7 +2582,7 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createConferenceTextChatroom(
@@ -2637,7 +2637,7 @@ PendingChannelRequest *Account::createContactSearch(
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
- *         when the call has finished.
+ *         when the request has been made.
  * \sa createChannel()
  */
 PendingChannelRequest *Account::createContactSearch(
@@ -2688,6 +2688,8 @@ PendingChannelRequest *Account::createChannel(
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
  * \sa createChannel()
  */
 PendingChannelRequest *Account::createChannel(
@@ -2730,6 +2732,8 @@ PendingChannelRequest *Account::ensureChannel(
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
  *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
  * \sa createChannel()
  */
 PendingChannelRequest *Account::ensureChannel(
