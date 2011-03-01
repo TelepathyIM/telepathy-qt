@@ -396,7 +396,7 @@ void TextChannel::Private::processMessageQueue()
     // to incoming messages
     while (!incompleteMessages.isEmpty()) {
         const MessageEvent *e = incompleteMessages.first();
-        debug() << "MessageEvent:" << e;
+        debug() << "MessageEvent:" << reinterpret_cast<const void *>(e);
 
         if (e->isMessage) {
             if (e->message.senderHandle() != 0 &&
@@ -468,7 +468,7 @@ void TextChannel::Private::processChatStateQueue()
 {
     while (!chatStateQueue.isEmpty()) {
         const ChatStateEvent *e = chatStateQueue.first();
-        debug() << "ChatStateEvent:" << e;
+        debug() << "ChatStateEvent:" << reinterpret_cast<const void *>(e);
 
         if (e->contact.isNull()) {
             // the chat state Contact object wasn't retrieved yet, but needs
