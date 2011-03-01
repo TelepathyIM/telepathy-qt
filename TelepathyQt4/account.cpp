@@ -35,6 +35,7 @@
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingChannelRequest>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
@@ -2740,6 +2741,64 @@ PendingChannelRequest *Account::ensureChannel(
 {
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
+}
+
+/**
+ * Start a request to create channel.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request,
+ * or to cancel it.
+ *
+ * Helper methods for text chat, text chat room, media call and conference are
+ * provided and should be used if appropriate.
+ *
+ * The caller is responsible for closing the channel with
+ * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
+ *
+ * \param request A dictionary containing desirable properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         when the call has finished and can be used to get the channel to handle.
+ */
+PendingChannel *Account::createAndHandleChannel(
+        const QVariantMap &request,
+        const QDateTime &userActionTime,
+        const ChannelRequestHints &hints)
+{
+    return new PendingChannel(AccountPtr(this), request, userActionTime, hints, true);
+}
+
+/**
+ * Start a request to ensure that a channel exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request,
+ * or to cancel it.
+ *
+ * Helper methods for text chat, text chat room, media call and conference are
+ * provided and should be used if appropriate.
+ *
+ * The caller is responsible for closing the channel with
+ * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
+ *
+ * \param request A dictionary containing desirable properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         when the call has finished and can be used to get the channel to handle.
+ */
+PendingChannel *Account::ensureAndHandleChannel(
+        const QVariantMap &request,
+        const QDateTime &userActionTime,
+        const ChannelRequestHints &hints)
+{
+    return new PendingChannel(AccountPtr(this), request, userActionTime, hints, false);
 }
 
 /**

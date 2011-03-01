@@ -57,6 +57,7 @@ namespace Tp
 
 class Account;
 class Connection;
+class PendingChannel;
 class PendingChannelRequest;
 class PendingConnection;
 class PendingOperation;
@@ -429,6 +430,15 @@ public:
             const QDateTime &userActionTime,
             const QString &preferredHandler,
             const ChannelRequestHints &hints);
+
+    PendingChannel *createAndHandleChannel(
+            const QVariantMap &requestedProperties,
+            const QDateTime &userActionTime,
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannel *ensureAndHandleChannel(
+            const QVariantMap &requestedProperties,
+            const QDateTime &userActionTime,
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
 Q_SIGNALS:
     void removed();
