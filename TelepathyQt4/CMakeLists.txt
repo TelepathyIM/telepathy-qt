@@ -88,6 +88,8 @@ set(telepathy_qt4_SRCS
     ready-object.cpp
     referenced-handles.cpp
     room-list-channel.cpp
+    simple-handler-internal.cpp
+    simple-handler-internal.h
     streamed-media-channel.cpp
     test-backdoors.cpp
     test-backdoors.h
@@ -420,6 +422,7 @@ set(telepathy_qt4_MOC_SRCS
     profile-manager.h
     readiness-helper.h
     room-list-channel.h
+    simple-handler-internal.h
     simple-pending-operations.h
     streamed-media-channel.h
     text-channel.h)
