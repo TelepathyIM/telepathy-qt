@@ -26,7 +26,7 @@ namespace Tp
 
 class ConnectionCapabilities;
 
-struct AccountSet::Private
+struct TELEPATHY_QT4_NO_EXPORT AccountSet::Private
 {
     class AccountWrapper;
 

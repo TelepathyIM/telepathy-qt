@@ -26,7 +26,7 @@
 namespace Tp
 {
 
-struct FixedFeatureFactory::Private
+struct TELEPATHY_QT4_NO_EXPORT FixedFeatureFactory::Private
 {
     Features features;
 };

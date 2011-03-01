@@ -197,7 +197,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  * \sa AbstractClient
  */
 
-struct AbstractClientObserver::ObserverInfo::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::ObserverInfo::Private : public QSharedData
 {
     Private(const QVariantMap &info)
         : info(info) {}
@@ -636,7 +636,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  * \sa AbstractClient
  */
 
-struct AbstractClientHandler::Capabilities::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Capabilities::Private : public QSharedData
 {
     Private(const QStringList &tokens)
         : tokens(QSet<QString>::fromList(tokens)) {}
@@ -689,7 +689,7 @@ QStringList AbstractClientHandler::Capabilities::allTokens() const
     return mPriv->tokens.toList();
 }
 
-struct AbstractClientHandler::HandlerInfo::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::HandlerInfo::Private : public QSharedData
 {
     Private(const QVariantMap &info)
         : info(info) {}

@@ -40,7 +40,7 @@
 namespace Tp
 {
 
-struct ChannelFactory::Private
+struct TELEPATHY_QT4_NO_EXPORT ChannelFactory::Private
 {
     Private();
 
