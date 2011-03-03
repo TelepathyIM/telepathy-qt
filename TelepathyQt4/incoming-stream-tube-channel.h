@@ -66,11 +66,9 @@ private Q_SLOTS:
 
 private:
     struct Private;
-    friend struct Private;
-
-    Private *mPriv;
-
     friend class PendingStreamTubeConnection;
+    friend struct Private;
+    Private *mPriv;
 };
 
 }

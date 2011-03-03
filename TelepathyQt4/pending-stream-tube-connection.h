@@ -70,10 +70,9 @@ private:
             const IncomingStreamTubeChannelPtr &object);
 
     struct Private;
+    friend class IncomingStreamTubeChannel;
     friend struct Private;
     Private *mPriv;
-
-    friend class IncomingStreamTubeChannel;
 };
 
 }

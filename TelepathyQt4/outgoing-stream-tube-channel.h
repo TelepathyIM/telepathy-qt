@@ -70,10 +70,9 @@ private Q_SLOTS:
 
 private:
     struct Private;
+    friend struct PendingOpenTube;
     friend struct Private;
     Private *mPriv;
-
-    friend struct PendingOpenTube;
 };
 
 }
