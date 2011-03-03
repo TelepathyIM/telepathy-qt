@@ -245,7 +245,7 @@ void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
             connect(socket, SIGNAL(connected()),
                     this, SLOT(onDeviceConnected()));
             connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
-                    this, SLOT(onAbstractSocketError(QAbstractSocket::SocketError)));
+                    this, SLOT(onSocketError()));
             debug() << "QTcpSocket built";
         } else {
             // Unix socket
@@ -262,7 +262,7 @@ void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
                 connect(socket, SIGNAL(connected()),
                         this, SLOT(onDeviceConnected()));
                 connect(socket, SIGNAL(error(QLocalSocket::LocalSocketError)),
-                        this, SLOT(onLocalSocketError(QLocalSocket::LocalSocketError)));
+                        this, SLOT(onSocketError()));
             }
         }
     } else if (state != TubeChannelStateLocalPending) {
@@ -272,24 +272,17 @@ void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
     }
 }
 
-void PendingStreamTubeConnection::onAbstractSocketError(QAbstractSocket::SocketError error)
+void PendingStreamTubeConnection::onSocketError()
 {
-    // TODO: Use error to provide more detailed error messages
-    Q_UNUSED(error)
-    // Failure
-    mPriv->device = 0;
-    setFinishedWithError(QLatin1String("Error while creating TCP socket"),
-            QLatin1String("Could not connect to the new socket"));
-}
+    QString errorString = QLatin1String("Could not connect to the new socket");
+    // Try and get a human readable description of the error
+    if (mPriv->device) {
+        errorString = mPriv->device->errorString();
+    }
 
-void PendingStreamTubeConnection::onLocalSocketError(QLocalSocket::LocalSocketError error)
-{
-    // TODO: Use error to provide more detailed error messages
-    Q_UNUSED(error)
     // Failure
     mPriv->device = 0;
-    setFinishedWithError(QLatin1String("Error while creating Local socket"),
-                      QLatin1String("Could not connect to the new socket"));
+    setFinishedWithError(QLatin1String("Error while creating the socket"), errorString);
 }
 
 void PendingStreamTubeConnection::onDeviceConnected()

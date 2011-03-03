@@ -60,8 +60,7 @@ private Q_SLOTS:
     void onAcceptFinished(Tp::PendingOperation *op);
     void onTubeStateChanged(Tp::TubeChannelState state);
     void onDeviceConnected();
-    void onAbstractSocketError(QAbstractSocket::SocketError error);
-    void onLocalSocketError(QLocalSocket::LocalSocketError error);
+    void onSocketError();
 
 private:
     PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,
