@@ -38,7 +38,7 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
 {
     Private(PendingStreamTubeConnection *parent);
-    virtual ~Private();
+    ~Private();
 
     // Public object
     PendingStreamTubeConnection *parent;
