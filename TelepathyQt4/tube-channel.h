@@ -65,7 +65,7 @@ private:
     struct Private;
     friend struct Private;
 
-    Private * const mPriv;
+    Private *mPriv;
 };
 
 }

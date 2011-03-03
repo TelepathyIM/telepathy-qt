@@ -68,7 +68,7 @@ private:
     struct Private;
     friend struct Private;
 
-    Private * const mPriv;
+    Private *mPriv;
 
     friend class PendingStreamTubeConnection;
 };
