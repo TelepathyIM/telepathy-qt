@@ -49,12 +49,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
     quint16 port;
     QString socketPath;
 
-    QIODevice *device;
+    QWeakPointer<QIODevice> device;
 };
 
 PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection *parent)
-    : parent(parent),
-      device(0)
+    : parent(parent)
 {
 
 }
@@ -122,7 +121,7 @@ PendingStreamTubeConnection::~PendingStreamTubeConnection()
  */
 QIODevice *PendingStreamTubeConnection::device() const
 {
-    return mPriv->device;
+    return mPriv->device.data();
 }
 
 /**
@@ -276,12 +275,12 @@ void PendingStreamTubeConnection::onSocketError()
 {
     QString errorString = QLatin1String("Could not connect to the new socket");
     // Try and get a human readable description of the error
-    if (mPriv->device) {
-        errorString = mPriv->device->errorString();
+    if (!mPriv->device.isNull()) {
+        errorString = mPriv->device.data()->errorString();
     }
 
     // Failure
-    mPriv->device = 0;
+    mPriv->device.data()->deleteLater();
     setFinishedWithError(QLatin1String("Error while creating the socket"), errorString);
 }
 
