@@ -2759,17 +2759,14 @@ PendingChannelRequest *Account::ensureChannel(
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported,
- *              as indicated by supportsRequestHints().
  * \return A PendingChannel which will emit PendingChannel::finished
  *         when the call has finished and can be used to get the channel to handle.
  */
 PendingChannel *Account::createAndHandleChannel(
         const QVariantMap &request,
-        const QDateTime &userActionTime,
-        const ChannelRequestHints &hints)
+        const QDateTime &userActionTime)
 {
-    return new PendingChannel(AccountPtr(this), request, userActionTime, hints, true);
+    return new PendingChannel(AccountPtr(this), request, userActionTime, true);
 }
 
 /**
@@ -2788,17 +2785,14 @@ PendingChannel *Account::createAndHandleChannel(
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.
- * \param hints Arbitrary metadata which will be relayed to the handler if supported,
- *              as indicated by supportsRequestHints().
  * \return A PendingChannel which will emit PendingChannel::finished
  *         when the call has finished and can be used to get the channel to handle.
  */
 PendingChannel *Account::ensureAndHandleChannel(
         const QVariantMap &request,
-        const QDateTime &userActionTime,
-        const ChannelRequestHints &hints)
+        const QDateTime &userActionTime)
 {
-    return new PendingChannel(AccountPtr(this), request, userActionTime, hints, false);
+    return new PendingChannel(AccountPtr(this), request, userActionTime, false);
 }
 
 /**

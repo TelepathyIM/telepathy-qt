@@ -163,7 +163,6 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
 
 PendingChannel::PendingChannel(const AccountPtr &account,
         const QVariantMap &request, const QDateTime &userActionTime,
-        const ChannelRequestHints &hints,
         bool create)
     : PendingOperation(account),
       mPriv(new Private)
@@ -205,9 +204,9 @@ PendingChannel::PendingChannel(const AccountPtr &account,
     debug() << "Requesting channel through account using handler" << handlerName;
     PendingChannelRequest *pcr;
     if (create) {
-        pcr = account->createChannel(request, userActionTime, handlerName, hints);
+        pcr = account->createChannel(request, userActionTime, handlerName, ChannelRequestHints());
     } else {
-        pcr = account->ensureChannel(request, userActionTime, handlerName, hints);
+        pcr = account->ensureChannel(request, userActionTime, handlerName, ChannelRequestHints());
     }
     connect(pcr,
             SIGNAL(finished(Tp::PendingOperation*)),

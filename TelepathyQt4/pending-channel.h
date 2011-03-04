@@ -38,7 +38,6 @@ namespace Tp
 {
 
 class Connection;
-class ChannelRequestHints;
 class HandledChannelNotifier;
 
 class TELEPATHY_QT4_EXPORT PendingChannel : public PendingOperation
@@ -89,7 +88,7 @@ private:
             const QVariantMap &request, bool create);
     TELEPATHY_QT4_NO_EXPORT PendingChannel(const AccountPtr &account,
             const QVariantMap &request, const QDateTime &userActionTime,
-            const ChannelRequestHints &hints, bool create);
+            bool create);
 
     struct Private;
     friend struct Private;

@@ -433,12 +433,10 @@ public:
 
     PendingChannel *createAndHandleChannel(
             const QVariantMap &requestedProperties,
-            const QDateTime &userActionTime,
-            const ChannelRequestHints &hints = ChannelRequestHints());
+            const QDateTime &userActionTime);
     PendingChannel *ensureAndHandleChannel(
             const QVariantMap &requestedProperties,
-            const QDateTime &userActionTime,
-            const ChannelRequestHints &hints = ChannelRequestHints());
+            const QDateTime &userActionTime);
 
 Q_SIGNALS:
     void removed();
