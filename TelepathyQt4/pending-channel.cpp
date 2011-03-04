@@ -497,7 +497,10 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
 void PendingChannel::onAccountCreateChannelFinished(PendingOperation *op)
 {
     if (isFinished()) {
-        // ignore possible errors when calling create/ensureChannel if we already finished
+        if (!isError()) {
+            warning() << "Creating/ensuring channel finished with a failure after the internal "
+                "handler already got a channel, ignoring";
+        }
         return;
     }
 
