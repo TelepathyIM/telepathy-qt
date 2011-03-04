@@ -68,7 +68,6 @@ ChannelPtr HandledChannelNotifier::channel() const
 
 void HandledChannelNotifier::onChannelInvalidated()
 {
-    emit finished();
     deleteLater();
 }
 

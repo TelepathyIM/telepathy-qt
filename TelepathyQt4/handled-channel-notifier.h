@@ -47,7 +47,6 @@ public:
     ChannelPtr channel() const;
 
 Q_SIGNALS:
-    void finished();
     void handledAgain();
 
 private Q_SLOTS:
