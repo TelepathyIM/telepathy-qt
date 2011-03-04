@@ -27,7 +27,6 @@
 #include "TelepathyQt4/request-temporary-handler-internal.h"
 
 #include <TelepathyQt4/Channel>
-#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
