@@ -77,4 +77,11 @@ void HandledChannelNotifier::onChannelInvalidated()
     deleteLater();
 }
 
+void HandledChannelNotifier::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(handledAgain(Tp::ChannelRequestHints,QDateTime))) == 0) {
+        mPriv->handler->setQueueChannelReceived(false);
+    }
+}
+
 } // Tp

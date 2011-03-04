@@ -50,6 +50,9 @@ public:
 Q_SIGNALS:
     void handledAgain(const Tp::ChannelRequestHints &requestHints, const QDateTime &userActionTime);
 
+protected:
+    void connectNotify(const char *);
+
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onChannelReceived(const Tp::ChannelPtr &channel,
             const Tp::ChannelRequestHints &requestHints, const QDateTime &userActionTime);
