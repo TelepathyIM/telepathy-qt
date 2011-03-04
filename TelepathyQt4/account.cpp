@@ -101,6 +101,278 @@ Tp::PresenceSpec presenceSpecForStatus(const QString &status, bool canHaveStatus
     return Tp::PresenceSpec(status, spec);
 }
 
+QVariantMap textChatCommonRequest()
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    return request;
+}
+
+QVariantMap textChatRequest(const QString &contactIdentifier)
+{
+    QVariantMap request = textChatCommonRequest();
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+    return request;
+}
+
+QVariantMap textChatRequest(const Tp::ContactPtr &contact)
+{
+    QVariantMap request = textChatCommonRequest();
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+    return request;
+}
+
+QVariantMap textChatroomRequest(const QString &roomName)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeRoom);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   roomName);
+    return request;
+}
+
+QVariantMap streamedMediaCallCommonRequest()
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    return request;
+}
+
+QVariantMap streamedMediaCallRequest(const QString &contactIdentifier)
+{
+    QVariantMap request = streamedMediaCallCommonRequest();
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+    return request;
+}
+
+QVariantMap streamedMediaCallRequest(const Tp::ContactPtr &contact)
+{
+    QVariantMap request = streamedMediaCallCommonRequest();
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+    return request;
+}
+
+QVariantMap streamedMediaAudioCallRequest(const QString &contactIdentifier)
+{
+    QVariantMap request = streamedMediaCallRequest(contactIdentifier);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+                   true);
+    return request;
+}
+
+QVariantMap streamedMediaAudioCallRequest(const Tp::ContactPtr &contact)
+{
+    QVariantMap request = streamedMediaCallRequest(contact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+                   true);
+    return request;
+}
+
+QVariantMap streamedMediaVideoCallRequest(const QString &contactIdentifier, bool withAudio)
+{
+    QVariantMap request = streamedMediaCallRequest(contactIdentifier);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
+                   true);
+    if (withAudio) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+                       true);
+    }
+    return request;
+}
+
+QVariantMap streamedMediaVideoCallRequest(const Tp::ContactPtr &contact, bool withAudio)
+{
+    QVariantMap request = streamedMediaCallRequest(contact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
+                   true);
+    if (withAudio) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+                       true);
+    }
+    return request;
+}
+
+QVariantMap fileTransferCommonRequest(const Tp::FileTransferChannelCreationProperties &properties)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+
+    QFileInfo fileInfo(properties.suggestedFileName());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
+                   fileInfo.fileName());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
+                   properties.contentType());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
+                   properties.size());
+
+    if (properties.hasContentHash()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
+                       (uint) properties.contentHashType());
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHash"),
+                       properties.contentHash());
+    }
+
+    if (properties.hasDescription()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Description"),
+                       properties.description());
+    }
+
+    if (properties.hasLastModificationTime()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
+                       (qulonglong) properties.lastModificationTime().toTime_t());
+    }
+    return request;
+}
+
+QVariantMap fileTransferRequest(const QString &contactIdentifier,
+        const Tp::FileTransferChannelCreationProperties &properties)
+{
+    QVariantMap request = fileTransferCommonRequest(properties);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+    return request;
+}
+
+QVariantMap fileTransferRequest(const Tp::ContactPtr &contact,
+        const Tp::FileTransferChannelCreationProperties &properties)
+{
+    QVariantMap request = fileTransferCommonRequest(properties);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+    return request;
+}
+
+QVariantMap conferenceCommonRequest(const char *channelType, Tp::HandleType targetHandleType,
+        const QList<Tp::ChannelPtr> &channels)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(channelType));
+    if (targetHandleType != Tp::HandleTypeNone) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                       (uint) targetHandleType);
+    }
+
+    Tp::ObjectPathList objectPaths;
+    foreach (const Tp::ChannelPtr &channel, channels) {
+        objectPaths << QDBusObjectPath(channel->objectPath());
+    }
+
+    request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"),
+            qVariantFromValue(objectPaths));
+    return request;
+}
+
+QVariantMap conferenceRequest(const char *channelType, Tp::HandleType targetHandleType,
+        const QList<Tp::ChannelPtr> &channels, const QStringList &initialInviteeContactsIdentifiers)
+{
+    QVariantMap request = conferenceCommonRequest(channelType, targetHandleType, channels);
+    if (!initialInviteeContactsIdentifiers.isEmpty()) {
+        request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeIDs"),
+                initialInviteeContactsIdentifiers);
+    }
+    return request;
+}
+
+QVariantMap conferenceRequest(const char *channelType, Tp::HandleType targetHandleType,
+        const QList<Tp::ChannelPtr> &channels, const QList<Tp::ContactPtr> &initialInviteeContacts)
+{
+    QVariantMap request = conferenceCommonRequest(channelType, targetHandleType, channels);
+    if (!initialInviteeContacts.isEmpty()) {
+        Tp::UIntList handles;
+        foreach (const Tp::ContactPtr &contact, initialInviteeContacts) {
+            if (!contact) {
+                continue;
+            }
+            handles << contact->handle()[0];
+        }
+        if (!handles.isEmpty()) {
+            request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE +
+                        QLatin1String(".InitialInviteeHandles"), qVariantFromValue(handles));
+        }
+    }
+    return request;
+}
+
+QVariantMap conferenceTextChatRequest(const QList<Tp::ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers)
+{
+    QVariantMap request = conferenceRequest(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            Tp::HandleTypeNone, channels, initialInviteeContactsIdentifiers);
+    return request;
+}
+
+QVariantMap conferenceTextChatRequest(const QList<Tp::ChannelPtr> &channels,
+        const QList<Tp::ContactPtr> &initialInviteeContacts)
+{
+    QVariantMap request = conferenceRequest(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            Tp::HandleTypeNone, channels, initialInviteeContacts);
+    return request;
+}
+
+QVariantMap conferenceTextChatroomRequest(const QString &roomName,
+        const QList<Tp::ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers)
+{
+    QVariantMap request = conferenceRequest(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            Tp::HandleTypeRoom, channels, initialInviteeContactsIdentifiers);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), roomName);
+    return request;
+}
+
+QVariantMap conferenceTextChatroomRequest(const QString &roomName,
+        const QList<Tp::ChannelPtr> &channels,
+        const QList<Tp::ContactPtr> &initialInviteeContacts)
+{
+    QVariantMap request = conferenceRequest(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            Tp::HandleTypeRoom, channels, initialInviteeContacts);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), roomName);
+    return request;
+}
+
+QVariantMap conferenceStreamedMediaCallRequest(const QList<Tp::ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers)
+{
+    QVariantMap request = conferenceRequest(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            Tp::HandleTypeNone, channels, initialInviteeContactsIdentifiers);
+    return request;
+}
+
+QVariantMap conferenceStreamedMediaCallRequest(const QList<Tp::ChannelPtr> &channels,
+        const QList<Tp::ContactPtr> &initialInviteeContacts)
+{
+    QVariantMap request = conferenceRequest(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            Tp::HandleTypeNone, channels, initialInviteeContacts);
+    return request;
+}
+
+QVariantMap contactSearchRequest(const QString &server, uint limit)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server"),
+                   server);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), limit);
+    return request;
+}
+
 }
 
 namespace Tp
@@ -125,24 +397,6 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     bool processConnQueue();
 
     bool checkCapabilitiesChanged(bool profileChanged);
-
-    void addConferenceRequestCommonParameters(
-            const char *channelType,
-            HandleType targetHandleType,
-            const QList<ChannelPtr> &channels,
-            QVariantMap &request);
-    void addConferenceRequestParameters(
-            const char *channelType,
-            HandleType targetHandleType,
-            const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers,
-            QVariantMap &request);
-    void addConferenceRequestParameters(
-            const char *channelType,
-            HandleType targetHandleType,
-            const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts,
-            QVariantMap &request);
 
     QString connectionObjectPath() const;
 
@@ -360,70 +614,6 @@ bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
     }
 
     return changed;
-}
-
-void Account::Private::addConferenceRequestCommonParameters(
-        const char *channelType,
-        HandleType targetHandleType,
-        const QList<ChannelPtr> &channels,
-        QVariantMap &request)
-{
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(channelType));
-    if (targetHandleType != HandleTypeNone) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                       (uint) targetHandleType);
-    }
-
-    ObjectPathList objectPaths;
-    foreach (const ChannelPtr &channel, channels) {
-        objectPaths << QDBusObjectPath(channel->objectPath());
-    }
-
-    request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"),
-            qVariantFromValue(objectPaths));
-}
-
-void Account::Private::addConferenceRequestParameters(
-        const char *channelType,
-        HandleType targetHandleType,
-        const QList<ChannelPtr> &channels,
-        const QStringList &initialInviteeContactsIdentifiers,
-        QVariantMap &request)
-{
-    addConferenceRequestCommonParameters(channelType, targetHandleType,
-            channels, request);
-
-    if (!initialInviteeContactsIdentifiers.isEmpty()) {
-        request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeIDs"),
-                initialInviteeContactsIdentifiers);
-    }
-}
-
-void Account::Private::addConferenceRequestParameters(
-        const char *channelType,
-        HandleType targetHandleType,
-        const QList<ChannelPtr> &channels,
-        const QList<ContactPtr> &initialInviteeContacts,
-        QVariantMap &request)
-{
-    addConferenceRequestCommonParameters(channelType, targetHandleType,
-            channels, request);
-
-    if (!initialInviteeContacts.isEmpty()) {
-        UIntList handles;
-        foreach (const ContactPtr &contact, initialInviteeContacts) {
-            if (!contact) {
-                continue;
-            }
-            handles << contact->handle()[0];
-        }
-        if (!handles.isEmpty()) {
-            request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE +
-                        QLatin1String(".InitialInviteeHandles"),
-                    qVariantFromValue(handles));
-        }
-    }
 }
 
 QString Account::Private::connectionObjectPath() const
@@ -1710,13 +1900,8 @@ PendingChannelRequest *Account::ensureTextChat(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   contactIdentifier);
+    QVariantMap request = textChatRequest(contactIdentifier);
+
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
 }
@@ -1758,13 +1943,8 @@ PendingChannelRequest *Account::ensureTextChat(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+    QVariantMap request = textChatRequest(contact);
+
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
 }
@@ -1806,13 +1986,8 @@ PendingChannelRequest *Account::ensureTextChatroom(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeRoom);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   roomName);
+    QVariantMap request = textChatroomRequest(roomName);
+
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
 }
@@ -1854,13 +2029,8 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   contactIdentifier);
+    QVariantMap request = streamedMediaCallRequest(contactIdentifier);
+
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
 }
@@ -1902,13 +2072,8 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+    QVariantMap request = streamedMediaCallRequest(contact);
+
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
 }
@@ -1953,15 +2118,8 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
-                   true);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   contactIdentifier);
+    QVariantMap request = streamedMediaAudioCallRequest(contactIdentifier);
+
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
 }
@@ -2006,15 +2164,8 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
-                   true);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+    QVariantMap request = streamedMediaAudioCallRequest(contact);
+
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
 }
@@ -2063,20 +2214,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
-                   true);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   contactIdentifier);
-
-    if (withAudio) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
-                       true);
-    }
+    QVariantMap request = streamedMediaVideoCallRequest(contactIdentifier, withAudio);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
@@ -2126,20 +2264,7 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
-                   true);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
-
-    if (withAudio) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
-                       true);
-    }
+    QVariantMap request = streamedMediaVideoCallRequest(contact, withAudio);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
@@ -2184,38 +2309,7 @@ PendingChannelRequest *Account::createFileTransfer(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   contactIdentifier);
-
-    QFileInfo fileInfo(properties.suggestedFileName());
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
-                   fileInfo.fileName());
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
-                   properties.contentType());
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
-                   properties.size());
-
-    if (properties.hasContentHash()) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
-                       (uint) properties.contentHashType());
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHash"),
-                       properties.contentHash());
-    }
-
-    if (properties.hasDescription()) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Description"),
-                       properties.description());
-    }
-
-    if (properties.hasLastModificationTime()) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
-                       (qulonglong) properties.lastModificationTime().toTime_t());
-    }
+    QVariantMap request = fileTransferRequest(contactIdentifier, properties);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2259,38 +2353,7 @@ PendingChannelRequest *Account::createFileTransfer(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
-
-    QFileInfo fileInfo(properties.suggestedFileName());
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
-                   fileInfo.fileName());
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
-                   properties.contentType());
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
-                   properties.size());
-
-    if (properties.hasContentHash()) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
-                       (uint) properties.contentHashType());
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHash"),
-                       properties.contentHash());
-    }
-
-    if (properties.hasDescription()) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Description"),
-                       properties.description());
-    }
-
-    if (properties.hasLastModificationTime()) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
-                       (qulonglong) properties.lastModificationTime().toTime_t());
-    }
+    QVariantMap request = fileTransferRequest(contact, properties);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2336,11 +2399,8 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    mPriv->addConferenceRequestParameters(
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
-            HandleTypeNone,
-            channels, initialInviteeContactsIdentifiers, request);
+    QVariantMap request = conferenceStreamedMediaCallRequest(channels,
+            initialInviteeContactsIdentifiers);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2386,13 +2446,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
-    //      should be used?
-    mPriv->addConferenceRequestParameters(
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
-            HandleTypeNone,
-            channels, initialInviteeContacts, request);
+    QVariantMap request = conferenceStreamedMediaCallRequest(channels, initialInviteeContacts);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2438,11 +2492,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    mPriv->addConferenceRequestParameters(
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
-            HandleTypeNone,
-            channels, initialInviteeContactsIdentifiers, request);
+    QVariantMap request = conferenceTextChatRequest(channels, initialInviteeContactsIdentifiers);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2486,11 +2536,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    mPriv->addConferenceRequestParameters(
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
-            HandleTypeNone,
-            channels, initialInviteeContacts, request);
+    QVariantMap request = conferenceTextChatRequest(channels, initialInviteeContacts);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2539,13 +2585,8 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   roomName);
-    mPriv->addConferenceRequestParameters(
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
-            HandleTypeRoom,
-            channels, initialInviteeContactsIdentifiers, request);
+    QVariantMap request = conferenceTextChatroomRequest(roomName, channels,
+            initialInviteeContactsIdentifiers);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2594,13 +2635,8 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   roomName);
-    mPriv->addConferenceRequestParameters(
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
-            HandleTypeRoom,
-            channels, initialInviteeContacts, request);
+    QVariantMap request = conferenceTextChatroomRequest(roomName, channels,
+            initialInviteeContacts);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2648,12 +2684,7 @@ PendingChannelRequest *Account::createContactSearch(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server"),
-                   server);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), limit);
+    QVariantMap request = contactSearchRequest(server, limit);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
