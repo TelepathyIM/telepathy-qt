@@ -874,12 +874,12 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     QString busName = QLatin1String("org.freedesktop.Telepathy.Client.");
     busName.append(clientName);
     if (unique) {
-        // o.f.T.Client.<unique_bus_name>_<pointer> should be enough to identify
+        // o.f.T.Client.clientName.<unique_bus_name>_<pointer> should be enough to identify
         // an unique identifier
-        busName.append(QString(QLatin1String(".%1.x%2"))
+        busName.append(QString(QLatin1String(".%1_%2"))
                 .arg(mPriv->bus.baseService()
                     .replace(QLatin1String(":"), QLatin1String("_"))
-                    .replace(QLatin1String("."), QLatin1String("._")))
+                    .replace(QLatin1String("."), QLatin1String("_")))
                 .arg((intptr_t) client.data(), 0, 16));
     }
 
