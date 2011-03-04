@@ -225,6 +225,9 @@ PendingChannel::~PendingChannel()
 /**
  * Return the Connection object through which the channel request was made.
  *
+ * Note that if this channel request was created through Account, a null ConnectionPtr will be
+ * returned.
+ *
  * \return Pointer to the Connection.
  */
 ConnectionPtr PendingChannel::connection() const
@@ -484,7 +487,6 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
         return;
     }
 
-    mPriv->connection = channel->connection();
     mPriv->yours = channel->isRequested();
     Q_ASSERT(mPriv->channelType == channel->channelType());
     mPriv->handleType = channel->targetHandleType();
