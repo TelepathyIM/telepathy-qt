@@ -68,7 +68,8 @@ void RequestTemporaryHandler::handleChannels(
         mChannel = channels.first();
     }
 
-    emit channelReceived(mChannel);
+    ChannelRequestPtr channelRequest = requestsSatisfied.first();
+    emit channelReceived(mChannel, channelRequest->hints(), userActionTime);
 
     context->setFinished();
 }

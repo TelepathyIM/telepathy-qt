@@ -61,7 +61,8 @@ public:
 
 Q_SIGNALS:
     void error(const QString &errorName, const QString &errorMessage);
-    void channelReceived(const Tp::ChannelPtr &channel);
+    void channelReceived(const Tp::ChannelPtr &channel, const Tp::ChannelRequestHints &requestHints,
+            const QDateTime &userActionTime);
 
 private:
     RequestTemporaryHandler(const AccountPtr &account);

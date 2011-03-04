@@ -26,6 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 #include "TelepathyQt4/request-temporary-handler-internal.h"
 
+#include <TelepathyQt4/ChannelRequestHints>
 #include <TelepathyQt4/ClientRegistrar>
 
 namespace Tp
@@ -51,8 +52,8 @@ HandledChannelNotifier::HandledChannelNotifier(const ClientRegistrarPtr &cr,
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated()));
     connect(handler.data(),
-            SIGNAL(channelReceived(Tp::ChannelPtr)),
-            SIGNAL(hanldedAgain()));
+            SIGNAL(channelReceived(Tp::ChannelPtr,Tp::ChannelRequestHints,QDateTime)),
+            SIGNAL(handledAgain()));
 }
 
 HandledChannelNotifier::~HandledChannelNotifier()
