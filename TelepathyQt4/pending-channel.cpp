@@ -487,7 +487,6 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
         return;
     }
 
-    Q_ASSERT(mPriv->channelType == channel->channelType());
     mPriv->handleType = channel->targetHandleType();
     mPriv->handle = channel->targetHandle();
     mPriv->immutableProperties = channel->immutableProperties();
