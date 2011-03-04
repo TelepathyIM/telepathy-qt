@@ -168,7 +168,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
     : PendingOperation(account),
       mPriv(new Private)
 {
-    mPriv->yours = false;
+    mPriv->yours = true;
     mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
     mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
     mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
@@ -487,7 +487,6 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
         return;
     }
 
-    mPriv->yours = channel->isRequested();
     Q_ASSERT(mPriv->channelType == channel->channelType());
     mPriv->handleType = channel->targetHandleType();
     mPriv->handle = channel->targetHandle();
