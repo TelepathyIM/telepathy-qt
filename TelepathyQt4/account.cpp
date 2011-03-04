@@ -2746,8 +2746,7 @@ PendingChannelRequest *Account::ensureChannel(
 /**
  * Start a request to create channel.
  * This initially just creates a PendingChannel object,
- * which can be used to track the success or failure of the request,
- * or to cancel it.
+ * which can be used to track the success or failure of the request.
  *
  * Helper methods for text chat, text chat room, media call and conference are
  * provided and should be used if appropriate.
@@ -2755,12 +2754,16 @@ PendingChannelRequest *Account::ensureChannel(
  * The caller is responsible for closing the channel with
  * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
  *
+ * A possible error returned by this method is #TELEPATHY_ERROR_NOT_AVAILABLE, in case a conflicting
+ * channel that matches \a request already exists.
+ *
  * \param request A dictionary containing desirable properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \return A PendingChannel which will emit PendingChannel::finished
- *         when the call has finished and can be used to get the channel to handle.
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
  */
 PendingChannel *Account::createAndHandleChannel(
         const QVariantMap &request,
@@ -2772,8 +2775,7 @@ PendingChannel *Account::createAndHandleChannel(
 /**
  * Start a request to ensure that a channel exists, creating it if necessary.
  * This initially just creates a PendingChannel object,
- * which can be used to track the success or failure of the request,
- * or to cancel it.
+ * which can be used to track the success or failure of the request.
  *
  * Helper methods for text chat, text chat room, media call and conference are
  * provided and should be used if appropriate.
@@ -2781,12 +2783,16 @@ PendingChannel *Account::createAndHandleChannel(
  * The caller is responsible for closing the channel with
  * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
  *
+ * A possible error returned by this method is #TELEPATHY_ERROR_NOT_YOURS, in case somebody else is
+ * already handling a channel that matches \a request.
+ *
  * \param request A dictionary containing desirable properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \return A PendingChannel which will emit PendingChannel::finished
- *         when the call has finished and can be used to get the channel to handle.
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
  */
 PendingChannel *Account::ensureAndHandleChannel(
         const QVariantMap &request,
