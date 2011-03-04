@@ -34,6 +34,7 @@
 namespace Tp
 {
 
+class ChannelRequestHints;
 class RequestTemporaryHandler;
 
 class TELEPATHY_QT4_EXPORT HandledChannelNotifier : public QObject
@@ -47,9 +48,11 @@ public:
     ChannelPtr channel() const;
 
 Q_SIGNALS:
-    void handledAgain();
+    void handledAgain(const Tp::ChannelRequestHints &requestHints, const QDateTime &userActionTime);
 
 private Q_SLOTS:
+    TELEPATHY_QT4_NO_EXPORT void onChannelReceived(const Tp::ChannelPtr &channel,
+            const Tp::ChannelRequestHints &requestHints, const QDateTime &userActionTime);
     TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated();
 
 private:

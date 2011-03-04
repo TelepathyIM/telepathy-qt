@@ -53,7 +53,7 @@ HandledChannelNotifier::HandledChannelNotifier(const ClientRegistrarPtr &cr,
             SLOT(onChannelInvalidated()));
     connect(handler.data(),
             SIGNAL(channelReceived(Tp::ChannelPtr,Tp::ChannelRequestHints,QDateTime)),
-            SIGNAL(handledAgain()));
+            SIGNAL(onChannelReceived(Tp::ChannelPtr,Tp::ChannelRequestHints,QDateTime)));
 }
 
 HandledChannelNotifier::~HandledChannelNotifier()
@@ -64,6 +64,12 @@ HandledChannelNotifier::~HandledChannelNotifier()
 ChannelPtr HandledChannelNotifier::channel() const
 {
     return mPriv->handler->channel();
+}
+
+void HandledChannelNotifier::onChannelReceived(const Tp::ChannelPtr &channel,
+        const Tp::ChannelRequestHints &requestHints, const QDateTime &userActionTime)
+{
+    emit handledAgain(requestHints, userActionTime);
 }
 
 void HandledChannelNotifier::onChannelInvalidated()
