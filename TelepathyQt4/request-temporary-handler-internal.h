@@ -41,7 +41,15 @@ public:
     AccountPtr account() const { return mAccount; }
     ChannelPtr channel() const { return mChannel; }
 
-    bool bypassApproval() const { return true; }
+    /**
+     * Handlers we request ourselves never go through the approvers but this
+     * handler shouldn't get any channels we didn't request - hence let's make
+     * this always false to leave slightly less room for the CD to get confused and
+     * give some channel we didn't request to us, without even asking an approver
+     * first. Though if the CD isn't confused it shouldn't really matter - our filter
+     * is empty anyway.
+     */
+    bool bypassApproval() const { return false; }
 
     void handleChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
