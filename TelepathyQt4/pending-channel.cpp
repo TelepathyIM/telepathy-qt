@@ -77,6 +77,9 @@ protected:
             const ChannelFactoryConstPtr &chanFactory,
             const ContactFactoryConstPtr &contactFactory) const
     {
+        if (mAccount->objectPath() != objectPath) {
+            warning() << "Account received by the fake factory is different from original account";
+        }
         return mAccount;
     }
 
