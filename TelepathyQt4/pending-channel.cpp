@@ -181,8 +181,10 @@ PendingChannel::PendingChannel(const AccountPtr &account,
     mPriv->handler = RequestTemporaryHandler::create(account);
     mPriv->notifier = 0;
 
-    QString handlerName = QString(QLatin1String("x%1.%2"))
-        .arg((intptr_t) mPriv->handler.data(), 0, 16)
+    QString handlerName = QString(QLatin1String("TpQt4RaH_%1_%2"))
+        .arg(account->dbusConnection().baseService()
+            .replace(QLatin1String(":"), QLatin1String("_"))
+            .replace(QLatin1String("."), QLatin1String("._")))
         .arg(Private::numHandlers++);
     if (!mPriv->cr->registerClient(mPriv->handler, handlerName, false)) {
         warning() << "Unable to register handler" << handlerName;
