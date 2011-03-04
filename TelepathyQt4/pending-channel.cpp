@@ -381,6 +381,9 @@ HandledChannelNotifier *PendingChannel::handledChannelNotifier() const
         return 0;
     }
 
+    if (mPriv->cr && !mPriv->notifier) {
+        mPriv->notifier = new HandledChannelNotifier(mPriv->cr, mPriv->handler);
+    }
     return mPriv->notifier;
 }
 
@@ -484,7 +487,6 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
     mPriv->handle = channel->targetHandle();
     mPriv->immutableProperties = channel->immutableProperties();
     mPriv->channel = channel;
-    mPriv->notifier = new HandledChannelNotifier(mPriv->cr, mPriv->handler);
     setFinished();
 }
 
