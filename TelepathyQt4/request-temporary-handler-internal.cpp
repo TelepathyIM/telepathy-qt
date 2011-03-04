@@ -38,7 +38,8 @@ SharedPtr<RequestTemporaryHandler> RequestTemporaryHandler::create(const Account
 RequestTemporaryHandler::RequestTemporaryHandler(const AccountPtr &account)
     : QObject(),
       AbstractClientHandler(ChannelClassSpecList(), AbstractClientHandler::Capabilities(), false),
-      mAccount(account)
+      mAccount(account),
+      mQueueChannelReceived(true)
 {
 }
 
@@ -79,12 +80,36 @@ void RequestTemporaryHandler::handleChannels(
         return;
     }
 
-    mChannel = channels.first();
-
     ChannelRequestPtr channelRequest = requestsSatisfied.first();
-    emit channelReceived(mChannel, channelRequest->hints(), userActionTime);
+
+    if (!mChannel) {
+        mChannel = channels.first();
+        emit channelReceived(mChannel, channelRequest->hints(), userActionTime);
+    } else {
+        if (mQueueChannelReceived) {
+            mChannelReceivedQueue.enqueue(qMakePair(channelRequest->hints(), userActionTime));
+        } else {
+            emit channelReceived(mChannel, channelRequest->hints(), userActionTime);
+        }
+    }
 
     context->setFinished();
+}
+
+void RequestTemporaryHandler::setQueueChannelReceived(bool queue)
+{
+    mQueueChannelReceived = queue;
+    if (!queue) {
+        processChannelReceivedQueue();
+    }
+}
+
+void RequestTemporaryHandler::processChannelReceivedQueue()
+{
+    while (!mChannelReceivedQueue.isEmpty()) {
+        QPair<ChannelRequestHints, QDateTime> info = mChannelReceivedQueue.dequeue();
+        emit channelReceived(mChannel, info.first, info.second);
+    }
 }
 
 } // Tp

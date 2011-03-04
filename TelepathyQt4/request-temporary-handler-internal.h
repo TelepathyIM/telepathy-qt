@@ -59,6 +59,8 @@ public:
             const QDateTime &userActionTime,
             const HandlerInfo &handlerInfo);
 
+    void setQueueChannelReceived(bool queue);
+
 Q_SIGNALS:
     void error(const QString &errorName, const QString &errorMessage);
     void channelReceived(const Tp::ChannelPtr &channel, const Tp::ChannelRequestHints &requestHints,
@@ -67,8 +69,12 @@ Q_SIGNALS:
 private:
     RequestTemporaryHandler(const AccountPtr &account);
 
+    void processChannelReceivedQueue();
+
     AccountPtr mAccount;
     ChannelPtr mChannel;
+    bool mQueueChannelReceived;
+    QQueue<QPair<ChannelRequestHints, QDateTime> > mChannelReceivedQueue;
 };
 
 } // Tp
