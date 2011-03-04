@@ -50,7 +50,7 @@ Q_SIGNALS:
     void handledAgain();
 
 private Q_SLOTS:
-    void onChannelInvalidated();
+    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated();
 
 private:
     friend class PendingChannel;
