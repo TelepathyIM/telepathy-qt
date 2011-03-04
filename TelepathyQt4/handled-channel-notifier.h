@@ -34,7 +34,7 @@
 namespace Tp
 {
 
-class SimpleHandler;
+class RequestTemporaryHandler;
 
 class TELEPATHY_QT4_EXPORT HandledChannelNotifier : public QObject
 {
@@ -57,7 +57,7 @@ private:
     friend class PendingChannel;
 
     HandledChannelNotifier(const ClientRegistrarPtr &cr,
-            const SharedPtr<SimpleHandler> &handler);
+            const SharedPtr<RequestTemporaryHandler> &handler);
 
     struct Private;
     friend struct Private;

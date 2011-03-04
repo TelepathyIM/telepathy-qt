@@ -88,9 +88,9 @@ set(telepathy_qt4_SRCS
     requestable-channel-class-spec.cpp
     ready-object.cpp
     referenced-handles.cpp
+    request-temporary-handler-internal.cpp
+    request-temporary-handler-internal.h
     room-list-channel.cpp
-    simple-handler-internal.cpp
-    simple-handler-internal.h
     streamed-media-channel.cpp
     test-backdoors.cpp
     test-backdoors.h
@@ -425,8 +425,8 @@ set(telepathy_qt4_MOC_SRCS
     pending-variant-map.h
     profile-manager.h
     readiness-helper.h
+    request-temporary-handler-internal.h
     room-list-channel.h
-    simple-handler-internal.h
     simple-pending-operations.h
     streamed-media-channel.h
     text-channel.h)

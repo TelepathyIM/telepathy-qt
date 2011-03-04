@@ -19,32 +19,32 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "TelepathyQt4/simple-handler-internal.h"
+#include "TelepathyQt4/request-temporary-handler-internal.h"
 
-#include "TelepathyQt4/_gen/simple-handler-internal.moc.hpp"
+#include "TelepathyQt4/_gen/request-temporary-handler-internal.moc.hpp"
 
 #include <TelepathyQt4/ChannelClassSpecList>
 
 namespace Tp
 {
 
-SharedPtr<SimpleHandler> SimpleHandler::create(const AccountPtr &account)
+SharedPtr<RequestTemporaryHandler> RequestTemporaryHandler::create(const AccountPtr &account)
 {
-    return SharedPtr<SimpleHandler>(new SimpleHandler(account));
+    return SharedPtr<RequestTemporaryHandler>(new RequestTemporaryHandler(account));
 }
 
-SimpleHandler::SimpleHandler(const AccountPtr &account)
+RequestTemporaryHandler::RequestTemporaryHandler(const AccountPtr &account)
     : QObject(),
       AbstractClientHandler(ChannelClassSpecList(), AbstractClientHandler::Capabilities(), false),
       mAccount(account)
 {
 }
 
-SimpleHandler::~SimpleHandler()
+RequestTemporaryHandler::~RequestTemporaryHandler()
 {
 }
 
-void SimpleHandler::handleChannels(
+void RequestTemporaryHandler::handleChannels(
         const MethodInvocationContextPtr<> &context,
         const AccountPtr &account,
         const ConnectionPtr &connection,

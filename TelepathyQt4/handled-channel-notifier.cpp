@@ -24,7 +24,7 @@
 #include "TelepathyQt4/_gen/handled-channel-notifier.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
-#include "TelepathyQt4/simple-handler-internal.h"
+#include "TelepathyQt4/request-temporary-handler-internal.h"
 
 #include <TelepathyQt4/ClientRegistrar>
 
@@ -33,18 +33,18 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT HandledChannelNotifier::Private
 {
-    Private(const ClientRegistrarPtr &cr, const SharedPtr<SimpleHandler> &handler)
+    Private(const ClientRegistrarPtr &cr, const SharedPtr<RequestTemporaryHandler> &handler)
         : cr(cr),
           handler(handler)
     {
     }
 
     ClientRegistrarPtr cr;
-    SharedPtr<SimpleHandler> handler;
+    SharedPtr<RequestTemporaryHandler> handler;
 };
 
 HandledChannelNotifier::HandledChannelNotifier(const ClientRegistrarPtr &cr,
-        const SharedPtr<SimpleHandler> &handler)
+        const SharedPtr<RequestTemporaryHandler> &handler)
     : mPriv(new Private(cr, handler))
 {
     connect(handler->channel().data(),

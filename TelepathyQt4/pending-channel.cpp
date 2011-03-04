@@ -24,7 +24,7 @@
 #include "TelepathyQt4/_gen/pending-channel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
-#include "TelepathyQt4/simple-handler-internal.h"
+#include "TelepathyQt4/request-temporary-handler-internal.h"
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelClassSpecList>
@@ -53,7 +53,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
     ChannelPtr channel;
 
     ClientRegistrarPtr cr;
-    SharedPtr<SimpleHandler> handler;
+    SharedPtr<RequestTemporaryHandler> handler;
     HandledChannelNotifier *notifier;
     static uint numHandlers;
 };
@@ -176,7 +176,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
             account->connectionFactory(),
             account->channelFactory(),
             account->contactFactory());
-    mPriv->handler = SimpleHandler::create(account);
+    mPriv->handler = RequestTemporaryHandler::create(account);
     mPriv->notifier = 0;
 
     QString handlerName = QString(QLatin1String("x%1.%2"))

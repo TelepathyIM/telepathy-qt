@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_simple_handler_internal_h_HEADER_GUARD_
-#define _TelepathyQt4_simple_handler_internal_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_request_temporary_handler_internal_h_HEADER_GUARD_
+#define _TelepathyQt4_request_temporary_handler_internal_h_HEADER_GUARD_
 
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/Account>
@@ -29,14 +29,14 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT SimpleHandler : public QObject, public AbstractClientHandler
+class TELEPATHY_QT4_NO_EXPORT RequestTemporaryHandler : public QObject, public AbstractClientHandler
 {
     Q_OBJECT
 
 public:
-    static SharedPtr<SimpleHandler> create(const AccountPtr &account);
+    static SharedPtr<RequestTemporaryHandler> create(const AccountPtr &account);
 
-    ~SimpleHandler();
+    ~RequestTemporaryHandler();
 
     AccountPtr account() const { return mAccount; }
     ChannelPtr channel() const { return mChannel; }
@@ -56,7 +56,7 @@ Q_SIGNALS:
     void channelReceived(const Tp::ChannelPtr &channel);
 
 private:
-    SimpleHandler(const AccountPtr &account);
+    RequestTemporaryHandler(const AccountPtr &account);
 
     AccountPtr mAccount;
     ChannelPtr mChannel;
