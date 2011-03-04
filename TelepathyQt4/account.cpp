@@ -2691,6 +2691,497 @@ PendingChannelRequest *Account::createContactSearch(
 }
 
 /**
+ * Start a request to ensure that a text channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contactIdentifier The identifier of the contact to chat with.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleTextChat(
+        const QString &contactIdentifier,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = textChatRequest(contactIdentifier);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that a text channel with the given
+ * contact \a contact exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contact The contact to chat with.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleTextChat(
+        const ContactPtr &contact,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = textChatRequest(contact);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that a text chat room with the given
+ * room name \a roomName exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param roomName The name of the chat room.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleTextChatroom(
+        const QString &roomName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = textChatroomRequest(roomName);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that a media channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleStreamedMediaCall(
+        const QString &contactIdentifier,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = streamedMediaCallRequest(contactIdentifier);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that a media channel with the given
+ * contact \a contact exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contact The contact to call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleStreamedMediaCall(
+        const ContactPtr &contact,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = streamedMediaCallRequest(contact);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that an audio call with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * This will only work on relatively modern connection managers,
+ * like telepathy-gabble 0.9.0 or later.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleStreamedMediaAudioCall(
+        const QString &contactIdentifier,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = streamedMediaAudioCallRequest(contactIdentifier);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that an audio call with the given
+ * contact \a contact exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * This will only work on relatively modern connection managers,
+ * like telepathy-gabble 0.9.0 or later.
+ *
+ * \param contact The contact to call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleStreamedMediaAudioCall(
+        const ContactPtr &contact,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = streamedMediaAudioCallRequest(contact);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that a video call with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * This will only work on relatively modern connection managers,
+ * like telepathy-gabble 0.9.0 or later.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param withAudio true if both audio and video are required, false for a
+ *                  video-only call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleStreamedMediaVideoCall(
+        const QString &contactIdentifier,
+        bool withAudio,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = streamedMediaVideoCallRequest(contactIdentifier, withAudio);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that a video call with the given
+ * contact \a contact exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * This will only work on relatively modern connection managers,
+ * like telepathy-gabble 0.9.0 or later.
+ *
+ * \param contact The contact to call.
+ * \param withAudio true if both audio and video are required, false for a
+ *                  video-only call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleStreamedMediaVideoCall(
+        const ContactPtr &contact,
+        bool withAudio,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = streamedMediaVideoCallRequest(contact, withAudio);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a file transfer channel with the given
+ * contact \a contactIdentifier.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contactIdentifier The identifier of the contact to send a file.
+ * \param properties The desired properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleFileTransfer(
+        const QString &contactIdentifier,
+        const FileTransferChannelCreationProperties &properties,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = fileTransferRequest(contactIdentifier, properties);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a file transfer channel with the given
+ * contact \a contact.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contact The contact to send a file.
+ * \param properties The desired properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleFileTransfer(
+        const ContactPtr &contact,
+        const FileTransferChannelCreationProperties &properties,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = fileTransferRequest(contact, properties);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a conference text chat with the given
+ * channels \a channels.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          identifiers to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleConferenceTextChat(
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = conferenceTextChatRequest(channels, initialInviteeContactsIdentifiers);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a conference text chat with the given
+ * channels \a channels.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContacts A list of additional contacts
+ *                               to be invited to this
+ *                               conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleConferenceTextChat(
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = conferenceTextChatRequest(channels, initialInviteeContacts);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a conference text chat room with the given
+ * channels \a channels and room name \a roomName.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param roomName The room name.
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          identifiers to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleConferenceTextChatroom(
+        const QString &roomName,
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = conferenceTextChatroomRequest(roomName, channels,
+            initialInviteeContactsIdentifiers);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a conference text chat room with the given
+ * channels \a channels and room name \a roomName.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param roomName The room name.
+ * \param channels The conference channels.
+ * \param initialInviteeContacts A list of additional contacts
+ *                               to be invited to this
+ *                               conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleConferenceTextChatroom(
+        const QString &roomName,
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = conferenceTextChatroomRequest(roomName, channels,
+            initialInviteeContacts);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a conference media call with the given
+ * channels \a channels.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          identifiers to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleConferenceStreamedMediaCall(
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = conferenceStreamedMediaCallRequest(channels,
+            initialInviteeContactsIdentifiers);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a conference media call with the given
+ * channels \a channels.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContacts A list of additional contacts
+ *                               to be invited to this
+ *                               conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleConferenceStreamedMediaCall(
+        const QList<ChannelPtr> &channels,
+        const QList<ContactPtr> &initialInviteeContacts,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = conferenceStreamedMediaCallRequest(channels, initialInviteeContacts);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a contact search channel with the given
+ * server \a server and limit \a limit.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param server For protocols which support searching for contacts on multiple servers with
+ *               different DNS names (like XMPP), the DNS name of the server to be searched,
+ *               e.g. "characters.shakespeare.lit". Otherwise, an empty string.
+ * \param limit The desired maximum number of results that should be returned by a doing a search.
+ *              If the protocol does not support specifying a limit for the number of results
+ *              returned at a time, this will be ignored.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleContactSearch(
+        const QString &server,
+        uint limit,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = contactSearchRequest(server, limit);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
  * Same as \c createChannel(request, userActionTime, preferredHandler, ChannelRequestHints())
  */
 PendingChannelRequest *Account::createChannel(
