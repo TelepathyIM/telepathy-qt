@@ -196,7 +196,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
             SIGNAL(error(QString,QString)),
             SLOT(onHandlerError(QString,QString)));
     connect(mPriv->handler.data(),
-            SIGNAL(channelReceived(Tp::ChannelPtr,Tp::ChannelRequestHints,QDateTime)),
+            SIGNAL(channelReceived(Tp::ChannelPtr,QDateTime,Tp::ChannelRequestHints)),
             SLOT(onHandlerChannelReceived(Tp::Channelptr)));
 
     handlerName = QString(QLatin1String("org.freedesktop.Telepathy.Client.%1")).arg(handlerName);

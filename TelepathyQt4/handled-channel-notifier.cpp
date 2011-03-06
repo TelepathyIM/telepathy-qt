@@ -52,8 +52,8 @@ HandledChannelNotifier::HandledChannelNotifier(const ClientRegistrarPtr &cr,
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated()));
     connect(handler.data(),
-            SIGNAL(channelReceived(Tp::ChannelPtr,Tp::ChannelRequestHints,QDateTime)),
-            SIGNAL(onChannelReceived(Tp::ChannelPtr,Tp::ChannelRequestHints,QDateTime)));
+            SIGNAL(channelReceived(Tp::ChannelPtr,QDateTime,Tp::ChannelRequestHints)),
+            SIGNAL(onChannelReceived(Tp::ChannelPtr,QDateTime,Tp::ChannelRequestHints)));
 }
 
 HandledChannelNotifier::~HandledChannelNotifier()
@@ -67,9 +67,9 @@ ChannelPtr HandledChannelNotifier::channel() const
 }
 
 void HandledChannelNotifier::onChannelReceived(const Tp::ChannelPtr &channel,
-        const Tp::ChannelRequestHints &requestHints, const QDateTime &userActionTime)
+        const QDateTime &userActionTime, const Tp::ChannelRequestHints &requestHints)
 {
-    emit handledAgain(requestHints, userActionTime);
+    emit handledAgain(userActionTime, requestHints);
 }
 
 void HandledChannelNotifier::onChannelInvalidated()
@@ -79,7 +79,7 @@ void HandledChannelNotifier::onChannelInvalidated()
 
 void HandledChannelNotifier::connectNotify(const char *signalName)
 {
-    if (qstrcmp(signalName, SIGNAL(handledAgain(Tp::ChannelRequestHints,QDateTime))) == 0) {
+    if (qstrcmp(signalName, SIGNAL(handledAgain(QDateTime,Tp::ChannelRequestHints))) == 0) {
         mPriv->handler->setQueueChannelReceived(false);
     }
 }

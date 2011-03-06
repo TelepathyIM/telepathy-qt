@@ -84,12 +84,12 @@ void RequestTemporaryHandler::handleChannels(
 
     if (!mChannel) {
         mChannel = channels.first();
-        emit channelReceived(mChannel, channelRequest->hints(), userActionTime);
+        emit channelReceived(mChannel, userActionTime, channelRequest->hints());
     } else {
         if (mQueueChannelReceived) {
-            mChannelReceivedQueue.enqueue(qMakePair(channelRequest->hints(), userActionTime));
+            mChannelReceivedQueue.enqueue(qMakePair(userActionTime, channelRequest->hints()));
         } else {
-            emit channelReceived(mChannel, channelRequest->hints(), userActionTime);
+            emit channelReceived(mChannel, userActionTime, channelRequest->hints());
         }
     }
 
@@ -107,7 +107,7 @@ void RequestTemporaryHandler::setQueueChannelReceived(bool queue)
 void RequestTemporaryHandler::processChannelReceivedQueue()
 {
     while (!mChannelReceivedQueue.isEmpty()) {
-        QPair<ChannelRequestHints, QDateTime> info = mChannelReceivedQueue.dequeue();
+        QPair<QDateTime, ChannelRequestHints> info = mChannelReceivedQueue.dequeue();
         emit channelReceived(mChannel, info.first, info.second);
     }
 }
