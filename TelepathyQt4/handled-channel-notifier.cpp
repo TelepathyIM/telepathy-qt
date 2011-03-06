@@ -53,7 +53,7 @@ HandledChannelNotifier::HandledChannelNotifier(const ClientRegistrarPtr &cr,
             SLOT(onChannelInvalidated()));
     connect(handler.data(),
             SIGNAL(channelReceived(Tp::ChannelPtr,QDateTime,Tp::ChannelRequestHints)),
-            SIGNAL(onChannelReceived(Tp::ChannelPtr,QDateTime,Tp::ChannelRequestHints)));
+            SLOT(onChannelReceived(Tp::ChannelPtr,QDateTime,Tp::ChannelRequestHints)));
 }
 
 HandledChannelNotifier::~HandledChannelNotifier()
