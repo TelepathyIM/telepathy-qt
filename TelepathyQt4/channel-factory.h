@@ -205,8 +205,6 @@ public:
     void setConstructorForContactSearches(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
-    // When merged, Tube channels should have export/import variants too like FT has for send/receive
-
     Features commonFeatures() const;
     void addCommonFeatures(const Features &features);
 
