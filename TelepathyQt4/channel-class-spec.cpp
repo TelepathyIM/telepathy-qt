@@ -436,7 +436,8 @@ ChannelClassSpec ChannelClassSpec::outgoingStreamTube(const QString &service,
     }
 
     if (!service.isEmpty()) {
-        spec.setProperty(QLatin1String("service"), service);
+        spec.setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                         service);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -457,7 +458,8 @@ ChannelClassSpec ChannelClassSpec::incomingStreamTube(const QString &service,
     }
 
     if (!service.isEmpty()) {
-        spec.setProperty(QLatin1String("service"), service);
+        spec.setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                         service);
     }
 
     if (additionalProperties.isEmpty()) {
