@@ -178,15 +178,28 @@ void TubeReceiver::onStreamTubeAccepted(PendingOperation* op)
 
     qDebug() << "Stream tube channel accepted and opened!";
 
-    mDevice = mChan->device();
-    connect(mDevice, SIGNAL(readyRead()), this, SLOT(onDataFromSocket()));
-    mDevice->write(QByteArray("Hi there!!\n"));
+    mDevice = new QLocalSocket(this);
+    mDevice->connectToServer(mChan->localAddress());
 
-    // Throw in some stuff
-    QTimer *timer = new QTimer(this);
-    timer->setInterval(2000);
-    connect(timer, SIGNAL(timeout()), this, SLOT(onTimerTimeout()));
-    timer->start();
+    connect(mDevice, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)),
+            this, SLOT(onStateChanged(QLocalSocket::LocalSocketState)));
+}
+
+void TubeReceiver::onStateChanged(QLocalSocket::LocalSocketState state)
+{
+    if (state == QLocalSocket::ConnectedState) {
+        qDebug() << "Local socket connected and ready";
+        connect(mDevice, SIGNAL(readyRead()), this, SLOT(onDataFromSocket()));
+        mDevice->write(QByteArray("Hi there!!\n"));
+
+        // Throw in some stuff
+        QTimer *timer = new QTimer(this);
+        timer->setInterval(2000);
+        connect(timer, SIGNAL(timeout()), this, SLOT(onTimerTimeout()));
+        timer->start();
+    } else {
+        qDebug() << "Socket in state " << state;
+    }
 }
 
 void TubeReceiver::onDataFromSocket()

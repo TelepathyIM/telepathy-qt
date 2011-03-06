@@ -30,9 +30,7 @@
 #include <TelepathyQt4/Types>
 
 #include <QPair>
-#include <QLocalSocket>
 
-class QIODevice;
 class QHostAddress;
 
 namespace Tp
@@ -49,8 +47,6 @@ class TELEPATHY_QT4_EXPORT PendingStreamTubeConnection : public PendingOperation
 public:
     virtual ~PendingStreamTubeConnection();
 
-    QIODevice *device() const;
-
     SocketAddressType addressType() const;
 
     QPair<QHostAddress, quint16> ipAddress() const;
@@ -59,8 +55,6 @@ public:
 private Q_SLOTS:
     void onAcceptFinished(Tp::PendingOperation *op);
     void onTubeStateChanged(Tp::TubeChannelState state);
-    void onDeviceConnected();
-    void onSocketError();
 
 private:
     PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,

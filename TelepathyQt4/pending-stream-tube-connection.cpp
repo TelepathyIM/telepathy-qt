@@ -29,9 +29,6 @@
 #include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/Types>
 
-#include <QLocalSocket>
-#include <QTcpSocket>
-
 namespace Tp
 {
 
@@ -48,8 +45,6 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
     QHostAddress hostAddress;
     quint16 port;
     QString socketPath;
-
-    QWeakPointer<QIODevice> device;
 };
 
 PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection *parent)
@@ -106,22 +101,6 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
 PendingStreamTubeConnection::~PendingStreamTubeConnection()
 {
     delete mPriv;
-}
-
-/**
- * This method returns an opened QIODevice representing the opened socket.
- *
- * Calling this method when the operation has not been completed or has failed, will cause it
- * to return 0.
- *
- * \return The opened QIODevice if the operation is finished and successful, 0 otherwise.
- *
- * \note This function will return a valid value only after the operation has been
- *       finished successfully.
- */
-QIODevice *PendingStreamTubeConnection::device() const
-{
-    return mPriv->device.data();
 }
 
 /**
@@ -230,65 +209,22 @@ void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
-        // The tube is ready
-        // Build the IO device
+        // The tube is ready, populate its properties
         if (mPriv->type == SocketAddressTypeIPv4 || mPriv->type == SocketAddressTypeIPv6) {
             mPriv->tube->setIpAddress(qMakePair<QHostAddress, quint16>(mPriv->hostAddress,
                     mPriv->port));
-            debug() << "Building a QTcpSocket " << mPriv->hostAddress << mPriv->port;
-
-            QTcpSocket *socket = new QTcpSocket(mPriv->tube.data());
-            socket->connectToHost(mPriv->hostAddress, mPriv->port);
-            mPriv->device = socket;
-
-            connect(socket, SIGNAL(connected()),
-                    this, SLOT(onDeviceConnected()));
-            connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
-                    this, SLOT(onSocketError()));
-            debug() << "QTcpSocket built";
         } else {
             // Unix socket
             mPriv->tube->setLocalAddress(mPriv->socketPath);
-
-            QLocalSocket *socket = new QLocalSocket(mPriv->tube.data());
-            socket->connectToServer(mPriv->socketPath);
-            mPriv->device = socket;
-
-            // The local socket might already be connected
-            if (socket->state() == QLocalSocket::ConnectedState) {
-                onDeviceConnected();
-            } else {
-                connect(socket, SIGNAL(connected()),
-                        this, SLOT(onDeviceConnected()));
-                connect(socket, SIGNAL(error(QLocalSocket::LocalSocketError)),
-                        this, SLOT(onSocketError()));
-            }
         }
+
+        // Mark the operation as finished
+        setFinished();
     } else if (state != TubeChannelStateLocalPending) {
         // Something happened
         setFinishedWithError(QLatin1String("Connection refused"),
                 QLatin1String("The connection to this tube was refused"));
     }
-}
-
-void PendingStreamTubeConnection::onSocketError()
-{
-    QString errorString = QLatin1String("Could not connect to the new socket");
-    // Try and get a human readable description of the error
-    if (!mPriv->device.isNull()) {
-        errorString = mPriv->device.data()->errorString();
-    }
-
-    // Failure
-    mPriv->device.data()->deleteLater();
-    setFinishedWithError(QLatin1String("Error while creating the socket"), errorString);
-}
-
-void PendingStreamTubeConnection::onDeviceConnected()
-{
-    // Our IODevice is ready! Let's just set finished
-    debug() << "Device connected!";
-    setFinished();
 }
 
 }

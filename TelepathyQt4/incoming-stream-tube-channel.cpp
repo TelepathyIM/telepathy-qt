@@ -44,12 +44,12 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
     IncomingStreamTubeChannel *parent;
 
     // Properties
-    QIODevice *device;
+    QPair<QHostAddress, quint16> ipAddress;
+    QString localAddress;
 };
 
 IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
-    : parent(parent),
-      device(0)
+    : parent(parent)
 {
 }
 
@@ -461,19 +461,44 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 }
 
 /**
- * This method returns an opened QIODevice representing the opened tube.
+ * This method returns the local address of the opened tube.
  *
- * Calling this method when the tube has not been opened, will cause it
- * to return 0.
+ * Calling this method when the tube has not been opened will cause it
+ * to return an unmeaningful value. The same will happen if the tube has been accepted as a TCP
+ * socket. Use #ipAddress if that is the case.
  *
- * \return A valid QIODevice if the tube is in the \c Open state, 0 otherwise.
+ * \return The local address representing this opened tube as a QString,
+ *         if the tube has been accepted as an Unix socket.
+ *
+ * \note This function will return a meaningful value only if the tube has already been opened.
  */
-QIODevice *IncomingStreamTubeChannel::device() const
+QString IncomingStreamTubeChannel::localAddress() const
 {
     if (tubeState() == TubeChannelStateOpen) {
-        return mPriv->device;
+        return mPriv->localAddress;
     } else {
-        return 0;
+        return QString();
+    }
+}
+
+/**
+ * This method returns the IP address/port combination of the opened tube.
+ *
+ * Calling this method when the tube has not been opened will cause it
+ * to return an unmeaningful value. The same will happen if the tube has been accepted as an Unix
+ * socket. Use #localAddress if that is the case.
+ *
+ * \return The IP address/port combination representing this opened tube,
+ *         if the tube has been accepted as a TCP socket.
+ *
+ * \note This function will return a meaningful value only if the tube has already been opened.
+ */
+QPair<QHostAddress, quint16> IncomingStreamTubeChannel::ipAddress() const
+{
+    if (tubeState() == TubeChannelStateOpen) {
+        return mPriv->ipAddress;
+    } else {
+        return QPair<QHostAddress, quint16>();
     }
 }
 
@@ -481,7 +506,8 @@ void IncomingStreamTubeChannel::onAcceptTubeFinished(PendingOperation *op)
 {
     PendingStreamTubeConnection *pendingDevice = qobject_cast<PendingStreamTubeConnection*>(op);
 
-    mPriv->device = pendingDevice->device();
+    mPriv->ipAddress = pendingDevice->ipAddress();
+    mPriv->localAddress = pendingDevice->localAddress();
 }
 
 void IncomingStreamTubeChannel::onNewLocalConnection(uint connectionId)

@@ -26,6 +26,8 @@
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/Types>
 
+#include <QLocalSocket>
+
 using namespace Tp;
 
 namespace Tp
@@ -48,6 +50,7 @@ private Q_SLOTS:
     void onNewChannels(const Tp::ChannelDetailsList &channels);
     void onStreamTubeChannelReady(Tp::PendingOperation*);
     void onStreamTubeAccepted(Tp::PendingOperation*);
+    void onStateChanged(QLocalSocket::LocalSocketState);
     void onTimerTimeout();
     void onDataFromSocket();
     void onInvalidated();
@@ -55,7 +58,7 @@ private Q_SLOTS:
 private:
     QString mUsername;
     QString mPassword;
-    QIODevice *mDevice;
+    QLocalSocket *mDevice;
 
     ConnectionManagerPtr mCM;
     ConnectionPtr mConn;

@@ -52,7 +52,8 @@ public:
             quint16 allowedPort);
     PendingStreamTubeConnection *acceptTubeAsUnixSocket(bool requireCredentials = false);
 
-    QIODevice *device() const;
+    QPair<QHostAddress, quint16> ipAddress() const;
+    QString localAddress() const;
 
 protected:
     IncomingStreamTubeChannel(const ConnectionPtr &connection,
