@@ -507,9 +507,18 @@ void PendingChannel::onAccountCreateChannelFinished(PendingOperation *op)
         warning() << "Creating/ensuring channel failed with" << op->errorName()
             << ":" << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
     }
 
-    // do nothing, we are waiting for the channel to appear in the handler
+    if (!mPriv->channel) {
+        // Our handler hasn't be called but the channel request is complete.
+        // That means another handler handled the channels so we don't own it.
+        warning() << "Creating/ensuring channel failed with" << TP_QT4_ERROR_NOT_YOURS
+            << ":" << QLatin1String("Another handler is handling this channel");
+        setFinishedWithError(TP_QT4_ERROR_NOT_YOURS,
+                QLatin1String("Another handler is handling this channel"));
+        return;
+    }
 }
 
 } // Tp
