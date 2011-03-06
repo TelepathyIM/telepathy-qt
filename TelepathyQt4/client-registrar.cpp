@@ -487,7 +487,7 @@ void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
             continue;
         }
 
-        debug() << "Invoking application observeChannels with" << invocation->chans.size()
+        debug() << "Invoking application handleChannels with" << invocation->chans.size()
             << "channels on" << mClient;
 
         mClient->handleChannels(invocation->ctx, invocation->acc, invocation->conn,
