@@ -483,7 +483,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \sa StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
 PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
-        QTcpServer *server,
+        const QTcpServer *server,
         const QVariantMap &parameters)
 {
     // In this overload, we're handling a superset of QHostAddress.
@@ -633,7 +633,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
  * \sa StreamTubeChannel::supportsUnixSocketsWithCredentials
  */
 PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
-        QLocalServer *server,
+        const QLocalServer *server,
         const QVariantMap &parameters,
         bool requireCredentials)
 {

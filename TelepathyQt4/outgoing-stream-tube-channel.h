@@ -47,11 +47,11 @@ public:
     virtual ~OutgoingStreamTubeChannel();
 
     PendingOperation *offerTcpSocket(const QHostAddress &address, quint16 port, const QVariantMap &parameters);
-    PendingOperation *offerTcpSocket(QTcpServer *server, const QVariantMap &parameters);
+    PendingOperation *offerTcpSocket(const QTcpServer *server, const QVariantMap &parameters);
 
     PendingOperation *offerUnixSocket(const QString &socketAddress, const QVariantMap &parameters,
             bool requireCredentials = false);
-    PendingOperation *offerUnixSocket(QLocalServer *server, const QVariantMap &parameters,
+    PendingOperation *offerUnixSocket(const QLocalServer *server, const QVariantMap &parameters,
             bool requireCredentials = false);
 
     QHash<uint, Tp::ContactPtr> contactsForConnections() const;
