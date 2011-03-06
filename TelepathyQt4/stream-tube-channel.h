@@ -84,8 +84,8 @@ protected:
     void setLocalAddress(const QString &address);
 
 private Q_SLOTS:
-    void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
-    void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
+    TELEPATHY_QT4_NO_EXPORT void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
 
 private:
     struct Private;

@@ -53,8 +53,8 @@ public:
     QString localAddress() const;
 
 private Q_SLOTS:
-    void onAcceptFinished(Tp::PendingOperation *op);
-    void onTubeStateChanged(Tp::TubeChannelState state);
+    TELEPATHY_QT4_NO_EXPORT void onAcceptFinished(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onTubeStateChanged(Tp::TubeChannelState state);
 
 private:
     PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,

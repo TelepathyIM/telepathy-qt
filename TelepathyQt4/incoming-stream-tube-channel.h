@@ -62,8 +62,8 @@ protected:
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
 
 private Q_SLOTS:
-    void onAcceptTubeFinished(Tp::PendingOperation *op);
-    void onNewLocalConnection(uint connectionId);
+    TELEPATHY_QT4_NO_EXPORT void onAcceptTubeFinished(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onNewLocalConnection(uint connectionId);
 
 private:
     struct Private;
