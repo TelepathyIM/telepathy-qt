@@ -265,48 +265,48 @@ void ChannelFactory::setConstructorForIncomingFileTransfers(const ConstructorCon
 
 Features ChannelFactory::featuresForOutgoingStreamTubes(const QVariantMap &additionalProps) const
 {
-    return featuresFor(ChannelClassSpec::outgoingStreamTube(additionalProps));
+    return featuresFor(ChannelClassSpec::outgoingStreamTube(QString(), additionalProps));
 }
 
 void ChannelFactory::addFeaturesForOutgoingStreamTubes(const Features &features,
         const QVariantMap &additionalProps)
 {
-    addFeaturesFor(ChannelClassSpec::outgoingStreamTube(additionalProps), features);
+    addFeaturesFor(ChannelClassSpec::outgoingStreamTube(QString(), additionalProps), features);
 }
 
 ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForOutgoingStreamTubes(
         const QVariantMap &additionalProps) const
 {
-    return constructorFor(ChannelClassSpec::outgoingStreamTube(additionalProps));
+    return constructorFor(ChannelClassSpec::outgoingStreamTube(QString(), additionalProps));
 }
 
 void ChannelFactory::setConstructorForOutgoingStreamTubes(const ConstructorConstPtr &ctor,
         const QVariantMap &additionalProps)
 {
-    setConstructorFor(ChannelClassSpec::outgoingStreamTube(additionalProps), ctor);
+    setConstructorFor(ChannelClassSpec::outgoingStreamTube(QString(), additionalProps), ctor);
 }
 
 Features ChannelFactory::featuresForIncomingStreamTubes(const QVariantMap &additionalProps) const
 {
-    return featuresFor(ChannelClassSpec::incomingStreamTube(additionalProps));
+    return featuresFor(ChannelClassSpec::incomingStreamTube(QString(), additionalProps));
 }
 
 void ChannelFactory::addFeaturesForIncomingStreamTubes(const Features &features,
         const QVariantMap &additionalProps)
 {
-    addFeaturesFor(ChannelClassSpec::incomingStreamTube(additionalProps), features);
+    addFeaturesFor(ChannelClassSpec::incomingStreamTube(QString(), additionalProps), features);
 }
 
 ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingStreamTubes(
         const QVariantMap &additionalProps) const
 {
-    return constructorFor(ChannelClassSpec::incomingStreamTube(additionalProps));
+    return constructorFor(ChannelClassSpec::incomingStreamTube(QString(), additionalProps));
 }
 
 void ChannelFactory::setConstructorForIncomingStreamTubes(const ConstructorConstPtr &ctor,
         const QVariantMap &additionalProps)
 {
-    setConstructorFor(ChannelClassSpec::incomingStreamTube(additionalProps), ctor);
+    setConstructorFor(ChannelClassSpec::incomingStreamTube(QString(), additionalProps), ctor);
 }
 
 Features ChannelFactory::featuresForContactSearches(const QVariantMap &additionalProps) const
