@@ -323,13 +323,13 @@ public:
 
     PendingChannelRequest *createStreamTube(
             const QString &contactIdentifier,
-            const QString &serviceName,
+            const QString &service,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *createStreamTube(
             const ContactPtr &contact,
-            const QString &serviceName,
+            const QString &service,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());

@@ -2286,7 +2286,7 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  */
 PendingChannelRequest *Account::createStreamTube(
         const QString &contactIdentifier,
-        const QString &serviceName,
+        const QString &service,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
@@ -2300,7 +2300,7 @@ PendingChannelRequest *Account::createStreamTube(
                    contactIdentifier);
 
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
-                   serviceName);
+                   service);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2325,7 +2325,7 @@ PendingChannelRequest *Account::createStreamTube(
  */
 PendingChannelRequest *Account::createStreamTube(
         const Tp::ContactPtr &contact,
-        const QString &serviceName,
+        const QString &service,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
@@ -2339,7 +2339,7 @@ PendingChannelRequest *Account::createStreamTube(
                    contact ? contact->handle().at(0) : (uint) 0);
 
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
-                   serviceName);
+                   service);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
