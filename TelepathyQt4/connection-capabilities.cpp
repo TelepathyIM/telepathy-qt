@@ -283,4 +283,20 @@ bool ConnectionCapabilities::contactSearchesWithLimit() const
     return false;
 }
 
+/**
+ * Return whether creating a StreamTube channel by providing a contact identifier is supported.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::streamTubes() const
+{
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::streamTube())) {
+            return true;
+        }
+    }
+    return false;
+}
+
 } // Tp

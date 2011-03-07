@@ -55,6 +55,8 @@ public:
     TELEPATHY_QT4_DEPRECATED bool contactSearchWithSpecificServer() const;
     TELEPATHY_QT4_DEPRECATED bool contactSearchWithLimit() const;
 
+    bool streamTubes() const;
+
 private:
     friend class Account;
     friend class Connection;
