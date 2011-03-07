@@ -111,7 +111,9 @@ QStringList ContactCapabilities::streamTubeServices() const
 
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.hasFixedProperty(
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.hasFixedProperty(
                     TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"))) {
             ret << rccSpec.fixedProperty(
                     TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service")).toString();
