@@ -736,7 +736,7 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannel()
 
 void TestAccountChannelDispatcher::testCreateAndHandleChannelNotYours()
 {
-    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(createAndHandleChannel, false, true, false, TP_QT4_ERROR_NOT_YOURS);
+    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(ensureAndHandleChannel, false, true, false, TP_QT4_ERROR_NOT_YOURS);
 }
 
 void TestAccountChannelDispatcher::testCreateAndHandleChannelFail()
