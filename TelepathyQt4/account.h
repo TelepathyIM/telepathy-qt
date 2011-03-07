@@ -466,6 +466,15 @@ public:
             const FileTransferChannelCreationProperties &properties,
             const QDateTime &userActionTime = QDateTime::currentDateTime());
 
+    PendingChannel *createAndHandleStreamTube(
+            const QString &contactIdentifier,
+            const QString &service,
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+    PendingChannel *createAndHandleStreamTube(
+            const ContactPtr &contact,
+            const QString &service,
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+
     PendingChannel *createAndHandleConferenceTextChat(
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
