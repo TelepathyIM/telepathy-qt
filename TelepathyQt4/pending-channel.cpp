@@ -44,6 +44,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
     class FakeAccountFactory;
 
     ConnectionPtr connection;
+    bool create;
     bool yours;
     QString channelType;
     uint handleType;
@@ -120,6 +121,7 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &e
     mPriv->handleType = 0;
     mPriv->handle = 0;
     mPriv->notifier = 0;
+    mPriv->create = false;
 
     setFinishedWithError(errorName, errorMessage);
 }
@@ -142,6 +144,7 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
     mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
     mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
     mPriv->notifier = 0;
+    mPriv->create = create;
 
     Client::ConnectionInterfaceRequestsInterface *requestsInterface =
         connection->interface<Client::ConnectionInterfaceRequestsInterface>();
@@ -179,6 +182,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
             account->contactFactory());
     mPriv->handler = RequestTemporaryHandler::create(account);
     mPriv->notifier = 0;
+    mPriv->create = create;
 
     QString handlerName = QString(QLatin1String("TpQt4RaH_%1_%2"))
         .arg(account->dbusConnection().baseService()
@@ -513,10 +517,19 @@ void PendingChannel::onAccountCreateChannelFinished(PendingOperation *op)
     if (!mPriv->channel) {
         // Our handler hasn't be called but the channel request is complete.
         // That means another handler handled the channels so we don't own it.
-        warning() << "Creating/ensuring channel failed with" << TP_QT4_ERROR_NOT_YOURS
-            << ":" << QLatin1String("Another handler is handling this channel");
-        setFinishedWithError(TP_QT4_ERROR_NOT_YOURS,
-                QLatin1String("Another handler is handling this channel"));
+        if (mPriv->create) {
+            warning() << "Creating/ensuring channel failed with" << TP_QT4_ERROR_SERVICE_CONFUSED
+                << ":" << QLatin1String("CD.CreateChannel/WithHints returned successfully and "
+                        "the handler didn't receive the channel yet");
+            setFinishedWithError(TP_QT4_ERROR_SERVICE_CONFUSED,
+                    QLatin1String("CD.CreateChannel/WithHints returned successfully and "
+                        "the handler didn't receive the channel yet"));
+        } else {
+            warning() << "Creating/ensuring channel failed with" << TP_QT4_ERROR_NOT_YOURS
+                << ":" << QLatin1String("Another handler is handling this channel");
+            setFinishedWithError(TP_QT4_ERROR_NOT_YOURS,
+                    QLatin1String("Another handler is handling this channel"));
+        }
         return;
     }
 }
