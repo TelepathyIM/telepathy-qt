@@ -4,13 +4,15 @@ telepathy-qt4 0.5.9 (2011-03-07)
 The "planned engineering works for the last year" release.
 
 Enhancements:
- * fd.o #28367 - Added High-level API for StreamTube channels
- * fd.o #34228 - Added API on Account for requesting Channels and handling them
+ * fd.o#28367 - Added High-level API for StreamTube channels
+ * fd.o#34228 - Added API on Account for requesting Channels and handling them
    yourself, implemented properly using the Channel Dispatcher service
  * Account::allowedPresenceStatuses() now has fallbacks to include "available"
    and "offline" when that makes sense
  * Removed some more private symbols from the shared library, resulting in
    slightly faster load times
+ * Deprecated ConnectionCapabilities contact search related methods with
+   singular names and added plural versions of them, for API consistency.
 
 Fixes:
  * Redundant Contact::avatarDataChanged() emissions
