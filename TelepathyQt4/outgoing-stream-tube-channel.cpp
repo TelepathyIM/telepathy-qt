@@ -453,7 +453,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
 
 /**
  * \overload
- * Offer an IPv4/IPv6 socket over the tube
+ * Offer an IPv4/IPv6 socket over the tube.
  *
  * This method offers an IPv4/IPv6 socket over this tube through a QTcpServer.
  *
@@ -493,7 +493,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
 }
 
 /**
- * Offer a Unix socket over the tube
+ * Offer a Unix socket over the tube.
  *
  * This method offers a Unix socket over this tube. The socket is represented through
  * a QString, which should contain the path to the socket. You can also expose an
@@ -609,7 +609,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
 
 /**
  * \overload
- * Offer a Unix socket over the tube
+ * Offer a Unix socket over the tube.
  *
  * This method offers a Unix socket over this tube through a QLocalServer.
  *
