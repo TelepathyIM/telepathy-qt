@@ -425,6 +425,50 @@ ChannelClassSpec ChannelClassSpec::incomingFileTransfer(const QVariantMap &addit
     }
 }
 
+ChannelClassSpec ChannelClassSpec::outgoingStreamTube(const QString &service,
+                                                      const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+                HandleTypeContact, true);
+    }
+
+    if (!service.isEmpty()) {
+        spec.setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                         service);
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::incomingStreamTube(const QString &service,
+                                                      const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+                HandleTypeContact, false);
+    }
+
+    if (!service.isEmpty()) {
+        spec.setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                         service);
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
 ChannelClassSpec ChannelClassSpec::contactSearch(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;

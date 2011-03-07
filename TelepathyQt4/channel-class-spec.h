@@ -183,7 +183,11 @@ public:
     static ChannelClassSpec roomList(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec outgoingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec incomingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
-    // TODO: add dbus tubes, stream tubes when they're implemented
+    static ChannelClassSpec outgoingStreamTube(const QString &service = QString(),
+            const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec incomingStreamTube(const QString &service = QString(),
+            const QVariantMap &additionalProperties = QVariantMap());
+    // TODO: add dbus tubes when they're implemented
     static ChannelClassSpec contactSearch(const QVariantMap &additionalProperties = QVariantMap());
 
 private:

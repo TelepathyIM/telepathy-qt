@@ -55,6 +55,7 @@ set(telepathy_qt4_SRCS
     future-internal.h
     handled-channel-notifier.cpp
     incoming-file-transfer-channel.cpp
+    incoming-stream-tube-channel.cpp
     key-file.cpp
     location-info.cpp
     manager-file.cpp
@@ -64,6 +65,7 @@ set(telepathy_qt4_SRCS
     object.cpp
     optional-interface-factory.cpp
     outgoing-file-transfer-channel.cpp
+    outgoing-stream-tube-channel.cpp
     pending-account.cpp
     pending-channel.cpp
     pending-channel-request.cpp
@@ -76,6 +78,7 @@ set(telepathy_qt4_SRCS
     pending-operation.cpp
     pending-ready.cpp
     pending-string-list.cpp
+    pending-stream-tube-connection.cpp
     pending-variant.cpp
     presence.cpp
     pending-variant-map.cpp
@@ -91,10 +94,12 @@ set(telepathy_qt4_SRCS
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
     room-list-channel.cpp
+    stream-tube-channel.cpp
     streamed-media-channel.cpp
     test-backdoors.cpp
     test-backdoors.h
     text-channel.cpp
+    tube-channel.cpp
     types.cpp
     types-internal.h
     utils.cpp)
@@ -259,6 +264,8 @@ set(telepathy_qt4_HEADERS
     handled-channel-notifier.h
     IncomingFileTransferChannel
     incoming-file-transfer-channel.h
+    IncomingStreamTubeChannel
+    incoming-stream-tube-channel.h
     IntrospectableInterface
     KeyFile
     key-file.h
@@ -286,6 +293,8 @@ set(telepathy_qt4_HEADERS
     or-filter.h
     OutgoingFileTransferChannel
     outgoing-file-transfer-channel.h
+    OutgoingStreamTubeChannel
+    outgoing-stream-tube-channel.h
     PeerInterface
     PendingAccount
     pending-account.h
@@ -309,6 +318,8 @@ set(telepathy_qt4_HEADERS
     pending-operation.h
     PendingReady
     pending-ready.h
+    PendingStreamTubeConnection
+    pending-stream-tube-connection.h
     PendingStringList
     pending-string-list.h
     PendingSuccess
@@ -350,10 +361,14 @@ set(telepathy_qt4_HEADERS
     simple-pending-operations.h
     StatefulDBusProxy
     StatelessDBusProxy
+    StreamTubeChannel
+    stream-tube-channel.h
     StreamedMediaChannel
     streamed-media-channel.h
     TextChannel
     text-channel.h
+    TubeChannel
+    tube-channel.h
     Types
     types.h
     Utils
@@ -407,8 +422,11 @@ set(telepathy_qt4_MOC_SRCS
     file-transfer-channel.h
     handled-channel-notifier.h
     incoming-file-transfer-channel.h
+    incoming-stream-tube-channel.h
     object.h
     outgoing-file-transfer-channel.h
+    outgoing-stream-tube-channel.h
+    outgoing-stream-tube-channel-internal.h
     pending-account.h
     pending-channel.h
     pending-channel-request.h
@@ -420,6 +438,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-handles.h
     pending-operation.h
     pending-ready.h
+    pending-stream-tube-connection.h
     pending-string-list.h
     pending-variant.h
     pending-variant-map.h
@@ -428,8 +447,10 @@ set(telepathy_qt4_MOC_SRCS
     request-temporary-handler-internal.h
     room-list-channel.h
     simple-pending-operations.h
+    stream-tube-channel.h
     streamed-media-channel.h
-    text-channel.h)
+    text-channel.h
+    tube-channel.h)
 
 # Generate the spec files for both stable and future spec
 set(gen_stable_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml)
