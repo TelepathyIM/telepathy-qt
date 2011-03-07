@@ -212,11 +212,35 @@ bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
 }
 
 /**
+ * \deprecated Use contactSearches() instead.
+ */
+bool ConnectionCapabilities::contactSearch()
+{
+    return contactSearches();
+}
+
+/**
+ * \deprecated Use contactSearchesWithSpecificServer() instead.
+ */
+bool ConnectionCapabilities::contactSearchWithSpecificServer() const
+{
+    return contactSearchesWithSpecificServer();
+}
+
+/**
+ * \deprecated Use contactSearchesWithLimit() instead.
+ */
+bool ConnectionCapabilities::contactSearchWithLimit() const
+{
+    return contactSearchesWithLimit();
+}
+
+/**
  * Return whether creating a ContactSearch channel is supported.
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::contactSearch()
+bool ConnectionCapabilities::contactSearches() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
@@ -232,7 +256,7 @@ bool ConnectionCapabilities::contactSearch()
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::contactSearchWithSpecificServer() const
+bool ConnectionCapabilities::contactSearchesWithSpecificServer() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
@@ -248,7 +272,7 @@ bool ConnectionCapabilities::contactSearchWithSpecificServer() const
  *
  * \return \c true if supported, \c false otherwise.
  */
-bool ConnectionCapabilities::contactSearchWithLimit() const
+bool ConnectionCapabilities::contactSearchesWithLimit() const
 {
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
