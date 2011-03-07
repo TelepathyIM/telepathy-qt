@@ -837,8 +837,6 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             continue;
         }
 
-        contact->setSubscriptionState(SubscriptionStateNo);
-        contact->setPublishState(SubscriptionStateNo);
         cachedAllKnownContacts.remove(contact);
         removed << contact;
     }
@@ -846,6 +844,11 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
     if (!added.isEmpty() || !removed.isEmpty()) {
         emit contactManager->allKnownContactsChanged(added, removed,
                 Channel::GroupMemberChangeDetails());
+    }
+
+    foreach (const Tp::ContactPtr &contact, removed) {
+        contact->setSubscriptionState(SubscriptionStateNo);
+        contact->setPublishState(SubscriptionStateNo);
     }
 
     processingContactListChanges = false;
