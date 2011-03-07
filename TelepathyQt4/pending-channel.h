@@ -38,6 +38,7 @@ namespace Tp
 {
 
 class Connection;
+class HandledChannelNotifier;
 
 class TELEPATHY_QT4_EXPORT PendingChannel : public PendingOperation
 {
@@ -61,18 +62,33 @@ public:
 
     ChannelPtr channel() const;
 
+    HandledChannelNotifier *handledChannelNotifier() const;
+
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionCreateChannelFinished(
+            QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionEnsureChannelFinished(
+            QDBusPendingCallWatcher *watcher);
     TELEPATHY_QT4_NO_EXPORT void onChannelReady(Tp::PendingOperation *op);
 
+    TELEPATHY_QT4_NO_EXPORT void onHandlerError(const QString &errorName,
+            const QString &errorMessage);
+    TELEPATHY_QT4_NO_EXPORT void onHandlerChannelReceived(
+            const Tp::ChannelPtr &channel);
+    TELEPATHY_QT4_NO_EXPORT void onAccountCreateChannelFinished(
+            Tp::PendingOperation *op);
+
 private:
+    friend class Account;
     friend class ConnectionLowlevel;
 
     TELEPATHY_QT4_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
             const QString &errorName, const QString &errorMessage);
     TELEPATHY_QT4_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
             const QVariantMap &request, bool create);
+    TELEPATHY_QT4_NO_EXPORT PendingChannel(const AccountPtr &account,
+            const QVariantMap &request, const QDateTime &userActionTime,
+            bool create);
 
     struct Private;
     friend struct Private;

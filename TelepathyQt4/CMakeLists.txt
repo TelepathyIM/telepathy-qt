@@ -53,6 +53,7 @@ set(telepathy_qt4_SRCS
     fixed-feature-factory.cpp
     future.cpp
     future-internal.h
+    handled-channel-notifier.cpp
     incoming-file-transfer-channel.cpp
     key-file.cpp
     location-info.cpp
@@ -87,6 +88,8 @@ set(telepathy_qt4_SRCS
     requestable-channel-class-spec.cpp
     ready-object.cpp
     referenced-handles.cpp
+    request-temporary-handler-internal.cpp
+    request-temporary-handler-internal.h
     room-list-channel.cpp
     streamed-media-channel.cpp
     test-backdoors.cpp
@@ -252,6 +255,8 @@ set(telepathy_qt4_HEADERS
     generic-property-filter.h
     Global
     global.h
+    HandledChannelNotifier
+    handled-channel-notifier.h
     IncomingFileTransferChannel
     incoming-file-transfer-channel.h
     IntrospectableInterface
@@ -400,6 +405,7 @@ set(telepathy_qt4_MOC_SRCS
     dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
     file-transfer-channel.h
+    handled-channel-notifier.h
     incoming-file-transfer-channel.h
     object.h
     outgoing-file-transfer-channel.h
@@ -419,6 +425,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-variant-map.h
     profile-manager.h
     readiness-helper.h
+    request-temporary-handler-internal.h
     room-list-channel.h
     simple-pending-operations.h
     streamed-media-channel.h
@@ -549,7 +556,8 @@ endforeach(moc_src ${telepathy_qt4_MOC_SRCS})
 target_link_libraries(telepathy-qt4
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
-    ${QT_QTNETWORK_LIBRARIES})
+    ${QT_QTNETWORK_LIBRARIES}
+    ${QT_QTXML_LIBRARIES})
 
 if (ENABLE_COMPILER_COVERAGE)
     target_link_libraries(telepathy-qt4 gcov)

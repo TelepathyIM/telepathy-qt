@@ -106,7 +106,7 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
                     << "because the Channel Dispatcher service in use is too old";
             }
         }
-        
+
         if (!watcher) {
             watcher = new QDBusPendingCallWatcher(
                     channelDispatcherInterface->CreateChannel(

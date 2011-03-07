@@ -60,25 +60,23 @@ public:
     FileTransferChannelCreationProperties &setLastModificationTime(
             const QDateTime &lastModificationTime);
 
-private:
-    friend class Account;
-
     /* mandatory parameters */
-    TELEPATHY_QT4_NO_EXPORT QString suggestedFileName() const;
-    TELEPATHY_QT4_NO_EXPORT QString contentType() const;
-    TELEPATHY_QT4_NO_EXPORT qulonglong size() const;
+    QString suggestedFileName() const;
+    QString contentType() const;
+    qulonglong size() const;
 
     /* optional parameters */
-    TELEPATHY_QT4_NO_EXPORT bool hasContentHash() const;
-    TELEPATHY_QT4_NO_EXPORT FileHashType contentHashType() const;
-    TELEPATHY_QT4_NO_EXPORT QString contentHash() const;
+    bool hasContentHash() const;
+    FileHashType contentHashType() const;
+    QString contentHash() const;
 
-    TELEPATHY_QT4_NO_EXPORT bool hasDescription() const;
-    TELEPATHY_QT4_NO_EXPORT QString description() const;
+    bool hasDescription() const;
+    QString description() const;
 
-    TELEPATHY_QT4_NO_EXPORT bool hasLastModificationTime() const;
-    TELEPATHY_QT4_NO_EXPORT QDateTime lastModificationTime() const;
+    bool hasLastModificationTime() const;
+    QDateTime lastModificationTime() const;
 
+private:
     struct Private;
     friend struct Private;
     QSharedDataPointer<Private> mPriv;

@@ -7,13 +7,19 @@
 #include <QString>
 #include <QVariantMap>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/ChannelRequestHints>
+#include <TelepathyQt4/Client>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/Debug>
+#include <TelepathyQt4/HandledChannelNotifier>
 #include <TelepathyQt4/PendingAccount>
+#include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingChannelRequest>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Types>
@@ -23,6 +29,8 @@
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 
+#include <tests/lib/glib/contacts-conn.h>
+#include <tests/lib/glib/echo/chan.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
@@ -77,7 +85,7 @@ public:
           mAccount(account), mUserActionTime(userActionTime),
           mPreferredHandler(preferredHandler), mRequests(requests),
           mInterfaces(interfaces), mShouldFail(shouldFail),
-          mProceedNoop(false), mHints(hints)
+          mProceedNoop(proceedNoop), mHints(hints)
     {
     }
 
@@ -88,10 +96,10 @@ public:
     void setChan(const QString &connPath, const QVariantMap &connProps,
             const QString &chanPath, const QVariantMap &chanProps)
     {
-        this->mConnPath = connPath;
-        this->mConnProps = connProps;
-        this->mChanPath = chanPath;
-        this->mChanProps = chanProps;
+        mConnPath = connPath;
+        mConnProps = connProps;
+        mChanPath = chanPath;
+        mChanProps = chanProps;
     }
 
 public: // Properties
@@ -225,8 +233,12 @@ class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
 
 public:
     ChannelDispatcherAdaptor(const QDBusConnection &bus, QObject *parent)
-        : QDBusAbstractAdaptor(parent), mCurRequest(0), mBus(bus),
-          mRequests(0), mChannelRequestShouldFail(false),
+        : QDBusAbstractAdaptor(parent),
+          mBus(bus),
+          mRequests(0),
+          mCurRequest(0),
+          mInvokeHandler(false),
+          mChannelRequestShouldFail(false),
           mChannelRequestProceedNoop(false)
     {
     }
@@ -235,7 +247,22 @@ public:
     {
     }
 
-    ChannelRequestAdaptor *mCurRequest;
+    void setChan(const QString &connPath, const QVariantMap &connProps,
+            const QString &chanPath, const QVariantMap &chanProps)
+    {
+        mConnPath = connPath;
+        mConnProps = connProps;
+        mChanPath = chanPath;
+        mChanProps = chanProps;
+    }
+
+    void clearChan()
+    {
+        mConnPath = QString();
+        mConnProps.clear();
+        mChanPath = QString();
+        mChanProps.clear();
+    }
 
 public: // Properties
     inline QStringList Interfaces() const
@@ -289,6 +316,7 @@ private:
             const QString &preferredHandler, const QVariantMap &hints = QVariantMap())
     {
         QObject *request = new QObject(this);
+
         mCurRequest = new ChannelRequestAdaptor(
                 account,
                 userActionTime,
@@ -299,18 +327,47 @@ private:
                 mChannelRequestProceedNoop,
                 hints,
                 request);
-        QString channelRequestPath =
-            QString(QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/_%1"))
+        mCurRequest->setChan(mConnPath, mConnProps, mChanPath, mChanProps);
+        mCurRequestPath = QString(QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/_%1"))
                 .arg(mRequests++);
         mBus.registerService(QLatin1String("org.freedesktop.Telepathy.ChannelDispatcher"));
-        mBus.registerObject(channelRequestPath, request);
-        return QDBusObjectPath(channelRequestPath);
+        mBus.registerObject(mCurRequestPath, request);
+
+        mCurPreferredHandler = preferredHandler;
+
+        if (mInvokeHandler && !mConnPath.isEmpty() && !mChanPath.isEmpty()) {
+            invokeHandler(userActionTime);
+        }
+
+        return QDBusObjectPath(mCurRequestPath);
+    }
+
+    void invokeHandler(const qulonglong &userActionTime)
+    {
+        QString channelHandlerPath = QString(QLatin1String("/%1")).arg(mCurPreferredHandler);
+        channelHandlerPath.replace(QLatin1Char('.'), QLatin1Char('/'));
+        Client::ClientHandlerInterface *clientHandlerInterface =
+            new Client::ClientHandlerInterface(mBus, mCurPreferredHandler,
+                    channelHandlerPath, this);
+
+        ChannelDetails channelDetails = { QDBusObjectPath(mChanPath), mChanProps };
+        clientHandlerInterface->HandleChannels(mCurRequest->Account(),
+                QDBusObjectPath(mConnPath),
+                ChannelDetailsList() << channelDetails,
+                ObjectPathList() << QDBusObjectPath(mCurRequestPath),
+                userActionTime, QVariantMap());
     }
 
     QDBusConnection mBus;
     uint mRequests;
+    ChannelRequestAdaptor *mCurRequest;
+    QString mCurRequestPath;
+    QString mCurPreferredHandler;
+    bool mInvokeHandler;
     bool mChannelRequestShouldFail;
     bool mChannelRequestProceedNoop;
+    QString mConnPath, mChanPath;
+    QVariantMap mConnProps, mChanProps;
 };
 
 class TestAccountChannelDispatcher : public Test
@@ -327,6 +384,9 @@ public:
 
 protected Q_SLOTS:
     void onPendingChannelRequestFinished(Tp::PendingOperation *op);
+    void onPendingChannelFinished(Tp::PendingOperation *op);
+    void onChannelHandledAgain(const QDateTime &userActionTime,
+            const Tp::ChannelRequestHints &hints);
 
 private Q_SLOTS:
     void initTestCase();
@@ -348,11 +408,17 @@ private Q_SLOTS:
     void testEnsureChannelFail();
     void testEnsureChannelCancel();
 
+    void testCreateAndHandleChannel();
+    void testCreateAndHandleChannelNotYours();
+    void testCreateAndHandleChannelFail();
+    void testCreateAndHandleChannelHandledAgain();
+
     void cleanup();
     void cleanupTestCase();
 
 private:
     void testPCR(PendingChannelRequest *pcr);
+    void testPC(PendingChannel *pc);
 
     AccountManagerPtr mAM;
     AccountPtr mAccount;
@@ -362,6 +428,10 @@ private:
     bool mChannelRequestFinished;
     bool mChannelRequestFinishedWithError;
     QString mChannelRequestFinishedErrorName;
+    bool mChannelRequestAndHandleFinished;
+    bool mChannelRequestAndHandleFinishedWithError;
+    QString mChannelRequestAndHandleFinishedErrorName;
+    QDateTime mChannelHandledAgainActionTime;
     ChannelRequestHints mHints;
     QString mConnPath, mChanPath;
     QVariantMap mConnProps, mChanProps;
@@ -373,6 +443,22 @@ void TestAccountChannelDispatcher::onPendingChannelRequestFinished(
     mChannelRequestFinished = true;
     mChannelRequestFinishedWithError = op->isError();
     mChannelRequestFinishedErrorName = op->errorName();
+    mLoop->exit(0);
+}
+
+void TestAccountChannelDispatcher::onPendingChannelFinished(
+        Tp::PendingOperation *op)
+{
+    mChannelRequestAndHandleFinished = true;
+    mChannelRequestAndHandleFinishedWithError = op->isError();
+    mChannelRequestAndHandleFinishedErrorName = op->errorName();
+    mLoop->exit(0);
+}
+
+void TestAccountChannelDispatcher::onChannelHandledAgain(const QDateTime &userActionTime,
+        const Tp::ChannelRequestHints &hints)
+{
+    mChannelHandledAgainActionTime = userActionTime;
     mLoop->exit(0);
 }
 
@@ -429,6 +515,10 @@ void TestAccountChannelDispatcher::init()
     mChannelRequestFinished = false;
     mChannelRequestFinishedWithError = false;
     mChannelRequestFinishedErrorName = QString();
+    mChannelRequestAndHandleFinished = false;
+    mChannelRequestAndHandleFinishedWithError = false;
+    mChannelRequestAndHandleFinishedErrorName = QString();
+    mChannelHandledAgainActionTime = QDateTime();
     QDateTime mUserActionTime = QDateTime::currentDateTime();
     mHints = ChannelRequestHints();
 
@@ -440,10 +530,6 @@ void TestAccountChannelDispatcher::init()
 
 void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
 {
-    if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) {
-        mChannelDispatcherAdaptor->mCurRequest->setChan(mConnPath, mConnProps, mChanPath, mChanProps);
-    }
-
     QVERIFY(connect(pcr,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(onPendingChannelRequestFinished(Tp::PendingOperation *))));
@@ -471,11 +557,38 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
     QCOMPARE(mChannelRequest->hints().allHints(), mHints.allHints());
 }
 
+void TestAccountChannelDispatcher::testPC(PendingChannel *pc)
+{
+    QVERIFY(connect(pc,
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(onPendingChannelFinished(Tp::PendingOperation *))));
+    mLoop->exec(0);
+
+    ChannelPtr channel = pc->channel();
+    if (mChannelDispatcherAdaptor->mInvokeHandler && !mConnPath.isEmpty() && !mChanPath.isEmpty()) {
+        QVERIFY(!channel.isNull());
+        QCOMPARE(channel->connection()->objectPath(), mConnPath);
+        QCOMPARE(channel->objectPath(), mChanPath);
+        QCOMPARE(channel->immutableProperties(), mChanProps);
+    } else {
+        QVERIFY(channel.isNull());
+    }
+}
+
 #define TEST_ENSURE_CHANNEL_SPECIFIC(method_name, shouldFail, proceedNoop, expectedError) \
+    mChannelDispatcherAdaptor->mInvokeHandler = false; \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
+    if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) { \
+        mChannelDispatcherAdaptor->setChan(mConnPath, mConnProps, mChanPath, mChanProps); \
+    } else { \
+        mChannelDispatcherAdaptor->clearChan(); \
+    } \
     PendingChannelRequest *pcr = mAccount->method_name(QLatin1String("foo@bar"), \
             mUserActionTime, QString(), mHints); \
+    if (shouldFail && proceedNoop) { \
+        pcr->cancel(); \
+    } \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) {\
@@ -490,10 +603,19 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
                                  (uint) Tp::HandleTypeContact); \
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), \
                                  QLatin1String("foo@bar")); \
+    mChannelDispatcherAdaptor->mInvokeHandler = false; \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
+    if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) { \
+        mChannelDispatcherAdaptor->setChan(mConnPath, mConnProps, mChanPath, mChanProps); \
+    } else { \
+        mChannelDispatcherAdaptor->clearChan(); \
+    } \
     PendingChannelRequest *pcr = mAccount->method_name(request, \
             mUserActionTime, QString(), mHints); \
+    if (shouldFail && proceedNoop) { \
+        pcr->cancel(); \
+    } \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) {\
@@ -512,7 +634,7 @@ void TestAccountChannelDispatcher::testEnsureTextChatFail()
 
 void TestAccountChannelDispatcher::testEnsureTextChatCancel()
 {
-    TEST_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, false, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, true, true, TELEPATHY_ERROR_CANCELLED);
 }
 
 void TestAccountChannelDispatcher::testEnsureTextChatroom()
@@ -528,7 +650,7 @@ void TestAccountChannelDispatcher::testEnsureTextChatroomFail()
 
 void TestAccountChannelDispatcher::testEnsureTextChatroomCancel()
 {
-    TEST_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, false, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, true, true, TELEPATHY_ERROR_CANCELLED);
 }
 
 void TestAccountChannelDispatcher::testEnsureMediaCall()
@@ -547,7 +669,7 @@ void TestAccountChannelDispatcher::testEnsureMediaCallFail()
 
 void TestAccountChannelDispatcher::testEnsureMediaCallCancel()
 {
-    TEST_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, false, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, true, TELEPATHY_ERROR_CANCELLED);
 }
 
 void TestAccountChannelDispatcher::testCreateChannel()
@@ -562,7 +684,7 @@ void TestAccountChannelDispatcher::testCreateChannelFail()
 
 void TestAccountChannelDispatcher::testCreateChannelCancel()
 {
-    TEST_CREATE_ENSURE_CHANNEL(createChannel, false, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL(createChannel, true, true, TELEPATHY_ERROR_CANCELLED);
 }
 
 void TestAccountChannelDispatcher::testEnsureChannel()
@@ -577,7 +699,144 @@ void TestAccountChannelDispatcher::testEnsureChannelFail()
 
 void TestAccountChannelDispatcher::testEnsureChannelCancel()
 {
-    TEST_CREATE_ENSURE_CHANNEL(ensureChannel, false, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL(ensureChannel, true, true, TELEPATHY_ERROR_CANCELLED);
+}
+
+#define TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(method_name, channelRequestShouldFail, shouldFail, invokeHandler, expectedError) \
+    QVariantMap request; \
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), \
+                                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)); \
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), \
+                                 (uint) Tp::HandleTypeContact); \
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), \
+                                 QLatin1String("foo@bar")); \
+    mChannelDispatcherAdaptor->mInvokeHandler = invokeHandler; \
+    mChannelDispatcherAdaptor->mChannelRequestShouldFail = channelRequestShouldFail; \
+    mChannelDispatcherAdaptor->mChannelRequestProceedNoop = false; \
+    if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) { \
+        mChannelDispatcherAdaptor->setChan(mConnPath, mConnProps, mChanPath, mChanProps); \
+    } else { \
+        mChannelDispatcherAdaptor->clearChan(); \
+    } \
+    PendingChannel *pc = mAccount->method_name(request, mUserActionTime); \
+    testPC(pc); \
+    QCOMPARE(mChannelRequestAndHandleFinishedWithError, shouldFail); \
+    if (shouldFail) {\
+        QCOMPARE(mChannelRequestAndHandleFinishedErrorName, QString(QLatin1String(expectedError))); \
+    }
+
+void TestAccountChannelDispatcher::testCreateAndHandleChannel()
+{
+    mConnPath = QLatin1String("/org/freedesktop/Telepathy/Connection/cmname/proto/account");
+    mChanPath = mConnPath + QLatin1String("/channel");
+    mChanProps = ChannelClassSpec::textChat().allProperties();
+
+    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(createAndHandleChannel, false, false, true, "");
+}
+
+void TestAccountChannelDispatcher::testCreateAndHandleChannelNotYours()
+{
+    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(ensureAndHandleChannel, false, true, false, TP_QT4_ERROR_NOT_YOURS);
+}
+
+void TestAccountChannelDispatcher::testCreateAndHandleChannelFail()
+{
+    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(createAndHandleChannel, true, true, false, TP_QT4_ERROR_NOT_AVAILABLE);
+}
+
+void TestAccountChannelDispatcher::testCreateAndHandleChannelHandledAgain()
+{
+    TpTestsContactsConnection *connService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
+            "account", "me@example.com",
+            "protocol", "example",
+            NULL));
+    QVERIFY(connService != 0);
+    TpBaseConnection *baseConnService = TP_BASE_CONNECTION(connService);
+    QVERIFY(baseConnService != 0);
+
+    gchar *name;
+    gchar *connPath;
+    GError *error = 0;
+
+    QVERIFY(tp_base_connection_register(baseConnService, "example", &name, &connPath, &error));
+    QVERIFY(error == 0);
+
+    QVERIFY(name != 0);
+    QVERIFY(connPath != 0);
+
+    QString connName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
+
+    g_free(name);
+    g_free(connPath);
+
+    ConnectionPtr conn = Connection::create(connName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+    QCOMPARE(conn->isReady(), false);
+
+    QVERIFY(connect(conn->lowlevel()->requestConnect(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(conn->isReady(), true);
+    QCOMPARE(conn->status(), ConnectionStatusConnected);
+
+    // create a Channel by magic, rather than doing D-Bus round-trips for it
+
+    TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(baseConnService,
+            TP_HANDLE_TYPE_CONTACT);
+    guint handle = tp_handle_ensure(contactRepo, "someone@localhost", 0, 0);
+
+    mChanPath = mConnPath + QLatin1String("/TextChannel");
+    QByteArray chanPath(mChanPath.toAscii());
+    ExampleEchoChannel *textChanService = EXAMPLE_ECHO_CHANNEL(g_object_new(
+                EXAMPLE_TYPE_ECHO_CHANNEL,
+                "connection", connService,
+                "object-path", chanPath.data(),
+                "handle", handle,
+                NULL));
+
+    tp_handle_unref(contactRepo, handle);
+
+    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(createAndHandleChannel, false, false, true, "");
+
+    HandledChannelNotifier *notifier = pc->handledChannelNotifier();
+    connect(notifier,
+            SIGNAL(handledAgain(QDateTime,Tp::ChannelRequestHints)),
+            SLOT(onChannelHandledAgain(QDateTime,Tp::ChannelRequestHints)));
+    QDateTime timestamp(QDate::currentDate());
+
+    mChannelDispatcherAdaptor->invokeHandler(timestamp.toTime_t());
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChannelHandledAgainActionTime, timestamp);
+
+    // Disconnect and wait for the readiness change
+    QVERIFY(connect(conn->lowlevel()->requestDisconnect(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    if (conn->isValid()) {
+        QVERIFY(connect(conn.data(),
+                        SIGNAL(invalidated(Tp::DBusProxy *,
+                                           const QString &, const QString &)),
+                        mLoop,
+                        SLOT(quit())));
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    if (textChanService != 0) {
+        g_object_unref(textChanService);
+        textChanService = 0;
+    }
+
+    if (connService != 0) {
+        baseConnService = 0;
+        g_object_unref(connService);
+        connService = 0;
+    }
 }
 
 void TestAccountChannelDispatcher::cleanup()
