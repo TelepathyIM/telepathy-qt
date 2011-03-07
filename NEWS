@@ -13,6 +13,9 @@ Enhancements:
    slightly faster load times
  * Deprecated ConnectionCapabilities contact search related methods with
    singular names and added plural versions of them, for API consistency.
+ * Contacts publish/subscription state updates for removed contacts are only
+   signalled after the ContactManager::allKnownContactsChanged signal is
+   emitted.
 
 Fixes:
  * Redundant Contact::avatarDataChanged() emissions
