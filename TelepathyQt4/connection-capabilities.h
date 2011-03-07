@@ -47,9 +47,13 @@ public:
     bool conferenceTextChatrooms() const;
     bool conferenceTextChatroomsWithInvitees() const;
 
-    bool contactSearch();
-    bool contactSearchWithSpecificServer() const;
-    bool contactSearchWithLimit() const;
+    bool contactSearches() const;
+    bool contactSearchesWithSpecificServer() const;
+    bool contactSearchesWithLimit() const;
+
+    TELEPATHY_QT4_DEPRECATED bool contactSearch();
+    TELEPATHY_QT4_DEPRECATED bool contactSearchWithSpecificServer() const;
+    TELEPATHY_QT4_DEPRECATED bool contactSearchWithLimit() const;
 
 private:
     friend class Account;

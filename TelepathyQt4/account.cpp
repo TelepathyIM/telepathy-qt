@@ -872,7 +872,7 @@ Account::~Account()
 }
 
 /**
- * Get the connection factory used by this account.
+ * Return the connection factory used by this account.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
@@ -887,7 +887,7 @@ ConnectionFactoryConstPtr Account::connectionFactory() const
 }
 
 /**
- * Get the channel factory used by this account.
+ * Return the channel factory used by this account.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
@@ -902,7 +902,7 @@ ChannelFactoryConstPtr Account::channelFactory() const
 }
 
 /**
- * Get the contact factory used by this account.
+ * Return the contact factory used by this account.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
