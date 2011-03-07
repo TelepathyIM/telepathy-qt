@@ -38,8 +38,11 @@ public:
     ContactCapabilities();
     virtual ~ContactCapabilities();
 
+    bool streamTubes(const QString &service) const;
+    QStringList streamTubeServices() const;
+
     // later:
-    // QStringList streamTubeServices() const;
+    // bool dbusTubes(const QString &service) const;
     // QStringList dbusTubeServices() const;
 
 private:
