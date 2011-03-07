@@ -1,19 +1,27 @@
-telepathy-qt4 0.5.9 (UNRELEASED)
+telepathy-qt4 0.5.9 (2011-03-07)
 =================================
 
-The "..." release.
+The "planned engineering works for the last year" release.
 
 Enhancements:
+ * fd.o #28367 - Added High-level API for StreamTube channels
+ * fd.o #34228 - Added API on Account for requesting Channels and handling them
+   yourself, implemented properly using the Channel Dispatcher service
  * Account::allowedPresenceStatuses() now has fallbacks to include "available"
    and "offline" when that makes sense
  * Removed some more private symbols from the shared library, resulting in
    slightly faster load times
 
 Fixes:
+ * Redundant Contact::avatarDataChanged() emissions
  * Connection::becomeReady() never finishing in state Connecting, which for
    example prevents handling ServerAuthentication channels. NOTE: any code
    incorrectly relying on the old buggy behavior of becomeReady() only finishing
    once the connection goes Connected or Disconnected may need adjustment.
+ * Linking errors referencing the QtXml library
+ * Spec-incompliant building of Client names when uniquifying is requested from
+   ClientRegistrar
+ * Sensitive data in Account parameters being included in debug logs
 
 telepathy-qt4 0.5.8 (2011-02-22)
 =================================
