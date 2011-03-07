@@ -189,6 +189,7 @@ void StreamTubeChannel::Private::introspectStreamTube(
  */
 const Feature StreamTubeChannel::FeatureStreamTube =
         Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0);
+
 /**
  * Feature used in order to monitor connections to this tube.
  *
@@ -232,7 +233,6 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
 {
     mPriv->init();
 }
-
 
 /**
  * Class destructor.
@@ -572,7 +572,7 @@ UIntList StreamTubeChannel::connections() const
 }
 
 /**
- * This method returns the local address used by this StreamTube as a QString.
+ * Return the local address used by this StreamTube as a QString.
  *
  * This method will return a meaningful value only if the socket is local, hence when #addressType
  * returns either SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
@@ -594,7 +594,7 @@ QString StreamTubeChannel::localAddress() const
 }
 
 /**
- * This method returns the IP address/port combination used by this StreamTube as a QHostAddress.
+ * Return the IP address/port combination used by this StreamTube as a QHostAddress.
  *
  * This method will return a meaningful value only if the socket is an IP socket, hence when
  * #addressType returns either SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
@@ -616,7 +616,7 @@ QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 }
 
 /**
- * This method returns the type of socket this StreamTube is using.
+ * Return the type of socket this StreamTube is using.
  *
  * \return The type of socket this StreamTube is using
  *

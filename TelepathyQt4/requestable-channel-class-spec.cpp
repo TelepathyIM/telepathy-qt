@@ -342,6 +342,29 @@ RequestableChannelClassSpec RequestableChannelClassSpec::contactSearchWithSpecif
     return spec;
 }
 
+RequestableChannelClassSpec RequestableChannelClassSpec::streamTube(const QString &service)
+{
+    static RequestableChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        RequestableChannelClass rcc;
+        rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE);
+        rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                (uint) HandleTypeContact);
+        spec = RequestableChannelClassSpec(rcc);
+    }
+
+    if (service.isEmpty()) {
+        return spec;
+    }
+
+    RequestableChannelClass rcc = spec.bareClass();
+    rcc.fixedProperties.insert(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
+            service);
+    return RequestableChannelClassSpec(rcc);
+}
+
 RequestableChannelClassSpec &RequestableChannelClassSpec::operator=(const RequestableChannelClassSpec &other)
 {
     this->mPriv = other.mPriv;

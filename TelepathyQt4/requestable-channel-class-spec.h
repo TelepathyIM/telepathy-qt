@@ -62,6 +62,8 @@ public:
     static RequestableChannelClassSpec contactSearchWithLimit();
     static RequestableChannelClassSpec contactSearchWithSpecificServerAndLimit();
 
+    static RequestableChannelClassSpec streamTube(const QString &service = QString());
+
     bool isValid() const { return mPriv.constData() != 0; }
 
     RequestableChannelClassSpec &operator=(const RequestableChannelClassSpec &other);

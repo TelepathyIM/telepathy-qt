@@ -82,4 +82,45 @@ ContactCapabilities::~ContactCapabilities()
 {
 }
 
+/**
+ * Return whether creating a StreamTube channel, using the given \a service, by providing a
+ * contact identifier is supported.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ContactCapabilities::streamTubes(const QString &service) const
+{
+    RequestableChannelClassSpec streamTubeSpec = RequestableChannelClassSpec::streamTube(service);
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.supports(streamTubeSpec)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return the supported StreamTube services.
+ *
+ * \return A list of supported StreamTube services.
+ */
+QStringList ContactCapabilities::streamTubeServices() const
+{
+    QSet<QString> ret;
+
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.hasFixedProperty(
+                    TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"))) {
+            ret << rccSpec.fixedProperty(
+                    TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service")).toString();
+        }
+    }
+
+    return ret.toList();
+}
+
 } // Tp

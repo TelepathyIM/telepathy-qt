@@ -57,9 +57,6 @@ public:
 
     // later: FIXME TODO why not now?
     // QList<FileHashType> fileTransfersRequireHash() const;
-    //
-    // bool streamTubes() const;
-    // bool dBusTubes() const;
 
 protected:
     CapabilitiesBase(bool specificToContact);

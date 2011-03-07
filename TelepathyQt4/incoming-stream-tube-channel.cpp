@@ -204,7 +204,7 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
 }
 
 /**
- * Accept an incoming Stream tube as a TCP socket
+ * Accept an incoming Stream tube as a TCP socket.
  *
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the \c LocalPending state.
@@ -345,7 +345,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
 }
 
 /**
- * Accept an incoming Stream tube as a TCP socket
+ * Accept an incoming Stream tube as a TCP socket.
  *
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the \c LocalPending state.
@@ -374,7 +374,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
 }
 
 /**
- * Accept an incoming Stream tube as a Unix socket
+ * Accept an incoming Stream tube as a Unix socket.
  *
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the \c LocalPending state.
@@ -461,7 +461,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 }
 
 /**
- * This method returns the local address of the opened tube.
+ * Return the local address of the opened tube.
  *
  * Calling this method when the tube has not been opened will cause it
  * to return an unmeaningful value. The same will happen if the tube has been accepted as a TCP
@@ -482,7 +482,7 @@ QString IncomingStreamTubeChannel::localAddress() const
 }
 
 /**
- * This method returns the IP address/port combination of the opened tube.
+ * Return the IP address/port combination of the opened tube.
  *
  * Calling this method when the tube has not been opened will cause it
  * to return an unmeaningful value. The same will happen if the tube has been accepted as an Unix
