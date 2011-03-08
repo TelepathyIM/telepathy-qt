@@ -4,10 +4,13 @@ telepathy-qt4 0.5.10 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Added Connection::FeatureConnected to help applications that only care about
+   connected connections. Setting this feature on the ConnectionFactory used
+   will make sure all connections signalled by the library are connected.
 
 Fixes:
- * ...
+ * Ensure FeatureRoster is ready before setting ContactManager state to
+   success.
 
 telepathy-qt4 0.5.9 (2011-03-07)
 =================================
