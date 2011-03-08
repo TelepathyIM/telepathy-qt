@@ -33,9 +33,10 @@ public:
     { }
 
 protected Q_SLOTS:
-    void expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason);
+    void expectConnReady(Tp::ConnectionStatus);
     void expectConnInvalidated();
     void expectPresenceAvailable(const Tp::SimplePresence &);
+    void onRequestConnectFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
@@ -51,28 +52,29 @@ private:
     QString mConnName, mConnPath;
     TpTestsContactsConnection *mConnService;
     ConnectionPtr mConn;
+    QList<ConnectionStatus> mStatuses;
 };
 
-void TestConnBasics::expectConnReady(Tp::ConnectionStatus newStatus,
-        Tp::ConnectionStatusReason newStatusReason)
+void TestConnBasics::expectConnReady(Tp::ConnectionStatus newStatus)
 {
     qDebug() << "connection changed to status" << newStatus;
     switch (newStatus) {
     case ConnectionStatusDisconnected:
         qWarning() << "Disconnected";
-        mLoop->exit(1);
         break;
     case ConnectionStatusConnecting:
-        /* do nothing */
+        QCOMPARE(mConn->isReady(Connection::FeatureConnected), false);
+        mStatuses << newStatus;
+        qDebug() << "Connecting";
         break;
     case ConnectionStatusConnected:
-        qDebug() << "Ready";
-        mLoop->exit(0);
+        QCOMPARE(mConn->isReady(Connection::FeatureConnected), true);
+        mStatuses << newStatus;
+        qDebug() << "Connected";
         break;
     default:
         qWarning().nospace() << "What sort of status is "
             << newStatus << "?!";
-        mLoop->exit(2);
         break;
     }
 }
@@ -91,6 +93,13 @@ void TestConnBasics::expectPresenceAvailable(const Tp::SimplePresence &presence)
         return;
     }
     mLoop->exit(1);
+}
+
+void TestConnBasics::onRequestConnectFinished(Tp::PendingOperation *op)
+{
+    QCOMPARE(mConn->status(), ConnectionStatusConnected);
+    QVERIFY(mStatuses.contains(ConnectionStatusConnected));
+    mLoop->exit(0);
 }
 
 void TestConnBasics::initTestCase()
@@ -135,27 +144,31 @@ void TestConnBasics::init()
             ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->lowlevel()->requestConnect();
+    QVERIFY(connect(mConn.data(),
+                    SIGNAL(statusChanged(Tp::ConnectionStatus)),
+                    SLOT(expectConnReady(Tp::ConnectionStatus))));
 
-    qDebug() << "waiting connection to become ready";
-    QVERIFY(connect(mConn->becomeReady(),
+    qDebug() << "waiting connection to become connected";
+    PendingOperation *pr = mConn->becomeReady(Connection::FeatureConnected);
+    QVERIFY(connect(pr,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+
+    PendingOperation *pc = mConn->lowlevel()->requestConnect();
+    QVERIFY(connect(pc,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onRequestConnectFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
+    QCOMPARE(pr->isFinished(), true);
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(pc->isFinished(), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureConnected), true);
     qDebug() << "connection is now ready";
 
-    if (mConn->status() != ConnectionStatusConnected) {
-        QVERIFY(connect(mConn.data(),
-                        SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
-                        SLOT(expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason))));
-        QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn.data(),
-                           SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
-                           this,
-                           SLOT(expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason))));
-        QCOMPARE(mConn->status(), ConnectionStatusConnected);
-    }
+    QVERIFY(disconnect(mConn.data(),
+                       SIGNAL(statusChanged(Tp::ConnectionStatus)),
+                       this,
+                       SLOT(expectConnReady(Tp::ConnectionStatus))));
 }
 
 void TestConnBasics::testBasics()
