@@ -80,6 +80,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     static void introspectRoster(Private *self);
     static void introspectRosterGroups(Private *self);
     static void introspectBalance(Private *self);
+    static void introspectConnected(Private *self);
 
     void continueMainIntrospection();
     void setCurrentStatus(uint status);
@@ -271,6 +272,17 @@ Connection::Private::Private(Connection *parent,
         (ReadinessHelper::IntrospectFunc) &Private::introspectBalance,
         this);
     introspectables[FeatureAccountBalance] = introspectableBalance;
+
+    ReadinessHelper::Introspectable introspectableConnected(
+        QSet<uint>() << (uint) -1 <<
+                        ConnectionStatusDisconnected <<
+                        ConnectionStatusConnecting <<
+                        ConnectionStatusConnected,                                                  // makesSenseForStatuses
+        Features() << FeatureCore,                                                                  // dependsOnFeatures (none)
+        QStringList(),                                                                              // dependsOnInterfaces (none)
+        (ReadinessHelper::IntrospectFunc) &Private::introspectConnected,
+        this);
+    introspectables[FeatureConnected] = introspectableConnected;
 
     readinessHelper->addIntrospectables(introspectables);
     readinessHelper->setCurrentStatus(status);
@@ -527,6 +539,13 @@ void Connection::Private::introspectBalance(Connection::Private *self)
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotBalance(QDBusPendingCallWatcher*)));
+}
+
+void Connection::Private::introspectConnected(Connection::Private *self)
+{
+    if (self->pendingStatus == ConnectionStatusConnected) {
+        self->readinessHelper->setIntrospectCompleted(FeatureConnected, true);
+    }
 }
 
 void Connection::Private::continueMainIntrospection()
@@ -883,6 +902,16 @@ const Feature Connection::FeatureRosterGroups = Feature(QLatin1String(Connection
  * See account balance specific methods' documentation for more details.
  */
 const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connection::staticMetaObject.className()), 6);
+
+/**
+ * When this feature is prepared, it means that the connection status() is
+ * ConnectionStatusConnected.
+ *
+ * Note that if ConnectionFactory is being used with FeatureConnected set, Connection objects will
+ * only be signalled by the library when the corresponding connection is in status()
+ * ConnectionStatusConnected.
+ */
+const Feature Connection::FeatureConnected = Feature(QLatin1String(Connection::staticMetaObject.className()), 7);
 
 /**
  * Create a new connection object using QDBusConnection::sessionBus().
