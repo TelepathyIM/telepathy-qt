@@ -14,9 +14,9 @@ Version control
 The current development version of telepathy-qt4 is available from the
 'master' branch in the git repository:
 
-  <git://git.collabora.co.uk/git/telepathy-qt4.git>
-  <git+ssh://git.collabora.co.uk/git/telepathy-qt4.git> (for committers)
-  <http://git.collabora.co.uk/?p=telepathy-qt4.git> (gitweb)
+  <git://anongit.freedesktop.org/telepathy/telepathy-qt4>
+  <ssh://git.freedesktop.org/git/telepathy/telepathy-qt4> (for committers)
+  <http://cgit.freedesktop.org/telepathy/telepathy-qt4/> (cgit)
 
 Stable branches are available from branches with names like
 'telepathy-qt4-0.2' in the same repository.
@@ -94,9 +94,9 @@ Submitting patches
 Patches should be made as (preferably) git branches or (last resort) -uNr diffs
 against upstream git master, as found at:
 
-  git://git.collabora.co.uk/git/telepathy-qt4.git
-  git+ssh://git.collabora.co.uk/git/telepathy-qt4.git (for committers)
-  http://git.collabora.co.uk/?p=telepathy-qt4.git (gitweb)
+  git://anongit.freedesktop.org/telepathy/telepathy-qt4
+  ssh://git.freedesktop.org/git/telepathy/telepathy-qt4 (for committers)
+  http://cgit.freedesktop.org/telepathy/telepathy-qt4/ (cgit)
 
 Patches can be announced at the freedesktop.org bugzilla, using the product
 "Telepathy" and component "tp-qt4":
