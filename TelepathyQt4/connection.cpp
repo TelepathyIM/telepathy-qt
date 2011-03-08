@@ -906,6 +906,10 @@ const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connecti
 /**
  * When this feature is prepared, it means that the connection status() is
  * ConnectionStatusConnected.
+ *
+ * Note that if ConnectionFactory is being used with FeatureConnected set, Connection objects will
+ * only be signalled by the library when the corresponding connection is in status()
+ * ConnectionStatusConnected.
  */
 const Feature Connection::FeatureConnected = Feature(QLatin1String(Connection::staticMetaObject.className()), 7);
 
