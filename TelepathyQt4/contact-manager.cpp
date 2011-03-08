@@ -196,6 +196,7 @@ ContactListState ContactManager::state() const
 Contacts ContactManager::allKnownContacts() const
 {
     if (!connection()->isReady(Connection::FeatureRoster)) {
+        warning() << "Calling allKnownContacts() before FeatureRoster is ready";
         return Contacts();
     }
 

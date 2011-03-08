@@ -95,6 +95,7 @@ private Q_SLOTS:
     void onContactListStateChanged(uint state);
     void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
             const Tp::UIntList &removals);
+    void setStateSuccess();
 
     void onContactListNewContactsConstructed(Tp::PendingOperation *op);
     void onContactListGroupsChanged(const Tp::UIntList &contacts,

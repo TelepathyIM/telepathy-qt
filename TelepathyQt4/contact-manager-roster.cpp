@@ -705,17 +705,29 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
     }
 
     // We may have been in state Failure and then Success, and FeatureRoster is already ready
-    contactListState = pendingContactListState;
-    debug() << "State is now success";
-    emit contactManager->stateChanged((Tp::ContactListState) contactListState);
-
     if (introspectPendingOp) {
+        // Will emit stateChanged() signal when the op is finished in idle
+        // callback. This is to ensure FeatureRoster is marked ready.
+        connect(introspectPendingOp,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(setStateSuccess()));
         introspectPendingOp->setFinished();
         introspectPendingOp = 0;
+    } else {
+        setStateSuccess();
     }
 
     if (groupsReintrospectionRequired) {
         introspectGroups();
+    }
+}
+
+void ContactManager::Roster::setStateSuccess()
+{
+    if (contactManager->connection()->isValid()) {
+        debug() << "State is now success";
+        contactListState = ContactListStateSuccess;
+        emit contactManager->stateChanged((Tp::ContactListState) contactListState);
     }
 }
 
