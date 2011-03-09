@@ -1,7 +1,7 @@
-telepathy-qt4 0.5.10 (UNRELEASED)
+telepathy-qt4 0.5.10 (2011-03-09)
 =================================
 
-The "..." release.
+The "am I connected?" release.
 
 Enhancements:
  * Added Connection::FeatureConnected to help applications that only care about
