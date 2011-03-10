@@ -1058,12 +1058,12 @@ void ContactManager::Roster::onContactListChannelReady()
         updateContactsPresenceState();
 
         Q_ASSERT(introspectPendingOp);
-        introspectPendingOp->setFinished();
         // Will emit stateChanged() signal when the op is finished in idle
         // callback. This is to ensure FeatureRoster is marked ready.
         connect(introspectPendingOp,
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(setStateSuccess()));
+        introspectPendingOp->setFinished();
         introspectPendingOp = 0;
     }
 }
