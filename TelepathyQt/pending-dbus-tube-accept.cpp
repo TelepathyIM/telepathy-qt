@@ -42,7 +42,7 @@ struct TP_QT_NO_EXPORT PendingDBusTubeAccept::Private
     IncomingDBusTubeChannelPtr tube;
 };
 
-PendingDBusTubeAccept::Private::Private(PendingDBusTubeAccept* parent)
+PendingDBusTubeAccept::Private::Private(PendingDBusTubeAccept *parent)
     : parent(parent)
 {
 }
@@ -51,7 +51,7 @@ PendingDBusTubeAccept::Private::~Private()
 {
 }
 
-void PendingDBusTubeAccept::onAcceptFinished(PendingOperation* op)
+void PendingDBusTubeAccept::onAcceptFinished(PendingOperation *op)
 {
     if (op->isError()) {
         // Fail
@@ -62,7 +62,7 @@ void PendingDBusTubeAccept::onAcceptFinished(PendingOperation* op)
     debug() << "Accept tube finished successfully";
 
     // Now get the address and set it
-    PendingString *ps = qobject_cast< PendingString* >(op);
+    PendingString *ps = qobject_cast<PendingString*>(op);
     mPriv->tube->mPriv->address = ps->result();
 
     // It might have been already opened - check
@@ -89,7 +89,7 @@ void PendingDBusTubeAccept::onTubeStateChanged(TubeChannelState state)
 }
 
 PendingDBusTubeAccept::PendingDBusTubeAccept(
-        PendingString* string,
+        PendingString *string,
         const IncomingDBusTubeChannelPtr &object)
     : PendingOperation(object)
     , mPriv(new PendingDBusTubeAccept::Private(this))
@@ -106,8 +106,8 @@ PendingDBusTubeAccept::PendingDBusTubeAccept(
 }
 
 PendingDBusTubeAccept::PendingDBusTubeAccept(
-        const QString& errorName,
-        const QString& errorMessage,
+        const QString &errorName,
+        const QString &errorMessage,
         const IncomingDBusTubeChannelPtr &object)
     : PendingOperation(object)
     , mPriv(new PendingDBusTubeAccept::Private(this))

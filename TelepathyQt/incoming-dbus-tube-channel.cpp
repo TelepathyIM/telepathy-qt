@@ -21,18 +21,20 @@
 #include <TelepathyQt/IncomingDBusTubeChannel>
 #include "TelepathyQt/incoming-dbus-tube-channel-internal.h"
 
+#include "TelepathyQt/_gen/incoming-dbus-tube-channel.moc.hpp"
+
+#include "TelepathyQt/debug-internal.h"
+
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/PendingDBusTubeAccept>
 #include <TelepathyQt/PendingString>
 #include <TelepathyQt/Types>
 
-#include "TelepathyQt/debug-internal.h"
-
 namespace Tp
 {
 
-IncomingDBusTubeChannel::Private::Private(IncomingDBusTubeChannel* parent)
+IncomingDBusTubeChannel::Private::Private(IncomingDBusTubeChannel *parent)
         : parent(parent)
 {
 }
@@ -121,7 +123,7 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingDBusTubeAccept* IncomingDBusTubeChannel::acceptTube(
+PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(
         bool requireCredentials)
 {
     SocketAccessControl accessControl = requireCredentials ?
@@ -172,5 +174,3 @@ QString IncomingDBusTubeChannel::address() const
 }
 
 }
-
-#include "TelepathyQt/_gen/incoming-dbus-tube-channel.moc.hpp"

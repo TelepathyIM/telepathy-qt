@@ -42,20 +42,19 @@ public:
 
     QString address() const;
 
+private Q_SLOTS:
+    TP_QT_NO_EXPORT void onOfferFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onTubeStateChanged(Tp::TubeChannelState state);
+
 private:
     PendingDBusTubeOffer(PendingString *string, const OutgoingDBusTubeChannelPtr &object);
     PendingDBusTubeOffer(const QString &errorName, const QString &errorMessage,
                          const OutgoingDBusTubeChannelPtr &object);
 
     struct Private;
+    friend class OutgoingDBusTubeChannel;
     friend struct Private;
     Private *mPriv;
-
-    friend class OutgoingDBusTubeChannel;
-
-private Q_SLOTS:
-    TP_QT_NO_EXPORT void onOfferFinished(Tp::PendingOperation *op);
-    TP_QT_NO_EXPORT void onTubeStateChanged(Tp::TubeChannelState state);
 };
 
 }

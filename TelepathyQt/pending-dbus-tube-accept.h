@@ -52,10 +52,9 @@ private:
                           const IncomingDBusTubeChannelPtr &object);
 
     struct Private;
+    friend class IncomingDBusTubeChannel;
     friend class Private;
     Private *mPriv;
-
-    friend class IncomingDBusTubeChannel;
 };
 
 }

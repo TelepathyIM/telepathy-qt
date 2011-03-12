@@ -27,9 +27,9 @@
 
 #include <TelepathyQt/TubeChannel>
 
-
 namespace Tp
 {
+
 
 class DBusTubeChannelPrivate;
 class TP_QT_EXPORT DBusTubeChannel : public TubeChannel
@@ -50,7 +50,7 @@ public:
 
     bool supportsCredentials() const;
 
-    QHash< Tp::ContactPtr, QString > busNames() const;
+    QHash<Tp::ContactPtr, QString> busNames() const;
 
     QString address() const;
 
@@ -61,11 +61,11 @@ protected:
             const QVariantMap &immutableProperties);
 
 Q_SIGNALS:
-    void busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr > &removed);
+    void busNamesChanged(const QHash<ContactPtr, QString> &added, const QList<ContactPtr> &removed);
 
 private Q_SLOTS:
-    void gotDBusTubeProperties(QDBusPendingCallWatcher *watcher);
-    void onDBusNamesChanged(const Tp::DBusTubeParticipants &added, const Tp::UIntList &removed);
+    TP_QT_NO_EXPORT void gotDBusTubeProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onDBusNamesChanged(const Tp::DBusTubeParticipants &added, const Tp::UIntList &removed);
 
 private:
     struct Private;

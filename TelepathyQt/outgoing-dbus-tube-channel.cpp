@@ -21,25 +21,18 @@
 #include <TelepathyQt/OutgoingDBusTubeChannel>
 #include "TelepathyQt/outgoing-dbus-tube-channel-internal.h"
 
+#include "TelepathyQt/_gen/outgoing-dbus-tube-channel.moc.hpp"
+
+#include "TelepathyQt/debug-internal.h"
+
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/PendingDBusTubeOffer>
 #include <TelepathyQt/PendingString>
 #include <TelepathyQt/Types>
 
-#include "TelepathyQt/debug-internal.h"
-
 namespace Tp
 {
-
-OutgoingDBusTubeChannel::Private::Private(OutgoingDBusTubeChannel* parent)
-        : parent(parent)
-{
-}
-
-OutgoingDBusTubeChannel::Private::~Private()
-{
-}
 
 /**
  * \class OutgoingDBusTubeChannel
@@ -120,8 +113,8 @@ OutgoingDBusTubeChannel::~OutgoingDBusTubeChannel()
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingDBusTubeOffer* OutgoingDBusTubeChannel::offerTube(
-        const QVariantMap& parameters,
+PendingDBusTubeOffer *OutgoingDBusTubeChannel::offerTube(
+        const QVariantMap &parameters,
         bool requireCredentials)
 {
     SocketAccessControl accessControl = requireCredentials ?
@@ -173,5 +166,3 @@ QString OutgoingDBusTubeChannel::address() const
 }
 
 }
-
-#include "TelepathyQt/_gen/outgoing-dbus-tube-channel.moc.hpp"

@@ -20,10 +20,12 @@
 
 #include <TelepathyQt/DBusTubeChannel>
 
-#include <TelepathyQt/Connection>
-#include <TelepathyQt/ContactManager>
+#include "TelepathyQt/_gen/dbus-tube-channel.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
+
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ContactManager>
 
 namespace Tp
 {
@@ -47,12 +49,12 @@ struct TP_QT_NO_EXPORT DBusTubeChannel::Private
     // Properties
     UIntList accessControls;
     QString serviceName;
-    QHash< ContactPtr, QString > busNames;
+    QHash<ContactPtr, QString> busNames;
     QString address;
 };
 
 DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
-    : parent(parent)
+        : parent(parent)
 {
     // Initialize readinessHelper + introspectables here
     readinessHelper = parent->readinessHelper();
@@ -101,7 +103,7 @@ void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipant
 }
 
 
-void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher* watcher)
+void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
@@ -122,8 +124,8 @@ void DBusTubeChannel::onDBusNamesChanged(
         const Tp::DBusTubeParticipants &added,
         const Tp::UIntList &removed)
 {
-    QHash< ContactPtr, QString > realAdded;
-    QList< ContactPtr > realRemoved;
+    QHash<ContactPtr, QString> realAdded;
+    QList<ContactPtr> realRemoved;
 
     for (DBusTubeParticipants::const_iterator i = added.constBegin();
          i != added.constEnd();
@@ -146,7 +148,7 @@ void DBusTubeChannel::onDBusNamesChanged(
 }
 
 void DBusTubeChannel::Private::introspectBusNamesMonitoring(
-        DBusTubeChannel::Private* self)
+        DBusTubeChannel::Private *self)
 {
     DBusTubeChannel *parent = self->parent;
 
@@ -168,7 +170,7 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(
 }
 
 void DBusTubeChannel::Private::introspectDBusTube(
-        DBusTubeChannel::Private* self)
+        DBusTubeChannel::Private *self)
 {
     DBusTubeChannel *parent = self->parent;
 
@@ -183,9 +185,9 @@ void DBusTubeChannel::Private::introspectDBusTube(
                     QLatin1String(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE)),
                 parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
             parent,
-            SLOT(gotDBusTubeProperties(QDBusPendingCallWatcher *)));
+            SLOT(gotDBusTubeProperties(QDBusPendingCallWatcher*)));
 }
 
 /**
@@ -210,21 +212,18 @@ void DBusTubeChannel::Private::introspectDBusTube(
  * DBusTubeChannel methods.
  * See specific methods documentation for more details.
  */
-const Feature DBusTubeChannel::FeatureDBusTube =
-Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 0);
+const Feature DBusTubeChannel::FeatureDBusTube = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 0);
 /**
  * Feature used in order to monitor connections to this tube.
  * Please note that this feature makes sense only in Group tubes.
  *
  * %busNamesChanged will be emitted when the participants of this tube change
  */
-const Feature DBusTubeChannel::FeatureBusNamesMonitoring =
-Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 1);
+const Feature DBusTubeChannel::FeatureBusNamesMonitoring = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 1);
 
 // Signals documentation
 /**
- * \fn void DBusTubeChannel::busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr >
-&removed)
+ * \fn void DBusTubeChannel::busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr > &removed)
  *
  * Emitted when the participants of this tube change
  *
@@ -338,7 +337,7 @@ QHash< ContactPtr, QString > DBusTubeChannel::busNames() const
     if (!isReady(FeatureBusNamesMonitoring)) {
         warning() << "DBusTubeChannel::busNames() used with "
             "FeatureBusNamesMonitoring not ready";
-        return QHash< ContactPtr, QString >();
+        return QHash<ContactPtr, QString>();
     }
 
     return mPriv->busNames;
@@ -350,5 +349,3 @@ UIntList DBusTubeChannel::accessControls() const
 }
 
 }
-
-#include "TelepathyQt/_gen/dbus-tube-channel.moc.hpp"
