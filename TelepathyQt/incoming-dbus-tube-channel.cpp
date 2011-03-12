@@ -19,7 +19,6 @@
  */
 
 #include <TelepathyQt/IncomingDBusTubeChannel>
-#include "TelepathyQt/dbus-tube-channel-internal.h"
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
@@ -31,27 +30,26 @@
 namespace Tp
 {
 
-class TP_QT_NO_EXPORT IncomingDBusTubeChannelPrivate : public DBusTubeChannelPrivate
+struct TP_QT_NO_EXPORT IncomingDBusTubeChannel::Private
 {
-    Q_DECLARE_PUBLIC(IncomingDBusTubeChannel)
 public:
-    IncomingDBusTubeChannelPrivate(IncomingDBusTubeChannel* parent);
-    virtual ~IncomingDBusTubeChannelPrivate();
+    Private(IncomingDBusTubeChannel* parent);
+    virtual ~Private();
 
-    QDBusConnection connection;
+    // Public object
+    IncomingDBusTubeChannel *parent;
+
+    QString address;
 };
 
-IncomingDBusTubeChannelPrivate::IncomingDBusTubeChannelPrivate(IncomingDBusTubeChannel* parent)
-        : DBusTubeChannelPrivate(parent)
-        , connection(QLatin1String("none"))
+IncomingDBusTubeChannel::Private::Private(IncomingDBusTubeChannel* parent)
+        : parent(parent)
 {
 }
 
-IncomingDBusTubeChannelPrivate::~IncomingDBusTubeChannelPrivate()
+IncomingDBusTubeChannel::Private::~Private()
 {
 }
-
-
 
 struct TP_QT_NO_EXPORT PendingDBusTubeAcceptPrivate
 {
@@ -89,7 +87,7 @@ void PendingDBusTubeAcceptPrivate::onAcceptFinished(PendingOperation* op)
 
     // Now get the address and set it
     PendingString *ps = qobject_cast< PendingString* >(op);
-    tube->d_func()->address = ps->result();
+    tube->mPriv->address = ps->result();
 
     // It might have been already opened - check
     if (tube->state() == TubeChannelStateOpen) {
@@ -105,20 +103,8 @@ void PendingDBusTubeAcceptPrivate::onStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
-        // The tube is ready: let's create the QDBusConnection and set the tube's object path as the name
-        QDBusConnection connection = QDBusConnection::sessionBus();/* = QDBusConnection::connectToPeer(tube->d_func()->address,
-                                                                    tube->objectPath());*/
-
-        if (!connection.isConnected()) {
-            // Something went wrong
-            warning() << "Could not create a QDBusConnection";
-            parent->setFinishedWithError(QLatin1String("Connection refused"),
-                      QLatin1String("Could not create a valid QDBusConnection from the tube"));
-        } else {
-            // Inject the server
-            tube->d_func()->connection = connection;
-            parent->setFinished();
-        }
+        // The tube is ready: let's inject the address into the tube itself
+        parent->setFinished();
     } else if (state != TubeChannelStateLocalPending) {
         // Something happened
         parent->setFinishedWithError(QLatin1String("Connection refused"),
@@ -158,9 +144,9 @@ PendingDBusTubeAccept::~PendingDBusTubeAccept()
     delete mPriv;
 }
 
-QDBusConnection PendingDBusTubeAccept::connection() const
+QString PendingDBusTubeAccept::address() const
 {
-    return mPriv->tube->connection();
+    return mPriv->tube->address();
 }
 
 
@@ -209,7 +195,8 @@ IncomingDBusTubeChannelPtr IncomingDBusTubeChannel::create(const ConnectionPtr &
 IncomingDBusTubeChannel::IncomingDBusTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties)
-    : DBusTubeChannel(connection, objectPath, immutableProperties, *new IncomingDBusTubeChannelPrivate(this))
+    : DBusTubeChannel(connection, objectPath, immutableProperties),
+      mPriv(new Private(this))
 {
 }
 
@@ -218,8 +205,8 @@ IncomingDBusTubeChannel::IncomingDBusTubeChannel(const ConnectionPtr &connection
  */
 IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
 {
+    delete mPriv;
 }
-
 
 /**
  * \brief Offer a Unix socket over the tube
@@ -264,10 +251,8 @@ PendingDBusTubeAccept* IncomingDBusTubeChannel::acceptTube(
                 QLatin1String("Channel busy"), IncomingDBusTubeChannelPtr(this));
     }
 
-    Q_D(IncomingDBusTubeChannel);
-
     // Let's offer the tube
-    if (!d->accessControls.contains(accessControl)) {
+    if (!accessControls().contains(accessControl)) {
         warning() << "You requested an access control "
             "not supported by this channel";
         return new PendingDBusTubeAccept(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
@@ -284,19 +269,16 @@ PendingDBusTubeAccept* IncomingDBusTubeChannel::acceptTube(
     return op;
 }
 
-QDBusConnection IncomingDBusTubeChannel::connection() const
+QString IncomingDBusTubeChannel::address() const
 {
     if (state() != TubeChannelStateOpen) {
-        warning() << "IncomingDBusTubeChannel::connection() can be called only if "
+        warning() << "IncomingDBusTubeChannel::address() can be called only if "
             "the tube has already been opened";
-        return QDBusConnection(QLatin1String("none"));
+        return QString();
     }
 
-    Q_D(const IncomingDBusTubeChannel);
-
-    return d->connection;
+    return mPriv->address;
 }
-
 
 }
 

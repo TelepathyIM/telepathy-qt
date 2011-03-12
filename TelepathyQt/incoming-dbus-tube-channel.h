@@ -41,7 +41,7 @@ class TP_QT_EXPORT PendingDBusTubeAccept : public PendingOperation
 public:
     virtual ~PendingDBusTubeAccept();
 
-    QDBusConnection connection() const;
+    QString address() const;
 
 private:
     PendingDBusTubeAccept(PendingString *string, const IncomingDBusTubeChannelPtr &object);
@@ -64,9 +64,6 @@ class TP_QT_EXPORT IncomingDBusTubeChannel : public DBusTubeChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(IncomingDBusTubeChannel)
-    Q_DECLARE_PRIVATE(IncomingDBusTubeChannel)
-
-    friend class PendingDBusTubeAcceptPrivate;
 
 public:
     static IncomingDBusTubeChannelPtr create(const ConnectionPtr &connection,
@@ -76,11 +73,17 @@ public:
 
     PendingDBusTubeAccept *acceptTube(bool requireCredentials = false);
 
-    QDBusConnection connection() const;
+    QString address() const;
 
 protected:
     IncomingDBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
+
+private:
+    struct Private;
+    friend class PendingDBusTubeAcceptPrivate;
+    friend struct Private;
+    Private *mPriv;
 
 };
 

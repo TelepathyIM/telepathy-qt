@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "TelepathyQt/dbus-tube-channel-internal.h"
+#include <TelepathyQt/DBusTubeChannel>
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
@@ -28,20 +28,34 @@
 namespace Tp
 {
 
-DBusTubeChannelPrivate::DBusTubeChannelPrivate(DBusTubeChannel *parent)
-    : q_ptr(parent)
+struct TP_QT_NO_EXPORT DBusTubeChannel::Private
 {
-}
+    Private(DBusTubeChannel *parent);
+    virtual ~Private();
 
-DBusTubeChannelPrivate::~DBusTubeChannelPrivate()
-{
-}
+    void extractProperties(const QVariantMap &props);
+    void extractParticipants(const Tp::DBusTubeParticipants &participants);
 
-void DBusTubeChannelPrivate::init()
+    static void introspectDBusTube(Private *self);
+    static void introspectBusNamesMonitoring(Private *self);
+
+    ReadinessHelper *readinessHelper;
+
+    // Public object
+    DBusTubeChannel *parent;
+
+    // Properties
+    UIntList accessControls;
+    QString serviceName;
+    QHash< ContactPtr, QString > busNames;
+    QString address;
+};
+
+DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
+    : parent(parent)
 {
-    Q_Q(DBusTubeChannel);
     // Initialize readinessHelper + introspectables here
-    readinessHelper = q->readinessHelper();
+    readinessHelper = parent->readinessHelper();
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -49,7 +63,7 @@ void DBusTubeChannelPrivate::init()
         QSet<uint>() << 0,                                                      // makesSenseForStatuses
         Features() << TubeChannel::FeatureCore,                                 // dependsOnFeatures (core)
         QStringList(),                                                          // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &DBusTubeChannelPrivate::introspectDBusTube,
+        (ReadinessHelper::IntrospectFunc) &Private::introspectDBusTube,
         this);
     introspectables[DBusTubeChannel::FeatureDBusTube] = introspectableDBusTube;
 
@@ -57,84 +71,84 @@ void DBusTubeChannelPrivate::init()
         QSet<uint>() << 0,                                                      // makesSenseForStatuses
         Features() << DBusTubeChannel::FeatureDBusTube,                         // dependsOnFeatures (core)
         QStringList(),                                                          // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &DBusTubeChannelPrivate::introspectBusNamesMonitoring,
+        (ReadinessHelper::IntrospectFunc) &Private::introspectBusNamesMonitoring,
         this);
     introspectables[DBusTubeChannel::FeatureBusNamesMonitoring] = introspectableBusNamesMonitoring;
 
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void DBusTubeChannelPrivate::extractProperties(const QVariantMap& props)
+DBusTubeChannel::Private::~Private()
+{
+}
+
+void DBusTubeChannel::Private::extractProperties(const QVariantMap& props)
 {
     serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
     accessControls = qdbus_cast<UIntList>(props[QLatin1String("SupportedAccessControls")]);
     extractParticipants(qdbus_cast<DBusTubeParticipants>(props[QLatin1String("DBusNames")]));
 }
 
-void DBusTubeChannelPrivate::extractParticipants(const Tp::DBusTubeParticipants& participants)
+void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipants& participants)
 {
-    Q_Q(DBusTubeChannel);
-
     busNames.clear();
     for (DBusTubeParticipants::const_iterator i = participants.constBegin();
          i != participants.constEnd();
          ++i) {
-        busNames.insert(q->connection()->contactManager()->lookupContactByHandle(i.key()),
+        busNames.insert(parent->connection()->contactManager()->lookupContactByHandle(i.key()),
                         i.value());
     }
 }
 
 
-void DBusTubeChannelPrivate::gotDBusTubeProperties(QDBusPendingCallWatcher* watcher)
+void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
     if (!reply.isError()) {
         QVariantMap props = reply.value();
-        extractProperties(props);
+        mPriv->extractProperties(props);
         debug() << "Got reply to Properties::GetAll(DBusTubeChannel)";
-        readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
     } else {
         warning().nospace() << "Properties::GetAll(DBusTubeChannel) failed "
             "with " << reply.error().name() << ": " << reply.error().message();
-        readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, false,
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, false,
                 reply.error());
     }
 }
 
-void DBusTubeChannelPrivate::onDBusNamesChanged(
-        const Tp::DBusTubeParticipants& added,
-        const Tp::UIntList& removed)
+void DBusTubeChannel::onDBusNamesChanged(
+        const Tp::DBusTubeParticipants &added,
+        const Tp::UIntList &removed)
 {
-    Q_Q(DBusTubeChannel);
-
     QHash< ContactPtr, QString > realAdded;
     QList< ContactPtr > realRemoved;
 
     for (DBusTubeParticipants::const_iterator i = added.constBegin();
          i != added.constEnd();
          ++i) {
-        ContactPtr contact = q->connection()->contactManager()->lookupContactByHandle(i.key());
+        ContactPtr contact = connection()->contactManager()->lookupContactByHandle(i.key());
         realAdded.insert(contact, i.value());
         // Add it to our hash as well
-        busNames.insert(contact, i.value());
+        mPriv->busNames.insert(contact, i.value());
     }
 
     foreach (uint handle, removed) {
-        ContactPtr contact = q->connection()->contactManager()->lookupContactByHandle(handle);
+        ContactPtr contact = connection()->contactManager()->lookupContactByHandle(handle);
         realRemoved << contact;
         // Remove it from our hash as well
-        busNames.remove(contact);
+        mPriv->busNames.remove(contact);
     }
 
     // Emit the "real" signal
-    emit q->busNamesChanged(realAdded, realRemoved);
+    emit busNamesChanged(realAdded, realRemoved);
 }
 
-void DBusTubeChannelPrivate::introspectBusNamesMonitoring(
-        DBusTubeChannelPrivate* self)
+void DBusTubeChannel::Private::introspectBusNamesMonitoring(
+        DBusTubeChannel::Private* self)
 {
-    DBusTubeChannel *parent = self->q_func();
+    DBusTubeChannel *parent = self->parent;
 
     Client::ChannelTypeDBusTubeInterface *dbusTubeInterface =
             parent->interface<Client::ChannelTypeDBusTubeInterface>();
@@ -153,10 +167,10 @@ void DBusTubeChannelPrivate::introspectBusNamesMonitoring(
     self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNamesMonitoring, true);
 }
 
-void DBusTubeChannelPrivate::introspectDBusTube(
-        DBusTubeChannelPrivate* self)
+void DBusTubeChannel::Private::introspectDBusTube(
+        DBusTubeChannel::Private* self)
 {
-    DBusTubeChannel *parent = self->q_func();
+    DBusTubeChannel *parent = self->parent;
 
     debug() << "Introspect dbus tube properties";
 
@@ -247,32 +261,16 @@ DBusTubeChannel::DBusTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties)
     : TubeChannel(connection, objectPath, immutableProperties),
-      d_ptr(new DBusTubeChannelPrivate(this))
+      mPriv(new Private(this))
 {
-    // Initialize
-    Q_D(DBusTubeChannel);
-    d->init();
 }
-
-DBusTubeChannel::DBusTubeChannel(const ConnectionPtr& connection,
-        const QString& objectPath,
-        const QVariantMap& immutableProperties,
-        DBusTubeChannelPrivate& dd)
-    : TubeChannel(connection, objectPath, immutableProperties)
-    , d_ptr(&dd)
-{
-    // Initialize
-    Q_D(DBusTubeChannel);
-    d->init();
-}
-
 
 /**
  * Class destructor.
  */
 DBusTubeChannel::~DBusTubeChannel()
 {
-    delete d_ptr;
+    delete mPriv;
 }
 
 /**
@@ -286,9 +284,7 @@ QString DBusTubeChannel::serviceName() const
         return QString();
     }
 
-    Q_D(const DBusTubeChannel);
-
-    return d->serviceName;
+    return mPriv->serviceName;
 }
 
 
@@ -308,17 +304,8 @@ bool DBusTubeChannel::supportsCredentials() const
         return false;
     }
 
-    Q_D(const DBusTubeChannel);
-
-    return d->accessControls.contains(static_cast<uint>(Tp::SocketAccessControlCredentials));
+    return mPriv->accessControls.contains(static_cast<uint>(Tp::SocketAccessControlCredentials));
 }
-
-
-void DBusTubeChannel::connectNotify(const char* signal)
-{
-    TubeChannel::connectNotify(signal);
-}
-
 
 /**
  * If the tube has been opened, this function returns the private bus address you should be listening
@@ -335,9 +322,7 @@ QString DBusTubeChannel::address() const
         return QString();
     }
 
-    Q_D(const DBusTubeChannel);
-
-    return d->address;
+    return mPriv->address;
 }
 
 
@@ -356,9 +341,12 @@ QHash< ContactPtr, QString > DBusTubeChannel::busNames() const
         return QHash< ContactPtr, QString >();
     }
 
-    Q_D(const DBusTubeChannel);
+    return mPriv->busNames;
+}
 
-    return d->busNames;
+UIntList DBusTubeChannel::accessControls() const
+{
+    return mPriv->accessControls;
 }
 
 }

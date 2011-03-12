@@ -36,11 +36,6 @@ class TP_QT_EXPORT DBusTubeChannel : public TubeChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(DBusTubeChannel)
-    Q_DECLARE_PRIVATE(DBusTubeChannel)
-
-    // private slots:
-    Q_PRIVATE_SLOT(d_func(), void gotDBusTubeProperties(QDBusPendingCallWatcher*))
-    Q_PRIVATE_SLOT(d_func(), void onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList))
 
 public:
     static const Feature FeatureDBusTube;
@@ -59,19 +54,18 @@ public:
 
     QString address() const;
 
+    UIntList accessControls() const;
+
 protected:
     DBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
-    // For private class inheriters
-    DBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties, DBusTubeChannelPrivate &dd);
-
-    virtual void connectNotify(const char* signal);
-
-    DBusTubeChannelPrivate * const d_ptr;
 
 Q_SIGNALS:
     void busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr > &removed);
+
+private Q_SLOTS:
+    void gotDBusTubeProperties(QDBusPendingCallWatcher *watcher);
+    void onDBusNamesChanged(const Tp::DBusTubeParticipants &added, const Tp::UIntList &removed);
 
 private:
     struct Private;
