@@ -162,6 +162,7 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionLowlevel::Private
     }
 
     QWeakPointer<Connection> conn;
+    HandleIdentifierMap contactsIds;
 };
 
 // Handle tracking
@@ -2110,6 +2111,40 @@ QStringList ConnectionLowlevel::contactAttributeInterfaces() const
     }
 
     return conn->mPriv->contactAttributeInterfaces;
+}
+
+void ConnectionLowlevel::injectContactIds(const HandleIdentifierMap &handles)
+{
+    if (!hasImmortalHandles()) {
+        return;
+    }
+
+    for (HandleIdentifierMap::const_iterator i = handles.constBegin();
+            i != handles.constEnd(); ++i) {
+        uint handle = i.key();
+        QString id = i.value();
+
+        if (!id.isEmpty()) {
+            QString currentId = mPriv->contactsIds.value(handle);
+
+            if (!currentId.isEmpty() && id != currentId) {
+                warning() << "Trying to overwrite contact id from" << currentId << "to" << id
+                    << "for the same handle" << handle << ", ignoring";
+            } else {
+                mPriv->contactsIds.insert(handle, id);
+            }
+        }
+    }
+}
+
+bool ConnectionLowlevel::hasContactId(uint handle) const
+{
+    return mPriv->contactsIds.contains(handle);
+}
+
+QString ConnectionLowlevel::contactId(uint handle) const
+{
+    return mPriv->contactsIds.value(handle);
 }
 
 /**

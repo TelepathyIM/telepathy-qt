@@ -67,12 +67,19 @@ public:
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
 
+    void injectContactIds(const HandleIdentifierMap &handles);
+
 private:
     friend class Connection;
+    friend class ContactManager;
+    friend class PendingContacts;
 
     TELEPATHY_QT4_NO_EXPORT ConnectionLowlevel(Connection *parent);
 
     TELEPATHY_QT4_NO_EXPORT bool hasImmortalHandles() const;
+
+    TELEPATHY_QT4_NO_EXPORT bool hasContactId(uint handle) const;
+    TELEPATHY_QT4_NO_EXPORT QString contactId(uint handle) const;
 
     struct Private;
     friend struct Private;

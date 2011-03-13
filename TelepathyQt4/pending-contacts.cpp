@@ -81,6 +81,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     {
     }
 
+    void setFinished();
+
     // Public object
     PendingContacts *parent;
 
@@ -104,6 +106,21 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
 
     ReferencedHandles handlesToInspect;
 };
+
+void PendingContacts::Private::setFinished()
+{
+    ConnectionLowlevelPtr connLowlevel = manager->connection()->lowlevel();
+    UIntList handles = invalidHandles;
+    foreach (uint handle, handles) {
+        if (connLowlevel->hasContactId(handle)) {
+            satisfyingContacts.insert(handle, manager->ensureContact(handle,
+                        connLowlevel->contactId(handle), features));
+            invalidHandles.removeOne(handle);
+        }
+    }
+
+    parent->setFinished();
+}
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const UIntList &handles, const Features &features,
@@ -390,7 +407,7 @@ void PendingContacts::onNestedFinished(PendingOperation *operation)
 
     mPriv->contacts = mPriv->nested->contacts();
     mPriv->nested = 0;
-    setFinished();
+    mPriv->setFinished();
 }
 
 void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
@@ -430,7 +447,7 @@ void PendingContacts::allAttributesFetched()
         }
     }
 
-    setFinished();
+    mPriv->setFinished();
 }
 
 } // Tp

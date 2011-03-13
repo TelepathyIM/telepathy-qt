@@ -808,6 +808,19 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
+    ConnectionLowlevelPtr connLowlevel = connection()->lowlevel();
+
+    if (connLowlevel->hasImmortalHandles() && realFeatures.isEmpty()) {
+        // try to avoid a roundtrip if all handles have an id set and no feature was requested
+        foreach (uint handle, handles) {
+            if (connLowlevel->hasContactId(handle)) {
+                ContactPtr contact = ensureContact(handle,
+                        connLowlevel->contactId(handle), realFeatures);
+                satisfyingContacts.insert(handle, contact);
+            }
+        }
+    }
+
     foreach (uint handle, handles) {
         ContactPtr contact = lookupContactByHandle(handle);
         if (contact) {
@@ -847,6 +860,14 @@ PendingContacts *ContactManager::contactsForHandles(const ReferencedHandles &han
         const Features &features)
 {
     return contactsForHandles(handles.toList(), features);
+}
+
+PendingContacts *ContactManager::contactsForHandles(const HandleIdentifierMap &handles,
+        const Features &features)
+{
+    connection()->lowlevel()->injectContactIds(handles);
+
+    return contactsForHandles(handles.keys(), features);
 }
 
 PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &identifiers,
@@ -1070,6 +1091,26 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
     }
 
     contact->augment(features, attributes);
+
+    return contact;
+}
+
+ContactPtr ContactManager::ensureContact(uint bareHandle, const QString &id,
+        const Features &features)
+{
+    ContactPtr contact = lookupContactByHandle(bareHandle);
+
+    if (!contact) {
+        QVariantMap attributes;
+        attributes.insert(QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id"), id);
+
+        contact = connection()->contactFactory()->construct(this,
+                ReferencedHandles(connection(), HandleTypeContact, UIntList() << bareHandle),
+                features, attributes);
+        mPriv->contacts.insert(bareHandle, contact.data());
+
+        // do not call augment here as this is a fake contact
+    }
 
     return contact;
 }
