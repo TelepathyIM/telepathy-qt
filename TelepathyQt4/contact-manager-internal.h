@@ -93,6 +93,8 @@ private Q_SLOTS:
     void gotContactListProperties(Tp::PendingOperation *op);
     void gotContactListContacts(QDBusPendingCallWatcher *watcher);
     void onContactListStateChanged(uint state);
+    void onContactListContactsChangedWithId(const Tp::ContactSubscriptionMap &changes,
+            const Tp::HandleIdentifierMap &ids, const Tp::HandleIdentifierMap &removals);
     void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
             const Tp::UIntList &removals);
     void setStateSuccess();
@@ -193,6 +195,7 @@ private:
     bool canChangeContactList;
     bool contactListRequestUsesMessage;
     bool gotContactListInitialContacts;
+    bool gotContactListContactsChangedWithId;
     bool groupsReintrospectionRequired;
     QSet<QString> cachedAllKnownGroups;
     bool contactListGroupPropertiesReceived;
@@ -253,14 +256,17 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::UpdateInfo
 {
-    UpdateInfo(const ContactSubscriptionMap &changes, const UIntList &removals)
+    UpdateInfo(const ContactSubscriptionMap &changes, const HandleIdentifierMap &ids,
+            const HandleIdentifierMap &removals)
         : changes(changes),
+          ids(ids),
           removals(removals)
     {
     }
 
     ContactSubscriptionMap changes;
-    UIntList removals;
+    HandleIdentifierMap ids;
+    HandleIdentifierMap removals;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::GroupsUpdateInfo

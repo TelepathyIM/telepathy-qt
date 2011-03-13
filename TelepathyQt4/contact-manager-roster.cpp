@@ -51,6 +51,7 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
       canChangeContactList(false),
       contactListRequestUsesMessage(false),
       gotContactListInitialContacts(false),
+      gotContactListContactsChangedWithId(false),
       groupsReintrospectionRequired(false),
       contactListGroupPropertiesReceived(false),
       processingContactListChanges(false),
@@ -762,9 +763,34 @@ void ContactManager::Roster::onContactListStateChanged(uint state)
     }
 }
 
+void ContactManager::Roster::onContactListContactsChangedWithId(const Tp::ContactSubscriptionMap &changes,
+        const Tp::HandleIdentifierMap &ids, const Tp::HandleIdentifierMap &removals)
+{
+    debug() << "Got ContactList.ContactsChangedWithID with" << changes.size() <<
+        "changes and" << removals.size() << "removals";
+
+    gotContactListContactsChangedWithId = true;
+
+    if (!gotContactListInitialContacts) {
+        debug() << "Ignoring ContactList changes until initial contacts are retrieved";
+        return;
+    }
+
+    ConnectionPtr conn(contactManager->connection());
+    conn->lowlevel()->injectContactIds(ids);
+
+    contactListUpdatesQueue.enqueue(UpdateInfo(changes, ids, removals));
+    contactListChangesQueue.enqueue(&ContactManager::Roster::processContactListUpdates);
+    processContactListChanges();
+}
+
 void ContactManager::Roster::onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
         const Tp::UIntList &removals)
 {
+    if (gotContactListContactsChangedWithId) {
+        return;
+    }
+
     debug() << "Got ContactList.ContactsChanged with" << changes.size() <<
         "changes and" << removals.size() << "removals";
 
@@ -773,7 +799,12 @@ void ContactManager::Roster::onContactListContactsChanged(const Tp::ContactSubsc
         return;
     }
 
-    contactListUpdatesQueue.enqueue(UpdateInfo(changes, removals));
+    HandleIdentifierMap removalsMap;
+    foreach (uint handle, removals) {
+        removalsMap.insert(handle, QString());
+    }
+
+    contactListUpdatesQueue.enqueue(UpdateInfo(changes, HandleIdentifierMap(), removalsMap));
     contactListChangesQueue.enqueue(&ContactManager::Roster::processContactListUpdates);
     processContactListChanges();
 }
@@ -837,7 +868,7 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
         emit contactManager->presencePublicationRequested(publishRequested);
     }
 
-    foreach (uint bareHandle, info.removals) {
+    foreach (uint bareHandle, info.removals.keys()) {
         ContactPtr contact = contactManager->lookupContactByHandle(bareHandle);
         if (!contact) {
             warning() << "Unable to find removed contact with handle" << bareHandle;
@@ -1363,6 +1394,9 @@ void ContactManager::Roster::introspectContactList()
     connect(iface,
             SIGNAL(ContactListStateChanged(uint)),
             SLOT(onContactListStateChanged(uint)));
+    connect(iface,
+            SIGNAL(ContactsChangedWithID(Tp::ContactSubscriptionMap,Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)),
+            SLOT(onContactListContactsChangedWithId(Tp::ContactSubscriptionMap,Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)));
     connect(iface,
             SIGNAL(ContactsChanged(Tp::ContactSubscriptionMap,Tp::UIntList)),
             SLOT(onContactListContactsChanged(Tp::ContactSubscriptionMap,Tp::UIntList)));
