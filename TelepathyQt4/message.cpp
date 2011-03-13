@@ -55,6 +55,7 @@ struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
     inline bool getBoolean(uint index, const char *key,
             bool assumeIfAbsent) const;
     inline uint senderHandle() const;
+    inline QString senderId() const;
     inline uint pendingId() const;
     void clearSenderHandle();
 };
@@ -104,6 +105,11 @@ inline bool Message::Private::getBoolean(uint index, const char *key,
 inline uint Message::Private::senderHandle() const
 {
     return getUIntOrZero(0, "message-sender");
+}
+
+inline QString Message::Private::senderId() const
+{
+    return getStringOrEmpty(0, "message-sender-id");
 }
 
 inline uint Message::Private::pendingId() const
@@ -549,6 +555,11 @@ uint ReceivedMessage::pendingId() const
 uint ReceivedMessage::senderHandle() const
 {
     return mPriv->senderHandle();
+}
+
+QString ReceivedMessage::senderId() const
+{
+    return mPriv->senderId();
 }
 
 void ReceivedMessage::setForceNonText()
