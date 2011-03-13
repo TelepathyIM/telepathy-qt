@@ -1067,9 +1067,9 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
     if (!contact) {
         contact = connection()->contactFactory()->construct(this, handle, features, attributes);
         mPriv->contacts.insert(bareHandle, contact.data());
-    } else {
-        contact->augment(features, attributes);
     }
+
+    contact->augment(features, attributes);
 
     return contact;
 }

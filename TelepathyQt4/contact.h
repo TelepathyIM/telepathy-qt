@@ -200,16 +200,16 @@ Q_SIGNALS:
     // want to signal that change right away with a handle?
 
 protected:
+    Contact(ContactManager *manager, const ReferencedHandles &handle,
+            const Features &requestedFeatures, const QVariantMap &attributes);
+
+    virtual void augment(const Features &requestedFeatures, const QVariantMap &attributes);
+
     // FIXME: (API/ABI break) Remove connectNotify
     void connectNotify(const char *);
 
 private:
     static const Feature FeatureRosterGroups;
-
-    TELEPATHY_QT4_NO_EXPORT Contact(ContactManager *manager, const ReferencedHandles &handle,
-            const Features &requestedFeatures, const QVariantMap &attributes);
-
-    TELEPATHY_QT4_NO_EXPORT void augment(const Features &requestedFeatures, const QVariantMap &attributes);
 
     TELEPATHY_QT4_NO_EXPORT void receiveAlias(const QString &alias);
     TELEPATHY_QT4_NO_EXPORT void receiveAvatarToken(const QString &avatarToken);
