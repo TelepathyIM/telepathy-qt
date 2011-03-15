@@ -386,9 +386,7 @@ void Channel::Private::introspectMainProperties()
     initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
 
     QString initiatorId = qdbus_cast<QString>(props[QLatin1String("InitiatorID")]);
-    HandleIdentifierMap contactIds;
-    contactIds.insert(initiatorHandle, initiatorId);
-    connection->lowlevel()->injectContactIds(contactIds);
+    connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
 
     if (needIntrospectMainProps) {
         debug() << "Calling Properties::GetAll(Channel)";
@@ -641,9 +639,7 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
 
         if (props.contains(keyInitiatorId)) {
             QString initiatorId = qdbus_cast<QString>(props[keyInitiatorId]);
-            HandleIdentifierMap contactIds;
-            contactIds.insert(initiatorHandle, initiatorId);
-            connection->lowlevel()->injectContactIds(contactIds);
+            connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
         }
 
         if (!fakeGroupInterfaceIfNeeded() &&
