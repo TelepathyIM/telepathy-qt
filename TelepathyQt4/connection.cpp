@@ -2113,14 +2113,14 @@ QStringList ConnectionLowlevel::contactAttributeInterfaces() const
     return conn->mPriv->contactAttributeInterfaces;
 }
 
-void ConnectionLowlevel::injectContactIds(const HandleIdentifierMap &handles)
+void ConnectionLowlevel::injectContactIds(const HandleIdentifierMap &contactIds)
 {
     if (!hasImmortalHandles()) {
         return;
     }
 
-    for (HandleIdentifierMap::const_iterator i = handles.constBegin();
-            i != handles.constEnd(); ++i) {
+    for (HandleIdentifierMap::const_iterator i = contactIds.constBegin();
+            i != contactIds.constEnd(); ++i) {
         uint handle = i.key();
         QString id = i.value();
 
@@ -2135,6 +2135,13 @@ void ConnectionLowlevel::injectContactIds(const HandleIdentifierMap &handles)
             }
         }
     }
+}
+
+void ConnectionLowlevel::injectContactId(uint handle, const QString &contactId)
+{
+    HandleIdentifierMap contactIds;
+    contactIds.insert(handle, contactId);
+    injectContactIds(contactIds);
 }
 
 bool ConnectionLowlevel::hasContactId(uint handle) const

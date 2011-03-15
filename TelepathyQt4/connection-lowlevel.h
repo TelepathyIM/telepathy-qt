@@ -67,7 +67,8 @@ public:
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
 
-    void injectContactIds(const HandleIdentifierMap &handles);
+    void injectContactIds(const HandleIdentifierMap &contactIds);
+    void injectContactId(uint handle, const QString &contactId);
 
 private:
     friend class Connection;
