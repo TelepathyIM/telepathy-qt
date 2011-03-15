@@ -4,10 +4,13 @@ telepathy-qt4 0.5.11 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * fd.o#33121 - Bind Connection.ContactList.ContactsChangedWithID.
 
 Fixes:
- * ...
+ * ContactManager will now create contact objects even if everything fails but
+   we have the contact handle/id and the connection has ImmortalHandles.
+ * Ensure FeatureRoster is ready before setting ContactManager state to
+   success even in fallback mode.
 
 telepathy-qt4 0.5.10 (2011-03-09)
 =================================
