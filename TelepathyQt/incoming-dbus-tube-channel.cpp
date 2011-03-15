@@ -215,7 +215,7 @@ PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(
     }
 
     // Let's offer the tube
-    if (!accessControls().contains(accessControl)) {
+    if (requireCredentials && !supportsCredentials()) {
         warning() << "You requested an access control "
             "not supported by this channel";
         return new PendingDBusTubeAccept(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),

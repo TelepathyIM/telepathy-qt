@@ -54,8 +54,6 @@ public:
 
     QString address() const;
 
-    UIntList accessControls() const;
-
 protected:
     DBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);

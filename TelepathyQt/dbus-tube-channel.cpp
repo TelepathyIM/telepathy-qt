@@ -363,11 +363,6 @@ QHash< ContactPtr, QString > DBusTubeChannel::busNames() const
     return mPriv->busNames;
 }
 
-UIntList DBusTubeChannel::accessControls() const
-{
-    return mPriv->accessControls;
-}
-
 // Signals documentation
 /**
  * \fn void DBusTubeChannel::busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr > &removed)
