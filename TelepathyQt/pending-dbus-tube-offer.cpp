@@ -22,8 +22,9 @@
 
 #include "TelepathyQt/_gen/pending-dbus-tube-offer.moc.hpp"
 
+
+#include "TelepathyQt/dbus-tube-channel-internal.h"
 #include "TelepathyQt/debug-internal.h"
-#include "TelepathyQt/outgoing-dbus-tube-channel-internal.h"
 
 #include <TelepathyQt/PendingString>
 #include <TelepathyQt/Types>
@@ -108,7 +109,7 @@ void PendingDBusTubeOffer::onOfferFinished(PendingOperation *op)
 
     // Now get the address and set it
     PendingString *ps = qobject_cast<PendingString*>(op);
-    mPriv->tube->mPriv->address = ps->result();
+    DBusTubeChannelPtr::qObjectCast<DBusTubeChannel>(mPriv->tube)->mPriv->address = ps->result();
 
     // It might have been already opened - check
     if (mPriv->tube->state() == TubeChannelStateOpen) {

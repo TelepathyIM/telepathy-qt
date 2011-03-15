@@ -67,6 +67,8 @@ private Q_SLOTS:
 
 private:
     struct Private;
+    friend struct PendingDBusTubeAccept;
+    friend struct PendingDBusTubeOffer;
     friend struct Private;
     Private *mPriv;
 

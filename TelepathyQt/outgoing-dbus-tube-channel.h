@@ -44,15 +44,12 @@ public:
 
     PendingDBusTubeOffer *offerTube(const QVariantMap &parameters, bool requireCredentials = false);
 
-    QString address() const;
-
 protected:
     OutgoingDBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
 private:
     struct Private;
-    friend struct PendingDBusTubeOffer;
     friend struct Private;
     Private *mPriv;
 };

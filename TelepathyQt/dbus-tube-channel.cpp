@@ -19,6 +19,7 @@
  */
 
 #include <TelepathyQt/DBusTubeChannel>
+#include "TelepathyQt/dbus-tube-channel-internal.h"
 
 #include "TelepathyQt/_gen/dbus-tube-channel.moc.hpp"
 
@@ -29,29 +30,6 @@
 
 namespace Tp
 {
-
-struct TP_QT_NO_EXPORT DBusTubeChannel::Private
-{
-    Private(DBusTubeChannel *parent);
-    virtual ~Private();
-
-    void extractProperties(const QVariantMap &props);
-    void extractParticipants(const Tp::DBusTubeParticipants &participants);
-
-    static void introspectDBusTube(Private *self);
-    static void introspectBusNamesMonitoring(Private *self);
-
-    ReadinessHelper *readinessHelper;
-
-    // Public object
-    DBusTubeChannel *parent;
-
-    // Properties
-    UIntList accessControls;
-    QString serviceName;
-    QHash<ContactPtr, QString> busNames;
-    QString address;
-};
 
 DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
         : parent(parent)
@@ -329,8 +307,11 @@ bool DBusTubeChannel::supportsCredentials() const
 
 /**
  * If the tube has been opened, this function returns the private bus address you should be listening
- * to for using this tube. Please note that specialized superclasses such as IncomingDBusTubeChannel and
- * OutgoingDBusTubeChannel have more convenient methods for accessing the resulting connection.
+ * to for using this tube.
+ *
+ * Please note this function will return a meaningful value only if the tube has already
+ * been opened successfully: in case of failure or the tube being still pending, an empty QString will be
+ * returned.
  *
  * \returns The address of the private bus opened by this tube
  */

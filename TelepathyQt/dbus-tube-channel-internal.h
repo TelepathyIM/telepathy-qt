@@ -21,20 +21,31 @@
 #ifndef _TelepathyQt_incoming_dbus_tube_channel_internal_h_HEADER_GUARD_
 #define _TelepathyQt_incoming_dbus_tube_channel_internal_h_HEADER_GUARD_
 
-#include <TelepathyQt/IncomingDBusTubeChannel>
+#include <TelepathyQt/DBusTubeChannel>
 
 namespace Tp
 {
 
-struct TP_QT_NO_EXPORT IncomingDBusTubeChannel::Private
+struct TP_QT_NO_EXPORT DBusTubeChannel::Private
 {
-public:
-    Private(IncomingDBusTubeChannel* parent);
+    Private(DBusTubeChannel *parent);
     virtual ~Private();
 
-    // Public object
-    IncomingDBusTubeChannel *parent;
+    void extractProperties(const QVariantMap &props);
+    void extractParticipants(const Tp::DBusTubeParticipants &participants);
 
+    static void introspectDBusTube(Private *self);
+    static void introspectBusNamesMonitoring(Private *self);
+
+    ReadinessHelper *readinessHelper;
+
+    // Public object
+    DBusTubeChannel *parent;
+
+    // Properties
+    UIntList accessControls;
+    QString serviceName;
+    QHash<ContactPtr, QString> busNames;
     QString address;
 };
 

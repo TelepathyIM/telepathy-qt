@@ -19,7 +19,6 @@
  */
 
 #include <TelepathyQt/IncomingDBusTubeChannel>
-#include "TelepathyQt/incoming-dbus-tube-channel-internal.h"
 
 #include "TelepathyQt/_gen/incoming-dbus-tube-channel.moc.hpp"
 
@@ -33,6 +32,16 @@
 
 namespace Tp
 {
+
+struct TP_QT_NO_EXPORT IncomingDBusTubeChannel::Private
+{
+public:
+    Private(IncomingDBusTubeChannel* parent);
+    virtual ~Private();
+
+    // Public object
+    IncomingDBusTubeChannel *parent;
+};
 
 IncomingDBusTubeChannel::Private::Private(IncomingDBusTubeChannel *parent)
         : parent(parent)
@@ -230,26 +239,6 @@ PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(
 
     PendingDBusTubeAccept *op = new PendingDBusTubeAccept(ps, IncomingDBusTubeChannelPtr(this));
     return op;
-}
-
-/**
- * Returns the address of the opened DBus connection.
- *
- * Please note this function will return a meaningful value only if the tube has already
- * been opened successfully: in case of failure or the tube being still pending, an empty QString will be
- * returned.
- *
- * \returns The address of the opened DBus connection.
- */
-QString IncomingDBusTubeChannel::address() const
-{
-    if (state() != TubeChannelStateOpen) {
-        warning() << "IncomingDBusTubeChannel::address() can be called only if "
-            "the tube has already been opened";
-        return QString();
-    }
-
-    return mPriv->address;
 }
 
 }
