@@ -27,6 +27,7 @@
 #include "TelepathyQt4/_gen/text-channel.moc.hpp"
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/Message>
 #include <TelepathyQt4/PendingContacts>
@@ -443,13 +444,13 @@ void TextChannel::Private::processMessageQueue()
 
     // What Contact objects do we need in order to proceed, ignoring those
     // for which we've already sent a request?
-    QSet<uint> contactsRequired;
+    HandleIdentifierMap contactsRequired;
     foreach (const MessageEvent *e, incompleteMessages) {
         if (e->isMessage) {
             uint handle = e->message.senderHandle();
             if (handle != 0 && !e->message.sender()
                     && !awaitingContacts.contains(handle)) {
-                contactsRequired << handle;
+                contactsRequired.insert(handle, e->message.senderId());
             }
         }
     }
@@ -458,12 +459,15 @@ void TextChannel::Private::processMessageQueue()
         return;
     }
 
-    parent->connect(parent->connection()->contactManager()->contactsForHandles(
-                contactsRequired.toList()),
+    ConnectionPtr conn = parent->connection();
+    conn->lowlevel()->injectContactIds(contactsRequired);
+
+    parent->connect(conn->contactManager()->contactsForHandles(
+                contactsRequired.keys()),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onContactsFinished(Tp::PendingOperation*)));
 
-    awaitingContacts |= contactsRequired;
+    awaitingContacts |= contactsRequired.keys().toSet();
 }
 
 void TextChannel::Private::processChatStateQueue()
@@ -502,6 +506,8 @@ void TextChannel::Private::processChatStateQueue()
         return;
     }
 
+    // TODO: pass id hints to ContactManager if we ever gain support to retrieve contact ids
+    //       from ChatState.
     parent->connect(parent->connection()->contactManager()->contactsForHandles(
                 contactsRequired.toList()),
             SIGNAL(finished(Tp::PendingOperation*)),

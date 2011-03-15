@@ -235,6 +235,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
 
     static const QString keyChangeReason;
     static const QString keyMessage;
+    static const QString keyContactIds;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private::ConferenceChannelRemovedInfo
@@ -253,6 +254,7 @@ const QString Channel::Private::keyActor(QLatin1String("actor"));
 const QString Channel::Private::GroupMembersChangedInfo::keyChangeReason(
         QLatin1String("change-reason"));
 const QString Channel::Private::GroupMembersChangedInfo::keyMessage(QLatin1String("message"));
+const QString Channel::Private::GroupMembersChangedInfo::keyContactIds(QLatin1String("contact-ids"));
 
 Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         const QVariantMap &immutableProperties)
@@ -350,14 +352,15 @@ void Channel::Private::introspectMainProperties()
     QVariantMap props;
     QString key;
     bool needIntrospectMainProps = false;
-    const unsigned numNames = 6;
+    const unsigned numNames = 7;
     const static QString names[numNames] = {
         QLatin1String("ChannelType"),
         QLatin1String("Interfaces"),
         QLatin1String("TargetHandleType"),
         QLatin1String("TargetHandle"),
         QLatin1String("Requested"),
-        QLatin1String("InitiatorHandle")
+        QLatin1String("InitiatorHandle"),
+        QLatin1String("InitiatorID")
     };
     const static QString qualifiedNames[numNames] = {
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -365,7 +368,8 @@ void Channel::Private::introspectMainProperties()
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle")
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle"),
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorID")
     };
     for (unsigned i = 0; i < numNames; ++i) {
         const QString &qualified = qualifiedNames[i];
@@ -380,6 +384,9 @@ void Channel::Private::introspectMainProperties()
     // the given immutable props do (eg. due to the PendingChannel fallback guesses) we use them
     requested = qdbus_cast<bool>(props[QLatin1String("Requested")]);
     initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
+
+    QString initiatorId = qdbus_cast<QString>(props[QLatin1String("InitiatorID")]);
+    connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
 
     if (needIntrospectMainProps) {
         debug() << "Calling Properties::GetAll(Channel)";
@@ -620,6 +627,7 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
 
         const static QString keyRequested(QLatin1String("Requested"));
         const static QString keyInitiatorHandle(QLatin1String("InitiatorHandle"));
+        const static QString keyInitiatorId(QLatin1String("InitiatorID"));
 
         if (props.contains(keyRequested)) {
             requested = qdbus_cast<uint>(props[keyRequested]);
@@ -627,6 +635,11 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
 
         if (props.contains(keyInitiatorHandle)) {
             initiatorHandle = qdbus_cast<uint>(props[keyInitiatorHandle]);
+        }
+
+        if (props.contains(keyInitiatorId)) {
+            QString initiatorId = qdbus_cast<QString>(props[keyInitiatorId]);
+            connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
         }
 
         if (!fakeGroupInterfaceIfNeeded() &&
@@ -3068,6 +3081,10 @@ void Channel::Private::doMembersChangedDetailed(
                 details);
     }
 
+    HandleIdentifierMap contactIds = qdbus_cast<HandleIdentifierMap>(
+            details.value(GroupMembersChangedInfo::keyContactIds));
+    connection->lowlevel()->injectContactIds(contactIds);
+
     groupMembersChangedQueue.enqueue(
             new Private::GroupMembersChangedInfo(
                 added, removed,
@@ -3188,6 +3205,16 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
 
         mPriv->conferenceInitialInviteeHandles =
             qdbus_cast<UIntList>(props[QLatin1String("InitialInviteeHandles")]);
+        QStringList conferenceInitialInviteeIds =
+            qdbus_cast<QStringList>(props[QLatin1String("InitialInviteeIDs")]);
+        if (mPriv->conferenceInitialInviteeHandles.size() == conferenceInitialInviteeIds.size()) {
+            HandleIdentifierMap contactIds;
+            int i = 0;
+            foreach (uint handle, mPriv->conferenceInitialInviteeHandles) {
+                contactIds.insert(handle, conferenceInitialInviteeIds.at(i++));
+            }
+            mPriv->connection->lowlevel()->injectContactIds(contactIds);
+        }
 
         mPriv->conferenceInvitationMessage =
             qdbus_cast<QString>(props[QLatin1String("InvitationMessage")]);
@@ -3261,6 +3288,10 @@ void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath,
     if (!mPriv->conferenceChannels.contains(channelPath.path())) {
         return;
     }
+
+    HandleIdentifierMap contactIds = qdbus_cast<HandleIdentifierMap>(
+            details.value(Private::GroupMembersChangedInfo::keyContactIds));
+    mPriv->connection->lowlevel()->injectContactIds(contactIds);
 
     mPriv->conferenceChannelRemovedQueue.enqueue(
             new Private::ConferenceChannelRemovedInfo(channelPath, details));

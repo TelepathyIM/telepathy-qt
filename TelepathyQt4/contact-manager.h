@@ -108,6 +108,8 @@ public:
             const Features &features = Features());
     PendingContacts *contactsForHandles(const ReferencedHandles &handles,
             const Features &features = Features());
+    PendingContacts *contactsForHandles(const HandleIdentifierMap &handles,
+            const Features &features = Features());
 
     PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
             const Features &features = Features());
@@ -167,9 +169,11 @@ private:
     TELEPATHY_QT4_NO_EXPORT ContactPtr ensureContact(const ReferencedHandles &handle,
             const Features &features,
             const QVariantMap &attributes);
+    TELEPATHY_QT4_NO_EXPORT ContactPtr ensureContact(uint bareHandle,
+            const QString &id, const Features &features);
 
-    TELEPATHY_QT4_NO_EXPORT void ensureTracking(const Feature &feature);
     TELEPATHY_QT4_NO_EXPORT static QString featureToInterface(const Feature &feature);
+    TELEPATHY_QT4_NO_EXPORT void ensureTracking(const Feature &feature);
 
     TELEPATHY_QT4_NO_EXPORT PendingOperation *introspectRoster();
     TELEPATHY_QT4_NO_EXPORT PendingOperation *introspectRosterGroups();

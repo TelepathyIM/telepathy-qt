@@ -116,6 +116,7 @@ private:
     TELEPATHY_QT4_NO_EXPORT ReceivedMessage();
 
     TELEPATHY_QT4_NO_EXPORT uint senderHandle() const;
+    TELEPATHY_QT4_NO_EXPORT QString senderId() const;
     TELEPATHY_QT4_NO_EXPORT uint pendingId() const;
 
     TELEPATHY_QT4_NO_EXPORT void setForceNonText();

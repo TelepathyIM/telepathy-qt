@@ -134,6 +134,8 @@ void QueuedContactFactory::processNextRequest()
 
     Entry entry = m_queue.dequeue();
 
+    // TODO: pass id hints to ContactManager if we ever gain support to retrieve contact ids
+    //       from NewRemoteConnection.
     PendingContacts *pc = m_manager->contactsForHandles(entry.handles);
     pc->setProperty("__TpQt4__QueuedContactFactoryUuid", entry.uuid.toString());
     connect(pc, SIGNAL(finished(Tp::PendingOperation*)),

@@ -282,6 +282,8 @@ void StreamedMediaStream::Private::introspectContact(StreamedMediaStream::Privat
     ContactManagerPtr contactManager =
         self->parent->channel()->connection()->contactManager();
     debug() << "contact manager" << contactManager;
+    // TODO: pass id hints to ContactManager if we ever gain support to retrieve contact ids
+    //       from MediaStreamInfo or something similar.
     self->parent->connect(contactManager->contactsForHandles(
                 UIntList() << self->contactHandle),
             SIGNAL(finished(Tp::PendingOperation*)),

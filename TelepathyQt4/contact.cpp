@@ -176,7 +176,9 @@ Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
     : Object(),
       mPriv(new Private(this, manager, handle))
 {
-    augment(requestedFeatures, attributes);
+    mPriv->requestedFeatures.unite(requestedFeatures);
+    mPriv->id = qdbus_cast<QString>(attributes[
+            QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id")]);
 }
 
 Contact::~Contact()
