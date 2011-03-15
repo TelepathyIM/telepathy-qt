@@ -80,51 +80,6 @@ void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipant
     }
 }
 
-
-void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-
-    if (!reply.isError()) {
-        QVariantMap props = reply.value();
-        mPriv->extractProperties(props);
-        debug() << "Got reply to Properties::GetAll(DBusTubeChannel)";
-        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
-    } else {
-        warning().nospace() << "Properties::GetAll(DBusTubeChannel) failed "
-            "with " << reply.error().name() << ": " << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, false,
-                reply.error());
-    }
-}
-
-void DBusTubeChannel::onDBusNamesChanged(
-        const Tp::DBusTubeParticipants &added,
-        const Tp::UIntList &removed)
-{
-    QHash<ContactPtr, QString> realAdded;
-    QList<ContactPtr> realRemoved;
-
-    for (DBusTubeParticipants::const_iterator i = added.constBegin();
-         i != added.constEnd();
-         ++i) {
-        ContactPtr contact = connection()->contactManager()->lookupContactByHandle(i.key());
-        realAdded.insert(contact, i.value());
-        // Add it to our hash as well
-        mPriv->busNames.insert(contact, i.value());
-    }
-
-    foreach (uint handle, removed) {
-        ContactPtr contact = connection()->contactManager()->lookupContactByHandle(handle);
-        realRemoved << contact;
-        // Remove it from our hash as well
-        mPriv->busNames.remove(contact);
-    }
-
-    // Emit the "real" signal
-    emit busNamesChanged(realAdded, realRemoved);
-}
-
 void DBusTubeChannel::Private::introspectBusNamesMonitoring(
         DBusTubeChannel::Private *self)
 {
@@ -342,6 +297,50 @@ QHash< ContactPtr, QString > DBusTubeChannel::busNames() const
     }
 
     return mPriv->busNames;
+}
+
+void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+
+    if (!reply.isError()) {
+        QVariantMap props = reply.value();
+        mPriv->extractProperties(props);
+        debug() << "Got reply to Properties::GetAll(DBusTubeChannel)";
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
+    } else {
+        warning().nospace() << "Properties::GetAll(DBusTubeChannel) failed "
+            "with " << reply.error().name() << ": " << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, false,
+                reply.error());
+    }
+}
+
+void DBusTubeChannel::onDBusNamesChanged(
+        const Tp::DBusTubeParticipants &added,
+        const Tp::UIntList &removed)
+{
+    QHash<ContactPtr, QString> realAdded;
+    QList<ContactPtr> realRemoved;
+
+    for (DBusTubeParticipants::const_iterator i = added.constBegin();
+         i != added.constEnd();
+         ++i) {
+        ContactPtr contact = connection()->contactManager()->lookupContactByHandle(i.key());
+        realAdded.insert(contact, i.value());
+        // Add it to our hash as well
+        mPriv->busNames.insert(contact, i.value());
+    }
+
+    foreach (uint handle, removed) {
+        ContactPtr contact = connection()->contactManager()->lookupContactByHandle(handle);
+        realRemoved << contact;
+        // Remove it from our hash as well
+        mPriv->busNames.remove(contact);
+    }
+
+    // Emit the "real" signal
+    emit busNamesChanged(realAdded, realRemoved);
 }
 
 // Signals documentation

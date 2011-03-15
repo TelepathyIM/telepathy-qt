@@ -96,6 +96,20 @@ PendingDBusTubeAccept::~PendingDBusTubeAccept()
     delete mPriv;
 }
 
+/**
+ * When the operation has been completed successfully, returns the address of the opened DBus connection.
+ *
+ * Please note this function will return a meaningful value only if the operation has already
+ * been completed successfully: in case of failure or non-completion, an empty QString will be
+ * returned.
+ *
+ * \returns The address of the opened DBus connection.
+ */
+QString PendingDBusTubeAccept::address() const
+{
+    return mPriv->tube->address();
+}
+
 void PendingDBusTubeAccept::onAcceptFinished(PendingOperation *op)
 {
     if (op->isError()) {
@@ -131,20 +145,6 @@ void PendingDBusTubeAccept::onTubeStateChanged(TubeChannelState state)
         setFinishedWithError(QLatin1String("Connection refused"),
                 QLatin1String("The connection to this tube was refused"));
     }
-}
-
-/**
- * When the operation has been completed successfully, returns the address of the opened DBus connection.
- *
- * Please note this function will return a meaningful value only if the operation has already
- * been completed successfully: in case of failure or non-completion, an empty QString will be
- * returned.
- *
- * \returns The address of the opened DBus connection.
- */
-QString PendingDBusTubeAccept::address() const
-{
-    return mPriv->tube->address();
 }
 
 }
