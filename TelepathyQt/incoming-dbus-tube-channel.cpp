@@ -46,19 +46,91 @@ IncomingDBusTubeChannel::Private::~Private()
 
 /**
  * \class IncomingDBusTubeChannel
- * \headerfile TelepathyQt/stream-tube.h <TelepathyQt/IncomingDBusTubeChannel>
+ * \headerfile TelepathyQt/incoming-dbus-tube-channel.h <TelepathyQt/IncomingDBusTubeChannel>
  *
- * \brief A class representing a Stream Tube
+ * An high level wrapper for managing an incoming DBus tube
  *
  * \c IncomingDBusTubeChannel is an high level wrapper for managing Telepathy interface
- * org.freedesktop.Telepathy.Channel.Type.StreamTubeChannel.
- * In particular, this class is meant to be used as a comfortable way for exposing new tubes.
- * It provides a set of overloads for exporting a variety of sockets over a stream tube.
+ * #TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE.
+ * In particular, this class is meant to be used as a comfortable way for accepting incoming requests.
  *
- * For more details, please refer to Telepathy spec.
+ * \section incoming_dbus_tube_usage_sec Usage
+ *
+ * \subsection incoming_dbus_tube_create_sec Obtaining an incoming DBus tube
+ *
+ * Whenever a contact invites you to open an incoming DBus tube, if you are registered
+ * as a channel handler for the channel type #TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE,
+ * you will be notified of the offer and you will be able to handle the channel.
+ * Please refer to the documentation of #AbstractClientHandler for more
+ * details on channel handling.
+ *
+ * Supposing your channel handler has been created correctly, you would do:
+ *
+ * \code
+ * void MyChannelManager::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
+ *                               const Tp::AccountPtr &account,
+ *                               const Tp::ConnectionPtr &connection,
+ *                               const QList<Tp::ChannelPtr> &channels,
+ *                               const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
+ *                               const QDateTime &userActionTime,
+ *                               const QVariantMap &handlerInfo)
+ * {
+ *     foreach(const Tp::ChannelPtr &channel, channels) {
+ *         QVariantMap properties = channel->immutableProperties();
+ *
+ *         if (properties[TELEPATHY_INTERFACE_CHANNEL ".ChannelType"] ==
+ *                        TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE) {
+ *
+ *             // Handle the channel
+ *             Tp::IncomingDBusTubeChannelPtr myTube =
+ *                      Tp::IncomingDBusTubeChannelPtr::dynamicCast(channel);
+ *
+ *          }
+ *     }
+ *
+ *     context->setFinished();
+ * }
+ * \endcode
+ *
+ * \subsection incoming_dbus_tube_accept_sec Accepting the tube
+ *
+ * Before being ready to accept the tube, we must be sure the required features on our object
+ * are ready. In this case, we need to enable TubeChannel::FeatureTube and
+ * DBusTubeChannel::FeatureDBusTube.
+ *
+ * \code
+ *
+ * Features features = Features() << TubeChannel::FeatureTube
+ *                                << DBusTubeChannel::FeatureDBusTube;
+ * connect(myTube->becomeReady(features),
+ *         SIGNAL(finished(Tp::PendingOperation *)),
+ *         SLOT(onDBusTubeChannelReady(Tp::PendingOperation *)));
+ *
+ * \endcode
+ *
+ * To learn more on how to use introspectable and features, please see \ref account_ready_sec.
+ *
+ * Once your object is ready, you can use #acceptTube to accept the tube and create a brand
+ * new private DBus connection.
+ *
+ * The returned PendingDBusTubeAccept serves both for monitoring the state of the tube and for
+ * obtaining, upon success, the address of the new connection.
+ * When the operation finishes, you can do:
+ *
+ * \code
+ * void MyTubeReceiver::onDBusTubeAccepted(PendingDBusTubeAccept *op)
+ * {
+ *     if (op->isError()) {
+ *        return;
+ *     }
+ *
+ *     QString address = op->address();
+ *     // Do some stuff here
+ * }
+ * \endcode
+ *
+ * See \ref async_model, \ref shared_ptr
  */
-
-
 
 /**
  * Create a new IncomingDBusTubeChannel channel.
@@ -102,26 +174,24 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
 }
 
 /**
- * \brief Offer a Unix socket over the tube
+ * Accepts an incoming DBus tube.
  *
- * This method offers a Unix socket over this tube. The socket is represented through
- * a QByteArray, which should contain the path to the socket. You can also expose an
- * abstract Unix socket, by including the leading null byte in the address
+ * This method accepts an incoming connection request for a DBus tube. It can be called
+ * only if the tube is in the \c LocalPending state.
  *
- * If you are already handling a local socket logic in your application, you can also
- * use an overload which accepts a QLocalServer.
+ * Once called, this method will try opening the tube, and will create a new private DBus connection
+ * which can be used to communicate with the other end. You can then
+ * retrieve the address either from \c PendingDBusTubeAccept or from %address().
  *
- * The %PendingOperation returned by this method will be completed as soon as the tube is
- * open and ready to be used.
+ * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
  *
- * \param address A valid path to an existing Unix socket or abstract Unix socket
- * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
- *                   Please read the specification for more details.
+ * \note When using QHostAddress::Any, the allowedPort parameter is ignored.
+ *
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *
- * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
- *          (hence in the Open state)
+ * \return A %PendingDBusTubeAccept which will finish as soon as the tube is ready to be used
+ *         (hence in the Open state)
  */
 PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(
         bool requireCredentials)
@@ -162,6 +232,15 @@ PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(
     return op;
 }
 
+/**
+ * Returns the address of the opened DBus connection.
+ *
+ * Please note this function will return a meaningful value only if the tube has already
+ * been opened successfully: in case of failure or the tube being still pending, an empty QString will be
+ * returned.
+ *
+ * \returns The address of the opened DBus connection.
+ */
 QString IncomingDBusTubeChannel::address() const
 {
     if (state() != TubeChannelStateOpen) {

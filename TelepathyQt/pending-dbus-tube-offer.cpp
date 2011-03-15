@@ -51,6 +51,51 @@ PendingDBusTubeOffer::Private::~Private()
 {
 }
 
+/**
+ * \class PendingDBusTubeOffer
+ * \headerfile TelepathyQt4/pending-dbus-tube-offer.h <TelepathyQt4/PendingDBusTubeOffer>
+ *
+ * A pending operation for offering a DBus tube
+ *
+ * This class represents an asynchronous operation for offering a DBus tube.
+ * Upon completion, the address of the opened tube is returned as a QString.
+ */
+
+PendingDBusTubeOffer::PendingDBusTubeOffer(
+        PendingString *string,
+        const OutgoingDBusTubeChannelPtr &object)
+    : PendingOperation(object)
+    , mPriv(new Private(this))
+{
+    mPriv->tube = object;
+
+    if (string->isFinished()) {
+        onOfferFinished(string);
+    } else {
+        // Connect the pending void
+        connect(string, SIGNAL(finished(Tp::PendingOperation*)),
+                this, SLOT(onOfferFinished(Tp::PendingOperation*)));
+    }
+}
+
+PendingDBusTubeOffer::PendingDBusTubeOffer(
+        const QString &errorName,
+        const QString &errorMessage,
+        const OutgoingDBusTubeChannelPtr &object)
+    : PendingOperation(object)
+    , mPriv(new PendingDBusTubeOffer::Private(this))
+{
+    setFinishedWithError(errorName, errorMessage);
+}
+
+/**
+ * Class destructor
+ */
+PendingDBusTubeOffer::~PendingDBusTubeOffer()
+{
+    delete mPriv;
+}
+
 void PendingDBusTubeOffer::onOfferFinished(PendingOperation *op)
 {
     if (op->isError()) {
@@ -88,38 +133,15 @@ void PendingDBusTubeOffer::onTubeStateChanged(TubeChannelState state)
     }
 }
 
-PendingDBusTubeOffer::PendingDBusTubeOffer(
-        PendingString *string,
-        const OutgoingDBusTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new Private(this))
-{
-    mPriv->tube = object;
-
-    if (string->isFinished()) {
-        onOfferFinished(string);
-    } else {
-        // Connect the pending void
-        connect(string, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onOfferFinished(Tp::PendingOperation*)));
-    }
-}
-
-PendingDBusTubeOffer::PendingDBusTubeOffer(
-        const QString &errorName,
-        const QString &errorMessage,
-        const OutgoingDBusTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new PendingDBusTubeOffer::Private(this))
-{
-    setFinishedWithError(errorName, errorMessage);
-}
-
-PendingDBusTubeOffer::~PendingDBusTubeOffer()
-{
-    delete mPriv;
-}
-
+/**
+ * When the operation has been completed successfully, returns the address of the opened DBus connection.
+ *
+ * Please note this function will return a meaningful value only if the operation has already
+ * been completed successfully: in case of failure or non-completion, an empty QString will be
+ * returned.
+ *
+ * \returns The address of the opened DBus connection.
+ */
 QString PendingDBusTubeOffer::address() const
 {
     return mPriv->tube->address();

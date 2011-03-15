@@ -194,11 +194,18 @@ void DBusTubeChannel::Private::introspectDBusTube(
  * \class DBusTubeChannel
  * \headerfile TelepathyQt/stream-tube-channel.h <TelepathyQt/DBusTubeChannel>
  *
- * \brief A class representing a Stream Tube
+ * A class representing a DBus Tube
  *
  * \c DBusTubeChannel is an high level wrapper for managing Telepathy interface
- * org.freedesktop.Telepathy.Channel.Type.DBusTubeChannel.
- * It provides a transport for reliable and ordered data transfer, similar to SOCK_STREAM sockets.
+ * #TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE.
+ * It provides a private DBus connection, either peer-to-peer or between a group of contacts, which
+ * can be used just like a standard DBus connection. As such, services exposed MUST adhere to the
+ * DBus specification.
+ *
+ * This class provides high level methods for managing both incoming and outgoing tubes - however,
+ * you probably want to use one of its subclasses, #OutgoingDBusTubeChannel or
+ * #IncomingDBusTubeChannel, which both provide higher level methods for accepting
+ * or offering tubes.
  *
  * For more details, please refer to Telepathy spec.
  */
@@ -220,16 +227,6 @@ const Feature DBusTubeChannel::FeatureDBusTube = Feature(QLatin1String(DBusTubeC
  * %busNamesChanged will be emitted when the participants of this tube change
  */
 const Feature DBusTubeChannel::FeatureBusNamesMonitoring = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 1);
-
-// Signals documentation
-/**
- * \fn void DBusTubeChannel::busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr > &removed)
- *
- * Emitted when the participants of this tube change
- *
- * \param added An hash containing the contacts who joined this tube, with their respective bus name.
- * \param removed A list containing the contacts who left this tube.
- */
 
 /**
  * Create a new DBusTubeChannel channel.
@@ -273,7 +270,13 @@ DBusTubeChannel::~DBusTubeChannel()
 }
 
 /**
- * \returns the service name that will be used over the tube
+ * Returns the service name which will be used over the tube. This should be a
+ * well-known and valid DBus service name, in the form "org.domain.service". Tubes
+ * providing invalid service names might cause non-predictable behavior.
+ *
+ * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
+ *
+ * \return the service name that will be used over the tube
  */
 QString DBusTubeChannel::serviceName() const
 {
@@ -286,14 +289,32 @@ QString DBusTubeChannel::serviceName() const
     return mPriv->serviceName;
 }
 
-
 /**
- * \returns Whether this Stream tube supports offering or accepting it as an Unix socket and requiring
- *          credentials for connecting to it.
+ * Checks if this tube is capable to accept or offer a private bus which
+ * will require credentials upon connection.
  *
- * \see IncomingDBusTubeChannel::acceptTubeAsUnixSocket
- * \see OutgoingDBusTubeChannel::offerTubeAsUnixSocket
- * \see supportsUnixSockets
+ * When this capability is available and enabled, the connecting process must send a byte when
+ * it first connects, which is not considered to be part of the data stream.
+ * If the operating system uses sendmsg() with SCM_CREDS or SCM_CREDENTIALS to pass
+ * credentials over sockets, the connecting process must do so if possible;
+ * if not, it must still send the byte.
+ *
+ * The listening process will disconnect the connection unless it can determine
+ * by OS-specific means that the connecting process has the same user ID as the listening process.
+ *
+ * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
+ *
+ * \note It is strongly advised to call this method before attempting to call
+ *       #IncomingDBusTubeChannel::acceptTube or
+ *       #OutgoingDBusTubeChannel::offerTube requiring
+ *       credentials to prevent failures, as the spec implies
+ *       this feature is not compulsory for connection managers.
+ *
+ * \return Whether this DBus tube is capable to accept or offer a private bus
+ *         requiring credentials for connecting to it.
+ *
+ * \sa IncomingDBusTubeChannel::acceptTube
+ * \sa OutgoingDBusTubeChannel::offerTube
  */
 bool DBusTubeChannel::supportsCredentials() const
 {
@@ -324,7 +345,6 @@ QString DBusTubeChannel::address() const
     return mPriv->address;
 }
 
-
 /**
  * This function returns all the known active connections since FeatureConnectionMonitoring has
  * been enabled. For this method to return all known connections, you need to make
@@ -347,5 +367,15 @@ UIntList DBusTubeChannel::accessControls() const
 {
     return mPriv->accessControls;
 }
+
+// Signals documentation
+/**
+ * \fn void DBusTubeChannel::busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr > &removed)
+ *
+ * Emitted when the participants of this tube change
+ *
+ * \param added An hash containing the contacts who joined this tube, with their respective bus name.
+ * \param removed A list containing the contacts who left this tube.
+ */
 
 }

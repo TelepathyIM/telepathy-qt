@@ -36,19 +36,65 @@ namespace Tp
 
 /**
  * \class OutgoingDBusTubeChannel
- * \headerfile TelepathyQt/stream-tube.h <TelepathyQt/OutgoingDBusTubeChannel>
+ * \headerfile TelepathyQt/outgoing-dbus-tube-channel.h <TelepathyQt/OutgoingDBusTubeChannel>
  *
- * \brief A class representing a Stream Tube
+ * An high level wrapper for managing an outgoing DBus tube
  *
  * \c OutgoingDBusTubeChannel is an high level wrapper for managing Telepathy interface
- * org.freedesktop.Telepathy.Channel.Type.StreamTubeChannel.
+ * #TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE.
  * In particular, this class is meant to be used as a comfortable way for exposing new tubes.
- * It provides a set of overloads for exporting a variety of sockets over a stream tube.
  *
- * For more details, please refer to Telepathy spec.
+ * \section outgoing_dbus_tube_usage_sec Usage
+ *
+ * \subsection outgoing_dbus_tube_create_sec Creating an outgoing DBus tube
+ *
+ * The easiest way to create a DBus tube is through Account. One can
+ * just use the Account convenience methods such as
+ * Account::createDBusTube() to get a brand new DBus tube channel ready to be used.
+ *
+ * To create such a channel, it is required to pass Account::createDBusTube()
+ * the contact identifier and the DBus service name which will be used over the tube.
+ * For example:
+ *
+ * \code
+ * AccountPtr myaccount = getMyAccountSomewhere();
+ * ContactPtr myfriend = getMyFriendSomewhereElse();
+ *
+ * PendingChannelRequest *tube = myaccount->createDBusTube(myfriend, "org.my.service");
+ * \endcode
+ *
+ * Be sure to track the pending request to retrieve your outgoing DBus tube upon success.
+ *
+ * \subsection outgoing_dbus_tube_offer_sec Offering the tube
+ *
+ * Before being ready to offer the tube, we must be sure the required features on our object
+ * are ready. In this case, we need to enable TubeChannel::FeatureTube
+ * and StreamTubeChannel::FeatureDBusTube.
+ *
+ * \code
+ *
+ * Features features = Features() << TubeChannel::FeatureTube
+ *                                << DBusTubeChannel::FeatureDBusTube;
+ * connect(myTube->becomeReady(features),
+ *         SIGNAL(finished(Tp::PendingOperation *)),
+ *         SLOT(onDBusTubeChannelReady(Tp::PendingOperation *)));
+ *
+ * \endcode
+ *
+ * To learn more on how to use introspectable and features, please see \ref account_ready_sec.
+ *
+ * You can also enable DBusTubeChannel::FeatureBusNamesMonitoring to monitor connections
+ * to the tube.
+ *
+ * Once your object is ready, you can use offerTube to create a brand new DBus connection and offer
+ * it over the tube.
+ *
+ * You can now monitor the returned operation to know when the tube will be ready.
+ * It is guaranteed that when the operation finishes,
+ * the tube will be already opened and ready to be used.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
-
-
 
 /**
  * Create a new OutgoingDBusTubeChannel channel.
@@ -88,29 +134,23 @@ OutgoingDBusTubeChannel::OutgoingDBusTubeChannel(const ConnectionPtr &connection
  */
 OutgoingDBusTubeChannel::~OutgoingDBusTubeChannel()
 {
+    delete mPriv;
 }
 
-
 /**
- * \brief Offer a Unix socket over the tube
+ * Offer the tube
  *
- * This method offers a Unix socket over this tube. The socket is represented through
- * a QByteArray, which should contain the path to the socket. You can also expose an
- * abstract Unix socket, by including the leading null byte in the address
+ * This method creates a brand new private DBus connection, and offers it through the tube.
  *
- * If you are already handling a local socket logic in your application, you can also
- * use an overload which accepts a QLocalServer.
+ * The %PendingDBusTubeOffer returned by this method will be completed as soon as the tube is
+ * opened and ready to be used.
  *
- * The %PendingOperation returned by this method will be completed as soon as the tube is
- * open and ready to be used.
- *
- * \param address A valid path to an existing Unix socket or abstract Unix socket
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
  *                   Please read the specification for more details.
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *
- * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
+ * \returns A %PendingDBusTubeOffer which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
 PendingDBusTubeOffer *OutgoingDBusTubeChannel::offerTube(
@@ -154,6 +194,15 @@ PendingDBusTubeOffer *OutgoingDBusTubeChannel::offerTube(
     return op;
 }
 
+/**
+ * Returns the address of the opened DBus connection.
+ *
+ * Please note this function will return a meaningful value only if the tube has already
+ * been opened successfully: in case of failure or the tube being still pending, an empty QString will be
+ * returned.
+ *
+ * \returns The address of the opened DBus connection.
+ */
 QString OutgoingDBusTubeChannel::address() const
 {
     if (state() != TubeChannelStateOpen) {
