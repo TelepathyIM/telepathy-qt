@@ -40,6 +40,7 @@ set(telepathy_qt4_SRCS
     contact-factory.cpp
     contact-manager.cpp
     contact-manager-roster.cpp
+    contact-messenger.cpp
     contact-search-channel.cpp
     dbus.cpp
     dbus-proxy.cpp
@@ -234,6 +235,8 @@ set(telepathy_qt4_HEADERS
     contact-factory.h
     ContactManager
     contact-manager.h
+    ContactMessenger
+    contact-messenger.h
     ContactSearchChannel
     contact-search-channel.h
     DBus
@@ -419,6 +422,7 @@ set(telepathy_qt4_MOC_SRCS
     contact.h
     contact-manager.h
     contact-manager-internal.h
+    contact-messenger.h
     contact-search-channel.h
     contact-search-channel-internal.h
     dbus-proxy.h
