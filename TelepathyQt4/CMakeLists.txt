@@ -318,6 +318,7 @@ set(telepathy_qt4_HEADERS
     pending-operation.h
     PendingReady
     pending-ready.h
+    PendingSendMessage
     PendingStreamTubeConnection
     pending-stream-tube-connection.h
     PendingStringList
