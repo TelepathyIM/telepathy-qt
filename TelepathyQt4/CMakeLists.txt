@@ -62,6 +62,7 @@ set(telepathy_qt4_SRCS
     media-session-handler.cpp
     media-stream-handler.cpp
     message.cpp
+    message-content-part.cpp
     object.cpp
     optional-interface-factory.cpp
     outgoing-file-transfer-channel.cpp
@@ -281,6 +282,9 @@ set(telepathy_qt4_HEADERS
     MediaStreamHandlerInterface
     Message
     message.h
+    MessageContentPart
+    MessageContentPartList
+    message-content-part.h
     MethodInvocationContext
     method-invocation-context.h
     NotFilter
