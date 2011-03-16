@@ -44,11 +44,13 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
     : QObject(),
       contactManager(contactManager),
       usingFallbackContactList(false),
+      hasContactBlockingInterface(false),
       introspectPendingOp(0),
       introspectGroupsPendingOp(0),
       pendingContactListState((uint) -1),
       contactListState((uint) -1),
       canChangeContactList(false),
+      canReportAbusive(false),
       contactListRequestUsesMessage(false),
       gotContactListInitialContacts(false),
       gotContactListContactsChangedWithId(false),
@@ -79,17 +81,23 @@ PendingOperation *ContactManager::Roster::introspect()
 
         usingFallbackContactList = false;
 
-        debug() << "Requesting handle for deny channel";
+        if (conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_BLOCKING)) {
+            debug() << "Contact blocking interface found. Calling introspectContactBlocking";
+            hasContactBlockingInterface = true;
+            introspectContactBlocking();
+        } else {
+            debug() << "Requesting handle for deny channel";
 
-        contactListChannels.insert(ChannelInfo::TypeDeny,
-                ChannelInfo(ChannelInfo::TypeDeny));
+            contactListChannels.insert(ChannelInfo::TypeDeny,
+                    ChannelInfo(ChannelInfo::TypeDeny));
 
-        PendingHandles *ph = conn->lowlevel()->requestHandles(HandleTypeList,
-                QStringList() << ChannelInfo::identifierForType(
-                    ChannelInfo::TypeDeny));
-        connect(ph,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(gotContactListChannelHandle(Tp::PendingOperation*)));
+            PendingHandles *ph = conn->lowlevel()->requestHandles(HandleTypeList,
+                    QStringList() << ChannelInfo::identifierForType(
+                        ChannelInfo::TypeDeny));
+            connect(ph,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(gotContactListChannelHandle(Tp::PendingOperation*)));
+        }
     } else {
         debug() << "Connection.ContactList not found, falling back to contact list channels";
 
@@ -619,25 +627,78 @@ PendingOperation *ContactManager::Roster::removeContacts(
 
 bool ContactManager::Roster::canBlockContacts() const
 {
-    return (bool) denyChannel;
+    if (!usingFallbackContactList && hasContactBlockingInterface) {
+        return true;
+    } else {
+        return (bool) denyChannel;
+    }
+}
+
+bool ContactManager::Roster::canReportAbuse() const
+{
+    return canReportAbusive;
 }
 
 PendingOperation *ContactManager::Roster::blockContacts(
-        const QList<ContactPtr> &contacts, bool value)
+        const QList<ContactPtr> &contacts, bool value, bool reportAbuse)
 {
-    ConnectionPtr conn(contactManager->connection());
+    if (!usingFallbackContactList && hasContactBlockingInterface) {
+        ConnectionPtr conn(contactManager->connection());
+        Client::ConnectionInterfaceContactBlockingInterface *iface =
+            conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
 
-    if (!denyChannel) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Cannot block contacts on this protocol"),
-                conn);
-    }
+        UIntList handles;
+        foreach (const ContactPtr &contact, contacts) {
+            handles << contact->handle()[0];
+        }
 
-    if (value) {
-        return denyChannel->groupAddContacts(contacts);
+        Q_ASSERT(iface);
+        if(value) {
+            return queuedFinishVoid(iface->BlockContacts(handles, reportAbuse));
+        } else {
+            return queuedFinishVoid(iface->UnblockContacts(handles));
+        }
+
     } else {
-        return denyChannel->groupRemoveContacts(contacts);
+        ConnectionPtr conn(contactManager->connection());
+
+        if (!denyChannel) {
+            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                    QLatin1String("Cannot block contacts on this protocol"),
+                    conn);
+        }
+
+        if (value) {
+            return denyChannel->groupAddContacts(contacts);
+        } else {
+            return denyChannel->groupRemoveContacts(contacts);
+        }
     }
+}
+
+void ContactManager::Roster::gotContactBlockingProperties(PendingOperation *op)
+{
+    if (op->isError()) {
+        // We may have been in state Failure and then Success, and FeatureRoster is already ready
+        if (introspectPendingOp) {
+            introspectPendingOp->setFinishedWithError(
+                    op->errorName(), op->errorMessage());
+            introspectPendingOp = 0;
+        }
+        return;
+    }
+
+    debug() << "Got ContactBlocking properties";
+
+    PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+
+    QVariantMap props = pvm->result();
+
+    uint contactBlockingCaps =  qdbus_cast<uint>(props[QLatin1String("ContactBlockingCapabilities")]);
+    canReportAbusive =  contactBlockingCaps & ContactBlockingCapabilityCanReportAbusive;
+
+    // call contact list introspection now
+    introspectContactList();
 }
 
 void ContactManager::Roster::gotContactListProperties(PendingOperation *op)
@@ -1077,6 +1138,7 @@ void ContactManager::Roster::onContactListChannelReady()
         updateContactsBlockState();
 
         introspectContactList();
+
     } else if (++contactListChannelsReady == ChannelInfo::LastType) {
         if (contactListChannels.isEmpty()) {
             contactListState = ContactListStateFailure;
@@ -1481,6 +1543,27 @@ void ContactManager::Roster::introspectContactListContacts()
             SLOT(gotContactListContacts(QDBusPendingCallWatcher*)));
 }
 
+void ContactManager::Roster::introspectContactBlocking()
+{
+    debug() << "Requesting ContactBlocking properties";
+
+    ConnectionPtr conn(contactManager->connection());
+
+    Client::ConnectionInterfaceContactBlockingInterface *iface =
+        conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
+
+    PendingVariantMap *pvm = iface->requestAllProperties();
+    connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotContactBlockingProperties(Tp::PendingOperation*)));
+
+    // get the initial blocked contacts list and connect for further updates
+    updateBlockedContacts();
+    connect(iface, SIGNAL(BlockedContactsChanged(Tp::UIntList,Tp::UIntList)),
+            SLOT(onBlockedContactsChanged(Tp::UIntList,Tp::UIntList)));
+}
+
+
 void ContactManager::Roster::processContactListChanges()
 {
     if (processingContactListChanges || contactListChangesQueue.isEmpty()) {
@@ -1700,6 +1783,11 @@ void ContactManager::Roster::setContactListChannelsReady()
 void ContactManager::Roster::updateContactsBlockState()
 {
     if (!denyChannel) {
+        if(hasContactBlockingInterface) {
+            foreach (const ContactPtr contact, cachedBlockedContacts) {
+                contact->setBlocked(true);
+            }
+        }
         return;
     }
 
@@ -1949,6 +2037,62 @@ void ContactManager::Roster::RemoveGroupOp::onChannelClosed(PendingOperation *op
     } else {
         setFinishedWithError(op->errorName(), op->errorMessage());
     }
+}
+
+void ContactManager::Roster::updateBlockedContacts()
+{
+    ConnectionPtr conn(contactManager->connection());
+
+    Client::ConnectionInterfaceContactBlockingInterface *iface =
+        conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
+
+    Q_ASSERT(iface);
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            iface->RequestBlockedContacts(), contactManager);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotRequestedBlockedContacts(QDBusPendingCallWatcher*)));
+}
+
+void ContactManager::Roster::gotRequestedBlockedContacts(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<Tp::UIntList> reply = *watcher;
+
+    if (watcher->isError()) {
+        warning() << "Failed introspecting blocked contacts";
+        return;
+    }
+
+    debug() << "Got initial blocked contacts";
+
+
+    ConnectionPtr conn(contactManager->connection());
+    Tp::UIntList handles = reply.value();
+
+    cachedBlockedContacts.clear();
+    foreach (uint handle, handles) {
+        Tp::ContactPtr contact = contactManager->lookupContactByHandle(handle);
+        cachedBlockedContacts.insert(contact);
+    }
+}
+
+void ContactManager::Roster::onBlockedContactsChanged(Tp::UIntList added, Tp::UIntList removed)
+{
+    Tp::Contacts addedContacts;
+    foreach (uint handle, added) {
+        Tp::ContactPtr contact = contactManager->lookupContactByHandle(handle);
+        addedContacts.insert(contact);
+    }
+
+    Tp::Contacts removedContacts;
+    foreach (uint handle, added) {
+        Tp::ContactPtr contact = contactManager->lookupContactByHandle(handle);
+        removedContacts.insert(contact);
+    }
+
+    cachedBlockedContacts.unite(addedContacts);
+    cachedBlockedContacts.subtract(removedContacts);
 }
 
 } // Tp

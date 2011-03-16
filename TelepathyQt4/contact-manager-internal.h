@@ -87,11 +87,14 @@ public:
             const QList<ContactPtr> &contacts, const QString &message);
 
     bool canBlockContacts() const;
-    PendingOperation *blockContacts(const QList<ContactPtr> &contacts, bool value);
+    bool canReportAbuse() const;
+    PendingOperation *blockContacts(const QList<ContactPtr> &contacts, bool value, bool reportAbuse);
 
 private Q_SLOTS:
+    void gotContactBlockingProperties(Tp::PendingOperation *op);
     void gotContactListProperties(Tp::PendingOperation *op);
     void gotContactListContacts(QDBusPendingCallWatcher *watcher);
+    void gotRequestedBlockedContacts(QDBusPendingCallWatcher *watcher);
     void onContactListStateChanged(uint state);
     void onContactListContactsChangedWithId(const Tp::ContactSubscriptionMap &changes,
             const Tp::HandleIdentifierMap &ids, const Tp::HandleIdentifierMap &removals);
@@ -153,6 +156,7 @@ private Q_SLOTS:
         const Tp::Channel::GroupMemberChangeDetails &details);
     void onContactListGroupRemoved(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage);
+    void onBlockedContactsChanged(Tp::UIntList added, Tp::UIntList removed);
 
 private:
     struct ChannelInfo;
@@ -164,6 +168,7 @@ private:
 
     void introspectContactList();
     void introspectContactListContacts();
+    void introspectContactBlocking();
     void processContactListChanges();
     void processContactListUpdates();
     void processContactListGroupsUpdates();
@@ -181,18 +186,22 @@ private:
     void checkContactListGroupsReady();
     void setContactListGroupChannelsReady();
     QString addContactListGroupChannel(const ChannelPtr &contactListGroupChannel);
+    void updateBlockedContacts();
 
     ContactManager *contactManager;
 
     Contacts cachedAllKnownContacts;
+    Contacts cachedBlockedContacts;
 
     bool usingFallbackContactList;
+    bool hasContactBlockingInterface;
 
     PendingOperation *introspectPendingOp;
     PendingOperation *introspectGroupsPendingOp;
     uint pendingContactListState;
     uint contactListState;
     bool canChangeContactList;
+    bool canReportAbusive;
     bool contactListRequestUsesMessage;
     bool gotContactListInitialContacts;
     bool gotContactListContactsChangedWithId;
@@ -227,6 +236,9 @@ private:
 
     // If RosterGroups introspection completing should advance the ContactManager state to Success
     bool groupsSetSuccess;
+
+    // Blocked contacts using the new ContactBlocking API
+    QList<ContactPtr> blockedContacts;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo

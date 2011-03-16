@@ -103,6 +103,9 @@ public:
     bool canBlockContacts() const;
     PendingOperation *blockContacts(
             const QList<ContactPtr> &contacts, bool value = true);
+    PendingOperation *blockContacts(
+            const QList<ContactPtr> &contacts, bool value, bool reportAbuse);
+    bool canReportAbuse() const;
 
     PendingContacts *contactsForHandles(const UIntList &handles,
             const Features &features = Features());

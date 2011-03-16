@@ -755,6 +755,20 @@ bool ContactManager::canBlockContacts() const
 }
 
 /**
+ * Return whether this protocol can report abusive contacts
+ *
+ * \return Whether the reportAbuse flag will succeed when blocking contacts
+ */
+bool ContactManager::canReportAbuse() const
+{
+    if (!connection()->isReady(Connection::FeatureRoster)) {
+        return false;
+    }
+
+    return mPriv->roster->canReportAbuse();
+}
+
+/**
  * Set whether the given contacts are blocked. Blocked contacts cannot send
  * messages to the user; depending on the protocol, blocking a contact may
  * have other effects.
@@ -769,7 +783,7 @@ bool ContactManager::canBlockContacts() const
  *         to take the requested action
  */
 PendingOperation *ContactManager::blockContacts(
-        const QList<ContactPtr> &contacts, bool value)
+        const QList<ContactPtr> &contacts, bool value, bool reportAbuse)
 {
     if (!connection()->isValid()) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
@@ -781,7 +795,23 @@ PendingOperation *ContactManager::blockContacts(
                 connection());
     }
 
-    return mPriv->roster->blockContacts(contacts, value);
+    return mPriv->roster->blockContacts(contacts, value, reportAbuse);
+}
+
+/**
+ * This is an overloaded method
+ *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \param contacts Contacts who should be added to, or removed from, the list
+ *                 of blocked contacts
+ * \param value If true, add the contacts to the list of blocked contacts;
+ *              if false, remove them from the list
+ */
+PendingOperation *ContactManager::blockContacts(
+        const QList<ContactPtr> &contacts, bool value)
+{
+    return blockContacts(contacts, value, false);
 }
 
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,

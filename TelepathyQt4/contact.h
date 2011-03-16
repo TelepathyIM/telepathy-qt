@@ -152,6 +152,7 @@ public:
      */
     bool isBlocked() const;
     PendingOperation *block(bool value = true);
+    PendingOperation *block(bool value, bool reportAbuse);
 
     /*
      * Filter on the groups they're in - to show a specific group only
