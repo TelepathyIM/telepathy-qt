@@ -36,7 +36,7 @@ namespace Tp
 struct TP_QT_NO_EXPORT IncomingDBusTubeChannel::Private
 {
 public:
-    Private(IncomingDBusTubeChannel* parent);
+    Private(IncomingDBusTubeChannel *parent);
     virtual ~Private();
 
     // Public object
@@ -202,8 +202,7 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  * \return A %PendingDBusTubeAccept which will finish as soon as the tube is ready to be used
  *         (hence in the Open state)
  */
-PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(
-        bool requireCredentials)
+PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
 {
     SocketAccessControl accessControl = requireCredentials ?
                                         SocketAccessControlCredentials :

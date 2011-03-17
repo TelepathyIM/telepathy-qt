@@ -62,14 +62,14 @@ DBusTubeChannel::Private::~Private()
 {
 }
 
-void DBusTubeChannel::Private::extractProperties(const QVariantMap& props)
+void DBusTubeChannel::Private::extractProperties(const QVariantMap &props)
 {
     serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
     accessControls = qdbus_cast<UIntList>(props[QLatin1String("SupportedAccessControls")]);
     extractParticipants(qdbus_cast<DBusTubeParticipants>(props[QLatin1String("DBusNames")]));
 }
 
-void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipants& participants)
+void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipants &participants)
 {
     busNames.clear();
     for (DBusTubeParticipants::const_iterator i = participants.constBegin();
@@ -80,8 +80,7 @@ void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipant
     }
 }
 
-void DBusTubeChannel::Private::introspectBusNamesMonitoring(
-        DBusTubeChannel::Private *self)
+void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Private *self)
 {
     DBusTubeChannel *parent = self->parent;
 
@@ -102,8 +101,7 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(
     self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNamesMonitoring, true);
 }
 
-void DBusTubeChannel::Private::introspectDBusTube(
-        DBusTubeChannel::Private *self)
+void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self)
 {
     DBusTubeChannel *parent = self->parent;
 
@@ -288,7 +286,7 @@ QString DBusTubeChannel::address() const
  *
  * \returns A list of active connection ids known to this tube
  */
-QHash< ContactPtr, QString > DBusTubeChannel::busNames() const
+QHash<ContactPtr, QString> DBusTubeChannel::busNames() const
 {
     if (!isReady(FeatureBusNamesMonitoring)) {
         warning() << "DBusTubeChannel::busNames() used with "
@@ -316,8 +314,7 @@ void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher *watcher)
     }
 }
 
-void DBusTubeChannel::onDBusNamesChanged(
-        const Tp::DBusTubeParticipants &added,
+void DBusTubeChannel::onDBusNamesChanged(const Tp::DBusTubeParticipants &added,
         const Tp::UIntList &removed)
 {
     QHash<ContactPtr, QString> realAdded;

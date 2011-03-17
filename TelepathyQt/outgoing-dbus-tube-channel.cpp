@@ -170,8 +170,7 @@ OutgoingDBusTubeChannel::~OutgoingDBusTubeChannel()
  * \returns A %PendingDBusTubeOffer which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingDBusTubeOffer *OutgoingDBusTubeChannel::offerTube(
-        const QVariantMap &parameters,
+PendingDBusTubeOffer *OutgoingDBusTubeChannel::offerTube(const QVariantMap &parameters,
         bool requireCredentials)
 {
     SocketAccessControl accessControl = requireCredentials ?
