@@ -9,9 +9,13 @@
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/ContactMessenger>
 #include <TelepathyQt4/Debug>
+#include <TelepathyQt4/Message>
+#include <TelepathyQt4/MessageContentPart>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingSendMessage>
 #include <TelepathyQt4/Types>
 
 #include <telepathy-glib/debug.h>
@@ -53,11 +57,22 @@ public:
     {
     }
 
+    void setSimulatedSendError(const QString &error)
+    {
+        mSimulatedSendError = error;
+    }
+
 public Q_SLOTS: // Methods
     QString Send(const QDBusObjectPath &account,
             const QString &targetID, const MessagePartList &message,
             uint flags)
     {
+        if (!mSimulatedSendError.isEmpty()) {
+            dynamic_cast<QDBusContext *>(parent())->sendErrorReply(mSimulatedSendError,
+                    QLatin1String("Let's pretend this interface and method don't exist, shall we?"));
+            return QString();
+        }
+
         // TODO implement
         return QString();
     }
@@ -69,6 +84,22 @@ Q_SIGNALS:
 private:
 
     QDBusConnection mBus;
+    QString mSimulatedSendError;
+};
+
+class Dispatcher : public QObject, public QDBusContext
+{
+    Q_OBJECT;
+
+public:
+    Dispatcher(QObject *parent)
+        : QObject(parent)
+    {
+    }
+
+    ~Dispatcher()
+    {
+    }
 };
 
 class TestContactMessenger : public Test
@@ -84,6 +115,8 @@ public:
 private Q_SLOTS:
     void initTestCase();
     void init();
+
+    void testNoSupport();
 
     void cleanup();
     void cleanupTestCase();
@@ -107,7 +140,7 @@ void TestContactMessenger::initTestCase()
     QDBusConnection bus = QDBusConnection::sessionBus();
     QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
     QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
-    QObject *dispatcher = new QObject(this);
+    Dispatcher *dispatcher = new Dispatcher(this);
     mCDMessagesAdaptor = new CDMessagesAdaptor(bus, dispatcher);
     QVERIFY(bus.registerService(channelDispatcherBusName));
     QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
@@ -142,6 +175,46 @@ void TestContactMessenger::initTestCase()
 void TestContactMessenger::init()
 {
     initImpl();
+
+    mCDMessagesAdaptor->setSimulatedSendError(QString());
+}
+
+void TestContactMessenger::testNoSupport()
+{
+    // We should give a descriptive error message if the CD doesn't actually support sending
+    // messages using the new API. NotImplemented should probably be documented for the
+    // sendMessage() methods as an indication that the CD implementation needs to be upgraded.
+
+    ContactMessengerPtr messenger = ContactMessenger::create(mAccount, QLatin1String("Ann"));
+    QVERIFY(!messenger.isNull());
+
+    mCDMessagesAdaptor->setSimulatedSendError(TP_QT4_DBUS_ERROR_UNKNOWN_METHOD);
+
+    PendingSendMessage *pendingSend = messenger->sendMessage(QLatin1String("Hi!"));
+    QVERIFY(pendingSend != NULL);
+
+    QVERIFY(connect(pendingSend,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QVERIFY(pendingSend->isFinished());
+    QVERIFY(!pendingSend->isValid());
+
+    QCOMPARE(pendingSend->errorName(), TP_QT4_ERROR_NOT_IMPLEMENTED);
+
+    // Let's try using the other sendMessage overload similarly as well
+
+    Message m(ChannelTextMessageTypeAction, QLatin1String("is testing!"));
+
+    pendingSend = messenger->sendMessage(m.parts());
+    QVERIFY(pendingSend != NULL);
+
+    QVERIFY(connect(pendingSend,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QVERIFY(pendingSend->isFinished());
+    QVERIFY(!pendingSend->isValid());
+
+    QCOMPARE(pendingSend->errorName(), TP_QT4_ERROR_NOT_IMPLEMENTED);
 }
 
 void TestContactMessenger::cleanup()
