@@ -9,6 +9,8 @@
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/ChannelClassSpec>
+#include <TelepathyQt4/Client>
 #include <TelepathyQt4/ContactMessenger>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Message>
@@ -117,11 +119,14 @@ private Q_SLOTS:
     void init();
 
     void testNoSupport();
+    void testObserverRegistration();
 
     void cleanup();
     void cleanupTestCase();
 
 private:
+
+    ClientObserverInterface *observerForID(const QString &id);
 
     AccountManagerPtr mAM;
     AccountPtr mAccount;
@@ -217,6 +222,26 @@ void TestContactMessenger::testNoSupport()
     QCOMPARE(pendingSend->errorName(), TP_QT4_ERROR_NOT_IMPLEMENTED);
 }
 
+void TestContactMessenger::testObserverRegistration()
+{
+    ContactMessengerPtr messenger = ContactMessenger::create(mAccount, QLatin1String("Ann"));
+
+    // At this point, there should be a registered observer for that target ID and the relevant
+    // channel class on our unique name
+
+    ClientObserverInterface *observer = observerForID(QLatin1String("Ann"));
+    QVERIFY(observer != NULL);
+
+    // It shouldn't have recover == true, as it shouldn't be activatable at all, and hence recovery
+    // doesn't make sense for it
+    bool recover;
+    QVERIFY(waitForProperty(observer->requestPropertyRecover(), &recover));
+    QVERIFY(!recover);
+
+    // OTOH, there shouldn't be an observer for some other target
+    QVERIFY(!observerForID(QLatin1String("Bob")));
+}
+
 void TestContactMessenger::cleanup()
 {
     cleanupImpl();
@@ -225,6 +250,51 @@ void TestContactMessenger::cleanup()
 void TestContactMessenger::cleanupTestCase()
 {
     cleanupTestCaseImpl();
+}
+
+ClientObserverInterface *TestContactMessenger::observerForID(const QString &id)
+{
+    QStringList registeredNames =
+        QDBusConnection::sessionBus().interface()->registeredServiceNames();
+
+    QVariantMap idProps;
+    idProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), id);
+
+    ChannelClassSpec spec = ChannelClassSpec::textChat(idProps);
+
+    Q_FOREACH(QString name, registeredNames) {
+        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
+            continue;
+        }
+
+        QString path = QLatin1Char('/') + name.replace(QLatin1Char('.'), QLatin1Char('/'));
+
+        ClientInterface client(name, path);
+        QStringList ifaces;
+        if (!waitForProperty(client.requestPropertyInterfaces(), &ifaces)) {
+            continue;
+        }
+
+        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_OBSERVER)) {
+            continue;
+        }
+
+        ClientObserverInterface *observer = new ClientObserverInterface(name, path, this);
+
+        ChannelClassList filter;
+        if (!waitForProperty(observer->requestPropertyObserverChannelFilter(), &filter)) {
+            continue;
+        }
+
+        if (ChannelClassSpecList(filter) == ChannelClassSpecList(spec)) {
+            qDebug() << "Found observer" << name << "for id" << id << '\n';
+            return observer;
+        } else {
+            delete observer;
+        }
+    }
+
+    return 0;
 }
 
 QTEST_MAIN(TestContactMessenger)
