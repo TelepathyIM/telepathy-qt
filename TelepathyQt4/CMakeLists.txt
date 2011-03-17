@@ -366,6 +366,7 @@ set(telepathy_qt4_HEADERS
     ReferencedHandlesIterator
     requestable-channel-class-spec.h
     RequestableChannelClassSpec
+    RequestableChannelClassSpecList
     RoomListChannel
     room-list-channel.h
     SharedPtr
