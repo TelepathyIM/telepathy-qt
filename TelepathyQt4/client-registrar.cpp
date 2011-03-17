@@ -28,6 +28,7 @@
 
 #include "TelepathyQt4/channel-factory.h"
 #include "TelepathyQt4/debug-internal.h"
+#include "TelepathyQt4/request-temporary-handler-internal.h"
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
@@ -399,6 +400,13 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
     SharedPtr<InvocationData> invocation(new InvocationData());
     QList<PendingOperation *> readyOps;
 
+    RequestTemporaryHandler *tempHandler = dynamic_cast<RequestTemporaryHandler *>(mClient);
+    if (tempHandler) {
+        debug() << "  This is a temporary handler for the Request & Handle API,"
+            << "giving an early signal of the invocation";
+        tempHandler->setDBusHandlerInvoked();
+    }
+
     PendingReady *accReady = accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             accountPath.path(),
             connFactory,
@@ -482,6 +490,12 @@ void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
         SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
 
         if (!invocation->error.isEmpty()) {
+            RequestTemporaryHandler *tempHandler = dynamic_cast<RequestTemporaryHandler *>(mClient);
+            if (tempHandler) {
+                debug() << "  This is a temporary handler for the Request & Handle API, indicating failure";
+                tempHandler->setDBusHandlerErrored(invocation->error, invocation->message);
+            }
+
             // We guarantee that the proxies were ready - so we can't invoke the client if they
             // weren't made ready successfully. Fix the introspection code if this happens :)
             invocation->ctx->setFinishedWithError(invocation->error, invocation->message);

@@ -515,7 +515,7 @@ void PendingChannel::onAccountCreateChannelFinished(PendingOperation *op)
         return;
     }
 
-    if (!mPriv->channel) {
+    if (!mPriv->handler->isDBusHandlerInvoked()) {
         // Our handler hasn't be called but the channel request is complete.
         // That means another handler handled the channels so we don't own it.
         if (mPriv->create) {

@@ -40,7 +40,8 @@ RequestTemporaryHandler::RequestTemporaryHandler(const AccountPtr &account)
     : QObject(),
       AbstractClientHandler(ChannelClassSpecList(), AbstractClientHandler::Capabilities(), false),
       mAccount(account),
-      mQueueChannelReceived(true)
+      mQueueChannelReceived(true),
+      dbusHandlerInvoked(false)
 {
 }
 
@@ -57,6 +58,8 @@ void RequestTemporaryHandler::handleChannels(
         const QDateTime &userActionTime,
         const HandlerInfo &handlerInfo)
 {
+    Q_ASSERT(dbusHandlerInvoked);
+
     QString errorMessage;
     if (channels.size() != 1 || requestsSatisfied.size() != 1) {
         errorMessage = QLatin1String("Only one channel and one channel request should be given "
@@ -102,6 +105,19 @@ void RequestTemporaryHandler::setQueueChannelReceived(bool queue)
     mQueueChannelReceived = queue;
     if (!queue) {
         processChannelReceivedQueue();
+    }
+}
+
+void RequestTemporaryHandler::setDBusHandlerInvoked()
+{
+    dbusHandlerInvoked = true;
+}
+
+void RequestTemporaryHandler::setDBusHandlerErrored(const QString &errorName, const QString &errorMessage)
+{
+    Q_ASSERT(dbusHandlerInvoked);
+    if (!mChannel) {
+        emit error(errorName, errorMessage);
     }
 }
 

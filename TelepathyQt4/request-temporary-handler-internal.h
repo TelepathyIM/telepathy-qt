@@ -62,6 +62,11 @@ public:
 
     void setQueueChannelReceived(bool queue);
 
+    void setDBusHandlerInvoked();
+    void setDBusHandlerErrored(const QString &errorName, const QString &errorMessage);
+
+    bool isDBusHandlerInvoked() const { return dbusHandlerInvoked; }
+
 Q_SIGNALS:
     void error(const QString &errorName, const QString &errorMessage);
     void channelReceived(const Tp::ChannelPtr &channel, const QDateTime &userActionTime,
@@ -76,6 +81,7 @@ private:
     ChannelPtr mChannel;
     bool mQueueChannelReceived;
     QQueue<QPair<QDateTime, ChannelRequestHints> > mChannelReceivedQueue;
+    bool dbusHandlerInvoked;
 };
 
 } // Tp
