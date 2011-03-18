@@ -84,7 +84,6 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
         parent->connect(account.data(),
                 SIGNAL(connectionChanged(Tp::ConnectionPtr)),
                 SLOT(onAccountConnectionChanged(Tp::ConnectionPtr)));
-        parent->onAccountConnectionChanged(account->connection());
     }
 
     parent->connect(observer.data(),
@@ -361,6 +360,9 @@ SimpleTextObserver::SimpleTextObserver(const AccountPtr &account,
         const QString &contactIdentifier, bool requiresNormalization)
     : mPriv(new Private(this, account, contactIdentifier, requiresNormalization))
 {
+    if (mPriv->observer && requiresNormalization) {
+        onAccountConnectionChanged(account->connection());
+    }
 }
 
 /**
