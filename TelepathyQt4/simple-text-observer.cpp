@@ -184,13 +184,26 @@ void SimpleTextObserver::observeChannels(
 
     foreach (const ChannelPtr &channel, channels) {
         TextChannelPtr textChannel = TextChannelPtr::qObjectCast(channel);
+        if (!textChannel) {
+            if (channel->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_TEXT) {
+                warning() << "Channel received to observe is not of type Text, service confused. "
+                    "Ignoring channel";
+            } else {
+                warning() << "Channel received to observe is not a subclass of TextChannel. "
+                    "ChannelFactory set on this observer's account must construct TextChannel "
+                    "subclasses for channels of type Text. Ignoring channel";
+            }
+            continue;
+        }
+
         if (mPriv->channels.contains(textChannel)) {
             // we are already observing this channel
             continue;
         }
 
         // this shouldn't happen, but in any case
-        if (!textChannel || !textChannel->isValid()) {
+        if (!textChannel->isValid()) {
+            warning() << "Channel received to observe is invalid. Ignoring channel";
             continue;
         }
 
