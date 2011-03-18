@@ -397,13 +397,9 @@ QString SimpleTextObserver::contactIdentifier() const
 void SimpleTextObserver::onAccountConnectionChanged(const Tp::ConnectionPtr &connection)
 {
     if (connection) {
-        if (connection->status() == ConnectionStatusConnected) {
-            onAccountConnectionConnected();
-        } else {
-            connect(connection->becomeReady(Connection::FeatureConnected),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(onAccountConnectionConnected()));
-        }
+        connect(connection->becomeReady(Connection::FeatureConnected),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onAccountConnectionConnected()));
     }
 }
 
@@ -426,9 +422,12 @@ void SimpleTextObserver::onContactConstructed(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         // what should we do here? retry? wait for a new connection?
+        warning() << "Normalizing contact id failed with" <<
+            op->errorName() << " : " << op->errorMessage();
         return;
     }
 
+    debug() << "Contact id normalized";
     PendingContacts *pc = qobject_cast<PendingContacts*>(op);
     Q_ASSERT(pc->contacts().size() == 1);
     ContactPtr contact = pc->contacts().first();
