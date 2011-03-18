@@ -517,6 +517,7 @@ endforeach(spec ${SPECS})
 
 set(FUTURE_SPECS
     channel
+    channel-dispatcher
     misc)
 foreach(spec ${FUTURE_SPECS})
     tpqt4_xincludator(${spec}-future-xincludator  ${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
@@ -553,6 +554,7 @@ tpqt4_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::C
 tpqt4_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)
 
 tpqt4_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
+tpqt4_future_client_generator(channel-dispatcher TpFuture::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-future-xincludator)
 tpqt4_future_client_generator(misc TpFuture::Client DEPENDS misc-future-xincludator)
 
 # Create the library
