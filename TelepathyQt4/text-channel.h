@@ -29,41 +29,13 @@
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingSendMessage>
 
 namespace Tp
 {
 
-class PendingReadyChannel;
 class Message;
 class ReceivedMessage;
-class TextChannel;
-
-class TELEPATHY_QT4_EXPORT PendingSendMessage : public PendingOperation
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(PendingSendMessage)
-
-public:
-    ~PendingSendMessage();
-
-    TextChannelPtr channel() const;
-
-    QString sentMessageToken() const;
-    Message message() const;
-
-private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onTextSent(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void onMessageSent(QDBusPendingCallWatcher *);
-
-private:
-    friend class TextChannel;
-
-    TELEPATHY_QT4_NO_EXPORT PendingSendMessage(const TextChannelPtr &channel, const Message &message);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
 
 class TELEPATHY_QT4_EXPORT TextChannel : public Channel
 {

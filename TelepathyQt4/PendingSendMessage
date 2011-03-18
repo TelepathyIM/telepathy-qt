@@ -5,7 +5,7 @@
 #define IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/text-channel.h>
+#include <TelepathyQt4/pending-send-message.h>
 
 #undef IN_TELEPATHY_QT4_HEADER
 

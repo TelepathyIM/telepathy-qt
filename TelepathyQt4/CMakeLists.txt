@@ -79,6 +79,7 @@ set(telepathy_qt4_SRCS
     pending-handles.cpp
     pending-operation.cpp
     pending-ready.cpp
+    pending-send-message.cpp
     pending-string-list.cpp
     pending-stream-tube-connection.cpp
     pending-variant.cpp
@@ -328,6 +329,7 @@ set(telepathy_qt4_HEADERS
     PendingReady
     pending-ready.h
     PendingSendMessage
+    pending-send-message.h
     PendingStreamTubeConnection
     pending-stream-tube-connection.h
     PendingStringList
@@ -451,6 +453,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-handles.h
     pending-operation.h
     pending-ready.h
+    pending-send-message.h
     pending-stream-tube-connection.h
     pending-string-list.h
     pending-variant.h
