@@ -83,6 +83,14 @@ PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &messag
     return op;
 }
 
+/**
+ * Create a new ContactMessenger object.
+ *
+ * \param account The account used to listen to events.
+ * \param contact The contact used to filter events.
+ * \return An ContactMessengerPtr object pointing to the newly created ContactMessenger object,
+ *         or a null ContactMessengerPtr if \a contact is null.
+ */
 ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
         const ContactPtr &contact)
 {
@@ -93,6 +101,15 @@ ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
     }
     return ContactMessengerPtr(new ContactMessenger(account, contact->id()));
 }
+
+/**
+ * Create a new ContactMessenger object.
+ *
+ * \param account The account used to listen to events.
+ * \param contactIdentifier The identifier of the contact used to filter events.
+ * \return An ContactMessengerPtr object pointing to the newly created ContactMessenger object,
+ *         or a null ContactMessengerPtr if \a contact is null.
+ */
 
 ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
         const QString &contactIdentifier)
@@ -105,6 +122,12 @@ ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
     return ContactMessengerPtr(new ContactMessenger(account, contactIdentifier));
 }
 
+/**
+ * Construct a new ContactMessenger object.
+ *
+ * \param account The account used to listen to events.
+ * \param contactIdentifier The identifier of the contact used to filter events.
+ */
 ContactMessenger::ContactMessenger(const AccountPtr &account, const QString &contactIdentifier)
     : mPriv(new Private(this, account, contactIdentifier))
 {
@@ -117,21 +140,49 @@ ContactMessenger::ContactMessenger(const AccountPtr &account, const QString &con
             SIGNAL(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
 }
 
+/**
+ * Class destructor.
+ */
 ContactMessenger::~ContactMessenger()
 {
     delete mPriv;
 }
 
+/**
+ * Return the account used to listen to events.
+ *
+ * \return The account used to listen to events.
+ */
 AccountPtr ContactMessenger::account() const
 {
     return mPriv->account;
 }
 
+/**
+ * Return the identifier of the contact used to filter events, or an empty string if none was
+ * provided at construction.
+ *
+ * \return The identifier of the contact used to filter events.
+ */
 QString ContactMessenger::contactIdentifier() const
 {
     return mPriv->contactIdentifier;
 }
 
+/**
+ * Send a message to the contact identified by contactIdentifier() using account().
+ *
+ * Note that the return from this method isn't ordered in any sane way, meaning that
+ * messageSent() can be signalled either before or after the returned PendingSendMessage object
+ * finishes.
+ *
+ * \param text The message text.
+ * \param type The message type.
+ * \param flags The message flags.
+ * \return A PendingSendMessage which will emit PendingSendMessage::finished
+ *         once the reply is received and that can be used to check whether sending the
+ *         message succeeded or not.
+ */
 PendingSendMessage *ContactMessenger::sendMessage(const QString &text,
         ChannelTextMessageType type,
         MessageSendingFlags flags)
@@ -140,11 +191,49 @@ PendingSendMessage *ContactMessenger::sendMessage(const QString &text,
     return mPriv->sendMessage(message, flags);
 }
 
+/**
+ * Send a message to the contact identified by contactIdentifier() using account().
+ *
+ * Note that the return from this method isn't ordered in any sane way, meaning that
+ * messageSent() can be signalled either before or after the returned PendingSendMessage object
+ * finishes.
+ *
+ * \param parts The message parts.
+ * \param flags The message flags.
+ * \return A PendingSendMessage which will emit PendingSendMessage::finished
+ *         once the reply is received and that can be used to check whether sending the
+ *         message succeeded or not.
+ */
 PendingSendMessage *ContactMessenger::sendMessage(const MessageContentPartList &parts,
         MessageSendingFlags flags)
 {
     Message message(parts.bareParts());
     return mPriv->sendMessage(message, flags);
 }
+
+/**
+ * \fn void ContactMessenger::messageSent(const Tp::Message &message,
+ *                  Tp::MessageSendingFlags flags, const QString &sentMessageToken,
+ *                  const Tp::TextChannelPtr &channel);
+ *
+ * This signal is emitted whenever a text message on account() is sent to the contact
+ * identified by contactIdentifier().
+ *
+ * \param message The message sent.
+ * \param flags The flags of the message that was sent.
+ * \param sentMessageToken The token of the message that was sent.
+ * \param channel The channel from which the message was sent.
+ */
+
+/**
+ * \fn void ContactMessenger::messageReceived(const Tp::ReceivedMessage &message,
+ *                  const Tp::TextChannelPtr &channel);
+ *
+ * This signal is emitted whenever a text message on account() is received from the contact
+ * identified by contactIdentifier().
+ *
+ * \param message The message received.
+ * \param channel The channel from which the message was received.
+ */
 
 } // Tp
