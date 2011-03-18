@@ -1,0 +1,20 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Channel Dispatcher extensions from the future</tp:title>
+
+<xi:include href="../spec/Channel_Dispatcher_Interface_Messages.xml"/>
+
+<tp:generic-types>
+  <tp:external-type name="Message_Part" type="a{sv}" from="Telepathy specification"/>
+  <tp:mapping name="Message_Part" array-name="Message_Part_List" array-depth="2">
+    <tp:member name="Key" type="s"/>
+    <tp:member name="Value" type="v"/>
+  </tp:mapping>
+</tp:generic-types>
+
+<xi:include href="../spec/generic-types.xml"/>
+<xi:include href="../spec/errors.xml"/>
+
+</tp:spec>

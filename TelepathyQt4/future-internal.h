@@ -27,8 +27,10 @@
 #include "TelepathyQt4/_gen/future-types.h"
 
 #include "TelepathyQt4/Channel"
+#include "TelepathyQt4/ChannelDispatcher"
 
 #include "TelepathyQt4/_gen/future-channel.h"
+#include "TelepathyQt4/_gen/future-channel-dispatcher.h"
 #include "TelepathyQt4/_gen/future-misc.h"
 
 #endif

@@ -25,5 +25,8 @@
 #include "TelepathyQt4/_gen/future-channel-body.hpp"
 #include "TelepathyQt4/_gen/future-channel.moc.hpp"
 
+#include "TelepathyQt4/_gen/future-channel-dispatcher-body.hpp"
+#include "TelepathyQt4/_gen/future-channel-dispatcher.moc.hpp"
+
 #include "TelepathyQt4/_gen/future-misc-body.hpp"
 #include "TelepathyQt4/_gen/future-misc.moc.hpp"
