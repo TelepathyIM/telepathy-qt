@@ -24,6 +24,8 @@
 
 #include "TelepathyQt4/_gen/contact-messenger.moc.hpp"
 
+#include "TelepathyQt4/debug-internal.h"
+
 #include "TelepathyQt4/future-internal.h"
 
 #include <TelepathyQt4/Account>
@@ -79,6 +81,15 @@ PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &messag
             op,
             SLOT(onMessageSent(QDBusPendingCallWatcher*)));
     return op;
+}
+
+ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
+        const ContactPtr &contact)
+{
+    if (!contact) {
+        return ContactMessengerPtr();
+    }
+    return ContactMessengerPtr(new ContactMessenger(account, contact->id()));
 }
 
 ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,

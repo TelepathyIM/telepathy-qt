@@ -43,6 +43,7 @@ class TELEPATHY_QT4_EXPORT ContactMessenger  : public QObject, public RefCounted
     Q_DISABLE_COPY(ContactMessenger)
 
 public:
+    static ContactMessengerPtr create(const AccountPtr &account, const ContactPtr &contact);
     static ContactMessengerPtr create(const AccountPtr &account, const QString &contactIdentifier);
 
     virtual ~ContactMessenger();
