@@ -48,11 +48,23 @@ PendingSendMessage::PendingSendMessage(const TextChannelPtr &channel, const Mess
 {
 }
 
+PendingSendMessage::PendingSendMessage(const ContactMessengerPtr &messenger, const Message &message)
+    : PendingOperation(messenger),
+      mPriv(new Private(message))
+{
+}
+
 PendingSendMessage::~PendingSendMessage()
 {
     delete mPriv;
 }
 
+/**
+ * Return the channel used to send the message if this instance was created using
+ * TextChannel. If it was created using ContactMessenger, return a null TextChannelPtr.
+ *
+ * \return A TextChannelPtr object.
+ */
 TextChannelPtr PendingSendMessage::channel() const
 {
     return TextChannelPtr(qobject_cast<TextChannel*>((TextChannel*) object().data()));

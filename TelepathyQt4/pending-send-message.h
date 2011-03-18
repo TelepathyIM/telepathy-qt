@@ -61,6 +61,8 @@ private:
 
     TELEPATHY_QT4_NO_EXPORT PendingSendMessage(const TextChannelPtr &channel,
             const Message &message);
+    TELEPATHY_QT4_NO_EXPORT PendingSendMessage(const ContactMessengerPtr &messenger,
+            const Message &message);
 
     struct Private;
     friend struct Private;
