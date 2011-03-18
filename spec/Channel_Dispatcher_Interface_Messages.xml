@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Dispatcher_Interface_Messages"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:copyright>Copyright (C) 2011 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2011 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+      USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT"
+    tp:causes-havoc="not yet final">
+
+    <tp:requires interface="org.freedesktop.Telepathy.ChannelDispatcher"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface allows users of the ChannelDispatcher to send one-off
+      text messages to a contact, identified by account and target ID.</p>
+
+      <tp:rationale>
+        <p>This enables entities other than the main UI to send one-off messages
+        to a contact.</p>
+      </tp:rationale>
+    </tp:docstring>
+
+    <method name="SendMessage" tp:name-for-bindings="Send_Message">
+      <arg direction="in"  name="Account"          type="o"/>
+      <arg direction="in"  name="TargetID"         type="s"/>
+      <arg direction="in"  name="Message"          type="aa{sv}" tp:type="Message_Part[]"/>
+      <arg direction="in"  name="Flags"            type="u"/>
+      <arg direction="out" name="Token"            type="s"/>
+    </method>
+
+  </interface>
+</node>
+
