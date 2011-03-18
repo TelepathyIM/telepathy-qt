@@ -54,8 +54,9 @@ public:
     Message message() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onTextSent(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void onMessageSent(QDBusPendingCallWatcher *);
+    TELEPATHY_QT4_NO_EXPORT void onTextSent(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onMessageSent(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void onCDMessageSent(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class TextChannel;

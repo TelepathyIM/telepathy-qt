@@ -79,7 +79,7 @@ PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &messag
                     contactIdentifier, parts, (uint) flags)),
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             op,
-            SLOT(onMessageSent(QDBusPendingCallWatcher*)));
+            SLOT(onCDMessageSent(QDBusPendingCallWatcher*)));
     return op;
 }
 
