@@ -84,6 +84,15 @@ PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &messag
 }
 
 /**
+ * \class ContactMessenger
+ * \ingroup clientaccount
+ * \headerfile TelepathyQt4/contact-messenger.h <TelepathyQt4/ContactMessenger>
+ *
+ * \brief The ContactMessenger class provides an easy way to send text messages to a contact
+ *        and also track sent/receive text messages from the same contact.
+ */
+
+/**
  * Create a new ContactMessenger object.
  *
  * \param account The account used to listen to events.
