@@ -24,8 +24,12 @@
 
 #include "TelepathyQt4/_gen/contact-messenger.moc.hpp"
 
+#include "TelepathyQt4/future-internal.h"
+
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/ChannelDispatcher>
 #include <TelepathyQt4/ClientRegistrar>
+#include <TelepathyQt4/MessageContentPartList>
 #include <TelepathyQt4/PendingSendMessage>
 #include <TelepathyQt4/SimpleTextObserver>
 
@@ -34,16 +38,48 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ContactMessenger::Private
 {
-    Private(const AccountPtr &account, const QString &contactIdentifier)
-        : account(account),
-          contactIdentifier(contactIdentifier)
+    Private(ContactMessenger *parent, const AccountPtr &account, const QString &contactIdentifier)
+        : parent(parent),
+          account(account),
+          contactIdentifier(contactIdentifier),
+          cdMessagesInterface(0)
     {
     }
 
+    PendingSendMessage *sendMessage(const Message &message, MessageSendingFlags flags);
+
+    ContactMessenger *parent;
     AccountPtr account;
     QString contactIdentifier;
     SimpleTextObserverPtr observer;
+    TpFuture::Client::ChannelDispatcherInterfaceMessagesInterface *cdMessagesInterface;
 };
+
+PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &message,
+        MessageSendingFlags flags)
+{
+    if (!cdMessagesInterface) {
+        cdMessagesInterface = new TpFuture::Client::ChannelDispatcherInterfaceMessagesInterface(
+                account->dbusConnection(),
+                TP_QT4_CHANNEL_DISPATCHER_BUS_NAME, TP_QT4_CHANNEL_DISPATCHER_OBJECT_PATH, parent);
+    }
+
+    PendingSendMessage *op = new PendingSendMessage(ContactMessengerPtr(parent), message);
+
+    // TODO: is there a way to avoid this? Ideally TpFuture classes should use Tp types.
+    TpFuture::MessagePartList parts;
+    foreach (const Tp::MessagePart &part, message.parts()) {
+        parts << static_cast<QMap<QString, QDBusVariant> >(part);
+    }
+
+    connect(new QDBusPendingCallWatcher(
+                cdMessagesInterface->SendMessage(QDBusObjectPath(account->objectPath()),
+                    contactIdentifier, parts, (uint) flags)),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            op,
+            SLOT(onMessageSent(QDBusPendingCallWatcher*)));
+    return op;
+}
 
 ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
         const QString &contactIdentifier)
@@ -55,7 +91,7 @@ ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
 }
 
 ContactMessenger::ContactMessenger(const AccountPtr &account, const QString &contactIdentifier)
-    : mPriv(new Private(account, contactIdentifier))
+    : mPriv(new Private(this, account, contactIdentifier))
 {
     mPriv->observer = SimpleTextObserver::create(account, contactIdentifier);
     connect(mPriv->observer.data(),
@@ -85,13 +121,15 @@ PendingSendMessage *ContactMessenger::sendMessage(const QString &text,
         ChannelTextMessageType type,
         MessageSendingFlags flags)
 {
-    return NULL;
+    Message message(type, text);
+    return mPriv->sendMessage(message, flags);
 }
 
 PendingSendMessage *ContactMessenger::sendMessage(const MessageContentPartList &parts,
         MessageSendingFlags flags)
 {
-    return NULL;
+    Message message(parts.bareParts());
+    return mPriv->sendMessage(message, flags);
 }
 
 } // Tp
