@@ -75,7 +75,9 @@ public:
     inline ~SharedPtr()
     {
         if (d && !d->deref()) {
-            delete d;
+            T *saved = d;
+            d = 0;
+            delete saved;
         }
     }
 
