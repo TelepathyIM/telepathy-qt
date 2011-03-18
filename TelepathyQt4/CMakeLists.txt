@@ -96,6 +96,8 @@ set(telepathy_qt4_SRCS
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
     room-list-channel.cpp
+    simple-text-observer.cpp
+    simple-text-observer-internal.h
     stream-tube-channel.cpp
     streamed-media-channel.cpp
     test-backdoors.cpp
@@ -367,6 +369,8 @@ set(telepathy_qt4_HEADERS
     SharedPtr
     shared-ptr.h
     simple-pending-operations.h
+    SimpleTextObserver
+    simple-text-observer.h
     StatefulDBusProxy
     StatelessDBusProxy
     StreamTubeChannel
@@ -456,6 +460,8 @@ set(telepathy_qt4_MOC_SRCS
     request-temporary-handler-internal.h
     room-list-channel.h
     simple-pending-operations.h
+    simple-text-observer.h
+    simple-text-observer-internal.h
     stream-tube-channel.h
     streamed-media-channel.h
     text-channel.h

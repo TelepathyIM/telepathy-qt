@@ -1,0 +1,112 @@
+/**
+ * This file is part of TelepathyQt4
+ *
+ * @copyright Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2011 Nokia Corporation
+ * @license LGPL 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFactory>
+#include <TelepathyQt4/ClientRegistrar>
+#include <TelepathyQt4/TextChannel>
+
+namespace Tp
+{
+
+struct TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private
+{
+    Private(const ClientRegistrarPtr &cr, const AccountPtr &account,
+            const QString &contactIdentifier);
+    ~Private();
+
+    class FakeAccountFactory;
+    class TextChannelWrapper;
+
+    ClientRegistrarPtr cr;
+    AccountPtr account;
+    QString contactIdentifier;
+    QHash<TextChannelPtr, TextChannelWrapper*> channels;
+    static uint numObservers;
+};
+
+class TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private::FakeAccountFactory :
+                public AccountFactory
+{
+public:
+    static AccountFactoryPtr create(const AccountPtr &account)
+    {
+        return AccountFactoryPtr(new FakeAccountFactory(account));
+    }
+
+    ~FakeAccountFactory() { }
+
+    AccountPtr account() const { return mAccount; }
+
+protected:
+    AccountPtr construct(const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory) const
+    {
+        if (mAccount->objectPath() != objectPath) {
+            return AccountFactory::construct(busName, objectPath, connFactory, chanFactory,
+                    contactFactory);
+        }
+        return mAccount;
+    }
+
+private:
+    FakeAccountFactory(const AccountPtr &account)
+        : AccountFactory(account->dbusConnection(), Features()),
+          mAccount(account)
+    {
+    }
+
+    AccountPtr mAccount;
+};
+
+class TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private::TextChannelWrapper :
+                public QObject
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(TextChannelWrapper)
+
+public:
+    TextChannelWrapper(const Tp::TextChannelPtr &channel);
+    ~TextChannelWrapper() { }
+
+    TextChannelPtr channel() const { return mChannel; }
+
+Q_SIGNALS:
+    void channelInvalidated(const Tp::TextChannelPtr &channel);
+    void channelMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,
+            const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+    void channelMessageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
+
+private Q_SLOTS:
+    void onChannelInvalidated();
+    void onChannelReady();
+    void onChannelMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,
+            const QString &sentMessageToken);
+    void onChannelMessageReceived(const Tp::ReceivedMessage &message);
+
+private:
+    TextChannelPtr mChannel;
+};
+
+} // Tp
