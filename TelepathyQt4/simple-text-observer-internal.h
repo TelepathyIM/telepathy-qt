@@ -23,6 +23,7 @@
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/ClientRegistrar>
+#include <TelepathyQt4/Message>
 #include <TelepathyQt4/TextChannel>
 
 namespace Tp
@@ -30,17 +31,26 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private
 {
-    Private(const ClientRegistrarPtr &cr, const AccountPtr &account,
-            const QString &contactIdentifier);
+    Private(SimpleTextObserver *parent,
+            const ClientRegistrarPtr &cr, const AccountPtr &account,
+            const QString &contactIdentifier, bool requiresNormalization);
     ~Private();
+
+    void processMessageQueue();
+    bool filterMessage(const Message &message, const TextChannelPtr &textChannel);
 
     class FakeAccountFactory;
     class TextChannelWrapper;
+    class TextMessageInfo;
 
+    SimpleTextObserver *parent;
     ClientRegistrarPtr cr;
     AccountPtr account;
     QString contactIdentifier;
+    QString normalizedContactIdentifier;
+    bool requiresNormalization;
     QHash<TextChannelPtr, TextChannelWrapper*> channels;
+    QList<TextMessageInfo> messageQueue;
     static uint numObservers;
 };
 
@@ -107,6 +117,37 @@ private Q_SLOTS:
 
 private:
     TextChannelPtr mChannel;
+};
+
+struct TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private::TextMessageInfo
+{
+    enum Type {
+        Sent = 0,
+        Received
+    };
+
+    TextMessageInfo(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel)
+        : message(message),
+          channel(channel),
+          type(Received)
+    {
+    }
+
+    TextMessageInfo(const Tp::Message &message, Tp::MessageSendingFlags flags,
+            const QString &sentMessageToken, const Tp::TextChannelPtr &channel)
+        : message(message),
+          flags(flags),
+          sentMessageToken(sentMessageToken),
+          channel(channel),
+          type(Sent)
+    {
+    }
+
+    Tp::Message message;
+    Tp::MessageSendingFlags flags;
+    QString sentMessageToken;
+    TextChannelPtr channel;
+    Type type;
 };
 
 } // Tp

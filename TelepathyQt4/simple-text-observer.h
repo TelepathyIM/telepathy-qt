@@ -32,6 +32,7 @@ namespace Tp
 {
 
 class Message;
+class PendingOperation;
 class ReceivedMessage;
 
 class TELEPATHY_QT4_EXPORT SimpleTextObserver : public QObject, public AbstractClientObserver
@@ -57,12 +58,25 @@ Q_SIGNALS:
     void messageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
 
 private Q_SLOTS:
+    TELEPATHY_QT4_NO_EXPORT void onAccountConnectionChanged(const Tp::ConnectionPtr &connection);
+    TELEPATHY_QT4_NO_EXPORT void onAccountConnectionConnected();
+    TELEPATHY_QT4_NO_EXPORT void onContactConstructed(Tp::PendingOperation *op);
+
     TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::TextChannelPtr &channel);
+    TELEPATHY_QT4_NO_EXPORT void onChannelMessageSent(const Tp::Message &message,
+            Tp::MessageSendingFlags flags, const QString &sentMessageToken,
+            const Tp::TextChannelPtr &textChannel);
+    TELEPATHY_QT4_NO_EXPORT void onChannelMessageReceived(const Tp::ReceivedMessage &message,
+            const Tp::TextChannelPtr &textChannel);
 
 private:
+    TELEPATHY_QT4_NO_EXPORT static SimpleTextObserverPtr create(const AccountPtr &account,
+            const QString &contactIdentifier, bool requiresNormalization);
+
     TELEPATHY_QT4_NO_EXPORT SimpleTextObserver(const ClientRegistrarPtr &cr,
             const ChannelClassSpecList &channelFilter,
-            const AccountPtr &account, const QString &contactIdentifier);
+            const AccountPtr &account, const QString &contactIdentifier,
+            bool requiresNormalization);
 
     TELEPATHY_QT4_NO_EXPORT void observeChannels(
             const MethodInvocationContextPtr<> &context,
