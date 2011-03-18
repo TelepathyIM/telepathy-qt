@@ -190,7 +190,7 @@ void SimpleTextObserver::Private::Observer::observeChannels(
                 SIGNAL(messageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)));
         connect(wrapper,
                 SIGNAL(channelMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
-                SLOT(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
+                SIGNAL(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
     }
 
     context->setFinished();
@@ -205,7 +205,7 @@ SimpleTextObserver::Private::TextChannelWrapper::TextChannelWrapper(const TextCh
     : mChannel(channel)
 {
     connect(channel.data(),
-            SIGNAL(invalidated(Tp::PendingOperation*)),
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated()));
 
     Features features = TextChannel::FeatureMessageQueue | TextChannel::FeatureMessageSentSignal;
