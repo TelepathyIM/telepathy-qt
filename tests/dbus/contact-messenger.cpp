@@ -126,7 +126,7 @@ private Q_SLOTS:
 
 private:
 
-    ClientObserverInterface *observerForID(const QString &id);
+    QList<ClientObserverInterface *> ourObservers();
 
     AccountManagerPtr mAM;
     AccountPtr mAccount;
@@ -226,20 +226,29 @@ void TestContactMessenger::testObserverRegistration()
 {
     ContactMessengerPtr messenger = ContactMessenger::create(mAccount, QLatin1String("Ann"));
 
-    // At this point, there should be a registered observer for that target ID and the relevant
-    // channel class on our unique name
+    // At this point, there should be a registered observer for the relevant channel class on our
+    // unique name
 
-    ClientObserverInterface *observer = observerForID(QLatin1String("Ann"));
-    QVERIFY(observer != NULL);
+    QList<ClientObserverInterface *> observers = ourObservers();
+    QVERIFY(!observers.empty());
 
-    // It shouldn't have recover == true, as it shouldn't be activatable at all, and hence recovery
-    // doesn't make sense for it
-    bool recover;
-    QVERIFY(waitForProperty(observer->requestPropertyRecover(), &recover));
-    QVERIFY(!recover);
+    Q_FOREACH(ClientObserverInterface *observer, observers) {
+        // It shouldn't have recover == true, as it shouldn't be activatable at all, and hence recovery
+        // doesn't make sense for it
+        bool recover;
+        QVERIFY(waitForProperty(observer->requestPropertyRecover(), &recover));
+        QVERIFY(!recover);
+    }
 
-    // OTOH, there shouldn't be an observer for some other target
-    QVERIFY(!observerForID(QLatin1String("Bob")));
+    // If we destroy our messenger (which is the last/only one for that ID), the observers should go
+    // away, at least in a few mainloop iterations
+    messenger.reset();
+
+    for (int i = 0; i < 100; i++) {
+        mLoop->processEvents();
+    }
+
+    QVERIFY(!ourObservers().empty());
 }
 
 void TestContactMessenger::cleanup()
@@ -249,21 +258,28 @@ void TestContactMessenger::cleanup()
 
 void TestContactMessenger::cleanupTestCase()
 {
+    if (mConnService != 0) {
+        mBaseConnService = 0;
+        g_object_unref(mConnService);
+        mConnService = 0;
+    }
+
     cleanupTestCaseImpl();
 }
 
-ClientObserverInterface *TestContactMessenger::observerForID(const QString &id)
+QList<ClientObserverInterface *> TestContactMessenger::ourObservers()
 {
     QStringList registeredNames =
         QDBusConnection::sessionBus().interface()->registeredServiceNames();
+    QList<ClientObserverInterface *> observers;
 
-    QVariantMap idProps;
-    idProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), id);
-
-    ChannelClassSpec spec = ChannelClassSpec::textChat(idProps);
-
-    Q_FOREACH(QString name, registeredNames) {
+    Q_FOREACH (QString name, registeredNames) {
         if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
+            continue;
+        }
+
+        if (QDBusConnection::sessionBus().interface()->serviceOwner(name).value() !=
+                QDBusConnection::sessionBus().baseService()) {
             continue;
         }
 
@@ -286,15 +302,16 @@ ClientObserverInterface *TestContactMessenger::observerForID(const QString &id)
             continue;
         }
 
-        if (ChannelClassSpecList(filter) == ChannelClassSpecList(spec)) {
-            qDebug() << "Found observer" << name << "for id" << id << '\n';
-            return observer;
-        } else {
-            delete observer;
+        Q_FOREACH (ChannelClassSpec spec, filter) {
+            if (spec.isSubsetOf(ChannelClassSpec::textChat())) {
+                observers.push_back(observer);
+                qDebug() << "Found our observer" << name << '\n';
+                break;
+            }
         }
     }
 
-    return 0;
+    return observers;
 }
 
 QTEST_MAIN(TestContactMessenger)
