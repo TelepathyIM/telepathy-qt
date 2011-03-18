@@ -121,12 +121,14 @@ void PendingSendMessage::onCDMessageSent(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QString> reply = *watcher;
 
     if (reply.isError()) {
-        if (reply.error().name() == TP_QT4_DBUS_ERROR_UNKNOWN_METHOD) {
+        QDBusError error = reply.error();
+        if (error.name() == TP_QT4_DBUS_ERROR_UNKNOWN_METHOD ||
+            error.name() == TP_QT4_DBUS_ERROR_UNKNOWN_INTERFACE) {
             setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Channel Dispatcher implementation (e.g. mission-control), "
                         "does not support interface CD.I.Messages"));
         } else {
-            setFinishedWithError(reply.error());
+            setFinishedWithError(error);
         }
     } else {
         mPriv->token = reply.value();
