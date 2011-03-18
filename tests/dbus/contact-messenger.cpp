@@ -7,10 +7,13 @@
 #include <QString>
 #include <QVariantMap>
 
+#define TP_QT4_ENABLE_LOWLEVEL_API
+
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/Client>
+#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactMessenger>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Message>
@@ -18,6 +21,7 @@
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingSendMessage>
+#include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Types>
 
 #include <telepathy-glib/debug.h>
@@ -32,13 +36,15 @@
 using namespace Tp;
 using namespace Tp::Client;
 
+class TestContactMessenger;
+
 class CDMessagesAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages")
+    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT")
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT\" >\n"
-"    <method name=\"Send\" >\n"
+"    <method name=\"SendMessage\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"TargetID\" type=\"s\" direction=\"in\" />\n"
 "      <arg name=\"Message\" type=\"aa{sv}\" direction=\"in\" />\n"
@@ -49,11 +55,13 @@ class CDMessagesAdaptor : public QDBusAbstractAdaptor
         "")
 
 public:
-    CDMessagesAdaptor(const QDBusConnection &bus, QObject *parent)
+    CDMessagesAdaptor(const QDBusConnection &bus, TestContactMessenger *test, QObject *parent)
         : QDBusAbstractAdaptor(parent),
-          mBus(bus)
+        test(test),
+        mBus(bus)
     {
     }
+
 
     virtual ~CDMessagesAdaptor()
     {
@@ -65,26 +73,13 @@ public:
     }
 
 public Q_SLOTS: // Methods
-    QString Send(const QDBusObjectPath &account,
-            const QString &targetID, const MessagePartList &message,
-            uint flags)
-    {
-        if (!mSimulatedSendError.isEmpty()) {
-            dynamic_cast<QDBusContext *>(parent())->sendErrorReply(mSimulatedSendError,
-                    QLatin1String("Let's pretend this interface and method don't exist, shall we?"));
-            return QString();
-        }
-
-        // TODO implement
-        return QString();
-    }
-
-Q_SIGNALS:
-    void Status(const QDBusObjectPath &account, const QString &token, uint status,
-            const QString &error);
+    QString SendMessage(const QDBusObjectPath &account,
+            const QString &targetID, const Tp::MessagePartList &message,
+            uint flags);
 
 private:
 
+    TestContactMessenger *test;
     QDBusConnection mBus;
     QString mSimulatedSendError;
 };
@@ -113,8 +108,14 @@ public:
         : Test(parent),
           mCDMessagesAdaptor(0),
           // service side (telepathy-glib)
-          mConnService(0), mBaseConnService(0), mContactRepo(0)
+          mConnService(0), mBaseConnService(0), mContactRepo(0),
+          mSendFinished(false), mGotMessageSent(false)
     { }
+
+protected Q_SLOTS:
+    void onSendFinished(Tp::PendingOperation *);
+    void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,
+            const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
 
 private Q_SLOTS:
     void initTestCase();
@@ -122,25 +123,113 @@ private Q_SLOTS:
 
     void testNoSupport();
     void testObserverRegistration();
+    void testSimpleSend();
 
     void cleanup();
     void cleanupTestCase();
 
 private:
 
+    friend class CDMessagesAdaptor;
+
     QList<ClientObserverInterface *> ourObservers();
 
     AccountManagerPtr mAM;
     AccountPtr mAccount;
     CDMessagesAdaptor *mCDMessagesAdaptor;
+    ConnectionPtr mConn;
+    TextChannelPtr mChan;
 
     TpTestsContactsConnection *mConnService;
     TpBaseConnection *mBaseConnService;
     TpHandleRepoIface *mContactRepo;
+    ExampleEcho2Channel *mMessagesChanService;
 
     QString mConnName;
     QString mConnPath;
+    QString mMessagesChanPath;
+
+    bool mSendFinished, mGotMessageSent;
+    QString mSendError, mSendToken, mMessageSentText, mMessageSentToken, mMessageSentChannel;
 };
+
+QString CDMessagesAdaptor::SendMessage(const QDBusObjectPath &account,
+        const QString &targetID, const MessagePartList &message,
+        uint flags)
+{
+    if (!mSimulatedSendError.isEmpty()) {
+        dynamic_cast<QDBusContext *>(QObject::parent())->sendErrorReply(mSimulatedSendError,
+                QLatin1String("Let's pretend this interface and method don't exist, shall we?"));
+        return QString();
+    }
+
+    /*
+     * Sadly, the QDBus local-loop "optimization" prevents us from correctly waiting for the
+     * ObserveChannels call to return, and consequently prevents us from knowing when we can call
+     * Send, knowing that the observer has connected to the message sent signal.
+     *
+     * The real MC doesn't have this limitation because it actually really calls and waits our
+     * ObserveChannels method to finish, unlike dear QDBus here.
+     */
+    QList<ClientObserverInterface *> observers = test->ourObservers();
+    Q_FOREACH(ClientObserverInterface *iface, observers) {
+        ChannelDetails chan = { QDBusObjectPath(test->mChan->objectPath()), test->mChan->immutableProperties() };
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(iface->ObserveChannels(
+                QDBusObjectPath(test->mAccount->objectPath()),
+                QDBusObjectPath(test->mChan->connection()->objectPath()),
+                ChannelDetailsList() << chan,
+                QDBusObjectPath(QLatin1String("/")),
+                Tp::ObjectPathList(),
+                QVariantMap()));
+
+        connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    test->mLoop,
+                    SLOT(quit()));
+        test->mLoop->exec();
+        QDBusPendingReply<void> reply = *watcher;
+        qDebug() << reply.error(); // Always gives out "local-loop messages can't have delayed replies"
+
+        delete watcher;
+    }
+
+    qDebug() << "Calling send"; // And this is always called before the observer manages to connect to messageSent. Bummer.
+
+    PendingSendMessage *msg = test->mChan->send(message, static_cast<MessageSendingFlags>(flags));
+    connect(msg,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            test,
+            SLOT(expectSuccessfulCall(Tp::PendingOperation*)));
+    test->mLoop->exec();
+    return msg->sentMessageToken();
+}
+
+void TestContactMessenger::onSendFinished(Tp::PendingOperation *op)
+{
+    PendingSendMessage *msg = qobject_cast<PendingSendMessage *>(op);
+    QVERIFY(msg != NULL);
+
+    if (msg->isValid()) {
+        qDebug() << "Send succeeded, got token" << msg->sentMessageToken();
+        mSendToken = msg->sentMessageToken();
+    } else {
+        qDebug() << "Send failed, got error" << msg->errorName();
+        mSendError = msg->errorName();
+    }
+
+    mSendFinished = true;
+}
+
+void TestContactMessenger::onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,
+        const QString &sentMessageToken, const Tp::TextChannelPtr &channel)
+{
+    qDebug() << "Got ContactMessenger::messageSent()";
+
+    mGotMessageSent = true;
+    mMessageSentToken = sentMessageToken;
+    mMessageSentText = message.text();
+}
 
 void TestContactMessenger::initTestCase()
 {
@@ -155,7 +244,7 @@ void TestContactMessenger::initTestCase()
     QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
     QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
     Dispatcher *dispatcher = new Dispatcher(this);
-    mCDMessagesAdaptor = new CDMessagesAdaptor(bus, dispatcher);
+    mCDMessagesAdaptor = new CDMessagesAdaptor(bus, this, dispatcher);
     QVERIFY(bus.registerService(channelDispatcherBusName));
     QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
 
@@ -209,12 +298,48 @@ void TestContactMessenger::initTestCase()
 
     g_free(name);
     g_free(connPath);
+
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+    QCOMPARE(mConn->isReady(), false);
+
+    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->isReady(), true);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+            static_cast<uint>(ConnectionStatusConnected));
+
+    mContactRepo = tp_base_connection_get_handles(mBaseConnService,
+            TP_HANDLE_TYPE_CONTACT);
+    guint handle = tp_handle_ensure(mContactRepo, "Ann", 0, 0);
+
+    mMessagesChanPath = mConnPath + QLatin1String("/MessagesChannel");
+    QByteArray chanPath = mMessagesChanPath.toAscii();
+    mMessagesChanService = EXAMPLE_ECHO_2_CHANNEL(g_object_new(
+                EXAMPLE_TYPE_ECHO_2_CHANNEL,
+                "connection", mConnService,
+                "object-path", chanPath.data(),
+                "handle", handle,
+                NULL));
+
+    mChan = TextChannel::create(mConn, mMessagesChanPath, QVariantMap());
+    QVERIFY(connect(mChan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    tp_handle_unref(mContactRepo, handle);
 }
 
 void TestContactMessenger::init()
 {
     initImpl();
 
+    mSendFinished = false;
+    mGotMessageSent = false;
     mCDMessagesAdaptor->setSimulatedSendError(QString());
 }
 
@@ -235,6 +360,7 @@ void TestContactMessenger::testNoSupport()
     QVERIFY(connect(pendingSend,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
     QVERIFY(pendingSend->isFinished());
     QVERIFY(!pendingSend->isValid());
 
@@ -250,6 +376,7 @@ void TestContactMessenger::testNoSupport()
     QVERIFY(connect(pendingSend,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
     QVERIFY(pendingSend->isFinished());
     QVERIFY(!pendingSend->isValid());
 
@@ -285,6 +412,21 @@ void TestContactMessenger::testObserverRegistration()
     QVERIFY(!ourObservers().empty());
 }
 
+void TestContactMessenger::testSimpleSend()
+{
+    ContactMessengerPtr messenger = ContactMessenger::create(mAccount, QLatin1String("Ann"));
+
+    QVERIFY(connect(messenger->sendMessage(QLatin1String("Hi!")),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onSendFinished(Tp::PendingOperation*))));
+
+    while (!mSendFinished) {
+        mLoop->processEvents();
+    }
+
+    QVERIFY(mSendError.isEmpty());
+}
+
 void TestContactMessenger::cleanup()
 {
     cleanupImpl();
@@ -292,6 +434,30 @@ void TestContactMessenger::cleanup()
 
 void TestContactMessenger::cleanupTestCase()
 {
+    if (mConn) {
+        // Disconnect and wait for the readiness change
+        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+        QCOMPARE(mLoop->exec(), 0);
+
+        if (mConn->isValid()) {
+            QVERIFY(connect(mConn.data(),
+                            SIGNAL(invalidated(Tp::DBusProxy *,
+                                               const QString &, const QString &)),
+                            mLoop,
+                            SLOT(quit())));
+            QCOMPARE(mLoop->exec(), 0);
+        }
+    }
+
+    mChan.reset();
+
+    if (mMessagesChanService != 0) {
+        g_object_unref(mMessagesChanService);
+        mMessagesChanService = 0;
+    }
+
     if (mConnService != 0) {
         mBaseConnService = 0;
         g_object_unref(mConnService);
@@ -317,7 +483,8 @@ QList<ClientObserverInterface *> TestContactMessenger::ourObservers()
             continue;
         }
 
-        QString path = QLatin1Char('/') + name.replace(QLatin1Char('.'), QLatin1Char('/'));
+        QString path = QLatin1Char('/') + name;
+        path.replace(QLatin1Char('.'), QLatin1Char('/'));
 
         ClientInterface client(name, path);
         QStringList ifaces;
