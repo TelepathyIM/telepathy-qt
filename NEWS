@@ -1,10 +1,13 @@
 telepathy-qt4 0.5.12 (UNRELEASED)
 =================================
 
-The "..." release.
+The "Can I use the IM framework for, like, sending and receiving messages" release.
 
 Enhancements:
- * ...
+ * fd.o #28753: Added SimpleTextObserver class which makes it easy to follow all
+   text communication on a given Account
+ * fd.o #35321: Added ContactMessenger class for easily sending and receiving
+   text messages with a particular contact
 
 Fixes:
  * The Request & Handle API spuriously failing with SERVICE_CONFUSED because of
