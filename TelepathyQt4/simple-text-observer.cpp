@@ -168,6 +168,16 @@ SimpleTextObserver::~SimpleTextObserver()
     delete mPriv;
 }
 
+AccountPtr SimpleTextObserver::account() const
+{
+    return mPriv->account;
+}
+
+QString SimpleTextObserver::contactIdentifier() const
+{
+    return mPriv->contactIdentifier;
+}
+
 void SimpleTextObserver::observeChannels(
         const MethodInvocationContextPtr<> &context,
         const AccountPtr &account,
