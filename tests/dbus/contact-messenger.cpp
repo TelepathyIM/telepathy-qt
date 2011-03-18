@@ -24,6 +24,7 @@
 #include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Types>
 
+#include <telepathy-glib/cm-message.h>
 #include <telepathy-glib/debug.h>
 
 #include <glib-object.h>
@@ -84,6 +85,63 @@ private:
     QString mSimulatedSendError;
 };
 
+class AccountAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Account")
+    Q_CLASSINFO("D-Bus Introspection", ""
+"  <interface name=\"org.freedesktop.Telepathy.Account\" >\n"
+"    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
+"    <property name=\"Connection\" type=\"o\" access=\"read\" />\n"
+"    <signal name=\"AccountPropertyChanged\" >\n"
+"      <arg name=\"Properties\" type=\"a{sv}\" />\n"
+"    </signal>\n"
+"  </interface>\n"
+        "")
+
+    Q_PROPERTY(QDBusObjectPath Connection READ Connection)
+    Q_PROPERTY(QStringList Interfaces READ Interfaces)
+
+public:
+    AccountAdaptor(QObject *parent)
+        : QDBusAbstractAdaptor(parent), mConnection(QLatin1String("/"))
+    {
+    }
+
+    virtual ~AccountAdaptor()
+    {
+    }
+
+    void setConnection(QString conn)
+    {
+        if (conn.isEmpty()) {
+            conn = QLatin1String("/");
+        }
+
+        mConnection = QDBusObjectPath(conn);
+        QVariantMap props;
+        props.insert(QLatin1String("Connection"), QVariant::fromValue(mConnection));
+        Q_EMIT AccountPropertyChanged(props);
+    }
+
+public: // Properties
+    inline QDBusObjectPath Connection() const
+    {
+        return mConnection;
+    }
+
+    inline QStringList Interfaces() const
+    {
+        return QStringList();
+    }
+
+Q_SIGNALS: // Signals
+    void AccountPropertyChanged(const QVariantMap &properties);
+
+private:
+    QDBusObjectPath mConnection;
+};
+
 class Dispatcher : public QObject, public QDBusContext
 {
     Q_OBJECT;
@@ -106,7 +164,7 @@ class TestContactMessenger : public Test
 public:
     TestContactMessenger(QObject *parent = 0)
         : Test(parent),
-          mCDMessagesAdaptor(0),
+          mCDMessagesAdaptor(0), mAccountAdaptor(0),
           // service side (telepathy-glib)
           mConnService(0), mBaseConnService(0), mContactRepo(0),
           mSendFinished(false), mGotMessageSent(false)
@@ -116,6 +174,8 @@ protected Q_SLOTS:
     void onSendFinished(Tp::PendingOperation *);
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,
             const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
+    void onMessageReceived(const Tp::ReceivedMessage &message,
+            const Tp::TextChannelPtr &channel);
 
 private Q_SLOTS:
     void initTestCase();
@@ -124,6 +184,7 @@ private Q_SLOTS:
     void testNoSupport();
     void testObserverRegistration();
     void testSimpleSend();
+    void testReceived();
 
     void cleanup();
     void cleanupTestCase();
@@ -134,9 +195,12 @@ private:
 
     QList<ClientObserverInterface *> ourObservers();
 
+    CDMessagesAdaptor *mCDMessagesAdaptor;
+    AccountAdaptor *mAccountAdaptor;
+    QString mAccountBusName, mAccountPath;
+
     AccountManagerPtr mAM;
     AccountPtr mAccount;
-    CDMessagesAdaptor *mCDMessagesAdaptor;
     ConnectionPtr mConn;
     TextChannelPtr mChan;
 
@@ -149,8 +213,10 @@ private:
     QString mConnPath;
     QString mMessagesChanPath;
 
-    bool mSendFinished, mGotMessageSent;
+    bool mSendFinished, mGotMessageSent, mGotMessageReceived;
     QString mSendError, mSendToken, mMessageSentText, mMessageSentToken, mMessageSentChannel;
+    QString mMessageReceivedText;
+    ChannelPtr mMessageReceivedChan;
 };
 
 QString CDMessagesAdaptor::SendMessage(const QDBusObjectPath &account,
@@ -231,6 +297,16 @@ void TestContactMessenger::onMessageSent(const Tp::Message &message, Tp::Message
     mMessageSentText = message.text();
 }
 
+void TestContactMessenger::onMessageReceived(const Tp::ReceivedMessage &message,
+        const Tp::TextChannelPtr &channel)
+{
+    qDebug() << "Got ContactMessenger::messageReceived()";
+
+    mGotMessageReceived = true;
+    mMessageReceivedText = message.text();
+    mMessageReceivedChan = channel;
+}
+
 void TestContactMessenger::initTestCase()
 {
     initTestCaseImpl();
@@ -248,23 +324,16 @@ void TestContactMessenger::initTestCase()
     QVERIFY(bus.registerService(channelDispatcherBusName));
     QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
 
-    mAM = AccountManager::create();
-    QVERIFY(connect(mAM->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mAM->isReady(), true);
+    mAccountBusName = QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER);
+    mAccountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/simple/account");
+    QObject *acc = new QObject(this);
 
-    QVariantMap parameters;
-    parameters[QLatin1String("account")] = QLatin1String("foobar");
-    PendingAccount *pacc = mAM->createAccount(QLatin1String("foo"),
-            QLatin1String("bar"), QLatin1String("foobar"), parameters);
-    QVERIFY(connect(pacc,
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(pacc->account());
-    mAccount = pacc->account();
+    mAccountAdaptor = new AccountAdaptor(acc);
+
+    QVERIFY(bus.registerService(mAccountBusName));
+    QVERIFY(bus.registerObject(mAccountPath, acc));
+
+    mAccount = Account::create(mAccountBusName, mAccountPath);
     QVERIFY(connect(mAccount->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -298,6 +367,8 @@ void TestContactMessenger::initTestCase()
 
     g_free(name);
     g_free(connPath);
+
+    mAccountAdaptor->setConnection(mConnPath);
 
     mConn = Connection::create(mConnName, mConnPath,
             ChannelFactory::create(QDBusConnection::sessionBus()),
@@ -340,6 +411,7 @@ void TestContactMessenger::init()
 
     mSendFinished = false;
     mGotMessageSent = false;
+    mGotMessageReceived = false;
     mCDMessagesAdaptor->setSimulatedSendError(QString());
 }
 
@@ -427,8 +499,44 @@ void TestContactMessenger::testSimpleSend()
     QVERIFY(mSendError.isEmpty());
 }
 
+void TestContactMessenger::testReceived()
+{
+    ContactMessengerPtr messenger = ContactMessenger::create(mAccount, QLatin1String("Ann"));
+
+    QVERIFY(connect(messenger.data(),
+            SIGNAL(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
+            SLOT(onMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr))));
+
+    QList<ClientObserverInterface *> observers = ourObservers();
+    Q_FOREACH(ClientObserverInterface *iface, observers) {
+        ChannelDetails chan = { QDBusObjectPath(mChan->objectPath()), mChan->immutableProperties() };
+        iface->ObserveChannels(
+                QDBusObjectPath(mAccount->objectPath()),
+                QDBusObjectPath(mChan->connection()->objectPath()),
+                ChannelDetailsList() << chan,
+                QDBusObjectPath(QLatin1String("/")),
+                Tp::ObjectPathList(),
+                QVariantMap());
+    }
+
+    guint handle = tp_handle_ensure(mContactRepo, "Ann", 0, 0);
+    TpMessage *msg = tp_cm_message_new_text(mBaseConnService, handle, TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, "Hi!");
+
+    tp_message_mixin_take_received(G_OBJECT(mMessagesChanService), msg);
+
+    tp_handle_unref(mContactRepo, handle);
+
+    while (!mGotMessageReceived) {
+        mLoop->processEvents();
+    }
+
+    QCOMPARE(mMessageSentText, QString::fromLatin1("Hi!"));
+}
+
 void TestContactMessenger::cleanup()
 {
+    mMessageReceivedChan.reset();
+
     cleanupImpl();
 }
 
