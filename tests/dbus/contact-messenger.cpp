@@ -26,7 +26,7 @@
 #include <dbus/dbus-glib.h>
 
 #include <tests/lib/glib/contacts-conn.h>
-#include <tests/lib/glib/echo/chan.h>
+#include <tests/lib/glib/echo2/chan.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
@@ -111,7 +111,9 @@ class TestContactMessenger : public Test
 public:
     TestContactMessenger(QObject *parent = 0)
         : Test(parent),
-          mCDMessagesAdaptor(0)
+          mCDMessagesAdaptor(0),
+          // service side (telepathy-glib)
+          mConnService(0), mBaseConnService(0), mContactRepo(0)
     { }
 
 private Q_SLOTS:
@@ -131,6 +133,13 @@ private:
     AccountManagerPtr mAM;
     AccountPtr mAccount;
     CDMessagesAdaptor *mCDMessagesAdaptor;
+
+    TpTestsContactsConnection *mConnService;
+    TpBaseConnection *mBaseConnService;
+    TpHandleRepoIface *mContactRepo;
+
+    QString mConnName;
+    QString mConnPath;
 };
 
 void TestContactMessenger::initTestCase()
@@ -175,6 +184,31 @@ void TestContactMessenger::initTestCase()
 
     QCOMPARE(mAccount->supportsRequestHints(), false);
     QCOMPARE(mAccount->requestsSucceedWithChannel(), false);
+
+    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
+            "account", "me@example.com",
+            "protocol", "example",
+            NULL));
+    QVERIFY(mConnService != 0);
+    mBaseConnService = TP_BASE_CONNECTION(mConnService);
+    QVERIFY(mBaseConnService != 0);
+
+    gchar *name, *connPath;
+    GError *error = NULL;
+
+    QVERIFY(tp_base_connection_register(mBaseConnService,
+                "example", &name, &connPath, &error));
+    QVERIFY(error == 0);
+
+    QVERIFY(name != 0);
+    QVERIFY(connPath != 0);
+
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
+
+    g_free(name);
+    g_free(connPath);
 }
 
 void TestContactMessenger::init()
