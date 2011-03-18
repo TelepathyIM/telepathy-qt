@@ -202,6 +202,22 @@
 /**
  * \ingroup errorstrconsts
  *
+ * The error name "org.freedesktop.DBus.Error.UnknownInterface".
+ */
+#define TELEPATHY_DBUS_ERROR_UNKNOWN_INTERFACE \
+    "org.freedesktop.DBus.Error.UnknownInterface"
+
+/**
+ * \ingroup errorstrconsts
+ *
+ * The error name "org.freedesktop.DBus.Error.UnknownInterface" as a QLatin1String.
+ */
+#define TP_QT4_DBUS_ERROR_UNKNOWN_INTERFACE \
+    (QLatin1String("org.freedesktop.DBus.Error.UnknownInterface"))
+
+/**
+ * \ingroup errorstrconsts
+ *
  * The error name "org.freedesktop.DBus.Error.UnknownMethod".
  *
  * Raised by the D-Bus daemon when the method name invoked isn't
