@@ -25,7 +25,9 @@
 #include "TelepathyQt4/_gen/contact-messenger.moc.hpp"
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/PendingSendMessage>
+#include <TelepathyQt4/SimpleTextObserver>
 
 namespace Tp
 {
@@ -40,6 +42,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactMessenger::Private
 
     AccountPtr account;
     QString contactIdentifier;
+    SimpleTextObserverPtr observer;
 };
 
 ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
@@ -54,6 +57,13 @@ ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
 ContactMessenger::ContactMessenger(const AccountPtr &account, const QString &contactIdentifier)
     : mPriv(new Private(account, contactIdentifier))
 {
+    mPriv->observer = SimpleTextObserver::create(account, contactIdentifier);
+    connect(mPriv->observer.data(),
+            SIGNAL(messageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)),
+            SIGNAL(messageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)));
+    connect(mPriv->observer.data(),
+            SIGNAL(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
+            SIGNAL(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
 }
 
 ContactMessenger::~ContactMessenger()
