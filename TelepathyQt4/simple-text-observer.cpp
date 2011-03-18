@@ -40,17 +40,44 @@
 namespace Tp
 {
 
+QHash<AccountPtr, SharedPtr<SimpleTextObserver::Private::Observer> > SimpleTextObserver::Private::observers;
 uint SimpleTextObserver::Private::numObservers = 0;
 
 SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
-        const ClientRegistrarPtr &cr, const AccountPtr &account,
+        const AccountPtr &account,
         const QString &contactIdentifier, bool requiresNormalization)
     : parent(parent),
-      cr(cr),
       account(account),
       contactIdentifier(contactIdentifier),
       requiresNormalization(requiresNormalization)
 {
+    if (observers.contains(account)) {
+        observer = observers.value(account);
+    } else {
+        ClientRegistrarPtr cr = ClientRegistrar::create(
+                FakeAccountFactory::create(account),
+                account->connectionFactory(),
+                account->channelFactory(),
+                account->contactFactory());
+
+        ChannelClassSpec channelFilter = ChannelClassSpec::textChat();
+        observer = SharedPtr<Observer>(
+                new Observer(cr, ChannelClassSpecList() << channelFilter, account));
+
+        QString observerName = QString(QLatin1String("TpQt4STO_%1_%2"))
+            .arg(account->dbusConnection().baseService()
+                .replace(QLatin1String(":"), QLatin1String("_"))
+                .replace(QLatin1String("."), QLatin1String("_")))
+            .arg(numObservers++);
+        if (!cr->registerClient(observer, observerName, false)) {
+            warning() << "Unable to register observer" << observerName;
+            observer.reset();
+            return;
+        }
+
+        observers.insert(account, observer);
+    }
+
     if (!requiresNormalization) {
         normalizedContactIdentifier = contactIdentifier;
     } else {
@@ -59,24 +86,23 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
                 SLOT(onAccountConnectionChanged(Tp::ConnectionPtr)));
         parent->onAccountConnectionChanged(account->connection());
     }
-}
 
-SimpleTextObserver::Private::~Private()
-{
-    for (QHash<TextChannelPtr, TextChannelWrapper*>::iterator i = channels.begin();
-            i != channels.end();) {
-        delete i.value();
-    }
+    parent->connect(observer.data(),
+            SIGNAL(messageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)),
+            SLOT(onMessageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)));
+    parent->connect(observer.data(),
+            SIGNAL(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
+            SLOT(onMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
 }
 
 void SimpleTextObserver::Private::processMessageQueue()
 {
     foreach (const TextMessageInfo mi, messageQueue) {
         if (mi.type == TextMessageInfo::Sent) {
-            parent->onChannelMessageSent(mi.message, mi.flags, mi.sentMessageToken,
+            parent->onMessageSent(mi.message, mi.flags, mi.sentMessageToken,
                     mi.channel);
         } else {
-            parent->onChannelMessageReceived(*(reinterpret_cast<const ReceivedMessage*>(&mi.message)),
+            parent->onMessageReceived(*(reinterpret_cast<const ReceivedMessage*>(&mi.message)),
                     mi.channel);
         }
     }
@@ -86,15 +112,92 @@ void SimpleTextObserver::Private::processMessageQueue()
 bool SimpleTextObserver::Private::filterMessage(const Message &message,
         const TextChannelPtr &textChannel)
 {
-    if (requiresNormalization) {
-        QString targetId = textChannel->immutableProperties().value(
-                TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
-        if (targetId != normalizedContactIdentifier) {
-            // we didn't filter per contact, let's filter here
-            return false;
-        }
+    QString targetId = textChannel->immutableProperties().value(
+            TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
+    if (targetId != normalizedContactIdentifier) {
+        // we didn't filter per contact, let's filter here
+        return false;
     }
     return true;
+}
+
+SimpleTextObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
+        const ChannelClassSpecList &channelFilter,
+        const AccountPtr &account)
+    : QObject(),
+      AbstractClientObserver(channelFilter, false),
+      mCr(cr),
+      mAccount(account)
+{
+}
+
+SimpleTextObserver::Private::Observer::~Observer()
+{
+    for (QHash<TextChannelPtr, TextChannelWrapper*>::iterator i = mChannels.begin();
+            i != mChannels.end();) {
+        delete i.value();
+    }
+}
+
+void SimpleTextObserver::Private::Observer::observeChannels(
+        const MethodInvocationContextPtr<> &context,
+        const AccountPtr &account,
+        const ConnectionPtr &connection,
+        const QList<ChannelPtr> &channels,
+        const ChannelDispatchOperationPtr &dispatchOperation,
+        const QList<ChannelRequestPtr> &requestsSatisfied,
+        const ObserverInfo &observerInfo)
+{
+    if (account != mAccount) {
+        context->setFinished();
+        return;
+    }
+
+    foreach (const ChannelPtr &channel, channels) {
+        TextChannelPtr textChannel = TextChannelPtr::qObjectCast(channel);
+        if (!textChannel) {
+            if (channel->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_TEXT) {
+                warning() << "Channel received to observe is not of type Text, service confused. "
+                    "Ignoring channel";
+            } else {
+                warning() << "Channel received to observe is not a subclass of TextChannel. "
+                    "ChannelFactory set on this observer's account must construct TextChannel "
+                    "subclasses for channels of type Text. Ignoring channel";
+            }
+            continue;
+        }
+
+        if (mChannels.contains(textChannel)) {
+            // we are already observing this channel
+            continue;
+        }
+
+        // this shouldn't happen, but in any case
+        if (!textChannel->isValid()) {
+            warning() << "Channel received to observe is invalid. Ignoring channel";
+            continue;
+        }
+
+        SimpleTextObserver::Private::TextChannelWrapper *wrapper =
+            new SimpleTextObserver::Private::TextChannelWrapper(textChannel);
+        mChannels.insert(textChannel, wrapper);
+        connect(wrapper,
+                SIGNAL(channelInvalidated(Tp::TextChannelPtr)),
+                SLOT(onChannelInvalidated(Tp::TextChannelPtr)));
+        connect(wrapper,
+                SIGNAL(channelMessageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)),
+                SIGNAL(messageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)));
+        connect(wrapper,
+                SIGNAL(channelMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
+                SLOT(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
+    }
+
+    context->setFinished();
+}
+
+void SimpleTextObserver::Private::Observer::onChannelInvalidated(const TextChannelPtr &textChannel)
+{
+    delete mChannels.take(textChannel);
 }
 
 SimpleTextObserver::Private::TextChannelWrapper::TextChannelWrapper(const TextChannelPtr &channel)
@@ -209,35 +312,8 @@ SimpleTextObserverPtr SimpleTextObserver::create(const AccountPtr &account,
 SimpleTextObserverPtr SimpleTextObserver::create(const AccountPtr &account,
         const QString &contactIdentifier, bool requiresNormalization)
 {
-    QVariantMap additionalProperties;
-    if (!contactIdentifier.isEmpty() && !requiresNormalization) {
-        QVariantMap additionalProperties;
-        additionalProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID"),
-                contactIdentifier);
-    }
-    ChannelClassSpec channelFilter = ChannelClassSpec::textChat(additionalProperties);
-
-    ClientRegistrarPtr cr = ClientRegistrar::create(
-            Private::FakeAccountFactory::create(account),
-            account->connectionFactory(),
-            account->channelFactory(),
-            account->contactFactory());
-
-    SimpleTextObserverPtr observer = SimpleTextObserverPtr(
-            new SimpleTextObserver(cr, ChannelClassSpecList() << channelFilter,
-                account, contactIdentifier, requiresNormalization));
-
-    QString observerName = QString(QLatin1String("TpQt4STO_%1_%2"))
-        .arg(account->dbusConnection().baseService()
-            .replace(QLatin1String(":"), QLatin1String("_"))
-            .replace(QLatin1String("."), QLatin1String("_")))
-        .arg(Private::numObservers++);
-    if (!cr->registerClient(observer, observerName, false)) {
-        warning() << "Unable to register observer" << observerName;
-        return SimpleTextObserverPtr();
-    }
-
-    return observer;
+    return SimpleTextObserverPtr(
+            new SimpleTextObserver(account, contactIdentifier, requiresNormalization));
 }
 
 /**
@@ -250,13 +326,9 @@ SimpleTextObserverPtr SimpleTextObserver::create(const AccountPtr &account,
  * \param requiresNormalization Whether \a contactIdentifier needs to be normalized.
  * \return An SimpleTextObserverPtr object pointing to the newly created SimpleTextObserver object.
  */
-SimpleTextObserver::SimpleTextObserver(const ClientRegistrarPtr &cr,
-        const ChannelClassSpecList &channelFilter,
-        const AccountPtr &account, const QString &contactIdentifier,
-        bool requiresNormalization)
-    : QObject(),
-      AbstractClientObserver(channelFilter, false),
-      mPriv(new Private(this, cr, account, contactIdentifier, requiresNormalization))
+SimpleTextObserver::SimpleTextObserver(const AccountPtr &account,
+        const QString &contactIdentifier, bool requiresNormalization)
+    : mPriv(new Private(this, account, contactIdentifier, requiresNormalization))
 {
 }
 
@@ -287,61 +359,6 @@ AccountPtr SimpleTextObserver::account() const
 QString SimpleTextObserver::contactIdentifier() const
 {
     return mPriv->contactIdentifier;
-}
-
-void SimpleTextObserver::observeChannels(
-        const MethodInvocationContextPtr<> &context,
-        const AccountPtr &account,
-        const ConnectionPtr &connection,
-        const QList<ChannelPtr> &channels,
-        const ChannelDispatchOperationPtr &dispatchOperation,
-        const QList<ChannelRequestPtr> &requestsSatisfied,
-        const ObserverInfo &observerInfo)
-{
-    if (account != mPriv->account) {
-        context->setFinished();
-        return;
-    }
-
-    foreach (const ChannelPtr &channel, channels) {
-        TextChannelPtr textChannel = TextChannelPtr::qObjectCast(channel);
-        if (!textChannel) {
-            if (channel->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_TEXT) {
-                warning() << "Channel received to observe is not of type Text, service confused. "
-                    "Ignoring channel";
-            } else {
-                warning() << "Channel received to observe is not a subclass of TextChannel. "
-                    "ChannelFactory set on this observer's account must construct TextChannel "
-                    "subclasses for channels of type Text. Ignoring channel";
-            }
-            continue;
-        }
-
-        if (mPriv->channels.contains(textChannel)) {
-            // we are already observing this channel
-            continue;
-        }
-
-        // this shouldn't happen, but in any case
-        if (!textChannel->isValid()) {
-            warning() << "Channel received to observe is invalid. Ignoring channel";
-            continue;
-        }
-
-        Private::TextChannelWrapper *wrapper = new Private::TextChannelWrapper(textChannel);
-        mPriv->channels.insert(textChannel, wrapper);
-        connect(wrapper,
-                SIGNAL(channelInvalidated(Tp::TextChannelPtr)),
-                SLOT(onChannelInvalidated(Tp::TextChannelPtr)));
-        connect(wrapper,
-                SIGNAL(channelMessageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)),
-                SLOT(onChannelMessageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)));
-        connect(wrapper,
-                SIGNAL(channelMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
-                SLOT(onChannelMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
-    }
-
-    context->setFinished();
 }
 
 void SimpleTextObserver::onAccountConnectionChanged(const Tp::ConnectionPtr &connection)
@@ -389,12 +406,7 @@ void SimpleTextObserver::onContactConstructed(Tp::PendingOperation *op)
     disconnect(mPriv->account.data(), 0, this, 0);
 }
 
-void SimpleTextObserver::onChannelInvalidated(const TextChannelPtr &textChannel)
-{
-    delete mPriv->channels.take(textChannel);
-}
-
-void SimpleTextObserver::onChannelMessageSent(const Tp::Message &message,
+void SimpleTextObserver::onMessageSent(const Tp::Message &message,
         Tp::MessageSendingFlags flags, const QString &sentMessageToken,
         const Tp::TextChannelPtr &textChannel)
 {
@@ -411,7 +423,7 @@ void SimpleTextObserver::onChannelMessageSent(const Tp::Message &message,
     emit messageSent(message, flags, sentMessageToken, textChannel);
 }
 
-void SimpleTextObserver::onChannelMessageReceived(const Tp::ReceivedMessage &message,
+void SimpleTextObserver::onMessageReceived(const Tp::ReceivedMessage &message,
         const Tp::TextChannelPtr &textChannel)
 {
     if (mPriv->normalizedContactIdentifier.isEmpty()) {
