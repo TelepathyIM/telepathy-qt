@@ -95,8 +95,8 @@ PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &messag
 /**
  * Create a new ContactMessenger object.
  *
- * \param account The account used to listen to events.
- * \param contact The contact used to filter events.
+ * \param account The account this messenger is communicating with.
+ * \param contact The contact this messenger is communicating with.
  * \return An ContactMessengerPtr object pointing to the newly created ContactMessenger object,
  *         or a null ContactMessengerPtr if \a contact is null.
  */
@@ -114,12 +114,11 @@ ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
 /**
  * Create a new ContactMessenger object.
  *
- * \param account The account used to listen to events.
- * \param contactIdentifier The identifier of the contact used to filter events.
+ * \param account The account this messenger is communicating with.
+ * \param contactIdentifier The identifier of the contact this messenger is communicating with.
  * \return An ContactMessengerPtr object pointing to the newly created ContactMessenger object,
  *         or a null ContactMessengerPtr if \a contact is null.
  */
-
 ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
         const QString &contactIdentifier)
 {
@@ -134,8 +133,8 @@ ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
 /**
  * Construct a new ContactMessenger object.
  *
- * \param account The account used to listen to events.
- * \param contactIdentifier The identifier of the contact used to filter events.
+ * \param account The account this messenger is communicating with.
+ * \param contactIdentifier The identifier of the contact this messenger is communicating with.
  */
 ContactMessenger::ContactMessenger(const AccountPtr &account, const QString &contactIdentifier)
     : mPriv(new Private(this, account, contactIdentifier))
@@ -158,9 +157,9 @@ ContactMessenger::~ContactMessenger()
 }
 
 /**
- * Return the account used to listen to events.
+ * Return the account this messenger is communicating with.
  *
- * \return The account used to listen to events.
+ * \return The account this messenger is communicating with.
  */
 AccountPtr ContactMessenger::account() const
 {
@@ -168,10 +167,9 @@ AccountPtr ContactMessenger::account() const
 }
 
 /**
- * Return the identifier of the contact used to filter events, or an empty string if none was
- * provided at construction.
+ * Return the identifier of the contact this messenger is communicating with.
  *
- * \return The identifier of the contact used to filter events.
+ * \return The identifier of the contact this messenger is communicating with.
  */
 QString ContactMessenger::contactIdentifier() const
 {
