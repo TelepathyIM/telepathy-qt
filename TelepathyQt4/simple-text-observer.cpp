@@ -106,11 +106,29 @@ void SimpleTextObserver::Private::TextChannelWrapper::onChannelMessageReceived(
     emit channelMessageReceived(message, mChannel);
 }
 
+/**
+ * Create a new SimpleTextObserver object.
+ *
+ * Events will be signalled for all messages (sent/received) by all contacts in \a account.
+ *
+ * \param account The account used to listen to events.
+ * \return An SimpleTextObserverPtr object pointing to the newly created SimpleTextObserver object.
+ */
 SimpleTextObserverPtr SimpleTextObserver::create(const AccountPtr &account)
 {
     return create(account, QString());
 }
 
+/**
+ * Create a new SimpleTextObserver object.
+ *
+ * If \a contact is not null, events will be signalled for all messages (sent/received) by \a
+ * contact, otherwise this method works the same as create(const Tp::AccountPtr &).
+ *
+ * \param account The account used to listen to events.
+ * \param contact The contact used to filter events.
+ * \return An SimpleTextObserverPtr object pointing to the newly created SimpleTextObserver object.
+ */
 SimpleTextObserverPtr SimpleTextObserver::create(const AccountPtr &account,
         const ContactPtr &contact)
 {
@@ -120,6 +138,17 @@ SimpleTextObserverPtr SimpleTextObserver::create(const AccountPtr &account,
     return create(account, QString());
 }
 
+/**
+ * Create a new SimpleTextObserver object.
+ *
+ * If \a contactIdentifier is non-empty, events will be signalled for all messages (sent/received)
+ * by a contact identified by \a contactIdentifier, otherwise this method works the same as
+ * create(const Tp::AccountPtr &).
+ *
+ * \param account The account used to listen to events.
+ * \param contactIdentifier The identifier of the contact used to filter events.
+ * \return An SimpleTextObserverPtr object pointing to the newly created SimpleTextObserver object.
+ */
 SimpleTextObserverPtr SimpleTextObserver::create(const AccountPtr &account,
         const QString &contactIdentifier)
 {
@@ -154,6 +183,15 @@ SimpleTextObserverPtr SimpleTextObserver::create(const AccountPtr &account,
     return observer;
 }
 
+/**
+ * Construct a new SimpleTextObserver object.
+ *
+ * \param cr The ClientRegistrar used to register this observer.
+ * \param channelFilter The channel filter used by this observer.
+ * \param account The account used to listen to events.
+ * \param contactIdentifier The identifier of the contact used to filter events.
+ * \return An SimpleTextObserverPtr object pointing to the newly created SimpleTextObserver object.
+ */
 SimpleTextObserver::SimpleTextObserver(const ClientRegistrarPtr &cr,
         const ChannelClassSpecList &channelFilter,
         const AccountPtr &account, const QString &contactIdentifier)
@@ -163,16 +201,30 @@ SimpleTextObserver::SimpleTextObserver(const ClientRegistrarPtr &cr,
 {
 }
 
+/**
+ * Class destructor.
+ */
 SimpleTextObserver::~SimpleTextObserver()
 {
     delete mPriv;
 }
 
+/**
+ * Return the account used to listen to events.
+ *
+ * \return The account used to listen to events.
+ */
 AccountPtr SimpleTextObserver::account() const
 {
     return mPriv->account;
 }
 
+/**
+ * Return the identifier of the contact used to filter events, or an empty string if none was
+ * provided at construction.
+ *
+ * \return The identifier of the contact used to filter events.
+ */
 QString SimpleTextObserver::contactIdentifier() const
 {
     return mPriv->contactIdentifier;
@@ -237,5 +289,24 @@ void SimpleTextObserver::onChannelInvalidated(const TextChannelPtr &textChannel)
 {
     delete mPriv->channels.take(textChannel);
 }
+
+/**
+ * \fn void SimpleTextObserver::messageSent(const Tp::Message &message,
+ *                  Tp::MessageSendingFlags flags, const QString &sentMessageToken,
+ *                  const Tp::TextChannelPtr &channel);
+ *
+ * This signal is emitted whenever a text message on account() is sent.
+ * If contactIdentifier() is non-empty, only messages sent to the contact identified by it will
+ * be signalled.
+ */
+
+/**
+ * \fn void SimpleTextObserver::messageReceived(const Tp::ReceivedMessage &message,
+ *                  const Tp::TextChannelPtr &channel);
+ *
+ * This signal is emitted whenever a text message on account() is received.
+ * If contactIdentifier() is non-empty, only messages received by the contact identified by it will
+ * be signalled.
+ */
 
 } // Tp
