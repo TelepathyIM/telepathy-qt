@@ -40,8 +40,8 @@ endif(POLICY CMP0011)
 #   set nano_version to 1
 set(TP_QT4_MAJOR_VERSION 0)
 set(TP_QT4_MINOR_VERSION 5)
-set(TP_QT4_MICRO_VERSION 11)
-set(TP_QT4_NANO_VERSION  1)
+set(TP_QT4_MICRO_VERSION 12)
+set(TP_QT4_NANO_VERSION  0)
 
 # This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
 # occurs, and will be used for the SOVERSION of the generated shared libraries.
