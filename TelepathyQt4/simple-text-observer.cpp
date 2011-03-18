@@ -196,7 +196,7 @@ SimpleTextObserver::SimpleTextObserver(const ClientRegistrarPtr &cr,
         const ChannelClassSpecList &channelFilter,
         const AccountPtr &account, const QString &contactIdentifier)
     : QObject(),
-      AbstractClientObserver(channelFilter, true),
+      AbstractClientObserver(channelFilter, false),
       mPriv(new Private(cr, account, contactIdentifier))
 {
 }
