@@ -48,6 +48,8 @@ public:
 
     TextChannelPtr channel() const;
 
+    ContactMessengerPtr messenger() const;
+
     QString sentMessageToken() const;
     Message message() const;
 

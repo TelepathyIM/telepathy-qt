@@ -70,6 +70,17 @@ TextChannelPtr PendingSendMessage::channel() const
     return TextChannelPtr(qobject_cast<TextChannel*>((TextChannel*) object().data()));
 }
 
+/**
+ * Return the contact messenger used to send the message if this instance was created using
+ * ContactMessenger. If it was created using TextChannel, return a null ContactMessengerPtr.
+ *
+ * \return A ContactMessengerPtr object.
+ */
+ContactMessengerPtr PendingSendMessage::messenger() const
+{
+    return ContactMessengerPtr(qobject_cast<ContactMessenger*>((ContactMessenger*) object().data()));
+}
+
 QString PendingSendMessage::sentMessageToken() const
 {
     return mPriv->token;
