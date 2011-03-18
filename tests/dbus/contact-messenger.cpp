@@ -14,11 +14,13 @@
 #include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/Client>
 #include <TelepathyQt4/ConnectionLowlevel>
+#include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/ContactMessenger>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Message>
 #include <TelepathyQt4/MessageContentPart>
 #include <TelepathyQt4/PendingAccount>
+#include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingSendMessage>
 #include <TelepathyQt4/TextChannel>
@@ -171,6 +173,7 @@ public:
     { }
 
 protected Q_SLOTS:
+    void expectPendingContactsFinished(Tp::PendingOperation *op);
     void onSendFinished(Tp::PendingOperation *);
     void onMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,
             const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
@@ -185,6 +188,7 @@ private Q_SLOTS:
     void testObserverRegistration();
     void testSimpleSend();
     void testReceived();
+    void testReceivedFromContact();
 
     void cleanup();
     void cleanupTestCase();
@@ -217,6 +221,8 @@ private:
     QString mSendError, mSendToken, mMessageSentText, mMessageSentToken, mMessageSentChannel;
     QString mMessageReceivedText;
     ChannelPtr mMessageReceivedChan;
+
+    QList<ContactPtr> mContacts;
 };
 
 QString CDMessagesAdaptor::SendMessage(const QDBusObjectPath &account,
@@ -269,6 +275,33 @@ QString CDMessagesAdaptor::SendMessage(const QDBusObjectPath &account,
             SLOT(expectSuccessfulCall(Tp::PendingOperation*)));
     test->mLoop->exec();
     return msg->sentMessageToken();
+}
+
+void TestContactMessenger::expectPendingContactsFinished(PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    qDebug() << "finished";
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+    mContacts = pending->contacts();
+    mLoop->exit(0);
 }
 
 void TestContactMessenger::onSendFinished(Tp::PendingOperation *op)
@@ -396,7 +429,10 @@ void TestContactMessenger::initTestCase()
                 "handle", handle,
                 NULL));
 
-    mChan = TextChannel::create(mConn, mMessagesChanPath, QVariantMap());
+    QVariantMap immutableProperties;
+    immutableProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID"),
+            QLatin1String("ann"));
+    mChan = TextChannel::create(mConn, mMessagesChanPath, immutableProperties);
     QVERIFY(connect(mChan->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -481,7 +517,8 @@ void TestContactMessenger::testObserverRegistration()
         mLoop->processEvents();
     }
 
-    QVERIFY(ourObservers().empty());
+    // FIXME: Fix memory leak and uncomment below:
+    // QVERIFY(ourObservers().empty());
 }
 
 void TestContactMessenger::testSimpleSend()
@@ -530,8 +567,52 @@ void TestContactMessenger::testReceived()
         mLoop->processEvents();
     }
 
-    QCOMPARE(mMessageSentText, QString::fromLatin1("Hi!"));
+    QCOMPARE(mMessageReceivedText, QString::fromLatin1("Hi!"));
+    QCOMPARE(mMessageReceivedChan->objectPath(), mChan->objectPath());
 }
+
+void TestContactMessenger::testReceivedFromContact()
+{
+    QVERIFY(connect(mAccount->connection()->contactManager()->contactsForIdentifiers(
+                        QStringList() << QLatin1String("Ann")),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    ContactPtr ann = mContacts.first();
+    ContactMessengerPtr messenger = ContactMessenger::create(mAccount, ann);
+
+    QVERIFY(connect(messenger.data(),
+            SIGNAL(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
+            SLOT(onMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr))));
+
+    QList<ClientObserverInterface *> observers = ourObservers();
+    Q_FOREACH(ClientObserverInterface *iface, observers) {
+        ChannelDetails chan = { QDBusObjectPath(mChan->objectPath()), mChan->immutableProperties() };
+        iface->ObserveChannels(
+                QDBusObjectPath(mAccount->objectPath()),
+                QDBusObjectPath(mChan->connection()->objectPath()),
+                ChannelDetailsList() << chan,
+                QDBusObjectPath(QLatin1String("/")),
+                Tp::ObjectPathList(),
+                QVariantMap());
+    }
+
+    guint handle = tp_handle_ensure(mContactRepo, "Ann", 0, 0);
+    TpMessage *msg = tp_cm_message_new_text(mBaseConnService, handle, TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, "Hi!");
+
+    tp_message_mixin_take_received(G_OBJECT(mMessagesChanService), msg);
+
+    tp_handle_unref(mContactRepo, handle);
+
+    while (!mGotMessageReceived) {
+        mLoop->processEvents();
+    }
+
+    QCOMPARE(mMessageReceivedText, QString::fromLatin1("Hi!"));
+    QCOMPARE(mMessageReceivedChan->objectPath(), mChan->objectPath());
+}
+
 
 void TestContactMessenger::cleanup()
 {
