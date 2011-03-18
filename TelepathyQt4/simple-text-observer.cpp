@@ -224,10 +224,10 @@ void SimpleTextObserver::observeChannels(
                 SLOT(onChannelInvalidated(Tp::TextChannelPtr)));
         connect(wrapper,
                 SIGNAL(channelMessageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)),
-                SLOT(onChannelMessageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)));
+                SIGNAL(channelMessageSent(Tp::Message,Tp::MessageSendingFlags,QString,Tp::TextChannelPtr)));
         connect(wrapper,
                 SIGNAL(channelMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
-                SLOT(onChannelMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
+                SIGNAL(channelMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
     }
 
     context->setFinished();
@@ -236,18 +236,6 @@ void SimpleTextObserver::observeChannels(
 void SimpleTextObserver::onChannelInvalidated(const TextChannelPtr &textChannel)
 {
     delete mPriv->channels.take(textChannel);
-}
-
-void SimpleTextObserver::onChannelMessageSent(const Message &message, MessageSendingFlags flags,
-        const QString &sentMessageToken, const TextChannelPtr &textChannel)
-{
-    emit messageSent(message, flags, sentMessageToken, textChannel);
-}
-
-void SimpleTextObserver::onChannelMessageReceived(const ReceivedMessage &message,
-        const TextChannelPtr &textChannel)
-{
-    emit messageReceived(message, textChannel);
 }
 
 } // Tp

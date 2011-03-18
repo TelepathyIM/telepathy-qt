@@ -58,10 +58,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::TextChannelPtr &channel);
-    TELEPATHY_QT4_NO_EXPORT void onChannelMessageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,
-            const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
-    TELEPATHY_QT4_NO_EXPORT void onChannelMessageReceived(const Tp::ReceivedMessage &message,
-            const Tp::TextChannelPtr &channel);
 
 private:
     TELEPATHY_QT4_NO_EXPORT SimpleTextObserver(const ClientRegistrarPtr &cr,
