@@ -88,6 +88,7 @@ class TELEPATHY_QT4_NO_EXPORT ClientObserverAdaptor : public QDBusAbstractAdapto
         "")
 
     Q_PROPERTY(Tp::ChannelClassList ObserverChannelFilter READ ObserverChannelFilter)
+    Q_PROPERTY(bool Recover READ Recover)
 
 public:
     ClientObserverAdaptor(ClientRegistrar *registrar,
