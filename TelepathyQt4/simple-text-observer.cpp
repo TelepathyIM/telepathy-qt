@@ -107,6 +107,15 @@ void SimpleTextObserver::Private::TextChannelWrapper::onChannelMessageReceived(
 }
 
 /**
+ * \class SimpleTextObserver
+ * \ingroup clientaccount
+ * \headerfile TelepathyQt4/simple-text-observer.h <TelepathyQt4/SimpleTextObserver>
+ *
+ * \brief The SimpleTextObserver class provides an easy way to track sent/receive text messages
+ *        in an account and can be optionally filtered by a contact.
+ */
+
+/**
  * Create a new SimpleTextObserver object.
  *
  * Events will be signalled for all messages (sent/received) by all contacts in \a account.
