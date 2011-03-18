@@ -481,7 +481,7 @@ void TestContactMessenger::testObserverRegistration()
         mLoop->processEvents();
     }
 
-    QVERIFY(!ourObservers().empty());
+    QVERIFY(ourObservers().empty());
 }
 
 void TestContactMessenger::testSimpleSend()
