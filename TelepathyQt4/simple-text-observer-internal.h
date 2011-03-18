@@ -46,10 +46,9 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private
     AccountPtr account;
     QString contactIdentifier;
     QString normalizedContactIdentifier;
-    bool requiresNormalization;
     QList<TextMessageInfo> messageQueue;
     SharedPtr<Observer> observer;
-    static QHash<AccountPtr, SharedPtr<Observer> > observers;
+    static QHash<AccountPtr, QWeakPointer<Observer> > observers;
     static uint numObservers;
 };
 

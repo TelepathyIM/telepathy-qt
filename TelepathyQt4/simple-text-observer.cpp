@@ -40,7 +40,7 @@
 namespace Tp
 {
 
-QHash<AccountPtr, SharedPtr<SimpleTextObserver::Private::Observer> > SimpleTextObserver::Private::observers;
+QHash<AccountPtr, QWeakPointer<SimpleTextObserver::Private::Observer> > SimpleTextObserver::Private::observers;
 uint SimpleTextObserver::Private::numObservers = 0;
 
 SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
@@ -48,12 +48,10 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
         const QString &contactIdentifier, bool requiresNormalization)
     : parent(parent),
       account(account),
-      contactIdentifier(contactIdentifier),
-      requiresNormalization(requiresNormalization)
+      contactIdentifier(contactIdentifier)
 {
-    if (observers.contains(account)) {
-        observer = observers.value(account);
-    } else {
+    observer = SharedPtr<Observer>(observers.value(account));
+    if (!observer) {
         ClientRegistrarPtr cr = ClientRegistrar::create(
                 FakeAccountFactory::create(account),
                 account->connectionFactory(),
@@ -75,7 +73,7 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
             return;
         }
 
-        observers.insert(account, observer);
+        observers.insert(account, observer.data());
     }
 
     if (!requiresNormalization) {
@@ -137,6 +135,9 @@ SimpleTextObserver::Private::Observer::~Observer()
             i != mChannels.end();) {
         delete i.value();
     }
+    mChannels.clear();
+
+    mCr->unregisterClient(SharedPtr<Observer>(this));
 }
 
 void SimpleTextObserver::Private::Observer::observeChannels(
