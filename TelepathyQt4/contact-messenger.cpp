@@ -87,6 +87,8 @@ ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
         const ContactPtr &contact)
 {
     if (!contact) {
+        warning() << "Contact used to create a ContactMessenger object must be "
+            "valid";
         return ContactMessengerPtr();
     }
     return ContactMessengerPtr(new ContactMessenger(account, contact->id()));
@@ -96,6 +98,8 @@ ContactMessengerPtr ContactMessenger::create(const AccountPtr &account,
         const QString &contactIdentifier)
 {
     if (contactIdentifier.isEmpty()) {
+        warning() << "Contact identifier used to create a ContactMessenger object must be "
+            "non-empty";
         return ContactMessengerPtr();
     }
     return ContactMessengerPtr(new ContactMessenger(account, contactIdentifier));
