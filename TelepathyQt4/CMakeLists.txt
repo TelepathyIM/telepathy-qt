@@ -40,6 +40,7 @@ set(telepathy_qt4_SRCS
     contact-factory.cpp
     contact-manager.cpp
     contact-manager-roster.cpp
+    contact-messenger.cpp
     contact-search-channel.cpp
     dbus.cpp
     dbus-proxy.cpp
@@ -62,6 +63,7 @@ set(telepathy_qt4_SRCS
     media-session-handler.cpp
     media-stream-handler.cpp
     message.cpp
+    message-content-part.cpp
     object.cpp
     optional-interface-factory.cpp
     outgoing-file-transfer-channel.cpp
@@ -77,6 +79,7 @@ set(telepathy_qt4_SRCS
     pending-handles.cpp
     pending-operation.cpp
     pending-ready.cpp
+    pending-send-message.cpp
     pending-string-list.cpp
     pending-stream-tube-connection.cpp
     pending-variant.cpp
@@ -94,6 +97,8 @@ set(telepathy_qt4_SRCS
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
     room-list-channel.cpp
+    simple-text-observer.cpp
+    simple-text-observer-internal.h
     stream-tube-channel.cpp
     streamed-media-channel.cpp
     test-backdoors.cpp
@@ -233,6 +238,8 @@ set(telepathy_qt4_HEADERS
     contact-factory.h
     ContactManager
     contact-manager.h
+    ContactMessenger
+    contact-messenger.h
     ContactSearchChannel
     contact-search-channel.h
     DBus
@@ -281,6 +288,9 @@ set(telepathy_qt4_HEADERS
     MediaStreamHandlerInterface
     Message
     message.h
+    MessageContentPart
+    MessageContentPartList
+    message-content-part.h
     MethodInvocationContext
     method-invocation-context.h
     NotFilter
@@ -318,6 +328,8 @@ set(telepathy_qt4_HEADERS
     pending-operation.h
     PendingReady
     pending-ready.h
+    PendingSendMessage
+    pending-send-message.h
     PendingStreamTubeConnection
     pending-stream-tube-connection.h
     PendingStringList
@@ -359,6 +371,8 @@ set(telepathy_qt4_HEADERS
     SharedPtr
     shared-ptr.h
     simple-pending-operations.h
+    SimpleTextObserver
+    simple-text-observer.h
     StatefulDBusProxy
     StatelessDBusProxy
     StreamTubeChannel
@@ -414,6 +428,7 @@ set(telepathy_qt4_MOC_SRCS
     contact.h
     contact-manager.h
     contact-manager-internal.h
+    contact-messenger.h
     contact-search-channel.h
     contact-search-channel-internal.h
     dbus-proxy.h
@@ -438,6 +453,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-handles.h
     pending-operation.h
     pending-ready.h
+    pending-send-message.h
     pending-stream-tube-connection.h
     pending-string-list.h
     pending-variant.h
@@ -447,6 +463,8 @@ set(telepathy_qt4_MOC_SRCS
     request-temporary-handler-internal.h
     room-list-channel.h
     simple-pending-operations.h
+    simple-text-observer.h
+    simple-text-observer-internal.h
     stream-tube-channel.h
     streamed-media-channel.h
     text-channel.h

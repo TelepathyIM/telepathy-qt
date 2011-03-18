@@ -82,8 +82,9 @@ public:
     MessagePartList parts() const;
 
 private:
-    friend class TextChannel;
+    friend class ContactMessenger;
     friend class ReceivedMessage;
+    friend class TextChannel;
 
     TELEPATHY_QT4_NO_EXPORT Message();
     TELEPATHY_QT4_NO_EXPORT Message(const MessagePartList &parts);

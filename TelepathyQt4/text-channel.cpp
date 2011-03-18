@@ -22,9 +22,9 @@
 
 #include <TelepathyQt4/TextChannel>
 
-#include <QDateTime>
-
 #include "TelepathyQt4/_gen/text-channel.moc.hpp"
+
+#include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
@@ -36,73 +36,10 @@
 #include <TelepathyQt4/ReceivedMessage>
 #include <TelepathyQt4/ReferencedHandles>
 
-#include "TelepathyQt4/debug-internal.h"
+#include <QDateTime>
 
 namespace Tp
 {
-
-struct TELEPATHY_QT4_NO_EXPORT PendingSendMessage::Private
-{
-    inline Private(const Message &message);
-    QString token;
-    Message message;
-};
-
-inline PendingSendMessage::Private::Private(const Message &message)
-    : token(QLatin1String("")), message(message)
-{
-}
-
-PendingSendMessage::PendingSendMessage(const TextChannelPtr &channel, const Message &message)
-    : PendingOperation(channel),
-      mPriv(new Private(message))
-{
-}
-
-PendingSendMessage::~PendingSendMessage()
-{
-    delete mPriv;
-}
-
-TextChannelPtr PendingSendMessage::channel() const
-{
-    return TextChannelPtr(qobject_cast<TextChannel*>((TextChannel*) object().data()));
-}
-
-QString PendingSendMessage::sentMessageToken() const
-{
-    return mPriv->token;
-}
-
-Message PendingSendMessage::message() const
-{
-    return mPriv->message;
-}
-
-void PendingSendMessage::onTextSent(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<> reply = *watcher;
-
-    if (reply.isError()) {
-        setFinishedWithError(reply.error());
-    } else {
-        setFinished();
-    }
-    watcher->deleteLater();
-}
-
-void PendingSendMessage::onMessageSent(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QString> reply = *watcher;
-
-    if (reply.isError()) {
-        setFinishedWithError(reply.error());
-    } else {
-        mPriv->token = reply.value();
-        setFinished();
-    }
-    watcher->deleteLater();
-}
 
 struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
 {
