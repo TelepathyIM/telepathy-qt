@@ -83,11 +83,13 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void onChannelInvalidated(const Tp::TextChannelPtr &channel);
+    void onChannelsReady(Tp::PendingOperation *op);
 
 private:
     ClientRegistrarPtr mCr;
     AccountPtr mAccount;
     QHash<TextChannelPtr, TextChannelWrapper*> mChannels;
+    QHash<PendingOperation*, MethodInvocationContextPtr<> > mObserveChannelsInvocations;
 };
 
 
@@ -138,6 +140,8 @@ public:
     ~TextChannelWrapper() { }
 
     TextChannelPtr channel() const { return mChannel; }
+
+    PendingOperation *becomeReady();
 
 Q_SIGNALS:
     void channelInvalidated(const Tp::TextChannelPtr &channel);

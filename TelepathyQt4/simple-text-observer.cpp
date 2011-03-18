@@ -35,7 +35,9 @@
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/Message>
 #include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingSuccess>
 
 namespace Tp
 {
@@ -154,6 +156,8 @@ void SimpleTextObserver::Private::Observer::observeChannels(
         return;
     }
 
+    QList<PendingOperation*> readyOps;
+
     foreach (const ChannelPtr &channel, channels) {
         TextChannelPtr textChannel = TextChannelPtr::qObjectCast(channel);
         if (!textChannel) {
@@ -191,14 +195,31 @@ void SimpleTextObserver::Private::Observer::observeChannels(
         connect(wrapper,
                 SIGNAL(channelMessageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)),
                 SIGNAL(messageReceived(Tp::ReceivedMessage,Tp::TextChannelPtr)));
+
+        readyOps.append(wrapper->becomeReady());
     }
 
-    context->setFinished();
+    if (readyOps.isEmpty()) {
+        context->setFinished();
+    }
+
+    PendingComposite *pc = new PendingComposite(readyOps, SharedPtr<Observer>(this));
+    mObserveChannelsInvocations.insert(pc, context);
+    connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onChannelsReady(Tp::PendingOperation*)));
 }
 
 void SimpleTextObserver::Private::Observer::onChannelInvalidated(const TextChannelPtr &textChannel)
 {
     delete mChannels.take(textChannel);
+}
+
+void SimpleTextObserver::Private::Observer::onChannelsReady(PendingOperation *op)
+{
+    MethodInvocationContextPtr<> context = mObserveChannelsInvocations.value(op);
+    mObserveChannelsInvocations.remove(op);
+    context->setFinished();
 }
 
 SimpleTextObserver::Private::TextChannelWrapper::TextChannelWrapper(const TextChannelPtr &channel)
@@ -207,17 +228,26 @@ SimpleTextObserver::Private::TextChannelWrapper::TextChannelWrapper(const TextCh
     connect(channel.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated()));
+}
+
+PendingOperation *SimpleTextObserver::Private::TextChannelWrapper::becomeReady()
+{
+    PendingOperation *op;
 
     Features features = TextChannel::FeatureMessageQueue | TextChannel::FeatureMessageSentSignal;
-    if (!channel->isReady(features)) {
+    if (!mChannel->isReady(features)) {
         // The channel factory passed to the Account used by SimpleTextObserver does not contain the
         // neeeded features, request them
-        connect(channel->becomeReady(features),
+        op = mChannel->becomeReady(features);
+        connect(op,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onChannelReady()));
     } else {
         onChannelReady();
+        op = new PendingSuccess(mChannel);
     }
+
+    return op;
 }
 
 void SimpleTextObserver::Private::TextChannelWrapper::onChannelInvalidated()
