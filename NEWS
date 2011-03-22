@@ -7,7 +7,8 @@ Enhancements:
  * ...
 
 Fixes:
- * ...
+ * Multiple parallel invalidated() signal connections created between DBusProxy
+   and ReadinessHelper
 
 telepathy-qt4 0.5.12 (2011-03-18)
 =================================
