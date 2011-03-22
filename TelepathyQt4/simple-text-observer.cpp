@@ -427,9 +427,15 @@ void SimpleTextObserver::onContactConstructed(Tp::PendingOperation *op)
         return;
     }
 
-    debug() << "Contact id normalized";
     PendingContacts *pc = qobject_cast<PendingContacts*>(op);
-    Q_ASSERT(pc->contacts().size() == 1);
+    Q_ASSERT((pc->contacts().size() + pc->invalidIdentifiers().size()) == 1);
+    if (!pc->invalidIdentifiers().isEmpty()) {
+        warning() << "Normalizing contact id failed with invalid id" <<
+            mPriv->contactIdentifier;
+        return;
+    }
+
+    debug() << "Contact id normalized";
     ContactPtr contact = pc->contacts().first();
     mPriv->normalizedContactIdentifier = contact->id();
     mPriv->processMessageQueue();
