@@ -1,30 +1,30 @@
-set(receiver_SRCS
+set(ft-receiver_SRCS
     receiver.cpp
     receiver-channel.cpp)
 
-set(receiver_MOC_SRCS
+set(ft-receiver_MOC_SRCS
     receiver.h
     receiver-channel.h)
 
-tpqt4_generate_mocs(${receiver_MOC_SRCS})
+tpqt4_generate_mocs(${ft-receiver_MOC_SRCS})
 
-add_executable(receiver ${receiver_SRCS} ${receiver_MOC_SRCS})
-target_link_libraries(receiver
+add_executable(ft-receiver ${ft-receiver_SRCS} ${ft-receiver_MOC_SRCS})
+target_link_libraries(ft-receiver
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     telepathy-qt4)
 
-set(sender_SRCS
+set(ft-sender_SRCS
     sender.cpp)
 
-set(sender_MOC_SRCS
+set(ft-sender_MOC_SRCS
     sender.h)
 
-tpqt4_generate_mocs(${sender_MOC_SRCS})
+tpqt4_generate_mocs(${ft-sender_MOC_SRCS})
 
-add_executable(sender ${sender_SRCS} ${sender_MOC_SRCS})
-target_link_libraries(sender
+add_executable(ft-sender ${ft-sender_SRCS} ${ft-sender_MOC_SRCS})
+target_link_libraries(ft-sender
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
