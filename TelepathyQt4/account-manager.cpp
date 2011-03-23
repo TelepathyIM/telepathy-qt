@@ -55,6 +55,7 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     void init();
 
     static void introspectMain(Private *self);
+    void introspectMainProperties();
 
     void checkIntrospectionCompleted();
 
@@ -79,10 +80,15 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     ContactFactoryConstPtr contactFactory;
 
     // Introspection
+    int reintrospectionRetries;
+    bool gotInitialAccounts;
     QHash<QString, AccountPtr> incompleteAccounts;
     QHash<QString, AccountPtr> accounts;
     QStringList supportedAccountProperties;
 };
+
+static const int maxReintrospectionRetries = 5;
+static const int reintrospectionRetryInterval = 3;
 
 AccountManager::Private::Private(AccountManager *parent,
         const AccountFactoryConstPtr &accFactory, const ConnectionFactoryConstPtr &connFactory,
@@ -94,7 +100,9 @@ AccountManager::Private::Private(AccountManager *parent,
       accFactory(accFactory),
       connFactory(connFactory),
       chanFactory(chanFactory),
-      contactFactory(contactFactory)
+      contactFactory(contactFactory),
+      reintrospectionRetries(0),
+      gotInitialAccounts(false)
 {
     debug() << "Creating new AccountManager:" << parent->busName();
 
@@ -148,12 +156,17 @@ void AccountManager::Private::init()
 
 void AccountManager::Private::introspectMain(AccountManager::Private *self)
 {
+    self->introspectMainProperties();
+}
+
+void AccountManager::Private::introspectMainProperties()
+{
     debug() << "Calling Properties::GetAll(AccountManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            self->properties->GetAll(
+            properties->GetAll(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER)),
-            self->parent);
-    self->parent->connect(watcher,
+            parent);
+    parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
@@ -975,11 +988,14 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
     QVariantMap props;
 
     if (!reply.isError()) {
+        mPriv->gotInitialAccounts = true;
+
         debug() << "Got reply to Properties.GetAll(AccountManager)";
         props = reply.value();
 
         if (props.contains(QLatin1String("Interfaces"))) {
             setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
+            mPriv->readinessHelper->setInterfaces(interfaces());
         }
 
         if (props.contains(QLatin1String("SupportedAccountProperties"))) {
@@ -991,15 +1007,25 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         foreach (const QString &path, paths) {
             mPriv->addAccountForPath(path);
         }
+
+        mPriv->checkIntrospectionCompleted();
     } else {
-        warning().nospace() <<
-            "GetAll(AccountManager) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
+        if (mPriv->reintrospectionRetries++ < maxReintrospectionRetries) {
+            int retryInterval = reintrospectionRetryInterval;
+            if (reply.error().type() == QDBusError::TimedOut) {
+                retryInterval = 0;
+            }
+            QTimer::singleShot(retryInterval, this,
+                    SLOT(introspectMainProperties()));
+        } else {
+            warning() << "GetAll(AccountManager) failed with" <<
+                reply.error().name() << ":" << reply.error().message();
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
+                    false, reply.error());
+        }
     }
 
     watcher->deleteLater();
-
-    mPriv->checkIntrospectionCompleted();
 }
 
 void AccountManager::onAccountReady(Tp::PendingOperation *op)
@@ -1032,6 +1058,10 @@ void AccountManager::onAccountReady(Tp::PendingOperation *op)
 void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
         bool valid)
 {
+    if (!mPriv->gotInitialAccounts) {
+        return;
+    }
+
     QString path = objectPath.path();
 
     if (!mPriv->incompleteAccounts.contains(path) &&
@@ -1043,6 +1073,10 @@ void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
 
 void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
 {
+    if (!mPriv->gotInitialAccounts) {
+        return;
+    }
+
     QString path = objectPath.path();
 
     /* the account is either in mPriv->incompleteAccounts or mPriv->accounts */
