@@ -35,7 +35,8 @@
 Sender::Sender(const QString &accountPath,
         const QString &contactIdentifier, const QString &message)
 {
-    Tp::AccountPtr acc = Tp::Account::create(TP_QT4_IFACE_ACCOUNT, accountPath);
+    Tp::AccountPtr acc = Tp::Account::create(TP_QT4_ACCOUNT_MANAGER_BUS_NAME,
+            accountPath);
     messenger = Tp::ContactMessenger::create(acc, contactIdentifier);
     connect(messenger->sendMessage(message),
             SIGNAL(finished(Tp::PendingOperation*)),
