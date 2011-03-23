@@ -3,11 +3,14 @@ telepathy-qt4 0.5.14 (UNRELEASED)
 
 The "..." release.
 
+The Qt dependency has been bumped to >= 4.6.0 for all future releases.
+
 Enhancements:
  * ...
 
 Fixes:
- * ...
+ * Regression in 0.5.13 causing PendingReadys to not fail even if the object
+   being made ready disappears
 
 telepathy-qt4 0.5.13 (2011-03-23)
 =================================
