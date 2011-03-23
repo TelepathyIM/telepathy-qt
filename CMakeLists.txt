@@ -89,7 +89,7 @@ include(MacroLogFeature)
 
 # Required dependencies
 # Find qt4 version >= 4.5
-set (QT_MIN_VERSION "4.5.0")
+set (QT_MIN_VERSION "4.6.0")
 find_package(Qt4 REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}
