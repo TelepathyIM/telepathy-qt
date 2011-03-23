@@ -170,11 +170,6 @@ ReadinessHelper::Private::Private(
 {
     Q_ASSERT(proxy != 0);
 
-    connect(proxy,
-            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-            parent,
-            SLOT(onProxyInvalidated(Tp::DBusProxy*,QString,QString)));
-
     for (Introspectables::const_iterator i = introspectables.constBegin();
             i != introspectables.constEnd(); ++i) {
         Feature feature = i.key();
@@ -565,6 +560,12 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     Q_ASSERT(!requestedFeatures.isEmpty());
 
     if (mPriv->proxy) {
+        connect(mPriv->proxy,
+                SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                this,
+                SLOT(onProxyInvalidated(Tp::DBusProxy*,QString,QString)),
+                Qt::UniqueConnection);
+
         if (!mPriv->proxy->isValid()) {
             PendingReady *operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object),
                     requestedFeatures);
