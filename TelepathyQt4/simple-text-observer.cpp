@@ -52,6 +52,7 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
       account(account),
       contactIdentifier(contactIdentifier)
 {
+    debug() << "Registering observer for account" << account->objectPath();
     observer = SharedPtr<Observer>(observers.value(account));
     if (!observer) {
         ClientRegistrarPtr cr = ClientRegistrar::create(
@@ -75,7 +76,12 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
             return;
         }
 
+        debug() << "Observer for account" << account->objectPath() <<
+            "registered";
         observers.insert(account, observer.data());
+    } else {
+        debug() << "Observer for account" << account->objectPath() <<
+            "already registered, using it";
     }
 
     if (!requiresNormalization) {
@@ -96,6 +102,7 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
 
 void SimpleTextObserver::Private::processMessageQueue()
 {
+    debug() << "Processing event queue";
     foreach (const TextMessageInfo mi, messageQueue) {
         if (mi.type == TextMessageInfo::Sent) {
             parent->onMessageSent(mi.message, mi.flags, mi.sentMessageToken,
@@ -138,6 +145,7 @@ SimpleTextObserver::Private::Observer::~Observer()
     }
     mChannels.clear();
 
+    debug() << "Unregistering observer for account" << mAccount->objectPath();
     mCr->unregisterClient(SharedPtr<Observer>(this));
 }
 
@@ -361,6 +369,8 @@ SimpleTextObserver::SimpleTextObserver(const AccountPtr &account,
     : mPriv(new Private(this, account, contactIdentifier, requiresNormalization))
 {
     if (mPriv->observer && requiresNormalization) {
+        debug() << "Contact id requires normalization. "
+            "Queueing events until it is normalized";
         onAccountConnectionChanged(account->connection());
     }
 }
@@ -412,6 +422,7 @@ void SimpleTextObserver::onAccountConnectionConnected()
         return;
     }
 
+    debug() << "Normalizing contact id" << mPriv->contactIdentifier;
     ContactManagerPtr contactManager = conn->contactManager();
     connect(contactManager->contactsForIdentifiers(QStringList() << mPriv->contactIdentifier),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -435,8 +446,9 @@ void SimpleTextObserver::onContactConstructed(Tp::PendingOperation *op)
         return;
     }
 
-    debug() << "Contact id normalized";
     ContactPtr contact = pc->contacts().first();
+    debug() << "Contact id" << mPriv->contactIdentifier <<
+        "normalized to" << contact->id();
     mPriv->normalizedContactIdentifier = contact->id();
     mPriv->processMessageQueue();
 
