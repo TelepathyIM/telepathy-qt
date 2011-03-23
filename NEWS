@@ -4,9 +4,11 @@ telepathy-qt4 0.5.13 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Added example to send messages using ContactMessenger.
 
 Fixes:
+ * ContactMessenger: Do not crash if an error occurred normalizing the contact
+   identifier but the ContactManager::contactsForIdentifiers() succeeded.
  * Multiple parallel invalidated() signal connections created between DBusProxy
    and ReadinessHelper
 
