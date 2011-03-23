@@ -1,7 +1,7 @@
-telepathy-qt4 0.5.13 (UNRELEASED)
+telepathy-qt4 0.5.13 (2011-03-23)
 =================================
 
-The "..." release.
+The "what is my id?" release.
 
 Enhancements:
  * Added example to send messages using ContactMessenger.
