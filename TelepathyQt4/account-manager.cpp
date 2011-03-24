@@ -55,7 +55,6 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     void init();
 
     static void introspectMain(Private *self);
-    void introspectMainProperties();
 
     void checkIntrospectionCompleted();
 
@@ -156,17 +155,12 @@ void AccountManager::Private::init()
 
 void AccountManager::Private::introspectMain(AccountManager::Private *self)
 {
-    self->introspectMainProperties();
-}
-
-void AccountManager::Private::introspectMainProperties()
-{
     debug() << "Calling Properties::GetAll(AccountManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(
+            self->properties->GetAll(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER)),
-            parent);
-    parent->connect(watcher,
+            self->parent);
+    self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
@@ -982,6 +976,11 @@ Client::AccountManagerInterface *AccountManager::baseInterface() const
     return mPriv->baseInterface;
 }
 
+void AccountManager::introspectMain()
+{
+    mPriv->introspectMain(mPriv);
+}
+
 void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -1015,8 +1014,7 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
             if (reply.error().type() == QDBusError::TimedOut) {
                 retryInterval = 0;
             }
-            QTimer::singleShot(retryInterval, this,
-                    SLOT(introspectMainProperties()));
+            QTimer::singleShot(retryInterval, this, SLOT(introspectMain()));
         } else {
             warning() << "GetAll(AccountManager) failed with" <<
                 reply.error().name() << ":" << reply.error().message();

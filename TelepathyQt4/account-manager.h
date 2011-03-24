@@ -132,6 +132,7 @@ protected:
     Client::AccountManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
+    TELEPATHY_QT4_NO_EXPORT void introspectMain();
     TELEPATHY_QT4_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
     TELEPATHY_QT4_NO_EXPORT void onAccountReady(Tp::PendingOperation *op);
     TELEPATHY_QT4_NO_EXPORT void onAccountValidityChanged(const QDBusObjectPath &objectPath,
