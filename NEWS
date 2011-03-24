@@ -6,7 +6,11 @@ The "..." release.
 The Qt dependency has been bumped to >= 4.6.0 for all future releases.
 
 Enhancements:
- * ...
+ * AccountManager will now retry introspection 5 times with a 3 seconds interval
+   (or immediately if error is Timeout) if the introspection failed and
+   becomeReady() will fail if there is still an error after all tries.
+ * AccountManager will no more signal newAccount if the initial
+   introspection failed.
 
 Fixes:
  * Regression in 0.5.13 causing PendingReadys to not fail even if the object
