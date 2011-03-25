@@ -3,10 +3,10 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.21.8</tp:version>
+<tp:version>0.22.0</tp:version>
 
-<tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
-<tp:copyright>Copyright © 2005-2010 Nokia Corporation</tp:copyright>
+<tp:copyright>Copyright © 2005-2011 Collabora Limited</tp:copyright>
+<tp:copyright>Copyright © 2005-2011 Nokia Corporation</tp:copyright>
 <tp:copyright>Copyright © 2006 INdT</tp:copyright>
 
 <tp:license xmlns="http://www.w3.org/1999/xhtml">
@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </p>
  </tp:docstring>
  <xi:include href="Connection_Manager.xml"/>
+ <xi:include href="Connection_Manager_Interface_Account_Storage.xml"/>
  <xi:include href="Protocol.xml"/>
  <xi:include href="Protocol_Interface_Addressing.xml"/>
  <xi:include href="Protocol_Interface_Avatars.xml"/>
@@ -55,13 +56,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
     <p>
      On protocols that support contact lists, these interface expose the user's
-     contact lists, along with presence subscription information and contact
-     list groups (if supported).
+     contact lists, along with presence subscription information, contact
+     list groups (if supported), and the ability to block and unblock contacts
+     (if supported).
     </p>
    </tp:docstring>
 
    <xi:include href="Connection_Interface_Contact_List.xml"/>
    <xi:include href="Connection_Interface_Contact_Groups.xml"/>
+   <xi:include href="Connection_Interface_Contact_Blocking.xml"/>
   </tp:section>
 
   <tp:section name="Contact metadata interfaces">
@@ -163,6 +166,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_Password.xml"/>
    <xi:include href="Channel_Interface_Room.xml"/>
    <xi:include href="Channel_Interface_SASL_Authentication.xml"/>
+   <xi:include href="Channel_Interface_Credentials_Storage.xml"/>
    <xi:include href="Channel_Interface_Securable.xml"/>
    <xi:include href="Channel_Interface_Service_Point.xml"/>
    <xi:include href="Channel_Interface_Tube.xml"/>
@@ -179,13 +183,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <xi:include href="Channel_Interface_SMS.xml"/>
    </tp:section>
 
-   <tp:section name="Streamed Media-related interfaces">
+   <tp:section name="Streamed Media/Call-related interfaces">
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
      <p>These interfaces are only applicable to channels of type <tp:dbus-ref
        namespace='ofdT.Channel.Type'>StreamedMedia</tp:dbus-ref>, with the
        exception of the <tp:dbus-ref
-       namespace='ofdT.Channel.Interface'>Hold</tp:dbus-ref> interface, which
-       may also appear on <tp:dbus-ref
+       namespace='ofdT.Channel.Interface'>Hold</tp:dbus-ref> and
+       <tp:dbus-ref namespace="ofdT.Channel.Interface">DTMF</tp:dbus-ref>
+       interfaces, which may also appear on <tp:dbus-ref
        namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref> channels.</p>
     </tp:docstring>
 
@@ -232,6 +237,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Call_Content.xml"/>
    <xi:include href="Call_Content_Interface_Media.xml"/>
    <xi:include href="Call_Content_Interface_Mute.xml"/>
+   <xi:include href="Call_Content_Interface_Video_Control.xml"/>
    <xi:include href="Call_Content_Codec_Offer.xml"/>
    <xi:include href="Call_Stream.xml"/>
    <xi:include href="Call_Stream_Interface_Media.xml"/>
@@ -253,10 +259,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </p>
  </tp:docstring>
  <xi:include href="Account_Manager.xml"/>
+ <xi:include href="Account_Manager_Interface_Hidden.xml"/>
  <xi:include href="Account.xml"/>
  <xi:include href="Account_Interface_Addressing.xml"/>
  <xi:include href="Account_Interface_Avatar.xml"/>
+ <xi:include href="Account_Interface_Hidden.xml"/>
  <xi:include href="Account_Interface_Storage.xml"/>
+ <xi:include href="Account_Interface_External_Password_Storage.xml"/>
 </tp:section>
 
 <tp:section name="The Channel Dispatcher">

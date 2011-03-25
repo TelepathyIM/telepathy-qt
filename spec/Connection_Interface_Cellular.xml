@@ -117,13 +117,39 @@
       type="b" access="readwrite"
       tp:is-connection-parameter='no... just kidding! yes!'>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Determines whether SMSes containing characters that do not fit into
-          a 7‐bit GSM character set should be sent as UCS‐2, or lossily
-          recoded. If <code>False</code> (which SHOULD be the default),
-          messages will be sent with no loss of fidelity (at the potential
-          financial cost of using twice as many SMSes); if <code>True</code>,
-          the message will be recoded in an implementation‐specific way to fit
-          into a country‐specific GSM reduced character set.</p>
+        <p>Determines how to encode SMSes containing characters that do not
+          fit into a non-Unicode character set.
+          If <code>False</code> (which SHOULD be the default), messages will
+          be encoded as UCS-2 and sent with no loss of fidelity (at the
+          potential financial cost of using twice as many SMSes); if
+          <code>True</code>, the message will be recoded in an
+          implementation‐specific way to fit into a GSM reduced character
+          set.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="MessageNationalCharacterSet"
+      tp:name-for-bindings="Message_National_Character_Set"
+      type="s" access="readwrite"
+      tp:is-connection-parameter='affirmative'>
+      <tp:added version="0.21.12"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Hint for the connection manager for the GSM character set that
+          should be used to send SMSes. The connection manager SHOULD follow
+          this hint unless it has other ways to determine a better encoding.
+          If the value is <code>"gsm"</code> (which SHOULD be the default),
+          SMSes will be encoded in the normal 7-bit GSM character set,
+          eventually falling back to UCS-2; see the
+          <tp:member-ref>MessageReducedCharacterSet</tp:member-ref> property
+          for details.
+          Other valid character sets are specified in the
+          <a href="http://www.3gpp.org/ftp/specs/archive/23_series/23.038/"
+            >GSM standard</a> and are, for instance, <code>"turkey"</code>,
+          <code>"spain"</code> or <code>"portugal"</code>.
+          If the SMS cannot be encoded using the requested character set the
+          behaviour is implementation-specific, but it is RECOMMENDED that
+          the connection manager should behave as if this property was set
+          to <code>"gsm"</code>.</p>
       </tp:docstring>
     </property>
   </interface>

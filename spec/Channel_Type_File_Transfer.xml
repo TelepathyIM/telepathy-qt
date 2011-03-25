@@ -260,6 +260,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </property>
 
+    <property name="URI" type="s" access="readwrite"
+      tp:name-for-bindings="URI" tp:immutable="sometimes" tp:requestable="yes">
+      <tp:added version="0.21.9"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>For outgoing file transfers, this requestable property allows the channel
+        requester to inform observers (and the handler, if it is not the requester
+        itself) of the URI of the file being transferred. Note that the
+        connection manager SHOULD NOT read this file directly; the handler
+        streams the file into the CM through the socket negotiated using
+        <tp:member-ref>ProvideFile</tp:member-ref>.</p>
+
+        <p>On outgoing file transfers, this property MUST NOT change after the channel
+        is requested.</p>
+
+        <p>For incoming file transfers, this property MAY be set by the channel
+        handler before calling <tp:member-ref>AcceptFile</tp:member-ref> to
+        inform observers where the incoming file will be saved.
+        Setting this property once <tp:member-ref>AcceptFile</tp:member-ref>
+        has been called MUST fail. Once this property has been set
+        <tp:member-ref>URIDefined</tp:member-ref> is emitted.</p>
+
+        <p>If set, this URI SHOULD generally point to a file on the local system, as
+        defined by <a href='http://www.apps.ietf.org/rfc/rfc1738.html#sec-3.10'>
+        RFC 1738 §3.10</a>; that is, it should be of the form
+        <tt>file:///path/to/file</tt> or <tt>file://localhost/path/to/file</tt>.
+        For outgoing files, this URI MAY use a different scheme, such as
+        <tt>http:</tt>, if a remote resource is being transferred
+        to a contact.</p>
+
+      </tp:docstring>
+    </property>
+
     <tp:enum name="File_Transfer_State" type="u">
       <tp:enumvalue suffix="None" value="0">
         <tp:docstring>
@@ -521,6 +553,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg name="InitialOffset" type="t">
         <tp:docstring>
           The value of the <tp:member-ref>InitialOffset</tp:member-ref> property.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="URIDefined"
+      tp:name-for-bindings="URI_Defined">
+      <tp:added version="0.21.9"/>
+      <tp:docstring>
+        Emitted when the value of the <tp:member-ref>URI</tp:member-ref>
+        property has been set. This signal MUST only be emitted on
+        incoming file transfers, and only if the handler sets the
+        <tp:member-ref>URI</tp:member-ref> property before
+        accepting the file.
+      </tp:docstring>
+      <arg name="URI" type="s">
+        <tp:docstring>
+          The value of the <tp:member-ref>URI</tp:member-ref> property.
         </tp:docstring>
       </arg>
     </signal>
