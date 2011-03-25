@@ -14,6 +14,7 @@
 <xi:include href="../spec/Connection_Interface_Cellular.xml"/>
 <xi:include href="../spec/Connection_Interface_Client_Types.xml"/>
 <xi:include href="../spec/Connection_Interface_Contacts.xml"/>
+<xi:include href="../spec/Connection_Interface_Contact_Blocking.xml"/>
 <xi:include href="../spec/Connection_Interface_Contact_Capabilities.xml"/>
 <xi:include href="../spec/Connection_Interface_Contact_Groups.xml"/>
 <xi:include href="../spec/Connection_Interface_Contact_Info.xml"/>
