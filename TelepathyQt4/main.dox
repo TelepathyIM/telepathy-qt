@@ -22,29 +22,7 @@
 /**
  * \mainpage Telepathy-Qt4
  *
- * \section getting_started Getting Started
- * \li \subpage introduction
- * \li \subpage installation
- * \li \subpage examples
- *
- * \section developer_resources Developer Resources
- * \li \subpage bugreport
- * \li \subpage mailing_lists
- *
- * \section api_reference API Reference
- * \li <a href="classes.html">All Classes</a>
- * \li <a href="namespaces.html">All Namespaces</a>
- * \li <a href="modules.html">Modules</a>
- * \li <a href="functions.html">Functions</a>
- * \li <a href="inherits.html">Graphical Class Hierarchy</a>
- *
- * \section related_pages Related Pages
- * \li \subpage async_model
- * \li \subpage shared_ptr
- */
-
-/**
- * \page introduction Introduction
+ * \section Introduction
  *
  * Telepathy-Qt4 is a Qt4 high-level binding for <a
  * href="http://telepathy.freedesktop.org">Telepathy</a>.
@@ -59,6 +37,28 @@
  *
  * Development is done in the git repository found <a
  * href="http://cgit.freedesktop.org/telepathy/telepathy-qt4/">here</a>.
+ *
+ * \li <a href="classes.html">All Classes</a>
+ *
+ * \section getting_started Getting Started
+ * \li \subpage installation
+ *
+ * \section examples Examples
+ *
+ * This is the list of examples in Telepathy-Qt4's examples directory.
+ * The examples demonstrate Telepathy-Qt4 features in small, self-contained
+ * programs. They are not all designed to be impressive when you run them,
+ * but their source code is carefully written to show good Telepathy-Qt4
+ * programming practices.
+ *
+ * \li \subpage accounts_example
+ * \li \subpage roster_example
+ *
+ * \section developer_resources Further Information
+ * \li \subpage bugreport
+ * \li \subpage mailing_lists
+ * \li \subpage async_model
+ * \li \subpage shared_ptr
  */
 
 /**
