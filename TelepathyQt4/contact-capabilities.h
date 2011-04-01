@@ -46,13 +46,13 @@ public:
     // bool dbusTubes(const QString &service) const;
     // QStringList dbusTubeServices() const;
 
-private:
+protected:
     friend class Contact;
 
-    TELEPATHY_QT4_NO_EXPORT ContactCapabilities(bool specificToContact);
-    TELEPATHY_QT4_NO_EXPORT ContactCapabilities(const RequestableChannelClassList &rccs,
+    ContactCapabilities(bool specificToContact);
+    ContactCapabilities(const RequestableChannelClassList &rccs,
             bool specificToContact);
-    TELEPATHY_QT4_NO_EXPORT ContactCapabilities(const RequestableChannelClassSpecList &rccSpecs,
+    ContactCapabilities(const RequestableChannelClassSpecList &rccSpecs,
             bool specificToContact);
 };
 

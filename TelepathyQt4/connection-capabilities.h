@@ -58,13 +58,13 @@ public:
 
     bool streamTubes() const;
 
-private:
+protected:
     friend class Account;
     friend class Connection;
     friend class ProtocolInfo;
 
-    TELEPATHY_QT4_NO_EXPORT ConnectionCapabilities(const RequestableChannelClassList &rccs);
-    TELEPATHY_QT4_NO_EXPORT ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs);
+    ConnectionCapabilities(const RequestableChannelClassList &rccs);
+    ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs);
 };
 
 } // Tp
