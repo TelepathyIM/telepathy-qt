@@ -1336,8 +1336,8 @@ void StreamedMediaChannel::onStreamAdded(uint streamId,
         contactHandle,
         streamType,
         MediaStreamStateDisconnected,
-        MediaStreamDirectionNone,
-        0
+        MediaStreamDirectionReceive,
+        MediaStreamPendingLocalSend
     };
     addStream(streamInfo);
 }
