@@ -25,7 +25,13 @@ MaximumAvatarBytes=8192
 VCardField=x-foo
 EnglishName=Foo
 Icon=im-foo
-RequestableChannelClasses=foo text
+RequestableChannelClasses=ft;foo text;
+
+[ft]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.FileTransfer
+org.freedesktop.Telepathy.Channel.TargetHandleType u=1
+org.freedesktop.Telepathy.Channel.Type.FileTransfer.ContentHashType u=1
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
 
 [foo text]
 org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text

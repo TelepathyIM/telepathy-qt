@@ -306,6 +306,9 @@ bool ManagerFile::Private::parse(const QString &fileName)
                         QLatin1String("allowed"));
 
                 info.rccs.append(rcc);
+
+                rcc.fixedProperties.clear();
+                rcc.allowedProperties.clear();
             }
         }
     }
