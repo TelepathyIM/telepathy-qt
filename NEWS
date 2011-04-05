@@ -1,7 +1,7 @@
-telepathy-qt4 0.5.14 (UNRELEASED)
+telepathy-qt4 0.5.14 (2011-04-05)
 =================================
 
-The "..." release.
+The "Now succeeds at failing!" release.
 
 The Qt dependency has been bumped to >= 4.6.0 for all future releases.
 
@@ -11,10 +11,13 @@ Enhancements:
    becomeReady() will fail if there is still an error after all tries.
  * AccountManager will no more signal newAccount if the initial
    introspection failed.
+ * ConnectionCapabilities and ContactCapabilities are now subclassable
 
 Fixes:
  * Regression in 0.5.13 causing PendingReadys to not fail even if the object
    being made ready disappears
+ * Discrepancy between the spec and implementation on initially assumed
+   non-locally-requested StreamedMediaChannel stream direction
 
 telepathy-qt4 0.5.13 (2011-03-23)
 =================================
