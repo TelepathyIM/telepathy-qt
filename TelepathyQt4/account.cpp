@@ -169,7 +169,7 @@ QVariantMap streamedMediaCallRequest(const Tp::ContactPtr &contact)
 QVariantMap streamedMediaAudioCallRequest(const QString &contactIdentifier)
 {
     QVariantMap request = streamedMediaCallRequest(contactIdentifier);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"),
                    true);
     return request;
 }
@@ -177,7 +177,7 @@ QVariantMap streamedMediaAudioCallRequest(const QString &contactIdentifier)
 QVariantMap streamedMediaAudioCallRequest(const Tp::ContactPtr &contact)
 {
     QVariantMap request = streamedMediaCallRequest(contact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"),
                    true);
     return request;
 }
@@ -185,10 +185,10 @@ QVariantMap streamedMediaAudioCallRequest(const Tp::ContactPtr &contact)
 QVariantMap streamedMediaVideoCallRequest(const QString &contactIdentifier, bool withAudio)
 {
     QVariantMap request = streamedMediaCallRequest(contactIdentifier);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"),
                    true);
     if (withAudio) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"),
                        true);
     }
     return request;
@@ -197,10 +197,10 @@ QVariantMap streamedMediaVideoCallRequest(const QString &contactIdentifier, bool
 QVariantMap streamedMediaVideoCallRequest(const Tp::ContactPtr &contact, bool withAudio)
 {
     QVariantMap request = streamedMediaCallRequest(contact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"),
                    true);
     if (withAudio) {
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"),
                        true);
     }
     return request;
