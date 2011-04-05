@@ -18,6 +18,8 @@ Fixes:
    being made ready disappears
  * Discrepancy between the spec and implementation on initially assumed
    non-locally-requested StreamedMediaChannel stream direction
+ * Reporting capabilities of offline accounts incorrectly because of a .manager
+   file parsing bug
 
 telepathy-qt4 0.5.13 (2011-03-23)
 =================================
