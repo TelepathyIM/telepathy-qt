@@ -91,20 +91,45 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(QLatin1String("Foo"), managerFile.englishName(QLatin1String("foo")));
     QCOMPARE(QLatin1String("im-foo"), managerFile.iconName(QLatin1String("foo")));
 
-    RequestableChannelClass expectedRcc;
-    expectedRcc.fixedProperties.insert(
+    RequestableChannelClass ftRcc;
+    ftRcc.fixedProperties.insert(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    expectedRcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
+    ftRcc.fixedProperties.insert(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
             HandleTypeContact);
-    expectedRcc.allowedProperties.append(
+    ftRcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
+            FileHashTypeMD5);
+    ftRcc.allowedProperties.append(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
-    expectedRcc.allowedProperties.append(
+    ftRcc.allowedProperties.append(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"));
+
+    RequestableChannelClass fooTextRcc;
+    fooTextRcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    fooTextRcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            HandleTypeContact);
+    fooTextRcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    fooTextRcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"));
+
     RequestableChannelClassList expectedRccs;
-    expectedRccs.append(expectedRcc);
-    QCOMPARE(expectedRccs, managerFile.requestableChannelClasses(QLatin1String("foo")));
+
+    expectedRccs.append(ftRcc);
+    expectedRccs.append(fooTextRcc);
+
+    QCOMPARE(expectedRccs.size(), managerFile.requestableChannelClasses(QLatin1String("foo")).size());
+
+    qDebug() << managerFile.requestableChannelClasses(QLatin1String("foo"))[0].fixedProperties;
+    qDebug() << managerFile.requestableChannelClasses(QLatin1String("foo"))[1].fixedProperties;
+
+    QCOMPARE(ftRcc, managerFile.requestableChannelClasses(QLatin1String("foo"))[0]);
+    QCOMPARE(fooTextRcc, managerFile.requestableChannelClasses(QLatin1String("foo"))[1]);
 
     const ParamSpec *param;
     param = getParam(params, QLatin1String("account"));
