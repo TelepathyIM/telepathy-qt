@@ -318,6 +318,17 @@ void ContactSearchChannel::PendingSearch::watcherFinished(QDBusPendingCallWatche
  */
 
 /**
+ * \class ContactSearchChannel::SearchStateChangeDetails
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/contact-search-channel.h <TelepathyQt4/ContactSearchChannel>
+ *
+ * \brief The ContactSearchChannel::SearchStateChangeDetails class provides an
+ * object representing a wrapper around the details for a search state change.
+ *
+ * \sa ContactSearchChannel
+ */
+
+/**
  * Feature representing the core that needs to become ready to make the
  * ContactSearchChannel object usable.
  *
