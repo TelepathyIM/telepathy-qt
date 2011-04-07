@@ -49,6 +49,15 @@ struct TELEPATHY_QT4_NO_EXPORT AccountPropertyFilter::Private
 
 QStringList AccountPropertyFilter::Private::supportedAccountProperties;
 
+/**
+ * \class Tp::AccountPropertyFilter
+ * \ingroup utils
+ * \headerfile TelepathyQt4/account-property-filter.h <TelepathyQt4/AccountPropertyFilter>
+ *
+ * \brief The AccountPropertyFilter class provides a filter object to be used
+ * to filter accounts by properties.
+ */
+
 AccountPropertyFilter::AccountPropertyFilter()
     : GenericPropertyFilter<Account>(),
       mPriv(new Private())
