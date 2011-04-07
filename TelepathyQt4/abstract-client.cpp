@@ -198,6 +198,18 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  * \sa AbstractClient
  */
 
+/**
+ * \class AbstractClientObserver::ObserverInfo
+ * \ingroup clientclient
+ * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientObserver>
+ *
+ * \brief The AbstractClientObserver::ObserverInfo class provides an
+ * object representing a wrapper around the additional info about the channels
+ * passed to observeChannels().
+ *
+ * \sa AbstractClientObserver
+ */
+
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::ObserverInfo::Private : public QSharedData
 {
     Private(const QVariantMap &info)
@@ -635,6 +647,29 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  * \endcode
  *
  * \sa AbstractClient
+ */
+
+/**
+ * \class AbstractClientHandler::Capabilities
+ * \ingroup clientclient
+ * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientHandler>
+ *
+ * \brief The AbstractClientHandler::Capabilities class provides an
+ * object representing a wrapper around the capabilities of a handler.
+ *
+ * \sa AbstractClientHandler
+ */
+
+/**
+ * \class AbstractClientHandler::HandlerInfo
+ * \ingroup clientclient
+ * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientHandler>
+ *
+ * \brief The AbstractClientHandler::HandlerInfo class provides an
+ * object representing a wrapper around the additional info about the channels
+ * passed to handleChannels().
+ *
+ * \sa AbstractClientHandler
  */
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Capabilities::Private : public QSharedData
