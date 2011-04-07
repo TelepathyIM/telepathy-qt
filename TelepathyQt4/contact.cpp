@@ -118,6 +118,15 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::InfoFields::Private : public QSharedData
     ContactInfoFieldList allFields;
 };
 
+/**
+ * \class Contact::InfoFields
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/contact.h <TelepathyQt4/Contact>
+ *
+ * \brief The Contact::InfoFields class provides an object representing a
+ * wrapper around ContactInfoFieldList.
+ */
+
 Contact::InfoFields::InfoFields(const ContactInfoFieldList &allFields)
     : mPriv(new Private(allFields))
 {
@@ -161,6 +170,14 @@ ContactInfoFieldList Contact::InfoFields::allFields() const
 {
     return isValid() ? mPriv->allFields : ContactInfoFieldList();
 }
+
+/**
+ * \class Contact
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/contact.h <TelepathyQt4/Contact>
+ *
+ * \brief The Contact class provides an object representing a contact.
+ */
 
 const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaObject.className()), 0, false);
 const Feature Contact::FeatureAvatarData = Feature(QLatin1String(Contact::staticMetaObject.className()), 1, false);
