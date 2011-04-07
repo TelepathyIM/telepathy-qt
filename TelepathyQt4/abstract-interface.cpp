@@ -44,6 +44,15 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractInterface::Private
     QString mMessage;
 };
 
+/**
+ * \class AbstractInterface
+ * \ingroup clientsideproxies
+ * \headerfile TelepathyQt4/abstract-interface.h <TelepathyQt4/AbstractInterface>
+ *
+ * \brief The AbstractInterface class is the base class for all client side
+ * D-Bus interfaces, allowing access to remote methods/properties/signals.
+ */
+
 AbstractInterface::AbstractInterface(const QString &busName,
         const QString &path, const QLatin1String &interface,
         const QDBusConnection &dbusConnection, QObject *parent)
