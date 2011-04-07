@@ -25,6 +25,14 @@
 namespace Tp
 {
 
+/**
+ * \class AvatarData
+ * \ingroup wrappers
+ * \headerfile TelepathyQt4/avatar.h <TelepathyQt4/AvatarData>
+ *
+ * \brief The AvatarData class provides an object representing an avatar.
+ */
+
 struct TELEPATHY_QT4_NO_EXPORT AvatarSpec::Private : public QSharedData
 {
     Private(const QStringList &supportedMimeTypes,
@@ -51,6 +59,15 @@ struct TELEPATHY_QT4_NO_EXPORT AvatarSpec::Private : public QSharedData
     uint recommendedWidth;
     uint maxBytes;
 };
+
+/**
+ * \class AvatarSpec
+ * \ingroup wrappers
+ * \headerfile TelepathyQt4/avatar.h <TelepathyQt4/AvatarSpec>
+ *
+ * \brief The AvatarSpec class provides an object representing a wrapper around
+ * avatar info.
+ */
 
 AvatarSpec::AvatarSpec()
 {
