@@ -130,6 +130,8 @@ GType tp_tests_props_group_text_channel_get_type (void);
 
 void tp_tests_text_channel_null_close (TpTestsTextChannelNull *self);
 
+GHashTable * tp_tests_text_channel_get_props (TpTestsTextChannelNull *self);
+
 G_END_DECLS
 
 #endif /* #ifndef __TP_TESTS_TEXT_CHANNEL_NULL_H__ */
