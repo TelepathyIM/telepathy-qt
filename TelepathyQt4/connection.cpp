@@ -243,7 +243,8 @@ Connection::Private::Private(Connection *parent,
     introspectables[FeatureSelfContact] = introspectableSelfContact;
 
     ReadinessHelper::Introspectable introspectableSimplePresence(
-        QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
+        QSet<uint>() << ConnectionStatusDisconnected <<
+                        ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),   // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
