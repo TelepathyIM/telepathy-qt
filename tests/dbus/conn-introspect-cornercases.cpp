@@ -18,6 +18,7 @@
 #include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
 
+#include <tests/lib/glib/bug16307-conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
@@ -37,6 +38,8 @@ protected Q_SLOTS:
 private Q_SLOTS:
     void initTestCase();
     void init();
+
+    void testSlowpath();
 
     void cleanup();
     void cleanupTestCase();
@@ -75,6 +78,50 @@ void TestConnIntrospectCornercases::init()
 
     // don't create the client- or service-side connection objects here, as it's expected that many
     // different types of service connections with different initial states need to be used
+}
+
+void TestConnIntrospectCornercases::testSlowpath()
+{
+    gchar *name;
+    gchar *connPath;
+    GError *error = 0;
+
+    TpTestsBug16307Connection *bugConnService =
+        TP_TESTS_BUG16307_CONNECTION(
+            g_object_new(
+                TP_TESTS_TYPE_BUG16307_CONNECTION,
+                "account", "me@example.com",
+                "protocol", "simple",
+                NULL));
+    QVERIFY(bugConnService != 0);
+
+    mConnService = TP_BASE_CONNECTION(bugConnService);
+    QVERIFY(mConnService != 0);
+
+    QVERIFY(tp_base_connection_register(mConnService, "simple",
+                &name, &connPath, &error));
+    QVERIFY(error == 0);
+
+    mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+    QCOMPARE(mConn->isReady(), false);
+
+    g_free(name); name = 0;
+    g_free(connPath); connPath = 0;
+
+    PendingOperation *op = mConn->becomeReady();
+    QVERIFY(connect(op,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+
+    tp_tests_bug16307_connection_inject_get_status_return(bugConnService);
+
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(op->isFinished(), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureCore), true);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+             static_cast<uint>(ConnectionStatusConnected));
 }
 
 void TestConnIntrospectCornercases::cleanup()
