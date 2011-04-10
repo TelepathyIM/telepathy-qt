@@ -15,6 +15,8 @@ if(ENABLE_TP_GLIB_TESTS)
     add_subdirectory(future)
 
     set(tp_glib_tests_SRCS
+        bug16307-conn.c
+        bug16307-conn.h
         contacts-conn.c
         contacts-conn.h
         contact-search-chan.c
