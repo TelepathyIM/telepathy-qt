@@ -119,6 +119,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     // so Connection::status() and Connection::statusReason() are consistent
     bool introspectingMain;
     bool statusChangedWhileIntrospectingMain;
+    bool introspectingConnected;
 
     uint pendingStatus;
     uint pendingStatusReason;
@@ -205,6 +206,7 @@ Connection::Private::Private(Connection *parent,
       readinessHelper(parent->readinessHelper()),
       introspectingMain(false),
       statusChangedWhileIntrospectingMain(false),
+      introspectingConnected(false),
       pendingStatus((uint) -1),
       pendingStatusReason(ConnectionStatusReasonNoneSpecified),
       status((uint) -1),
@@ -545,8 +547,12 @@ void Connection::Private::introspectBalance(Connection::Private *self)
 
 void Connection::Private::introspectConnected(Connection::Private *self)
 {
+    Q_ASSERT(!self->introspectingConnected);
+    self->introspectingConnected = true;
+
     if (self->pendingStatus == ConnectionStatusConnected) {
         self->readinessHelper->setIntrospectCompleted(FeatureConnected, true);
+        self->introspectingConnected = false;
     }
 }
 
@@ -577,6 +583,16 @@ void Connection::Private::setCurrentStatus(uint status)
         introspectMainQueue.clear();
     } else {
         readinessHelper->setCurrentStatus(status);
+
+        if (introspectingConnected) {
+            // We have to finish the Connected introspection for now, as ReadinessHelper waits for
+            // all introspect ops in flight for the current status to finish before it starts
+            // introspecting the new status
+            debug() << "Finishing FeatureConnected for status" << this->status <<
+                "to allow ReadinessHelper to introspect new status" << status;
+            readinessHelper->setIntrospectCompleted(FeatureConnected, true);
+            introspectingConnected = false;
+        }
     }
 }
 
