@@ -1453,9 +1453,11 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
         // let's try to fallback first before failing
     }
 
-    if (props.contains(QLatin1String("Status"))) {
-        mPriv->forceCurrentStatus(qdbus_cast<uint>(
-                    props[QLatin1String("Status")]));
+    uint status = static_cast<uint>(-1);
+    if (props.contains(QLatin1String("Status"))
+            && ((status = qdbus_cast<uint>(props[QLatin1String("Status")])) <=
+                ConnectionStatusDisconnected)) {
+        mPriv->forceCurrentStatus(status);
     } else {
         // only introspect status if we did not got it from StatusChanged
         if (mPriv->pendingStatus == (uint) -1) {
