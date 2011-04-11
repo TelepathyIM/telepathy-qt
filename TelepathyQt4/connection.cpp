@@ -547,6 +547,11 @@ void Connection::Private::introspectConnected(Connection::Private *self)
 
 void Connection::Private::continueMainIntrospection()
 {
+    if (!parent->isValid()) {
+        debug() << parent << "stopping main introspection, as it has been invalidated";
+        return;
+    }
+
     if (introspectMainQueue.isEmpty()) {
         readinessHelper->setIntrospectCompleted(FeatureCore, true);
     } else {
