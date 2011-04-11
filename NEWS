@@ -1,14 +1,18 @@
-telepathy-qt4 0.5.15 (UNRELEASED)
+telepathy-qt4 0.5.15 (2011-04-11)
 =================================
 
-The "..." release.
+The "How to remove a hole from a set of holes" release.
 
 Enhancements:
- * ...
+ * Performance improvements for introspection (becomeReady() latency)
 
 Fixes:
  * Incorrect scoping for Initial{Audio,Video} properties in Account channel
    request methods
+ * Possible deadlock on connection status changes when FeatureConnected is
+   requested on a Connection
+ * Crash opportunities when introspecting a Connection which disappears in the
+   process (e.g. due to a network error or a CM crash)
 
 telepathy-qt4 0.5.14 (2011-04-05)
 =================================
