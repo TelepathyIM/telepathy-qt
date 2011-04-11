@@ -497,8 +497,7 @@ void TextChannel::Private::contactFound(ContactPtr contact)
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
  *
- * \brief The TextChannel class provides an object representing a
- * Telepathy channel of type Text.
+ * \brief The TextChannel class represents a Telepathy channel of type Text.
  */
 
 /**

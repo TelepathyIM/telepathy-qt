@@ -40,8 +40,7 @@ struct TELEPATHY_QT4_NO_EXPORT MessageContentPart::Private : public QSharedData
  * \ingroup wrappers
  * \headerfile TelepathyQt4/message-content-part.h <TelepathyQt4/MessageContentPart>
  *
- * \brief The MessageContentPart class provides an object representing a wrapper
- * around MessagePart.
+ * \brief The MessageContentPart class represents a Telepathy message part.
  */
 
 MessageContentPart::MessageContentPart()
@@ -90,7 +89,7 @@ MessagePart MessageContentPart::barePart() const
  * \ingroup wrappers
  * \headerfile TelepathyQt4/message-content-part.h <TelepathyQt4/MessageContentPartList>
  *
- * \brief The MessageContentPartList class an object representing a list of
+ * \brief The MessageContentPartList class represents a list of
  * MessageContentPart.
  */
 

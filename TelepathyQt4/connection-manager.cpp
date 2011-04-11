@@ -598,8 +598,7 @@ ConnectionManagerPtr ConnectionManagerLowlevel::connectionManager() const
  * \ingroup clientcm
  * \headerfile TelepathyQt4/connection-manager.h <TelepathyQt4/ConnectionManager>
  *
- * \brief The ConnectionManager class provides an object representing a
- * Telepathy connection manager.
+ * \brief The ConnectionManager class represents a Telepathy connection manager.
  *
  * Connection managers allow connections to be made on one or more protocols.
  *

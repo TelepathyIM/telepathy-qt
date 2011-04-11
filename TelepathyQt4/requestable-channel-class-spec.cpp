@@ -38,8 +38,8 @@ struct TELEPATHY_QT4_NO_EXPORT RequestableChannelClassSpec::Private : public QSh
  * \ingroup wrappers
  * \headerfile TelepathyQt4/requestable-channel-class-spec.h <TelepathyQt4/RequestableChannelClassSpec>
  *
- * \brief The RequestableChannelClassSpec class provides an object representing
- * a wrapper around RequestableChannelClass.
+ * \brief The RequestableChannelClassSpec class represents a Telepathy
+ * requestable channel class.
  */
 
 RequestableChannelClassSpec::RequestableChannelClassSpec(const RequestableChannelClass &rcc)
@@ -487,8 +487,8 @@ RequestableChannelClass RequestableChannelClassSpec::bareClass() const
  * \ingroup wrappers
  * \headerfile TelepathyQt4/requestable-channel-class-spec.h <TelepathyQt4/RequestableChannelClassSpecList>
  *
- * \brief The RequestableChannelClassSpecList class provides an object
- * representing a list of RequestableChannelClassSpec.
+ * \brief The RequestableChannelClassSpecList class represents a list of
+ * RequestableChannelClassSpec.
  */
 
 } // Tp

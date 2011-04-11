@@ -35,8 +35,7 @@ namespace Tp
  * \ingroup clientclient
  * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClient>
  *
- * \brief The AbstractClient class provides an object representing a Telepathy
- * client.
+ * \brief The AbstractClient class represents a Telepathy client.
  *
  * Clients are programs used to process channels, approving, handling or
  * observing them. User interface processes are the obvious example of clients,
@@ -107,8 +106,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  * \ingroup clientclient
  * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientObserver>
  *
- * \brief The AbstractClientObserver class provides an object representing a
- * Telepathy observer.
+ * \brief The AbstractClientObserver class represents a Telepathy observer.
  *
  * Observers are clients that monitor the creation of new channels.
  * This functionality can be used for things like message logging.
@@ -203,9 +201,8 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  * \ingroup clientclient
  * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientObserver>
  *
- * \brief The AbstractClientObserver::ObserverInfo class provides an
- * object representing a wrapper around the additional info about the channels
- * passed to observeChannels().
+ * \brief The AbstractClientObserver::ObserverInfo class provides a wrapper
+ * around the additional info about the channels passed to observeChannels().
  *
  * \sa AbstractClientObserver
  */
@@ -379,8 +376,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
  * \ingroup clientclient
  * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientApprover>
  *
- * \brief The AbstractClientApprover class provides an object representing a
- * Telepathy approver.
+ * \brief The AbstractClientApprover class represents a Telepathy approver.
  *
  * Approvers are clients that notify the user that new channels have been
  * created, and allow the user to accept or reject those channels.
@@ -554,8 +550,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  * \ingroup clientclient
  * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientHandler>
  *
- * \brief The AbstractClientHandler class provides an object representing a
- * Telepathy handler.
+ * \brief The AbstractClientHandler class represents a Telepathy handler.
  *
  * Handlers are the user interface for a channel. They turn an abstract
  * channel into something the user wants to see, like a text message
@@ -654,8 +649,8 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  * \ingroup clientclient
  * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientHandler>
  *
- * \brief The AbstractClientHandler::Capabilities class provides an
- * object representing a wrapper around the capabilities of a handler.
+ * \brief The AbstractClientHandler::Capabilities class provides a wrapper
+ * around the capabilities of a handler.
  *
  * \sa AbstractClientHandler
  */
@@ -665,9 +660,8 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  * \ingroup clientclient
  * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientHandler>
  *
- * \brief The AbstractClientHandler::HandlerInfo class provides an
- * object representing a wrapper around the additional info about the channels
- * passed to handleChannels().
+ * \brief The AbstractClientHandler::HandlerInfo class provides a wrapper
+ * around the additional info about the channels passed to handleChannels().
  *
  * \sa AbstractClientHandler
  */

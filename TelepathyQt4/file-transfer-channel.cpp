@@ -145,8 +145,8 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/file-transfer-channel.h <TelepathyQt4/FileTransferChannel>
  *
- * \brief The FileTransferChannel class provides an object representing a
- * Telepathy channel of type FileTransfer.
+ * \brief The FileTransferChannel class represents a Telepathy channel of type
+ * FileTransfer.
  *
  * For more specialized file transfer classes, please refer to
  * OutgoingFileTransferChannel and IncomingFileTransferChannel.

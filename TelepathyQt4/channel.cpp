@@ -1216,7 +1216,7 @@ void Channel::Private::processConferenceChannelRemoved()
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/channel.h <TelepathyQt4/Channel>
  *
- * \brief The Channel class provides an object representing a Telepathy channel.
+ * \brief The Channel class represents a Telepathy channel.
  *
  * All communication in the Telepathy framework is carried out via channel
  * objects which are created and managed by connections. Specialized classes for

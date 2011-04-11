@@ -39,8 +39,7 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelClassSpec::Private : public QSharedData
  * \ingroup wrappers
  * \headerfile TelepathyQt4/channel-class-spec.h <TelepathyQt4/ChannelClassSpec>
  *
- * \brief The ChannelClassSpec class provides an object representing a wrapper
- * around ChannelClass.
+ * \brief The ChannelClassSpec class represents a Telepathy channel class.
  */
 
 ChannelClassSpec::ChannelClassSpec()
@@ -500,8 +499,7 @@ ChannelClassSpec ChannelClassSpec::contactSearch(const QVariantMap &additionalPr
  * \ingroup wrappers
  * \headerfile TelepathyQt4/channel-class-spec.h <TelepathyQt4/ChannelClassSpecList>
  *
- * \brief The ChannelClassSpecList class provides an object representing a list
- * of ChannelClassSpec.
+ * \brief The ChannelClassSpecList class represents a list of ChannelClassSpec.
  */
 
 } // Tp

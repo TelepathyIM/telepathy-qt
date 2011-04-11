@@ -756,8 +756,7 @@ QMutex Connection::Private::handleContextsLock;
  * \ingroup clientconn
  * \headerfile TelepathyQt4/connection.h <TelepathyQt4/Connection>
  *
- * \brief The Connection class provides an object representing a Telepathy
- * connection.
+ * \brief The Connection class represents a Telepathy connection.
  *
  * This models a connection to a single user account on a communication service.
  * Its basic capability is to provide the facility to request and receive

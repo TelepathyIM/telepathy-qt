@@ -123,8 +123,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::InfoFields::Private : public QSharedData
  * \ingroup clientconn
  * \headerfile TelepathyQt4/contact.h <TelepathyQt4/Contact>
  *
- * \brief The Contact::InfoFields class provides an object representing a
- * wrapper around ContactInfoFieldList.
+ * \brief The Contact::InfoFields class represents the information of a
+ * Telepathy contact.
  */
 
 Contact::InfoFields::InfoFields(const ContactInfoFieldList &allFields)
@@ -176,7 +176,7 @@ ContactInfoFieldList Contact::InfoFields::allFields() const
  * \ingroup clientconn
  * \headerfile TelepathyQt4/contact.h <TelepathyQt4/Contact>
  *
- * \brief The Contact class provides an object representing a contact.
+ * \brief The Contact class represents a Telepathy contact.
  */
 
 const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaObject.className()), 0, false);

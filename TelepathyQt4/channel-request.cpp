@@ -257,8 +257,7 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
  * \ingroup clientchannelrequest
  * \headerfile TelepathyQt4/channel-request.h <TelepathyQt4/ChannelRequest>
  *
- * \brief The ChannelRequest class provides an object representing a Telepathy
- * channel request.
+ * \brief The ChannelRequest class represents a Telepathy channel request.
  *
  * A channel request is an object in the channel dispatcher representing an
  * ongoing request for some channels to be created or found. There can be any

@@ -198,8 +198,8 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  * \ingroup clientaccount
  * \headerfile TelepathyQt4/account-set.h <TelepathyQt4/AccountSet>
  *
- * \brief The AccountSet class provides an object representing a set of
- * Telepathy accounts filtered by a given criteria.
+ * \brief The AccountSet class represents a set of Telepathy accounts
+ * filtered by a given criteria.
  *
  * AccountSet is automatically updated whenever accounts that match the given
  * criteria are added, removed or updated.

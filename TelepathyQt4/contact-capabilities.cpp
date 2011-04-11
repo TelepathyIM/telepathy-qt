@@ -32,8 +32,8 @@ namespace Tp
  * \ingroup clientconn
  * \headerfile TelepathyQt4/contact-capabilities.h <TelepathyQt4/ContactCapabilities>
  *
- * \brief The ContactCapabilities class provides an object representing the
- * capabilities of a Contact.
+ * \brief The ContactCapabilities class represents the capabilities of a
+ * Contact.
  */
 
 /**

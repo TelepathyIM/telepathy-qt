@@ -76,8 +76,8 @@ OutgoingFileTransferChannel::Private::~Private()
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/outgoing-file-transfer-channel.h <TelepathyQt4/OutgoingFileTransferChannel>
  *
- * \brief The OutgoingFileTransferChannel class provides an object representing
- * a Telepathy channel of type FileTransfer for outgoing file transfers.
+ * \brief The OutgoingFileTransferChannel class represents a Telepathy channel
+ * of type FileTransfer for outgoing file transfers.
  */
 
 /**

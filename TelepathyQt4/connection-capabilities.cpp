@@ -33,8 +33,8 @@ namespace Tp
  * \ingroup clientconn
  * \headerfile TelepathyQt4/connection-capabilities.h <TelepathyQt4/ConnectionCapabilities>
  *
- * \brief The ConnectionCapabilities class provides an object representing the
- * capabilities of a Connection.
+ * \brief The ConnectionCapabilities class represents the capabilities of a
+ * Connection.
  */
 
 /**

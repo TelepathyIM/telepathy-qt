@@ -54,8 +54,8 @@ CapabilitiesBase::Private::Private(const RequestableChannelClassSpecList &rccSpe
  * \ingroup clientconn
  * \headerfile TelepathyQt4/capabilities-base.h <TelepathyQt4/CapabilitiesBase>
  *
- * \brief The CapabilitiesBase class provides an object representing the
- * capabilities a Connection or a Contact supports.
+ * \brief The CapabilitiesBase class represents the capabilities a Connection
+ * or a Contact supports.
  */
 
 /**
