@@ -299,6 +299,10 @@ void ReadinessHelper::Private::iterateIntrospection()
     }
 
     if ((requestedFeatures - completedFeatures).isEmpty()) {
+        // Otherwise, we'd emit statusReady with currentStatus although we are supposed to be
+        // introspecting the pendingStatus and only when that is complete, emit statusReady
+        Q_ASSERT(!pendingStatusChange);
+
         // all requested features satisfied or missing
         emit parent->statusReady(currentStatus);
         return;
