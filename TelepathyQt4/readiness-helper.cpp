@@ -261,6 +261,22 @@ void ReadinessHelper::Private::setIntrospectCompleted(const Feature &feature,
 void ReadinessHelper::Private::iterateIntrospection()
 {
     if (proxy && !proxy->isValid()) {
+        debug() << "ReadinessHelper: not iterating as the proxy is invalidated";
+        return;
+    }
+
+    // When there's a pending status change, we MUST NOT
+    //  - finish PendingReadys (as they'd not be finished in the new status)
+    //  - claim a status as being ready (because the new one isn't)
+    // and SHOULD NOT
+    //  - fire new introspection jobs (as that would just delay the pending status change even more)
+    // and NEED NOT
+    //  - flag features as missing (as the completed features will be cleared anyway when starting
+    //  introspection for the new status)
+    //
+    //  So we can safely skip the rest of this function here.
+    if (pendingStatusChange) {
+        debug() << "ReadinessHelper: not iterating as a status change is pending";
         return;
     }
 
