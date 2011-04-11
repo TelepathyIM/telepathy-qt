@@ -28,6 +28,7 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt4_add_dbus_unit_test(ConnectionManagerBasics cm-basics tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionBasics conn-basics tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionCapabilities conn-capabilities tp-glib-tests)
+    tpqt4_add_dbus_unit_test(ConnectionIntrospectCornercases conn-introspect-cornercases tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionRequests conn-requests tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionRosterLegacy conn-roster-legacy tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionRoster conn-roster example-cm-contactlist2

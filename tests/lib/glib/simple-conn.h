@@ -61,6 +61,17 @@ void tp_tests_simple_connection_inject_disconnect (
 void tp_tests_simple_connection_set_identifier (TpTestsSimpleConnection *self,
     const gchar *identifier);
 
+gchar * tp_tests_simple_connection_ensure_text_chan (
+    TpTestsSimpleConnection *self,
+    const gchar *target_id,
+    GHashTable **props);
+
+void tp_tests_simple_connection_set_get_self_handle_error (
+    TpTestsSimpleConnection *self,
+    GQuark domain,
+    gint code,
+    const gchar *message);
+
 G_END_DECLS
 
 #endif /* #ifndef __TP_TESTS_SIMPLE_CONN_H__ */

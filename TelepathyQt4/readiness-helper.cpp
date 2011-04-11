@@ -198,15 +198,11 @@ void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
         satisfiedFeatures.clear();
         missingFeatures.clear();
 
-        // retrieve all features that were requested for the new status
+        // Make all features that were requested for the new status pending again
         pendingFeatures = requestedFeatures;
 
-        // make sure that we have inserted the dependencies for the requested features too
-        Features deps;
-        foreach (Feature feature, pendingFeatures) {
-            deps.unite(depsFor(feature));
-        }
-        pendingFeatures.unite(deps);
+        // becomeReady ensures that the recursive dependencies of the requested features are already
+        // in the requested set, so we don't have to re-add them here
 
         if (supportedStatuses.contains(currentStatus)) {
             QTimer::singleShot(0, parent, SLOT(iterateIntrospection()));
@@ -265,15 +261,28 @@ void ReadinessHelper::Private::setIntrospectCompleted(const Feature &feature,
 void ReadinessHelper::Private::iterateIntrospection()
 {
     if (proxy && !proxy->isValid()) {
+        debug() << "ReadinessHelper: not iterating as the proxy is invalidated";
         return;
     }
 
-    // take care to flag anything with dependencies in missing, and the
-    // stuff depending on them, as missing
-    for (Introspectables::const_iterator i = introspectables.constBegin();
-            i != introspectables.constEnd(); ++i) {
-        Feature feature = i.key();
-        Introspectable introspectable = i.value();
+    // When there's a pending status change, we MUST NOT
+    //  - finish PendingReadys (as they'd not be finished in the new status)
+    //  - claim a status as being ready (because the new one isn't)
+    // and SHOULD NOT
+    //  - fire new introspection jobs (as that would just delay the pending status change even more)
+    // and NEED NOT
+    //  - flag features as missing (as the completed features will be cleared anyway when starting
+    //  introspection for the new status)
+    //
+    //  So we can safely skip the rest of this function here.
+    if (pendingStatusChange) {
+        debug() << "ReadinessHelper: not iterating as a status change is pending";
+        return;
+    }
+
+    // Flag the currently pending reverse dependencies of any previously discovered missing features
+    // as missing
+    foreach (const Feature &feature, pendingFeatures) {
         if (!depsFor(feature).intersect(missingFeatures).isEmpty()) {
             missingFeatures.insert(feature);
             missingFeaturesErrors.insert(feature,
@@ -296,10 +305,20 @@ void ReadinessHelper::Private::iterateIntrospection()
             } else {
                 operation->setFinishedWithError(errorName, errorMessage);
             }
+
+            // Remove the operation from tracking, so we don't double-finish it
+            //
+            // Qt foreach makes a copy of the container, which will be detached at this point, so
+            // this is perfectly safe
+            pendingOperations.removeOne(operation);
         }
     }
 
     if ((requestedFeatures - completedFeatures).isEmpty()) {
+        // Otherwise, we'd emit statusReady with currentStatus although we are supposed to be
+        // introspecting the pendingStatus and only when that is complete, emit statusReady
+        Q_ASSERT(!pendingStatusChange);
+
         // all requested features satisfied or missing
         emit parent->statusReady(currentStatus);
         return;
@@ -373,14 +392,6 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
         const QString &errorMessage)
 {
     foreach (PendingReady *operation, pendingOperations) {
-        parent->disconnect(operation,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                parent,
-                SLOT(onOperationFinished(Tp::PendingOperation*)));
-        parent->disconnect(operation,
-                SIGNAL(destroyed(QObject*)),
-                parent,
-                SLOT(onOperationDestroyed(QObject*)));
         operation->setFinishedWithError(errorName, errorMessage);
     }
     pendingOperations.clear();
@@ -602,25 +613,19 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
         }
     }
 
-    mPriv->requestedFeatures += requestedFeatures;
-    // it will be updated on iterateIntrospection
-    mPriv->pendingFeatures += requestedFeatures;
-
     // Insert the dependencies of the requested features too
-    Features deps;
-    foreach (Feature feature, mPriv->pendingFeatures) {
-        deps.unite(mPriv->depsFor(feature));
+    Features requestedWithDeps = requestedFeatures;
+    foreach (const Feature &feature, requestedFeatures) {
+        requestedWithDeps.unite(mPriv->depsFor(feature));
     }
-    mPriv->pendingFeatures.unite(deps);
+
+    mPriv->requestedFeatures += requestedWithDeps;
+    mPriv->pendingFeatures += requestedWithDeps; // will be updated in iterateIntrospection
 
     operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object), requestedFeatures);
-    connect(operation,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onOperationFinished(Tp::PendingOperation*)));
-    connect(operation,
-            SIGNAL(destroyed(QObject*)),
-            SLOT(onOperationDestroyed(QObject*)));
     mPriv->pendingOperations.append(operation);
+    // Only we finish these PendingReadys, so we don't need destroyed or finished handling for them
+    // - we already know when that happens, as we caused it!
 
     QTimer::singleShot(0, this, SLOT(iterateIntrospection()));
 
@@ -656,20 +661,6 @@ void ReadinessHelper::onProxyInvalidated(DBusProxy *proxy,
     mPriv->missingFeatures.clear();
 
     mPriv->abortOperations(errorName, errorMessage);
-}
-
-void ReadinessHelper::onOperationFinished(PendingOperation *op)
-{
-    disconnect(op,
-               SIGNAL(destroyed(QObject*)),
-               this,
-               SLOT(onOperationDestroyed(QObject*)));
-    mPriv->pendingOperations.removeOne(qobject_cast<PendingReady*>(op));
-}
-
-void ReadinessHelper::onOperationDestroyed(QObject *obj)
-{
-    mPriv->pendingOperations.removeOne(qobject_cast<PendingReady*>(obj));
 }
 
 } // Tp

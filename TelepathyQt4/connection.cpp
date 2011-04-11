@@ -69,7 +69,6 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     void init();
 
     static void introspectMain(Private *self);
-    void introspectMainProperties();
     void introspectMainFallbackStatus();
     void introspectMainFallbackInterfaces();
     void introspectMainFallbackSelfHandle();
@@ -117,8 +116,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     // FeatureCore
     // keep pendingStatus and pendingStatusReason until we emit statusChanged
     // so Connection::status() and Connection::statusReason() are consistent
-    bool introspectingMain;
-    bool statusChangedWhileIntrospectingMain;
+    bool introspectingConnected;
 
     uint pendingStatus;
     uint pendingStatusReason;
@@ -203,8 +201,7 @@ Connection::Private::Private(Connection *parent,
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       simplePresence(0),
       readinessHelper(parent->readinessHelper()),
-      introspectingMain(false),
-      statusChangedWhileIntrospectingMain(false),
+      introspectingConnected(false),
       pendingStatus((uint) -1),
       pendingStatusReason(ConnectionStatusReasonNoneSpecified),
       status((uint) -1),
@@ -243,7 +240,8 @@ Connection::Private::Private(Connection *parent,
     introspectables[FeatureSelfContact] = introspectableSelfContact;
 
     ReadinessHelper::Introspectable introspectableSimplePresence(
-        QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
+        QSet<uint>() << ConnectionStatusDisconnected <<
+                        ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),   // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
@@ -396,18 +394,12 @@ void Connection::Private::init()
 
 void Connection::Private::introspectMain(Connection::Private *self)
 {
-    self->introspectingMain = true;
-    self->introspectMainProperties();
-}
-
-void Connection::Private::introspectMainProperties()
-{
     debug() << "Calling Properties::GetAll(Connection)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CONNECTION)),
-                parent);
-    parent->connect(watcher,
+                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CONNECTION)),
+                self->parent);
+    self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
@@ -544,22 +536,24 @@ void Connection::Private::introspectBalance(Connection::Private *self)
 
 void Connection::Private::introspectConnected(Connection::Private *self)
 {
+    Q_ASSERT(!self->introspectingConnected);
+    self->introspectingConnected = true;
+
     if (self->pendingStatus == ConnectionStatusConnected) {
         self->readinessHelper->setIntrospectCompleted(FeatureConnected, true);
+        self->introspectingConnected = false;
     }
 }
 
 void Connection::Private::continueMainIntrospection()
 {
+    if (!parent->isValid()) {
+        debug() << parent << "stopping main introspection, as it has been invalidated";
+        return;
+    }
+
     if (introspectMainQueue.isEmpty()) {
         readinessHelper->setIntrospectCompleted(FeatureCore, true);
-
-        introspectingMain = false;
-
-        if (statusChangedWhileIntrospectingMain) {
-            statusChangedWhileIntrospectingMain = false;
-            readinessHelper->setCurrentStatus(pendingStatus);
-        }
     } else {
         (this->*(introspectMainQueue.dequeue()))();
     }
@@ -567,16 +561,25 @@ void Connection::Private::continueMainIntrospection()
 
 void Connection::Private::setCurrentStatus(uint status)
 {
-    // if the initial introspection is still running, only clear main
-    // introspection queue and wait for the last call to return, to avoid
-    // the return of the last call wrongly setting FeatureCore as ready for the
-    // new status, otherwise set the readinessHelper status to the new status,
-    // so it can re-run the introspection if needed.
-    if (introspectingMain) {
-        introspectMainQueue.clear();
-    } else {
-        readinessHelper->setCurrentStatus(status);
+    // ReadinessHelper waits for all in-flight introspection ops to finish for the current status
+    // before proceeding to a new one.
+    //
+    // Therefore we don't need any safeguarding here to prevent finishing introspection when there
+    // is a pending status change. However, we can speed up the process slightly by canceling any
+    // pending introspect ops from our local introspection queue when it's waiting for us.
+
+    introspectMainQueue.clear();
+
+    if (introspectingConnected) {
+        // On the other hand, we have to finish the Connected introspection for now, as
+        // ReadinessHelper would otherwise wait indefinitely for it to land
+        debug() << "Finishing FeatureConnected for status" << this->status <<
+            "to allow ReadinessHelper to introspect new status" << status;
+        readinessHelper->setIntrospectCompleted(FeatureConnected, true);
+        introspectingConnected = false;
     }
+
+    readinessHelper->setCurrentStatus(status);
 }
 
 void Connection::Private::forceCurrentStatus(uint status)
@@ -1388,10 +1391,6 @@ void Connection::onStatusChanged(uint status, uint reason)
         return;
     }
 
-    if (mPriv->introspectingMain) {
-        mPriv->statusChangedWhileIntrospectingMain = true;
-    }
-
     uint oldStatus = mPriv->pendingStatus;
     mPriv->pendingStatus = status;
     mPriv->pendingStatusReason = reason;
@@ -1453,9 +1452,11 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
         // let's try to fallback first before failing
     }
 
-    if (props.contains(QLatin1String("Status"))) {
-        mPriv->forceCurrentStatus(qdbus_cast<uint>(
-                    props[QLatin1String("Status")]));
+    uint status = static_cast<uint>(-1);
+    if (props.contains(QLatin1String("Status"))
+            && ((status = qdbus_cast<uint>(props[QLatin1String("Status")])) <=
+                ConnectionStatusDisconnected)) {
+        mPriv->forceCurrentStatus(status);
     } else {
         // only introspect status if we did not got it from StatusChanged
         if (mPriv->pendingStatus == (uint) -1) {
