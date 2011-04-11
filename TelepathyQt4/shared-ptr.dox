@@ -61,7 +61,7 @@
  * \ingroup utils
  * \headerfile TelepathyQt4/shared-ptr.h <TelepathyQt4/SharedPtr>
  *
- * \brief The SharedPtr class represents a pointer to an explicitly shared object.
+ * \brief The SharedPtr class is a pointer to an explicitly shared object.
  *
  * See \ref shared_ptr
  */
