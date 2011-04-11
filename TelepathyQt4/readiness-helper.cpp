@@ -198,15 +198,11 @@ void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
         satisfiedFeatures.clear();
         missingFeatures.clear();
 
-        // retrieve all features that were requested for the new status
+        // Make all features that were requested for the new status pending again
         pendingFeatures = requestedFeatures;
 
-        // make sure that we have inserted the dependencies for the requested features too
-        Features deps;
-        foreach (Feature feature, pendingFeatures) {
-            deps.unite(depsFor(feature));
-        }
-        pendingFeatures.unite(deps);
+        // becomeReady ensures that the recursive dependencies of the requested features are already
+        // in the requested set, so we don't have to re-add them here
 
         if (supportedStatuses.contains(currentStatus)) {
             QTimer::singleShot(0, parent, SLOT(iterateIntrospection()));
@@ -602,16 +598,14 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
         }
     }
 
-    mPriv->requestedFeatures += requestedFeatures;
-    // it will be updated on iterateIntrospection
-    mPriv->pendingFeatures += requestedFeatures;
-
     // Insert the dependencies of the requested features too
-    Features deps;
-    foreach (Feature feature, mPriv->pendingFeatures) {
-        deps.unite(mPriv->depsFor(feature));
+    Features requestedWithDeps = requestedFeatures;
+    foreach (const Feature &feature, requestedFeatures) {
+        requestedWithDeps.unite(mPriv->depsFor(feature));
     }
-    mPriv->pendingFeatures.unite(deps);
+
+    mPriv->requestedFeatures += requestedWithDeps;
+    mPriv->pendingFeatures += requestedWithDeps; // will be updated in iterateIntrospection
 
     operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object), requestedFeatures);
     connect(operation,
