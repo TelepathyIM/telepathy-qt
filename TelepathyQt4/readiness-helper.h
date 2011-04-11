@@ -118,8 +118,6 @@ private Q_SLOTS:
 
     TELEPATHY_QT4_NO_EXPORT void onProxyInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage);
-    TELEPATHY_QT4_NO_EXPORT void onOperationFinished(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onOperationDestroyed(QObject *obj);
 
 private:
     struct Private;

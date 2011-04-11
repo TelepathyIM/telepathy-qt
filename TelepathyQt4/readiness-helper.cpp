@@ -289,6 +289,12 @@ void ReadinessHelper::Private::iterateIntrospection()
             } else {
                 operation->setFinishedWithError(errorName, errorMessage);
             }
+
+            // Remove the operation from tracking, so we don't double-finish it
+            //
+            // Qt foreach makes a copy of the container, which will be detached at this point, so
+            // this is perfectly safe
+            pendingOperations.removeOne(operation);
         }
     }
 
@@ -366,14 +372,6 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
         const QString &errorMessage)
 {
     foreach (PendingReady *operation, pendingOperations) {
-        parent->disconnect(operation,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                parent,
-                SLOT(onOperationFinished(Tp::PendingOperation*)));
-        parent->disconnect(operation,
-                SIGNAL(destroyed(QObject*)),
-                parent,
-                SLOT(onOperationDestroyed(QObject*)));
         operation->setFinishedWithError(errorName, errorMessage);
     }
     pendingOperations.clear();
@@ -605,13 +603,9 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     mPriv->pendingFeatures += requestedWithDeps; // will be updated in iterateIntrospection
 
     operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object), requestedFeatures);
-    connect(operation,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onOperationFinished(Tp::PendingOperation*)));
-    connect(operation,
-            SIGNAL(destroyed(QObject*)),
-            SLOT(onOperationDestroyed(QObject*)));
     mPriv->pendingOperations.append(operation);
+    // Only we finish these PendingReadys, so we don't need destroyed or finished handling for them
+    // - we already know when that happens, as we caused it!
 
     QTimer::singleShot(0, this, SLOT(iterateIntrospection()));
 
@@ -647,20 +641,6 @@ void ReadinessHelper::onProxyInvalidated(DBusProxy *proxy,
     mPriv->missingFeatures.clear();
 
     mPriv->abortOperations(errorName, errorMessage);
-}
-
-void ReadinessHelper::onOperationFinished(PendingOperation *op)
-{
-    disconnect(op,
-               SIGNAL(destroyed(QObject*)),
-               this,
-               SLOT(onOperationDestroyed(QObject*)));
-    mPriv->pendingOperations.removeOne(qobject_cast<PendingReady*>(op));
-}
-
-void ReadinessHelper::onOperationDestroyed(QObject *obj)
-{
-    mPriv->pendingOperations.removeOne(qobject_cast<PendingReady*>(obj));
 }
 
 } // Tp
