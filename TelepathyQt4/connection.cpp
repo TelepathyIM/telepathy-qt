@@ -69,7 +69,6 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     void init();
 
     static void introspectMain(Private *self);
-    void introspectMainProperties();
     void introspectMainFallbackStatus();
     void introspectMainFallbackInterfaces();
     void introspectMainFallbackSelfHandle();
@@ -117,8 +116,6 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     // FeatureCore
     // keep pendingStatus and pendingStatusReason until we emit statusChanged
     // so Connection::status() and Connection::statusReason() are consistent
-    bool introspectingMain;
-    bool statusChangedWhileIntrospectingMain;
     bool introspectingConnected;
 
     uint pendingStatus;
@@ -204,8 +201,6 @@ Connection::Private::Private(Connection *parent,
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       simplePresence(0),
       readinessHelper(parent->readinessHelper()),
-      introspectingMain(false),
-      statusChangedWhileIntrospectingMain(false),
       introspectingConnected(false),
       pendingStatus((uint) -1),
       pendingStatusReason(ConnectionStatusReasonNoneSpecified),
@@ -399,18 +394,12 @@ void Connection::Private::init()
 
 void Connection::Private::introspectMain(Connection::Private *self)
 {
-    self->introspectingMain = true;
-    self->introspectMainProperties();
-}
-
-void Connection::Private::introspectMainProperties()
-{
     debug() << "Calling Properties::GetAll(Connection)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CONNECTION)),
-                parent);
-    parent->connect(watcher,
+                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CONNECTION)),
+                self->parent);
+    self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
@@ -560,13 +549,6 @@ void Connection::Private::continueMainIntrospection()
 {
     if (introspectMainQueue.isEmpty()) {
         readinessHelper->setIntrospectCompleted(FeatureCore, true);
-
-        introspectingMain = false;
-
-        if (statusChangedWhileIntrospectingMain) {
-            statusChangedWhileIntrospectingMain = false;
-            readinessHelper->setCurrentStatus(pendingStatus);
-        }
     } else {
         (this->*(introspectMainQueue.dequeue()))();
     }
@@ -574,26 +556,25 @@ void Connection::Private::continueMainIntrospection()
 
 void Connection::Private::setCurrentStatus(uint status)
 {
-    // if the initial introspection is still running, only clear main
-    // introspection queue and wait for the last call to return, to avoid
-    // the return of the last call wrongly setting FeatureCore as ready for the
-    // new status, otherwise set the readinessHelper status to the new status,
-    // so it can re-run the introspection if needed.
-    if (introspectingMain) {
-        introspectMainQueue.clear();
-    } else {
-        readinessHelper->setCurrentStatus(status);
+    // ReadinessHelper waits for all in-flight introspection ops to finish for the current status
+    // before proceeding to a new one.
+    //
+    // Therefore we don't need any safeguarding here to prevent finishing introspection when there
+    // is a pending status change. However, we can speed up the process slightly by canceling any
+    // pending introspect ops from our local introspection queue when it's waiting for us.
 
-        if (introspectingConnected) {
-            // We have to finish the Connected introspection for now, as ReadinessHelper waits for
-            // all introspect ops in flight for the current status to finish before it starts
-            // introspecting the new status
-            debug() << "Finishing FeatureConnected for status" << this->status <<
-                "to allow ReadinessHelper to introspect new status" << status;
-            readinessHelper->setIntrospectCompleted(FeatureConnected, true);
-            introspectingConnected = false;
-        }
+    introspectMainQueue.clear();
+
+    if (introspectingConnected) {
+        // On the other hand, we have to finish the Connected introspection for now, as
+        // ReadinessHelper would otherwise wait indefinitely for it to land
+        debug() << "Finishing FeatureConnected for status" << this->status <<
+            "to allow ReadinessHelper to introspect new status" << status;
+        readinessHelper->setIntrospectCompleted(FeatureConnected, true);
+        introspectingConnected = false;
     }
+
+    readinessHelper->setCurrentStatus(status);
 }
 
 void Connection::Private::forceCurrentStatus(uint status)
@@ -1403,10 +1384,6 @@ void Connection::onStatusChanged(uint status, uint reason)
         warning() << "New status was the same as the old status! Ignoring"
             "redundant StatusChanged";
         return;
-    }
-
-    if (mPriv->introspectingMain) {
-        mPriv->statusChangedWhileIntrospectingMain = true;
     }
 
     uint oldStatus = mPriv->pendingStatus;
