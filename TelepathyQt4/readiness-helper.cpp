@@ -264,12 +264,9 @@ void ReadinessHelper::Private::iterateIntrospection()
         return;
     }
 
-    // take care to flag anything with dependencies in missing, and the
-    // stuff depending on them, as missing
-    for (Introspectables::const_iterator i = introspectables.constBegin();
-            i != introspectables.constEnd(); ++i) {
-        Feature feature = i.key();
-        Introspectable introspectable = i.value();
+    // Flag the currently pending reverse dependencies of any previously discovered missing features
+    // as missing
+    foreach (const Feature &feature, pendingFeatures) {
         if (!depsFor(feature).intersect(missingFeatures).isEmpty()) {
             missingFeatures.insert(feature);
             missingFeaturesErrors.insert(feature,
