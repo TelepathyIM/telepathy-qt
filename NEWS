@@ -1,10 +1,11 @@
-telepathy-qt4 0.5.15 (2011-04-11)
+telepathy-qt4 0.5.15 (2011-04-12)
 =================================
 
 The "How to remove a hole from a set of holes" release.
 
 Enhancements:
  * Performance improvements for introspection (becomeReady() latency)
+ * Some documentation improvements.
 
 Fixes:
  * Incorrect scoping for Initial{Audio,Video} properties in Account channel
