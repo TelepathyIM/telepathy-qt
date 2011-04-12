@@ -35,6 +35,14 @@ struct TELEPATHY_QT4_NO_EXPORT MessageContentPart::Private : public QSharedData
     MessagePart mp;
 };
 
+/**
+ * \class MessageContentPart
+ * \ingroup wrappers
+ * \headerfile TelepathyQt4/message-content-part.h <TelepathyQt4/MessageContentPart>
+ *
+ * \brief The MessageContentPart class represents a Telepathy message part.
+ */
+
 MessageContentPart::MessageContentPart()
 {
 }
@@ -75,5 +83,14 @@ MessagePart MessageContentPart::barePart() const
 {
     return isValid() ? mPriv->mp : MessagePart();
 }
+
+/**
+ * \class MessageContentPartList
+ * \ingroup wrappers
+ * \headerfile TelepathyQt4/message-content-part.h <TelepathyQt4/MessageContentPartList>
+ *
+ * \brief The MessageContentPartList class represents a list of
+ * MessageContentPart.
+ */
 
 } // Tp

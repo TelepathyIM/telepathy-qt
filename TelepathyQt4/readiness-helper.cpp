@@ -397,6 +397,24 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
     pendingOperations.clear();
 }
 
+/**
+ * \class ReadinessHelper
+ * \ingroup utils
+ * \headerfile TelepathyQt4/readiness-helper.h <TelepathyQt4/ReadinessHelper>
+ *
+ * \brief The ReadinessHelper class is a helper class used by the introspection
+ * process.
+ */
+
+/**
+ * \class ReadinessHelper::Introspectable
+ * \ingroup utils
+ * \headerfile TelepathyQt4/readiness-helper.h <TelepathyQt4/ReadinessHelper>
+ *
+ * \brief The ReadinessHelper::Introspectable class represents a introspectable
+ * used by ReadinessHelper.
+ */
+
 ReadinessHelper::ReadinessHelper(RefCounted *object,
         uint currentStatus,
         const Introspectables &introspectables,

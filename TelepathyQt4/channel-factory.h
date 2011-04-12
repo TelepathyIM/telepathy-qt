@@ -48,6 +48,7 @@ class TELEPATHY_QT4_EXPORT ChannelFactory : public DBusProxyFactory
     Q_DISABLE_COPY(ChannelFactory)
 
 public:
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     struct TELEPATHY_QT4_EXPORT Constructor : public RefCounted
     {
         virtual ~Constructor() {}
@@ -57,6 +58,7 @@ public:
     };
     typedef SharedPtr<Constructor> ConstructorPtr;
     typedef SharedPtr<const Constructor> ConstructorConstPtr;
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
     static ChannelFactoryPtr create(const QDBusConnection &bus);
 
@@ -237,6 +239,7 @@ public:
 protected:
     ChannelFactory(const QDBusConnection &bus);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     template <typename Subclass>
     struct SubclassCtor : public Constructor
     {
@@ -253,6 +256,7 @@ protected:
             return Subclass::create(conn, objectPath, immutableProperties);
         }
     };
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
     virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
     // Nothing we'd like to prepare()

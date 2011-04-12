@@ -122,6 +122,15 @@ void PendingContacts::Private::setFinished()
     parent->setFinished();
 }
 
+/**
+ * \class PendingContacts
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/pending-contacts.h <TelepathyQt4/PendingContacts>
+ *
+ * \brief The PendingContacts class is used by ContactManager when
+ * creating/updating Contact objects.
+ */
+
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const UIntList &handles, const Features &features,
         const QStringList &interfaces,

@@ -37,9 +37,9 @@ namespace Tp
  * \ingroup clientconn
  * \headerfile TelepathyQt4/pending-contact-attributes.h <TelepathyQt4/PendingContactAttributes>
  *
- * \brief Class containing the parameters of and the reply to an asynchronous
- * request for raw contact attributes, as used in the
- * Connection::contactAttributes() low-level convenience method wrapping the
+ * \brief The PendingContactAttributes class represents the parameters of and
+ * the reply to an asynchronous request for raw contact attributes, as used in
+ * the Connection::contactAttributes() low-level convenience method wrapping the
  * Client::ConnectionInterfaceContactsInterface::GetContactAttributes() D-Bus
  * method.
  */

@@ -59,6 +59,15 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : 
     QDateTime lastModificationTime;
 };
 
+/**
+ * \class FileTransferChannelCreationProperties
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/file-transfer-channel-creation-properties.h <TelepathyQt4/FileTransferChannelCreationProperties>
+ *
+ * \brief The FileTransferChannelCreationProperties class represents the
+ * properties of a file transfer channel request.
+ */
+
 FileTransferChannelCreationProperties::FileTransferChannelCreationProperties()
 {
 }

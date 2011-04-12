@@ -519,9 +519,9 @@ void Profile::Private::invalidate()
     data.clear();
 }
 
-
 /**
  * \class Profile
+ * \ingroup utils
  * \headerfile TelepathyQt4/profile.h <TelepathyQt4/Profile>
  *
  * \brief The Profile class provides an easy way to read telepathy profile
@@ -881,6 +881,7 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Parameter::Private
 
 /**
  * \class Profile::Parameter
+ * \ingroup utils
  * \headerfile TelepathyQt4/profile.h <TelepathyQt4/Profile>
  *
  * \brief The Profile::Parameter class represents a parameter defined in
@@ -1051,7 +1052,8 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Presence::Private
 };
 
 /**
- * \class Profile::Prsence
+ * \class Profile::Presence
+ * \ingroup utils
  * \headerfile TelepathyQt4/profile.h <TelepathyQt4/Profile>
  *
  * \brief The Profile::Presence class represents a presence defined in

@@ -56,23 +56,24 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOperation::Private
  * \class PendingOperation
  * \headerfile TelepathyQt4/pending-operation.h <TelepathyQt4/PendingOperation>
  *
- * \brief Abstract base class for pending asynchronous operations.
+ * \brief The PendingOperation class is a base class for pending asynchronous
+ * operations.
  *
  * This class represents an incomplete asynchronous operation, such as a
  * D-Bus method call. When the operation has finished, it emits
- * #finished. The slot or slots connected to the #finished() signal may obtain
- * additional information from the %PendingOperation.
+ * finished(). The slot or slots connected to the finished() signal may obtain
+ * additional information from the pending operation.
  *
  * In simple cases, like a D-Bus method with no 'out' arguments or for which
  * all 'out' arguments are to be ignored (so the possible results are
  * success with no extra information, or failure with an error code), the
- * trivial subclass %PendingVoid can be used.
+ * trivial subclass PendingVoid can be used.
  *
  * For pending operations that produce a result, another subclass of
- * %PendingOperation can be used, with additional methods that provide that
+ * PendingOperation can be used, with additional methods that provide that
  * result to the library user.
  *
- * After #finished() is emitted, the %PendingOperation is automatically
+ * After finished() is emitted, the PendingOperation is automatically
  * deleted using deleteLater(), so library users must not explicitly
  * delete this object.
  *
@@ -268,29 +269,30 @@ QString PendingOperation::errorMessage() const
 
 /**
  * \class PendingSuccess
+ * \ingroup utils
  * \headerfile TelepathyQt4/simple-pending-operations.h <TelepathyQt4/PendingSuccess>
  *
- * \brief A PendingOperation that is always successful.
+ * \brief The PendingSuccess class represents PendingOperation that is always
+ * successful.
  */
 
 /**
  * \class PendingFailure
+ * \ingroup utils
  * \headerfile TelepathyQt4/simple-pending-operations.h <TelepathyQt4/PendingFailure>
  *
- * \brief A PendingOperation that always fails with the error passed to the
- * constructor.
+ * \brief The PendingFailure class represents a PendingOperation that always
+ * fails with the error passed to the constructor.
  */
 
 /**
  * \class PendingVoid
+ * \ingroup utils
  * \headerfile TelepathyQt4/simple-pending-operations.h <TelepathyQt4/PendingVoid>
  *
- * \brief Generic subclass of PendingOperation representing a pending D-Bus
- * method call that does not return anything (or returns a result that is not
- * interesting).
- *
- * Objects of this class indicate the success or failure of the method call,
- * but if the method call succeeds, no additional information is available.
+ * \brief The PendingVoid class is a generic subclass of PendingOperation
+ * representing a pending D-Bus method call that does not return anything
+ * (or returns a result that is not interesting).
  */
 
 /**
@@ -337,6 +339,15 @@ struct TELEPATHY_QT4_NO_EXPORT PendingComposite::Private
     uint nOperations;
     uint nOperationsFinished;
 };
+
+/**
+ * \class PendingComposite
+ * \ingroup utils
+ * \headerfile TelepathyQt4/simple-pending-operations.h <TelepathyQt4/PendingComposite>
+ *
+ * \brief The PendingComposite class is a PendingOperation that can be used
+ * to track multiple pending operations at once.
+ */
 
 PendingComposite::PendingComposite(const QList<PendingOperation*> &operations,
          const SharedPtr<RefCounted> &object)

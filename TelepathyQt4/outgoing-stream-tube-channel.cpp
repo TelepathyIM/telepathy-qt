@@ -184,14 +184,16 @@ OutgoingStreamTubeChannel::Private::~Private()
 
 /**
  * \class OutgoingStreamTubeChannel
+ * \ingroup clientchannel
  * \headerfile TelepathyQt4/outgoing-stream-tube-channel.h <TelepathyQt4/OutgoingStreamTubeChannel>
  *
- * An high level wrapper for managing an outgoing stream tube
+ * \brief The IncomingStreamTubeChannel class represents a Telepathy channel
+ * of type StreamTube for outgoing stream tubes.
  *
- * \c OutgoingStreamTubeChannel is an high level wrapper for managing Telepathy interface
- * #TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE.
- * In particular, this class is meant to be used as a comfortable way for exposing new tubes.
- * It provides a set of overloads for exporting a variety of sockets over a stream tube.
+ * In particular, this class is meant to be used as a comfortable way for
+ * exposing new stream tubes.
+ * It provides a set of overloads for exporting a variety of sockets over
+ * a stream tube.
  *
  * \section outgoing_stream_tube_usage_sec Usage
  *

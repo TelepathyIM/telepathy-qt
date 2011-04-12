@@ -234,8 +234,7 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  * \ingroup clientam
  * \headerfile TelepathyQt4/account-manager.h <TelepathyQt4/AccountManager>
  *
- * \brief The AccountManager class provides an object representing a Telepathy
- * account manager.
+ * \brief The AccountManager class represents a Telepathy account manager.
  *
  * The remote object accessor functions on this object (allAccounts(),
  * validAccounts(), and so on) don't make any D-Bus calls; instead, they return/use

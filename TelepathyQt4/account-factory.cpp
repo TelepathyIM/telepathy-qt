@@ -29,14 +29,15 @@ namespace Tp
 
 /**
  * \class AccountFactory
- * \ingroup clientaccount
+ * \ingroup utils
  * \headerfile TelepathyQt4/account-factory.h <TelepathyQt4/AccountFactory>
  *
- * \brief Constructs Account objects according to application-defined settings
+ * \brief The AccountFactory class is responsible for constructing Account
+ * objects according to application-defined settings.
  *
- * The AccountFactory class is used by AccountManager and other classes which construct Account
- * proxy instances to enable sharing instances of application-defined Account subclasses with
- * certain features always ready.
+ * The class is used by AccountManager and other classes which construct Account
+ * proxy instances to enable sharing instances of application-defined Account
+ * subclasses with certain features always ready.
  */
 
 /**

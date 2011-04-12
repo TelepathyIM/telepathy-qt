@@ -61,14 +61,11 @@ ChannelFactory::Private::Private()
 
 /**
  * \class ChannelFactory
- * \ingroup clientchannel
+ * \ingroup utils
  * \headerfile TelepathyQt4/channel-factory.h <TelepathyQt4/ChannelFactory>
  *
- * \brief Constructs Channel objects
- *
- * \todo This class is currently only a placeholder to enable using factories in general in other
- * classes. There is no actual configurability in the construction behavior, although a
- * factory-style construction API is provided.
+ * \brief The ChannelFactory class is responsible for constructing Channel
+ * objects according to application-defined settings.
  */
 
 /**

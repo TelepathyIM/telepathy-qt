@@ -35,10 +35,10 @@ struct TELEPATHY_QT4_NO_EXPORT LocationInfo::Private : public QSharedData
 /**
  * \class LocationInfo
  * \ingroup clientconn
- * \headerfile TelepathyQt4/contact-location.h <TelepathyQt4/LocationInfo>
+ * \headerfile TelepathyQt4/location-info.h <TelepathyQt4/LocationInfo>
  *
- * \brief The LocationInfo class provides an object representing the
- * location of a Contact.
+ * \brief The LocationInfo class represents the location of a
+ * Telepathy Contact.
  */
 
 /**

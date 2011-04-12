@@ -657,7 +657,7 @@ QMap<QString, QSharedPointer<Account::Private::DispatcherContext> > Account::Pri
  * \ingroup clientaccount
  * \headerfile TelepathyQt4/account.h <TelepathyQt4/Account>
  *
- * \brief The Account class provides an object representing a Telepathy account.
+ * \brief The Account class represents a Telepathy account.
  *
  * Account adds the following features compared to using
  * Client::AccountManagerInterface directly:

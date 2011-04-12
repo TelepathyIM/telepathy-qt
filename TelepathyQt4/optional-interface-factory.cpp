@@ -32,29 +32,6 @@
 namespace Tp
 {
 
-/**
- * \enum OptionalInterfaceFactory::InterfaceSupportedChecking
- *
- * Specifies if the interface being supported by the remote object should be
- * checked by optionalInterface() and the convenience functions for it.
- *
- * \sa optionalInterface()
- */
-
-/**
- * \var OptionalInterfaceFactory::InterfaceSupportedChecking OptionalInterfaceFactory::CheckInterfaceSupported
- *
- * Don't return an interface instance unless it can be guaranteed that the
- * remote object actually implements the interface.
- */
-
-/**
- * \var OptionalInterfaceFactory::InterfaceSupportedChecking OptionalInterfaceFactory::BypassInterfaceCheck
- *
- * Return an interface instance even if it can't be verified that the remote
- * object supports the interface.
- */
-
 struct TELEPATHY_QT4_NO_EXPORT OptionalInterfaceCache::Private
 {
     QObject *proxy;
@@ -113,19 +90,39 @@ void OptionalInterfaceCache::cache(AbstractInterface *interface) const
  * \ingroup clientsideproxies
  * \headerfile TelepathyQt4/optional-interface-factory.h <TelepathyQt4/OptionalInterfaceFactory>
  *
- * \brief Implementation helper class for high-level proxy classes willing to
- * offer access to shared instances of interface proxies for optional
- * interfaces.
- *
- * This class is included in the public API for the benefit of high-level
- * proxies in extensions.
+ * \brief The OptionalInterfaceFactory class is a helper class for
+ * high-level D-Bus proxy classes willing to offer access to shared
+ * instances of interface proxies for optional interfaces.
  *
  * To use this helper in a subclass of DBusProxy (say, ExampleObject),
- * ExampleObject should inherit privately from
+ * ExampleObject should inherit from
  * OptionalInterfaceFactory<ExampleObject>, and call
  * OptionalInterfaceFactory(this) in its constructor's initialization list.
  *
  * \tparam DBusProxySubclass A subclass of DBusProxy
+ */
+
+/**
+ * \enum OptionalInterfaceFactory::InterfaceSupportedChecking
+ *
+ * Specifies if the interface being supported by the remote object should be
+ * checked by optionalInterface() and the convenience functions for it.
+ *
+ * \sa optionalInterface()
+ */
+
+/**
+ * \var OptionalInterfaceFactory::InterfaceSupportedChecking OptionalInterfaceFactory::CheckInterfaceSupported
+ *
+ * Don't return an interface instance unless it can be guaranteed that the
+ * remote object actually implements the interface.
+ */
+
+/**
+ * \var OptionalInterfaceFactory::InterfaceSupportedChecking OptionalInterfaceFactory::BypassInterfaceCheck
+ *
+ * Return an interface instance even if it can't be verified that the remote
+ * object supports the interface.
  */
 
 /**

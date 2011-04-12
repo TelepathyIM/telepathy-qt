@@ -20,19 +20,6 @@
  */
 
 /**
- * \page examples Examples
- *
- * This is the list of examples in Telepathy-Qt4's examples directory.
- * The examples demonstrate Telepathy-Qt4 features in small, self-contained
- * programs. They are not all designed to be impressive when you run them,
- * but their source code is carefully written to show good Telepathy-Qt4
- * programming practices.
- *
- * \li \subpage accounts_example
- * \li \subpage roster_example
- */
-
-/**
  * \page accounts_example Accounts Example
  *
  * \li \subpage accounts_example_account_item_cpp

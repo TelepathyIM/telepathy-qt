@@ -32,6 +32,15 @@ struct TELEPATHY_QT4_NO_EXPORT Feature::Private : public QSharedData
     bool critical;
 };
 
+/**
+ * \class Feature
+ * \ingroup utils
+ * \headerfile TelepathyQt4/feature.h <TelepathyQt4/Feature>
+ *
+ * \brief The Feature class represents a feature that can be enabled
+ * on demand.
+ */
+
 Feature::Feature()
     : QPair<QString, uint>()
 {
@@ -68,5 +77,13 @@ bool Feature::isCritical() const
 
     return mPriv->critical;
 }
+
+/**
+ * \class Features
+ * \ingroup utils
+ * \headerfile TelepathyQt4/feature.h <TelepathyQt4/Features>
+ *
+ * \brief The Features class represents a list of Feature.
+ */
 
 } // Tp

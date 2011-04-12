@@ -32,9 +32,11 @@ struct TELEPATHY_QT4_NO_EXPORT ContactFactory::Private
 
 /**
  * \class ContactFactory
+ * \ingroup utils
  * \headerfile TelepathyQt4/contact-factory.h <TelepathyQt4/ContactFactory>
  *
- * \brief Constructs contacts according to application-defined settings
+ * \brief The ContactFactory class is responsible for constructing Contact
+ * objects according to application-defined settings.
  */
 
 /**

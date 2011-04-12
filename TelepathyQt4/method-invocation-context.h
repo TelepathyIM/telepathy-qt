@@ -33,6 +33,8 @@
 namespace Tp
 {
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 namespace MethodInvocationContextTypes
 {
 
@@ -70,12 +72,15 @@ struct ForEach<Nil, Nil, Nil, Nil, Nil, Nil, Nil, Nil>
 
 }
 
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
 template<typename T1 = MethodInvocationContextTypes::Nil, typename T2 = MethodInvocationContextTypes::Nil,
          typename T3 = MethodInvocationContextTypes::Nil, typename T4 = MethodInvocationContextTypes::Nil,
          typename T5 = MethodInvocationContextTypes::Nil, typename T6 = MethodInvocationContextTypes::Nil,
          typename T7 = MethodInvocationContextTypes::Nil, typename T8 = MethodInvocationContextTypes::Nil>
 class MethodInvocationContext : public RefCounted
 {
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     template<int Index>
     struct Select : MethodInvocationContextTypes::Select<Index, T1, T2, T3, T4, T5, T6, T7, T8>
     {
@@ -83,6 +88,7 @@ class MethodInvocationContext : public RefCounted
 
     typedef MethodInvocationContextTypes::ForEach<T1, T2, T3, T4, T5, T6, T7, T8> ForEach;
     enum { Count = ForEach::Total };
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 public:
     MethodInvocationContext(const QDBusConnection &bus, const QDBusMessage &message)

@@ -44,6 +44,14 @@ struct TELEPATHY_QT4_NO_EXPORT Presence::Private : public QSharedData
     SimplePresence sp;
 };
 
+/**
+ * \class Presence
+ * \ingroup wrappers
+ * \headerfile TelepathyQt4/presence.h <TelepathyQt4/Presence>
+ *
+ * \brief The Presence class represents a Telepathy simple presence.
+ */
+
 Presence::Presence()
 {
 }
@@ -179,6 +187,15 @@ struct TELEPATHY_QT4_NO_EXPORT PresenceSpec::Private : public QSharedData
     SimpleStatusSpec spec;
 };
 
+/**
+ * \class PresenceSpec
+ * \ingroup wrappers
+ * \headerfile TelepathyQt4/presence.h <TelepathyQt4/PresenceSpec>
+ *
+ * \brief The PresenceSpec class represents a Telepathy presence information
+ * supported by a protocol.
+ */
+
 PresenceSpec::PresenceSpec()
 {
 }
@@ -243,5 +260,13 @@ SimpleStatusSpec PresenceSpec::bareSpec() const
 
     return mPriv->spec;
 }
+
+/**
+ * \class PresenceSpecList
+ * \ingroup wrappers
+ * \headerfile TelepathyQt4/presence.h <TelepathyQt4/PresenceSpecList>
+ *
+ * \brief The PresenceSpecList class represents a list of PresenceSpec.
+ */
 
 } // Tp

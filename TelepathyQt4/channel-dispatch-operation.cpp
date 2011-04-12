@@ -224,8 +224,8 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
  * \ingroup clientchanneldispatchoperation
  * \headerfile TelepathyQt4/channel-dispatch-operation.h <TelepathyQt4/ChannelDispatchOperation>
  *
- * \brief The ChannelDispatchOperation class provides an object representing a
- * Telepathy channel dispatch operation.
+ * \brief The ChannelDispatchOperation class represents a Telepathy channel
+ * dispatch operation.
  *
  * One of the channel dispatcher's functions is to offer incoming channels to
  * Approver clients for approval. An approver should generally ask the user

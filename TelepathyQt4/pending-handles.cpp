@@ -56,10 +56,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
  * \ingroup clientconn
  * \headerfile TelepathyQt4/pending-handles.h <TelepathyQt4/PendingHandles>
  *
- * \brief Class containing the parameters of and the reply to an asynchronous
- * handle request/hold. Instances of this class cannot be constructed directly;
- * the only way to get one is to use Connection::requestHandles() or
- * Connection::referenceHandles().
+ * \brief The PendingHandles class representsthe parameters of and the reply to
+ * an asynchronous handle request/hold.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is to use Connection::requestHandles() or Connection::referenceHandles().
  */
 
 PendingHandles::PendingHandles(const ConnectionPtr &connection, HandleType handleType,

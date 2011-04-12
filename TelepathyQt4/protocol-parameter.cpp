@@ -41,6 +41,15 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolParameter::Private : public QSharedData
     ConnMgrParamFlag flags;
 };
 
+/**
+ * \class ProtocolParameter
+ * \ingroup clientcm
+ * \headerfile TelepathyQt4/protocol-parameter.h <TelepathyQt4/ProtocolParameter>
+ *
+ * \brief The ProtocolParameter class represents a Telepathy protocol parameter.
+ */
+
+
 ProtocolParameter::ProtocolParameter()
 {
 }

@@ -76,14 +76,16 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
 
 /**
  * \class PendingStreamTubeConnection
- * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/IncomingStreamTubeChannel>
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/PendingStreamTubeConnection>
  *
- * A pending operation for accepting a stream tube
+ * \brief The PendingStreamTubeConnection class represents an asynchronous
+ * operation for accepting a stream tube.
  *
- * This class represents an asynchronous operation for accepting a stream tube.
  * When the operation is finished, you can access the resulting device
- * through #device().
- * Otherwise, you can access the bare address through either #tcpAddress or #localAddress.
+ * through device().
+ * Otherwise, you can access the bare address through either tcpAddress() or
+ * localAddress().
  */
 
 PendingStreamTubeConnection::PendingStreamTubeConnection(

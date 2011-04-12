@@ -101,3 +101,15 @@
  * Proxy objects representing remote Telepathy Connection objects and their
  * optional interfaces.
  */
+
+/**
+ * \defgroup wrappers Wrapper classes
+ *
+ * Wrapper classes representing a Telepathy type.
+ */
+
+/**
+ * \defgroup utils Utililty classes
+ *
+ * Utility classes.
+ */

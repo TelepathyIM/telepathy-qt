@@ -45,6 +45,18 @@ struct TELEPATHY_QT4_NO_EXPORT HandledChannelNotifier::Private
     SharedPtr<RequestTemporaryHandler> handler;
 };
 
+/**
+ * \class HandledChannelNotifier
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/handled-channel-notifier.h <TelepathyQt4/HandledChannelNotifier>
+ *
+ * \brief The HandledChannelNotifier class can be used to keep track of
+ * channel() being re-requested.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is trough PendingChannel.
+ */
+
 HandledChannelNotifier::HandledChannelNotifier(const ClientRegistrarPtr &cr,
         const SharedPtr<RequestTemporaryHandler> &handler)
     : mPriv(new Private(cr, handler))

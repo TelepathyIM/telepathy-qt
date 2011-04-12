@@ -1,8 +1,8 @@
-/**
+/*
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
- * @copyright Copyright (C) 2010 Nokia Corporation
+ * @copyright Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2011 Nokia Corporation
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -20,44 +20,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_filter_h_HEADER_GUARD_
-#define _TelepathyQt4_filter_h_HEADER_GUARD_
-
-#ifndef IN_TELEPATHY_QT4_HEADER
-#error IN_TELEPATHY_QT4_HEADER
-#endif
-
-#include <TelepathyQt4/SharedPtr>
-#include <TelepathyQt4/Types>
-
-namespace Tp
-{
-
-template <class T>
-class Filter : public RefCounted
-{
-    Q_DISABLE_COPY(Filter)
-
-public:
-    virtual ~Filter() {}
-
-    virtual bool isValid() const { return false; }
-
-    virtual bool matches(const SharedPtr<T> &t) const
-    {
-        Q_UNUSED(t);
-
-        return false;
-    }
-
-protected:
-    Filter() {}
-
-private:
-    struct Private;
-    Private *mPriv; // Just a placeholder really
-};
-
-} // Tp
-
-#endif
+/**
+ * \class Tp::Filter
+ * \ingroup utils
+ * \headerfile TelepathyQt4/filter.h <TelepathyQt4/Filter>
+ *
+ * \brief The Filter class provides a base class to be used by specialized
+ * filters such as GenericCapabilityFilter, GenericPropertyFilter, etc.
+ */

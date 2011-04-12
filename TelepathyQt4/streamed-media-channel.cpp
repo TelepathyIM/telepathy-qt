@@ -234,8 +234,8 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaStream::Private
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
  *
- * \brief The StreamedMediaStream class provides an object representing a Telepathy
- * media stream.
+ * \brief The StreamedMediaStream class represents a Telepathy streamed media
+ * stream.
  *
  * Instances of this class cannot be constructed directly; the only way to get
  * one is via StreamedMediaChannel.
@@ -850,8 +850,8 @@ void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChanne
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
  *
- * \brief The StreamedMediaChannel class provides an object representing a
- * Telepathy channel of type StreamedMedia or Call.
+ * \brief The StreamedMediaChannel class represents a Telepathy channel
+ * of type StreamedMedia.
  */
 
 /**

@@ -75,8 +75,8 @@ IncomingFileTransferChannel::Private::~Private()
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/incoming-file-transfer-channel.h <TelepathyQt4/IncomingFileTransferChannel>
  *
- * \brief The IncomingFileTransferChannel class provides an object representing
- * a Telepathy channel of type FileTransfer for incoming file transfers.
+ * \brief The IncomingFileTransferChannel class represents a Telepathy channel
+ * of type FileTransfer for incoming file transfers.
  */
 
 /**

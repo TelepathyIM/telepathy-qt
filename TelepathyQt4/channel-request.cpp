@@ -257,8 +257,7 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
  * \ingroup clientchannelrequest
  * \headerfile TelepathyQt4/channel-request.h <TelepathyQt4/ChannelRequest>
  *
- * \brief The ChannelRequest class provides an object representing a Telepathy
- * channel request.
+ * \brief The ChannelRequest class represents a Telepathy channel request.
  *
  * A channel request is an object in the channel dispatcher representing an
  * ongoing request for some channels to be created or found. There can be any
@@ -603,7 +602,7 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
  */
 
 /**
- * \fn void ChannelRequest::succeeded(const ChannelPtr &channel);
+ * \fn void ChannelRequest::succeeded(const Tp::ChannelPtr &channel);
  *
  * This signals is emitted when the channel request has succeeded. No further
  * methods must not be called on it.
@@ -712,6 +711,15 @@ void ChannelRequest::connectNotify(const char *signalName)
         warning() << "Connecting to deprecated signal ChannelRequest::succeeded()";
     }
 }
+
+/**
+ * \class ChannelRequestHints
+ * \ingroup clientchannelrequest
+ * \headerfile TelepathyQt4/channel-request.h <TelepathyQt4/ChannelRequestHints>
+ *
+ * \brief The ChannelRequestHints class represents a dictionary of metadata
+ * provided by the channel requester when requesting a channel.
+ */
 
 struct TELEPATHY_QT4_NO_EXPORT ChannelRequestHints::Private : public QSharedData
 {

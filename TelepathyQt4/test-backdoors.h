@@ -31,6 +31,8 @@
 
 #include <QString>
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 namespace Tp
 {
 
@@ -44,5 +46,7 @@ struct TELEPATHY_QT4_EXPORT TestBackdoors
 };
 
 } // Tp
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif

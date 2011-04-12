@@ -46,13 +46,14 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
 
 /**
  * \class PendingReady
+ * \ingroup utils
  * \headerfile TelepathyQt4/pending-ready.h <TelepathyQt4/PendingReady>
  *
- * \brief Class containing the features requested and the reply to a request
- * for an object to become ready.
+ * \brief The PendingReady class represents the features requested and the reply
+ * to a request for an object to become ready.
  *
- * Instances of this class cannot be constructed directly; the only way to get one is via
- * ReadyObject::becomeReady() or a DBusProxyFactory subclass.
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is via ReadyObject::becomeReady() or a DBusProxyFactory subclass.
  */
 
 /**

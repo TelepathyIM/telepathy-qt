@@ -60,14 +60,16 @@ IncomingStreamTubeChannel::Private::~Private()
 
 /**
  * \class IncomingStreamTubeChannel
+ * \ingroup clientchannel
  * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/IncomingStreamTubeChannel>
  *
- * An high level wrapper for managing an incoming stream tube
+ * \brief The IncomingStreamTubeChannel class represents a Telepathy channel
+ * of type StreamTube for incoming stream tubes.
  *
- * \c IncomingStreamTubeChannel is an high level wrapper for managing Telepathy interface
- * #TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE.
- * In particular, this class is meant to be used as a comfortable way for accepting incoming.
- * It provides an easy way for obtaining a QIODevice which can be used for communication.
+ * In particular, this class is meant to be used as a comfortable way for
+ * accepting incoming stream tubes.
+ * It provides an easy way for obtaining a QIODevice which can be used for
+ * communication.
  *
  * \section incoming_stream_tube_usage_sec Usage
  *

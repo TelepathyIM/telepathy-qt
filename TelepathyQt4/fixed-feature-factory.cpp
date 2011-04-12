@@ -33,12 +33,12 @@ struct TELEPATHY_QT4_NO_EXPORT FixedFeatureFactory::Private
 };
 
 /**
- * \class DBusProxyFactory
- * \ingroup clientreadiness
- * \headerfile TelepathyQt4/fixed-features-factory.h <TelepathyQt4/FixedFeatureFactory>
+ * \class FixedFeatureFactory
+ * \ingroup utils
+ * \headerfile TelepathyQt4/fixed-feature-factory.h <TelepathyQt4/FixedFeatureFactory>
  *
- * Base class for all D-Bus proxy factories which want the same set of features for all constructed
- * proxies.
+ * \brief The FixedFeatureFactory class is a base class for all D-Bus proxy
+ * factories which want the same set of features for all constructed proxies.
  */
 
 /**
