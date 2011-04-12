@@ -252,6 +252,7 @@ set(telepathy_qt4_HEADERS
     Debug
     debug.h
     Feature
+    Features
     feature.h
     FileTransferChannel
     FileTransferChannelCreationProperties
@@ -343,6 +344,7 @@ set(telepathy_qt4_HEADERS
     Presence
     presence.h
     PresenceSpec
+    PresenceSpecList
     Profile
     profile.h
     ProfileManager
