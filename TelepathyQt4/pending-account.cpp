@@ -46,8 +46,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingAccount::Private
  * \ingroup clientaccount
  * \headerfile TelepathyQt4/pending-account.h <TelepathyQt4/PendingAccount>
  *
- * \brief Class containing the parameters of and the reply to an asynchronous
- * account request.
+ * \brief The PendingAccount class represents the parameters of and the reply to
+ * an asynchronous account request.
  *
  * Instances of this class cannot be constructed directly; the only way to get
  * one is via AccountManager.

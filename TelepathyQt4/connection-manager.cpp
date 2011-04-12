@@ -573,6 +573,15 @@ QString ConnectionManager::Private::makeObjectPath(const QString &name)
                 TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE)).append(name);
 }
 
+/**
+ * \class ConnectionManagerLowlevel
+ * \ingroup clientcm
+ * \headerfile TelepathyQt4/connection-manager-lowlevel.h <TelepathyQt4/ConnectionManagerLowlevel>
+ *
+ * \brief The ConnectionManagerLowlevel class extends ConnectionManager with
+ * support to low-level features.
+ */
+
 ConnectionManagerLowlevel::ConnectionManagerLowlevel(ConnectionManager *cm)
     : mPriv(new Private(cm))
 {

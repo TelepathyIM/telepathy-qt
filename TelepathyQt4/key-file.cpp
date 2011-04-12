@@ -283,6 +283,7 @@ QStringList KeyFile::Private::valueAsStringList(const QString &key) const
 
 /**
  * \class KeyFile
+ * \ingroup utils
  * \headerfile TelepathyQt4/key-file.h <TelepathyQt4/KeyFile>
  *
  * \brief The KeyFile class provides an easy way to read key-pair files such as

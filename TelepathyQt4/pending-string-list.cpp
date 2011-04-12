@@ -37,7 +37,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStringList::Private
 
 /**
  * \class PendingStringList
+ * \ingroup utils
  * \headerfile TelepathyQt4/pending-string-list.h <TelepathyQt4/PendingStringList>
+ *
+ * \brief The PendingStringList class is a generic subclass of PendingOperation
+ * representing a pending D-Bus method call that returns a string list.
  */
 
 PendingStringList::PendingStringList(const SharedPtr<RefCounted> &object)

@@ -608,6 +608,15 @@ void Connection::Private::invalidateResetCaps(const QString &error, const QStrin
     parent->invalidate(error, message);
 }
 
+/**
+ * \class ConnectionLowlevel
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/connection-lowlevel.h <TelepathyQt4/ConnectionLowlevel>
+ *
+ * \brief The ConnectionLowlevel class extends Connection with support to
+ * low-level features.
+ */
+
 ConnectionLowlevel::ConnectionLowlevel(Connection *conn)
     : mPriv(new Private(conn))
 {

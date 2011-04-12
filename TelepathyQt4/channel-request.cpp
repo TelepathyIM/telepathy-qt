@@ -602,7 +602,7 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
  */
 
 /**
- * \fn void ChannelRequest::succeeded(const ChannelPtr &channel);
+ * \fn void ChannelRequest::succeeded(const Tp::ChannelPtr &channel);
  *
  * This signals is emitted when the channel request has succeeded. No further
  * methods must not be called on it.
@@ -711,6 +711,15 @@ void ChannelRequest::connectNotify(const char *signalName)
         warning() << "Connecting to deprecated signal ChannelRequest::succeeded()";
     }
 }
+
+/**
+ * \class ChannelRequestHints
+ * \ingroup clientchannelrequest
+ * \headerfile TelepathyQt4/channel-request.h <TelepathyQt4/ChannelRequestHints>
+ *
+ * \brief The ChannelRequestHints class represents a dictionary of metadata
+ * provided by the channel requester when requesting a channel.
+ */
 
 struct TELEPATHY_QT4_NO_EXPORT ChannelRequestHints::Private : public QSharedData
 {

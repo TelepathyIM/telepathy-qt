@@ -84,6 +84,8 @@ class StreamTubeChannel;
 class TextChannel;
 class TubeChannel;
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 typedef SharedPtr<AbstractClient> AbstractClientPtr;
 typedef SharedPtr<Account> AccountPtr;
 typedef SharedPtr<AccountCapabilityFilter> AccountCapabilityFilterPtr;
@@ -147,6 +149,8 @@ public:
     inline MethodInvocationContextPtr(const SharedPtr<MethodInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8> > &o)
         : SharedPtr<MethodInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8> >(o) { }
 };
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 } // Tp
 

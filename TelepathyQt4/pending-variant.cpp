@@ -39,7 +39,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingVariant::Private
 
 /**
  * \class PendingVariant
+ * \ingroup utils
  * \headerfile TelepathyQt4/pending-variant.h <TelepathyQt4/PendingVariant>
+ *
+ * \brief The PendingVariant class is a generic subclass of PendingOperation
+ * representing a pending D-Bus method call that returns a variant.
  */
 
 PendingVariant::PendingVariant(QDBusPendingCall call, const SharedPtr<RefCounted> &object)

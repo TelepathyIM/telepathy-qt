@@ -39,7 +39,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingVariantMap::Private
 
 /**
  * \class PendingVariantMap
+ * \ingroup utils
  * \headerfile TelepathyQt4/pending-variant-map.h <TelepathyQt4/PendingVariantMap>
+ *
+ * \brief The PendingVariantMap class is a generic subclass of PendingOperation
+ * representing a pending D-Bus method call that returns a variant map.
  */
 
 PendingVariantMap::PendingVariantMap(QDBusPendingCall call, const SharedPtr<RefCounted> &object)

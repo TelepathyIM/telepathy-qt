@@ -57,6 +57,17 @@
  */
 
 /**
+ * \class Tp::RefCounted
+ * \ingroup utils
+ * \headerfile TelepathyQt4/shared-ptr.h <TelepathyQt4/RefCounted>
+ *
+ * \brief The RefCounted class is a base class for shared objects used by
+ * SharedPtr.
+ *
+ * See \ref shared_ptr
+ */
+
+/**
  * \class Tp::SharedPtr
  * \ingroup utils
  * \headerfile TelepathyQt4/shared-ptr.h <TelepathyQt4/SharedPtr>

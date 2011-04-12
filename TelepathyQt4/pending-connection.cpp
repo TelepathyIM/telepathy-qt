@@ -49,9 +49,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
  * \ingroup clientconn
  * \headerfile TelepathyQt4/pending-connection.h <TelepathyQt4/PendingConnection>
  *
- * \brief Class containing the parameters of and the reply to an asynchronous
- * connection request. Instances of this class cannot be constructed directly;
- * the only way to get one is via ConnectionManager.
+ * \brief The PendingConnection class represents the parameters of and the reply
+ * to an asynchronous connection request.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is via ConnectionManager.
  */
 
 /**

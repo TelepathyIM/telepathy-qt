@@ -30,14 +30,15 @@ namespace Tp
 
 /**
  * \class ConnectionFactory
- * \ingroup clientconn
+ * \ingroup utils
  * \headerfile TelepathyQt4/connection-factory.h <TelepathyQt4/ConnectionFactory>
  *
- * \brief Constructs Connection objects according to application-defined settings
+ * \brief The ConnectionFactory class is responsible for constructing Connection
+ * objects according to application-defined settings.
  *
- * The ConnectionFactory class is used by Account and other classes which construct Account proxy
- * instances to enable sharing instances of application-defined Connection subclasses with certain
- * features always ready.
+ * The class is used by Account and other classes which construct Connection proxy
+ * instances to enable sharing instances of application-defined Connection
+ * subclasses with certain features always ready.
  */
 
 /**

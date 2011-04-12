@@ -42,10 +42,10 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContactInfo::Private
 /**
  * \class PendingContactInfo
  * \ingroup clientconn
- * \headerfile TelepathyQt4/pending-contact-manager.h <TelepathyQt4/PendingContactInfo>
+ * \headerfile TelepathyQt4/pending-contact-info.h <TelepathyQt4/PendingContactInfo>
  *
- * \brief Class containing the parameters of and the reply to an asynchronous
- * contact info request.
+ * \brief The PendingContactInfo class represents the parameters of and the
+ * reply to an asynchronous contact info request.
  *
  * Instances of this class cannot be constructed directly; the only way to get
  * one is via Contact.

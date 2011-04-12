@@ -60,9 +60,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
  * \ingroup clientchannelrequest
  * \headerfile TelepathyQt4/pending-channel-request.h <TelepathyQt4/PendingChannelRequest>
  *
- * \brief Class containing the parameters of and the reply to an asynchronous
- * ChannelRequest request. Instances of this class cannot be constructed
- * directly; the only way to get one is trough Account.
+ * \brief The PendingChannelRequest class represents the parameters of and
+ * the reply to an asynchronous ChannelRequest request.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is trough Account.
  */
 
 /**

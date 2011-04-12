@@ -38,6 +38,8 @@ namespace Tp
 
 class AbstractInterface;
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 class TELEPATHY_QT4_EXPORT OptionalInterfaceCache
 {
     Q_DISABLE_COPY(OptionalInterfaceCache)
@@ -57,6 +59,8 @@ private:
     friend struct Private;
     Private *mPriv;
 };
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 template <typename DBusProxySubclass> class OptionalInterfaceFactory
     : private OptionalInterfaceCache

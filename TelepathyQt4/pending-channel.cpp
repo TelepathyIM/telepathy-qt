@@ -100,9 +100,13 @@ private:
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/pending-channel.h <TelepathyQt4/PendingChannel>
  *
- * \brief Class containing the parameters of and the reply to an asynchronous
- * channel request. Instances of this class cannot be constructed directly; the
- * only way to get one is trough Connection.
+ * \brief The PendingChannel class represents the parameters of and the reply to
+ * an asynchronous channel request.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is trough Connection.
+ *
+ * See \ref async_model
  */
 
 /**

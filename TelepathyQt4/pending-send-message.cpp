@@ -42,6 +42,17 @@ struct TELEPATHY_QT4_NO_EXPORT PendingSendMessage::Private
     Message message;
 };
 
+/**
+ * \class PendingSendMessage
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/pending-send-message.h <TelepathyQt4/PendingSendMessage>
+ *
+ * \brief The PendingSendMessage class represents the parameters of and the
+ * reply to an asynchronous message send request.
+ *
+ * See \ref async_model
+ */
+
 PendingSendMessage::PendingSendMessage(const TextChannelPtr &channel, const Message &message)
     : PendingOperation(channel),
       mPriv(new Private(message))

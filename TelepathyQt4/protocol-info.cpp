@@ -54,9 +54,9 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private : public QSharedData
 /**
  * \class ProtocolInfo
  * \ingroup clientcm
- * \headerfile TelepathyQt4/connection-manager.h <TelepathyQt4/ConnectionManager>
+ * \headerfile TelepathyQt4/protocol-info.h <TelepathyQt4/ProtocolInfo>
  *
- * \brief Object representing a Telepathy protocol info.
+ * \brief The ProtocolInfo class represents a Telepathy protocol information.
  */
 
 ProtocolInfo::ProtocolInfo()

@@ -56,11 +56,11 @@ struct TELEPATHY_QT4_NO_EXPORT DBusProxyFactory::Private
 
 /**
  * \class DBusProxyFactory
- * \ingroup clientreadiness
+ * \ingroup utils
  * \headerfile TelepathyQt4/dbus-proxy-factory.h <TelepathyQt4/DBusProxyFactory>
  *
- * Base class for all D-Bus proxy factory classes. Handles proxy caching and making them ready as
- * appropriate.
+ * \brief The DBusProxyFactory class is a base class for all D-Bus proxy factory
+ * classes. Handles proxy caching and making them ready as appropriate.
  */
 
 /**
