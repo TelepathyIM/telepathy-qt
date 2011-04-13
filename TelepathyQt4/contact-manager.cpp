@@ -755,9 +755,9 @@ bool ContactManager::canBlockContacts() const
 }
 
 /**
- * Return whether this protocol can report abusive contacts
+ * Return whether this protocol can report abusive contacts.
  *
- * \return Whether the reportAbuse flag will succeed when blocking contacts
+ * \return Whether reporting abuse when blocking contacts is supported.
  */
 bool ContactManager::canReportAbuse() const
 {
@@ -776,11 +776,14 @@ bool ContactManager::canReportAbuse() const
  * This method requires Connection::FeatureRoster to be ready.
  *
  * \param contacts Contacts who should be added to, or removed from, the list
- *                 of blocked contacts
- * \param value If true, add the contacts to the list of blocked contacts;
- *              if false, remove them from the list
- * \return A pending operation which will return when an attempt has been made
- *         to take the requested action
+ *                 of blocked contacts.
+ * \param value If \c true, add the contacts to the list of blocked contacts;
+ *              otherwise remove them from the list.
+ * \param reportAbuse In protocols that support it (canReportAbuse() is \c
+ *                    true), also report abusive behaviour to server.
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
+ * \sa canBlockContacts(), canReportAbuse()
  */
 PendingOperation *ContactManager::blockContacts(
         const QList<ContactPtr> &contacts, bool value, bool reportAbuse)
@@ -799,14 +802,7 @@ PendingOperation *ContactManager::blockContacts(
 }
 
 /**
- * This is an overloaded method
- *
- * This method requires Connection::FeatureRoster to be ready.
- *
- * \param contacts Contacts who should be added to, or removed from, the list
- *                 of blocked contacts
- * \param value If true, add the contacts to the list of blocked contacts;
- *              if false, remove them from the list
+ * Same as \c blockContacts(contacts, value, false)
  */
 PendingOperation *ContactManager::blockContacts(
         const QList<ContactPtr> &contacts, bool value)

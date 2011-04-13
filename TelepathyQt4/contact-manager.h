@@ -101,11 +101,11 @@ public:
             const QString &message = QString());
 
     bool canBlockContacts() const;
-    PendingOperation *blockContacts(
-            const QList<ContactPtr> &contacts, bool value = true);
+    bool canReportAbuse() const;
     PendingOperation *blockContacts(
             const QList<ContactPtr> &contacts, bool value, bool reportAbuse);
-    bool canReportAbuse() const;
+    PendingOperation *blockContacts(
+            const QList<ContactPtr> &contacts, bool value = true);
 
     PendingContacts *contactsForHandles(const UIntList &handles,
             const Features &features = Features());
