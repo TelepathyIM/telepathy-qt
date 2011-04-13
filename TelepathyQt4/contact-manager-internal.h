@@ -92,15 +92,19 @@ public:
 
 private Q_SLOTS:
     void gotContactBlockingProperties(Tp::PendingOperation *op);
+    void gotContactBlockingBlockedContacts(QDBusPendingCallWatcher *watcher);
+    void onContactBlockingBlockedContactsChanged(
+            const Tp::HandleIdentifierMap &added,
+            const Tp::HandleIdentifierMap &removed);
+
     void gotContactListProperties(Tp::PendingOperation *op);
     void gotContactListContacts(QDBusPendingCallWatcher *watcher);
-    void gotRequestedBlockedContacts(QDBusPendingCallWatcher *watcher);
+    void setStateSuccess();
     void onContactListStateChanged(uint state);
     void onContactListContactsChangedWithId(const Tp::ContactSubscriptionMap &changes,
             const Tp::HandleIdentifierMap &ids, const Tp::HandleIdentifierMap &removals);
     void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
             const Tp::UIntList &removals);
-    void setStateSuccess();
 
     void onContactListNewContactsConstructed(Tp::PendingOperation *op);
     void onContactListGroupsChanged(const Tp::UIntList &contacts,
@@ -156,7 +160,6 @@ private Q_SLOTS:
         const Tp::Channel::GroupMemberChangeDetails &details);
     void onContactListGroupRemoved(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage);
-    void onBlockedContactsChanged(Tp::UIntList added, Tp::UIntList removed);
 
 private:
     struct ChannelInfo;
@@ -166,9 +169,10 @@ private:
     class ModifyFinishOp;
     class RemoveGroupOp;
 
+    void introspectContactBlocking();
+    void introspectContactBlockingBlockedContacts();
     void introspectContactList();
     void introspectContactListContacts();
-    void introspectContactBlocking();
     void processContactListChanges();
     void processContactListUpdates();
     void processContactListGroupsUpdates();
@@ -186,7 +190,6 @@ private:
     void checkContactListGroupsReady();
     void setContactListGroupChannelsReady();
     QString addContactListGroupChannel(const ChannelPtr &contactListGroupChannel);
-    void updateBlockedContacts();
 
     ContactManager *contactManager;
 
@@ -200,8 +203,9 @@ private:
     PendingOperation *introspectGroupsPendingOp;
     uint pendingContactListState;
     uint contactListState;
-    bool canChangeContactList;
     bool canReportAbusive;
+    bool gotContactBlockingInitialBlockedContacts;
+    bool canChangeContactList;
     bool contactListRequestUsesMessage;
     bool gotContactListInitialContacts;
     bool gotContactListContactsChangedWithId;
