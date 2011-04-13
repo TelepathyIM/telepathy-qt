@@ -151,8 +151,8 @@ public:
      * Filter on being blocked or not
      */
     bool isBlocked() const;
-    PendingOperation *block(bool value = true);
     PendingOperation *block(bool value, bool reportAbuse);
+    PendingOperation *block(bool value = true);
 
     /*
      * Filter on the groups they're in - to show a specific group only

@@ -523,24 +523,30 @@ bool Contact::isBlocked() const
 }
 
 /**
- * This is an overloaded method
- */
-PendingOperation *Contact::block(bool value)
-{
-    return block(value, false);
-}
-
-/**
- * Block or unblock a contact
+ * Block or unblock this contact. Blocked contacts cannot send
+ * messages to the user; depending on the protocol, blocking a contact may
+ * have other effects.
  *
- * \param value true if you want to block, false if you want to unblock the contact
- * \param reportAbuse in protocols that support it, also report abusive behaviour to server
- * \return PendingOperation which will return when it succeeds or an error is thrown
+ * \param value If \c true, add this contact to the list of blocked contacts;
+ *              otherwise remove it from the list.
+ * \param reportAbuse In protocols that support it (
+ *                    ContactManager::canReportAbuse() is \c true), also report
+ *                    abusive behaviour to server.
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
  */
 PendingOperation *Contact::block(bool value, bool reportAbuse)
 {
     ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
     return manager()->blockContacts(QList<ContactPtr>() << self, value, reportAbuse);
+}
+
+/**
+ * Same as \c block(value, false)
+ */
+PendingOperation *Contact::block(bool value)
+{
+    return block(value, false);
 }
 
 /**
