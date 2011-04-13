@@ -133,6 +133,8 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     ContactManagerPtr contactManager;
 
     // FeatureSelfContact
+    bool introspectingSelfContact;
+    bool reintrospectSelfContactRequired;
     ContactPtr selfContact;
     QStringList contactAttributeInterfaces;
 
@@ -209,6 +211,8 @@ Connection::Private::Private(Connection *parent,
       selfHandle(0),
       immortalHandles(false),
       contactManager(ContactManagerPtr(new ContactManager(parent))),
+      introspectingSelfContact(false),
+      reintrospectSelfContactRequired(false),
       handleContext(0)
 {
     Q_ASSERT(properties != 0);
@@ -466,6 +470,14 @@ void Connection::Private::introspectContactAttributeInterfaces()
 void Connection::Private::introspectSelfContact(Connection::Private *self)
 {
     debug() << "Building self contact";
+    if (self->introspectingSelfContact) {
+        self->reintrospectSelfContactRequired = true;
+        return;
+    }
+
+    self->introspectingSelfContact = true;
+    self->reintrospectSelfContactRequired = false;
+
     PendingContacts *contacts = self->contactManager->contactsForHandles(
             UIntList() << self->selfHandle);
     self->parent->connect(contacts,
@@ -1630,8 +1642,7 @@ void Connection::gotSelfContact(PendingOperation *op)
         if (mPriv->selfContact != contact) {
             mPriv->selfContact = contact;
 
-            // first time
-            if (!mPriv->readinessHelper->actualFeatures().contains(FeatureSelfContact)) {
+            if (!isReady(FeatureSelfContact)) {
                 mPriv->readinessHelper->setIntrospectCompleted(FeatureSelfContact, true);
             }
 
@@ -1643,10 +1654,21 @@ void Connection::gotSelfContact(PendingOperation *op)
 
         // check if the feature is already there, and for some reason introspectSelfContact
         // failed when called the second time
-        if (!mPriv->readinessHelper->missingFeatures().contains(FeatureSelfContact)) {
+        if (!isReady(FeatureSelfContact)) {
             mPriv->readinessHelper->setIntrospectCompleted(FeatureSelfContact, false,
                     op->errorName(), op->errorMessage());
         }
+
+        if (mPriv->selfContact) {
+            mPriv->selfContact.reset();
+            emit selfContactChanged();
+        }
+    }
+
+    mPriv->introspectingSelfContact = false;
+
+    if (mPriv->reintrospectSelfContactRequired) {
+        mPriv->introspectSelfContact(mPriv);
     }
 }
 
@@ -2298,10 +2320,16 @@ void Connection::handleRequestLanded(HandleType handleType)
 
 void Connection::onSelfHandleChanged(uint handle)
 {
+    if (mPriv->selfHandle == handle) {
+        return;
+    }
+
+    debug() << "Connection self handle changed to" << handle;
     mPriv->selfHandle = handle;
     emit selfHandleChanged(handle);
 
-    if (mPriv->readinessHelper->actualFeatures().contains(FeatureSelfContact)) {
+    if (mPriv->readinessHelper->requestedFeatures().contains(FeatureSelfContact)) {
+        debug() << "Re-building self contact for handle" << handle;
         Private::introspectSelfContact(mPriv);
     }
 }
