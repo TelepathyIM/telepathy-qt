@@ -33,6 +33,7 @@
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingHandles>
+#include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/PendingVariantMap>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReferencedHandles>
@@ -680,23 +681,20 @@ PendingOperation *ContactManager::Roster::blockContacts(
     }
 }
 
-void ContactManager::Roster::gotContactBlockingProperties(PendingOperation *op)
+void ContactManager::Roster::gotContactBlockingCapabilities(PendingOperation *op)
 {
     if (op->isError()) {
-        warning() << "Getting ContactBlocking properties failed with" <<
+        warning() << "Getting ContactBlockingCapabilities property failed with" <<
             op->errorName() << ":" << op->errorMessage();
         introspectContactList();
         return;
     }
 
-    debug() << "Got ContactBlocking properties";
+    debug() << "Got ContactBlockingCapabilities property";
 
-    PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+    PendingVariant *pv = qobject_cast<PendingVariant*>(op);
 
-    QVariantMap props = pvm->result();
-
-    uint contactBlockingCaps =  qdbus_cast<uint>(
-            props[QLatin1String("ContactBlockingCapabilities")]);
+    uint contactBlockingCaps = pv->result().toUInt();
     canReportAbusive =
         contactBlockingCaps & ContactBlockingCapabilityCanReportAbusive;
 
@@ -1592,17 +1590,17 @@ void ContactManager::Roster::onContactListGroupRemoved(Tp::DBusProxy *proxy,
 
 void ContactManager::Roster::introspectContactBlocking()
 {
-    debug() << "Requesting ContactBlocking properties";
+    debug() << "Requesting ContactBlockingCapabilities property";
 
     ConnectionPtr conn(contactManager->connection());
 
     Client::ConnectionInterfaceContactBlockingInterface *iface =
         conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
 
-    PendingVariantMap *pvm = iface->requestAllProperties();
-    connect(pvm,
+    PendingVariant *pv = iface->requestPropertyContactBlockingCapabilities();
+    connect(pv,
             SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(gotContactBlockingProperties(Tp::PendingOperation*)));
+            SLOT(gotContactBlockingCapabilities(Tp::PendingOperation*)));
 }
 
 void ContactManager::Roster::introspectContactBlockingBlockedContacts()

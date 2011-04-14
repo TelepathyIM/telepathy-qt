@@ -91,7 +91,7 @@ public:
     PendingOperation *blockContacts(const QList<ContactPtr> &contacts, bool value, bool reportAbuse);
 
 private Q_SLOTS:
-    void gotContactBlockingProperties(Tp::PendingOperation *op);
+    void gotContactBlockingCapabilities(Tp::PendingOperation *op);
     void gotContactBlockingBlockedContacts(QDBusPendingCallWatcher *watcher);
     void onContactBlockingBlockedContactsChanged(
             const Tp::HandleIdentifierMap &added,
