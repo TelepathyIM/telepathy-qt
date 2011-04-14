@@ -36,8 +36,6 @@ G_DEFINE_TYPE_WITH_CODE (TpTestsContactsConnection,
       init_aliasing);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_AVATARS,
       init_avatars);
-    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_CONTACTS,
-      tp_contacts_mixin_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_PRESENCE,
       tp_presence_mixin_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
@@ -49,6 +47,12 @@ G_DEFINE_TYPE_WITH_CODE (TpTestsContactsConnection,
       init_contact_caps)
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_CONTACT_INFO,
       init_contact_info)
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_CONTACTS,
+      tp_contacts_mixin_iface_init);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_CONTACT_LIST,
+      tp_base_contact_list_mixin_list_iface_init);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_CONTACT_GROUPS,
+      tp_base_contact_list_mixin_groups_iface_init);
     );
 
 /* type definition stuff */
@@ -89,6 +93,8 @@ struct _TpTestsContactsConnectionPrivate
   /* TpHandle => GPtrArray * */
   GHashTable *contact_info;
   GPtrArray *default_contact_info;
+
+  TestContactListManager *list_manager;
 };
 
 typedef struct
@@ -347,6 +353,7 @@ constructed (GObject *object)
   tp_contacts_mixin_init (object,
       G_STRUCT_OFFSET (TpTestsContactsConnection, contacts_mixin));
   tp_base_connection_register_with_contacts_mixin (base);
+  tp_base_contact_list_mixin_register_with_contacts_mixin (base);
   tp_contacts_mixin_add_contact_attributes_iface (object,
       TP_IFACE_CONNECTION_INTERFACE_ALIASING,
       aliasing_fill_contact_attributes);
@@ -458,16 +465,39 @@ my_set_own_status (GObject *object,
   return TRUE;
 }
 
+static guint
+my_get_maximum_status_message_length_cb (GObject *obj)
+{
+  return 512;
+}
+
+static GPtrArray *
+create_channel_managers (TpBaseConnection *conn)
+{
+  TpTestsContactsConnection *self = TP_TESTS_CONTACTS_CONNECTION (conn);
+  GPtrArray *ret = g_ptr_array_sized_new (1);
+
+  self->priv->list_manager = g_object_new (TEST_TYPE_CONTACT_LIST_MANAGER,
+      "connection", conn, NULL);
+
+  g_ptr_array_add (ret, self->priv->list_manager);
+
+  return ret;
+}
+
 static void
 tp_tests_contacts_connection_class_init (TpTestsContactsConnectionClass *klass)
 {
   TpBaseConnectionClass *base_class =
       (TpBaseConnectionClass *) klass;
   GObjectClass *object_class = (GObjectClass *) klass;
+  TpPresenceMixinClass *mixin_class;
   static const gchar *interfaces_always_present[] = {
       TP_IFACE_CONNECTION_INTERFACE_ALIASING,
       TP_IFACE_CONNECTION_INTERFACE_AVATARS,
       TP_IFACE_CONNECTION_INTERFACE_CONTACTS,
+      TP_IFACE_CONNECTION_INTERFACE_CONTACT_LIST,
+      TP_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS,
       TP_IFACE_CONNECTION_INTERFACE_PRESENCE,
       TP_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
       TP_IFACE_CONNECTION_INTERFACE_LOCATION,
@@ -494,6 +524,7 @@ tp_tests_contacts_connection_class_init (TpTestsContactsConnectionClass *klass)
   g_type_class_add_private (klass, sizeof (TpTestsContactsConnectionPrivate));
 
   base_class->interfaces_always_present = interfaces_always_present;
+  base_class->create_channel_managers = create_channel_managers;
 
   tp_contacts_mixin_class_init (object_class,
       G_STRUCT_OFFSET (TpTestsContactsConnectionClass, contacts_mixin));
@@ -502,12 +533,24 @@ tp_tests_contacts_connection_class_init (TpTestsContactsConnectionClass *klass)
       G_STRUCT_OFFSET (TpTestsContactsConnectionClass, presence_mixin),
       my_status_available, my_get_contact_statuses,
       my_set_own_status, my_statuses);
+  mixin_class = TP_PRESENCE_MIXIN_CLASS(klass);
+  mixin_class->get_maximum_status_message_length =
+      my_get_maximum_status_message_length_cb;
 
   tp_presence_mixin_simple_presence_init_dbus_properties (object_class);
 
   klass->properties_class.interfaces = prop_interfaces;
   tp_dbus_properties_mixin_class_init (object_class,
       G_STRUCT_OFFSET (TpTestsContactsConnectionClass, properties_class));
+
+  tp_base_contact_list_mixin_class_init (base_class);
+}
+
+TestContactListManager *
+tp_tests_contacts_connection_get_contact_list_manager (
+    TpTestsContactsConnection *self)
+{
+  return self->priv->list_manager;
 }
 
 void
@@ -1084,7 +1127,10 @@ lookup_contact_info (TpTestsContactsConnection *self,
           g_ptr_array_ref (ret));
     }
 
-  return ret;
+  if (ret == NULL)
+    return g_ptr_array_new ();
+
+  return g_ptr_array_ref (ret);
 }
 
 static void
@@ -1115,6 +1161,7 @@ my_refresh_contact_info (TpSvcConnectionInterfaceContactInfo *obj,
 
       tp_svc_connection_interface_contact_info_emit_contact_info_changed (self,
           handle, arr);
+      g_ptr_array_unref (arr);
     }
 
   tp_svc_connection_interface_contact_info_return_from_refresh_contact_info (
@@ -1146,6 +1193,8 @@ my_request_contact_info (TpSvcConnectionInterfaceContactInfo *obj,
 
   tp_svc_connection_interface_contact_info_return_from_request_contact_info (
       context, ret);
+
+  g_ptr_array_unref (ret);
 }
 
 static void
@@ -1193,6 +1242,30 @@ init_contact_info (gpointer g_iface,
 G_DEFINE_TYPE (TpTestsLegacyContactsConnection,
     tp_tests_legacy_contacts_connection, TP_TESTS_TYPE_CONTACTS_CONNECTION);
 
+enum
+{
+    LEGACY_PROP_HAS_IMMORTAL_HANDLES = 1
+};
+
+static void
+legacy_contacts_connection_get_property (GObject *object,
+    guint property_id,
+    GValue *value,
+    GParamSpec *pspec)
+{
+  switch (property_id)
+    {
+    case LEGACY_PROP_HAS_IMMORTAL_HANDLES:
+      /* Pretend we don't. */
+      g_value_set_boolean (value, FALSE);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+    }
+}
+
 static void
 tp_tests_legacy_contacts_connection_init (TpTestsLegacyContactsConnection *self)
 {
@@ -1214,8 +1287,14 @@ tp_tests_legacy_contacts_connection_class_init (
       NULL };
   TpBaseConnectionClass *base_class =
       (TpBaseConnectionClass *) klass;
+  GObjectClass *object_class = (GObjectClass *) klass;
+
+  object_class->get_property = legacy_contacts_connection_get_property;
 
   base_class->interfaces_always_present = interfaces_always_present;
+
+  g_object_class_override_property (object_class,
+      LEGACY_PROP_HAS_IMMORTAL_HANDLES, "has-immortal-handles");
 }
 
 /* =============== No Requests and no ContactCapabilities ================= */
