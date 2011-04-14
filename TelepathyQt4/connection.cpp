@@ -140,6 +140,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 
     // FeatureSimplePresence
     SimpleStatusSpecMap simplePresenceStatuses;
+    uint maxPresenceStatusMessageLength;
 
     // FeatureAccountBalance
     CurrencyAmount accountBalance;
@@ -213,6 +214,7 @@ Connection::Private::Private(Connection *parent,
       contactManager(ContactManagerPtr(new ContactManager(parent))),
       introspectingSelfContact(false),
       reintrospectSelfContactRequired(false),
+      maxPresenceStatusMessageLength(0),
       handleContext(0)
 {
     Q_ASSERT(properties != 0);
@@ -490,9 +492,8 @@ void Connection::Private::introspectSimplePresence(Connection::Private *self)
     debug() << "Calling Properties::Get("
         "Connection.I.SimplePresence.Statuses)";
     QDBusPendingCall call =
-        self->properties->Get(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),
-                QLatin1String("Statuses"));
+        self->properties->GetAll(
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, self->parent);
     self->parent->connect(watcher,
@@ -1273,6 +1274,38 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 }
 
 /**
+ * Return the maximum length in characters for any individual presence status
+ * message, or 0 if there is no limit.
+ *
+ * The value may have changed arbitrarily during the time the
+ * Connection spends in status ConnectionStatusConnecting,
+ * again staying fixed for the entire time in ConnectionStatusConnected.
+ *
+ * This method requires Connection::FeatureSimplePresence to be enabled.
+ *
+ * \return The maximum length in characters for any individual presence status
+ *         message, or 0 if there is no limit.
+ */
+uint ConnectionLowlevel::maximumPresenceStatusMessageLength() const
+{
+    if (!isValid()) {
+        warning() << "ConnectionLowlevel::maximumPresenceStatusMessageLength() "
+            "called for a connection which is already destroyed";
+        return 0;
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (!conn->isReady(Connection::FeatureSimplePresence)) {
+        warning() << "Trying to retrieve simple presence from connection, but "
+                     "simple presence is not supported or was not requested. "
+                     "Use becomeReady(FeatureSimplePresence)";
+    }
+
+    return conn->mPriv->maxPresenceStatusMessageLength;
+}
+
+/**
  * Set the self presence status.
  *
  * This should generally only be called by an Account Manager. In typical usage,
@@ -1614,11 +1647,20 @@ void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
 
 void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<QDBusVariant> reply = *watcher;
+    QDBusPendingReply<QVariantMap> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
-        debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
+        QVariantMap props = reply.value();
+
+        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(
+                props[QLatin1String("Statuses")]);
+        mPriv->maxPresenceStatusMessageLength = qdbus_cast<uint>(
+                props[QLatin1String("MaximumStatusMessageLength")]);
+
+        debug() << "Got" << mPriv->simplePresenceStatuses.size() <<
+            "simple presence statuses - max status message length is" <<
+            mPriv->maxPresenceStatusMessageLength;
+
         mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, true);
     }
     else {
