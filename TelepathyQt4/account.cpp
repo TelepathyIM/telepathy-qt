@@ -1707,6 +1707,34 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
 }
 
 /**
+ * Return the maximum length in characters for any individual presence status
+ * message, or 0 if there is no limit.
+ *
+ * If the status message being set is bigger than the maximum length allowed,
+ * the message will be truncated and currentPresenceChanged will be emitted (if
+ * setting the presence worked) with the truncated message.
+ *
+ * Full functionality requires Connection with Connection::FeatureSimplePresence
+ * enabled. If the connection is online and Connection::FeatureSimplePresence is
+ * enabled, it will return the connection maximum status message length,
+ * otherwise it will return 0.
+ *
+ * \return The maximum length in characters for any individual presence status
+ *         message, or 0 if there is no limit.
+ */
+uint Account::maximumPresenceStatusMessageLength() const
+{
+    // if the connection is online and ready use it
+    if (mPriv->connection &&
+        mPriv->connection->status() == ConnectionStatusConnected &&
+        mPriv->connection->actualFeatures().contains(Connection::FeatureSimplePresence)) {
+        return mPriv->connection->lowlevel()->maximumPresenceStatusMessageLength();
+    }
+
+    return 0;
+}
+
+/**
  * Return the presence status that this account will have set on it by the
  * account manager if it brings it online automatically.
  *
