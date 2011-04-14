@@ -722,14 +722,18 @@ void ContactManager::Roster::gotContactBlockingBlockedContacts(
 
     ConnectionPtr conn(contactManager->connection());
     HandleIdentifierMap contactsIds = reply.value();
+    HandleIdentifierMap::const_iterator begin = contactsIds.constBegin();
+    HandleIdentifierMap::const_iterator end = contactsIds.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+        QString id = i.value();
 
-    Q_ASSERT(!cachedBlockedContacts.isEmpty());
+        ContactPtr contact = contactManager->ensureContact(bareHandle,
+                id, conn->contactFactory()->features());
+        contact->setBlocked(true);
+        blockedContacts.insert(contact);
+    }
 
-    /*
-    // FIXME build contacts async, update contacts blocked state and
-    //       cachedBlockedContacts. Call introspectContactList when
-    //       finished
-    */
     introspectContactList();
 }
 
@@ -741,13 +745,15 @@ void ContactManager::Roster::onContactBlockingBlockedContactsChanged(
         return;
     }
 
-    /**
-    // FIXME inject ids, build contacts async, update contacts blocked state and
-    //       cachedBlockedContacts
+    ConnectionPtr conn(contactManager->connection());
+    conn->lowlevel()->injectContactIds(added);
+    conn->lowlevel()->injectContactIds(removed);
 
-    // inject ids
-    // conn->lowlevel()->injectContactIds(added+removed);
-    */
+    contactListBlockedContactsChangedQueue.enqueue(
+            BlockedContactsChangedInfo(added, removed));
+    contactListChangesQueue.enqueue(
+            &ContactManager::Roster::processContactListBlockedContactsChanged);
+    processContactListChanges();
 }
 
 void ContactManager::Roster::gotContactListProperties(PendingOperation *op)
@@ -932,6 +938,51 @@ void ContactManager::Roster::onContactListContactsChanged(const Tp::ContactSubsc
 
     contactListUpdatesQueue.enqueue(UpdateInfo(changes, HandleIdentifierMap(), removalsMap));
     contactListChangesQueue.enqueue(&ContactManager::Roster::processContactListUpdates);
+    processContactListChanges();
+}
+
+void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        contactListBlockedContactsChangedQueue.dequeue();
+        processingContactListChanges = false;
+        processContactListChanges();
+        return;
+    }
+
+    BlockedContactsChangedInfo info = contactListBlockedContactsChangedQueue.dequeue();
+
+    HandleIdentifierMap::const_iterator begin = info.added.constBegin();
+    HandleIdentifierMap::const_iterator end = info.added.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+
+        ContactPtr contact = contactManager->lookupContactByHandle(bareHandle);
+        if (!contact) {
+            warning() << "Unable to construct contact for handle" << bareHandle;
+            continue;
+        }
+
+        blockedContacts.insert(contact);
+        contact->setBlocked(true);
+    }
+
+    begin = info.removed.constBegin();
+    end = info.removed.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+
+        ContactPtr contact = contactManager->lookupContactByHandle(bareHandle);
+        if (!contact) {
+            warning() << "Unable to construct contact for handle" << bareHandle;
+            continue;
+        }
+
+        blockedContacts.remove(contact);
+        contact->setBlocked(false);
+    }
+
+    processingContactListChanges = false;
     processContactListChanges();
 }
 
@@ -1636,6 +1687,35 @@ void ContactManager::Roster::processContactListChanges()
     (this->*(contactListChangesQueue.dequeue()))();
 }
 
+void ContactManager::Roster::processContactListBlockedContactsChanged()
+{
+    BlockedContactsChangedInfo info = contactListBlockedContactsChangedQueue.head();
+
+    UIntList contacts;
+    HandleIdentifierMap::const_iterator begin = info.added.constBegin();
+    HandleIdentifierMap::const_iterator end = info.added.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+        contacts << bareHandle;
+    }
+
+    begin = info.removed.constBegin();
+    end = info.removed.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+        contacts << bareHandle;
+    }
+
+    Features features;
+    if (contactManager->connection()->isReady(Connection::FeatureRosterGroups)) {
+        features << Contact::FeatureRosterGroups;
+    }
+    PendingContacts *pc = contactManager->contactsForHandles(contacts, features);
+    connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContactListBlockedContactsConstructed(Tp::PendingOperation*)));
+}
+
 void ContactManager::Roster::processContactListUpdates()
 {
     UpdateInfo info = contactListUpdatesQueue.head();
@@ -1844,12 +1924,9 @@ void ContactManager::Roster::setContactListChannelsReady()
 
 void ContactManager::Roster::updateContactsBlockState()
 {
+    Q_ASSERT(!hasContactBlockingInterface);
+
     if (!denyChannel) {
-        if(hasContactBlockingInterface) {
-            foreach (const ContactPtr &contact, cachedBlockedContacts) {
-                contact->setBlocked(true);
-            }
-        }
         return;
     }
 

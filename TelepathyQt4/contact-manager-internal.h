@@ -106,6 +106,7 @@ private Q_SLOTS:
     void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
             const Tp::UIntList &removals);
 
+    void onContactListBlockedContactsConstructed(Tp::PendingOperation *op);
     void onContactListNewContactsConstructed(Tp::PendingOperation *op);
     void onContactListGroupsChanged(const Tp::UIntList &contacts,
             const QStringList &added, const QStringList &removed);
@@ -163,6 +164,7 @@ private Q_SLOTS:
 
 private:
     struct ChannelInfo;
+    struct BlockedContactsChangedInfo;
     struct UpdateInfo;
     struct GroupsUpdateInfo;
     struct GroupRenamedInfo;
@@ -174,6 +176,7 @@ private:
     void introspectContactList();
     void introspectContactListContacts();
     void processContactListChanges();
+    void processContactListBlockedContactsChanged();
     void processContactListUpdates();
     void processContactListGroupsUpdates();
     void processContactListGroupsCreated();
@@ -194,7 +197,6 @@ private:
     ContactManager *contactManager;
 
     Contacts cachedAllKnownContacts;
-    Contacts cachedBlockedContacts;
 
     bool usingFallbackContactList;
     bool hasContactBlockingInterface;
@@ -213,6 +215,7 @@ private:
     QSet<QString> cachedAllKnownGroups;
     bool contactListGroupPropertiesReceived;
     QQueue<void (ContactManager::Roster::*)()> contactListChangesQueue;
+    QQueue<BlockedContactsChangedInfo> contactListBlockedContactsChangedQueue;
     QQueue<UpdateInfo> contactListUpdatesQueue;
     QQueue<GroupsUpdateInfo> contactListGroupsUpdatesQueue;
     QQueue<QStringList> contactListGroupsCreatedQueue;
@@ -242,7 +245,7 @@ private:
     bool groupsSetSuccess;
 
     // Blocked contacts using the new ContactBlocking API
-    QList<ContactPtr> blockedContacts;
+    Contacts blockedContacts;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
@@ -271,6 +274,19 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
     Type type;
     ReferencedHandles handle;
     ChannelPtr channel;
+};
+
+struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInfo
+{
+    BlockedContactsChangedInfo(const HandleIdentifierMap &added,
+            const HandleIdentifierMap &removed)
+        : added(added),
+          removed(removed)
+    {
+    }
+
+    HandleIdentifierMap added;
+    HandleIdentifierMap removed;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::UpdateInfo
