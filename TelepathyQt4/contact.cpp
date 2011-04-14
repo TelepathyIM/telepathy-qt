@@ -529,24 +529,58 @@ bool Contact::isBlocked() const
  *
  * \param value If \c true, add this contact to the list of blocked contacts;
  *              otherwise remove it from the list.
- * \param reportAbuse In protocols that support it (
- *                    ContactManager::canReportAbuse() is \c true), also report
- *                    abusive behaviour to server.
  * \return A PendingOperation which will return when an attempt has been made
  *         to take the requested action.
  */
-PendingOperation *Contact::block(bool value, bool reportAbuse)
+PendingOperation *Contact::block(bool value)
 {
     ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
-    return manager()->blockContacts(QList<ContactPtr>() << self, value, reportAbuse);
+    return value ? manager()->blockContacts(QList<ContactPtr>() << self)
+                 : manager()->unblockContacts(QList<ContactPtr>() << self);
 }
 
 /**
- * Same as \c block(value, false)
+ * Block this contact. Blocked contacts cannot send messages to the user;
+ * depending on the protocol, blocking a contact may have other effects.
+ *
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
+ * \sa unblock()
  */
-PendingOperation *Contact::block(bool value)
+PendingOperation *Contact::block()
 {
-    return block(value, false);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->blockContacts(QList<ContactPtr>() << self);
+}
+
+/**
+ * Block this contact and additionally report abusive behaviour
+ * to the server.
+ *
+ * If reporting abusive behaviour is not supported by the protocol,
+ * this method has the same effect as block().
+ *
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
+ * \sa ContactManager::canReportAbuse(), block()
+ */
+PendingOperation *Contact::blockAndReportAbuse()
+{
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->blockContactsAndReportAbuse(QList<ContactPtr>() << self);
+}
+
+/**
+ * Unblock this contact.
+ *
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
+ * \sa block()
+ */
+PendingOperation *Contact::unblock()
+{
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->unblockContacts(QList<ContactPtr>() << self);
 }
 
 /**

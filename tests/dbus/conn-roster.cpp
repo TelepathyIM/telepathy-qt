@@ -398,7 +398,7 @@ void TestConnRoster::testRoster()
             contactsList.append(contact);
         }
 
-        QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList, true),
+        QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
@@ -414,7 +414,7 @@ void TestConnRoster::testRoster()
             contactsList.append(contact);
         }
 
-        QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList, false),
+        QVERIFY(connect(mConn->contactManager()->unblockContacts(contactsList),
                         SIGNAL(finished(Tp::PendingOperation*)),
                         SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
@@ -431,7 +431,7 @@ void TestConnRoster::testRoster()
                 contactsList.append(contact);
             }
 
-            QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList, true, true),
+            QVERIFY(connect(mConn->contactManager()->blockContactsAndReportAbuse(contactsList),
                         SIGNAL(finished(Tp::PendingOperation*)),
                         SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
                                 //);
@@ -448,7 +448,7 @@ void TestConnRoster::testRoster()
                 contactsList.append(contact);
             }
 
-            QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList, false, false),
+            QVERIFY(connect(mConn->contactManager()->unblockContacts(contactsList),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
             QCOMPARE(mLoop->exec(), 0);

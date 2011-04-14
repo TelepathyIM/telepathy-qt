@@ -647,6 +647,16 @@ bool ContactManager::Roster::canReportAbuse() const
 PendingOperation *ContactManager::Roster::blockContacts(
         const QList<ContactPtr> &contacts, bool value, bool reportAbuse)
 {
+    if (!contactManager->connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection is invalid"),
+                contactManager->connection());
+    } else if (!contactManager->connection()->isReady(Connection::FeatureRoster)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRoster is not ready"),
+                contactManager->connection());
+    }
+
     if (!usingFallbackContactList && hasContactBlockingInterface) {
         ConnectionPtr conn(contactManager->connection());
         Client::ConnectionInterfaceContactBlockingInterface *iface =

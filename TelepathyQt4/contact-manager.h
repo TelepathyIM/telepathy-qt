@@ -102,10 +102,11 @@ public:
 
     bool canBlockContacts() const;
     bool canReportAbuse() const;
-    PendingOperation *blockContacts(
-            const QList<ContactPtr> &contacts, bool value, bool reportAbuse);
-    PendingOperation *blockContacts(
-            const QList<ContactPtr> &contacts, bool value = true);
+    TELEPATHY_QT4_DEPRECATED PendingOperation *blockContacts(
+            const QList<ContactPtr> &contacts, bool value);
+    PendingOperation *blockContacts(const QList<ContactPtr> &contacts);
+    PendingOperation *blockContactsAndReportAbuse(const QList<ContactPtr> &contacts);
+    PendingOperation *unblockContacts(const QList<ContactPtr> &contacts);
 
     PendingContacts *contactsForHandles(const UIntList &handles,
             const Features &features = Features());
