@@ -1012,7 +1012,10 @@ void ContactManager::Roster::gotContactListChannelHandle(PendingOperation *op)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
             handle[0]);
     ConnectionPtr conn(contactManager->connection());
-    connect(conn->lowlevel()->ensureChannel(request),
+    /* Request the channel passing INT_MAX as timeout (meaning no timeout), as
+     * some CMs may take too long to return from ensureChannel when still
+     * loading the contact list */
+    connect(conn->lowlevel()->ensureChannel(request, INT_MAX),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(gotContactListChannel(Tp::PendingOperation*)));
 }
