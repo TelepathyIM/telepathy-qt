@@ -1258,13 +1258,14 @@ uint Connection::selfHandle() const
 SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 {
     if (!isValid()) {
-        warning() << "ConnectionLowlevel::selfHandle() called for a connection which is already destroyed";
+        warning() << "ConnectionLowlevel::selfHandle() "
+            "called for a connection which is already destroyed";
         return SimpleStatusSpecMap();
     }
 
     ConnectionPtr conn(mPriv->conn);
 
-    if (!conn->isReady(Features() << Connection::FeatureSimplePresence)) {
+    if (!conn->isReady(Connection::FeatureSimplePresence)) {
         warning() << "Trying to retrieve simple presence from connection, but "
                      "simple presence is not supported or was not requested. "
                      "Use becomeReady(FeatureSimplePresence)";
