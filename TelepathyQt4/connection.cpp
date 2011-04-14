@@ -1711,10 +1711,19 @@ Client::ConnectionInterface *Connection::baseInterface() const
 }
 
 /**
+ * Same as \c createChannel(request, -1)
+ */
+PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
+{
+    return createChannel(request, -1);
+}
+
+/**
  * Asynchronously creates a channel satisfying the given request.
  *
- * In typical usage, only the Channel Dispatcher should call this. Ordinary applications should use
- * the Account::createChannel() family of methods (which invoke the Channel Dispatcher's services).
+ * In typical usage, only the Channel Dispatcher should call this. Ordinary
+ * applications should use the Account::createChannel() family of methods
+ * (which invoke the Channel Dispatcher's services).
  *
  * The request MUST contain the following keys:
  *   org.freedesktop.Telepathy.Channel.ChannelType
@@ -1726,20 +1735,14 @@ Client::ConnectionInterface *Connection::baseInterface() const
  * notification of the request finishing processing. See the documentation
  * for that class for more info.
  *
- * The returned PendingChannel object should be freed using
- * its QObject::deleteLater() method after it is no longer used. However,
- * all PendingChannel objects resulting from requests to a particular
- * Connection will be freed when the Connection itself is freed. Conversely,
- * this means that the PendingChannel object should not be used after the
- * Connection is destroyed.
- *
- * \sa PendingChannel
- *
  * \param request A dictionary containing the desirable properties.
+ * \param timeout The D-Bus timeout used for the method call.
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
+ * \sa PendingChannel
  */
-PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
+PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request,
+        int timeout)
 {
     if (!isValid()) {
         return new PendingChannel(ConnectionPtr(),
@@ -1770,16 +1773,24 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
     }
 
     debug() << "Creating a Channel";
-    PendingChannel *channel =
-        new PendingChannel(conn, request, true);
+    PendingChannel *channel = new PendingChannel(conn, request, true, timeout);
     return channel;
+}
+
+/**
+ * Same as \c ensureChannel(request, -1)
+ */
+PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
+{
+    return ensureChannel(request, -1);
 }
 
 /**
  * Asynchronously ensures a channel exists satisfying the given request.
  *
- * In typical usage, only the Channel Dispatcher should call this. Ordinary applications should use
- * the Account::ensureChannel() family of methods (which invoke the Channel Dispatcher's services).
+ * In typical usage, only the Channel Dispatcher should call this. Ordinary
+ * applications should use the Account::ensureChannel() family of methods
+ * (which invoke the Channel Dispatcher's services).
  *
  * The request MUST contain the following keys:
  *   org.freedesktop.Telepathy.Channel.ChannelType
@@ -1791,20 +1802,14 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
  * notification of the request finishing processing. See the documentation
  * for that class for more info.
  *
- * The returned PendingChannel object should be freed using
- * its QObject::deleteLater() method after it is no longer used. However,
- * all PendingChannel objects resulting from requests to a particular
- * Connection will be freed when the Connection itself is freed. Conversely,
- * this means that the PendingChannel object should not be used after the
- * Connection is destroyed.
- *
- * \sa PendingChannel
- *
  * \param request A dictionary containing the desirable properties.
+ * \param timeout The D-Bus timeout used for the method call.
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
+ * \sa PendingChannel
  */
-PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
+PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request,
+        int timeout)
 {
     if (!isValid()) {
         return new PendingChannel(ConnectionPtr(),
@@ -1835,8 +1840,7 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
     }
 
     debug() << "Creating a Channel";
-    PendingChannel *channel =
-        new PendingChannel(conn, request, false);
+    PendingChannel *channel = new PendingChannel(conn, request, false, timeout);
     return channel;
 }
 

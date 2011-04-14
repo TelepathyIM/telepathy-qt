@@ -139,7 +139,7 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &e
  * \param create Whether createChannel or ensureChannel should be called.
  */
 PendingChannel::PendingChannel(const ConnectionPtr &connection,
-        const QVariantMap &request, bool create)
+        const QVariantMap &request, bool create, int timeout)
     : PendingOperation(connection),
       mPriv(new Private)
 {
@@ -155,14 +155,14 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
         connection->interface<Client::ConnectionInterfaceRequestsInterface>();
     if (create) {
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                requestsInterface->CreateChannel(request), this);
+                requestsInterface->CreateChannel(request, timeout), this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(onConnectionCreateChannelFinished(QDBusPendingCallWatcher*)));
     }
     else {
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                requestsInterface->EnsureChannel(request), this);
+                requestsInterface->EnsureChannel(request, timeout), this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(onConnectionEnsureChannelFinished(QDBusPendingCallWatcher*)));

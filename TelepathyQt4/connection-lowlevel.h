@@ -58,7 +58,9 @@ public:
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 
     PendingChannel *createChannel(const QVariantMap &request);
+    PendingChannel *createChannel(const QVariantMap &request, int timeout);
     PendingChannel *ensureChannel(const QVariantMap &request);
+    PendingChannel *ensureChannel(const QVariantMap &request, int timeout);
 
     PendingHandles *requestHandles(HandleType handleType, const QStringList &names);
     PendingHandles *referenceHandles(HandleType handleType, const UIntList &handles);
