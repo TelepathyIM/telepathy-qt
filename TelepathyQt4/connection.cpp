@@ -1736,7 +1736,10 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
  * for that class for more info.
  *
  * \param request A dictionary containing the desirable properties.
- * \param timeout The D-Bus timeout used for the method call.
+ * \param timeout The D-Bus timeout in milliseconds used for the method call.
+ *                If timeout is -1, a default implementation-defined value that
+ *                is suitable for inter-process communications (generally,
+ *                25 seconds) will be used.
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
  * \sa PendingChannel
@@ -1803,7 +1806,10 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
  * for that class for more info.
  *
  * \param request A dictionary containing the desirable properties.
- * \param timeout The D-Bus timeout used for the method call.
+ * \param timeout The D-Bus timeout in milliseconds used for the method call.
+ *                If timeout is -1, a default implementation-defined value that
+ *                is suitable for inter-process communications (generally,
+ *                25 seconds) will be used.
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
  * \sa PendingChannel
