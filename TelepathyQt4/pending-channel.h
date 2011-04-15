@@ -86,7 +86,7 @@ private:
     TELEPATHY_QT4_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
             const QString &errorName, const QString &errorMessage);
     TELEPATHY_QT4_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
-            const QVariantMap &request, bool create);
+            const QVariantMap &request, bool create, int timeout = -1);
     TELEPATHY_QT4_NO_EXPORT PendingChannel(const AccountPtr &account,
             const QVariantMap &request, const QDateTime &userActionTime,
             bool create);
