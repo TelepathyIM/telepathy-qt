@@ -729,17 +729,17 @@ void ContactManager::Roster::gotContactBlockingBlockedContacts(
     gotContactBlockingInitialBlockedContacts = true;
 
     ConnectionPtr conn(contactManager->connection());
-    HandleIdentifierMap contactsIds = reply.value();
-    HandleIdentifierMap::const_iterator begin = contactsIds.constBegin();
-    HandleIdentifierMap::const_iterator end = contactsIds.constEnd();
-    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
-        uint bareHandle = i.key();
-        QString id = i.value();
+    HandleIdentifierMap contactIds = reply.value();
 
-        ContactPtr contact = contactManager->ensureContact(bareHandle,
-                id, conn->contactFactory()->features());
-        contact->setBlocked(true);
-        blockedContacts.insert(contact);
+    if (!contactIds.isEmpty()) {
+        conn->lowlevel()->injectContactIds(contactIds);
+
+        //fake change event where all the contacts are added
+        contactListBlockedContactsChangedQueue.enqueue(
+                BlockedContactsChangedInfo(contactIds, HandleIdentifierMap()));
+        contactListChangesQueue.enqueue(
+                &ContactManager::Roster::processContactListBlockedContactsChanged);
+        processContactListChanges();
     }
 
     introspectContactList();
