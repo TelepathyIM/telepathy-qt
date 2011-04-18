@@ -389,75 +389,59 @@ void TestConnRoster::testRoster()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    // test if can block contacts
-    if (mConn->contactManager()->canBlockContacts()) {
-        QList<ContactPtr> contactsList;
 
-        // block all contacts
-        Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts().toList()) {
-            contactsList.append(contact);
-        }
+    // verify that the CM supports contact blocking
+    QVERIFY(mConn->contactManager()->canBlockContacts());
 
-        QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList),
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
+    // block all contacts
+    QList<ContactPtr> contactsList = mConn->contactManager()->allKnownContacts().toList();
+    QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
 
-        // verify all contacts have been blocked
-        Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts().toList()) {
-            QCOMPARE(contact->isBlocked(), true);
-        }
+    // verify all contacts have been blocked
+    Q_FOREACH (const ContactPtr &contact, contactsList) {
+        QCOMPARE(contact->isBlocked(), true);
+    }
 
-        // unblock all contacts
-        contactsList.clear();
-        Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts().toList()) {
-            contactsList.append(contact);
-        }
-
-        QVERIFY(connect(mConn->contactManager()->unblockContacts(contactsList),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        // verify all contacts have been unblocked
-        Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts().toList()) {
-            QCOMPARE(contact->isBlocked(), false);
-        }
-
-        // test the report abuse method
-        if (mConn->contactManager()->canReportAbuse()) {
-            // block and report abuse for all contacts
-            Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts().toList()) {
-                contactsList.append(contact);
-            }
-
-            QVERIFY(connect(mConn->contactManager()->blockContactsAndReportAbuse(contactsList),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
-                                //);
-            QCOMPARE(mLoop->exec(), 0);
-
-            // verify all contacts have been blocked
-            Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts().toList()) {
-                QCOMPARE(contact->isBlocked(), true);
-            }
-
-            // unblock all contacts
-            contactsList.clear();
-            Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts().toList()) {
-                contactsList.append(contact);
-            }
-
-            QVERIFY(connect(mConn->contactManager()->unblockContacts(contactsList),
+    // unblock all contacts
+    QVERIFY(connect(mConn->contactManager()->unblockContacts(contactsList),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
-            QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLoop->exec(), 0);
 
-            // verify all contacts have been unblocked
-            Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts().toList()) {
-                QCOMPARE(contact->isBlocked(), false);
-            }
-        }
+    // verify all contacts have been unblocked
+    Q_FOREACH (const ContactPtr &contact, contactsList) {
+        QCOMPARE(contact->isBlocked(), false);
+    }
+
+
+    // block some contacts that are not already known
+    ids = QStringList() <<
+        QLatin1String("blocktest1@example.com") <<
+        QLatin1String("blocktest2@example.com");
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mConn->contactManager()->blockContacts(mContacts),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
+
+    // destroy the Contact objects to let them be re-created when the block operation finishes
+    mContacts.clear();
+    QCOMPARE(mLoop->exec(), 0);
+
+    // construct the same contacts again and verify that they are blocked
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    Q_FOREACH (const ContactPtr &contact, mContacts) {
+        QCOMPARE(contact->isBlocked(), true);
     }
 }
 
