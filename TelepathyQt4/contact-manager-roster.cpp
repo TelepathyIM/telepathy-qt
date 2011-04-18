@@ -971,6 +971,7 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
             continue;
         }
 
+        debug() << "Contact" << contact->id() << "is now blocked";
         blockedContacts.insert(contact);
         contact->setBlocked(true);
     }
@@ -986,6 +987,7 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
             continue;
         }
 
+        debug() << "Contact" << contact->id() << "is now unblocked";
         blockedContacts.remove(contact);
         contact->setBlocked(false);
     }
