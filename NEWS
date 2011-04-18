@@ -7,7 +7,8 @@ Enhancements:
  * ...
 
 Fixes:
- * ...
+ * Timeout in some CMs when introspecting contact list channels.
+ * Fixed a crash when building self contact.
 
 telepathy-qt4 0.5.15 (2011-04-12)
 =================================
