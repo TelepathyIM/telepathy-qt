@@ -279,14 +279,17 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInfo
 {
     BlockedContactsChangedInfo(const HandleIdentifierMap &added,
-            const HandleIdentifierMap &removed)
+            const HandleIdentifierMap &removed,
+            bool continueIntrospectionWhenFinished = false)
         : added(added),
-          removed(removed)
+          removed(removed),
+          continueIntrospectionWhenFinished(continueIntrospectionWhenFinished)
     {
     }
 
     HandleIdentifierMap added;
     HandleIdentifierMap removed;
+    bool continueIntrospectionWhenFinished;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::UpdateInfo

@@ -736,13 +736,13 @@ void ContactManager::Roster::gotContactBlockingBlockedContacts(
 
         //fake change event where all the contacts are added
         contactListBlockedContactsChangedQueue.enqueue(
-                BlockedContactsChangedInfo(contactIds, HandleIdentifierMap()));
+                BlockedContactsChangedInfo(contactIds, HandleIdentifierMap(), true));
         contactListChangesQueue.enqueue(
                 &ContactManager::Roster::processContactListBlockedContactsChanged);
         processContactListChanges();
+    } else {
+        introspectContactList();
     }
-
-    introspectContactList();
 }
 
 void ContactManager::Roster::onContactBlockingBlockedContactsChanged(
@@ -951,14 +951,16 @@ void ContactManager::Roster::onContactListContactsChanged(const Tp::ContactSubsc
 
 void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::PendingOperation *op)
 {
+    BlockedContactsChangedInfo info = contactListBlockedContactsChangedQueue.dequeue();
+
     if (op->isError()) {
-        contactListBlockedContactsChangedQueue.dequeue();
+        if (info.continueIntrospectionWhenFinished) {
+            introspectContactList();
+        }
         processingContactListChanges = false;
         processContactListChanges();
         return;
     }
-
-    BlockedContactsChangedInfo info = contactListBlockedContactsChangedQueue.dequeue();
 
     HandleIdentifierMap::const_iterator begin = info.added.constBegin();
     HandleIdentifierMap::const_iterator end = info.added.constEnd();
@@ -990,6 +992,10 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
         debug() << "Contact" << contact->id() << "is now unblocked";
         blockedContacts.remove(contact);
         contact->setBlocked(false);
+    }
+
+    if (info.continueIntrospectionWhenFinished) {
+        introspectContactList();
     }
 
     processingContactListChanges = false;
