@@ -23,7 +23,7 @@
 #ifndef _TelepathyQt4_simple_text_observer_h_HEADER_GUARD_
 #define _TelepathyQt4_simple_text_observer_h_HEADER_GUARD_
 
-#include <TelepathyQt4/AbstractClientObserver>
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
 #include <QObject>
@@ -58,15 +58,8 @@ Q_SIGNALS:
     void messageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onAccountConnectionChanged(const Tp::ConnectionPtr &connection);
-    TELEPATHY_QT4_NO_EXPORT void onAccountConnectionConnected();
-    TELEPATHY_QT4_NO_EXPORT void onContactConstructed(Tp::PendingOperation *op);
-
-    TELEPATHY_QT4_NO_EXPORT void onMessageSent(const Tp::Message &message,
-            Tp::MessageSendingFlags flags, const QString &sentMessageToken,
-            const Tp::TextChannelPtr &textChannel);
-    TELEPATHY_QT4_NO_EXPORT void onMessageReceived(const Tp::ReceivedMessage &message,
-            const Tp::TextChannelPtr &textChannel);
+    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
+    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel);
 
 private:
     TELEPATHY_QT4_NO_EXPORT static SimpleTextObserverPtr create(const AccountPtr &account,

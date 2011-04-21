@@ -84,6 +84,7 @@ private Q_SLOTS:
 
 private:
     friend class SimpleCallObserver;
+    friend class SimpleTextObserver;
 
     TELEPATHY_QT4_NO_EXPORT static SimpleObserverPtr create(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
