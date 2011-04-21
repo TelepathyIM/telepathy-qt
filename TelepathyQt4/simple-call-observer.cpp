@@ -237,6 +237,23 @@ SimpleCallObserver::CallType SimpleCallObserver::type() const
     return mPriv->type;
 }
 
+/**
+ * Return the list of streamed media calls currently being observed.
+ *
+ * \return The list of streamed media calls currently being observed.
+ */
+QList<StreamedMediaChannelPtr> SimpleCallObserver::streamedMediaCalls() const
+{
+    QList<StreamedMediaChannelPtr> ret;
+    foreach (const ChannelPtr &channel, mPriv->observer->channels()) {
+        StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
+        if (smChannel) {
+            ret << smChannel;
+        }
+    }
+    return ret;
+}
+
 void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels,
         const QDateTime &timestamp)
 {
@@ -258,20 +275,22 @@ void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
  * \fn void SimpleCallObserver::streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel,
  *          const QDateTime &timestamp)
  *
- * This signal is emitted whenever a call that matches this observer's criteria is started.
+ * This signal is emitted whenever a streamed media call that matches this observer's criteria is
+ * started.
  *
- * \param channel The channel representing the call that started.
- * \param timestamp The timestamp indicating when the call has started.
+ * \param channel The channel representing the streamed media call that started.
+ * \param timestamp The timestamp indicating when the streamed media call has started.
  */
 
 /**
  * \fn void SimpleCallObserver::streamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel,
  *          const QString &errorName, const QString &errorMessage, const QDateTime &timestamp)
  *
- * This signal is emitted whenever a call that matches this observer's criteria has ended.
+ * This signal is emitted whenever a streamed media call that matches this observer's criteria has
+ * ended.
  *
- * \param channel The channel representing the call that ended.
- * \param timestamp The timestamp indicating when the call has ended.
+ * \param channel The channel representing the streamed media call that ended.
+ * \param timestamp The timestamp indicating when the streamed media call has ended.
  */
 
 } // Tp

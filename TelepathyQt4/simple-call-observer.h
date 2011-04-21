@@ -78,6 +78,8 @@ public:
     CallDirection direction() const;
     CallType type() const;
 
+    QList<StreamedMediaChannelPtr> streamedMediaCalls() const;
+
 Q_SIGNALS:
     void streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel,
             const QDateTime &timestamp);
