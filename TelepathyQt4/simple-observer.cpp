@@ -1,0 +1,375 @@
+/**
+ * This file is part of TelepathyQt4
+ *
+ * @copyright Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2011 Nokia Corporation
+ * @license LGPL 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+#include <TelepathyQt4/SimpleObserver>
+#include "TelepathyQt4/simple-observer-internal.h"
+
+#include "TelepathyQt4/_gen/simple-observer.moc.hpp"
+#include "TelepathyQt4/_gen/simple-observer-internal.moc.hpp"
+
+#include "TelepathyQt4/debug-internal.h"
+
+#include <TelepathyQt4/ChannelClassSpec>
+#include <TelepathyQt4/ChannelClassSpecList>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/PendingComposite>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingSuccess>
+
+#include <QDateTime>
+
+namespace Tp
+{
+
+QHash<AccountPtr, QWeakPointer<SimpleObserver::Private::Observer> > SimpleObserver::Private::observers;
+uint SimpleObserver::Private::numObservers = 0;
+
+SimpleObserver::Private::Private(SimpleObserver *parent,
+        const AccountPtr &account,
+        const ChannelClassSpecList &channelFilter,
+        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+    : parent(parent),
+      account(account),
+      channelFilter(channelFilter),
+      extraChannelFeatures(extraChannelFeatures)
+{
+    debug() << "Registering observer for account" << account->objectPath();
+    observer = SharedPtr<Observer>(observers.value(account));
+    if (!observer) {
+        ClientRegistrarPtr cr = ClientRegistrar::create(
+                FakeAccountFactory::create(account),
+                account->connectionFactory(),
+                account->channelFactory(),
+                account->contactFactory());
+
+        observer = SharedPtr<Observer>(new Observer(cr,
+                    channelFilter, account, extraChannelFeatures));
+
+        QString observerName = QString(QLatin1String("TpQt4SO_%1_%2"))
+            .arg(account->dbusConnection().baseService()
+                .replace(QLatin1String(":"), QLatin1String("_"))
+                .replace(QLatin1String("."), QLatin1String("_")))
+            .arg(numObservers++);
+        if (!cr->registerClient(observer, observerName, false)) {
+            warning() << "Unable to register observer" << observerName;
+            observer.reset();
+            return;
+        }
+
+        debug() << "Observer for account" << account->objectPath() <<
+            "registered";
+        observers.insert(account, observer.data());
+    } else {
+        debug() << "Observer for account" << account->objectPath() <<
+            "already registered, using it";
+    }
+
+    parent->connect(observer.data(),
+            SIGNAL(newChannels(Tp::ChannelPtr,QDateTime)),
+            SIGNAL(newChannels(Tp::ChannelPtr,QDateTime)));
+    parent->connect(observer.data(),
+            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString,QDateTime)),
+            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString,QDateTime)));
+
+}
+
+SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
+        const ChannelClassSpecList &channelFilter,
+        const AccountPtr &account,
+        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+    : QObject(),
+      AbstractClientObserver(channelFilter, false),
+      mCr(cr),
+      mAccount(account),
+      mExtraChannelFeatures(extraChannelFeatures)
+{
+}
+
+SimpleObserver::Private::Observer::~Observer()
+{
+    for (QHash<ChannelPtr, ChannelWrapper*>::iterator i = mChannels.begin();
+            i != mChannels.end();) {
+        delete i.value();
+    }
+    mChannels.clear();
+
+    // no need to delete context infos here as this observer will never be deleted before all
+    // PendingComposites finish (hold reference to this), which will properly delete them
+
+    debug() << "Unregistering observer for account" << mAccount->objectPath();
+    mCr->unregisterClient(SharedPtr<Observer>(this));
+}
+
+void SimpleObserver::Private::Observer::observeChannels(
+        const MethodInvocationContextPtr<> &context,
+        const AccountPtr &account,
+        const ConnectionPtr &connection,
+        const QList<ChannelPtr> &channels,
+        const ChannelDispatchOperationPtr &dispatchOperation,
+        const QList<ChannelRequestPtr> &requestsSatisfied,
+        const ObserverInfo &observerInfo)
+{
+    if (account != mAccount) {
+        context->setFinished();
+        return;
+    }
+
+    QDateTime now = QDateTime::currentDateTime();
+    QList<PendingOperation*> readyOps;
+    QList<ChannelPtr> newChannels;
+
+    foreach (const ChannelPtr &channel, channels) {
+        if (mChannels.contains(channel)) {
+            // we are already observing this channel
+            continue;
+        }
+
+        // this shouldn't happen, but in any case
+        if (!channel->isValid()) {
+            warning() << "Channel received to observe is invalid. "
+                "Ignoring channel";
+            continue;
+        }
+
+        SimpleObserver::Private::ChannelWrapper *wrapper =
+            new SimpleObserver::Private::ChannelWrapper(channel,
+                featuresFor(ChannelClassSpec(channel->immutableProperties())));
+        mChannels.insert(channel, wrapper);
+        connect(wrapper,
+                SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString)),
+                SLOT(onChannelInvalidated(Tp::ChannelPtr,QString,QString)));
+
+        newChannels.append(channel);
+        readyOps.append(wrapper->becomeReady());
+    }
+
+    if (readyOps.isEmpty()) {
+        context->setFinished();
+        return;
+    }
+
+    PendingComposite *pc = new PendingComposite(readyOps,
+            false /* failOnFirstError */, SharedPtr<Observer>(this));
+    mObserveChannelsInfo.insert(pc, new ContextInfo(context, newChannels, now));
+    connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onChannelsReady(Tp::PendingOperation*)));
+}
+
+void SimpleObserver::Private::Observer::onChannelInvalidated(
+        const ChannelPtr &channel, const QString &errorName, const QString &errorMessage)
+{
+    QDateTime now = QDateTime::currentDateTime();
+    foreach (ContextInfo *info, mObserveChannelsInfo) {
+        if (info->channels.contains(channel)) {
+            // we are still handling the channel, wait for onChannelsReady that will properly remove
+            // it from mChannels
+            info->channelInvalidatedTimestamps[channel] = now;
+            return;
+        }
+    }
+    emit channelInvalidated(channel, errorName, errorMessage, now);
+    delete mChannels.take(channel);
+}
+
+void SimpleObserver::Private::Observer::onChannelsReady(PendingOperation *op)
+{
+    ContextInfo *info = mObserveChannelsInfo.value(op);
+
+    emit newChannels(info->channels, info->timestamp);
+
+    foreach (const ChannelPtr &channel, info->channels) {
+        if (!channel->isValid()) {
+            QDateTime timestamp;
+            if (info->channelInvalidatedTimestamps.contains(channel)) {
+                timestamp = info->timestamp;
+            } else {
+                timestamp = QDateTime::currentDateTime();
+            }
+            emit channelInvalidated(channel, channel->invalidationReason(),
+                    channel->invalidationMessage(), timestamp);
+            delete mChannels.take(channel);
+        }
+    }
+
+    mObserveChannelsInfo.remove(op);
+    info->context->setFinished();
+    delete info;
+}
+
+Features SimpleObserver::Private::Observer::featuresFor(
+        const ChannelClassSpec &channelClass) const
+{
+    Features features;
+
+    foreach (const ChannelFeatureSpec &spec, mExtraChannelFeatures) {
+        if (spec.first.isSubsetOf(channelClass)) {
+            features.unite(spec.second);
+        }
+    }
+
+    return features;
+}
+
+SimpleObserver::Private::ChannelWrapper::ChannelWrapper(
+        const ChannelPtr &channel, const Features &extraChannelFeatures)
+    : mChannel(channel),
+      mExtraChannelFeatures(extraChannelFeatures)
+{
+    connect(channel.data(),
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
+}
+
+PendingOperation *SimpleObserver::Private::ChannelWrapper::becomeReady()
+{
+    PendingOperation *op;
+
+    if (!mChannel->isReady(mExtraChannelFeatures)) {
+        // The channel factory passed to the Account used by SimpleObserver does
+        // not contain the extra features, request them
+        op = mChannel->becomeReady(mExtraChannelFeatures);
+    } else {
+        op = new PendingSuccess(mChannel);
+    }
+
+    return op;
+}
+
+void SimpleObserver::Private::ChannelWrapper::onChannelInvalidated(DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage)
+{
+    Q_UNUSED(proxy);
+    emit channelInvalidated(mChannel, errorName, errorMessage);
+}
+
+/**
+ * \class SimpleObserver
+ * \ingroup utils
+ * \headerfile TelepathyQt4/simple-observer.h <TelepathyQt4/SimpleObserver>
+ *
+ * \brief The SimpleObserver class provides an easy way to track channels
+ *        in an account and can be optionally filtered by a contact.
+ */
+
+/**
+ * Create a new SimpleObserver object.
+ *
+ * The newChannels() signal will be emitted for all new channels in \a account that match
+ * \a channelFilter for all contacts.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param account The account used to listen to events.
+ * \param extraChannelFeatures Extra channel features to be enabled. All channels emitted in
+ *                             newChannels() will have the extra features that match their
+ *                             immutable properties enabled.
+ * \return An SimpleObserverPtr object pointing to the newly created SimpleObserver object.
+ */
+SimpleObserverPtr SimpleObserver::create(
+        const AccountPtr &account,
+        const ChannelClassSpecList &channelFilter,
+        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+{
+    return create(account, channelFilter, extraChannelFeatures);
+}
+
+/**
+ * Construct a new SimpleObserver object.
+ *
+ * \param cr The ClientRegistrar used to register this observer.
+ * \param channelFilter The channel filter used by this observer.
+ * \param account The account used to listen to events.
+ * \param extraChannelFeatures Extra channel features to be enabled. All channels emitted in
+ *                             newChannels() will have the extra features that match their
+ *                             immutable properties enabled.
+ * \return An SimpleObserverPtr object pointing to the newly created SimpleObserver object.
+ */
+SimpleObserver::SimpleObserver(const AccountPtr &account,
+        const ChannelClassSpecList &channelFilter,
+        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+    : mPriv(new Private(this, account, channelFilter, extraChannelFeatures))
+{
+}
+
+/**
+ * Class destructor.
+ */
+SimpleObserver::~SimpleObserver()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the account used to listen to events.
+ *
+ * \return The account used to listen to events.
+ */
+AccountPtr SimpleObserver::account() const
+{
+    return mPriv->account;
+}
+
+/**
+ * Return a specification of the channels that this observer is interested.
+ *
+ * \return The specification of the channels that this channel observer is interested.
+ */
+ChannelClassSpecList SimpleObserver::channelFilter() const
+{
+    return mPriv->channelFilter;
+}
+
+/**
+ * Return the extra channel features to be enabled based on the channels immutable properties.
+ *
+ * \return The extra channel features to be enabled based on the channels immutable properties.
+ */
+QList<ChannelFeatureSpec> SimpleObserver::extraChannelFeatures() const
+{
+    return mPriv->extraChannelFeatures;
+}
+
+/**
+ * \fn void SimpleObserver::newChannels(const QList<Tp::ChannelPtr> &channels,
+ *          const QDateTime &timestamp)
+ *
+ * This signal is emitted whenever new channels that match this observer's criteria are created.
+ *
+ * \param channels The new channels.
+ * \param timestamp The timestamp indicating when the channels were created.
+ */
+
+/**
+ * \fn void SimpleObserver::channelInvalidated(const Tp::ChannelPtr &channel,
+ *          const QString &errorName, const QString &errorMessage, const QDateTime &timestamp)
+ *
+ * This signal is emitted whenever a channel that is being observed is invalidated.
+ *
+ * \param channel The channel that was invalidated.
+ * \param errorName A D-Bus error name (a string in a subset
+ *                  of ASCII, prefixed with a reversed domain name).
+ * \param errorMessage A debugging message associated with the error.
+ * \param timestamp The timestamp indicating when the channel was invalidated.
+ */
+
+} // Tp

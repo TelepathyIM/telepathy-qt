@@ -97,6 +97,8 @@ set(telepathy_qt4_SRCS
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
     room-list-channel.cpp
+    simple-observer.cpp
+    simple-observer-internal.h
     simple-text-observer.cpp
     simple-text-observer-internal.h
     stream-tube-channel.cpp
@@ -380,6 +382,8 @@ set(telepathy_qt4_HEADERS
     room-list-channel.h
     SharedPtr
     shared-ptr.h
+    SimpleObserver
+    simple-observer.h
     simple-pending-operations.h
     SimpleTextObserver
     simple-text-observer.h
@@ -473,6 +477,8 @@ set(telepathy_qt4_MOC_SRCS
     request-temporary-handler-internal.h
     room-list-channel.h
     simple-pending-operations.h
+    simple-observer.h
+    simple-observer-internal.h
     simple-text-observer.h
     simple-text-observer-internal.h
     stream-tube-channel.h
