@@ -83,6 +83,8 @@ private Q_SLOTS:
             const QDateTime &timestamp);
 
 private:
+    friend class SimpleCallObserver;
+
     TELEPATHY_QT4_NO_EXPORT static SimpleObserverPtr create(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
             const QString &contactIdentifier,

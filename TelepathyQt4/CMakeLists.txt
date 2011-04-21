@@ -97,6 +97,7 @@ set(telepathy_qt4_SRCS
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
     room-list-channel.cpp
+    simple-call-observer.cpp
     simple-observer.cpp
     simple-observer-internal.h
     simple-text-observer.cpp
@@ -382,6 +383,8 @@ set(telepathy_qt4_HEADERS
     room-list-channel.h
     SharedPtr
     shared-ptr.h
+    SimpleCallObserver
+    simple-call-observer.h
     SimpleObserver
     simple-observer.h
     simple-pending-operations.h
@@ -476,6 +479,7 @@ set(telepathy_qt4_MOC_SRCS
     readiness-helper.h
     request-temporary-handler-internal.h
     room-list-channel.h
+    simple-call-observer.h
     simple-pending-operations.h
     simple-observer.h
     simple-observer-internal.h
