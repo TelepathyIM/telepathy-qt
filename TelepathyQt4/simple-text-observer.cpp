@@ -206,6 +206,23 @@ QString SimpleTextObserver::contactIdentifier() const
     return mPriv->contactIdentifier;
 }
 
+/**
+ * Return the list of text chats currently being observed.
+ *
+ * \return The list of text chats currently being observed.
+ */
+QList<TextChannelPtr> SimpleTextObserver::textChats() const
+{
+    QList<TextChannelPtr> ret;
+    foreach (const ChannelPtr &channel, mPriv->observer->channels()) {
+        TextChannelPtr textChannel = TextChannelPtr::qObjectCast(channel);
+        if (textChannel) {
+            ret << textChannel;
+        }
+    }
+    return ret;
+}
+
 void SimpleTextObserver::onNewChannels(const QList<ChannelPtr> &channels)
 {
     foreach (const ChannelPtr &channel, channels) {

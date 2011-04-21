@@ -52,6 +52,8 @@ public:
     AccountPtr account() const;
     QString contactIdentifier() const;
 
+    QList<TextChannelPtr> textChats() const;
+
 Q_SIGNALS:
     void messageSent(const Tp::Message &message, Tp::MessageSendingFlags flags,
             const QString &sentMessageToken, const Tp::TextChannelPtr &channel);
