@@ -228,7 +228,9 @@ void TestConnRoster::testRoster()
         QLatin1String("helen@example.com") <<
         QLatin1String("geraldine@example.com") <<
         QLatin1String("guillaume@example.com") <<
-        QLatin1String("christian@example.com");
+        QLatin1String("christian@example.com") <<
+        QLatin1String("bill@example.com") <<
+        QLatin1String("steve@example.com");
     QStringList ids;
     QList<ContactPtr> pendingSubscription;
     QList<ContactPtr> pendingPublish;
@@ -393,6 +395,22 @@ void TestConnRoster::testRoster()
     // verify that the CM supports contact blocking
     QVERIFY(mConn->contactManager()->canBlockContacts());
 
+    // check if the initially blocked contacts are there
+    ids.clear();
+    toCheck = QStringList() <<
+        QLatin1String("bill@example.com") <<
+        QLatin1String("steve@example.com");
+    Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts()) {
+        if (contact->isBlocked()) {
+            QVERIFY(contact->requestedFeatures().contains(Contact::FeatureAlias));
+            qDebug() << "blocked contact:" << contact->id();
+            ids << contact->id();
+        }
+    }
+    ids.sort();
+    toCheck.sort();
+    QCOMPARE(ids, toCheck);
+
     // block all contacts
     QList<ContactPtr> contactsList = mConn->contactManager()->allKnownContacts().toList();
     QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList),
@@ -403,6 +421,7 @@ void TestConnRoster::testRoster()
     // verify all contacts have been blocked
     Q_FOREACH (const ContactPtr &contact, contactsList) {
         QCOMPARE(contact->isBlocked(), true);
+        QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
     }
 
     // unblock all contacts
@@ -414,8 +433,8 @@ void TestConnRoster::testRoster()
     // verify all contacts have been unblocked
     Q_FOREACH (const ContactPtr &contact, contactsList) {
         QCOMPARE(contact->isBlocked(), false);
+        QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
     }
-
 
     // block some contacts that are not already known
     ids = QStringList() <<
@@ -432,7 +451,8 @@ void TestConnRoster::testRoster()
 
     // destroy the Contact objects to let them be re-created when the block operation finishes
     mContacts.clear();
-    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLoop->exec(), 0); // will quit from expectAllKnownContactsChanged()
+    QCOMPARE(mLoop->exec(), 0); // will quit from expectBlockingContactsFinished()
 
     // construct the same contacts again and verify that they are blocked
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
@@ -442,6 +462,7 @@ void TestConnRoster::testRoster()
 
     Q_FOREACH (const ContactPtr &contact, mContacts) {
         QCOMPARE(contact->isBlocked(), true);
+        QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
     }
 }
 
