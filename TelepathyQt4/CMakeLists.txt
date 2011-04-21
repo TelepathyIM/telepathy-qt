@@ -144,18 +144,20 @@ set(telepathy_qt4_HEADERS
     CapabilitiesBase
     capabilities-base.h
     Channel
+    channel.h
     ChannelClassSpec
     ChannelClassSpecList
+    channel-class-spec.h
     ChannelDispatcher
-    channel-dispatcher.h
     ChannelDispatcherInterface
+    channel-dispatcher.h
     ChannelDispatchOperation
     channel-dispatch-operation.h
     ChannelDispatchOperationInterface
     ChannelFactory
-    channel-class-spec.h
     channel-factory.h
-    channel.h
+    ChannelFeatureSpec
+    channel-feature-spec.h
     ChannelInterface
     ChannelInterfaceAnonymityInterface
     ChannelInterfaceCallStateInterface
