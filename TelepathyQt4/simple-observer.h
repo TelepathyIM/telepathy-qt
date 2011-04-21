@@ -34,6 +34,8 @@ class QDateTime;
 namespace Tp
 {
 
+class PendingOperation;
+
 class TELEPATHY_QT4_NO_EXPORT SimpleObserver : public QObject, public RefCounted
 {
     Q_OBJECT
@@ -44,21 +46,53 @@ public:
             const ChannelClassSpecList &channelFilter,
             const QList<ChannelFeatureSpec> &extraChannelFeatures =
                 QList<ChannelFeatureSpec>());
+    static SimpleObserverPtr create(const AccountPtr &account,
+            const ChannelClassSpecList &channelFilter,
+            const ContactPtr &contact,
+            const QList<ChannelFeatureSpec> &extraChannelFeatures =
+                QList<ChannelFeatureSpec>());
+    static SimpleObserverPtr create(const AccountPtr &account,
+            const ChannelClassSpecList &channelFilter,
+            const QString &contactIdentifier,
+            const QList<ChannelFeatureSpec> &extraChannelFeatures =
+                QList<ChannelFeatureSpec>());
 
     virtual ~SimpleObserver();
 
     AccountPtr account() const;
     ChannelClassSpecList channelFilter() const;
+    QString contactIdentifier() const;
     QList<ChannelFeatureSpec> extraChannelFeatures() const;
+
+    QList<ChannelPtr> channels() const;
 
 Q_SIGNALS:
     void newChannels(const QList<Tp::ChannelPtr> &channels, const QDateTime &timestamp);
     void channelInvalidated(const Tp::ChannelPtr &channel, const QString &errorName,
             const QString &errorMessage, const QDateTime &timestamp);
 
+private Q_SLOTS:
+    TELEPATHY_QT4_NO_EXPORT void onAccountConnectionChanged(const Tp::ConnectionPtr &connection);
+    TELEPATHY_QT4_NO_EXPORT void onAccountConnectionConnected();
+    TELEPATHY_QT4_NO_EXPORT void onContactConstructed(Tp::PendingOperation *op);
+
+    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels,
+            const QDateTime &timestamp);
+    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel,
+            const QString &errorName, const QString &errorMessage,
+            const QDateTime &timestamp);
+
 private:
+    TELEPATHY_QT4_NO_EXPORT static SimpleObserverPtr create(const AccountPtr &account,
+            const ChannelClassSpecList &channelFilter,
+            const QString &contactIdentifier,
+            bool requiresNormalization,
+            const QList<ChannelFeatureSpec> &extraChannelFeatures);
+
     TELEPATHY_QT4_NO_EXPORT SimpleObserver(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
+            const QString &contactIdentifier,
+            bool requiresNormalization,
             const QList<ChannelFeatureSpec> &extraChannelFeatures);
 
     struct Private;

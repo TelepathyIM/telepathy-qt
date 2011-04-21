@@ -34,19 +34,33 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     Private(SimpleObserver *parent,
             const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
+            const QString &contactIdentifier,
+            bool requiresNormalization,
             const QList<ChannelFeatureSpec> &extraChannelFeatures);
+
+    bool filterChannel(const Tp::ChannelPtr &channel);
+
+    void processChannelsQueue();
+    void processNewChannelsQueue();
+    void processChannelsInvalidationQueue();
 
     class FakeAccountFactory;
     class Observer;
     class ChannelWrapper;
+    struct NewChannelsInfo;
+    struct ChannelInvadationInfo;
 
     SimpleObserver *parent;
     AccountPtr account;
     ChannelClassSpecList channelFilter;
+    QString contactIdentifier;
+    QString normalizedContactIdentifier;
     QList<ChannelFeatureSpec> extraChannelFeatures;
     SharedPtr<Observer> observer;
-    static QHash<AccountPtr, QWeakPointer<Observer> > observers;
     static uint numObservers;
+    QQueue<void (SimpleObserver::Private::*)()> channelsQueue;
+    QQueue<ChannelInvadationInfo> channelsInvalidationQueue;
+    QQueue<NewChannelsInfo> newChannelsQueue;
 };
 
 class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::Observer : public QObject,
@@ -80,6 +94,8 @@ public:
              const QList<ChannelFeatureSpec> &extraChannelFeatures);
     ~Observer();
 
+    QList<ChannelPtr> channels() const { return mChannels.keys(); }
+
     void observeChannels(
             const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
@@ -106,6 +122,7 @@ private:
     AccountPtr mAccount;
     QList<ChannelFeatureSpec> mExtraChannelFeatures;
     QHash<ChannelPtr, ChannelWrapper*> mChannels;
+    QHash<ChannelPtr, ChannelWrapper*> mIncompleteChannels;
     QHash<PendingOperation*, ContextInfo*> mObserveChannelsInfo;
 };
 
@@ -166,6 +183,37 @@ private Q_SLOTS:
 private:
     ChannelPtr mChannel;
     Features mExtraChannelFeatures;
+};
+
+struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::NewChannelsInfo
+{
+    NewChannelsInfo();
+    NewChannelsInfo(const QList<ChannelPtr> &channels, const QDateTime &timestamp)
+        : channels(channels),
+          timestamp(timestamp)
+    {
+    }
+
+    QList<ChannelPtr> channels;
+    QDateTime timestamp;
+};
+
+struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelInvadationInfo
+{
+    ChannelInvadationInfo();
+    ChannelInvadationInfo(const ChannelPtr &channel, const QString &errorName,
+            const QString &errorMessage, const QDateTime &timestamp)
+        : channel(channel),
+          errorName(errorName),
+          errorMessage(errorMessage),
+          timestamp(timestamp)
+    {
+    }
+
+    ChannelPtr channel;
+    QString errorName;
+    QString errorMessage;
+    QDateTime timestamp;
 };
 
 } // Tp
