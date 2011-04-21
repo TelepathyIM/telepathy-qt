@@ -962,6 +962,8 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
         return;
     }
 
+    Contacts allChangedContacts;
+
     HandleIdentifierMap::const_iterator begin = info.added.constBegin();
     HandleIdentifierMap::const_iterator end = info.added.constEnd();
     for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
@@ -975,6 +977,7 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
 
         debug() << "Contact" << contact->id() << "is now blocked";
         blockedContacts.insert(contact);
+        allChangedContacts.insert(contact);
         contact->setBlocked(true);
     }
 
@@ -991,8 +994,13 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
 
         debug() << "Contact" << contact->id() << "is now unblocked";
         blockedContacts.remove(contact);
+        allChangedContacts.insert(contact);
         contact->setBlocked(false);
     }
+
+    // Perform the needed computation for allKnownContactsChanged
+    computeKnownContactsChanges(allChangedContacts, Contacts(),
+            Contacts(), Contacts(), Channel::GroupMemberChangeDetails());
 
     if (info.continueIntrospectionWhenFinished) {
         introspectContactList();
@@ -1252,6 +1260,10 @@ void ContactManager::Roster::onContactListChannelReady()
         setContactListChannelsReady();
 
         updateContactsBlockState();
+
+        if (denyChannel) {
+            cachedAllKnownContacts.unite(denyChannel->groupContacts());
+        }
 
         introspectContactList();
     } else if (++contactListChannelsReady == ChannelInfo::LastType) {
@@ -1562,6 +1574,12 @@ void ContactManager::Roster::onDenyChannelMembersChanged(
         debug() << "Contact" << contact->id() << "removed from deny list";
         contact->setBlocked(false);
     }
+
+    // Perform the needed computation for allKnownContactsChanged
+    Contacts allChangedContacts = groupMembersAdded;
+    allChangedContacts.unite(groupMembersRemoved);
+    computeKnownContactsChanges(allChangedContacts, Contacts(),
+            Contacts(), Contacts(), Channel::GroupMemberChangeDetails());
 }
 
 void ContactManager::Roster::onContactListGroupMembersChanged(
