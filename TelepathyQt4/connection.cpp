@@ -1274,8 +1274,7 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 }
 
 /**
- * Return the maximum length in characters for any individual presence status
- * message, or 0 if there is no limit.
+ * Returns the maximum length for a presence status message.
  *
  * The value may have changed arbitrarily during the time the
  * Connection spends in status ConnectionStatusConnecting,
@@ -1283,8 +1282,7 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
  *
  * This method requires Connection::FeatureSimplePresence to be enabled.
  *
- * \return The maximum length in characters for any individual presence status
- *         message, or 0 if there is no limit.
+ * \return The maximum length for a presence status message, or 0 if there is no limit.
  */
 uint ConnectionLowlevel::maxPresenceStatusMessageLength() const
 {
