@@ -230,7 +230,7 @@ void TestConnBasics::testSimplePresence()
                  static_cast<uint>(expectedTypes[expectedNames.indexOf(name)]));
     }
 
-    QCOMPARE(mConn->lowlevel()->maximumPresenceStatusMessageLength(), (uint) 512);
+    QCOMPARE(mConn->lowlevel()->maxPresenceStatusMessageLength(), (uint) 512);
 }
 
 void TestConnBasics::cleanup()

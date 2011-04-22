@@ -1722,13 +1722,13 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
  * \return The maximum length in characters for any individual presence status
  *         message, or 0 if there is no limit.
  */
-uint Account::maximumPresenceStatusMessageLength() const
+uint Account::maxPresenceStatusMessageLength() const
 {
     // if the connection is online and ready use it
     if (mPriv->connection &&
         mPriv->connection->status() == ConnectionStatusConnected &&
         mPriv->connection->actualFeatures().contains(Connection::FeatureSimplePresence)) {
-        return mPriv->connection->lowlevel()->maximumPresenceStatusMessageLength();
+        return mPriv->connection->lowlevel()->maxPresenceStatusMessageLength();
     }
 
     return 0;

@@ -55,7 +55,7 @@ public:
     PendingOperation *requestDisconnect();
 
     SimpleStatusSpecMap allowedPresenceStatuses() const;
-    uint maximumPresenceStatusMessageLength() const;
+    uint maxPresenceStatusMessageLength() const;
 
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 

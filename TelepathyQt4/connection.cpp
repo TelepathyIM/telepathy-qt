@@ -1286,10 +1286,10 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
  * \return The maximum length in characters for any individual presence status
  *         message, or 0 if there is no limit.
  */
-uint ConnectionLowlevel::maximumPresenceStatusMessageLength() const
+uint ConnectionLowlevel::maxPresenceStatusMessageLength() const
 {
     if (!isValid()) {
-        warning() << "ConnectionLowlevel::maximumPresenceStatusMessageLength() "
+        warning() << "ConnectionLowlevel::maxPresenceStatusMessageLength() "
             "called for a connection which is already destroyed";
         return 0;
     }
