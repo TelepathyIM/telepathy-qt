@@ -46,11 +46,12 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     };
 
     Private(PendingContacts *parent, const ContactManagerPtr &manager, const UIntList &handles,
-            const Features &features,
+            const Features &features, const Features &missingFeatures,
             const QMap<uint, ContactPtr> &satisfyingContacts)
         : parent(parent),
           manager(manager),
           features(features),
+          missingFeatures(missingFeatures),
           satisfyingContacts(satisfyingContacts),
           requestType(ForHandles),
           handles(handles),
@@ -89,6 +90,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
     // Generic parameters
     ContactManagerPtr manager;
     Features features;
+    Features missingFeatures;
     QMap<uint, ContactPtr> satisfyingContacts;
 
     // Request type specific parameters
@@ -114,7 +116,7 @@ void PendingContacts::Private::setFinished()
     foreach (uint handle, handles) {
         if (connLowlevel->hasContactId(handle)) {
             satisfyingContacts.insert(handle, manager->ensureContact(handle,
-                        connLowlevel->contactId(handle), features));
+                        connLowlevel->contactId(handle), missingFeatures));
             invalidHandles.removeOne(handle);
         }
     }
@@ -132,14 +134,16 @@ void PendingContacts::Private::setFinished()
  */
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const UIntList &handles, const Features &features,
+        const UIntList &handles,
+        const Features &features,
+        const Features &missingFeatures,
         const QStringList &interfaces,
         const QMap<uint, ContactPtr> &satisfyingContacts,
         const QSet<uint> &otherContacts,
         const QString &errorName,
         const QString &errorMessage)
     : PendingOperation(manager),
-      mPriv(new Private(this, manager, handles, features, satisfyingContacts))
+      mPriv(new Private(this, manager, handles, features, missingFeatures, satisfyingContacts))
 {
     if (!errorName.isEmpty()) {
         setFinishedWithError(errorName, errorMessage);
@@ -336,7 +340,7 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
                 ReferencedHandles referencedHandle = validHandles.mid(indexInValid, 1);
                 QVariantMap handleAttributes = attributes[handle];
                 mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
-                            features(), handleAttributes));
+                            mPriv->missingFeatures, handleAttributes));
             } else {
                 mPriv->invalidHandles.push_back(handle);
             }
@@ -440,7 +444,7 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
         ReferencedHandles referencedHandle(conn, HandleTypeContact,
                 UIntList() << handle);
         mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
-                    features(), handleAttributes));
+                    mPriv->missingFeatures, handleAttributes));
     }
 
     allAttributesFetched();
