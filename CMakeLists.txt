@@ -201,11 +201,11 @@ else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FO
 endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
 
 # Find telepathy-glib
-set(TELEPATHY_GLIB_MIN_VERSION 0.13.10)
+set(TELEPATHY_GLIB_MIN_VERSION 0.14.5)
 find_package(TelepathyGlib)
 macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
                   "Glib bindings for Telepathy"
-                  "http://telepathy.freedesktop.org/" FALSE "0.13.0"
+                  "http://telepathy.freedesktop.org/" FALSE "0.14.5"
                   "Needed, together with Qt Glib integration, to build most of the unit tests")
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
