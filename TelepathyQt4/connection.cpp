@@ -1265,9 +1265,9 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
     ConnectionPtr conn(mPriv->conn);
 
     if (!conn->isReady(Connection::FeatureSimplePresence)) {
-        warning() << "Trying to retrieve simple presence from connection, but "
+        warning() << "Trying to retrieve allowed presence statuses from connection, but "
                      "simple presence is not supported or was not requested. "
-                     "Use becomeReady(FeatureSimplePresence)";
+                     "Enable FeatureSimplePresence in this connection";
     }
 
     return conn->mPriv->simplePresenceStatuses;
@@ -1295,9 +1295,9 @@ uint ConnectionLowlevel::maxPresenceStatusMessageLength() const
     ConnectionPtr conn(mPriv->conn);
 
     if (!conn->isReady(Connection::FeatureSimplePresence)) {
-        warning() << "Trying to retrieve simple presence from connection, but "
+        warning() << "Trying to retrieve max presence status message length connection, but "
                      "simple presence is not supported or was not requested. "
-                     "Use becomeReady(FeatureSimplePresence)";
+                     "Enable FeatureSimplePresence in this connection";
     }
 
     return conn->mPriv->maxPresenceStatusMessageLength;
