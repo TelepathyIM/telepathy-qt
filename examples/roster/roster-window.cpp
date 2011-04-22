@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -19,19 +19,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-// FIXME: This example is quite non-exemplary, using the low-level API directly!
-#define TP_QT4_ENABLE_LOWLEVEL_API
-
 #include "roster-window.h"
 #include "_gen/roster-window.moc.hpp"
 
 #include "roster-widget.h"
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ConnectionManager>
-#include <TelepathyQt4/ConnectionManagerLowlevel>
-#include <TelepathyQt4/PendingConnection>
+#include <TelepathyQt4/ChannelFactory>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
 
@@ -39,29 +36,35 @@
 
 using namespace Tp;
 
-RosterWindow::RosterWindow(const QString &username, const QString &password,
-        QWidget *parent)
-    : QMainWindow(parent),
-      mUsername(username),
-      mPassword(password)
+RosterWindow::RosterWindow(const QString &accountPath, QWidget *parent)
+    : QMainWindow(parent)
 {
     setWindowTitle(QLatin1String("Roster"));
 
     setupGui();
 
-    mCM = ConnectionManager::create(QLatin1String("gabble"));
-    connect(mCM->becomeReady(),
+    ChannelFactoryPtr channelFactory = ChannelFactory::create(
+            QDBusConnection::sessionBus());
+    ConnectionFactoryPtr connectionFactory = ConnectionFactory::create(
+            QDBusConnection::sessionBus(),
+            Features() << Connection::FeatureConnected <<
+                Connection::FeatureRoster <<
+                Connection::FeatureRosterGroups);
+    ContactFactoryPtr contactFactory = ContactFactory::create(
+            Features() << Contact::FeatureAlias <<
+                Contact::FeatureSimplePresence);
+
+    mAccount = Account::create(TP_QT4_ACCOUNT_MANAGER_BUS_NAME, accountPath,
+        connectionFactory, channelFactory, contactFactory);
+    connect(mAccount->becomeReady(Account::FeatureCore),
             SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onCMReady(Tp::PendingOperation *)));
+            SLOT(onAccountReady(Tp::PendingOperation *)));
 
     resize(240, 320);
 }
 
 RosterWindow::~RosterWindow()
 {
-    foreach (const ConnectionPtr &conn, mConns) {
-        conn->lowlevel()->requestDisconnect();
-    }
 }
 
 void RosterWindow::setupGui()
@@ -70,66 +73,25 @@ void RosterWindow::setupGui()
     setCentralWidget(mRoster);
 }
 
-void RosterWindow::onCMReady(Tp::PendingOperation *op)
+void RosterWindow::onAccountReady(Tp::PendingOperation *op)
 {
     if (op->isError()) {
-        qWarning() << "CM cannot become ready";
+        qWarning() << "Account cannot become ready";
         return;
     }
 
-    qDebug() << "CM ready";
-    QVariantMap params;
-    params.insert(QLatin1String("account"), QVariant(mUsername));
-    params.insert(QLatin1String("password"), QVariant(mPassword));
-    PendingConnection *pconn = mCM->lowlevel()->requestConnection(QLatin1String("jabber"),
-            params);
-    connect(pconn,
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionCreated(Tp::PendingOperation *)));
+    qDebug() << "Account ready";
+    connect(mAccount.data(),
+            SIGNAL(connectionChanged(Tp::ConnectionPtr)),
+            SLOT(onAccountConnectionChanged(Tp::ConnectionPtr)));
+    onAccountConnectionChanged(mAccount->connection());
 }
 
-void RosterWindow::onConnectionCreated(Tp::PendingOperation *op)
+void RosterWindow::onAccountConnectionChanged(const ConnectionPtr &conn)
 {
-    if (op->isError()) {
-        qWarning() << "Unable to create connection";
-        return;
-    }
-
-    qDebug() << "Connection created";
-    PendingConnection *pconn =
-        qobject_cast<PendingConnection *>(op);
-    ConnectionPtr conn = pconn->connection();
-    mConns.append(conn);
-    connect(conn->lowlevel()->requestConnect(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionConnected(Tp::PendingOperation *)));
-    connect(conn.data(),
-            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-            SLOT(onConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
-}
-
-void RosterWindow::onConnectionConnected(Tp::PendingOperation *op)
-{
-    if (op->isError()) {
-        qWarning() << "Connection cannot become connected";
-        return;
-    }
-
-    PendingReady *pr = qobject_cast<PendingReady *>(op);
-    ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(
-                (Connection *) pr->object().data()));
-    mRoster->addConnection(conn);
-}
-
-void RosterWindow::onConnectionInvalidated(DBusProxy *proxy,
-        const QString &errorName, const QString &errorMessage)
-{
-    qDebug() << "RosterWindow::onConnectionInvalidated: connection became invalid:" <<
-        errorName << "-" << errorMessage;
-    foreach (const ConnectionPtr &conn, mConns) {
-        if (conn.data() == proxy) {
-            mRoster->removeConnection(conn);
-            mConns.removeOne(conn);
-        }
+    if (conn) {
+        mRoster->setConnection(conn);
+    } else {
+        mRoster->unsetConnection();
     }
 }

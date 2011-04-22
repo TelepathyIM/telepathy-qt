@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -23,13 +23,11 @@
 #define _TelepathyQt4_examples_roster_roster_window_h_HEADER_GUARD_
 
 #include <QMainWindow>
-#include <QSharedPointer>
 
-#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/Types>
 
 namespace Tp {
-class ConnectionManager;
-class DBusProxy;
 class PendingOperation;
 }
 
@@ -40,24 +38,17 @@ class RosterWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    RosterWindow(const QString &username, const QString &password,
-            QWidget *parent = 0);
+    RosterWindow(const QString &accountPath, QWidget *parent = 0);
     virtual ~RosterWindow();
 
 private Q_SLOTS:
-    void onCMReady(Tp::PendingOperation *);
-    void onConnectionCreated(Tp::PendingOperation *);
-    void onConnectionConnected(Tp::PendingOperation *);
-    void onConnectionInvalidated(Tp::DBusProxy *,
-            const QString &, const QString &);
+    void onAccountReady(Tp::PendingOperation *op);
+    void onAccountConnectionChanged(const Tp::ConnectionPtr &conn);
 
 private:
     void setupGui();
 
-    Tp::ConnectionManagerPtr mCM;
-    QList<Tp::ConnectionPtr> mConns;
-    QString mUsername;
-    QString mPassword;
+    Tp::AccountPtr mAccount;
     RosterWidget *mRoster;
 };
 

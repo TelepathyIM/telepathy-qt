@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -60,31 +60,42 @@ RosterWidget::~RosterWidget()
 {
 }
 
-void RosterWidget::addConnection(const ConnectionPtr &conn)
+void RosterWidget::setConnection(const ConnectionPtr &conn)
 {
-    mConns.append(conn);
-    connect(conn->becomeReady(Connection::FeatureRoster),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionReady(Tp::PendingOperation *)));
+    if (mConn) {
+        unsetConnection();
+    }
+
+    mConn = conn;
+    connect(conn->contactManager().data(),
+            SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
+            SLOT(onPresencePublicationRequested(const Tp::Contacts &)));
+    // TODO listen to allKnownContactsChanged
+
+    qDebug() << "Loading contacts";
+    RosterItem *item;
+    bool exists;
+    foreach (const ContactPtr &contact, conn->contactManager()->allKnownContacts()) {
+        exists = false;
+        item = createItemForContact(contact, exists);
+        if (!exists) {
+            connect(item, SIGNAL(changed()), SLOT(updateActions()));
+        }
+    }
+
+    mAddBtn->setEnabled(true);
 }
 
-void RosterWidget::removeConnection(const ConnectionPtr &conn)
+void RosterWidget::unsetConnection()
 {
-    int i = 0;
-    while (i < mList->count()) {
-        RosterItem *item = (RosterItem *) mList->item(i);
-        if (item->contact()->manager()->connection() == conn) {
-            mList->takeItem(i);
-            delete item;
-            continue;
-        }
-        ++i;
+    while (mList->count() > 0) {
+        RosterItem *item = (RosterItem *) mList->item(0);
+        mList->takeItem(0);
+        delete item;
     }
-    mConns.removeOne(conn);
-    if (mConns.count() == 0) {
-        updateActions();
-        mAddBtn->setEnabled(false);
-    }
+    mConn.reset();
+    updateActions();
+    mAddBtn->setEnabled(false);
 }
 
 void RosterWidget::createActions()
@@ -178,34 +189,6 @@ RosterItem *RosterWidget::createItemForContact(const ContactPtr &contact,
     return new RosterItem(contact, mList);
 }
 
-void RosterWidget::onConnectionReady(Tp::PendingOperation *op)
-{
-    if (op->isError()) {
-        qWarning() << "Connection cannot become ready";
-        return;
-    }
-
-    PendingReady *pr = qobject_cast<PendingReady *>(op);
-    ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(
-                (Connection *) pr->object().data()));
-    connect(conn->contactManager().data(),
-            SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
-            SLOT(onPresencePublicationRequested(const Tp::Contacts &)));
-
-    qDebug() << "Connection ready";
-    RosterItem *item;
-    bool exists;
-    foreach (const ContactPtr &contact, conn->contactManager()->allKnownContacts()) {
-        exists = false;
-        item = createItemForContact(contact, exists);
-        if (!exists) {
-            connect(item, SIGNAL(changed()), SLOT(updateActions()));
-        }
-    }
-
-    mAddBtn->setEnabled(true);
-}
-
 void RosterWidget::onPresencePublicationRequested(const Contacts &contacts)
 {
     qDebug() << "Presence publication requested";
@@ -234,8 +217,7 @@ void RosterWidget::onAddButtonClicked()
     }
 
     QString username = mAddDlgEdt->text();
-    // TODO which connection to use?
-    PendingContacts *pcontacts = mConns.first()->contactManager()->contactsForIdentifiers(
+    PendingContacts *pcontacts = mConn->contactManager()->contactsForIdentifiers(
             QStringList() << username);
     connect(pcontacts,
             SIGNAL(finished(Tp::PendingOperation *)),
@@ -320,8 +302,6 @@ void RosterWidget::onContactRetrieved(Tp::PendingOperation *op)
 
     ContactPtr contact = contacts.first();
     qDebug() << "Request presence subscription for contact" << username;
-    // TODO should we have a signal on ContactManager to signal that a contact was
-    //      added to subscribe list?
     bool exists = false;
     RosterItem *item = createItemForContact(contact, exists);
     if (!exists) {

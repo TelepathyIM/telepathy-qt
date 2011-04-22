@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -49,9 +49,9 @@ public:
     RosterWidget(QWidget *parent = 0);
     virtual ~RosterWidget();
 
-    QList<Tp::ConnectionPtr> connections() const { return mConns; }
-    void addConnection(const Tp::ConnectionPtr &conn);
-    void removeConnection(const Tp::ConnectionPtr &conn);
+    Tp::ConnectionPtr connection() const { return mConn; }
+    void setConnection(const Tp::ConnectionPtr &conn);
+    void unsetConnection();
 
     QListWidget *listWidget() const { return mList; }
 
@@ -62,7 +62,6 @@ protected:
     virtual void updateActions(RosterItem *item) { }
 
 private Q_SLOTS:
-    void onConnectionReady(Tp::PendingOperation *);
     void onPresencePublicationRequested(const Tp::Contacts &);
     void onItemSelectionChanged();
     void onAddButtonClicked();
@@ -77,7 +76,7 @@ private:
     void createActions();
     void setupGui();
 
-    QList<Tp::ConnectionPtr> mConns;
+    Tp::ConnectionPtr mConn;
     QAction *mAuthAction;
     QAction *mRemoveAction;
     QAction *mDenyAction;
