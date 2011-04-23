@@ -388,8 +388,10 @@ void Channel::Private::introspectMainProperties()
     requested = qdbus_cast<bool>(props[QLatin1String("Requested")]);
     initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
 
-    QString initiatorId = qdbus_cast<QString>(props[QLatin1String("InitiatorID")]);
-    connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
+    if (props.contains(QLatin1String("InitiatorID"))) {
+        QString initiatorId = qdbus_cast<QString>(props[QLatin1String("InitiatorID")]);
+        connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
+    }
 
     if (needIntrospectMainProps) {
         debug() << "Calling Properties::GetAll(Channel)";
