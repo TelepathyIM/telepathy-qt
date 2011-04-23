@@ -72,18 +72,10 @@ void RosterWidget::setConnection(const ConnectionPtr &conn)
             SLOT(onPresencePublicationRequested(const Tp::Contacts &)));
     // TODO listen to allKnownContactsChanged
 
-    qDebug() << "Loading contacts";
-    RosterItem *item;
-    bool exists;
-    foreach (const ContactPtr &contact, conn->contactManager()->allKnownContacts()) {
-        exists = false;
-        item = createItemForContact(contact, exists);
-        if (!exists) {
-            connect(item, SIGNAL(changed()), SLOT(updateActions()));
-        }
-    }
-
-    mAddBtn->setEnabled(true);
+    connect(conn->contactManager().data(),
+            SIGNAL(stateChanged(Tp::ContactListState)),
+            SLOT(onContactManagerStateChanged(Tp::ContactListState)));
+    onContactManagerStateChanged(conn->contactManager()->state());
 }
 
 void RosterWidget::unsetConnection()
@@ -187,6 +179,24 @@ RosterItem *RosterWidget::createItemForContact(const ContactPtr &contact,
     }
 
     return new RosterItem(contact, mList);
+}
+
+void RosterWidget::onContactManagerStateChanged(ContactListState state)
+{
+    if (state == ContactListStateSuccess) {
+        qDebug() << "Loading contacts";
+        RosterItem *item;
+        bool exists;
+        foreach (const ContactPtr &contact, mConn->contactManager()->allKnownContacts()) {
+            exists = false;
+            item = createItemForContact(contact, exists);
+            if (!exists) {
+                connect(item, SIGNAL(changed()), SLOT(updateActions()));
+            }
+        }
+
+        mAddBtn->setEnabled(true);
+    }
 }
 
 void RosterWidget::onPresencePublicationRequested(const Contacts &contacts)

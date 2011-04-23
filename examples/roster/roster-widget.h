@@ -62,6 +62,7 @@ protected:
     virtual void updateActions(RosterItem *item) { }
 
 private Q_SLOTS:
+    void onContactManagerStateChanged(Tp::ContactListState state);
     void onPresencePublicationRequested(const Tp::Contacts &);
     void onItemSelectionChanged();
     void onAddButtonClicked();
