@@ -1455,6 +1455,11 @@ QVariantMap Channel::immutableProperties() const
             mPriv->immutableProperties.insert(key, mPriv->targetHandle);
         }
 
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID");
+        if (!mPriv->immutableProperties.contains(key)) {
+            mPriv->immutableProperties.insert(key, mPriv->targetId);
+        }
+
         key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->requested);
@@ -1463,6 +1468,11 @@ QVariantMap Channel::immutableProperties() const
         key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->initiatorHandle);
+        }
+
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorID");
+        if (!mPriv->immutableProperties.contains(key) && !mPriv->initiatorContact.isNull()) {
+            mPriv->immutableProperties.insert(key, mPriv->initiatorContact->id());
         }
     }
 
