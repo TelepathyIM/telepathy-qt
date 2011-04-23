@@ -630,6 +630,10 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
 
         if (props.contains(keyTargetId)) {
             targetId = qdbus_cast<QString>(props[keyTargetId]);
+
+            if (targetHandleType == HandleTypeContact) {
+                connection->lowlevel()->injectContactId(targetHandle, targetId);
+            }
         }
 
         if (props.contains(keyRequested)) {
