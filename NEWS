@@ -4,7 +4,8 @@ telepathy-qt4 0.5.16 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * fd.o 36526: Tp::Channel has now gained targetID() and targetContact()
+   accessors
 
 Fixes:
  * Timeout in some CMs when introspecting contact list channels.
