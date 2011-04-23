@@ -78,7 +78,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 
     void continueIntrospection();
 
-    void extract0177MainProps(const QVariantMap &props);
+    void extractMainProps(const QVariantMap &props);
     void extract0176GroupProps(const QVariantMap &props);
 
     void nowHaveInterfaces();
@@ -145,6 +145,8 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     QString channelType;
     uint targetHandleType;
     uint targetHandle;
+    QString targetId;
+    ContactPtr targetContact;
     bool requested;
     uint initiatorHandle;
     ContactPtr initiatorContact;
@@ -352,12 +354,13 @@ void Channel::Private::introspectMainProperties()
     QVariantMap props;
     QString key;
     bool needIntrospectMainProps = false;
-    const unsigned numNames = 7;
+    const unsigned numNames = 8;
     const static QString names[numNames] = {
         QLatin1String("ChannelType"),
         QLatin1String("Interfaces"),
         QLatin1String("TargetHandleType"),
         QLatin1String("TargetHandle"),
+        QLatin1String("TargetID"),
         QLatin1String("Requested"),
         QLatin1String("InitiatorHandle"),
         QLatin1String("InitiatorID")
@@ -367,6 +370,7 @@ void Channel::Private::introspectMainProperties()
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Interfaces"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorID")
@@ -385,8 +389,10 @@ void Channel::Private::introspectMainProperties()
     requested = qdbus_cast<bool>(props[QLatin1String("Requested")]);
     initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
 
-    QString initiatorId = qdbus_cast<QString>(props[QLatin1String("InitiatorID")]);
-    connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
+    if (props.contains(QLatin1String("InitiatorID"))) {
+        QString initiatorId = qdbus_cast<QString>(props[QLatin1String("InitiatorID")]);
+        connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
+    }
 
     if (needIntrospectMainProps) {
         debug() << "Calling Properties::GetAll(Channel)";
@@ -398,7 +404,7 @@ void Channel::Private::introspectMainProperties()
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
     } else {
-        extract0177MainProps(props);
+        extractMainProps(props);
         continueIntrospection();
     }
 }
@@ -593,7 +599,7 @@ void Channel::Private::continueIntrospection()
     }
 }
 
-void Channel::Private::extract0177MainProps(const QVariantMap &props)
+void Channel::Private::extractMainProps(const QVariantMap &props)
 {
     const static QString keyChannelType(QLatin1String("ChannelType"));
     const static QString keyInterfaces(QLatin1String("Interfaces"));
@@ -608,26 +614,30 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
                   && props.contains(keyTargetHandleType);
 
     if (!haveProps) {
-        warning() << " Properties specified in 0.17.7 not found";
+        warning() << "Channel properties specified in 0.17.7 not found";
 
         introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
         introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
         introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
-    }
-    else {
+    } else {
         parent->setInterfaces(qdbus_cast<QStringList>(props[keyInterfaces]));
         readinessHelper->setInterfaces(parent->interfaces());
         channelType = qdbus_cast<QString>(props[keyChannelType]);
         targetHandle = qdbus_cast<uint>(props[keyTargetHandle]);
         targetHandleType = qdbus_cast<uint>(props[keyTargetHandleType]);
 
-        // FIXME: this is screwed up. See the name of the function? It says 0.17.7. The following
-        // props were only added in 0.17.13... However, I won't bother writing separate extraction
-        // functions now.
-
+        const static QString keyTargetId(QLatin1String("TargetID"));
         const static QString keyRequested(QLatin1String("Requested"));
         const static QString keyInitiatorHandle(QLatin1String("InitiatorHandle"));
         const static QString keyInitiatorId(QLatin1String("InitiatorID"));
+
+        if (props.contains(keyTargetId)) {
+            targetId = qdbus_cast<QString>(props[keyTargetId]);
+
+            if (targetHandleType == HandleTypeContact) {
+                connection->lowlevel()->injectContactId(targetHandle, targetId);
+            }
+        }
 
         if (props.contains(keyRequested)) {
             requested = qdbus_cast<uint>(props[keyRequested]);
@@ -837,6 +847,10 @@ void Channel::Private::buildContacts()
         toBuild.append(initiatorHandle);
     }
 
+    if (!targetContact && targetHandleType == HandleTypeContact && targetHandle != 0) {
+        toBuild.append(targetHandle);
+    }
+
     // always try to retrieve selfContact and check if it changed on
     // updateContacts or on gotContacts, in case we were not able to retrieve it
     if (groupSelfHandle) {
@@ -883,6 +897,11 @@ void Channel::Private::processMembersChanged()
                 if (initiatorHandle && !initiatorContact) {
                     warning() << " Unable to create contact object for initiator with handle" <<
                         initiatorHandle;
+                }
+
+                if (targetHandleType == HandleTypeContact && targetHandle != 0 && !targetContact) {
+                    warning() << " Unable to create contact object for target with handle" <<
+                        targetHandle;
                 }
 
                 if (groupSelfHandle && !groupSelfContact) {
@@ -979,6 +998,16 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
             // No initiator contact stored, but there's a contact for the initiator handle
             // We can use that!
             initiatorContact = contact;
+        }
+
+        if (!targetContact && targetHandleType == HandleTypeContact && targetHandle == handle) {
+            targetContact = contact;
+
+            if (targetId.isEmpty()) {
+                // For some reason, TargetID was missing from the property map. We can initialize it
+                // here in that case.
+                targetId = targetContact->id();
+            }
         }
 
         if (currentGroupMembersChangedInfo &&
@@ -1448,6 +1477,11 @@ QVariantMap Channel::immutableProperties() const
             mPriv->immutableProperties.insert(key, mPriv->targetHandle);
         }
 
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID");
+        if (!mPriv->immutableProperties.contains(key)) {
+            mPriv->immutableProperties.insert(key, mPriv->targetId);
+        }
+
         key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->requested);
@@ -1456,6 +1490,11 @@ QVariantMap Channel::immutableProperties() const
         key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->initiatorHandle);
+        }
+
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorID");
+        if (!mPriv->immutableProperties.contains(key) && !mPriv->initiatorContact.isNull()) {
+            mPriv->immutableProperties.insert(key, mPriv->initiatorContact->id());
         }
     }
 
@@ -1516,6 +1555,51 @@ uint Channel::targetHandle() const
     }
 
     return mPriv->targetHandle;
+}
+
+/**
+ * Return the persistent unique ID of the remote party with which this channel communicates.
+ *
+ * If targetHandleType() is HandleTypeContact, this will be the ID of the remote contact, and
+ * similarly the unique ID of the room when targetHandleType() is HandleTypeRoom.
+ *
+ * This is not necessarily the best identifier to display to the user, though. In particular, for
+ * contacts, their alias should be displayed instead. It can be used for matching channels and UI
+ * elements for them across reconnects, though, at which point the old channels and contacts are
+ * invalidated.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return The identifier, which is of the type targetHandleType() indicates.
+ */
+QString Channel::targetId() const
+{
+    if (!isReady()) {
+        warning() << "Channel::targetId() used, but the channel is not ready";
+    }
+
+    return mPriv->targetId;
+}
+
+/**
+ * Return the contact with which this channel communicates for its lifetime, if applicable.
+ *
+ * If targetHandleType() is not HandleTypeContact, this channel isn't permanently associated with a
+ * single contact, and hence this method will return a null contact pointer.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return Pointer to the target contact.
+ */
+ContactPtr Channel::targetContact() const
+{
+    if (!isReady()) {
+        warning() << "Channel::targetContact() used, but the channel is not ready";
+    } else if (targetHandleType() != HandleTypeContact) {
+        warning() << "Channel::targetContact() used with targetHandleType() != Contact";
+    }
+
+    return mPriv->targetContact;
 }
 
 /**
@@ -2684,15 +2768,12 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
     if (!reply.isError()) {
         debug() << "Got reply to Properties::GetAll(Channel)";
         props = reply.value();
-    }
-    else {
+    } else {
         warning().nospace() << "Properties::GetAll(Channel) failed with " <<
             reply.error().name() << ": " << reply.error().message();
     }
 
-    mPriv->extract0177MainProps(props);
-    // Add extraction (and possible fallbacks) in similar functions,
-    // called from here
+    mPriv->extractMainProps(props);
 
     mPriv->continueIntrospection();
 }
