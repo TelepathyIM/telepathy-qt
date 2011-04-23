@@ -40,8 +40,9 @@ private Q_SLOTS:
     void initTestCase();
     void init();
 
-    void testStatusChange();
+    void testSelfHandleChangeBeforeConnecting();
     void testSlowpath();
+    void testStatusChange();
 
     void cleanup();
     void cleanupTestCase();
@@ -80,6 +81,83 @@ void TestConnIntrospectCornercases::init()
 
     // don't create the client- or service-side connection objects here, as it's expected that many
     // different types of service connections with different initial states need to be used
+}
+
+void TestConnIntrospectCornercases::testSelfHandleChangeBeforeConnecting()
+{
+    gchar *name;
+    gchar *connPath;
+    GError *error = 0;
+
+    TpTestsSimpleConnection *simpleConnService =
+        TP_TESTS_SIMPLE_CONNECTION(
+            g_object_new(
+                TP_TESTS_TYPE_SIMPLE_CONNECTION,
+                "account", "me@example.com",
+                "protocol", "simple",
+                NULL));
+    QVERIFY(simpleConnService != 0);
+
+    mConnService = TP_BASE_CONNECTION(simpleConnService);
+    QVERIFY(mConnService != 0);
+
+    QVERIFY(tp_base_connection_register(mConnService, "simple",
+                &name, &connPath, &error));
+    QVERIFY(error == 0);
+
+    mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+    QCOMPARE(mConn->isReady(), false);
+
+    g_free(name); name = 0;
+    g_free(connPath); connPath = 0;
+
+    // Set the initial self handle (we're not using the conn service normally, so it doesn't do this
+    // by itself)
+    tp_tests_simple_connection_set_identifier(simpleConnService, "me@example.com");
+
+    // Make the conn Connecting, and with FeatureCore ready
+
+    tp_base_connection_change_status(mConnService, TP_CONNECTION_STATUS_CONNECTING,
+            TP_CONNECTION_STATUS_REASON_REQUESTED);
+
+    PendingOperation *op = mConn->becomeReady();
+    QVERIFY(connect(op,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(op->isFinished());
+    QVERIFY(mConn->isValid());
+    QVERIFY(op->isValid());
+
+    QCOMPARE(static_cast<uint>(mConn->status()),
+             static_cast<uint>(Tp::ConnectionStatusConnecting));
+
+    // Start introspecting the SelfContact feature
+
+    op = mConn->becomeReady(Connection::FeatureSelfContact);
+    QVERIFY(connect(op,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+
+    // Change the self handle, before the connection is Connected
+
+    tp_tests_simple_connection_set_identifier(simpleConnService, "myself@example.com");
+
+    // Now change it to Connected
+    tp_base_connection_change_status(mConnService, TP_CONNECTION_STATUS_CONNECTED,
+            TP_CONNECTION_STATUS_REASON_REQUESTED);
+
+    // Try to finish the SelfContact operation, running the mainloop for a while
+
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(op->isFinished(), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureCore), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureSelfContact), true);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+             static_cast<uint>(ConnectionStatusConnected));
 }
 
 void TestConnIntrospectCornercases::testSlowpath()
