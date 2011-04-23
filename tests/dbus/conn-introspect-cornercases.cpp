@@ -11,8 +11,9 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Debug>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/ReferencedHandles>
 
 #include <telepathy-glib/base-connection.h>
 #include <telepathy-glib/dbus.h>
@@ -30,17 +31,19 @@ class TestConnIntrospectCornercases : public Test
 
 public:
     TestConnIntrospectCornercases(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+        : Test(parent), mConnService(0), mNumSelfHandleChanged(0)
     { }
 
 protected Q_SLOTS:
     void expectConnInvalidated();
+    void onSelfHandleChanged(uint);
 
 private Q_SLOTS:
     void initTestCase();
     void init();
 
     void testSelfHandleChangeBeforeConnecting();
+    void testSelfHandleChangeWhileBuilding();
     void testSlowpath();
     void testStatusChange();
 
@@ -51,6 +54,7 @@ private:
     TpBaseConnection *mConnService;
     ConnectionPtr mConn;
     QList<ConnectionStatus> mStatuses;
+    int mNumSelfHandleChanged;
 };
 
 void TestConnIntrospectCornercases::expectConnInvalidated()
@@ -58,6 +62,12 @@ void TestConnIntrospectCornercases::expectConnInvalidated()
     qDebug() << "conn invalidated";
 
     mLoop->exit(0);
+}
+
+void TestConnIntrospectCornercases::onSelfHandleChanged(uint handle)
+{
+    qDebug() << "got new self handle" << handle;
+    mNumSelfHandleChanged++;
 }
 
 void TestConnIntrospectCornercases::initTestCase()
@@ -78,6 +88,7 @@ void TestConnIntrospectCornercases::init()
     QVERIFY(mConnService == 0);
 
     QVERIFY(mStatuses.empty());
+    QCOMPARE(mNumSelfHandleChanged, 0);
 
     // don't create the client- or service-side connection objects here, as it's expected that many
     // different types of service connections with different initial states need to be used
@@ -158,6 +169,106 @@ void TestConnIntrospectCornercases::testSelfHandleChangeBeforeConnecting()
     QCOMPARE(mConn->isReady(Connection::FeatureSelfContact), true);
     QCOMPARE(static_cast<uint>(mConn->status()),
              static_cast<uint>(ConnectionStatusConnected));
+}
+
+void TestConnIntrospectCornercases::testSelfHandleChangeWhileBuilding()
+{
+    gchar *name;
+    gchar *connPath;
+    GError *error = 0;
+
+    TpTestsSimpleConnection *simpleConnService =
+        TP_TESTS_SIMPLE_CONNECTION(
+            g_object_new(
+                TP_TESTS_TYPE_SIMPLE_CONNECTION,
+                "account", "me@example.com",
+                "protocol", "simple",
+                NULL));
+    QVERIFY(simpleConnService != 0);
+
+    mConnService = TP_BASE_CONNECTION(simpleConnService);
+    QVERIFY(mConnService != 0);
+
+    QVERIFY(tp_base_connection_register(mConnService, "simple",
+                &name, &connPath, &error));
+    QVERIFY(error == 0);
+
+    mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+    QCOMPARE(mConn->isReady(), false);
+
+    g_free(name); name = 0;
+    g_free(connPath); connPath = 0;
+
+    // Make the conn Connected, and with FeatureCore ready
+
+    PendingOperation *op = mConn->lowlevel()->requestConnect();
+    QVERIFY(connect(op,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(op->isFinished());
+    QVERIFY(mConn->isValid());
+    QVERIFY(op->isValid());
+
+    QCOMPARE(static_cast<uint>(mConn->status()),
+             static_cast<uint>(Tp::ConnectionStatusConnected));
+
+    QCOMPARE(mConn->isReady(Connection::FeatureCore), true);
+    QVERIFY(mConn->selfHandle() != 0);
+
+    // Start introspecting the SelfContact feature
+
+    op = mConn->becomeReady(Connection::FeatureSelfContact);
+    QVERIFY(connect(op,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+
+    // Run one mainloop iteration, so ReadinessHelper calls introspectSelfContact
+    mLoop->processEvents();
+
+    // Change the self handle, so a rebuild has to be done after the first build finishes
+    tp_tests_simple_connection_set_identifier(simpleConnService, "myself@example.com");
+
+    // Try to finish the SelfContact operation, running the mainloop for a while
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(op->isFinished(), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureCore), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureSelfContact), true);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+             static_cast<uint>(ConnectionStatusConnected));
+    QCOMPARE(mConn->selfContact()->id(), QString::fromLatin1("me@example.com"));
+
+    // We should shortly also receive a self contact change to the rebuilt contact
+    QVERIFY(connect(mConn.data(),
+                SIGNAL(selfContactChanged()),
+                mLoop,
+                SLOT(quit())));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->selfContact()->id(), QString::fromLatin1("myself@example.com"));
+    QCOMPARE(mConn->selfContact()->handle()[0], mConn->selfHandle());
+
+    // Change the self handle yet again, which should cause a self handle and self contact change to be signalled
+    // (in that order)
+    QVERIFY(connect(mConn.data(),
+                SIGNAL(selfHandleChanged(uint)),
+                SLOT(onSelfHandleChanged(uint))));
+
+    tp_tests_simple_connection_set_identifier(simpleConnService, "irene@example.com");
+
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(mConn->isValid());
+    QCOMPARE(mConn->isReady(Connection::FeatureCore), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureSelfContact), true);
+
+    // We should've received a single self handle change and the self contact should've changed
+    // (exiting the mainloop)
+    QCOMPARE(mNumSelfHandleChanged, 1);
+    QCOMPARE(mConn->selfContact()->id(), QString::fromLatin1("irene@example.com"));
+    QCOMPARE(mConn->selfContact()->handle()[0], mConn->selfHandle());
 }
 
 void TestConnIntrospectCornercases::testSlowpath()
@@ -314,6 +425,7 @@ void TestConnIntrospectCornercases::cleanup()
     }
 
     mStatuses.clear();
+    mNumSelfHandleChanged = 0;
 
     cleanupImpl();
 }
