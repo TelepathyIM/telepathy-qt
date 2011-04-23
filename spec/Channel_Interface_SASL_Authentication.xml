@@ -367,6 +367,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </property>
 
+    <property name="MaySaveResponse" tp:name-for-bindings="May_Save_Response"
+      type="b" access="read" tp:immutable="yes">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Whether or not the client can save the authentication response and
+          re-use it to automate future authentication challenges.</p>
+
+        <p>If this property is <code>False</code>, the client SHOULD NOT attempt
+          to cache the authentication response in its own keyring.</p>
+
+        <p>If this property is not specified, it should be treated as if it were
+          <code>True</code>.</p>
+
+        <tp:rationale>Some protocols or services may have terms and conditions
+          that prohibit caching a user's credentials.</tp:rationale>
+
+      </tp:docstring>
+    </property>
+
+
     <method name="StartMechanism" tp:name-for-bindings="Start_Mechanism">
       <arg direction="in" name="Mechanism" type="s" tp:type="SASL_Mechanism">
         <tp:docstring>

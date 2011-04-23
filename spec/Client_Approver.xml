@@ -77,6 +77,10 @@
       <p>Approvers should usually prompt the user and ask for
         confirmation, rather than dispatching the channel to a handler
         straight away.</p>
+
+      <p>Non-interactive approvers can also be implemented as
+        <tp:dbus-ref namespace="ofdT.Client">Observer</tp:dbus-ref>s as
+        described in the interface description.</p>
     </tp:docstring>
 
     <property name="ApproverChannelFilter"

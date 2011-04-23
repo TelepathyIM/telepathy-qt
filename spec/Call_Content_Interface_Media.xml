@@ -326,6 +326,42 @@
           there is no longer any active codec offer) signals.</p>
       </tp:docstring>
     </property>
+
+    <tp:enum name="Call_Content_Packetization_Type" type="u">
+      <tp:added version="0.21.2"/>
+      <tp:docstring>
+        A packetization method that can be used for a content.
+      </tp:docstring>
+
+      <tp:enumvalue suffix="RTP" value="0">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Real-time Transport Protocol, as documented by RFC 3550.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Raw" value="1">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Raw media.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="MSN_Webcam" value="2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          MSN webcam. This is the video-only one-way type which was
+          used in earlier versions of WLM. Although no longer used,
+          modern WLM clients still support the MSN webcam protocol.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <property name="Packetization" tp:name-for-bindings="Packetization"
+      type="u" tp:type="Call_Content_Packetization_Type" access="read"
+      tp:immutable="yes">
+      <tp:added version="0.21.2"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The packetization method in use for this content.</p>
+      </tp:docstring>
+    </property>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

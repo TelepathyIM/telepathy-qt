@@ -45,9 +45,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           a library on which they are based.</p>
 
         <tp:rationale>
-          <p>We often abbreviate, for instance, telepathy-haze as "Haze",
-            but abbreviating telepathy-sofiasip to "Sofia-SIP" would cause
-            confusion between the connection manager and the library it
+          <p>We often abbreviate, for instance, <i>telepathy-haze</i> as
+            “Haze”, but abbreviating <i>telepathy-sofiasip</i>—since renamed to
+            <i>telepathy-rakia</i> for exactly this reason—to “Sofia-SIP”
+            caused confusion between the connection manager and the library it
             uses. Please don't repeat that mistake.</p>
         </tp:rationale>
       </tp:docstring>
@@ -156,9 +157,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             and possibly changed on an existing Connection using methods on the
             <code>org.freedesktop.DBus.Properties</code> interface.</p>
 
-          <p>When a parameter with this flag is changed with <tp:dbus-ref
-            namespace="ofdT">Account.UpdateParameters</tp:dbus-ref>, the
-            account manager will attempt to update its value on any running
+          <p>When a new value for a parameter with this flag is passed to
+            <tp:dbus-ref namespace="ofdT">Account.UpdateParameters</tp:dbus-ref>,
+            the account manager will attempt to update its value on any running
+            connections. Similarly, if the parameter also has the
+            <code>Has_Default</code> flag, and is passed in the second argument
+            to <code>UpdateParameters</code>, the default value will be applied
+            to any running
             connections. Thus, clients generally do not need to directly access
             or update the connection property; instead, they SHOULD manipulate
             <tp:dbus-ref namespace="ofdT">Account.Parameters</tp:dbus-ref>.</p>

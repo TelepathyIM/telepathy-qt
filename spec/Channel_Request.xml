@@ -2,8 +2,8 @@
 <node name="/Channel_Request"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
 
-  <tp:copyright>Copyright © 2008-2009 Collabora Ltd.</tp:copyright>
-  <tp:copyright>Copyright © 2008-2009 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2008–2011 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2008–2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
       modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,15 @@
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>A channel request is an object in the ChannelDispatcher representing
-        an ongoing request for some channels to be created or found. There
+      <p>A channel request is an object in the <tp:dbus-ref
+        namespace='ofdT'>ChannelDispatcher</tp:dbus-ref> representing
+        an ongoing request for some channels to be created or found. They are
+        created by methods such as <tp:dbus-ref
+        namespace='ofdT.ChannelDispatcher'>CreateChannel</tp:dbus-ref>. There
         can be any number of ChannelRequest objects at the same time.</p>
 
       <p>Its well-known bus name is the same as that of the ChannelDispatcher,
-        "org.freedesktop.Telepathy.ChannelDispatcher".</p>
+        <code>"org.freedesktop.Telepathy.ChannelDispatcher"</code>.</p>
 
       <tp:rationale>
         <p>See

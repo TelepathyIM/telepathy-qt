@@ -86,6 +86,32 @@
         destructive happen. Destructive things (e.g. acknowledging messages)
         are defined to be done by handlers, therefore HandleWith and Claim
         aren't allowed to succeed until all observers are ready.</p>
+
+      <p>Non-interactive approvers (for instance, to shoot down spam
+        IM channels before the tray icon blinks at the user, or to grab
+        a SASL channel before the user is prompted for a password) can
+        be implemented as observers by following these steps:</p>
+
+      <ol>
+        <li><tp:member-ref>ObserveChannels</tp:member-ref>() is called
+          on the observer.</li>
+        <li>The observer calls <tp:dbus-ref
+          namespace="ofdT.ChannelDispatchOperation">Claim</tp:dbus-ref>()
+          on the CDO.</li>
+        <li>The observer then returns from
+          <tp:member-ref>ObserveChannels</tp:member-ref>().</li>
+        <li><tp:dbus-ref
+          namespace="ofdT.ChannelDispatchOperation">Claim</tp:dbus-ref>
+          will return successfully if the channels were successfully
+          claimed, or failure if someone else got there first.</li>
+      </ol>
+
+      <p>Non-interactive approvers implemented as observers SHOULD
+        also set <tp:member-ref>DelayApprovers</tp:member-ref> to TRUE
+        so that other Approvers are not called on until all observers
+        return from <tp:member-ref>ObserveChannels</tp:member-ref>.
+        This gives non-interactive approvers a chance to claim the
+        channels before Approvers are called.</p>
     </tp:docstring>
 
     <property name="ObserverChannelFilter"
@@ -373,6 +399,48 @@ Recover=true
       </arg>
 
     </method>
+
+    <property name="DelayApprovers" type="b" access="read"
+      tp:name-for-bindings="Delay_Approvers">
+      <tp:added version="0.21.11"/>
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>If true, the channel dispatcher will wait for
+            <tp:member-ref>ObserveChannels</tp:member-ref> to return
+            before calling <tp:dbus-ref
+            namespace="ofdT.Client">Approver.AddDispatchOperation</tp:dbus-ref>
+            on appropriate Approvers.</p>
+
+          <p>This property SHOULD be false unless there is a reason
+            why a channel should not be given to approvers. An example
+            of this is if an Observer is also a Handler and wants to
+            <tp:dbus-ref
+            namespace="ofdT.ChannelDispatchOperation">Claim</tp:dbus-ref>
+            a channel so that it becomes its handler and doesn't want
+            any approver to be called, this property should be true.</p>
+
+          <p>Observers and Approvers should be called at the same time
+            in normal operation (with this property set to false) to
+            improve responsiveness. For example, if an incoming call
+            appears, the approver should get the channel as fast as
+            possible to show a dialog, but if an approver has to make
+            round-trips to set itself up, then the approval of the
+            channel is delayed. As a result, it is recommended for this
+            property to remain false unless absolutely necessary.</p>
+
+          <p>For service-activatable clients, this property should be
+            specified in the observer's <tt>.client</tt> file as
+            follows:</p>
+
+          <p>If this property is not implemented (telepathy-mission-control
+            5.7.5 and older), the channel dispatcher SHOULD consider it as
+            being false.</p>
+
+<pre>
+[org.freedesktop.Telepathy.Client.Observer]
+DelayApprovers=true
+</pre>
+        </tp:docstring>
+    </property>
 
   </interface>
 </node>

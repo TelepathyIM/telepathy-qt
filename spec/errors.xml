@@ -544,6 +544,43 @@
     </tp:docstring>
   </tp:error>
 
+  <tp:error name="Software Upgrade Required">
+    <tp:added version="0.21.12"/>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Raised as a
+        <tp:dbus-ref namespace="ofdT.Connection">ConnectionError</tp:dbus-ref>
+        when a Connection cannot be established because either the Connection
+        Manager or its support library (e.g. wocky, papyon, sofiasip) requires
+        upgrading to support a newer protocol version.</p>
+
+      <p>This error corresponds to the
+        <tp:type>Connection_Status_Reason</tp:type> of Network_Error.</p>
+
+      <tp:rationale>
+        Some protocols transmit a protocol or library version number to the
+        server, which will disconnect them if the version isn't appropriate.
+        This way we can report the error to the user, and if appropriate, the
+        user's client can check for updates.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Emergency Calls Not Supported">
+    <tp:added version="0.21.12"/>
+    <tp:docstring>
+      Raised if a client attempts to dial a number that is recognized as an
+      emergency number (e.g. '911' in the USA), but the Connection Manager or
+      provider does not support dialling emergency numbers.
+
+      <tp:rationale>
+        Many VOIP providers have the ability to dial traditional (PSTN)
+        telephone numbers, but do not provide the ability to dial emergency
+        numbers (for instance, Google Voice).  This error provides additional
+        information about why such a call was unsuccessful.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
   <tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
   <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">

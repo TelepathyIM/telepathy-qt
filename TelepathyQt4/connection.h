@@ -116,11 +116,26 @@ public:
                 return qdbus_cast<QString>(allDetails().value(QLatin1String("debug-message")));
             }
 
-#if 0
-            /*
-             * TODO: these are actually specified in a draft interface only. Probably shouldn't
-             * include them yet.
-             */
+            bool hasServerMessage() const
+            {
+                return allDetails().contains(QLatin1String("server-message"));
+            }
+
+            QString serverMessage() const
+            {
+                return qdbus_cast<QString>(allDetails().value(QLatin1String("server-message")));
+            }
+
+            bool hasUserRequested() const
+            {
+                return allDetails().contains(QLatin1String("user-requested"));
+            }
+
+            bool userRequested() const
+            {
+                return qdbus_cast<bool>(allDetails().value(QLatin1String("user-requested")));
+            }
+
             bool hasExpectedHostname() const
             {
                 return allDetails().contains(QLatin1String("expected-hostname"));
@@ -140,7 +155,6 @@ public:
             {
                 return qdbus_cast<QString>(allDetails().value(QLatin1String("certificate-hostname")));
             }
-#endif
 
             QVariantMap allDetails() const;
 
