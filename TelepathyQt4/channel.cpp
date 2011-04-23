@@ -78,7 +78,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 
     void continueIntrospection();
 
-    void extract0177MainProps(const QVariantMap &props);
+    void extractMainProps(const QVariantMap &props);
     void extract0176GroupProps(const QVariantMap &props);
 
     void nowHaveInterfaces();
@@ -398,7 +398,7 @@ void Channel::Private::introspectMainProperties()
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
     } else {
-        extract0177MainProps(props);
+        extractMainProps(props);
         continueIntrospection();
     }
 }
@@ -593,7 +593,7 @@ void Channel::Private::continueIntrospection()
     }
 }
 
-void Channel::Private::extract0177MainProps(const QVariantMap &props)
+void Channel::Private::extractMainProps(const QVariantMap &props)
 {
     const static QString keyChannelType(QLatin1String("ChannelType"));
     const static QString keyInterfaces(QLatin1String("Interfaces"));
@@ -608,7 +608,7 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
                   && props.contains(keyTargetHandleType);
 
     if (!haveProps) {
-        warning() << " Properties specified in 0.17.7 not found";
+        warning() << "Channel properties specified in 0.17.7 not found";
 
         introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
         introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
@@ -620,10 +620,6 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         channelType = qdbus_cast<QString>(props[keyChannelType]);
         targetHandle = qdbus_cast<uint>(props[keyTargetHandle]);
         targetHandleType = qdbus_cast<uint>(props[keyTargetHandleType]);
-
-        // FIXME: this is screwed up. See the name of the function? It says 0.17.7. The following
-        // props were only added in 0.17.13... However, I won't bother writing separate extraction
-        // functions now.
 
         const static QString keyRequested(QLatin1String("Requested"));
         const static QString keyInitiatorHandle(QLatin1String("InitiatorHandle"));
@@ -2684,15 +2680,12 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
     if (!reply.isError()) {
         debug() << "Got reply to Properties::GetAll(Channel)";
         props = reply.value();
-    }
-    else {
+    } else {
         warning().nospace() << "Properties::GetAll(Channel) failed with " <<
             reply.error().name() << ": " << reply.error().message();
     }
 
-    mPriv->extract0177MainProps(props);
-    // Add extraction (and possible fallbacks) in similar functions,
-    // called from here
+    mPriv->extractMainProps(props);
 
     mPriv->continueIntrospection();
 }
