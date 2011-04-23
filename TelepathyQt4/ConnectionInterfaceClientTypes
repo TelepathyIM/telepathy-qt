@@ -1,8 +1,12 @@
-#ifndef _TelepathyQt4_ConnectionInterfaceClientTyesInterface_HEADER_GUARD_
-#define _TelepathyQt4_ConnectionInterfaceClientTyesInterface_HEADER_GUARD_
+#ifndef _TelepathyQt4_ConnectionInterfaceClientTyes_HEADER_GUARD_
+#define _TelepathyQt4_ConnectionInterfaceClientTyes_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #define IN_TELEPATHY_QT4_HEADER
+#endif
+
+#ifdef TELEPATHY_QT4_DEPRECATED_WARNINGS
+#warning "This file will be removed in a future tp-qt4 release, use #include <TelepathyQt4/ConnectionInterfaceClientTypesInterface> instead"
 #endif
 
 #include <TelepathyQt4/connection.h>

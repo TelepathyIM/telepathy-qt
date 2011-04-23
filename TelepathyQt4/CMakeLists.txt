@@ -211,14 +211,18 @@ set(telepathy_qt4_HEADERS
     ConnectionInterfaceCellularInterface
     ConnectionInterfaceClientTypes
     ConnectionInterfaceContactBlockingInterface
+    ConnectionInterfaceClientTypesInterface
     ConnectionInterfaceContactCapabilitiesInterface
     ConnectionInterfaceContactGroups
+    ConnectionInterfaceContactGroupsInterface
     ConnectionInterfaceContactInfoInterface
     ConnectionInterfaceContactList
+    ConnectionInterfaceContactListInterface
     ConnectionInterfaceContactsInterface
     ConnectionInterfaceLocationInterface
     ConnectionInterfaceMailNotificationInterface
     ConnectionInterfacePowerSaving
+    ConnectionInterfacePowerSavingInterface
     ConnectionInterfacePresenceInterface
     ConnectionInterfaceRequestsInterface
     ConnectionInterfaceServicePointInterface
