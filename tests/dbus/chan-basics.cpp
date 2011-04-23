@@ -285,10 +285,14 @@ void TestChanBasics::testCreateChannel()
     QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
     QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
     QCOMPARE(mChan->targetId(), QString::fromLatin1("alice"));
+    QVERIFY(!mChan->targetContact().isNull());
+    QCOMPARE(mChan->targetContact()->id(), QString::fromLatin1("alice"));
 
     QStringList ids;
     Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
         ids << contact->id();
+
+        QVERIFY(contact == mChan->groupSelfContact() || contact == mChan->targetContact());
     }
     ids.sort();
     QStringList toCheck = QStringList() << QLatin1String("me@example.com")

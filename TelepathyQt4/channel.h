@@ -72,6 +72,7 @@ public:
     HandleType targetHandleType() const;
     uint targetHandle() const;
     QString targetId() const;
+    ContactPtr targetContact() const;
 
     bool isRequested() const;
     ContactPtr initiatorContact() const;

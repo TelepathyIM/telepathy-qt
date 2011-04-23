@@ -275,6 +275,10 @@ void TestChanGroup::testCreateChannel()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
+    QCOMPARE(static_cast<uint>(mChan->targetHandleType()),
+             static_cast<uint>(Tp::HandleTypeGroup));
+    QVERIFY(mChan->targetContact().isNull());
+
     QCOMPARE(mChan->isRequested(), false);
     QVERIFY(mChan->groupContacts().contains(mContacts.first()));
 

@@ -146,6 +146,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     uint targetHandleType;
     uint targetHandle;
     QString targetId;
+    ContactPtr targetContact;
     bool requested;
     uint initiatorHandle;
     ContactPtr initiatorContact;
@@ -846,6 +847,10 @@ void Channel::Private::buildContacts()
         toBuild.append(initiatorHandle);
     }
 
+    if (!targetContact && targetHandleType == HandleTypeContact && targetHandle != 0) {
+        toBuild.append(targetHandle);
+    }
+
     // always try to retrieve selfContact and check if it changed on
     // updateContacts or on gotContacts, in case we were not able to retrieve it
     if (groupSelfHandle) {
@@ -892,6 +897,11 @@ void Channel::Private::processMembersChanged()
                 if (initiatorHandle && !initiatorContact) {
                     warning() << " Unable to create contact object for initiator with handle" <<
                         initiatorHandle;
+                }
+
+                if (targetHandleType == HandleTypeContact && targetHandle != 0 && !targetContact) {
+                    warning() << " Unable to create contact object for target with handle" <<
+                        targetHandle;
                 }
 
                 if (groupSelfHandle && !groupSelfContact) {
@@ -988,6 +998,16 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
             // No initiator contact stored, but there's a contact for the initiator handle
             // We can use that!
             initiatorContact = contact;
+        }
+
+        if (!targetContact && targetHandleType == HandleTypeContact && targetHandle == handle) {
+            targetContact = contact;
+
+            if (targetId.isEmpty()) {
+                // For some reason, TargetID was missing from the property map. We can initialize it
+                // here in that case.
+                targetId = targetContact->id();
+            }
         }
 
         if (currentGroupMembersChangedInfo &&
@@ -1559,6 +1579,27 @@ QString Channel::targetId() const
     }
 
     return mPriv->targetId;
+}
+
+/**
+ * Return the contact with which this channel communicates for its lifetime, if applicable.
+ *
+ * If targetHandleType() is not HandleTypeContact, this channel isn't permanently associated with a
+ * single contact, and hence this method will return a null contact pointer.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return Pointer to the target contact.
+ */
+ContactPtr Channel::targetContact() const
+{
+    if (!isReady()) {
+        warning() << "Channel::targetContact() used, but the channel is not ready";
+    } else if (targetHandleType() != HandleTypeContact) {
+        warning() << "Channel::targetContact() used with targetHandleType() != Contact";
+    }
+
+    return mPriv->targetContact;
 }
 
 /**
