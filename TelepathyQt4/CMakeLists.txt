@@ -210,6 +210,7 @@ set(telepathy_qt4_HEADERS
     ConnectionInterfaceCapabilitiesInterface
     ConnectionInterfaceCellularInterface
     ConnectionInterfaceClientTypes
+    ConnectionInterfaceContactBlockingInterface
     ConnectionInterfaceContactCapabilitiesInterface
     ConnectionInterfaceContactGroups
     ConnectionInterfaceContactInfoInterface

@@ -54,10 +54,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         an empty string to indicate no avatar. When the account becomes
         connected, the account manager SHOULD set this avatar using SetAvatar
         if appropriate.
-
-        <tp:rationale>
-          This corresponds to NMC 4.x mc_account_get_avatar.
-        </tp:rationale>
       </tp:docstring>
     </property>
 

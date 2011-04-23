@@ -72,7 +72,7 @@
     </signal>
 
     <property name="RemoteCandidates" tp:name-for-bindings="Remote_Candidates"
-      type="a(usqa{sv})" tp:type="Candidate[]" access="read">
+      type="a(usua{sv})" tp:type="Candidate[]" access="read">
       <tp:docstring>
         A list of candidates for this endpoint.
       </tp:docstring>
@@ -85,7 +85,7 @@
         <tp:member-ref>RemoteCandidates</tp:member-ref> property.
       </tp:docstring>
       <arg name="Candidates"
-        type="a(usqa{sv})" tp:type="Candidate[]">
+        type="a(usua{sv})" tp:type="Candidate[]">
         <tp:docstring>
           The candidates that were added.
         </tp:docstring>
@@ -98,7 +98,7 @@
         Emitted when a candidate is selected for use in the stream.
       </tp:docstring>
       <arg name="Candidate"
-        type="(usqa{sv})" tp:type="Candidate">
+        type="(usua{sv})" tp:type="Candidate">
         <tp:docstring>
           The candidate that has been selected.
         </tp:docstring>
@@ -107,7 +107,7 @@
 
     <property name="SelectedCandidate"
       tp:name-for-bindings="Selected_Candidate"
-      type="(usqa{sv})" tp:type="Candidate" access="read">
+      type="(usua{sv})" tp:type="Candidate" access="read">
       <tp:docstring>
         The candidate that has been selected for use to stream packets
         to the remote contact. Change notification is given via the
@@ -122,7 +122,7 @@
         <tp:member-ref>CandidateSelected</tp:member-ref>.
       </tp:docstring>
       <arg name="Candidate"
-        type="(usqa{sv})" tp:type="Candidate" direction="in">
+        type="(usua{sv})" tp:type="Candidate" direction="in">
         <tp:docstring>
           The candidate that has been selected.
         </tp:docstring>
