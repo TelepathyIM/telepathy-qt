@@ -470,10 +470,8 @@ void Connection::Private::introspectContactAttributeInterfaces()
 void Connection::Private::introspectSelfContact(Connection::Private *self)
 {
     debug() << "Building self contact";
-    if (self->introspectingSelfContact) {
-        self->reintrospectSelfContactRequired = true;
-        return;
-    }
+
+    Q_ASSERT(!self->introspectingSelfContact);
 
     self->introspectingSelfContact = true;
     self->reintrospectSelfContactRequired = false;
@@ -2334,14 +2332,32 @@ void Connection::onSelfHandleChanged(uint handle)
         return;
     }
 
+    if (mPriv->pendingStatus != ConnectionStatusConnected || !mPriv->selfHandle) {
+        debug() << "Got a self handle change before we have the initial self handle, ignoring";
+        return;
+    }
+
     debug() << "Connection self handle changed to" << handle;
     mPriv->selfHandle = handle;
     emit selfHandleChanged(handle);
 
-    if (mPriv->readinessHelper->requestedFeatures().contains(FeatureSelfContact)) {
+    if (isReady(FeatureSelfContact)) {
+        // We've already introspected the SelfContact feature, so we can reinvoke the introspection
+        // logic directly to rebuild with the new handle.
+
         debug() << "Re-building self contact for handle" << handle;
         Private::introspectSelfContact(mPriv);
+    } else if (mPriv->introspectingSelfContact) {
+        // We're currently introspecting the SelfContact feature, but have started building the
+        // contact with the old handle, so we need to do it again with the new handle.
+
+        debug() << "The self contact is being built, will rebuild with the new handle shortly";
+        mPriv->reintrospectSelfContactRequired = true;
     }
+
+    // If ReadinessHelper hasn't started introspecting SelfContact yet for the Connected state, we
+    // don't need to do anything. When it does start the introspection, it will do so using the
+    // correct handle.
 }
 
 void Connection::onBalanceChanged(const Tp::CurrencyAmount &value)
