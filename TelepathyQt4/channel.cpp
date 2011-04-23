@@ -145,6 +145,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     QString channelType;
     uint targetHandleType;
     uint targetHandle;
+    QString targetId;
     bool requested;
     uint initiatorHandle;
     ContactPtr initiatorContact;
@@ -352,12 +353,13 @@ void Channel::Private::introspectMainProperties()
     QVariantMap props;
     QString key;
     bool needIntrospectMainProps = false;
-    const unsigned numNames = 7;
+    const unsigned numNames = 8;
     const static QString names[numNames] = {
         QLatin1String("ChannelType"),
         QLatin1String("Interfaces"),
         QLatin1String("TargetHandleType"),
         QLatin1String("TargetHandle"),
+        QLatin1String("TargetID"),
         QLatin1String("Requested"),
         QLatin1String("InitiatorHandle"),
         QLatin1String("InitiatorID")
@@ -367,6 +369,7 @@ void Channel::Private::introspectMainProperties()
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Interfaces"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorID")
@@ -613,17 +616,21 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
         introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
         introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
         introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
-    }
-    else {
+    } else {
         parent->setInterfaces(qdbus_cast<QStringList>(props[keyInterfaces]));
         readinessHelper->setInterfaces(parent->interfaces());
         channelType = qdbus_cast<QString>(props[keyChannelType]);
         targetHandle = qdbus_cast<uint>(props[keyTargetHandle]);
         targetHandleType = qdbus_cast<uint>(props[keyTargetHandleType]);
 
+        const static QString keyTargetId(QLatin1String("TargetID"));
         const static QString keyRequested(QLatin1String("Requested"));
         const static QString keyInitiatorHandle(QLatin1String("InitiatorHandle"));
         const static QString keyInitiatorId(QLatin1String("InitiatorID"));
+
+        if (props.contains(keyTargetId)) {
+            targetId = qdbus_cast<QString>(props[keyTargetId]);
+        }
 
         if (props.contains(keyRequested)) {
             requested = qdbus_cast<uint>(props[keyRequested]);
@@ -1512,6 +1519,30 @@ uint Channel::targetHandle() const
     }
 
     return mPriv->targetHandle;
+}
+
+/**
+ * Return the persistent unique ID of the remote party with which this channel communicates.
+ *
+ * If targetHandleType() is HandleTypeContact, this will be the ID of the remote contact, and
+ * similarly the unique ID of the room when targetHandleType() is HandleTypeRoom.
+ *
+ * This is not necessarily the best identifier to display to the user, though. In particular, for
+ * contacts, their alias should be displayed instead. It can be used for matching channels and UI
+ * elements for them across reconnects, though, at which point the old channels and contacts are
+ * invalidated.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return The identifier, which is of the type targetHandleType() indicates.
+ */
+QString Channel::targetId() const
+{
+    if (!isReady()) {
+        warning() << "Channel::targetId() used, but the channel is not ready";
+    }
+
+    return mPriv->targetId;
 }
 
 /**

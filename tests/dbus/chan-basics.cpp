@@ -284,6 +284,7 @@ void TestChanBasics::testCreateChannel()
     QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
     QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
     QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
+    QCOMPARE(mChan->targetId(), QString::fromLatin1("alice"));
 
     QStringList ids;
     Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
