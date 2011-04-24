@@ -1,21 +1,22 @@
 telepathy-qt4 0.5.16 (UNRELEASED)
 =================================
 
-The "..." release.
+The "A brown paper bagful of Easter Eggs" release.
 
 Enhancements:
- * fd.o 36526: Tp::Channel has now gained targetID() and targetContact()
+ * fd.o #36526: Tp::Channel has now gained targetID() and targetContact()
    accessors
- * Update to spec 0.22.0:
+ * fd.o #35421: Update to spec 0.22.0:
   - Added auto generated class for Conn.ContactBlocking.
   - Added Connection::ErrorDetails accessors for ConnectionError details
     server-message, user-requested, expected-hostname and certificate-hostname.
 
 Fixes:
  * Timeout in some CMs when introspecting contact list channels.
- * Fixed a crash when building self contact.
- * Properly add connection interfaces pretty headers for
-   Conn.ClientTypes/ContactGroups/ContactList/Saving.
+ * Crashes with Connection::FeatureSelfContact enabled (Manifested as an assert
+   for inFlightFeatures or pendingFeatures being hit)
+ * Added correctly named pretty headers for the
+   Conn.ClientTypes/ContactGroups/ContactList/Saving interfaces
 
 telepathy-qt4 0.5.15 (2011-04-12)
 =================================
