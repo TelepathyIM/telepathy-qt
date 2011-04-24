@@ -269,6 +269,22 @@ void TestConnIntrospectCornercases::testSelfHandleChangeWhileBuilding()
     QCOMPARE(mNumSelfHandleChanged, 1);
     QCOMPARE(mConn->selfContact()->id(), QString::fromLatin1("irene@example.com"));
     QCOMPARE(mConn->selfContact()->handle()[0], mConn->selfHandle());
+
+    // Last but not least, try two consequtive changes
+    tp_tests_simple_connection_set_identifier(simpleConnService, "me@example.com");
+    tp_tests_simple_connection_set_identifier(simpleConnService, "myself@example.com");
+
+    // We should receive two more self handle changes in total, and one self contact change for
+    // each mainloop run
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mConn->isValid());
+    QCOMPARE(mConn->selfContact()->id(), QString::fromLatin1("me@example.com"));
+
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mConn->isValid());
+    QCOMPARE(mConn->selfContact()->id(), QString::fromLatin1("myself@example.com"));
+
+    QCOMPARE(mNumSelfHandleChanged, 3);
 }
 
 void TestConnIntrospectCornercases::testSlowpath()
