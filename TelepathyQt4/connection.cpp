@@ -140,6 +140,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 
     // FeatureSimplePresence
     SimpleStatusSpecMap simplePresenceStatuses;
+    uint maxPresenceStatusMessageLength;
 
     // FeatureAccountBalance
     CurrencyAmount accountBalance;
@@ -213,6 +214,7 @@ Connection::Private::Private(Connection *parent,
       contactManager(ContactManagerPtr(new ContactManager(parent))),
       introspectingSelfContact(false),
       reintrospectSelfContactRequired(false),
+      maxPresenceStatusMessageLength(0),
       handleContext(0)
 {
     Q_ASSERT(properties != 0);
@@ -490,9 +492,8 @@ void Connection::Private::introspectSimplePresence(Connection::Private *self)
     debug() << "Calling Properties::Get("
         "Connection.I.SimplePresence.Statuses)";
     QDBusPendingCall call =
-        self->properties->Get(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),
-                QLatin1String("Statuses"));
+        self->properties->GetAll(
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, self->parent);
     self->parent->connect(watcher,
@@ -1264,12 +1265,42 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
     ConnectionPtr conn(mPriv->conn);
 
     if (!conn->isReady(Connection::FeatureSimplePresence)) {
-        warning() << "Trying to retrieve simple presence from connection, but "
+        warning() << "Trying to retrieve allowed presence statuses from connection, but "
                      "simple presence is not supported or was not requested. "
-                     "Use becomeReady(FeatureSimplePresence)";
+                     "Enable FeatureSimplePresence in this connection";
     }
 
     return conn->mPriv->simplePresenceStatuses;
+}
+
+/**
+ * Returns the maximum length for a presence status message.
+ *
+ * The value may have changed arbitrarily during the time the
+ * Connection spends in status ConnectionStatusConnecting,
+ * again staying fixed for the entire time in ConnectionStatusConnected.
+ *
+ * This method requires Connection::FeatureSimplePresence to be enabled.
+ *
+ * \return The maximum length for a presence status message, or 0 if there is no limit.
+ */
+uint ConnectionLowlevel::maxPresenceStatusMessageLength() const
+{
+    if (!isValid()) {
+        warning() << "ConnectionLowlevel::maxPresenceStatusMessageLength() "
+            "called for a connection which is already destroyed";
+        return 0;
+    }
+
+    ConnectionPtr conn(mPriv->conn);
+
+    if (!conn->isReady(Connection::FeatureSimplePresence)) {
+        warning() << "Trying to retrieve max presence status message length connection, but "
+                     "simple presence is not supported or was not requested. "
+                     "Enable FeatureSimplePresence in this connection";
+    }
+
+    return conn->mPriv->maxPresenceStatusMessageLength;
 }
 
 /**
@@ -1614,11 +1645,20 @@ void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
 
 void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<QDBusVariant> reply = *watcher;
+    QDBusPendingReply<QVariantMap> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
-        debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
+        QVariantMap props = reply.value();
+
+        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(
+                props[QLatin1String("Statuses")]);
+        mPriv->maxPresenceStatusMessageLength = qdbus_cast<uint>(
+                props[QLatin1String("MaximumStatusMessageLength")]);
+
+        debug() << "Got" << mPriv->simplePresenceStatuses.size() <<
+            "simple presence statuses - max status message length is" <<
+            mPriv->maxPresenceStatusMessageLength;
+
         mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, true);
     }
     else {

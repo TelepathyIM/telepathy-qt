@@ -177,6 +177,7 @@ public:
     bool isChangingPresence() const;
 
     PresenceSpecList allowedPresenceStatuses(bool includeAllStatuses = false) const;
+    uint maxPresenceStatusMessageLength() const;
 
     // TODO: Add overload methods to set presence from a Profile::Presence
     // TODO: Add usablePresences() that would return a list of presences that could be set on the
