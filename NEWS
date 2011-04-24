@@ -12,6 +12,8 @@ Enhancements:
     server-message, user-requested, expected-hostname and certificate-hostname.
 
 Fixes:
+ * fd.o #35633: Contact features being erased after further contact upgrades,
+   e.g. from ContactFactory used together with Connection::FeatureRosterGroups
  * Timeout in some CMs when introspecting contact list channels.
  * Crashes with Connection::FeatureSelfContact enabled (Manifested as an assert
    for inFlightFeatures or pendingFeatures being hit)
