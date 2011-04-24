@@ -2341,18 +2341,18 @@ void Connection::onSelfHandleChanged(uint handle)
     mPriv->selfHandle = handle;
     emit selfHandleChanged(handle);
 
-    if (isReady(FeatureSelfContact)) {
-        // We've already introspected the SelfContact feature, so we can reinvoke the introspection
-        // logic directly to rebuild with the new handle.
-
-        debug() << "Re-building self contact for handle" << handle;
-        Private::introspectSelfContact(mPriv);
-    } else if (mPriv->introspectingSelfContact) {
+    if (mPriv->introspectingSelfContact) {
         // We're currently introspecting the SelfContact feature, but have started building the
         // contact with the old handle, so we need to do it again with the new handle.
 
         debug() << "The self contact is being built, will rebuild with the new handle shortly";
         mPriv->reintrospectSelfContactRequired = true;
+    } else if (isReady(FeatureSelfContact)) {
+        // We've already introspected the SelfContact feature, so we can reinvoke the introspection
+        // logic directly to rebuild with the new handle.
+
+        debug() << "Re-building self contact for handle" << handle;
+        Private::introspectSelfContact(mPriv);
     }
 
     // If ReadinessHelper hasn't started introspecting SelfContact yet for the Connected state, we
