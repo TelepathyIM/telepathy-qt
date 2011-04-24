@@ -7,14 +7,16 @@ Enhancements:
  * fd.o #36526: Tp::Channel has now gained targetID() and targetContact()
    accessors
  * fd.o #35421: Update to spec 0.22.0:
-  - Added auto generated class for Conn.ContactBlocking.
+  - Added auto generated class for Conn.ContactBlocking
   - Added Connection::ErrorDetails accessors for ConnectionError details
-    server-message, user-requested, expected-hostname and certificate-hostname.
+    server-message, user-requested, expected-hostname and certificate-hostname
+ * Add support for Conn.SimplePresence.MaximumStatusMessageLength
+ * Add Features operator|(Features, Feature)
 
 Fixes:
  * fd.o #35633: Contact features being erased after further contact upgrades,
    e.g. from ContactFactory used together with Connection::FeatureRosterGroups
- * Timeout in some CMs when introspecting contact list channels.
+ * Timeout in some CMs when introspecting contact list channels
  * Crashes with Connection::FeatureSelfContact enabled (Manifested as an assert
    for inFlightFeatures or pendingFeatures being hit)
  * Added correctly named pretty headers for the
