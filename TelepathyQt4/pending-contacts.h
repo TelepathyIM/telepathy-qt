@@ -81,6 +81,7 @@ private:
     // If errorName is non-empty, these will fail instantly
     TELEPATHY_QT4_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const UIntList &handles,
             const Features &features,
+            const Features &missingFeatures,
             const QStringList &interfaces,
             const QMap<uint, ContactPtr> &satisfyingContacts,
             const QSet<uint> &otherContacts,

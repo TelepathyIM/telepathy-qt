@@ -799,12 +799,14 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     }
 
     if (!connection()->isValid()) {
-        return new PendingContacts(ContactManagerPtr(this), handles, realFeatures, QStringList(),
-                satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingContacts(ContactManagerPtr(this), handles, features, Features(),
+                QStringList(), satisfyingContacts, otherContacts,
+                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
-        return new PendingContacts(ContactManagerPtr(this), handles, realFeatures, QStringList(),
-                satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingContacts(ContactManagerPtr(this), handles, features, Features(),
+                QStringList(), satisfyingContacts, otherContacts,
+                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
@@ -851,8 +853,8 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     }
 
     PendingContacts *contacts =
-        new PendingContacts(ContactManagerPtr(this), handles, realFeatures, interfaces.toList(),
-                satisfyingContacts, otherContacts);
+        new PendingContacts(ContactManagerPtr(this), handles, features, missingFeatures,
+                interfaces.toList(), satisfyingContacts, otherContacts);
     return contacts;
 }
 

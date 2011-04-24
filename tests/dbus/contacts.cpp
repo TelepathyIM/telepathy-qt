@@ -222,11 +222,26 @@ void TestContacts::testSelfContact()
     QCOMPARE(selfContact->handle()[0], mConn->selfHandle());
     QCOMPARE(selfContact->id(), QString(QLatin1String("me@example.com")));
 
+    Features features = Features() << Contact::FeatureAlias <<
+        Contact::FeatureAvatarToken <<
+        Contact::FeatureSimplePresence;
     QVERIFY(connect(selfContact->manager()->upgradeContacts(
-                        QList<ContactPtr>() << selfContact,
-                        Features() << Contact::FeatureAlias
-                            << Contact::FeatureAvatarToken
-                            << Contact::FeatureSimplePresence),
+                        QList<ContactPtr>() << selfContact, features),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(selfContact->alias(), QString(QLatin1String("me@example.com")));
+
+    QVERIFY(!selfContact->isAvatarTokenKnown());
+
+    QCOMPARE(selfContact->presence().status(), QString(QLatin1String("available")));
+    QCOMPARE(selfContact->presence().type(), Tp::ConnectionPresenceTypeAvailable);
+    QCOMPARE(selfContact->presence().statusMessage(), QString(QLatin1String("")));
+
+    features << Contact::FeatureInfo;
+    QVERIFY(connect(selfContact->manager()->upgradeContacts(
+                        QList<ContactPtr>() << selfContact, features),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);

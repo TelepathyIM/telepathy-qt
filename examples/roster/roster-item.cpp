@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -26,8 +26,7 @@
 
 using namespace Tp;
 
-RosterItem::RosterItem(const ContactPtr &contact,
-        QListWidget *parent)
+RosterItem::RosterItem(const ContactPtr &contact, QListWidget *parent)
     : QObject(parent),
       QListWidgetItem(parent),
       mContact(contact)
@@ -35,16 +34,19 @@ RosterItem::RosterItem(const ContactPtr &contact,
     onContactChanged();
 
     connect(contact.data(),
-            SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
+            SIGNAL(aliasChanged(QString)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
+            SIGNAL(presenceChanged(Tp::Presence)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
+            SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails)),
+            SIGNAL(publishStateChanged(Tp::Contact::PresenceState,QString)),
+            SLOT(onContactChanged()));
+    connect(contact.data(),
+            SIGNAL(blockStatusChanged(bool)),
             SLOT(onContactChanged()));
 }
 
@@ -65,11 +67,11 @@ void RosterItem::onContactChanged()
                mContact->publishState() == Contact::PresenceStateNo) {
         setText(QString(QLatin1String("%1 (unknown)")).arg(mContact->id()));
     } else {
-        if (mContact->isBlocked()) {
-            setText(QString(QLatin1String("%1 (%2) (blocked)")).arg(mContact->id()).arg(status));
-        } else {
-            setText(QString(QLatin1String("%1 (%2)")).arg(mContact->id()).arg(status));
-        }
+        setText(QString(QLatin1String("%1 (%2)")).arg(mContact->id()).arg(status));
+    }
+
+    if (mContact->isBlocked()) {
+        setText(QString(QLatin1String("%1 (blocked)")).arg(text()));
     }
 
     emit changed();
