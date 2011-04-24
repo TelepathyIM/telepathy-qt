@@ -148,7 +148,7 @@ void TestConnIntrospectCornercases::testSelfHandleChangeBeforeConnecting()
 
     // Start introspecting the SelfContact feature
 
-    op = mConn->becomeReady(Connection::FeatureSelfContact);
+    op = mConn->becomeReady(Connection::FeatureSelfContact | Connection::FeatureConnected);
     QVERIFY(connect(op,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
