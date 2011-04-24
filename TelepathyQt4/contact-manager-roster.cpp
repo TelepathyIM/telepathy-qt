@@ -1115,9 +1115,14 @@ void ContactManager::Roster::onContactListChannelReady()
 void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op)
 {
     if (op->isError()) {
+        warning() << "Getting contact list groups properties failed:" << op->errorName() << '-'
+            << op->errorMessage();
+
         introspectGroupsPendingOp->setFinishedWithError(
                 op->errorName(), op->errorMessage());
         introspectGroupsPendingOp = 0;
+
+        return;
     }
 
     debug() << "Got contact list groups properties";
@@ -1139,9 +1144,15 @@ void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op
 
 void ContactManager::Roster::onContactListContactsUpgraded(PendingOperation *op)
 {
+    Q_ASSERT(processingContactListChanges);
     processingContactListChanges = false;
 
+    Q_ASSERT(introspectGroupsPendingOp != NULL);
+
     if (op->isError()) {
+        warning() << "Upgrading contacts with group membership failed:" << op->errorName() << '-'
+            << op->errorMessage();
+
         introspectGroupsPendingOp->setFinishedWithError(
                 op->errorName(), op->errorMessage());
         introspectGroupsPendingOp = 0;
