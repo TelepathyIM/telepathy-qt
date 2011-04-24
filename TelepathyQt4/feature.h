@@ -71,6 +71,11 @@ inline Features operator|(const Feature &feature1, const Feature &feature2)
     return Features() << feature1 << feature2;
 }
 
+inline Features operator|(const Features &features, const Feature &feature)
+{
+    return Features(features) << feature;
+}
+
 } // Tp
 
 Q_DECLARE_METATYPE(Tp::Feature);

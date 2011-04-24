@@ -46,13 +46,10 @@ RosterWindow::RosterWindow(const QString &accountPath, QWidget *parent)
     ChannelFactoryPtr channelFactory = ChannelFactory::create(
             QDBusConnection::sessionBus());
     ConnectionFactoryPtr connectionFactory = ConnectionFactory::create(
-            QDBusConnection::sessionBus(),
-            Features() << Connection::FeatureConnected <<
-                Connection::FeatureRoster <<
-                Connection::FeatureRosterGroups);
+            QDBusConnection::sessionBus(), Connection::FeatureConnected |
+                Connection::FeatureRoster | Connection::FeatureRosterGroups);
     ContactFactoryPtr contactFactory = ContactFactory::create(
-            Features() << Contact::FeatureAlias <<
-                Contact::FeatureSimplePresence);
+            Contact::FeatureAlias | Contact::FeatureSimplePresence);
 
     mAccount = Account::create(TP_QT4_ACCOUNT_MANAGER_BUS_NAME, accountPath,
         connectionFactory, channelFactory, contactFactory);
