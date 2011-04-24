@@ -639,28 +639,21 @@ void TestConnRosterGroupsLegacy::cleanup()
 {
     mContact.reset();
 
-    if (mConn) {
-        if (mConn->status() != ConnectionStatusDisconnected) {
-            // Disconnect and wait for the readiness change
-            QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-            QCOMPARE(mLoop->exec(), 0);
+    if (mConn && mConn->requestedFeatures().contains(Connection::FeatureCore)) {
+        QVERIFY(mConnService != NULL);
+
+        if (TP_BASE_CONNECTION(mConnService)->status != TP_CONNECTION_STATUS_DISCONNECTED) {
+            tp_base_connection_change_status(TP_BASE_CONNECTION(mConnService),
+                    TP_CONNECTION_STATUS_DISCONNECTED,
+                    TP_CONNECTION_STATUS_REASON_REQUESTED);
         }
 
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
-
-            while (!mConnInvalidated) {
-                mLoop->processEvents();
-            }
+        while (mConn->isValid()) {
+            mLoop->processEvents();
         }
 
-        mConn.reset();
     }
+    mConn.reset();
 
     if (mConnService != 0) {
         g_object_unref(mConnService);
