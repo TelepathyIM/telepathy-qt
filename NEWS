@@ -27,6 +27,8 @@ Fixes:
    introspected (SIGSEGV in PendingOperation from ContactManager::Roster)
  * Added correctly named pretty headers for the
    Conn.ClientTypes/ContactGroups/ContactList/Saving interfaces
+ * Odd build system failures from feature checks which were anyway redundant due
+   to our recently bumped Qt 4.6+ dependency - checks now removed
 
 telepathy-qt4 0.5.15 (2011-04-12)
 =================================
