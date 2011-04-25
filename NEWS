@@ -12,13 +12,19 @@ Enhancements:
     server-message, user-requested, expected-hostname and certificate-hostname
  * Add support for Conn.SimplePresence.MaximumStatusMessageLength
  * Add Features operator|(Features, Feature)
+ * ContactManager state now only advances to Success when both the roster and
+   the roster groups have been downloaded, if requested
 
 Fixes:
  * fd.o #35633: Contact features being erased after further contact upgrades,
    e.g. from ContactFactory used together with Connection::FeatureRosterGroups
+ * Contact::groups() and ContactManager::groupContacts() not populated correctly
+   when using CMs with new-style ContactGroups D-Bus API
  * Timeout in some CMs when introspecting contact list channels
  * Crashes with Connection::FeatureSelfContact enabled (Manifested as an assert
    for inFlightFeatures or pendingFeatures being hit)
+ * Crashes if a connection disconnects while FeatureRosterGroups is being
+   introspected (SIGSEGV in PendingOperation from ContactManager::Roster)
  * Added correctly named pretty headers for the
    Conn.ClientTypes/ContactGroups/ContactList/Saving interfaces
 
