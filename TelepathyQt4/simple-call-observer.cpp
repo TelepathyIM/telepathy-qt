@@ -257,6 +257,20 @@ QList<StreamedMediaChannelPtr> SimpleCallObserver::streamedMediaCalls() const
 void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels)
 {
     foreach (const ChannelPtr &channel, channels) {
+        StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
+        if (!smChannel) {
+            if (channel->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+                warning() << "Channel received to observe is not of type StreamedMedia, service "
+                    "confused. Ignoring channel";
+            } else {
+                warning() << "Channel received to observe is not a subclass of "
+                    "StreamedMediaChannel. ChannelFactory set on this observer's account must "
+                    "construct StreamedMediaChannel subclasses for channels of type StreamedMedia. "
+                    "Ignoring channel";
+            }
+            continue;
+        }
+
         emit streamedMediaCallStarted(StreamedMediaChannelPtr::qObjectCast(channel));
     }
 }
@@ -264,8 +278,20 @@ void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels)
 void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
         const QString &errorName, const QString &errorMessage)
 {
-    emit streamedMediaCallEnded(StreamedMediaChannelPtr::qObjectCast(channel),
-            errorName, errorMessage);
+    StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
+    if (!smChannel) {
+        if (channel->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+            warning() << "Channel received by this observer is not of type StreamedMedia, service "
+                "confused. Ignoring channel";
+        } else {
+            warning() << "Channel received by this observer is not a subclass of "
+                "StreamedMediaChannel. ChannelFactory set on this observer's account must "
+                "construct StreamedMediaChannel subclasses for channels of type StreamedMedia. "
+                "Ignoring channel";
+        }
+        return;
+    }
+    emit streamedMediaCallEnded(smChannel, errorName, errorMessage);
 }
 
 /**
