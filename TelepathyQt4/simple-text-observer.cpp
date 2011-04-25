@@ -53,7 +53,7 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
     ChannelClassSpec channelFilter = ChannelClassSpec::textChat();
     observer = SimpleObserver::create(account, ChannelClassSpecList() << channelFilter,
             contactIdentifier, requiresNormalization,
-            QList<ChannelFeatureSpec>() << ChannelFeatureSpec(channelFilter,
+            QList<ChannelClassFeatures>() << ChannelClassFeatures(channelFilter,
                 TextChannel::FeatureMessageQueue | TextChannel::FeatureMessageSentSignal));
 
     parent->connect(observer.data(),

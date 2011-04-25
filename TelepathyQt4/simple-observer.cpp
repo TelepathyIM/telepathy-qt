@@ -50,7 +50,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
         const ChannelClassSpecList &channelFilter,
         const QString &contactIdentifier,
         bool requiresNormalization,
-        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+        const QList<ChannelClassFeatures> &extraChannelFeatures)
     : parent(parent),
       account(account),
       channelFilter(channelFilter),
@@ -137,7 +137,7 @@ void SimpleObserver::Private::processChannelsInvalidationQueue()
 SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
         const ChannelClassSpecList &channelFilter,
         const AccountPtr &account,
-        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+        const QList<ChannelClassFeatures> &extraChannelFeatures)
     : QObject(),
       AbstractClientObserver(channelFilter, false),
       mCr(cr),
@@ -268,7 +268,7 @@ Features SimpleObserver::Private::Observer::featuresFor(
 {
     Features features;
 
-    foreach (const ChannelFeatureSpec &spec, mExtraChannelFeatures) {
+    foreach (const ChannelClassFeatures &spec, mExtraChannelFeatures) {
         if (spec.first.isSubsetOf(channelClass)) {
             features.unite(spec.second);
         }
@@ -335,7 +335,7 @@ void SimpleObserver::Private::ChannelWrapper::onChannelInvalidated(DBusProxy *pr
 SimpleObserverPtr SimpleObserver::create(
         const AccountPtr &account,
         const ChannelClassSpecList &channelFilter,
-        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+        const QList<ChannelClassFeatures> &extraChannelFeatures)
 {
     return create(account, channelFilter, extraChannelFeatures);
 }
@@ -359,7 +359,7 @@ SimpleObserverPtr SimpleObserver::create(
         const AccountPtr &account,
         const ChannelClassSpecList &channelFilter,
         const ContactPtr &contact,
-        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+        const QList<ChannelClassFeatures> &extraChannelFeatures)
 {
     if (contact) {
         return create(account, channelFilter, contact->id(), false, extraChannelFeatures);
@@ -387,7 +387,7 @@ SimpleObserverPtr SimpleObserver::create(
         const AccountPtr &account,
         const ChannelClassSpecList &channelFilter,
         const QString &contactIdentifier,
-        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+        const QList<ChannelClassFeatures> &extraChannelFeatures)
 {
     return create(account, channelFilter, contactIdentifier, true, extraChannelFeatures);
 }
@@ -397,7 +397,7 @@ SimpleObserverPtr SimpleObserver::create(
         const ChannelClassSpecList &channelFilter,
         const QString &contactIdentifier,
         bool requiresNormalization,
-        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+        const QList<ChannelClassFeatures> &extraChannelFeatures)
 {
     return SimpleObserverPtr(new SimpleObserver(account, channelFilter, contactIdentifier,
                 requiresNormalization, extraChannelFeatures));
@@ -417,7 +417,7 @@ SimpleObserverPtr SimpleObserver::create(
 SimpleObserver::SimpleObserver(const AccountPtr &account,
         const ChannelClassSpecList &channelFilter,
         const QString &contactIdentifier, bool requiresNormalization,
-        const QList<ChannelFeatureSpec> &extraChannelFeatures)
+        const QList<ChannelClassFeatures> &extraChannelFeatures)
     : mPriv(new Private(this, account, channelFilter, contactIdentifier,
                 requiresNormalization, extraChannelFeatures))
 {
@@ -461,7 +461,7 @@ ChannelClassSpecList SimpleObserver::channelFilter() const
  *
  * \return The extra channel features to be enabled based on the channels immutable properties.
  */
-QList<ChannelFeatureSpec> SimpleObserver::extraChannelFeatures() const
+QList<ChannelClassFeatures> SimpleObserver::extraChannelFeatures() const
 {
     return mPriv->extraChannelFeatures;
 }

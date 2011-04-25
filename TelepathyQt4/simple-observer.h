@@ -24,7 +24,7 @@
 #define _TelepathyQt4_simple_observer_h_HEADER_GUARD_
 
 #include <TelepathyQt4/AbstractClientObserver>
-#include <TelepathyQt4/ChannelFeatureSpec>
+#include <TelepathyQt4/ChannelClassFeatures>
 #include <TelepathyQt4/Types>
 
 #include <QObject>
@@ -44,25 +44,25 @@ class TELEPATHY_QT4_NO_EXPORT SimpleObserver : public QObject, public RefCounted
 public:
     static SimpleObserverPtr create(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
-            const QList<ChannelFeatureSpec> &extraChannelFeatures =
-                QList<ChannelFeatureSpec>());
+            const QList<ChannelClassFeatures> &extraChannelFeatures =
+                QList<ChannelClassFeatures>());
     static SimpleObserverPtr create(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
             const ContactPtr &contact,
-            const QList<ChannelFeatureSpec> &extraChannelFeatures =
-                QList<ChannelFeatureSpec>());
+            const QList<ChannelClassFeatures> &extraChannelFeatures =
+                QList<ChannelClassFeatures>());
     static SimpleObserverPtr create(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
             const QString &contactIdentifier,
-            const QList<ChannelFeatureSpec> &extraChannelFeatures =
-                QList<ChannelFeatureSpec>());
+            const QList<ChannelClassFeatures> &extraChannelFeatures =
+                QList<ChannelClassFeatures>());
 
     virtual ~SimpleObserver();
 
     AccountPtr account() const;
     ChannelClassSpecList channelFilter() const;
     QString contactIdentifier() const;
-    QList<ChannelFeatureSpec> extraChannelFeatures() const;
+    QList<ChannelClassFeatures> extraChannelFeatures() const;
 
     QList<ChannelPtr> channels() const;
 
@@ -90,13 +90,13 @@ private:
             const ChannelClassSpecList &channelFilter,
             const QString &contactIdentifier,
             bool requiresNormalization,
-            const QList<ChannelFeatureSpec> &extraChannelFeatures);
+            const QList<ChannelClassFeatures> &extraChannelFeatures);
 
     TELEPATHY_QT4_NO_EXPORT SimpleObserver(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
             const QString &contactIdentifier,
             bool requiresNormalization,
-            const QList<ChannelFeatureSpec> &extraChannelFeatures);
+            const QList<ChannelClassFeatures> &extraChannelFeatures);
 
     struct Private;
     friend struct Private;

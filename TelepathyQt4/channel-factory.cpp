@@ -28,7 +28,7 @@
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ChannelFeatureSpec>
+#include <TelepathyQt4/ChannelClassFeatures>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactSearchChannel>
@@ -49,7 +49,7 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelFactory::Private
 {
     Private();
 
-    QList<ChannelFeatureSpec> features;
+    QList<ChannelClassFeatures> features;
 
     typedef QPair<ChannelClassSpec, ConstructorConstPtr> CtorPair;
     QList<CtorPair> ctors;
@@ -354,7 +354,7 @@ Features ChannelFactory::featuresFor(const ChannelClassSpec &channelClass) const
 {
     Features features;
 
-    foreach (const ChannelFeatureSpec &pair, mPriv->features) {
+    foreach (const ChannelClassFeatures &pair, mPriv->features) {
         if (pair.first.isSubsetOf(channelClass)) {
             features.unite(pair.second);
         }
@@ -365,7 +365,7 @@ Features ChannelFactory::featuresFor(const ChannelClassSpec &channelClass) const
 
 void ChannelFactory::addFeaturesFor(const ChannelClassSpec &channelClass, const Features &features)
 {
-    QList<ChannelFeatureSpec>::iterator i;
+    QList<ChannelClassFeatures>::iterator i;
     for (i = mPriv->features.begin(); i != mPriv->features.end(); ++i) {
         if (channelClass.allProperties().size() > i->first.allProperties().size()) {
             break;

@@ -36,7 +36,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
             const ChannelClassSpecList &channelFilter,
             const QString &contactIdentifier,
             bool requiresNormalization,
-            const QList<ChannelFeatureSpec> &extraChannelFeatures);
+            const QList<ChannelClassFeatures> &extraChannelFeatures);
 
     bool filterChannel(const Tp::ChannelPtr &channel);
 
@@ -55,7 +55,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     ChannelClassSpecList channelFilter;
     QString contactIdentifier;
     QString normalizedContactIdentifier;
-    QList<ChannelFeatureSpec> extraChannelFeatures;
+    QList<ChannelClassFeatures> extraChannelFeatures;
     SharedPtr<Observer> observer;
     static uint numObservers;
     QQueue<void (SimpleObserver::Private::*)()> channelsQueue;
@@ -91,7 +91,7 @@ public:
     Observer(const ClientRegistrarPtr &cr,
              const ChannelClassSpecList &channelFilter,
              const AccountPtr &account,
-             const QList<ChannelFeatureSpec> &extraChannelFeatures);
+             const QList<ChannelClassFeatures> &extraChannelFeatures);
     ~Observer();
 
     QList<ChannelPtr> channels() const { return mChannels.keys(); }
@@ -120,7 +120,7 @@ private:
 
     ClientRegistrarPtr mCr;
     AccountPtr mAccount;
-    QList<ChannelFeatureSpec> mExtraChannelFeatures;
+    QList<ChannelClassFeatures> mExtraChannelFeatures;
     QHash<ChannelPtr, ChannelWrapper*> mChannels;
     QHash<ChannelPtr, ChannelWrapper*> mIncompleteChannels;
     QHash<PendingOperation*, ContextInfo*> mObserveChannelsInfo;

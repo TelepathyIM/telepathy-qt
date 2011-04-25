@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_channel_feature_spec_h_HEADER_GUARD_
-#define _TelepathyQt4_channel_feature_spec_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_channel_class_features_h_HEADER_GUARD_
+#define _TelepathyQt4_channel_class_features_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
@@ -36,10 +36,10 @@
 namespace Tp
 {
 
-typedef QPair<ChannelClassSpec, Features> ChannelFeatureSpec;
+typedef QPair<ChannelClassSpec, Features> ChannelClassFeatures;
 
 } // Tp
 
-Q_DECLARE_METATYPE(Tp::ChannelFeatureSpec);
+Q_DECLARE_METATYPE(Tp::ChannelClassFeatures);
 
 #endif

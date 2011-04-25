@@ -80,7 +80,7 @@ SimpleCallObserver::Private::Private(SimpleCallObserver *parent,
     }
 
     observer = SimpleObserver::create(account, ChannelClassSpecList() << channelFilter,
-            contactIdentifier, requiresNormalization, QList<ChannelFeatureSpec>());
+            contactIdentifier, requiresNormalization, QList<ChannelClassFeatures>());
 
     parent->connect(observer.data(),
             SIGNAL(newChannels(QList<Tp::ChannelPtr>,QDateTime)),
