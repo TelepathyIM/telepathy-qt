@@ -264,9 +264,8 @@ void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels)
 void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
         const QString &errorName, const QString &errorMessage)
 {
-    Q_UNUSED(errorName);
-    Q_UNUSED(errorMessage);
-    emit streamedMediaCallEnded(StreamedMediaChannelPtr::qObjectCast(channel));
+    emit streamedMediaCallEnded(StreamedMediaChannelPtr::qObjectCast(channel),
+            errorName, errorMessage);
 }
 
 /**
@@ -286,6 +285,9 @@ void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
  * ended.
  *
  * \param channel The channel representing the streamed media call that ended.
+ * \param errorName A D-Bus error name (a string in a subset
+ *                  of ASCII, prefixed with a reversed domain name).
+ * \param errorMessage A debugging message associated with the error.
  */
 
 } // Tp

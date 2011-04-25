@@ -80,7 +80,8 @@ public:
 
 Q_SIGNALS:
     void streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel);
-    void streamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel);
+    void streamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel,
+            const QString &errorName, const QString &errorMessage);
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
