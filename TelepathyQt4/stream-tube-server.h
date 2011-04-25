@@ -85,6 +85,8 @@ public:
 
     ~StreamTubeServer();
 
+    bool monitorsConnections() const;
+
     // Recovery getters for the setters below
     QPair<QHostAddress, quint16> exportedTcpSocketAddress() const;
 
