@@ -43,11 +43,14 @@ class TELEPATHY_QT4_EXPORT StreamTubeServer : public QObject, public RefCounted
     Q_DISABLE_COPY(StreamTubeServer)
 
 public:
+    // The client name can be passed to allow service-activation. If service activation is not
+    // desired, the name can be left out, in which case an unique name will be generated.
+
     // Different parameter order, because name and service are mandatory params so they can't follow
     // the factory params which have default args
     static StreamTubeServerPtr create(
-            const QString &clientName,
             const QString &service,
+            const QString &clientName = QString(),
             bool monitorConnections = false,
             const AccountFactoryConstPtr &accountFactory =
                 AccountFactory::create(QDBusConnection::sessionBus()),
@@ -65,16 +68,19 @@ public:
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory,
             const QString &service,
+            const QString &clientName = QString(),
             bool monitorConnections = false);
 
     static StreamTubeServerPtr create(
             const AccountManagerPtr &accountManager,
             const QString &service,
+            const QString &clientName = QString(),
             bool monitorConnections = false);
 
     static StreamTubeServerPtr create(
             const ClientRegistrarPtr &registrar,
             const QString &service,
+            const QString &clientName = QString(),
             bool monitorConnections = false);
 
     ~StreamTubeServer();
