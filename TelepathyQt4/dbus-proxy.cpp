@@ -35,9 +35,7 @@
 #include <QDBusError>
 #include <QTimer>
 
-#ifdef HAVE_QDBUSSERVICEWATCHER
 #include <QDBusServiceWatcher>
-#endif
 
 namespace Tp
 {
@@ -275,17 +273,11 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
     : DBusProxy(dbusConnection, busName, objectPath, featureCore),
       mPriv(new Private(busName))
 {
-#ifdef HAVE_QDBUSSERVICEWATCHER
     QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(busName,
             dbusConnection, QDBusServiceWatcher::WatchForUnregistration, this);
     connect(serviceWatcher,
             SIGNAL(serviceOwnerChanged(QString,QString,QString)),
             SLOT(onServiceOwnerChanged(QString,QString,QString)));
-#else
-    connect(dbusConnection.interface(),
-            SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-            SLOT(onServiceOwnerChanged(QString,QString,QString)));
-#endif
 
     QString error, message;
     QString uniqueName = uniqueNameFrom(dbusConnection, busName, error, message);

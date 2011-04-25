@@ -124,21 +124,6 @@ macro_log_feature(QT4_GLIB_SUPPORT "Qt4 Glib Support"
                   "http://qt.nokia.com/" FALSE ""
                   "Needed, together with Telepathy-Glib, to build most of the unit tests")
 
-SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY})
-
-# Check for QDBusServiceWatcher being present
-# This check can be safely removed if we start depending on Qt 4.6
-CHECK_CXX_SOURCE_COMPILES("
-#include <QtDBus>
-int main()
-{
-QDBusServiceWatcher watcher;
-return 0;
-}
-"
-HAVE_QDBUSSERVICEWATCHER)
-set(CMAKE_REQUIRED_LIBRARIES)
-
 # Find python version >= 2.5
 find_package(PythonLibrary REQUIRED)
 set(REQUIRED_PY 2.5)
