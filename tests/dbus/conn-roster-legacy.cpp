@@ -177,6 +177,9 @@ void TestConnRosterLegacy::testRoster()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
+    QCOMPARE(static_cast<uint>(mConn->contactManager()->state()),
+             static_cast<uint>(ContactListStateSuccess));
+
     QStringList toCheck = QStringList() <<
         QLatin1String("sjoerd@example.com") <<
         QLatin1String("travis@example.com") <<

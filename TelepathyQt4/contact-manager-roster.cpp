@@ -56,7 +56,8 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
       contactListGroupPropertiesReceived(false),
       processingContactListChanges(false),
       contactListChannelsReady(0),
-      featureContactListGroupsTodo(0)
+      featureContactListGroupsTodo(0),
+      groupsSetSuccess(false)
 {
 }
 
@@ -705,17 +706,32 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
         cachedAllKnownContacts.insert(contact);
     }
 
+    if (contactManager->connection()->requestedFeatures().contains(
+                Connection::FeatureRosterGroups)) {
+        groupsSetSuccess = true;
+    }
+
     // We may have been in state Failure and then Success, and FeatureRoster is already ready
+    // In any case, if we're going to reintrospect Groups, we only advance to state success once
+    // that is finished. We connect to the op finishing already here to catch all the failure finish
+    // cases as well.
     if (introspectPendingOp) {
-        // Will emit stateChanged() signal when the op is finished in idle
-        // callback. This is to ensure FeatureRoster is marked ready.
-        connect(introspectPendingOp,
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(setStateSuccess()));
+        if (!groupsSetSuccess) {
+            // Will emit stateChanged() signal when the op is finished in idle
+            // callback. This is to ensure FeatureRoster (and Groups) is marked ready.
+            connect(introspectPendingOp,
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(setStateSuccess()));
+        }
+
         introspectPendingOp->setFinished();
         introspectPendingOp = 0;
-    } else {
+    } else if (!groupsSetSuccess) {
         setStateSuccess();
+    } else {
+        // Verify that Groups is actually going to set the state
+        // As far as I can see, this will always be the case.
+        Q_ASSERT(groupsReintrospectionRequired);
     }
 
     if (groupsReintrospectionRequired) {
@@ -1092,11 +1108,19 @@ void ContactManager::Roster::onContactListChannelReady()
         updateContactsPresenceState();
 
         Q_ASSERT(introspectPendingOp);
-        // Will emit stateChanged() signal when the op is finished in idle
-        // callback. This is to ensure FeatureRoster is marked ready.
-        connect(introspectPendingOp,
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(setStateSuccess()));
+
+        if (!contactManager->connection()->requestedFeatures().contains(
+                    Connection::FeatureRosterGroups)) {
+            // Will emit stateChanged() signal when the op is finished in idle
+            // callback. This is to ensure FeatureRoster is marked ready.
+            connect(introspectPendingOp,
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(setStateSuccess()));
+        } else {
+            Q_ASSERT(!groupsSetSuccess);
+            groupsSetSuccess = true;
+        }
+
         introspectPendingOp->setFinished();
         introspectPendingOp = 0;
     }
@@ -1104,10 +1128,24 @@ void ContactManager::Roster::onContactListChannelReady()
 
 void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op)
 {
+    Q_ASSERT(introspectGroupsPendingOp != NULL);
+
+    if (groupsSetSuccess) {
+        // Connect here, so we catch the following and the other failure cases
+        connect(introspectGroupsPendingOp,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(setStateSuccess()));
+    }
+
     if (op->isError()) {
+        warning() << "Getting contact list groups properties failed:" << op->errorName() << '-'
+            << op->errorMessage();
+
         introspectGroupsPendingOp->setFinishedWithError(
                 op->errorName(), op->errorMessage());
         introspectGroupsPendingOp = 0;
+
+        return;
     }
 
     debug() << "Got contact list groups properties";
@@ -1129,9 +1167,15 @@ void ContactManager::Roster::gotContactListGroupsProperties(PendingOperation *op
 
 void ContactManager::Roster::onContactListContactsUpgraded(PendingOperation *op)
 {
+    Q_ASSERT(processingContactListChanges);
     processingContactListChanges = false;
 
+    Q_ASSERT(introspectGroupsPendingOp != NULL);
+
     if (op->isError()) {
+        warning() << "Upgrading contacts with group membership failed:" << op->errorName() << '-'
+            << op->errorMessage();
+
         introspectGroupsPendingOp->setFinishedWithError(
                 op->errorName(), op->errorMessage());
         introspectGroupsPendingOp = 0;
@@ -1750,6 +1794,22 @@ void ContactManager::Roster::checkContactListGroupsReady()
 {
     if (featureContactListGroupsTodo != 0) {
         return;
+    }
+
+    if (groupsSetSuccess) {
+        Q_ASSERT(contactManager->state() != ContactListStateSuccess);
+
+        if (introspectGroupsPendingOp) {
+            // Will emit stateChanged() signal when the op is finished in idle
+            // callback. This is to ensure FeatureRosterGroups is marked ready.
+            connect(introspectGroupsPendingOp,
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(setStateSuccess()));
+        } else {
+            setStateSuccess();
+        }
+
+        groupsSetSuccess = false;
     }
 
     setContactListGroupChannelsReady();

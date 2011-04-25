@@ -150,7 +150,8 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureSimplePresence
             << Contact::FeatureCapabilities
             << Contact::FeatureLocation
-            << Contact::FeatureInfo;
+            << Contact::FeatureInfo
+            << Contact::FeatureRosterGroups;
         QStringList interfaces = connection()->lowlevel()->contactAttributeInterfaces();
         foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {

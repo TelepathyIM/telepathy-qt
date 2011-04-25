@@ -224,6 +224,9 @@ private:
     QList<ChannelPtr> pendingContactListGroupChannels;
     QMap<QString, ChannelPtr> contactListGroupChannels;
     QList<ChannelPtr> removedContactListGroupChannels;
+
+    // If RosterGroups introspection completing should advance the ContactManager state to Success
+    bool groupsSetSuccess;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
