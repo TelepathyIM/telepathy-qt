@@ -261,7 +261,11 @@ void SimpleTextObserver::onNewChannels(const QList<ChannelPtr> &channels)
 
 void SimpleTextObserver::onChannelInvalidated(const ChannelPtr &channel)
 {
-    delete mPriv->channels.take(channel);
+    // it may happen that the channel received in onNewChannels is not a text channel somehow, thus
+    // the channel won't be added to mPriv->channels
+    if (mPriv->channels.contains(channel)) {
+        delete mPriv->channels.take(channel);
+    }
 }
 
 /**
