@@ -86,6 +86,7 @@ class SimpleTextObserver;
 class StreamedMediaChannel;
 class StreamedMediaStream;
 class StreamTubeChannel;
+class StreamTubeServer;
 class TextChannel;
 class TubeChannel;
 
@@ -143,6 +144,7 @@ typedef SharedPtr<SimpleTextObserver> SimpleTextObserverPtr;
 typedef SharedPtr<StreamedMediaChannel> StreamedMediaChannelPtr;
 typedef SharedPtr<StreamedMediaStream> StreamedMediaStreamPtr;
 typedef SharedPtr<StreamTubeChannel> StreamTubeChannelPtr;
+typedef SharedPtr<StreamTubeServer> StreamTubeServerPtr;
 typedef SharedPtr<TextChannel> TextChannelPtr;
 typedef SharedPtr<TubeChannel> TubeChannelPtr;
 
