@@ -39,7 +39,6 @@ class TELEPATHY_QT4_EXPORT SimpleCallObserver : public QObject,
     Q_OBJECT
     Q_DISABLE_COPY(SimpleCallObserver)
     Q_FLAGS(CallDirection CallDirections)
-    Q_FLAGS(CallType CallTypes)
 
 public:
     enum CallDirection {
@@ -49,32 +48,20 @@ public:
     };
     Q_DECLARE_FLAGS(CallDirections, CallDirection)
 
-    enum CallType {
-        CallTypeAudio = 0x01,
-        CallTypeVideo = 0x02,
-        CallTypeAll = CallTypeAudio | CallTypeVideo
-        // FIXME conference calls
-    };
-    Q_DECLARE_FLAGS(CallTypes, CallType)
-
     static SimpleCallObserverPtr create(const AccountPtr &account,
-            CallDirection direction = CallDirectionBoth,
-            CallType type = CallTypeAll);
+            CallDirection direction = CallDirectionBoth);
     static SimpleCallObserverPtr create(const AccountPtr &account,
             const ContactPtr &contact,
-            CallDirection direction = CallDirectionBoth,
-            CallType type = CallTypeAll);
+            CallDirection direction = CallDirectionBoth);
     static SimpleCallObserverPtr create(const AccountPtr &account,
             const QString &contactIdentifier,
-            CallDirection direction = CallDirectionBoth,
-            CallType type = CallTypeAll);
+            CallDirection direction = CallDirectionBoth);
 
     virtual ~SimpleCallObserver();
 
     AccountPtr account() const;
     QString contactIdentifier() const;
     CallDirection direction() const;
-    CallType type() const;
 
     QList<StreamedMediaChannelPtr> streamedMediaCalls() const;
 
@@ -92,11 +79,11 @@ private:
     TELEPATHY_QT4_NO_EXPORT static SimpleCallObserverPtr create(
             const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization,
-            CallDirection direction, CallType type);
+            CallDirection direction);
 
     TELEPATHY_QT4_NO_EXPORT SimpleCallObserver(const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization,
-            CallDirection direction, CallType type);
+            CallDirection direction);
 
     struct Private;
     friend struct Private;

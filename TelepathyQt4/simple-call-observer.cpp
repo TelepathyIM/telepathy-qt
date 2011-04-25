@@ -46,37 +46,29 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleCallObserver::Private
 {
     Private(SimpleCallObserver *parent, const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization,
-            CallDirection direction, CallType type);
+            CallDirection direction);
 
     SimpleCallObserver *parent;
     AccountPtr account;
     QString contactIdentifier;
     CallDirection direction;
-    CallType type;
     SimpleObserverPtr observer;
 };
 
 SimpleCallObserver::Private::Private(SimpleCallObserver *parent,
         const AccountPtr &account,
         const QString &contactIdentifier, bool requiresNormalization,
-        CallDirection direction, CallType type)
+        CallDirection direction)
     : parent(parent),
       account(account),
       contactIdentifier(contactIdentifier),
-      direction(direction),
-      type(type)
+      direction(direction)
 {
     ChannelClassSpec channelFilter = ChannelClassSpec::streamedMediaCall();
     if (direction == CallDirectionIncoming) {
         channelFilter.setRequested(false);
     } else if (direction == CallDirectionOutgoing) {
         channelFilter.setRequested(true);
-    }
-    if (type & CallTypeAudio) {
-        channelFilter.setStreamedMediaInitialAudioFlag();
-    }
-    if (type & CallTypeVideo) {
-        channelFilter.setStreamedMediaInitialVideoFlag();
     }
 
     observer = SimpleObserver::create(account, ChannelClassSpecList() << channelFilter,
@@ -96,77 +88,74 @@ SimpleCallObserver::Private::Private(SimpleCallObserver *parent,
  * \headerfile TelepathyQt4/simple-call-observer.h <TelepathyQt4/SimpleCallObserver>
  *
  * \brief The SimpleCallObserver class provides an easy way to track calls
- *        in an account and can be optionally filtered by a contact, type or
- *        direction.
+ *        in an account and can be optionally filtered by a contact and/or
+ *        call direction.
  */
 
 /**
  * Create a new SimpleCallObserver object.
  *
- * Events will be signalled for all calls in \a account that respect \a direction and \a type.
+ * Events will be signalled for all calls in \a account that respect \a direction.
  *
  * \param account The account used to listen to events.
  * \param direction The direction of the calls used to filter events.
- * \param type The type of the calls used to filter events.
  * \return An SimpleCallObserverPtr object pointing to the newly created
  *         SimpleCallObserver object.
  */
 SimpleCallObserverPtr SimpleCallObserver::create(const AccountPtr &account,
-        CallDirection direction, CallType type)
+        CallDirection direction)
 {
-    return create(account, QString(), false, direction, type);
+    return create(account, QString(), false, direction);
 }
 
 /**
  * Create a new SimpleCallObserver object.
  *
  * Events will be signalled for all calls in \a account established with \a contact and
- * that respect \a direction and \a type.
+ * that respect \a direction.
  *
  * \param account The account used to listen to events.
  * \param contact The contact used to filter events.
  * \param direction The direction of the calls used to filter events.
- * \param type The type of the calls used to filter events.
  * \return An SimpleCallObserverPtr object pointing to the newly created
  *         SimpleCallObserver object.
  */
 SimpleCallObserverPtr SimpleCallObserver::create(const AccountPtr &account,
         const ContactPtr &contact,
-        CallDirection direction, CallType type)
+        CallDirection direction)
 {
     if (contact) {
-        return create(account, contact->id(), false, direction, type);
+        return create(account, contact->id(), false, direction);
     }
-    return create(account, QString(), false, direction, type);
+    return create(account, QString(), false, direction);
 }
 
 /**
  * Create a new SimpleCallObserver object.
  *
  * Events will be signalled for all calls in \a account established with a contact identified by \a
- * contactIdentifier and that respect \a direction and \a type.
+ * contactIdentifier and that respect \a direction.
  *
  * \param account The account used to listen to events.
  * \param contactIdentifier The identifier of the contact used to filter events.
  * \param direction The direction of the calls used to filter events.
- * \param type The type of the calls used to filter events.
  * \return An SimpleCallObserverPtr object pointing to the newly created
  *         SimpleCallObserver object.
  */
 SimpleCallObserverPtr SimpleCallObserver::create(const AccountPtr &account,
         const QString &contactIdentifier,
-        CallDirection direction, CallType type)
+        CallDirection direction)
 {
-    return create(account, contactIdentifier, true, direction, type);
+    return create(account, contactIdentifier, true, direction);
 }
 
 SimpleCallObserverPtr SimpleCallObserver::create(const AccountPtr &account,
         const QString &contactIdentifier, bool requiresNormalization,
-        CallDirection direction, CallType type)
+        CallDirection direction)
 {
     return SimpleCallObserverPtr(
             new SimpleCallObserver(account, contactIdentifier,
-                requiresNormalization, direction, type));
+                requiresNormalization, direction));
 }
 
 /**
@@ -177,14 +166,13 @@ SimpleCallObserverPtr SimpleCallObserver::create(const AccountPtr &account,
  * \param requiresNormalization Whether \a contactIdentifier needs to be
  *                              normalized.
  * \param direction The direction of the calls used to filter events.
- * \param type The type of the calls used to filter events.
  * \return An SimpleCallObserverPtr object pointing to the newly created
  *         SimpleCallObserver object.
  */
 SimpleCallObserver::SimpleCallObserver(const AccountPtr &account,
         const QString &contactIdentifier, bool requiresNormalization,
-        CallDirection direction, CallType type)
-    : mPriv(new Private(this, account, contactIdentifier, requiresNormalization, direction, type))
+        CallDirection direction)
+    : mPriv(new Private(this, account, contactIdentifier, requiresNormalization, direction))
 {
 }
 
@@ -225,16 +213,6 @@ QString SimpleCallObserver::contactIdentifier() const
 SimpleCallObserver::CallDirection SimpleCallObserver::direction() const
 {
     return mPriv->direction;
-}
-
-/**
- * Return the type of the calls used to filter events.
- *
- * \return The type of the calls used to filter events.
- */
-SimpleCallObserver::CallType SimpleCallObserver::type() const
-{
-    return mPriv->type;
 }
 
 /**
