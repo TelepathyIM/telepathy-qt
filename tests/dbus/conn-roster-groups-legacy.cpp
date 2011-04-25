@@ -48,6 +48,7 @@ private Q_SLOTS:
     void init();
 
     void testGroupsAfterStateChange();
+    void testIntrospectAfterStateChange();
     void testRosterGroups();
     void testNotADeathTrap();
 
@@ -240,6 +241,84 @@ void TestConnRosterGroupsLegacy::testGroupsAfterStateChange()
         expectedContacts.sort();
         QStringList contacts;
         Q_FOREACH (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Montreal"))) {
+            contacts << contact->id();
+        }
+        contacts.sort();
+        QCOMPARE(contacts, expectedContacts);
+    }
+}
+
+void TestConnRosterGroupsLegacy::testIntrospectAfterStateChange()
+{
+    // Create a conn and make the roster feature ready
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+
+    ContactManagerPtr contactManager = mConn->contactManager();
+
+    Features features = Features() << Connection::FeatureRoster;
+    QVERIFY(connect(mConn->becomeReady(features),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->isReady(Connection::FeatureRoster), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureRosterGroups), false);
+
+    // Now start connecting it, and wait for the ContactManager state to turn to Success
+    QVERIFY(connect(contactManager.data(),
+                    SIGNAL(stateChanged(Tp::ContactListState)),
+                    SLOT(exitOnStateSuccess(Tp::ContactListState))));
+
+    mConn->lowlevel()->requestConnect();
+
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(static_cast<uint>(contactManager->state()),
+             static_cast<uint>(ContactListStateSuccess));
+
+    // The conn should be valid and have the roster feature ready when it emits Success, but not
+    // RosterGroups because we didn't request it
+    QVERIFY(mConn->isValid());
+    QCOMPARE(mConn->isReady(Connection::FeatureRoster), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureRosterGroups), false);
+
+    // We should have roster contacts now, but no groups
+    QVERIFY(!contactManager->allKnownContacts().isEmpty());
+    QVERIFY(contactManager->allKnownGroups().isEmpty());
+
+    // Make RosterGroups ready too
+    features = Features() << Connection::FeatureRosterGroups;
+    QVERIFY(connect(mConn->becomeReady(features),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->isReady(Connection::FeatureRoster), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureRosterGroups), true);
+
+    // We should still have the contacts, and the state should be success
+    QVERIFY(!contactManager->allKnownContacts().isEmpty());
+    QCOMPARE(static_cast<uint>(contactManager->state()),
+             static_cast<uint>(ContactListStateSuccess));
+
+    // We should have all the group data downloaded now, check for that
+    QStringList expectedGroups;
+    expectedGroups << QLatin1String("Cambridge") << QLatin1String("Francophones")
+        << QLatin1String("Montreal");
+    expectedGroups.sort();
+    QStringList groups = contactManager->allKnownGroups();
+    groups.sort();
+    QCOMPARE(groups, expectedGroups);
+
+    // Cambridge
+    {
+        QStringList expectedContacts;
+        expectedContacts << QLatin1String("geraldine@example.com")
+            << QLatin1String("helen@example.com")
+            << QLatin1String("guillaume@example.com")
+            << QLatin1String("sjoerd@example.com");
+        expectedContacts.sort();
+        QStringList contacts;
+        Q_FOREACH (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Cambridge"))) {
             contacts << contact->id();
         }
         contacts.sort();
