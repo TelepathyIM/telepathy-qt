@@ -124,16 +124,7 @@ macro_log_feature(QT4_GLIB_SUPPORT "Qt4 Glib Support"
                   "http://qt.nokia.com/" FALSE ""
                   "Needed, together with Telepathy-Glib, to build most of the unit tests")
 
-# Check for operator== in QDBusVariant
 SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY})
-CHECK_CXX_SOURCE_COMPILES("
-#include <QtDBus>
-int main()
-{
-QDBusVariant a; QDBusVariant b; if (a == b) { ; }
-return 0;
-}"
-HAVE_QDBUSVARIANT_OPERATOR_EQUAL)
 
 # Check for QDBusServiceWatcher being present
 # This check can be safely removed if we start depending on Qt 4.6

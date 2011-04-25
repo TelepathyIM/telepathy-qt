@@ -20,22 +20,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "config.h"
 #include <TelepathyQt4/Types>
 
 #include <TelepathyQt4/types-internal.h>
-
-#ifndef HAVE_QDBUSVARIANT_OPERATOR_EQUAL
-
-/* FIXME This is a workaround that should be removed when Qt has support for
- *       this. There is already a merge request
- *       (http://qt.gitorious.org/qt/qt/merge_requests/1657) in place and the
- *       fix should be in next Qt versions.
- */
-inline bool operator==(const QDBusVariant &v1, const QDBusVariant &v2)
-{ return v1.variant() == v2.variant(); }
-
-#endif
 
 #include "TelepathyQt4/_gen/types-body.hpp"
 
