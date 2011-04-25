@@ -38,8 +38,6 @@
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingSuccess>
 
-#include <QDateTime>
-
 namespace Tp
 {
 
@@ -88,11 +86,11 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
     }
 
     parent->connect(observer.data(),
-            SIGNAL(newChannels(QList<Tp::ChannelPtr>,QDateTime)),
-            SLOT(onNewChannels(QList<Tp::ChannelPtr>,QDateTime)));
+            SIGNAL(newChannels(QList<Tp::ChannelPtr>)),
+            SLOT(onNewChannels(QList<Tp::ChannelPtr>)));
     parent->connect(observer.data(),
-            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString,QDateTime)),
-            SLOT(onChannelInvalidated(Tp::ChannelPtr,QString,QString,QDateTime)));
+            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString)),
+            SLOT(onChannelInvalidated(Tp::ChannelPtr,QString,QString)));
 }
 
 bool SimpleObserver::Private::filterChannel(const ChannelPtr &channel)
@@ -124,14 +122,13 @@ void SimpleObserver::Private::processChannelsQueue()
 void SimpleObserver::Private::processNewChannelsQueue()
 {
     NewChannelsInfo info = newChannelsQueue.dequeue();
-    emit parent->newChannels(info.channels, info.timestamp);
+    emit parent->newChannels(info.channels);
 }
 
 void SimpleObserver::Private::processChannelsInvalidationQueue()
 {
     ChannelInvadationInfo info = channelsInvalidationQueue.dequeue();
-    emit parent->channelInvalidated(info.channel, info.errorName, info.errorMessage,
-            info.timestamp);
+    emit parent->channelInvalidated(info.channel, info.errorName, info.errorMessage);
 }
 
 SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
@@ -175,7 +172,6 @@ void SimpleObserver::Private::Observer::observeChannels(
         return;
     }
 
-    QDateTime now = QDateTime::currentDateTime();
     QList<PendingOperation*> readyOps;
     QList<ChannelPtr> newChannels;
 
@@ -212,7 +208,7 @@ void SimpleObserver::Private::Observer::observeChannels(
 
     PendingComposite *pc = new PendingComposite(readyOps,
             false /* failOnFirstError */, SharedPtr<Observer>(this));
-    mObserveChannelsInfo.insert(pc, new ContextInfo(context, newChannels, now));
+    mObserveChannelsInfo.insert(pc, new ContextInfo(context, newChannels));
     connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onChannelsReady(Tp::PendingOperation*)));
@@ -221,16 +217,14 @@ void SimpleObserver::Private::Observer::observeChannels(
 void SimpleObserver::Private::Observer::onChannelInvalidated(
         const ChannelPtr &channel, const QString &errorName, const QString &errorMessage)
 {
-    QDateTime now = QDateTime::currentDateTime();
     foreach (ContextInfo *info, mObserveChannelsInfo) {
         if (info->channels.contains(channel)) {
             // we are still handling the channel, wait for onChannelsReady that will properly remove
             // it from mChannels
-            info->channelInvalidatedTimestamps[channel] = now;
             return;
         }
     }
-    emit channelInvalidated(channel, errorName, errorMessage, now);
+    emit channelInvalidated(channel, errorName, errorMessage);
     delete mChannels.take(channel);
     mIncompleteChannels.remove(channel);
 }
@@ -239,19 +233,13 @@ void SimpleObserver::Private::Observer::onChannelsReady(PendingOperation *op)
 {
     ContextInfo *info = mObserveChannelsInfo.value(op);
 
-    emit newChannels(info->channels, info->timestamp);
+    emit newChannels(info->channels);
 
     foreach (const ChannelPtr &channel, info->channels) {
         ChannelWrapper *wrapper = mIncompleteChannels.take(channel);
         if (!channel->isValid()) {
-            QDateTime timestamp;
-            if (info->channelInvalidatedTimestamps.contains(channel)) {
-                timestamp = info->timestamp;
-            } else {
-                timestamp = QDateTime::currentDateTime();
-            }
             emit channelInvalidated(channel, channel->invalidationReason(),
-                    channel->invalidationMessage(), timestamp);
+                    channel->invalidationMessage());
             delete mChannels.take(channel);
         } else {
             mChannels.insert(channel, wrapper);
@@ -534,11 +522,10 @@ void SimpleObserver::onContactConstructed(Tp::PendingOperation *op)
     disconnect(mPriv->account.data(), 0, this, 0);
 }
 
-void SimpleObserver::onNewChannels(const QList<ChannelPtr> &channels,
-        const QDateTime &timestamp)
+void SimpleObserver::onNewChannels(const QList<ChannelPtr> &channels)
 {
     if (!mPriv->contactIdentifier.isEmpty() && mPriv->normalizedContactIdentifier.isEmpty()) {
-        mPriv->newChannelsQueue.append(Private::NewChannelsInfo(channels, timestamp));
+        mPriv->newChannelsQueue.append(Private::NewChannelsInfo(channels));
         mPriv->channelsQueue.append(&SimpleObserver::Private::processNewChannelsQueue);
         return;
     }
@@ -550,15 +537,15 @@ void SimpleObserver::onNewChannels(const QList<ChannelPtr> &channels,
         }
     }
 
-    emit newChannels(match.toList(), timestamp);
+    emit newChannels(match.toList());
 }
 
 void SimpleObserver::onChannelInvalidated(const ChannelPtr &channel, const QString &errorName,
-        const QString &errorMessage, const QDateTime &timestamp)
+        const QString &errorMessage)
 {
     if (!mPriv->contactIdentifier.isEmpty() && mPriv->normalizedContactIdentifier.isEmpty()) {
         mPriv->channelsInvalidationQueue.append(Private::ChannelInvadationInfo(channel, errorName,
-                    errorMessage, timestamp));
+                    errorMessage));
         mPriv->channelsQueue.append(&SimpleObserver::Private::processChannelsInvalidationQueue);
         return;
     }
@@ -567,22 +554,20 @@ void SimpleObserver::onChannelInvalidated(const ChannelPtr &channel, const QStri
         return;
     }
 
-    emit channelInvalidated(channel, errorName, errorMessage, timestamp);
+    emit channelInvalidated(channel, errorName, errorMessage);
 }
 
 /**
- * \fn void SimpleObserver::newChannels(const QList<Tp::ChannelPtr> &channels,
- *          const QDateTime &timestamp)
+ * \fn void SimpleObserver::newChannels(const QList<Tp::ChannelPtr> &channels)
  *
  * This signal is emitted whenever new channels that match this observer's criteria are created.
  *
  * \param channels The new channels.
- * \param timestamp The timestamp indicating when the channels were created.
  */
 
 /**
  * \fn void SimpleObserver::channelInvalidated(const Tp::ChannelPtr &channel,
- *          const QString &errorName, const QString &errorMessage, const QDateTime &timestamp)
+ *          const QString &errorName, const QString &errorMessage)
  *
  * This signal is emitted whenever a channel that is being observed is invalidated.
  *
@@ -590,7 +575,6 @@ void SimpleObserver::onChannelInvalidated(const ChannelPtr &channel, const QStri
  * \param errorName A D-Bus error name (a string in a subset
  *                  of ASCII, prefixed with a reversed domain name).
  * \param errorMessage A debugging message associated with the error.
- * \param timestamp The timestamp indicating when the channel was invalidated.
  */
 
 } // Tp

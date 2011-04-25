@@ -83,11 +83,11 @@ SimpleCallObserver::Private::Private(SimpleCallObserver *parent,
             contactIdentifier, requiresNormalization, QList<ChannelClassFeatures>());
 
     parent->connect(observer.data(),
-            SIGNAL(newChannels(QList<Tp::ChannelPtr>,QDateTime)),
-            SLOT(onNewChannels(QList<Tp::ChannelPtr>,QDateTime)));
+            SIGNAL(newChannels(QList<Tp::ChannelPtr>)),
+            SLOT(onNewChannels(QList<Tp::ChannelPtr>)));
     parent->connect(observer.data(),
-            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString,QDateTime)),
-            SLOT(onChannelInvalidated(Tp::ChannelPtr,QString,QString,QDateTime)));
+            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString)),
+            SLOT(onChannelInvalidated(Tp::ChannelPtr,QString,QString)));
 }
 
 /**
@@ -254,43 +254,38 @@ QList<StreamedMediaChannelPtr> SimpleCallObserver::streamedMediaCalls() const
     return ret;
 }
 
-void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels,
-        const QDateTime &timestamp)
+void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels)
 {
     foreach (const ChannelPtr &channel, channels) {
-        emit streamedMediaCallStarted(StreamedMediaChannelPtr::qObjectCast(channel), timestamp);
+        emit streamedMediaCallStarted(StreamedMediaChannelPtr::qObjectCast(channel));
     }
 }
 
 void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
-        const QString &errorName, const QString &errorMessage, const QDateTime &timestamp)
+        const QString &errorName, const QString &errorMessage)
 {
     Q_UNUSED(errorName);
     Q_UNUSED(errorMessage);
-    emit streamedMediaCallEnded(StreamedMediaChannelPtr::qObjectCast(channel),
-            timestamp);
+    emit streamedMediaCallEnded(StreamedMediaChannelPtr::qObjectCast(channel));
 }
 
 /**
- * \fn void SimpleCallObserver::streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel,
- *          const QDateTime &timestamp)
+ * \fn void SimpleCallObserver::streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel)
  *
  * This signal is emitted whenever a streamed media call that matches this observer's criteria is
  * started.
  *
  * \param channel The channel representing the streamed media call that started.
- * \param timestamp The timestamp indicating when the streamed media call has started.
  */
 
 /**
  * \fn void SimpleCallObserver::streamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel,
- *          const QString &errorName, const QString &errorMessage, const QDateTime &timestamp)
+ *          const QString &errorName, const QString &errorMessage)
  *
  * This signal is emitted whenever a streamed media call that matches this observer's criteria has
  * ended.
  *
  * \param channel The channel representing the streamed media call that ended.
- * \param timestamp The timestamp indicating when the streamed media call has ended.
  */
 
 } // Tp

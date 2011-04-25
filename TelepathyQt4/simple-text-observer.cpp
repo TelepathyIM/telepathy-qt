@@ -57,10 +57,10 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
                 TextChannel::FeatureMessageQueue | TextChannel::FeatureMessageSentSignal));
 
     parent->connect(observer.data(),
-            SIGNAL(newChannels(QList<Tp::ChannelPtr>,QDateTime)),
+            SIGNAL(newChannels(QList<Tp::ChannelPtr>)),
             SLOT(onNewChannels(QList<Tp::ChannelPtr>)));
     parent->connect(observer.data(),
-            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString,QDateTime)),
+            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString)),
             SLOT(onChannelInvalidated(Tp::ChannelPtr)));
 }
 

@@ -74,18 +74,14 @@ public:
     {
         ContextInfo() {}
         ContextInfo(const MethodInvocationContextPtr<> &context,
-                const QList<ChannelPtr> &channels,
-                const QDateTime &timestamp)
+                const QList<ChannelPtr> &channels)
             : context(context),
-              channels(channels),
-              timestamp(timestamp)
+              channels(channels)
         {
         }
 
         MethodInvocationContextPtr<> context;
         QList<ChannelPtr> channels;
-        QDateTime timestamp;
-        QHash<ChannelPtr, QDateTime> channelInvalidatedTimestamps;
     };
 
     Observer(const ClientRegistrarPtr &cr,
@@ -106,9 +102,9 @@ public:
             const ObserverInfo &observerInfo);
 
 Q_SIGNALS:
-    void newChannels(const QList<Tp::ChannelPtr> &channels, const QDateTime &timestamp);
+    void newChannels(const QList<Tp::ChannelPtr> &channels);
     void channelInvalidated(const Tp::ChannelPtr &channel, const QString &errorName,
-            const QString &errorMessage, const QDateTime &timestamp);
+            const QString &errorMessage);
 
 private Q_SLOTS:
     void onChannelInvalidated(const Tp::ChannelPtr &channel,
@@ -188,32 +184,28 @@ private:
 struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::NewChannelsInfo
 {
     NewChannelsInfo();
-    NewChannelsInfo(const QList<ChannelPtr> &channels, const QDateTime &timestamp)
-        : channels(channels),
-          timestamp(timestamp)
+    NewChannelsInfo(const QList<ChannelPtr> &channels)
+        : channels(channels)
     {
     }
 
     QList<ChannelPtr> channels;
-    QDateTime timestamp;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelInvadationInfo
 {
     ChannelInvadationInfo();
     ChannelInvadationInfo(const ChannelPtr &channel, const QString &errorName,
-            const QString &errorMessage, const QDateTime &timestamp)
+            const QString &errorMessage)
         : channel(channel),
           errorName(errorName),
-          errorMessage(errorMessage),
-          timestamp(timestamp)
+          errorMessage(errorMessage)
     {
     }
 
     ChannelPtr channel;
     QString errorName;
     QString errorMessage;
-    QDateTime timestamp;
 };
 
 } // Tp

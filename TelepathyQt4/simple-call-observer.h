@@ -28,8 +28,6 @@
 
 #include <QObject>
 
-class QDateTime;
-
 namespace Tp
 {
 
@@ -81,16 +79,13 @@ public:
     QList<StreamedMediaChannelPtr> streamedMediaCalls() const;
 
 Q_SIGNALS:
-    void streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel,
-            const QDateTime &timestamp);
-    void streamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel,
-            const QDateTime &timestamp);
+    void streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel);
+    void streamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels,
-            const QDateTime &timestamp);
+    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
     TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel,
-            const QString &errorName, const QString &errorMessage, const QDateTime &timestamp);
+            const QString &errorName, const QString &errorMessage);
 
 private:
     TELEPATHY_QT4_NO_EXPORT static SimpleCallObserverPtr create(

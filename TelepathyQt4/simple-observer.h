@@ -29,8 +29,6 @@
 
 #include <QObject>
 
-class QDateTime;
-
 namespace Tp
 {
 
@@ -67,20 +65,18 @@ public:
     QList<ChannelPtr> channels() const;
 
 Q_SIGNALS:
-    void newChannels(const QList<Tp::ChannelPtr> &channels, const QDateTime &timestamp);
+    void newChannels(const QList<Tp::ChannelPtr> &channels);
     void channelInvalidated(const Tp::ChannelPtr &channel, const QString &errorName,
-            const QString &errorMessage, const QDateTime &timestamp);
+            const QString &errorMessage);
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onAccountConnectionChanged(const Tp::ConnectionPtr &connection);
     TELEPATHY_QT4_NO_EXPORT void onAccountConnectionConnected();
     TELEPATHY_QT4_NO_EXPORT void onContactConstructed(Tp::PendingOperation *op);
 
-    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels,
-            const QDateTime &timestamp);
+    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
     TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel,
-            const QString &errorName, const QString &errorMessage,
-            const QDateTime &timestamp);
+            const QString &errorName, const QString &errorMessage);
 
 private:
     friend class SimpleCallObserver;
