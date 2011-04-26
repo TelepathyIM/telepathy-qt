@@ -22,6 +22,8 @@
 
 #include <TelepathyQt4/ChannelFactory>
 
+#include "TelepathyQt4/_gen/channel-factory.moc.hpp"
+
 #include "TelepathyQt4/_gen/future-constants.h"
 
 #include "TelepathyQt4/debug-internal.h"

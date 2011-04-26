@@ -433,6 +433,7 @@ set(telepathy_qt4_MOC_SRCS
     account-set-internal.h
     channel.h
     channel-dispatch-operation.h
+    channel-factory.h
     channel-internal.h
     channel-request.h
     client-registrar.h

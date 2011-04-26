@@ -45,6 +45,7 @@ class ChannelClassSpec;
 
 class TELEPATHY_QT4_EXPORT ChannelFactory : public DBusProxyFactory
 {
+    Q_OBJECT
     Q_DISABLE_COPY(ChannelFactory)
 
 public:
