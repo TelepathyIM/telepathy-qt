@@ -506,7 +506,7 @@ void TestContactMessenger::testObserverRegistration()
         // doesn't make sense for it
         bool recover;
         QVERIFY(waitForProperty(observer->requestPropertyRecover(), &recover));
-        QVERIFY(!recover);
+        QCOMPARE(recover, true);
     }
 
     // If we destroy our messenger (which is the last/only one for that ID), the observers should go

@@ -157,7 +157,7 @@ SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
         const ChannelClassSpecList &channelFilter,
         const QList<ChannelClassFeatures> &extraChannelFeatures)
     : QObject(),
-      AbstractClientObserver(channelFilter, false),
+      AbstractClientObserver(channelFilter, true),
       mCr(cr),
       mFakeAccountFactory(fakeAccountFactory),
       mExtraChannelFeatures(extraChannelFeatures)
