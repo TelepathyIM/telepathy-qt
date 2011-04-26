@@ -249,16 +249,21 @@ inline uint qHash(const ChannelClassSpec &spec)
     return ret;
 }
 
-inline uint qHash(const ChannelClassSpecList &specList)
+inline uint qHash(const QSet<ChannelClassSpec> &specSet)
 {
-    // Make it unique by converting to QSet
-    QSet<ChannelClassSpec> uniqueSet = specList.toSet();
     int ret = 0;
-    Q_FOREACH (const ChannelClassSpec &spec, uniqueSet) {
+    Q_FOREACH (const ChannelClassSpec &spec, specSet) {
         int h = qHash(spec);
         ret ^= h;
     }
     return ret;
+}
+
+inline uint qHash(const ChannelClassSpecList &specList)
+{
+    // Make it unique by converting to QSet
+    QSet<ChannelClassSpec> uniqueSet = specList.toSet();
+    return qHash(uniqueSet);
 }
 
 } // Tp
