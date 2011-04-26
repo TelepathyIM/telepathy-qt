@@ -110,7 +110,7 @@ public:
     // listening on Unix sockets and not necessarily on TCP than X11 and perhaps CUPS?)
 
     // This will always be populated
-    QList<OutgoingStreamTubeChannelPtr> tubes() const;
+    QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > tubes() const;
 
     // This will be populated if monitorConnections = true and a TCP socket has been exported
     //
@@ -129,10 +129,12 @@ Q_SIGNALS:
 
     // These will always be emitted
     void tubeRequested(
+            const AccountPtr &account,
             const OutgoingStreamTubeChannelPtr &tube,
             const QDateTime &userActionTime,
             const ChannelRequestHints &hints);
     void tubeClosed(
+            const AccountPtr &account,
             const OutgoingStreamTubeChannelPtr &tube,
             const QString &error,
             const QString &message);
