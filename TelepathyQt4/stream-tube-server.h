@@ -83,7 +83,7 @@ public:
             const QString &clientName = QString(),
             bool monitorConnections = false);
 
-    ~StreamTubeServer();
+    virtual ~StreamTubeServer();
 
     bool monitorsConnections() const;
 
