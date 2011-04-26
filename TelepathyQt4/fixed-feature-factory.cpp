@@ -22,6 +22,8 @@
 
 #include <TelepathyQt4/FixedFeatureFactory>
 
+#include "TelepathyQt4/_gen/fixed-feature-factory.moc.hpp"
+
 #include <TelepathyQt4/Feature>
 
 namespace Tp

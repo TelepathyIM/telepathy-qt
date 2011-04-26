@@ -454,6 +454,7 @@ set(telepathy_qt4_MOC_SRCS
     dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
     file-transfer-channel.h
+    fixed-feature-factory.h
     handled-channel-notifier.h
     incoming-file-transfer-channel.h
     incoming-stream-tube-channel.h
