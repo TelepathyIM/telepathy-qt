@@ -93,19 +93,20 @@ private:
             const ChannelFactoryConstPtr &chanFactory,
             const ContactFactoryConstPtr &contactFactory) const
     {
-        foreach (const AccountPtr &account, mAccounts) {
-            if (account->objectPath() == objectPath) {
-                return account;
-            }
+        if (mAccounts.contains(objectPath)) {
+            return mAccounts.value(objectPath);
         }
         return AccountFactory::construct(busName, objectPath, connFactory,
                 chanFactory, contactFactory);
     }
 
-    QList<AccountPtr> accounts() const { return mAccounts; }
-    void registerAccount(const AccountPtr &account) { mAccounts.append(account); }
+    QHash<QString, AccountPtr> accounts() const { return mAccounts; }
+    void registerAccount(const AccountPtr &account)
+    {
+        mAccounts.insert(account->objectPath(), account);
+    }
 
-    QList<AccountPtr> mAccounts;
+    QHash<QString, AccountPtr> mAccounts;
 };
 
 class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::Observer : public QObject,
@@ -145,10 +146,10 @@ public:
         mExtraChannelFeatures.unite(features.toSet());
     }
 
-    QList<AccountPtr> accounts() const { return mAccounts; }
+    QSet<AccountPtr> accounts() const { return mAccounts; }
     void registerAccount(const AccountPtr &account)
     {
-        mAccounts.append(account);
+        mAccounts.insert(account);
         mFakeAccountFactory->registerAccount(account);
     }
 
@@ -179,7 +180,7 @@ private:
     ClientRegistrarPtr mCr;
     SharedPtr<FakeAccountFactory> mFakeAccountFactory;
     QSet<ChannelClassFeatures> mExtraChannelFeatures;
-    QList<AccountPtr> mAccounts;
+    QSet<AccountPtr> mAccounts;
     QHash<ChannelPtr, ChannelWrapper*> mChannels;
     QHash<ChannelPtr, ChannelWrapper*> mIncompleteChannels;
     QHash<PendingOperation*, ContextInfo*> mObserveChannelsInfo;
