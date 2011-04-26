@@ -128,7 +128,10 @@ public:
 Q_SIGNALS:
 
     // These will always be emitted
-    void tubeCreated(const OutgoingStreamTubeChannelPtr &tube);
+    void tubeRequested(
+            const OutgoingStreamTubeChannelPtr &tube,
+            const QDateTime &userActionTime,
+            const ChannelRequestHints &hints);
     void tubeClosed(
             const OutgoingStreamTubeChannelPtr &tube,
             const QString &error,
