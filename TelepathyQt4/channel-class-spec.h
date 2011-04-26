@@ -253,14 +253,10 @@ inline uint qHash(const ChannelClassSpecList &specList)
 {
     // Make it unique by converting to QSet
     QSet<ChannelClassSpec> uniqueSet = specList.toSet();
-    // Convert back to list and we have an ordered unique list
-    QList<ChannelClassSpec> uniqueOrderedList = uniqueSet.toList();
     int ret = 0;
-    int i = uniqueOrderedList.size() + 1;
-    Q_FOREACH (const ChannelClassSpec &spec, uniqueOrderedList) {
+    Q_FOREACH (const ChannelClassSpec &spec, uniqueSet) {
         int h = qHash(spec);
-        ret ^= ((h << (2 << i)) | (h >> (2 >> i)));
-        i--;
+        ret ^= h;
     }
     return ret;
 }
