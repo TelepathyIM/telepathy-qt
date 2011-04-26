@@ -34,6 +34,7 @@
 #include <TelepathyQt4/MessageContentPartList>
 #include <TelepathyQt4/PendingSendMessage>
 #include <TelepathyQt4/SimpleTextObserver>
+#include <TelepathyQt4/TextChannel>
 
 namespace Tp
 {
@@ -174,6 +175,16 @@ AccountPtr ContactMessenger::account() const
 QString ContactMessenger::contactIdentifier() const
 {
     return mPriv->contactIdentifier;
+}
+
+/**
+ * Return the list of text chats currently being observed.
+ *
+ * \return The list of text chats currently being observed.
+ */
+QList<TextChannelPtr> ContactMessenger::textChats() const
+{
+    return mPriv->observer->textChats();
 }
 
 /**
