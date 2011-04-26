@@ -131,6 +131,37 @@ bool SimpleObserver::Private::filterChannel(const AccountPtr &channelAccount,
     return true;
 }
 
+void SimpleObserver::Private::insertChannels(const AccountPtr &channelsAccount,
+        const QList<ChannelPtr> &newChannels)
+{
+    QSet<ChannelPtr> match;
+    foreach (const ChannelPtr &channel, newChannels) {
+        if (filterChannel(channelsAccount, channel)) {
+            match.insert(channel);
+        }
+    }
+
+    if (match.isEmpty() || channels.contains(match)) {
+        return;
+    }
+
+    channels.unite(match);
+    emit parent->newChannels(match.toList());
+}
+
+void SimpleObserver::Private::removeChannel(const AccountPtr &channelAccount,
+        const ChannelPtr &channel,
+        const QString &errorName, const QString &errorMessage)
+{
+    if (!filterChannel(channelAccount, channel)) {
+        Q_ASSERT(!channels.contains(channel));
+        return;
+    }
+
+    channels.remove(channel);
+    emit parent->channelInvalidated(channel, errorName, errorMessage);
+}
+
 void SimpleObserver::Private::processChannelsQueue()
 {
     if (channelsQueue.isEmpty()) {
@@ -145,13 +176,13 @@ void SimpleObserver::Private::processChannelsQueue()
 void SimpleObserver::Private::processNewChannelsQueue()
 {
     NewChannelsInfo info = newChannelsQueue.dequeue();
-    emit parent->newChannels(info.channels);
+    insertChannels(info.channelsAccount, info.channels);
 }
 
 void SimpleObserver::Private::processChannelsInvalidationQueue()
 {
     ChannelInvalidationInfo info = channelsInvalidationQueue.dequeue();
-    emit parent->channelInvalidated(info.channel, info.errorName, info.errorMessage);
+    removeChannel(info.channelAccount, info.channel, info.errorName, info.errorMessage);
 }
 
 SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
@@ -252,17 +283,20 @@ void SimpleObserver::Private::Observer::onChannelsReady(PendingOperation *op)
 {
     ContextInfo *info = mObserveChannelsInfo.value(op);
 
-    emit newChannels(info->account, info->channels);
-
     foreach (const ChannelPtr &channel, info->channels) {
         Q_ASSERT(mIncompleteChannels.contains(channel));
         ChannelWrapper *wrapper = mIncompleteChannels.take(channel);
+        mChannels.insert(channel, wrapper);
+    }
+    emit newChannels(info->account, info->channels);
+
+    foreach (const ChannelPtr &channel, info->channels) {
+        ChannelWrapper *wrapper = mChannels.value(channel);
         if (!channel->isValid()) {
+            mChannels.remove(channel);
             emit channelInvalidated(info->account, channel, channel->invalidationReason(),
                     channel->invalidationMessage());
             delete wrapper;
-        } else {
-            mChannels.insert(channel, wrapper);
         }
     }
 
@@ -430,10 +464,24 @@ SimpleObserver::SimpleObserver(const AccountPtr &account,
     : mPriv(new Private(this, account, channelFilter, contactIdentifier,
                 requiresNormalization, extraChannelFeatures))
 {
-    if (mPriv->observer && requiresNormalization) {
-        debug() << "Contact id requires normalization. "
-            "Queueing events until it is normalized";
-        onAccountConnectionChanged(account->connection());
+    if (mPriv->observer) {
+        // populate our channels list with current observer channels
+        QHash<AccountPtr, QList<ChannelPtr> > channels;
+        foreach (const Private::ChannelWrapper *wrapper, mPriv->observer->channels()) {
+            channels[wrapper->channelAccount()].append(wrapper->channel());
+        }
+
+        QHash<AccountPtr, QList<ChannelPtr> >::const_iterator it = channels.constBegin();
+        QHash<AccountPtr, QList<ChannelPtr> >::const_iterator end = channels.constEnd();
+        for (; it != end; ++it) {
+            onNewChannels(it.key(), it.value());
+        }
+
+        if (requiresNormalization) {
+            debug() << "Contact id requires normalization. "
+                "Queueing events until it is normalized";
+            onAccountConnectionChanged(account->connection());
+        }
     }
 }
 
@@ -475,9 +523,14 @@ QList<ChannelClassFeatures> SimpleObserver::extraChannelFeatures() const
     return mPriv->extraChannelFeatures;
 }
 
+/**
+ * Return the channels being observed.
+ *
+ * \return A list of channels being observed.
+ */
 QList<ChannelPtr> SimpleObserver::channels() const
 {
-    return mPriv->observer ? mPriv->observer->channels() : QList<ChannelPtr>();
+    return mPriv->channels.toList();
 }
 
 /**
@@ -546,41 +599,26 @@ void SimpleObserver::onContactConstructed(Tp::PendingOperation *op)
 void SimpleObserver::onNewChannels(const AccountPtr &channelsAccount,
         const QList<ChannelPtr> &channels)
 {
-    QList<ChannelPtr> match;
-    foreach (const ChannelPtr &channel, channels) {
-        if (mPriv->filterChannel(channelsAccount, channel)) {
-            match.append(channel);
-        }
-    }
-
-    if (match.isEmpty()) {
-        return;
-    }
-
     if (!mPriv->contactIdentifier.isEmpty() && mPriv->normalizedContactIdentifier.isEmpty()) {
-        mPriv->newChannelsQueue.append(Private::NewChannelsInfo(match));
+        mPriv->newChannelsQueue.append(Private::NewChannelsInfo(channelsAccount, channels));
         mPriv->channelsQueue.append(&SimpleObserver::Private::processNewChannelsQueue);
         return;
     }
 
-    emit newChannels(match);
+    mPriv->insertChannels(channelsAccount, channels);
 }
 
 void SimpleObserver::onChannelInvalidated(const AccountPtr &channelAccount,
         const ChannelPtr &channel, const QString &errorName, const QString &errorMessage)
 {
-    if (!mPriv->filterChannel(channelAccount, channel)) {
-        return;
-    }
-
     if (!mPriv->contactIdentifier.isEmpty() && mPriv->normalizedContactIdentifier.isEmpty()) {
-        mPriv->channelsInvalidationQueue.append(Private::ChannelInvalidationInfo(channel, errorName,
-                    errorMessage));
+        mPriv->channelsInvalidationQueue.append(Private::ChannelInvalidationInfo(channelAccount,
+                    channel, errorName, errorMessage));
         mPriv->channelsQueue.append(&SimpleObserver::Private::processChannelsInvalidationQueue);
         return;
     }
 
-    emit channelInvalidated(channel, errorName, errorMessage);
+    mPriv->removeChannel(channelAccount, channel, errorName, errorMessage);
 }
 
 /**

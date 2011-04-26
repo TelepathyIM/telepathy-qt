@@ -42,6 +42,9 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
             const QList<ChannelClassFeatures> &extraChannelFeatures);
 
     bool filterChannel(const AccountPtr &channelAccount, const ChannelPtr &channel);
+    void insertChannels(const AccountPtr &channelsAccount, const QList<ChannelPtr> &channels);
+    void removeChannel(const AccountPtr &channelAccount, const ChannelPtr &channel,
+            const QString &errorName, const QString &errorMessage);
 
     void processChannelsQueue();
     void processNewChannelsQueue();
@@ -60,6 +63,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     QString normalizedContactIdentifier;
     QList<ChannelClassFeatures> extraChannelFeatures;
     SharedPtr<Observer> observer;
+    QSet<ChannelPtr> channels;
     QQueue<void (SimpleObserver::Private::*)()> channelsQueue;
     QQueue<ChannelInvalidationInfo> channelsInvalidationQueue;
     QQueue<NewChannelsInfo> newChannelsQueue;
@@ -153,7 +157,7 @@ public:
         mFakeAccountFactory->registerAccount(account);
     }
 
-    QList<ChannelPtr> channels() const { return mChannels.keys(); }
+    QHash<ChannelPtr, ChannelWrapper*> channels() const { return mChannels; }
 
     void observeChannels(
             const MethodInvocationContextPtr<> &context,
@@ -220,25 +224,29 @@ private:
 struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::NewChannelsInfo
 {
     NewChannelsInfo();
-    NewChannelsInfo(const QList<ChannelPtr> &channels)
-        : channels(channels)
+    NewChannelsInfo(const AccountPtr &channelsAccount, const QList<ChannelPtr> &channels)
+        : channelsAccount(channelsAccount),
+          channels(channels)
     {
     }
 
+    AccountPtr channelsAccount;
     QList<ChannelPtr> channels;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelInvalidationInfo
 {
     ChannelInvalidationInfo();
-    ChannelInvalidationInfo(const ChannelPtr &channel, const QString &errorName,
-            const QString &errorMessage)
-        : channel(channel),
+    ChannelInvalidationInfo(const AccountPtr &channelAccount, const ChannelPtr &channel,
+            const QString &errorName, const QString &errorMessage)
+        : channelAccount(channelAccount),
+          channel(channel),
           errorName(errorName),
           errorMessage(errorMessage)
     {
     }
 
+    AccountPtr channelAccount;
     ChannelPtr channel;
     QString errorName;
     QString errorMessage;
