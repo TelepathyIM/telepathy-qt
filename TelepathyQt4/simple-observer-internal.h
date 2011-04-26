@@ -48,7 +48,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     class Observer;
     class ChannelWrapper;
     struct NewChannelsInfo;
-    struct ChannelInvadationInfo;
+    struct ChannelInvalidationInfo;
 
     SimpleObserver *parent;
     AccountPtr account;
@@ -58,7 +58,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     QList<ChannelClassFeatures> extraChannelFeatures;
     SharedPtr<Observer> observer;
     QQueue<void (SimpleObserver::Private::*)()> channelsQueue;
-    QQueue<ChannelInvadationInfo> channelsInvalidationQueue;
+    QQueue<ChannelInvalidationInfo> channelsInvalidationQueue;
     QQueue<NewChannelsInfo> newChannelsQueue;
     static QHash<QPair<QString, ChannelClassSpecList>, QWeakPointer<Observer> > observers;
     static uint numObservers;
@@ -221,10 +221,10 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::NewChannelsInfo
     QList<ChannelPtr> channels;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelInvadationInfo
+struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelInvalidationInfo
 {
-    ChannelInvadationInfo();
-    ChannelInvadationInfo(const ChannelPtr &channel, const QString &errorName,
+    ChannelInvalidationInfo();
+    ChannelInvalidationInfo(const ChannelPtr &channel, const QString &errorName,
             const QString &errorMessage)
         : channel(channel),
           errorName(errorName),

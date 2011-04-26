@@ -148,7 +148,7 @@ void SimpleObserver::Private::processNewChannelsQueue()
 
 void SimpleObserver::Private::processChannelsInvalidationQueue()
 {
-    ChannelInvadationInfo info = channelsInvalidationQueue.dequeue();
+    ChannelInvalidationInfo info = channelsInvalidationQueue.dequeue();
     emit parent->channelInvalidated(info.channel, info.errorName, info.errorMessage);
 }
 
@@ -574,7 +574,7 @@ void SimpleObserver::onChannelInvalidated(const AccountPtr &channelAccount,
     }
 
     if (!mPriv->contactIdentifier.isEmpty() && mPriv->normalizedContactIdentifier.isEmpty()) {
-        mPriv->channelsInvalidationQueue.append(Private::ChannelInvadationInfo(channel, errorName,
+        mPriv->channelsInvalidationQueue.append(Private::ChannelInvalidationInfo(channel, errorName,
                     errorMessage));
         mPriv->channelsQueue.append(&SimpleObserver::Private::processChannelsInvalidationQueue);
         return;
