@@ -23,6 +23,7 @@
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ClientRegistrar>
 
@@ -60,7 +61,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     QQueue<void (SimpleObserver::Private::*)()> channelsQueue;
     QQueue<ChannelInvalidationInfo> channelsInvalidationQueue;
     QQueue<NewChannelsInfo> newChannelsQueue;
-    static QHash<QPair<QString, ChannelClassSpecList>, QWeakPointer<Observer> > observers;
+    static QHash<QPair<QString, QSet<ChannelClassSpec> >, QWeakPointer<Observer> > observers;
     static uint numObservers;
 };
 

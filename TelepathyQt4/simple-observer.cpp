@@ -41,7 +41,7 @@
 namespace Tp
 {
 
-QHash<QPair<QString, ChannelClassSpecList>, QWeakPointer<SimpleObserver::Private::Observer> > SimpleObserver::Private::observers;
+QHash<QPair<QString, QSet<ChannelClassSpec> >, QWeakPointer<SimpleObserver::Private::Observer> > SimpleObserver::Private::observers;
 uint SimpleObserver::Private::numObservers = 0;
 
 SimpleObserver::Private::Private(SimpleObserver *parent,
@@ -57,8 +57,9 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
       extraChannelFeatures(extraChannelFeatures)
 {
     debug() << "Registering observer";
-    QPair<QString, ChannelClassSpecList> observerUniqueId(
-            account->dbusConnection().baseService(), channelFilter);
+    QSet<ChannelClassSpec> normalizedChannelFilter = channelFilter.toSet();
+    QPair<QString, QSet<ChannelClassSpec> > observerUniqueId(
+            account->dbusConnection().baseService(), normalizedChannelFilter);
     observer = SharedPtr<Observer>(observers.value(observerUniqueId));
     if (!observer) {
         SharedPtr<FakeAccountFactory> fakeAccountFactory = FakeAccountFactory::create(
@@ -71,7 +72,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
                 account->contactFactory());
 
         observer = SharedPtr<Observer>(new Observer(cr, fakeAccountFactory,
-                    channelFilter, extraChannelFeatures));
+                    normalizedChannelFilter.toList(), extraChannelFeatures));
 
         QString observerName = QString(QLatin1String("TpQt4SO_%1_%2"))
             .arg(account->dbusConnection().baseService()
