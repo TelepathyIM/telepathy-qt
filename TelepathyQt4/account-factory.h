@@ -44,6 +44,9 @@ class PendingReady;
 
 class TELEPATHY_QT4_EXPORT AccountFactory : public FixedFeatureFactory
 {
+    Q_OBJECT
+    Q_DISABLE_COPY(AccountFactory)
+
 public:
     static AccountFactoryPtr create(const QDBusConnection &bus,
             const Features &features = Features());

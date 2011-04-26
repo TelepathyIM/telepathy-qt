@@ -427,6 +427,7 @@ set(telepathy_qt4_gen_HEADERS
 set(telepathy_qt4_MOC_SRCS
     abstract-interface.h
     account.h
+    account-factory.h
     account-manager.h
     account-set.h
     account-set-internal.h
