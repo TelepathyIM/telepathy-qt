@@ -38,7 +38,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
             bool requiresNormalization,
             const QList<ChannelClassFeatures> &extraChannelFeatures);
 
-    bool filterChannel(const Tp::ChannelPtr &channel);
+    bool filterChannel(const AccountPtr &channelAccount, const ChannelPtr &channel);
 
     void processChannelsQueue();
     void processNewChannelsQueue();
@@ -57,10 +57,52 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     QString normalizedContactIdentifier;
     QList<ChannelClassFeatures> extraChannelFeatures;
     SharedPtr<Observer> observer;
-    static uint numObservers;
     QQueue<void (SimpleObserver::Private::*)()> channelsQueue;
     QQueue<ChannelInvadationInfo> channelsInvalidationQueue;
     QQueue<NewChannelsInfo> newChannelsQueue;
+    static QHash<QPair<QString, ChannelClassSpecList>, QWeakPointer<Observer> > observers;
+    static uint numObservers;
+};
+
+class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::FakeAccountFactory :
+                public AccountFactory
+{
+    Q_OBJECT
+
+public:
+    static SharedPtr<FakeAccountFactory> create(const QDBusConnection &bus)
+    {
+        return SharedPtr<FakeAccountFactory>(new FakeAccountFactory(bus));
+    }
+
+    ~FakeAccountFactory() { }
+
+private:
+    friend class Observer;
+
+    FakeAccountFactory(const QDBusConnection &bus)
+        : AccountFactory(bus, Features())
+    {
+    }
+
+    AccountPtr construct(const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory) const
+    {
+        foreach (const AccountPtr &account, mAccounts) {
+            if (account->objectPath() == objectPath) {
+                return account;
+            }
+        }
+        return AccountFactory::construct(busName, objectPath, connFactory,
+                chanFactory, contactFactory);
+    }
+
+    QList<AccountPtr> accounts() const { return mAccounts; }
+    void registerAccount(const AccountPtr &account) { mAccounts.append(account); }
+
+    QList<AccountPtr> mAccounts;
 };
 
 class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::Observer : public QObject,
@@ -74,21 +116,35 @@ public:
     {
         ContextInfo() {}
         ContextInfo(const MethodInvocationContextPtr<> &context,
+                const AccountPtr &account,
                 const QList<ChannelPtr> &channels)
             : context(context),
+              account(account),
               channels(channels)
         {
         }
 
         MethodInvocationContextPtr<> context;
+        AccountPtr account;
         QList<ChannelPtr> channels;
     };
 
     Observer(const ClientRegistrarPtr &cr,
+             const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
              const ChannelClassSpecList &channelFilter,
-             const AccountPtr &account,
              const QList<ChannelClassFeatures> &extraChannelFeatures);
     ~Observer();
+
+    ClientRegistrarPtr clientRegistrar() const { return mCr; }
+    SharedPtr<FakeAccountFactory> fakeAccountFactory() const { return mFakeAccountFactory; }
+    QList<ChannelClassFeatures> extraChannelFeatures() const { return mExtraChannelFeatures; }
+
+    QList<AccountPtr> accounts() const { return mAccounts; }
+    void registerAccount(const AccountPtr &account)
+    {
+        mAccounts.append(account);
+        mFakeAccountFactory->registerAccount(account);
+    }
 
     QList<ChannelPtr> channels() const { return mChannels.keys(); }
 
@@ -102,12 +158,12 @@ public:
             const ObserverInfo &observerInfo);
 
 Q_SIGNALS:
-    void newChannels(const QList<Tp::ChannelPtr> &channels);
-    void channelInvalidated(const Tp::ChannelPtr &channel, const QString &errorName,
-            const QString &errorMessage);
+    void newChannels(const Tp::AccountPtr &channelsAccount, const QList<Tp::ChannelPtr> &channels);
+    void channelInvalidated(const Tp::AccountPtr &channelAccount, const Tp::ChannelPtr &channel,
+            const QString &errorName, const QString &errorMessage);
 
 private Q_SLOTS:
-    void onChannelInvalidated(const Tp::ChannelPtr &channel,
+    void onChannelInvalidated(const Tp::AccountPtr &channelAccount, const Tp::ChannelPtr &channel,
             const QString &errorName, const QString &errorMessage);
     void onChannelsReady(Tp::PendingOperation *op);
 
@@ -115,44 +171,12 @@ private:
     Features featuresFor(const ChannelClassSpec &channelClass) const;
 
     ClientRegistrarPtr mCr;
-    AccountPtr mAccount;
+    SharedPtr<FakeAccountFactory> mFakeAccountFactory;
     QList<ChannelClassFeatures> mExtraChannelFeatures;
+    QList<AccountPtr> mAccounts;
     QHash<ChannelPtr, ChannelWrapper*> mChannels;
     QHash<ChannelPtr, ChannelWrapper*> mIncompleteChannels;
     QHash<PendingOperation*, ContextInfo*> mObserveChannelsInfo;
-};
-
-class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::FakeAccountFactory :
-                public AccountFactory
-{
-public:
-    static AccountFactoryPtr create(const AccountPtr &account)
-    {
-        return AccountFactoryPtr(new FakeAccountFactory(account));
-    }
-
-    ~FakeAccountFactory() { }
-
-private:
-    FakeAccountFactory(const AccountPtr &account)
-        : AccountFactory(account->dbusConnection(), Features()),
-          mAccount(account)
-    {
-    }
-
-    AccountPtr construct(const QString &busName, const QString &objectPath,
-            const ConnectionFactoryConstPtr &connFactory,
-            const ChannelFactoryConstPtr &chanFactory,
-            const ContactFactoryConstPtr &contactFactory) const
-    {
-        if (mAccount->objectPath() != objectPath) {
-            return AccountFactory::construct(busName, objectPath, connFactory,
-                    chanFactory, contactFactory);
-        }
-        return mAccount;
-    }
-
-    AccountPtr mAccount;
 };
 
 class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelWrapper :
@@ -162,14 +186,18 @@ class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelWrapper :
     Q_DISABLE_COPY(ChannelWrapper)
 
 public:
-    ChannelWrapper(const Tp::ChannelPtr &channel,
+    ChannelWrapper(const AccountPtr &channelAccount, const ChannelPtr &channel,
             const Features &extraChannelFeatures);
     ~ChannelWrapper() { }
+
+    AccountPtr channelAccount() const { return mChannelAccount; }
+    ChannelPtr channel() const { return mChannel; }
+    Features extraChannelFeatures() const { return mExtraChannelFeatures; }
 
     PendingOperation *becomeReady();
 
 Q_SIGNALS:
-    void channelInvalidated(const Tp::ChannelPtr &channel,
+    void channelInvalidated(const Tp::AccountPtr &channelAccount, const Tp::ChannelPtr &channel,
             const QString &errorName, const QString &errorMessage);
 
 private Q_SLOTS:
@@ -177,6 +205,7 @@ private Q_SLOTS:
             const QString &errorMessage);
 
 private:
+    AccountPtr mChannelAccount;
     ChannelPtr mChannel;
     Features mExtraChannelFeatures;
 };

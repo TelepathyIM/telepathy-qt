@@ -74,9 +74,10 @@ private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onAccountConnectionConnected();
     TELEPATHY_QT4_NO_EXPORT void onContactConstructed(Tp::PendingOperation *op);
 
-    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
-    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel,
-            const QString &errorName, const QString &errorMessage);
+    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const Tp::AccountPtr &channelsAccount,
+            const QList<Tp::ChannelPtr> &channels);
+    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::AccountPtr &channelAccount,
+            const Tp::ChannelPtr &channel, const QString &errorName, const QString &errorMessage);
 
 private:
     friend class SimpleCallObserver;

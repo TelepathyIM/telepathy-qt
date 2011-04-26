@@ -41,6 +41,7 @@
 namespace Tp
 {
 
+QHash<QPair<QString, ChannelClassSpecList>, QWeakPointer<SimpleObserver::Private::Observer> > SimpleObserver::Private::observers;
 uint SimpleObserver::Private::numObservers = 0;
 
 SimpleObserver::Private::Private(SimpleObserver *parent,
@@ -55,27 +56,42 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
       contactIdentifier(contactIdentifier),
       extraChannelFeatures(extraChannelFeatures)
 {
-    debug() << "Registering observer for account" << account->objectPath();
-    ClientRegistrarPtr cr = ClientRegistrar::create(
-            FakeAccountFactory::create(account),
-            account->connectionFactory(),
-            account->channelFactory(),
-            account->contactFactory());
+    debug() << "Registering observer";
+    QPair<QString, ChannelClassSpecList> observerUniqueId(
+            account->dbusConnection().baseService(), channelFilter);
+    observer = SharedPtr<Observer>(observers.value(observerUniqueId));
+    if (!observer) {
+        SharedPtr<FakeAccountFactory> fakeAccountFactory = FakeAccountFactory::create(
+                account->dbusConnection());
 
-    observer = SharedPtr<Observer>(new Observer(cr,
-                channelFilter, account, extraChannelFeatures));
+        ClientRegistrarPtr cr = ClientRegistrar::create(
+                AccountFactoryPtr::qObjectCast(fakeAccountFactory),
+                account->connectionFactory(),
+                account->channelFactory(),
+                account->contactFactory());
 
-    QString observerName = QString(QLatin1String("TpQt4SO_%1_%2"))
-        .arg(account->dbusConnection().baseService()
-            .replace(QLatin1String(":"), QLatin1String("_"))
-            .replace(QLatin1String("."), QLatin1String("_")))
-        .arg(numObservers++);
-    if (!cr->registerClient(observer, observerName, false)) {
-        warning() << "Unable to register observer" << observerName;
-        observer.reset();
-        cr.reset();
-        return;
+        observer = SharedPtr<Observer>(new Observer(cr, fakeAccountFactory,
+                    channelFilter, extraChannelFeatures));
+
+        QString observerName = QString(QLatin1String("TpQt4SO_%1_%2"))
+            .arg(account->dbusConnection().baseService()
+                .replace(QLatin1String(":"), QLatin1String("_"))
+                .replace(QLatin1String("."), QLatin1String("_")))
+            .arg(numObservers++);
+        if (!cr->registerClient(observer, observerName, false)) {
+            warning() << "Unable to register observer" << observerName;
+            observer.reset();
+            cr.reset();
+            return;
+        }
+
+        debug() << "Observer registered";
+        observers.insert(observerUniqueId, observer.data());
+    } else {
+        debug() << "Observer already registered, using it";
     }
+
+    observer->registerAccount(account);
 
     if (contactIdentifier.isEmpty() || !requiresNormalization) {
         normalizedContactIdentifier = contactIdentifier;
@@ -86,15 +102,20 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
     }
 
     parent->connect(observer.data(),
-            SIGNAL(newChannels(QList<Tp::ChannelPtr>)),
-            SLOT(onNewChannels(QList<Tp::ChannelPtr>)));
+            SIGNAL(newChannels(Tp::AccountPtr,QList<Tp::ChannelPtr>)),
+            SLOT(onNewChannels(Tp::AccountPtr,QList<Tp::ChannelPtr>)));
     parent->connect(observer.data(),
-            SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString)),
-            SLOT(onChannelInvalidated(Tp::ChannelPtr,QString,QString)));
+            SIGNAL(channelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)),
+            SLOT(onChannelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)));
 }
 
-bool SimpleObserver::Private::filterChannel(const ChannelPtr &channel)
+bool SimpleObserver::Private::filterChannel(const AccountPtr &channelAccount,
+        const ChannelPtr &channel)
 {
+    if (channelAccount != account) {
+        return false;
+    }
+
     if (contactIdentifier.isEmpty()) {
         return true;
     }
@@ -132,13 +153,13 @@ void SimpleObserver::Private::processChannelsInvalidationQueue()
 }
 
 SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
+        const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
         const ChannelClassSpecList &channelFilter,
-        const AccountPtr &account,
         const QList<ChannelClassFeatures> &extraChannelFeatures)
     : QObject(),
       AbstractClientObserver(channelFilter, false),
       mCr(cr),
-      mAccount(account),
+      mFakeAccountFactory(fakeAccountFactory),
       mExtraChannelFeatures(extraChannelFeatures)
 {
 }
@@ -154,7 +175,7 @@ SimpleObserver::Private::Observer::~Observer()
     // no need to delete context infos here as this observer will never be deleted before all
     // PendingComposites finish (hold reference to this), which will properly delete them
 
-    debug() << "Unregistering observer for account" << mAccount->objectPath();
+    debug() << "Unregistering observer";
     mCr->unregisterClient(SharedPtr<Observer>(this));
 }
 
@@ -167,7 +188,7 @@ void SimpleObserver::Private::Observer::observeChannels(
         const QList<ChannelRequestPtr> &requestsSatisfied,
         const ObserverInfo &observerInfo)
 {
-    if (account != mAccount) {
+    if (!mAccounts.contains(account)) {
         context->setFinished();
         return;
     }
@@ -190,12 +211,12 @@ void SimpleObserver::Private::Observer::observeChannels(
         }
 
         SimpleObserver::Private::ChannelWrapper *wrapper =
-            new SimpleObserver::Private::ChannelWrapper(channel,
+            new SimpleObserver::Private::ChannelWrapper(account, channel,
                 featuresFor(ChannelClassSpec(channel->immutableProperties())));
         mIncompleteChannels.insert(channel, wrapper);
         connect(wrapper,
-                SIGNAL(channelInvalidated(Tp::ChannelPtr,QString,QString)),
-                SLOT(onChannelInvalidated(Tp::ChannelPtr,QString,QString)));
+                SIGNAL(channelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)),
+                SLOT(onChannelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)));
 
         newChannels.append(channel);
         readyOps.append(wrapper->becomeReady());
@@ -208,39 +229,38 @@ void SimpleObserver::Private::Observer::observeChannels(
 
     PendingComposite *pc = new PendingComposite(readyOps,
             false /* failOnFirstError */, SharedPtr<Observer>(this));
-    mObserveChannelsInfo.insert(pc, new ContextInfo(context, newChannels));
+    mObserveChannelsInfo.insert(pc, new ContextInfo(context, account, newChannels));
     connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onChannelsReady(Tp::PendingOperation*)));
 }
 
-void SimpleObserver::Private::Observer::onChannelInvalidated(
+void SimpleObserver::Private::Observer::onChannelInvalidated(const AccountPtr &channelAccount,
         const ChannelPtr &channel, const QString &errorName, const QString &errorMessage)
 {
-    foreach (ContextInfo *info, mObserveChannelsInfo) {
-        if (info->channels.contains(channel)) {
-            // we are still handling the channel, wait for onChannelsReady that will properly remove
-            // it from mChannels
-            return;
-        }
+    if (mIncompleteChannels.contains(channel)) {
+        // we are still handling the channel, wait for onChannelsReady that will properly remove
+        // it from mChannels
+        return;
     }
-    emit channelInvalidated(channel, errorName, errorMessage);
+    emit channelInvalidated(channelAccount, channel, errorName, errorMessage);
+    Q_ASSERT(mChannels.contains(channel));
     delete mChannels.take(channel);
-    mIncompleteChannels.remove(channel);
 }
 
 void SimpleObserver::Private::Observer::onChannelsReady(PendingOperation *op)
 {
     ContextInfo *info = mObserveChannelsInfo.value(op);
 
-    emit newChannels(info->channels);
+    emit newChannels(info->account, info->channels);
 
     foreach (const ChannelPtr &channel, info->channels) {
+        Q_ASSERT(mIncompleteChannels.contains(channel));
         ChannelWrapper *wrapper = mIncompleteChannels.take(channel);
         if (!channel->isValid()) {
-            emit channelInvalidated(channel, channel->invalidationReason(),
+            emit channelInvalidated(info->account, channel, channel->invalidationReason(),
                     channel->invalidationMessage());
-            delete mChannels.take(channel);
+            delete wrapper;
         } else {
             mChannels.insert(channel, wrapper);
         }
@@ -265,9 +285,10 @@ Features SimpleObserver::Private::Observer::featuresFor(
     return features;
 }
 
-SimpleObserver::Private::ChannelWrapper::ChannelWrapper(
+SimpleObserver::Private::ChannelWrapper::ChannelWrapper(const AccountPtr &channelAccount,
         const ChannelPtr &channel, const Features &extraChannelFeatures)
-    : mChannel(channel),
+    : mChannelAccount(channelAccount),
+      mChannel(channel),
       mExtraChannelFeatures(extraChannelFeatures)
 {
     connect(channel.data(),
@@ -293,8 +314,8 @@ PendingOperation *SimpleObserver::Private::ChannelWrapper::becomeReady()
 void SimpleObserver::Private::ChannelWrapper::onChannelInvalidated(DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
-    Q_UNUSED(proxy);
-    emit channelInvalidated(mChannel, errorName, errorMessage);
+    Q_ASSERT(proxy == mChannel.data());
+    emit channelInvalidated(mChannelAccount, mChannel, errorName, errorMessage);
 }
 
 /**
@@ -522,35 +543,40 @@ void SimpleObserver::onContactConstructed(Tp::PendingOperation *op)
     disconnect(mPriv->account.data(), 0, this, 0);
 }
 
-void SimpleObserver::onNewChannels(const QList<ChannelPtr> &channels)
+void SimpleObserver::onNewChannels(const AccountPtr &channelsAccount,
+        const QList<ChannelPtr> &channels)
 {
+    QList<ChannelPtr> match;
+    foreach (const ChannelPtr &channel, channels) {
+        if (mPriv->filterChannel(channelsAccount, channel)) {
+            match.append(channel);
+        }
+    }
+
+    if (match.isEmpty()) {
+        return;
+    }
+
     if (!mPriv->contactIdentifier.isEmpty() && mPriv->normalizedContactIdentifier.isEmpty()) {
-        mPriv->newChannelsQueue.append(Private::NewChannelsInfo(channels));
+        mPriv->newChannelsQueue.append(Private::NewChannelsInfo(match));
         mPriv->channelsQueue.append(&SimpleObserver::Private::processNewChannelsQueue);
         return;
     }
 
-    QSet<ChannelPtr> match;
-    foreach (const ChannelPtr &channel, channels) {
-        if (mPriv->filterChannel(channel)) {
-            match.insert(channel);
-        }
-    }
-
-    emit newChannels(match.toList());
+    emit newChannels(match);
 }
 
-void SimpleObserver::onChannelInvalidated(const ChannelPtr &channel, const QString &errorName,
-        const QString &errorMessage)
+void SimpleObserver::onChannelInvalidated(const AccountPtr &channelAccount,
+        const ChannelPtr &channel, const QString &errorName, const QString &errorMessage)
 {
+    if (!mPriv->filterChannel(channelAccount, channel)) {
+        return;
+    }
+
     if (!mPriv->contactIdentifier.isEmpty() && mPriv->normalizedContactIdentifier.isEmpty()) {
         mPriv->channelsInvalidationQueue.append(Private::ChannelInvadationInfo(channel, errorName,
                     errorMessage));
         mPriv->channelsQueue.append(&SimpleObserver::Private::processChannelsInvalidationQueue);
-        return;
-    }
-
-    if (!mPriv->filterChannel(channel)) {
         return;
     }
 
