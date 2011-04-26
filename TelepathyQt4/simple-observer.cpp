@@ -72,7 +72,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
                 account->contactFactory());
 
         observer = SharedPtr<Observer>(new Observer(cr, fakeAccountFactory,
-                    normalizedChannelFilter.toList(), extraChannelFeatures));
+                    normalizedChannelFilter.toList()));
 
         QString observerName = QString(QLatin1String("TpQt4SO_%1_%2"))
             .arg(account->dbusConnection().baseService()
@@ -92,6 +92,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
         debug() << "Observer already registered, using it";
     }
 
+    observer->registerExtraChannelFeatures(extraChannelFeatures);
     observer->registerAccount(account);
 
     if (contactIdentifier.isEmpty() || !requiresNormalization) {
@@ -155,13 +156,11 @@ void SimpleObserver::Private::processChannelsInvalidationQueue()
 
 SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
         const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
-        const ChannelClassSpecList &channelFilter,
-        const QList<ChannelClassFeatures> &extraChannelFeatures)
+        const ChannelClassSpecList &channelFilter)
     : QObject(),
       AbstractClientObserver(channelFilter, true),
       mCr(cr),
-      mFakeAccountFactory(fakeAccountFactory),
-      mExtraChannelFeatures(extraChannelFeatures)
+      mFakeAccountFactory(fakeAccountFactory)
 {
 }
 

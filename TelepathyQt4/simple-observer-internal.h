@@ -23,9 +23,11 @@
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassFeatures>
 #include <TelepathyQt4/ChannelClassSpec>
 #include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ClientRegistrar>
+#include <TelepathyQt4/Types>
 
 namespace Tp
 {
@@ -132,13 +134,16 @@ public:
 
     Observer(const ClientRegistrarPtr &cr,
              const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
-             const ChannelClassSpecList &channelFilter,
-             const QList<ChannelClassFeatures> &extraChannelFeatures);
+             const ChannelClassSpecList &channelFilter);
     ~Observer();
 
     ClientRegistrarPtr clientRegistrar() const { return mCr; }
     SharedPtr<FakeAccountFactory> fakeAccountFactory() const { return mFakeAccountFactory; }
-    QList<ChannelClassFeatures> extraChannelFeatures() const { return mExtraChannelFeatures; }
+    QSet<ChannelClassFeatures> extraChannelFeatures() const { return mExtraChannelFeatures; }
+    void registerExtraChannelFeatures(const QList<ChannelClassFeatures> &features)
+    {
+        mExtraChannelFeatures.unite(features.toSet());
+    }
 
     QList<AccountPtr> accounts() const { return mAccounts; }
     void registerAccount(const AccountPtr &account)
@@ -173,7 +178,7 @@ private:
 
     ClientRegistrarPtr mCr;
     SharedPtr<FakeAccountFactory> mFakeAccountFactory;
-    QList<ChannelClassFeatures> mExtraChannelFeatures;
+    QSet<ChannelClassFeatures> mExtraChannelFeatures;
     QList<AccountPtr> mAccounts;
     QHash<ChannelPtr, ChannelWrapper*> mChannels;
     QHash<ChannelPtr, ChannelWrapper*> mIncompleteChannels;
