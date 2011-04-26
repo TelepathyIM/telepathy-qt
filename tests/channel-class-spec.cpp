@@ -7,6 +7,19 @@
 
 using namespace Tp;
 
+namespace {
+
+ChannelClassSpecList reverse(const ChannelClassSpecList &list)
+{
+    ChannelClassSpecList ret(list);
+    for (int k = 0; k < (list.size() / 2); k++) {
+        ret.swap(k, list.size() - (1 + k));
+    }
+    return ret;
+}
+
+};
+
 class TestChannelClassSpec : public QObject
 {
     Q_OBJECT
@@ -64,6 +77,47 @@ void TestChannelClassSpec::testChannelClassSpecHash()
     // same again
     sl1.prepend(ChannelClassSpec::unnamedTextChat());
     QCOMPARE(qHash(sl1), qHash(sl2));
+
+    sl1.clear();
+    sl2.clear();
+
+    for (int i = 0; i < 100; ++i) {
+        sl1 << ChannelClassSpec::textChat() <<
+            ChannelClassSpec::streamedMediaCall() <<
+            ChannelClassSpec::unnamedTextChat();
+    }
+
+    ChannelClassSpec specs[3] = {
+            ChannelClassSpec::textChat(),
+            ChannelClassSpec::streamedMediaCall(),
+            ChannelClassSpec::unnamedTextChat()
+    };
+    for (int i = 0; i < 3; ++i) {
+        ChannelClassSpec spec = specs[i];
+        for (int j = 0; j < 100; ++j) {
+            sl2 << spec;
+        }
+    }
+
+    QCOMPARE(qHash(sl1), qHash(ChannelClassSpecList() <<
+                ChannelClassSpec::unnamedTextChat() <<
+                ChannelClassSpec::streamedMediaCall() <<
+                ChannelClassSpec::textChat()));
+
+    for (int i = 0; i < 1000; ++i) {
+        ChannelClassSpec spec = ChannelClassSpec::outgoingStreamTube(QString::number(i));
+        sl1 << spec;
+        sl2.prepend(spec);
+    }
+
+    QCOMPARE(qHash(sl1), qHash(sl2));
+
+    sl1 = reverse(sl1);
+    sl2 = reverse(sl2);
+    QCOMPARE(qHash(sl1), qHash(sl2));
+
+    sl2 << ChannelClassSpec::outgoingFileTransfer();
+    QVERIFY(qHash(sl1) != qHash(sl2));
 }
 
 QTEST_MAIN(TestChannelClassSpec)
