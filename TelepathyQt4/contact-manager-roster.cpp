@@ -963,7 +963,8 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
         return;
     }
 
-    Contacts allChangedContacts;
+    Contacts newBlockedContacts;
+    Contacts unblockedContacts;
 
     HandleIdentifierMap::const_iterator begin = info.added.constBegin();
     HandleIdentifierMap::const_iterator end = info.added.constEnd();
@@ -978,7 +979,7 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
 
         debug() << "Contact" << contact->id() << "is now blocked";
         blockedContacts.insert(contact);
-        allChangedContacts.insert(contact);
+        newBlockedContacts.insert(contact);
         contact->setBlocked(true);
     }
 
@@ -995,13 +996,13 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
 
         debug() << "Contact" << contact->id() << "is now unblocked";
         blockedContacts.remove(contact);
-        allChangedContacts.insert(contact);
+        unblockedContacts.insert(contact);
         contact->setBlocked(false);
     }
 
     // Perform the needed computation for allKnownContactsChanged
-    computeKnownContactsChanges(allChangedContacts, Contacts(),
-            Contacts(), Contacts(), Channel::GroupMemberChangeDetails());
+    computeKnownContactsChanges(newBlockedContacts, Contacts(),
+            Contacts(), unblockedContacts, Channel::GroupMemberChangeDetails());
 
     if (info.continueIntrospectionWhenFinished) {
         introspectContactList();
@@ -1580,10 +1581,8 @@ void ContactManager::Roster::onDenyChannelMembersChanged(
     }
 
     // Perform the needed computation for allKnownContactsChanged
-    Contacts allChangedContacts = groupMembersAdded;
-    allChangedContacts.unite(groupMembersRemoved);
-    computeKnownContactsChanges(allChangedContacts, Contacts(),
-            Contacts(), Contacts(), Channel::GroupMemberChangeDetails());
+    computeKnownContactsChanges(groupMembersAdded, Contacts(),
+            Contacts(), groupMembersRemoved, details);
 }
 
 void ContactManager::Roster::onContactListGroupMembersChanged(
@@ -2045,6 +2044,9 @@ void ContactManager::Roster::computeKnownContactsChanges(const Tp::Contacts& add
         realRemoved.subtract(channel->groupLocalPendingContacts());
         realRemoved.subtract(channel->groupRemotePendingContacts());
     }
+
+    // ...and from the Conn.I.ContactList contacts
+    realRemoved.subtract(contactListContacts);
 
     // Are there any real changes?
     if (!realAdded.isEmpty() || !realRemoved.isEmpty()) {
