@@ -428,12 +428,24 @@ void TestConnRoster::testRoster()
     QVERIFY(connect(mConn->contactManager()->unblockContacts(contactsList),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+
+    // note: allKnownContacts() changes here because bill and steve, which were
+    // initially in the deny list, do not exist in any other list, so they are
+    // removed as soon as they get unblocked
+    QCOMPARE(mLoop->exec(), 0); // will quit from expectAllKnownContactsChanged()
+    QCOMPARE(mLoop->exec(), 0); // will quit from expectBlockingContactsFinished()
 
     // verify all contacts have been unblocked
     Q_FOREACH (const ContactPtr &contact, contactsList) {
         QCOMPARE(contact->isBlocked(), false);
-        QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
+
+        // ...and that bill and steve have also been removed from allKnownContacts()
+        if (contact->id() == QLatin1String("bill@example.com") ||
+            contact->id() == QLatin1String("steve@example.com")) {
+            QVERIFY(!mConn->contactManager()->allKnownContacts().contains(contact));
+        } else {
+            QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
+        }
     }
 
     // block some contacts that are not already known
@@ -463,6 +475,19 @@ void TestConnRoster::testRoster()
     Q_FOREACH (const ContactPtr &contact, mContacts) {
         QCOMPARE(contact->isBlocked(), true);
         QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
+    }
+
+    // now unblock them again
+    QVERIFY(connect(mConn->contactManager()->unblockContacts(mContacts),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0); // will quit from expectAllKnownContactsChanged()
+    QCOMPARE(mLoop->exec(), 0); // will quit from expectBlockingContactsFinished()
+
+    // and verify that they are not in allKnownContacts()
+    Q_FOREACH (const ContactPtr &contact, mContacts) {
+        QCOMPARE(contact->isBlocked(), false);
+        QVERIFY(!mConn->contactManager()->allKnownContacts().contains(contact));
     }
 }
 
