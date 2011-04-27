@@ -828,6 +828,7 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
                     HandleTypeContact, UIntList() << bareHandle),
                 conn->contactFactory()->features(), attrs);
         cachedAllKnownContacts.insert(contact);
+        contactListContacts.insert(contact);
     }
 
     if (contactManager->connection()->requestedFeatures().contains(
@@ -1043,6 +1044,8 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             added << contact;
         }
 
+        contactListContacts.insert(contact);
+
         Contact::PresenceState oldContactPublishState = contact->publishState();
         QString oldContactPublishStateMessage = contact->publishStateMessage();
         contact->setSubscriptionState((SubscriptionState) subscriptions.subscribe);
@@ -1083,6 +1086,7 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
         }
 
         cachedAllKnownContacts.remove(contact);
+        contactListContacts.remove(contact);
         removed << contact;
     }
 

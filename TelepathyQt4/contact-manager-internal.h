@@ -244,6 +244,8 @@ private:
     // If RosterGroups introspection completing should advance the ContactManager state to Success
     bool groupsSetSuccess;
 
+    // Contact list contacts using the Conn.I.ContactList API
+    Contacts contactListContacts;
     // Blocked contacts using the new ContactBlocking API
     Contacts blockedContacts;
 };
