@@ -149,6 +149,7 @@ set(telepathy_qt4_HEADERS
     Channel
     channel.h
     ChannelClassFeatures
+    channel-class-features.h
     ChannelClassSpec
     ChannelClassSpecList
     channel-class-spec.h
