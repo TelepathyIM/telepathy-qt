@@ -34,7 +34,7 @@ namespace Tp
 
 class PendingOperation;
 
-class TELEPATHY_QT4_NO_EXPORT SimpleObserver : public QObject, public RefCounted
+class TELEPATHY_QT4_EXPORT SimpleObserver : public QObject, public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(SimpleObserver)
