@@ -25,6 +25,7 @@ static const gchar *_contact_lists[NUM_EXAMPLE_CONTACT_LISTS + 1] = {
     "subscribe",
     "publish",
     "stored",
+    "deny",
     NULL
 };
 
@@ -58,6 +59,8 @@ typedef struct {
     guint publish:1;
     guint subscribe_requested:1;
     guint publish_requested:1;
+    guint stored:1;
+    guint blocked:1;
 
     TpHandleSet *tags;
 
@@ -380,7 +383,7 @@ receive_contact_lists (gpointer p)
   ExampleContactDetails *d;
   TpIntSet *set, *cam_set, *mtl_set, *fr_set;
   TpIntSetFastIter iter;
-  ExampleContactList *subscribe, *publish, *stored;
+  ExampleContactList *subscribe, *publish, *stored, *deny;
   ExampleContactGroup *cambridge_group, *montreal_group,
       *francophones_group;
 
@@ -399,6 +402,7 @@ receive_contact_lists (gpointer p)
   subscribe = ensure_list (self, EXAMPLE_CONTACT_LIST_SUBSCRIBE);
   publish = ensure_list (self, EXAMPLE_CONTACT_LIST_PUBLISH);
   stored = ensure_list (self, EXAMPLE_CONTACT_LIST_STORED);
+  deny = ensure_list (self, EXAMPLE_CONTACT_LIST_DENY);
 
   cambridge = tp_handle_ensure (self->priv->group_repo, "Cambridge", NULL,
       NULL);
@@ -427,6 +431,7 @@ receive_contact_lists (gpointer p)
   d->alias = g_strdup ("Sjoerd");
   d->subscribe = TRUE;
   d->publish = TRUE;
+  d->stored = TRUE;
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, cambridge);
   tp_handle_unref (self->priv->contact_repo, handle);
@@ -441,6 +446,7 @@ receive_contact_lists (gpointer p)
   d->alias = g_strdup ("Guillaume");
   d->subscribe = TRUE;
   d->publish = TRUE;
+  d->stored = TRUE;
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, cambridge);
   tp_handle_set_add (d->tags, francophones);
@@ -456,6 +462,7 @@ receive_contact_lists (gpointer p)
   d->alias = g_strdup ("Olivier");
   d->subscribe = TRUE;
   d->publish = TRUE;
+  d->stored = TRUE;
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, montreal);
   tp_handle_set_add (d->tags, francophones);
@@ -469,6 +476,7 @@ receive_contact_lists (gpointer p)
   d->alias = g_strdup ("Travis");
   d->subscribe = TRUE;
   d->publish = TRUE;
+  d->stored = TRUE;
   tp_handle_unref (self->priv->contact_repo, handle);
 
   tp_group_mixin_change_members ((GObject *) subscribe, "",
@@ -505,6 +513,7 @@ receive_contact_lists (gpointer p)
   g_free (d->alias);
   d->alias = g_strdup ("Géraldine");
   d->subscribe_requested = TRUE;
+  d->stored = TRUE;
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, cambridge);
   tp_handle_set_add (d->tags, francophones);
@@ -518,6 +527,7 @@ receive_contact_lists (gpointer p)
   g_free (d->alias);
   d->alias = g_strdup ("Helen");
   d->subscribe_requested = TRUE;
+  d->stored = TRUE;
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, cambridge);
   tp_handle_unref (self->priv->contact_repo, handle);
@@ -548,6 +558,7 @@ receive_contact_lists (gpointer p)
   g_free (d->alias);
   d->alias = g_strdup ("Wim");
   d->publish_requested = TRUE;
+  d->stored = TRUE;
   tp_handle_unref (self->priv->contact_repo, handle);
 
   set = tp_intset_new_containing (handle);
@@ -568,6 +579,7 @@ receive_contact_lists (gpointer p)
   g_free (d->alias);
   d->alias = g_strdup ("Christian");
   d->publish_requested = TRUE;
+  d->stored = TRUE;
   tp_handle_unref (self->priv->contact_repo, handle);
 
   set = tp_intset_new_containing (handle);
@@ -581,6 +593,44 @@ receive_contact_lists (gpointer p)
   tp_intset_destroy (set);
   g_signal_emit (self, signals[ALIAS_UPDATED], 0, handle);
   g_signal_emit (self, signals[PRESENCE_UPDATED], 0, handle);
+
+  /* Add a couple of people who are blocked */
+
+  set = tp_intset_new ();
+
+  handle = tp_handle_ensure (self->priv->contact_repo, "bill@example.com",
+      NULL, NULL);
+  tp_intset_add (set, handle);
+  d = ensure_contact (self, handle, NULL);
+  g_free (d->alias);
+  d->alias = g_strdup ("Bill");
+  d->blocked = TRUE;
+  tp_handle_unref (self->priv->contact_repo, handle);
+
+  handle = tp_handle_ensure (self->priv->contact_repo, "steve@example.com",
+      NULL, NULL);
+  tp_intset_add (set, handle);
+  d = ensure_contact (self, handle, NULL);
+  g_free (d->alias);
+  d->alias = g_strdup ("Steve");
+  d->blocked = TRUE;
+  tp_handle_unref (self->priv->contact_repo, handle);
+
+  tp_group_mixin_change_members ((GObject *) deny, "",
+      set, NULL, NULL, NULL,
+      0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+
+  tp_intset_fast_iter_init (&iter, set);
+
+  while (tp_intset_fast_iter_next (&iter, &handle))
+    {
+      g_signal_emit (self, signals[ALIAS_UPDATED], 0, handle);
+      g_signal_emit (self, signals[PRESENCE_UPDATED], 0, handle);
+    }
+
+  tp_intset_destroy (set);
+
+  /* Handle groups */
 
   tp_group_mixin_change_members ((GObject *) cambridge_group, "",
       cam_set, NULL, NULL, NULL,
@@ -1025,6 +1075,8 @@ send_updated_roster (ExampleContactListManager *self,
       g_message ("\tsends us presence = %s",
           d->subscribe ? "yes" :
           (d->subscribe_requested ? "no, but we have requested it" : "no"));
+      g_message ("\tstored = %s", d->stored ? "yes" : "no");
+      g_message ("\tblocked = %s", d->blocked ? "yes" : "no");
 
       if (d->tags == NULL || tp_handle_set_size (d->tags) == 0)
         {
@@ -1072,6 +1124,8 @@ example_contact_list_manager_add_to_group (ExampleContactListManager *self,
   if (updated)
     {
       TpIntSet *added = tp_intset_new_containing (member);
+
+      d->stored = TRUE;
 
       send_updated_roster (self, member);
       tp_group_mixin_change_members (channel, "", added, NULL, NULL, NULL,
@@ -1169,6 +1223,7 @@ receive_auth_request (ExampleContactListManager *self,
     return;
 
   d->publish_requested = TRUE;
+  d->stored = TRUE;
 
   set = tp_intset_new_containing (contact);
   tp_group_mixin_change_members ((GObject *) publish,
@@ -1208,6 +1263,7 @@ receive_authorized (gpointer p)
 
   d->subscribe_requested = FALSE;
   d->subscribe = TRUE;
+  d->stored = TRUE;
 
   set = tp_intset_new_containing (s->contact);
   tp_group_mixin_change_members ((GObject *) subscribe, "",
@@ -1304,6 +1360,7 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
           if (created || !d->subscribe_requested)
             {
               d->subscribe_requested = TRUE;
+              d->stored = TRUE;
               send_updated_roster (self, member);
             }
 
@@ -1365,6 +1422,7 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
             {
               d->publish = TRUE;
               d->publish_requested = FALSE;
+              d->stored = TRUE;
               send_updated_roster (self, member);
 
               set = tp_intset_new_containing (member);
@@ -1384,12 +1442,29 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
     case EXAMPLE_CONTACT_LIST_STORED:
       /* we would like member to be on the roster */
         {
-          gboolean created;
+          ExampleContactDetails *d = ensure_contact (self, member, NULL);
 
-          ensure_contact (self, member, &created);
+          d->stored = TRUE;
+          send_updated_roster (self, member);
 
-          if (created)
-            send_updated_roster (self, member);
+          set = tp_intset_new_containing (member);
+          tp_group_mixin_change_members (channel, "",
+              set, NULL, NULL, NULL, self->priv->conn->self_handle,
+              TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+          tp_intset_destroy (set);
+        }
+      return TRUE;
+
+    case EXAMPLE_CONTACT_LIST_DENY:
+      /* We would like member to be blocked */
+        {
+          ExampleContactDetails *d = ensure_contact (self, member, NULL);
+
+          g_message ("Blocking %s",
+              tp_handle_inspect (self->priv->contact_repo, member));
+
+          d->blocked = TRUE;
+          send_updated_roster (self, member);
 
           set = tp_intset_new_containing (member);
           tp_group_mixin_change_members (channel, "",
@@ -1536,8 +1611,20 @@ example_contact_list_manager_remove_from_list (ExampleContactListManager *self,
 
           if (d != NULL)
             {
-              g_hash_table_remove (self->priv->contact_details,
-                  GUINT_TO_POINTER (member));
+              /* if the contact is blocked, do not completely delete it */
+              if (d->blocked)
+                {
+                  d->publish = FALSE;
+                  d->publish_requested = FALSE;
+                  d->subscribe = FALSE;
+                  d->subscribe_requested = FALSE;
+                  d->stored = FALSE;
+                }
+              else
+                {
+                  g_hash_table_remove (self->priv->contact_details,
+                      GUINT_TO_POINTER (member));
+                }
               send_updated_roster (self, member);
 
               set = tp_intset_new_containing (member);
@@ -1557,13 +1644,50 @@ example_contact_list_manager_remove_from_list (ExampleContactListManager *self,
                   TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
               tp_intset_destroy (set);
 
-              tp_handle_set_remove (self->priv->contacts, member);
+              if (!d->blocked)
+                tp_handle_set_remove (self->priv->contacts, member);
 
               /* since they're no longer on the subscribe list, we can't
                * see their presence, so emit a signal changing it to
                * UNKNOWN */
               g_signal_emit (self, signals[PRESENCE_UPDATED], 0, member);
 
+            }
+        }
+      return TRUE;
+
+    case EXAMPLE_CONTACT_LIST_DENY:
+      /* we would like to unblock member */
+        {
+          ExampleContactDetails *d = lookup_contact (self, member);
+
+          if (d != NULL)
+            {
+              g_message ("Unblocking %s",
+                  tp_handle_inspect (self->priv->contact_repo, member));
+
+              /* if the contact is also not stored, we need to delete it */
+              if (!d->stored)
+                {
+                  g_hash_table_remove (self->priv->contact_details,
+                      GUINT_TO_POINTER (member));
+                }
+              else
+                {
+                  d->blocked = FALSE;
+                }
+
+              send_updated_roster (self, member);
+
+              set = tp_intset_new_containing (member);
+              tp_group_mixin_change_members (channel, "",
+                  NULL, set, NULL, NULL,
+                  self->priv->conn->self_handle,
+                  TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+              tp_intset_destroy (set);
+
+              if (!d->stored)
+                tp_handle_set_remove (self->priv->contacts, member);
             }
         }
       return TRUE;
@@ -1635,6 +1759,7 @@ example_contact_list_manager_set_alias (ExampleContactListManager *self,
     return;
 
   d->alias = g_strdup (alias);
+  d->stored = TRUE;
 
   if (created || tp_strdiff (old, alias))
     send_updated_roster (self, contact);
