@@ -136,12 +136,12 @@ void SimpleObserver::Private::insertChannels(const AccountPtr &channelsAccount,
 {
     QSet<ChannelPtr> match;
     foreach (const ChannelPtr &channel, newChannels) {
-        if (filterChannel(channelsAccount, channel)) {
+        if (!channels.contains(channel) && filterChannel(channelsAccount, channel)) {
             match.insert(channel);
         }
     }
 
-    if (match.isEmpty() || channels.contains(match)) {
+    if (match.isEmpty()) {
         return;
     }
 
@@ -153,8 +153,7 @@ void SimpleObserver::Private::removeChannel(const AccountPtr &channelAccount,
         const ChannelPtr &channel,
         const QString &errorName, const QString &errorMessage)
 {
-    if (!filterChannel(channelAccount, channel)) {
-        Q_ASSERT(!channels.contains(channel));
+    if (!channels.contains(channel) || !filterChannel(channelAccount, channel)) {
         return;
     }
 
