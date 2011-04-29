@@ -513,12 +513,7 @@ void TestContactMessenger::testObserverRegistration()
     // away, at least in a few mainloop iterations
     messenger.reset();
 
-    for (int i = 0; i < 100; i++) {
-        mLoop->processEvents();
-    }
-
-    // FIXME: Fix memory leak and uncomment below:
-    // QVERIFY(ourObservers().empty());
+    QVERIFY(ourObservers().empty());
 }
 
 void TestContactMessenger::testSimpleSend()
