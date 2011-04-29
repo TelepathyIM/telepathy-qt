@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     if (argc < 2) {
-        qDebug() << "usage: roster account";
+        qDebug() << "usage:" << argv[0] << "<account name, as in mc-tool list>";
         return 1;
     }
 
