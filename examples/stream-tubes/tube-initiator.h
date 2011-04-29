@@ -39,14 +39,12 @@ class TubeInitiator : public QObject
     Q_OBJECT
 
 public:
-   TubeInitiator(const QString &username, const QString &password,
-          const QString &receiver);
+   TubeInitiator(const QString &accountName, const QString &receiver, QObject *parent);
    ~TubeInitiator();
 
 private Q_SLOTS:
-    void onCMReady(Tp::PendingOperation *op);
-    void onConnectionCreated(Tp::PendingOperation *op);
-    void onConnectionConnected(Tp::PendingOperation *op);
+    void onAccountReady(Tp::PendingOperation *op);
+    void onAccountConnectionChanged(const Tp::ConnectionPtr &);
     void onContactRetrieved(Tp::PendingOperation *op);
     void onContactPresenceChanged();
     /*
@@ -64,12 +62,10 @@ private Q_SLOTS:
 private:
     void createStreamTubeChannel();
 
-    QString mUsername;
-    QString mPassword;
     QString mReceiver;
     QTcpServer *mServer;
 
-    ConnectionManagerPtr mCM;
+    AccountPtr mAccount;
     ConnectionPtr mConn;
     OutgoingStreamTubeChannelPtr mChan;
     ContactPtr mContact;

@@ -40,13 +40,12 @@ class TubeReceiver : public QObject
     Q_OBJECT
 
 public:
-   TubeReceiver(const QString &username, const QString &password);
+   TubeReceiver(const QString &accountName, QObject *parent);
    ~TubeReceiver();
 
 private Q_SLOTS:
-    void onCMReady(Tp::PendingOperation *op);
-    void onConnectionCreated(Tp::PendingOperation *op);
-    void onConnectionConnected(Tp::PendingOperation *op);
+    void onAccountReady(Tp::PendingOperation *op);
+    void onAccountConnectionChanged(const Tp::ConnectionPtr &);
     void onNewChannels(const Tp::ChannelDetailsList &channels);
     void onStreamTubeChannelReady(Tp::PendingOperation*);
     void onStreamTubeAccepted(Tp::PendingOperation*);
@@ -56,8 +55,7 @@ private Q_SLOTS:
     void onInvalidated();
 
 private:
-    QString mUsername;
-    QString mPassword;
+    AccountPtr mAccount;
     QLocalSocket *mDevice;
 
     ConnectionManagerPtr mCM;

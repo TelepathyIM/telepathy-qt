@@ -25,6 +25,7 @@
 // low-level interface (!!!) directly!
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
+#include <TelepathyQt4/Account>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
@@ -40,72 +41,58 @@
 #include <QDebug>
 #include <QIODevice>
 
-TubeReceiver::TubeReceiver(const QString &username, const QString &password)
-    : mUsername(username),
-      mPassword(password)
+TubeReceiver::TubeReceiver(const QString &accountName, QObject *parent)
+    : QObject(parent)
 {
-    mCM = ConnectionManager::create(QLatin1String("gabble"));
-    connect(mCM->becomeReady(),
+    // We only care about CONNECTED connections, so let's specify that in a Connection Factory
+    ConnectionFactoryPtr connectionFactory = ConnectionFactory::create(
+            QDBusConnection::sessionBus(), Connection::FeatureConnected);
+
+    mAccount = Account::create(TP_QT4_ACCOUNT_MANAGER_BUS_NAME,
+            TP_QT4_ACCOUNT_OBJECT_PATH_BASE + QLatin1Char('/') + accountName,
+            connectionFactory);
+
+    connect(mAccount->becomeReady(Account::FeatureCore),
             SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onCMReady(Tp::PendingOperation *)));
+            SLOT(onAccountReady(Tp::PendingOperation *)));
 }
 
 TubeReceiver::~TubeReceiver()
 {
 }
 
-void TubeReceiver::onCMReady(PendingOperation *op)
+void TubeReceiver::onAccountReady(Tp::PendingOperation *op)
 {
     if (op->isError()) {
-        qWarning() << "CM cannot become ready -" <<
-            op->errorName() << ": " << op->errorMessage();
+        qWarning() << "Account cannot become ready - " <<
+            op->errorName() << '-' << op->errorMessage();
+        QCoreApplication::exit(1);
         return;
     }
 
-    qDebug() << "CM ready!";
+    qDebug() << "Account ready";
+    connect(mAccount.data(),
+            SIGNAL(connectionChanged(Tp::ConnectionPtr)),
+            SLOT(onAccountConnectionChanged(Tp::ConnectionPtr)));
 
-    qDebug() << "Creating connection...";
-    QVariantMap params;
-    params.insert(QLatin1String("account"), QVariant(mUsername));
-    params.insert(QLatin1String("password"), QVariant(mPassword));
-    PendingConnection *pconn = mCM->lowlevel()->requestConnection(QLatin1String("jabber"),
-            params);
-    connect(pconn,
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionCreated(Tp::PendingOperation *)));
+    if (mAccount->connection().isNull()) {
+        qDebug() << "The account given has no Connection. Please set it online to continue.";
+    } else {
+        onAccountConnectionChanged(mAccount->connection());
+    }
 }
 
-void TubeReceiver::onConnectionCreated(PendingOperation *op)
+void TubeReceiver::onAccountConnectionChanged(const ConnectionPtr &conn)
 {
-    if (op->isError()) {
-        qWarning() << "Unable to create connection -" <<
-            op->errorName() << ": " << op->errorMessage();
+    if (!conn) {
         return;
     }
 
-    qDebug() << "Connection ready!";
+    Q_ASSERT(conn->isValid());
+    Q_ASSERT(conn->status() == ConnectionStatusConnected);
 
-    qDebug() << "Connecting...";
-    PendingConnection *pconn =
-        qobject_cast<PendingConnection *>(op);
-    mConn = pconn->connection();
-    connect(mConn->lowlevel()->requestConnect(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionConnected(Tp::PendingOperation *)));
-    connect(mConn.data(),
-            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-            SLOT(onInvalidated()));
-}
-
-void TubeReceiver::onConnectionConnected(PendingOperation *op)
-{
-    if (op->isError()) {
-        qWarning() << "Connection cannot become connected -" <<
-            op->errorName() << ": " << op->errorMessage();
-        return;
-    }
-
-    qDebug() << "Connected!";
+    qDebug() << "Got a Connected Connection!";
+    mConn = conn;
 
     QMap<QString, QDBusVariant> filter;
     filter[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")] =
@@ -224,17 +211,15 @@ int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    if (argc < 2) {
-        qDebug() << "usage: receiver username password";
+    if (argc != 2) {
+        qDebug() << "usage:" << argv[0] << "<account name, as in mc-tool list>";
         return 1;
     }
 
     Tp::registerTypes();
     Tp::enableDebug(true);
 
-    new TubeReceiver(
-            QLatin1String(argv[1]),
-            QLatin1String(argv[2]));
+    new TubeReceiver(QLatin1String(argv[1]), &app);
 
     return app.exec();
 }

@@ -24,6 +24,7 @@
 // directly!
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
+#include <TelepathyQt4/Account>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
@@ -44,78 +45,64 @@
 #include <QTcpSocket>
 #include <TelepathyQt4/Presence>
 
-TubeInitiator::TubeInitiator(const QString &username, const QString &password,
-        const QString &receiver)
-    : mUsername(username),
-      mPassword(password),
+TubeInitiator::TubeInitiator(const QString &accountName, const QString &receiver, QObject *parent)
+    : QObject(parent),
       mReceiver(receiver),
       mTubeOffered(false)
 {
     mServer = new QTcpServer(this);
     connect(mServer, SIGNAL(newConnection()), this, SLOT(onTcpServerNewConnection()));
     mServer->listen();
-    mCM = ConnectionManager::create(QLatin1String("gabble"));
-    connect(mCM->becomeReady(),
+
+    // We only care about CONNECTED connections, so let's specify that in a Connection Factory
+    ConnectionFactoryPtr connectionFactory = ConnectionFactory::create(
+            QDBusConnection::sessionBus(), Connection::FeatureConnected);
+
+    mAccount = Account::create(TP_QT4_ACCOUNT_MANAGER_BUS_NAME,
+            TP_QT4_ACCOUNT_OBJECT_PATH_BASE + QLatin1Char('/') + accountName,
+            connectionFactory);
+
+    connect(mAccount->becomeReady(Account::FeatureCore),
             SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onCMReady(Tp::PendingOperation *)));
+            SLOT(onAccountReady(Tp::PendingOperation *)));
 }
 
 TubeInitiator::~TubeInitiator()
 {
 }
 
-void TubeInitiator::onCMReady(PendingOperation *op)
+void TubeInitiator::onAccountReady(Tp::PendingOperation *op)
 {
     if (op->isError()) {
-        qWarning() << "CM cannot become ready -" <<
-            op->errorName() << ": " << op->errorMessage();
+        qWarning() << "Account cannot become ready - " <<
+            op->errorName() << '-' << op->errorMessage();
+        QCoreApplication::exit(1);
         return;
     }
 
-    qDebug() << "CM ready!";
+    qDebug() << "Account ready";
+    connect(mAccount.data(),
+            SIGNAL(connectionChanged(Tp::ConnectionPtr)),
+            SLOT(onAccountConnectionChanged(Tp::ConnectionPtr)));
 
-    qDebug() << "Creating connection...";
-    QVariantMap params;
-    params.insert(QLatin1String("account"), QVariant(mUsername));
-    params.insert(QLatin1String("password"), QVariant(mPassword));
-    PendingConnection *pconn = mCM->lowlevel()->requestConnection(QLatin1String("jabber"),
-            params);
-    connect(pconn,
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionCreated(Tp::PendingOperation *)));
+    if (mAccount->connection().isNull()) {
+        qDebug() << "The account given has no Connection. Please set it online to continue.";
+    } else {
+        onAccountConnectionChanged(mAccount->connection());
+    }
 }
 
-void TubeInitiator::onConnectionCreated(PendingOperation *op)
+void TubeInitiator::onAccountConnectionChanged(const ConnectionPtr &conn)
 {
-    if (op->isError()) {
-        qWarning() << "Unable to create connection -" <<
-            op->errorName() << ": " << op->errorMessage();
+    if (!conn) {
         return;
     }
 
-    qDebug() << "Connection ready!";
+    Q_ASSERT(conn->isValid());
+    Q_ASSERT(conn->status() == ConnectionStatusConnected);
 
-    qDebug() << "Connecting...";
-    PendingConnection *pconn =
-        qobject_cast<PendingConnection *>(op);
-    mConn = pconn->connection();
-    connect(mConn->lowlevel()->requestConnect(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionConnected(Tp::PendingOperation *)));
-    connect(mConn.data(),
-            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-            SLOT(onInvalidated()));
-}
-
-void TubeInitiator::onConnectionConnected(PendingOperation *op)
-{
-    if (op->isError()) {
-        qWarning() << "Connection cannot become connected -" <<
-            op->errorName() << ": " << op->errorMessage();
-        return;
-    }
-
-    qDebug() << "Connected!";
+    qDebug() << "Got a Connected Connection!";
+    mConn = conn;
 
     qDebug() << "Creating contact object for receiver" << mReceiver;
     connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << mReceiver,
@@ -148,6 +135,9 @@ void TubeInitiator::onContactPresenceChanged()
     if (mTubeOffered) {
         return;
     }
+
+    qDebug() << mContact->presence().type();
+    qDebug() << mContact->presence().status();
 
     if (mContact->presence().type() != ConnectionPresenceTypeUnset &&
         mContact->presence().type() != ConnectionPresenceTypeOffline &&
@@ -326,16 +316,15 @@ int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    if (argc < 4) {
-        qDebug() << "usage: sender username password receiver";
+    if (argc != 3) {
+        qDebug() << "usage:" << argv[0] << "<account name, as in mc-tool list> <receiver contact ID>";
         return 1;
     }
 
     Tp::registerTypes();
     Tp::enableDebug(true);
 
-    new TubeInitiator(QLatin1String(argv[1]), QLatin1String(argv[2]),
-            QLatin1String(argv[3]));
+    new TubeInitiator(QLatin1String(argv[1]), QLatin1String(argv[2]), &app);
 
     return app.exec();
 }
