@@ -49,7 +49,7 @@ SimpleTextObserver::Private::Private(SimpleTextObserver *parent,
       account(account),
       contactIdentifier(contactIdentifier)
 {
-    debug() << "Registering observer for account" << account->objectPath();
+    debug() << "Creating a new SimpleTextObserver";
     ChannelClassSpec channelFilter = ChannelClassSpec::textChat();
     observer = SimpleObserver::create(account, ChannelClassSpecList() << channelFilter,
             contactIdentifier, requiresNormalization,
