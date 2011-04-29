@@ -62,6 +62,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     QString contactIdentifier;
     QString normalizedContactIdentifier;
     QList<ChannelClassFeatures> extraChannelFeatures;
+    ClientRegistrarPtr cr;
     SharedPtr<Observer> observer;
     QSet<ChannelPtr> channels;
     QQueue<void (SimpleObserver::Private::*)()> channelsQueue;
@@ -137,12 +138,12 @@ public:
         QList<ChannelPtr> channels;
     };
 
-    Observer(const ClientRegistrarPtr &cr,
+    Observer(const QWeakPointer<ClientRegistrar> &cr,
              const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
              const ChannelClassSpecList &channelFilter);
     ~Observer();
 
-    ClientRegistrarPtr clientRegistrar() const { return mCr; }
+    QWeakPointer<ClientRegistrar> clientRegistrar() const { return mCr; }
     SharedPtr<FakeAccountFactory> fakeAccountFactory() const { return mFakeAccountFactory; }
     QSet<ChannelClassFeatures> extraChannelFeatures() const { return mExtraChannelFeatures; }
     void registerExtraChannelFeatures(const QList<ChannelClassFeatures> &features)
@@ -181,7 +182,7 @@ private Q_SLOTS:
 private:
     Features featuresFor(const ChannelClassSpec &channelClass) const;
 
-    ClientRegistrarPtr mCr;
+    QWeakPointer<ClientRegistrar> mCr;
     SharedPtr<FakeAccountFactory> mFakeAccountFactory;
     QSet<ChannelClassFeatures> mExtraChannelFeatures;
     QSet<AccountPtr> mAccounts;
@@ -198,7 +199,7 @@ class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelWrapper :
 
 public:
     ChannelWrapper(const AccountPtr &channelAccount, const ChannelPtr &channel,
-            const Features &extraChannelFeatures);
+            const Features &extraChannelFeatures, QObject *parent);
     ~ChannelWrapper() { }
 
     AccountPtr channelAccount() const { return mChannelAccount; }

@@ -65,13 +65,13 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
         SharedPtr<FakeAccountFactory> fakeAccountFactory = FakeAccountFactory::create(
                 account->dbusConnection());
 
-        ClientRegistrarPtr cr = ClientRegistrar::create(
+        cr = ClientRegistrar::create(
                 AccountFactoryPtr::qObjectCast(fakeAccountFactory),
                 account->connectionFactory(),
                 account->channelFactory(),
                 account->contactFactory());
 
-        observer = SharedPtr<Observer>(new Observer(cr, fakeAccountFactory,
+        observer = SharedPtr<Observer>(new Observer(cr.data(), fakeAccountFactory,
                     normalizedChannelFilter.toList()));
 
         QString observerName = QString(QLatin1String("TpQt4SO_%1_%2"))
@@ -89,6 +89,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
         debug() << "Observer registered";
         observers.insert(observerUniqueId, observer.data());
     } else {
+        cr = ClientRegistrarPtr(observer->clientRegistrar());
         debug() << "Observer already registered, using it";
     }
 
@@ -184,7 +185,7 @@ void SimpleObserver::Private::processChannelsInvalidationQueue()
     removeChannel(info.channelAccount, info.channel, info.errorName, info.errorMessage);
 }
 
-SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
+SimpleObserver::Private::Observer::Observer(const QWeakPointer<ClientRegistrar> &cr,
         const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
         const ChannelClassSpecList &channelFilter)
     : QObject(),
@@ -196,17 +197,13 @@ SimpleObserver::Private::Observer::Observer(const ClientRegistrarPtr &cr,
 
 SimpleObserver::Private::Observer::~Observer()
 {
-    for (QHash<ChannelPtr, ChannelWrapper*>::iterator i = mChannels.begin();
-            i != mChannels.end();) {
-        delete i.value();
-    }
-    mChannels.clear();
+    // no need to delete channel wrappers here as they have 'this' as parent
 
     // no need to delete context infos here as this observer will never be deleted before all
     // PendingComposites finish (hold reference to this), which will properly delete them
 
-    debug() << "Unregistering observer";
-    mCr->unregisterClient(SharedPtr<Observer>(this));
+    // no need to unregister this observer here as the client registrar destructor will
+    // unregister it
 }
 
 void SimpleObserver::Private::Observer::observeChannels(
@@ -242,7 +239,7 @@ void SimpleObserver::Private::Observer::observeChannels(
 
         SimpleObserver::Private::ChannelWrapper *wrapper =
             new SimpleObserver::Private::ChannelWrapper(account, channel,
-                featuresFor(ChannelClassSpec(channel->immutableProperties())));
+                featuresFor(ChannelClassSpec(channel->immutableProperties())), this);
         mIncompleteChannels.insert(channel, wrapper);
         connect(wrapper,
                 SIGNAL(channelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)),
@@ -319,8 +316,9 @@ Features SimpleObserver::Private::Observer::featuresFor(
 }
 
 SimpleObserver::Private::ChannelWrapper::ChannelWrapper(const AccountPtr &channelAccount,
-        const ChannelPtr &channel, const Features &extraChannelFeatures)
-    : mChannelAccount(channelAccount),
+        const ChannelPtr &channel, const Features &extraChannelFeatures, QObject *parent)
+    : QObject(parent),
+      mChannelAccount(channelAccount),
       mChannel(channel),
       mExtraChannelFeatures(extraChannelFeatures)
 {
