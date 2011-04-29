@@ -56,7 +56,6 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
       contactIdentifier(contactIdentifier),
       extraChannelFeatures(extraChannelFeatures)
 {
-    debug() << "Registering observer";
     QSet<ChannelClassSpec> normalizedChannelFilter = channelFilter.toSet();
     QPair<QString, QSet<ChannelClassSpec> > observerUniqueId(
             account->dbusConnection().baseService(), normalizedChannelFilter);
@@ -71,14 +70,13 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
                 account->channelFactory(),
                 account->contactFactory());
 
-        observer = SharedPtr<Observer>(new Observer(cr.data(), fakeAccountFactory,
-                    normalizedChannelFilter.toList()));
-
         QString observerName = QString(QLatin1String("TpQt4SO_%1_%2"))
             .arg(account->dbusConnection().baseService()
                 .replace(QLatin1String(":"), QLatin1String("_"))
                 .replace(QLatin1String("."), QLatin1String("_")))
             .arg(numObservers++);
+        observer = SharedPtr<Observer>(new Observer(cr.data(), fakeAccountFactory,
+                    normalizedChannelFilter.toList(), observerName));
         if (!cr->registerClient(observer, observerName, false)) {
             warning() << "Unable to register observer" << observerName;
             observer.reset();
@@ -86,11 +84,12 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
             return;
         }
 
-        debug() << "Observer registered";
+        debug() << "Observer" << observerName << "registered";
         observers.insert(observerUniqueId, observer.data());
     } else {
+        debug() << "Observer" << observer->observerName() <<
+            "already registered and matches filter, using it";
         cr = ClientRegistrarPtr(observer->clientRegistrar());
-        debug() << "Observer already registered, using it";
     }
 
     observer->registerExtraChannelFeatures(extraChannelFeatures);
@@ -187,11 +186,13 @@ void SimpleObserver::Private::processChannelsInvalidationQueue()
 
 SimpleObserver::Private::Observer::Observer(const QWeakPointer<ClientRegistrar> &cr,
         const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
-        const ChannelClassSpecList &channelFilter)
+        const ChannelClassSpecList &channelFilter,
+        const QString &observerName)
     : QObject(),
       AbstractClientObserver(channelFilter, true),
       mCr(cr),
-      mFakeAccountFactory(fakeAccountFactory)
+      mFakeAccountFactory(fakeAccountFactory),
+      mObserverName(observerName)
 {
 }
 

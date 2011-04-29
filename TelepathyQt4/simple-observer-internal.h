@@ -140,11 +140,15 @@ public:
 
     Observer(const QWeakPointer<ClientRegistrar> &cr,
              const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
-             const ChannelClassSpecList &channelFilter);
+             const ChannelClassSpecList &channelFilter,
+             const QString &observerName);
     ~Observer();
 
     QWeakPointer<ClientRegistrar> clientRegistrar() const { return mCr; }
     SharedPtr<FakeAccountFactory> fakeAccountFactory() const { return mFakeAccountFactory; }
+
+    QString observerName() const { return mObserverName; }
+
     QSet<ChannelClassFeatures> extraChannelFeatures() const { return mExtraChannelFeatures; }
     void registerExtraChannelFeatures(const QList<ChannelClassFeatures> &features)
     {
@@ -184,6 +188,7 @@ private:
 
     QWeakPointer<ClientRegistrar> mCr;
     SharedPtr<FakeAccountFactory> mFakeAccountFactory;
+    QString mObserverName;
     QSet<ChannelClassFeatures> mExtraChannelFeatures;
     QSet<AccountPtr> mAccounts;
     QHash<ChannelPtr, ChannelWrapper*> mChannels;
