@@ -90,11 +90,11 @@ void Test::expectSuccessfulProperty(PendingOperation *op)
         qWarning().nospace() << op->errorName()
             << ": " << op->errorMessage();
         mPropertyValue = QVariant();
-        mLoop->exit(1);
+        mLoop->exit(1001);
     } else {
         Tp::PendingVariant *pv = qobject_cast<Tp::PendingVariant*>(op);
         mPropertyValue = pv->result();
-        mLoop->exit(0);
+        mLoop->exit(1000);
     }
 }
 

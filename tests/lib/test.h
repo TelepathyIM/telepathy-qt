@@ -51,7 +51,7 @@ bool Test::waitForProperty(Tp::PendingVariant *pv, T *value)
     connect(pv,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(expectSuccessfulProperty(Tp::PendingOperation*)));
-    if (mLoop->exec() == 0) {
+    if (mLoop->exec() == 1000) {
         *value = qdbus_cast<T>(mPropertyValue);
         return true;
     }
