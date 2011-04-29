@@ -64,6 +64,7 @@ SimpleCallObserver::Private::Private(SimpleCallObserver *parent,
       contactIdentifier(contactIdentifier),
       direction(direction)
 {
+    debug() << "Creating a new SimpleCallObserver";
     ChannelClassSpec channelFilter = ChannelClassSpec::streamedMediaCall();
     if (direction == CallDirectionIncoming) {
         channelFilter.setRequested(false);
