@@ -243,6 +243,10 @@ void TestSimpleObserver::initTestCase()
 
     mContacts << QLatin1String("alice") << QLatin1String("bob");
 
+    // Create 2 accounts to be used by the tests:
+    // - each account contains a connection, a text channel and a SM channel setup:
+    // - the channels for the first account have alice as target and;
+    // - the channels for the second account have bob as target
     for (int i = 0; i < 2; ++i) {
         // setup account
         QString accountBusName = TP_QT4_IFACE_ACCOUNT_MANAGER;
@@ -363,6 +367,15 @@ void TestSimpleObserver::testObserverRegistration()
     QList<SimpleTextObserverPtr> textObservers;
     QList<SimpleCallObserverPtr> callObservers;
     int numRegisteredObservers = 0;
+    // Observers should be shared by bus and channel class, meaning that
+    // the following code should register only 4 observers:
+    // - one for text chat rooms
+    // - one for text chats
+    // - one for incoming/outgoing calls
+    // - one for incoming calls (incoming)
+    //
+    // The Simple*Observer instances are added to the lists observers/textObservers/callObservers,
+    // so they don't get deleted (refcount == 0) when out of scope
     for (int i = 0; i < 2; ++i) {
         AccountPtr acc = mAccounts[i];
 
@@ -373,6 +386,8 @@ void TestSimpleObserver::testObserverRegistration()
                 numRegisteredObservers = 1;
             }
 
+            // on first run the following code should register an observer for text chat rooms,
+            // on consecutive runs it should use the already registered observer for text chat rooms
             SimpleObserverPtr observer = SimpleObserver::create(acc,
                     ChannelClassSpec::textChatroom(), contact);
             QCOMPARE(observer->account(), acc);
@@ -384,6 +399,8 @@ void TestSimpleObserver::testObserverRegistration()
             observers.append(observer);
             QCOMPARE(ourObservers().size(), numRegisteredObservers);
 
+            // the following code should always reuse the observer for text chat rooms already
+            // created.
             QList<ChannelClassFeatures> extraChannelFeatures;
             extraChannelFeatures.append(QPair<ChannelClassSpec, Features>(
                         ChannelClassSpec::textChatroom(), Channel::FeatureCore));
@@ -402,6 +419,8 @@ void TestSimpleObserver::testObserverRegistration()
                 numRegisteredObservers = 2;
             }
 
+            // on first run the following code should register an observer for text chats,
+            // on consecutive runs it should use the already registered observer for text chats
             SimpleTextObserverPtr textObserver = SimpleTextObserver::create(acc, contact);
             QCOMPARE(textObserver->account(), acc);
             QCOMPARE(textObserver->contactIdentifier(), contact);
@@ -409,6 +428,8 @@ void TestSimpleObserver::testObserverRegistration()
             textObservers.append(textObserver);
             QCOMPARE(ourObservers().size(), numRegisteredObservers);
 
+            // the following code should always reuse the observer for text chats already
+            // created.
             textObserver = SimpleTextObserver::create(acc, contact);
             QCOMPARE(textObserver->account(), acc);
             QCOMPARE(textObserver->contactIdentifier(), contact);
@@ -420,6 +441,9 @@ void TestSimpleObserver::testObserverRegistration()
                 numRegisteredObservers = 3;
             }
 
+            // on first run the following code should register an observer for incoming/outgoing
+            // calls, on consecutive runs it should use the already registered observer for
+            // incoming/outgoing calls
             SimpleCallObserverPtr callObserver = SimpleCallObserver::create(acc, contact);
             QCOMPARE(callObserver->account(), acc);
             QCOMPARE(callObserver->contactIdentifier(), contact);
@@ -432,6 +456,8 @@ void TestSimpleObserver::testObserverRegistration()
                 numRegisteredObservers = 4;
             }
 
+            // on first run the following code should register an observer for incoming calls,
+            // on consecutive runs it should use the already registered observer for incoming calls
             callObserver = SimpleCallObserver::create(acc, contact,
                     SimpleCallObserver::CallDirectionIncoming);
             QCOMPARE(callObserver->account(), acc);
@@ -443,10 +469,13 @@ void TestSimpleObserver::testObserverRegistration()
         }
     }
 
+    // deleting all SimpleObserver instances (text chat room) should unregister 1 observer
     observers.clear();
     QCOMPARE(ourObservers().size(), 3);
+    // deleting all SimpleTextObserver instances should unregister 1 observer
     textObservers.clear();
     QCOMPARE(ourObservers().size(), 2);
+    // deleting all SimpleCallObserver instances should unregister 2 observers
     callObservers.clear();
     QVERIFY(ourObservers().isEmpty());
 }
@@ -496,6 +525,8 @@ void TestSimpleObserver::testCrossTalk()
 
         for (int i = 0; i < 2; ++i) {
             Q_FOREACH (const ChannelClassSpec &spec, observerFilter) {
+                // only call ObserveChannels for text chat channels on observers that support text
+                // chat
                 if (spec.isSubsetOf(ChannelClassSpec::textChat())) {
                     ChannelDetails textChan = {
                         QDBusObjectPath(mTextChans[i]->objectPath()),
@@ -513,6 +544,7 @@ void TestSimpleObserver::testCrossTalk()
             }
 
             Q_FOREACH (const ChannelClassSpec &spec, observerFilter) {
+                // only call ObserveChannels for SM channels on observers that support SM channels
                 if (spec.isSubsetOf(ChannelClassSpec::streamedMediaCall())) {
                     ChannelDetails smChan = {
                         QDBusObjectPath(mSMChans[i]->objectPath()),
@@ -531,6 +563,8 @@ void TestSimpleObserver::testCrossTalk()
         }
     }
 
+    // due to QtDBus limitation, we cannot wait for ObserveChannels to finish properly before
+    // proceeding, so we have to wait till all observers receive the channels
     while (observers[0]->channels().isEmpty() ||
            observers[1]->channels().isEmpty() ||
            textObservers[0]->textChats().isEmpty() ||
