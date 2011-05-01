@@ -14,6 +14,11 @@ Enhancements:
  * Add Features operator|(Features, Feature)
  * ContactManager state now only advances to Success when both the roster and
    the roster groups have been downloaded, if requested
+ * New class SimpleObserver that can be used to observe arbitrary channels on a
+   given Account.
+ * fd.o #33525 - Helper class(es) for observing calls
+   - New class SimpleCallObserver class which makes it easy to follow all
+     StreamedMedia communication on a given Account.
 
 Fixes:
  * fd.o #35633: Contact features being erased after further contact upgrades,
