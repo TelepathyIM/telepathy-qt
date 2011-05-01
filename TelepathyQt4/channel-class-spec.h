@@ -33,6 +33,8 @@
 
 #include <QSharedDataPointer>
 #include <QVariant>
+#include <QVariantMap>
+#include <QPair>
 
 namespace Tp
 {
@@ -230,6 +232,39 @@ public:
         return list;
     }
 };
+
+inline uint qHash(const ChannelClassSpec &spec)
+{
+    uint ret = 0;
+    QVariantMap::const_iterator it = spec.allProperties().constBegin();
+    QVariantMap::const_iterator end = spec.allProperties().constEnd();
+    int i = spec.allProperties().size() + 1;
+    for (; it != end; ++it) {
+        // all D-Bus types should be convertible to QString
+        QPair<QString, QString> p(it.key(), it.value().toString());
+        int h = qHash(p);
+        ret ^= ((h << (2 << i)) | (h >> (2 >> i)));
+        i--;
+    }
+    return ret;
+}
+
+inline uint qHash(const QSet<ChannelClassSpec> &specSet)
+{
+    int ret = 0;
+    Q_FOREACH (const ChannelClassSpec &spec, specSet) {
+        int h = qHash(spec);
+        ret ^= h;
+    }
+    return ret;
+}
+
+inline uint qHash(const ChannelClassSpecList &specList)
+{
+    // Make it unique by converting to QSet
+    QSet<ChannelClassSpec> uniqueSet = specList.toSet();
+    return qHash(uniqueSet);
+}
 
 } // Tp
 

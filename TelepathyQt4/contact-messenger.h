@@ -51,6 +51,8 @@ public:
     AccountPtr account() const;
     QString contactIdentifier() const;
 
+    QList<TextChannelPtr> textChats() const;
+
     PendingSendMessage *sendMessage(const QString &text,
             ChannelTextMessageType type = ChannelTextMessageTypeNormal,
             MessageSendingFlags flags = 0);

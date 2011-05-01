@@ -22,6 +22,8 @@
 
 #include <TelepathyQt4/AccountFactory>
 
+#include "TelepathyQt4/_gen/account-factory.moc.hpp"
+
 #include <TelepathyQt4/Account>
 
 namespace Tp

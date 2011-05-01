@@ -97,6 +97,9 @@ set(telepathy_qt4_SRCS
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
     room-list-channel.cpp
+    simple-call-observer.cpp
+    simple-observer.cpp
+    simple-observer-internal.h
     simple-text-observer.cpp
     simple-text-observer-internal.h
     stream-tube-channel.cpp
@@ -144,18 +147,20 @@ set(telepathy_qt4_HEADERS
     CapabilitiesBase
     capabilities-base.h
     Channel
+    channel.h
+    ChannelClassFeatures
+    channel-class-features.h
     ChannelClassSpec
     ChannelClassSpecList
+    channel-class-spec.h
     ChannelDispatcher
-    channel-dispatcher.h
     ChannelDispatcherInterface
+    channel-dispatcher.h
     ChannelDispatchOperation
     channel-dispatch-operation.h
     ChannelDispatchOperationInterface
     ChannelFactory
-    channel-class-spec.h
     channel-factory.h
-    channel.h
     ChannelInterface
     ChannelInterfaceAnonymityInterface
     ChannelInterfaceCallStateInterface
@@ -378,6 +383,10 @@ set(telepathy_qt4_HEADERS
     room-list-channel.h
     SharedPtr
     shared-ptr.h
+    SimpleCallObserver
+    simple-call-observer.h
+    SimpleObserver
+    simple-observer.h
     simple-pending-operations.h
     SimpleTextObserver
     simple-text-observer.h
@@ -418,11 +427,13 @@ set(telepathy_qt4_gen_HEADERS
 set(telepathy_qt4_MOC_SRCS
     abstract-interface.h
     account.h
+    account-factory.h
     account-manager.h
     account-set.h
     account-set-internal.h
     channel.h
     channel-dispatch-operation.h
+    channel-factory.h
     channel-internal.h
     channel-request.h
     client-registrar.h
@@ -443,6 +454,7 @@ set(telepathy_qt4_MOC_SRCS
     dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
     file-transfer-channel.h
+    fixed-feature-factory.h
     handled-channel-notifier.h
     incoming-file-transfer-channel.h
     incoming-stream-tube-channel.h
@@ -470,7 +482,10 @@ set(telepathy_qt4_MOC_SRCS
     readiness-helper.h
     request-temporary-handler-internal.h
     room-list-channel.h
+    simple-call-observer.h
     simple-pending-operations.h
+    simple-observer.h
+    simple-observer-internal.h
     simple-text-observer.h
     simple-text-observer-internal.h
     stream-tube-channel.h

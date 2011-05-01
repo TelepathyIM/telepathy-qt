@@ -76,6 +76,16 @@ inline Features operator|(const Features &features, const Feature &feature)
     return Features(features) << feature;
 }
 
+inline uint qHash(const Features &features)
+{
+    int ret = 0;
+    Q_FOREACH (const Feature &feature, features) {
+        int h = qHash(feature);
+        ret ^= h;
+    }
+    return ret;
+}
+
 } // Tp
 
 Q_DECLARE_METATYPE(Tp::Feature);

@@ -506,19 +506,14 @@ void TestContactMessenger::testObserverRegistration()
         // doesn't make sense for it
         bool recover;
         QVERIFY(waitForProperty(observer->requestPropertyRecover(), &recover));
-        QVERIFY(!recover);
+        QCOMPARE(recover, true);
     }
 
     // If we destroy our messenger (which is the last/only one for that ID), the observers should go
     // away, at least in a few mainloop iterations
     messenger.reset();
 
-    for (int i = 0; i < 100; i++) {
-        mLoop->processEvents();
-    }
-
-    // FIXME: Fix memory leak and uncomment below:
-    // QVERIFY(ourObservers().empty());
+    QVERIFY(ourObservers().empty());
 }
 
 void TestContactMessenger::testSimpleSend()
