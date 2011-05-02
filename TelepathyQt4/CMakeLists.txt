@@ -105,6 +105,7 @@ set(telepathy_qt4_SRCS
     simple-text-observer.cpp
     simple-text-observer-internal.h
     stream-tube-channel.cpp
+    stream-tube-server.cpp
     streamed-media-channel.cpp
     test-backdoors.cpp
     test-backdoors.h
@@ -398,7 +399,9 @@ set(telepathy_qt4_HEADERS
     StatefulDBusProxy
     StatelessDBusProxy
     StreamTubeChannel
+    StreamTubeServer
     stream-tube-channel.h
+    stream-tube-server.h
     StreamedMediaChannel
     streamed-media-channel.h
     StreamedMediaStream
@@ -499,6 +502,7 @@ set(telepathy_qt4_MOC_SRCS
     simple-text-observer.h
     simple-text-observer-internal.h
     stream-tube-channel.h
+    stream-tube-server.h
     streamed-media-channel.h
     text-channel.h
     tube-channel.h)
