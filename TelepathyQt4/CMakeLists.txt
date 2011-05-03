@@ -102,6 +102,7 @@ set(telepathy_qt4_SRCS
     simple-call-observer.cpp
     simple-observer.cpp
     simple-observer-internal.h
+    simple-stream-tube-handler.cpp
     simple-text-observer.cpp
     simple-text-observer-internal.h
     stream-tube-channel.cpp
@@ -499,6 +500,7 @@ set(telepathy_qt4_MOC_SRCS
     simple-pending-operations.h
     simple-observer.h
     simple-observer-internal.h
+    simple-stream-tube-handler.h
     simple-text-observer.h
     simple-text-observer-internal.h
     stream-tube-channel.h
