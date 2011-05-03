@@ -129,13 +129,13 @@ Q_SIGNALS:
 
     // These will always be emitted
     void tubeRequested(
-            const AccountPtr &account,
-            const OutgoingStreamTubeChannelPtr &tube,
+            const Tp::AccountPtr &account,
+            const Tp::OutgoingStreamTubeChannelPtr &tube,
             const QDateTime &userActionTime,
-            const ChannelRequestHints &hints);
+            const Tp::ChannelRequestHints &hints);
     void tubeClosed(
-            const AccountPtr &account,
-            const OutgoingStreamTubeChannelPtr &tube,
+            const Tp::AccountPtr &account,
+            const Tp::OutgoingStreamTubeChannelPtr &tube,
             const QString &error,
             const QString &message);
 
@@ -147,17 +147,28 @@ Q_SIGNALS:
     void newTcpConnection(
             const QHostAddress &sourceAddress,
             quint16 sourcePort,
-            const AccountPtr &account,
-            const ContactPtr &contact,
-            const OutgoingStreamTubeChannelPtr &tube);
+            const Tp::AccountPtr &account,
+            const Tp::ContactPtr &contact,
+            const Tp::OutgoingStreamTubeChannelPtr &tube);
     void tcpConnectionClosed(
             const QHostAddress &sourceAddress,
             quint16 sourcePort,
-            const AccountPtr &account,
-            const ContactPtr &contact,
+            const Tp::AccountPtr &account,
+            const Tp::ContactPtr &contact,
             const QString &error,
             const QString &message,
-            const OutgoingStreamTubeChannelPtr &tube);
+            const Tp::OutgoingStreamTubeChannelPtr &tube);
+
+private:
+
+    StreamTubeServer(
+            const ClientRegistrarPtr &registrar,
+            const QStringList &services,
+            const QString &clientName,
+            bool monitorConnections);
+
+    struct Private;
+    Private *mPriv;
 };
 
 } // Tp
