@@ -85,6 +85,8 @@ public:
 
     virtual ~StreamTubeServer();
 
+    ClientRegistrarPtr registrar() const;
+    QString clientName() const;
     bool monitorsConnections() const;
 
     // Recovery getters for the setters below
