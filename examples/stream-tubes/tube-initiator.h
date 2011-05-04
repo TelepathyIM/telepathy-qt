@@ -52,9 +52,7 @@ private Q_SLOTS:
     void gotContactCapabilities(QDBusPendingCallWatcher *watcher);
     */
     void onStreamTubeChannelCreated(Tp::PendingOperation *op);
-    void onStreamTubeChannelReady(Tp::PendingOperation *op);
-    void onStreamTubeChannelNewConnection(uint);
-    void onOfferTubeFinished(Tp::PendingOperation*);
+    //void onStreamTubeChannelNewConnection(uint);
     void onTcpServerNewConnection();
     void onDataFromSocket();
     void onInvalidated();
@@ -65,9 +63,9 @@ private:
     QString mReceiver;
     QTcpServer *mServer;
 
+    StreamTubeServerPtr mTubeServer;
     AccountPtr mAccount;
     ConnectionPtr mConn;
-    OutgoingStreamTubeChannelPtr mChan;
     ContactPtr mContact;
 
     bool mTubeOffered;
