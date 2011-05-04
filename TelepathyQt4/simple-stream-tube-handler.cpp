@@ -105,20 +105,18 @@ void SimpleStreamTubeHandler::handleChannels(
         StreamTubeChannelPtr tube = StreamTubeChannelPtr::qObjectCast(chan);
 
         if (!tube) {
-            if (chan->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE) {
-                warning() << "We got a non-StreamTube channel" << chan->objectPath();
-                context->setFinishedWithError(TP_QT4_ERROR_INCONSISTENT,
-                        QLatin1String(
-                            "Invoked with non-StreamTube channels, which don't match our filter"));
-                return;
+            const QString channelType =
+                chan->immutableProperties()[QLatin1String(
+                        TELEPATHY_INTERFACE_CHANNEL ".ChannelType")].toString();
+
+            if (channelType != TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE) {
+                debug() << "We got a non-StreamTube channel" << chan->objectPath() <<
+                    "of type" << channelType << ", ignoring";
             } else {
                 warning() << "The channel factory used for a simple StreamTube handler must" <<
                     "construct StreamTubeChannel subclasses for stream tubes";
-                context->setFinishedWithError(TP_QT4_ERROR_SERVICE_CONFUSED,
-                        QLatin1String(
-                            "ChannelFactory specifies invalid channel subclass for stream tubes"));
-                return;
             }
+            continue;
         }
 
         Features features = StreamTubeChannel::FeatureStreamTube;
