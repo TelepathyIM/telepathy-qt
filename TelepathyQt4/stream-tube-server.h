@@ -32,11 +32,11 @@
 
 class QHostAddress;
 class QTcpServer;
-class QLocalServer;
 
 namespace Tp
 {
 
+// TODO: Turn the comments here into real doxymentation
 class TELEPATHY_QT4_EXPORT StreamTubeServer : public QObject, public RefCounted
 {
     Q_OBJECT
@@ -91,7 +91,6 @@ public:
 
     // Recovery getters for the setters below
     QPair<QHostAddress, quint16> exportedTcpSocketAddress() const;
-
     QVariantMap exportedParameters() const;
 
     // These change the exported (Offer'ed) service to the given one for all future handled tubes
@@ -161,8 +160,14 @@ Q_SIGNALS:
             const QString &message,
             const Tp::OutgoingStreamTubeChannelPtr &tube);
 
-private:
+private Q_SLOTS:
+    void onInvokedForTube(
+            const Tp::AccountPtr &account,
+            const Tp::StreamTubeChannelPtr &tube,
+            const QDateTime &userActionTime,
+            const Tp::ChannelRequestHints &requestHints);
 
+private:
     StreamTubeServer(
             const ClientRegistrarPtr &registrar,
             const QStringList &services,
