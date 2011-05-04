@@ -137,9 +137,17 @@ void TubeInitiator::onContactRetrieved(PendingOperation *op)
 
     qDebug() << "Checking contact presence...";
     connect(mContact.data(),
-            SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
+            SIGNAL(presenceChanged(Tp::Presence)),
             SLOT(onContactPresenceChanged()));
-    onContactPresenceChanged();
+
+    if (mContact->presence().type() != ConnectionPresenceTypeUnset &&
+        mContact->presence().type() != ConnectionPresenceTypeOffline &&
+        mContact->presence().type() != ConnectionPresenceTypeUnknown &&
+        mContact->presence().type() != ConnectionPresenceTypeError) {
+        onContactPresenceChanged();
+    } else {
+        qDebug() << "The remote contact needs to become online to continue";
+    }
 }
 
 void TubeInitiator::onContactPresenceChanged()
