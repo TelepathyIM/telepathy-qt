@@ -1,11 +1,11 @@
-telepathy-qt4 0.6.0 (UNRELEASED)
+telepathy-qt4 0.7.0 (UNRELEASED)
 ================================
 
 The "..." release.
 
-This release begins the feature frozen 0.6 stable release series. 0.7 will be
-the new development series, but both will continue to be backwards compatible
-API and ABI wise with the 0.5 development series.
+This release begins the new 0.7 development series series for feature additions
+following the 0.6 stable release series. Both 0.6 and 0.7 will continue to be
+backwards compatible API and ABI wise with the earlier 0.5 development series.
 
 Enhancements:
  * ...
