@@ -23,6 +23,8 @@
 #ifndef _TelepathyQt4_request_temporary_handler_internal_h_HEADER_GUARD_
 #define _TelepathyQt4_request_temporary_handler_internal_h_HEADER_GUARD_
 
+#include <QWeakPointer>
+
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/Channel>
@@ -40,7 +42,7 @@ public:
     ~RequestTemporaryHandler();
 
     AccountPtr account() const { return mAccount; }
-    ChannelPtr channel() const { return mChannel; }
+    ChannelPtr channel() const { return ChannelPtr(mChannel); }
 
     /**
      * Handlers we request ourselves never go through the approvers but this
@@ -78,7 +80,7 @@ private:
     void processChannelReceivedQueue();
 
     AccountPtr mAccount;
-    ChannelPtr mChannel;
+    QWeakPointer<Channel> mChannel;
     bool mQueueChannelReceived;
     QQueue<QPair<QDateTime, ChannelRequestHints> > mChannelReceivedQueue;
     bool dbusHandlerInvoked;

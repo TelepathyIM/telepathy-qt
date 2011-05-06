@@ -35,14 +35,17 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT HandledChannelNotifier::Private
 {
-    Private(const ClientRegistrarPtr &cr, const SharedPtr<RequestTemporaryHandler> &handler)
+    Private(const ClientRegistrarPtr &cr,
+            const SharedPtr<RequestTemporaryHandler> &handler)
         : cr(cr),
-          handler(handler)
+          handler(handler),
+          channel(handler->channel())
     {
     }
 
     ClientRegistrarPtr cr;
     SharedPtr<RequestTemporaryHandler> handler;
+    ChannelPtr channel; // needed to keep channel alive, since RTH maintains only a weak ref
 };
 
 /**
@@ -61,7 +64,7 @@ HandledChannelNotifier::HandledChannelNotifier(const ClientRegistrarPtr &cr,
         const SharedPtr<RequestTemporaryHandler> &handler)
     : mPriv(new Private(cr, handler))
 {
-    connect(handler->channel().data(),
+    connect(mPriv->channel.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated()));
     connect(handler.data(),
@@ -76,7 +79,7 @@ HandledChannelNotifier::~HandledChannelNotifier()
 
 ChannelPtr HandledChannelNotifier::channel() const
 {
-    return mPriv->handler->channel();
+    return mPriv->channel;
 }
 
 void HandledChannelNotifier::onChannelReceived(const Tp::ChannelPtr &channel,

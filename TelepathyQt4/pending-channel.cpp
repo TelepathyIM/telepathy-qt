@@ -509,7 +509,7 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
     QPair<QString, QString> dbusConnection(
             channel->dbusConnection().name(),
             channel->dbusConnection().baseService());
-    FakeHandlerManager::instance()->registerHandler( dbusConnection, channel, mPriv->cr);
+    FakeHandlerManager::instance()->registerHandler(dbusConnection, channel, mPriv->cr);
 
     setFinished();
 }
