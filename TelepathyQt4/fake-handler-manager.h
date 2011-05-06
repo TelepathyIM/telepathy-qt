@@ -62,7 +62,7 @@ public:
 
     static FakeHandlerManager *instance();
 
-    void registerHandler(const QString &connectionName,
+    void registerHandler(const QPair<QString, QString> &dbusConnection,
                          const ChannelPtr &channel,
                          const ClientRegistrarPtr &registrar);
 
@@ -70,7 +70,7 @@ private:
 
     FakeHandlerManager();
 
-    QHash<QString, FakeHandler *> mFakeHandlers;
+    QHash<QPair<QString, QString>, FakeHandler *> mFakeHandlers;
 
 };
 

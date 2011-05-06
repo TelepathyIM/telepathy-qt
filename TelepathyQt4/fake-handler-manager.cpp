@@ -36,14 +36,14 @@ FakeHandlerManager::FakeHandlerManager()
 {
 }
 
-void FakeHandlerManager::registerHandler(const QString &connectionName,
+void FakeHandlerManager::registerHandler(const QPair<QString, QString> &dbusConnection,
                                          const ChannelPtr &channel,
                                          const ClientRegistrarPtr &registrar)
 {
-    FakeHandler *handler = mFakeHandlers.value(connectionName, 0);
+    FakeHandler *handler = mFakeHandlers.value(dbusConnection, 0);
     if (!handler) {
         handler = new FakeHandler;
-        mFakeHandlers.insert(connectionName, handler);
+        mFakeHandlers.insert(dbusConnection, handler);
     }
     handler->addChannel(channel, registrar);
 }
