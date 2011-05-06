@@ -34,6 +34,7 @@
 #include <TelepathyQt4/Types>
 
 #include <QDBusPendingCall>
+#include <QDBusVariant>
 
 namespace Tp
 {
@@ -116,7 +117,7 @@ PendingOperation *AbstractInterface::internalSetProperty(const QString &name,
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(),
             TP_QT4_IFACE_PROPERTIES, QLatin1String("Set"));
-    msg << interface() << name << newValue;
+    msg << interface() << name << QVariant::fromValue(QDBusVariant(newValue));
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
     DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
     return new PendingVoid(pendingCall, DBusProxyPtr(proxy));
