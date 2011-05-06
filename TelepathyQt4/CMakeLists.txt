@@ -48,6 +48,7 @@ set(telepathy_qt4_SRCS
     dbus-proxy-factory-internal.h
     debug.cpp
     debug-internal.h
+    fake-handler-manager.cpp
     feature.cpp
     file-transfer-channel.cpp
     file-transfer-channel-creation-properties.cpp
@@ -453,6 +454,7 @@ set(telepathy_qt4_MOC_SRCS
     dbus-proxy.h
     dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
+    fake-handler-manager.h
     file-transfer-channel.h
     fixed-feature-factory.h
     handled-channel-notifier.h
