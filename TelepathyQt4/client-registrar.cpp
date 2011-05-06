@@ -518,7 +518,10 @@ void ClientHandlerAdaptor::onContextFinished(
         debug() << "HandleChannels context finished successfully, "
             "updating handled channels";
         foreach (const ChannelPtr &channel, channels) {
-            self->mHandledChannels.insert(channel);
+            self->mHandledChannels.insert(channel.data());
+            self->connect(channel.data(),
+                    SIGNAL(destroyed()),
+                    SLOT(onChannelDestroyed()));
             self->connect(channel.data(),
                     SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                     SLOT(onChannelInvalidated(Tp::DBusProxy*)));
@@ -528,7 +531,15 @@ void ClientHandlerAdaptor::onContextFinished(
 
 void ClientHandlerAdaptor::onChannelInvalidated(DBusProxy *proxy)
 {
-    ChannelPtr channel(dynamic_cast<Channel*>(proxy));
+    Channel *channel = qobject_cast<Channel*>(proxy);
+    disconnect(channel, SIGNAL(destroyed()),
+            this, SLOT(onChannelDestroyed()));
+    mHandledChannels.remove(channel);
+}
+
+void ClientHandlerAdaptor::onChannelDestroyed()
+{
+    Channel *channel = qobject_cast<Channel *>(sender());
     mHandledChannels.remove(channel);
 }
 

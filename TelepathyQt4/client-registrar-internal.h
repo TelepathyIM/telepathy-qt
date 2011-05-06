@@ -269,13 +269,13 @@ public: // Properties
         // with this->mHandledChannels
         QList<ClientHandlerAdaptor*> adaptors(mAdaptorsForConnection.value(
                     qMakePair(mBus.name(), mBus.baseService())));
-        QSet<ChannelPtr> handledChannels;
+        QSet<Channel *> handledChannels;
         foreach (ClientHandlerAdaptor *handlerAdaptor, adaptors) {
             handledChannels.unite(handlerAdaptor->mHandledChannels);
         }
 
         Tp::ObjectPathList ret;
-        foreach (const ChannelPtr &channel, handledChannels) {
+        foreach (Channel *channel, handledChannels) {
             ret.append(QDBusObjectPath(channel->objectPath()));
         }
         return ret;
@@ -292,6 +292,7 @@ public Q_SLOTS: // Methods
 
 private Q_SLOTS:
     void onChannelInvalidated(Tp::DBusProxy *proxy);
+    void onChannelDestroyed();
     void onReadyOpFinished(Tp::PendingOperation *);
 
 private:
@@ -319,7 +320,7 @@ private:
     ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
-    QSet<ChannelPtr> mHandledChannels;
+    QSet<Channel *> mHandledChannels;
 
     static QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > mAdaptorsForConnection;
 };
