@@ -217,6 +217,9 @@ Connection::Private::Private(Connection *parent,
       maxPresenceStatusMessageLength(0),
       handleContext(0)
 {
+    accountBalance.amount = 0;
+    accountBalance.scale = 0;
+
     Q_ASSERT(properties != 0);
 
     if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
