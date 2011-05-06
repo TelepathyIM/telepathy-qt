@@ -45,6 +45,7 @@ public:
 private Q_SLOTS:
 
     void onChannelInvalidated();
+    void onChannelDestroyed();
 
 private:
 

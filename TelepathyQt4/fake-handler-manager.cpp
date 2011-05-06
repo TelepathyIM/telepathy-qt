@@ -21,9 +21,18 @@ void FakeHandler::addChannel(const ChannelPtr &channel,
     mNumChannels++;
     connect(channel.data(), SIGNAL(invalidated(Tp::DBusProxy*, QString, QString)),
             this, SLOT(onChannelInvalidated()));
+    connect(channel.data(), SIGNAL(destroyed()),
+            this, SLOT(onChannelDestroyed()));
 }
 
 void FakeHandler::onChannelInvalidated()
+{
+    disconnect(sender(), SIGNAL(destroyed()),
+            this, SLOT(onChannelDestroyed()));
+    onChannelDestroyed();
+}
+
+void FakeHandler::onChannelDestroyed()
 {
     mNumChannels--;
     if (mNumChannels <= 0) {
