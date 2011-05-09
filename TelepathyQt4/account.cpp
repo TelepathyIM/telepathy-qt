@@ -56,6 +56,9 @@
 
 #include <string.h>
 
+namespace Tp
+{
+
 namespace
 {
 
@@ -402,10 +405,7 @@ QVariantMap contactSearchRequest(const QString &server, uint limit)
     return request;
 }
 
-}
-
-namespace Tp
-{
+} // anonymous namespace
 
 struct TELEPATHY_QT4_NO_EXPORT Account::Private
 {
