@@ -36,7 +36,7 @@ void FakeHandler::onChannelDestroyed()
 {
     mNumChannels--;
     if (mNumChannels <= 0) {
-        mRegistrar.reset();
+        deleteLater();
     }
 }
 
@@ -49,10 +49,14 @@ void FakeHandlerManager::registerHandler(const QPair<QString, QString> &dbusConn
                                          const ChannelPtr &channel,
                                          const ClientRegistrarPtr &registrar)
 {
-    FakeHandler *handler = mFakeHandlers.value(dbusConnection, 0);
-    if (!handler) {
+    FakeHandler *handler;
+
+    QWeakPointer<FakeHandler> weakFakeHandlerPointer = mFakeHandlers[dbusConnection];
+    if (weakFakeHandlerPointer.isNull()) {
         handler = new FakeHandler;
-        mFakeHandlers.insert(dbusConnection, handler);
+        mFakeHandlers.insert(dbusConnection, QWeakPointer<FakeHandler>(handler));
+    } else {
+        handler = weakFakeHandlerPointer.data();
     }
     handler->addChannel(channel, registrar);
 }

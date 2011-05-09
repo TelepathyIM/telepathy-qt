@@ -71,7 +71,7 @@ private:
 
     FakeHandlerManager();
 
-    QHash<QPair<QString, QString>, FakeHandler *> mFakeHandlers;
+    QHash<QPair<QString, QString>, QWeakPointer<FakeHandler> > mFakeHandlers;
 
 };
 
