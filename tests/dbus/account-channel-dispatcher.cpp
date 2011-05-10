@@ -420,6 +420,7 @@ private Q_SLOTS:
 private:
     void testPCR(PendingChannelRequest *pcr);
     void testPC(PendingChannel *pc, ChannelPtr *channelOut = 0);
+    QStringList ourHandledChannels();
 
     AccountManagerPtr mAM;
     AccountPtr mAccount;
@@ -578,6 +579,51 @@ void TestAccountChannelDispatcher::testPC(PendingChannel *pc, ChannelPtr *channe
     } else {
         QVERIFY(channel.isNull());
     }
+}
+
+QStringList TestAccountChannelDispatcher::ourHandledChannels()
+{
+    ObjectPathList handledChannels;
+    QDBusConnection bus = QDBusConnection::sessionBus();
+    QStringList registeredNames = bus.interface()->registeredServiceNames();
+    Q_FOREACH (QString name, registeredNames) {
+        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
+            continue;
+        }
+
+        if (QDBusConnection::sessionBus().interface()->serviceOwner(name).value() !=
+                QDBusConnection::sessionBus().baseService()) {
+            continue;
+        }
+
+        QString path = QLatin1Char('/') + name;
+        path.replace(QLatin1Char('.'), QLatin1Char('/'));
+
+        ClientInterface client(name, path);
+        QStringList ifaces;
+        if (!waitForProperty(client.requestPropertyInterfaces(), &ifaces)) {
+            continue;
+        }
+
+        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_HANDLER)) {
+            continue;
+        }
+
+        ClientHandlerInterface *handler = new ClientHandlerInterface(bus, name, path, this);
+        Tp::ObjectPathList observerHandledChannels;
+        if (!waitForProperty(handler->requestPropertyHandledChannels(), &handledChannels)) {
+            continue;
+        }
+
+        handledChannels << observerHandledChannels;
+    }
+
+    QStringList ret;
+    Q_FOREACH (const QDBusObjectPath &objectPath, handledChannels) {
+        ret << objectPath.path();
+    }
+
+    return ret;
 }
 
 #define TEST_ENSURE_CHANNEL_SPECIFIC(method_name, shouldFail, proceedNoop, expectedError) \
@@ -849,60 +895,33 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannelHandledChannels()
     mConnPath = QLatin1String("/org/freedesktop/Telepathy/Connection/cmname/proto/account");
     mChanPath = mConnPath + QLatin1String("/channel");
     mChanProps = ChannelClassSpec::textChat().allProperties();
-    ChannelPtr channel; // keep the channel in scope
 
+    QVERIFY(ourHandledChannels().isEmpty());
+
+    ChannelPtr channel;
     TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(createAndHandleChannel, false, false, true, "", &channel);
 
     // check that the channel appears in the HandledChannels property of some handler
+    QVERIFY(!ourHandledChannels().isEmpty());
+    QCOMPARE(ourHandledChannels().size(), 1);
+    QVERIFY(ourHandledChannels().contains(mChanPath));
 
-    QDBusConnection bus = QDBusConnection::sessionBus();
-    QStringList registeredNames =
-        bus.interface()->registeredServiceNames();
+    channel.reset();
 
-    bool handlerFound = false;
-    Q_FOREACH (QString name, registeredNames) {
-        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
-            continue;
-        }
-
-        if (QDBusConnection::sessionBus().interface()->serviceOwner(name).value() !=
-                QDBusConnection::sessionBus().baseService()) {
-            continue;
-        }
-
-        QString path = QLatin1Char('/') + name;
-        path.replace(QLatin1Char('.'), QLatin1Char('/'));
-
-        ClientInterface client(name, path);
-        QStringList ifaces;
-        if (!waitForProperty(client.requestPropertyInterfaces(), &ifaces)) {
-            continue;
-        }
-
-        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_HANDLER)) {
-            continue;
-        }
-
-        ClientHandlerInterface *handler = new ClientHandlerInterface(bus, name, path, this);
-        Tp::ObjectPathList handledChannels;
-        QVERIFY(waitForProperty(handler->requestPropertyHandledChannels(), &handledChannels));
-        if (handledChannels.contains(QDBusObjectPath(mChanPath))) {
-            handlerFound = true;
-            break;
-        }
+    // reseting the channel should unregister the handler
+    while (!ourHandledChannels().isEmpty()) {
+        mLoop->processEvents();
     }
-
-    QVERIFY(handlerFound);
-}
-
-void TestAccountChannelDispatcher::cleanup()
-{
-    cleanupImpl();
 }
 
 void TestAccountChannelDispatcher::cleanupTestCase()
 {
     cleanupTestCaseImpl();
+}
+
+void TestAccountChannelDispatcher::cleanup()
+{
+    cleanupImpl();
 }
 
 QTEST_MAIN(TestAccountChannelDispatcher)
