@@ -31,39 +31,52 @@
 namespace Tp
 {
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 class FakeHandler : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(FakeHandler)
 
 public:
-    FakeHandler();
+    FakeHandler(const ClientRegistrarPtr &cr, const ChannelPtr &channel);
+    ~FakeHandler();
 
-    void addChannel(const ChannelPtr &channel, const ClientRegistrarPtr &registrar);
+Q_SIGNALS:
+    void invalidated(FakeHandler *self);
 
 private Q_SLOTS:
     void onChannelInvalidated();
     void onChannelDestroyed();
 
 private:
-    int mNumChannels;
-    ClientRegistrarPtr mRegistrar;
+    ClientRegistrarPtr mCr;
 };
 
 class FakeHandlerManager : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(FakeHandlerManager)
 
 public:
     static FakeHandlerManager *instance();
 
-    void registerHandler(const QPair<QString, QString> &dbusConnection,
-            const ChannelPtr &channel, const ClientRegistrarPtr &registrar);
+    ~FakeHandlerManager();
+
+    void registerHandler(const ClientRegistrarPtr &registrar,
+            const ChannelPtr &channel);
+
+private Q_SLOTS:
+    void onFakeHandlerInvalidated(FakeHandler *handler);
 
 private:
     FakeHandlerManager();
 
-    QHash<QPair<QString, QString>, QWeakPointer<FakeHandler> > mFakeHandlers;
+    static FakeHandlerManager *mInstance;
+    QSet<FakeHandler *> mFakeHandlers;
 };
+
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
 } // Tp
 

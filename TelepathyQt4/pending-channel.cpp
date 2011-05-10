@@ -506,10 +506,7 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
     // This is important in case Mission Control happens to restart while
     // the channel is still in use, since it will close the channel if it
     // doesn't find a handler for it.
-    QPair<QString, QString> dbusConnection(
-            channel->dbusConnection().name(),
-            channel->dbusConnection().baseService());
-    FakeHandlerManager::instance()->registerHandler(dbusConnection, channel, mPriv->cr);
+    FakeHandlerManager::instance()->registerHandler(mPriv->cr, channel);
 
     setFinished();
 }

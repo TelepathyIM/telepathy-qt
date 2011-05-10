@@ -29,25 +29,18 @@
 namespace Tp
 {
 
-FakeHandler::FakeHandler()
+FakeHandler::FakeHandler(const ClientRegistrarPtr &cr, const ChannelPtr &channel)
     : QObject(),
-      mNumChannels(0)
+      mCr(cr)
 {
-}
-
-void FakeHandler::addChannel(const ChannelPtr &channel,
-        const ClientRegistrarPtr &registrar)
-{
-    if (mNumChannels <= 0) {
-        mRegistrar = registrar;
-    }
-
-    mNumChannels++;
-
     connect(channel.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated()));
     connect(channel.data(), SIGNAL(destroyed()), SLOT(onChannelDestroyed()));
+}
+
+FakeHandler::~FakeHandler()
+{
 }
 
 void FakeHandler::onChannelInvalidated()
@@ -58,16 +51,18 @@ void FakeHandler::onChannelInvalidated()
 
 void FakeHandler::onChannelDestroyed()
 {
-    mNumChannels--;
-    if (mNumChannels <= 0) {
-        deleteLater();
-    }
+    emit invalidated(this);
+    deleteLater();
 }
+
+FakeHandlerManager *FakeHandlerManager::mInstance = 0;
 
 FakeHandlerManager *FakeHandlerManager::instance()
 {
-    static FakeHandlerManager sInstance;
-    return &sInstance;
+    if (!mInstance) {
+        mInstance = new FakeHandlerManager();
+    }
+    return mInstance;
 }
 
 FakeHandlerManager::FakeHandlerManager()
@@ -75,21 +70,35 @@ FakeHandlerManager::FakeHandlerManager()
 {
 }
 
-void FakeHandlerManager::registerHandler(const QPair<QString, QString> &dbusConnection,
-        const ChannelPtr &channel,
-        const ClientRegistrarPtr &registrar)
+FakeHandlerManager::~FakeHandlerManager()
 {
-    FakeHandler *handler;
+    mInstance = 0;
+}
 
-    QWeakPointer<FakeHandler> weakFakeHandlerPointer = mFakeHandlers[dbusConnection];
-    if (weakFakeHandlerPointer.isNull()) {
-        handler = new FakeHandler;
-        mFakeHandlers.insert(dbusConnection, QWeakPointer<FakeHandler>(handler));
-    } else {
-        handler = weakFakeHandlerPointer.data();
+void FakeHandlerManager::registerHandler(const ClientRegistrarPtr &cr,
+        const ChannelPtr &channel)
+{
+    // we need to keep one FakeHandler per ClientRegistrar as we create one client registrar per RAH
+    // request and the client registrar destructor will unregister all handlers registered by it
+    FakeHandler *handler = new FakeHandler(cr, channel);
+    mFakeHandlers.insert(handler);
+    connect(handler,
+            SIGNAL(invalidated(FakeHandler*)),
+            SLOT(onFakeHandlerInvalidated(FakeHandler*)));
+}
+
+void FakeHandlerManager::onFakeHandlerInvalidated(FakeHandler *handler)
+{
+    Q_ASSERT(mFakeHandlers.contains(handler));
+
+    mFakeHandlers.remove(handler);
+
+    if (mFakeHandlers.isEmpty()) {
+        // set mInstance to 0 here as we don't want instance() to return a already
+        // deleted instance
+        mInstance = 0;
+        deleteLater();
     }
-
-    handler->addChannel(channel, registrar);
 }
 
 }
