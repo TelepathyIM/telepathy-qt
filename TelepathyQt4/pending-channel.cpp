@@ -25,7 +25,7 @@
 #include "TelepathyQt4/_gen/pending-channel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
-#include "TelepathyQt4/fake-handler-manager.h"
+#include "TelepathyQt4/fake-handler-manager-internal.h"
 #include "TelepathyQt4/request-temporary-handler-internal.h"
 
 #include <TelepathyQt4/Channel>

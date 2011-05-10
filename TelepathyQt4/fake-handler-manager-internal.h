@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_fake_handler_manager_h_HEADER_GUARD_
-#define _TelepathyQt4_fake_handler_manager_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_fake_handler_manager_internal_h_HEADER_GUARD_
+#define _TelepathyQt4_fake_handler_manager_internal_h_HEADER_GUARD_
 
 #include <QObject>
 
@@ -36,45 +36,35 @@ class FakeHandler : public QObject
     Q_OBJECT
 
 public:
-
     FakeHandler();
 
-    void addChannel(const ChannelPtr &channel,
-                    const ClientRegistrarPtr &registrar);
+    void addChannel(const ChannelPtr &channel, const ClientRegistrarPtr &registrar);
 
 private Q_SLOTS:
-
     void onChannelInvalidated();
     void onChannelDestroyed();
 
 private:
-
     int mNumChannels;
     ClientRegistrarPtr mRegistrar;
-
 };
-
 
 class FakeHandlerManager : public QObject
 {
     Q_OBJECT
 
 public:
-
     static FakeHandlerManager *instance();
 
     void registerHandler(const QPair<QString, QString> &dbusConnection,
-                         const ChannelPtr &channel,
-                         const ClientRegistrarPtr &registrar);
+            const ChannelPtr &channel, const ClientRegistrarPtr &registrar);
 
 private:
-
     FakeHandlerManager();
 
     QHash<QPair<QString, QString>, QWeakPointer<FakeHandler> > mFakeHandlers;
-
 };
 
-}
+} // Tp
 
-#endif // _TelepathyQt4_fake_handler_manager_h_HEADER_GUARD_
+#endif
