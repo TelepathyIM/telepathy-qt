@@ -42,9 +42,6 @@ public:
     FakeHandler(const ClientRegistrarPtr &cr, const ChannelPtr &channel);
     ~FakeHandler();
 
-Q_SIGNALS:
-    void invalidated(FakeHandler *self);
-
 private Q_SLOTS:
     void onChannelInvalidated();
     void onChannelDestroyed();
@@ -67,7 +64,7 @@ public:
             const ChannelPtr &channel);
 
 private Q_SLOTS:
-    void onFakeHandlerInvalidated(FakeHandler *handler);
+    void onFakeHandlerDestroyed(QObject *obj);
 
 private:
     FakeHandlerManager();

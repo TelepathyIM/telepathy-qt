@@ -51,7 +51,6 @@ void FakeHandler::onChannelInvalidated()
 
 void FakeHandler::onChannelDestroyed()
 {
-    emit invalidated(this);
     deleteLater();
 }
 
@@ -83,12 +82,14 @@ void FakeHandlerManager::registerHandler(const ClientRegistrarPtr &cr,
     FakeHandler *handler = new FakeHandler(cr, channel);
     mFakeHandlers.insert(handler);
     connect(handler,
-            SIGNAL(invalidated(FakeHandler*)),
-            SLOT(onFakeHandlerInvalidated(FakeHandler*)));
+            SIGNAL(destroyed(QObject*)),
+            SLOT(onFakeHandlerDestroyed(QObject*)));
 }
 
-void FakeHandlerManager::onFakeHandlerInvalidated(FakeHandler *handler)
+void FakeHandlerManager::onFakeHandlerDestroyed(QObject *obj)
 {
+    FakeHandler *handler = (FakeHandler *) obj;
+
     Q_ASSERT(mFakeHandlers.contains(handler));
 
     mFakeHandlers.remove(handler);
