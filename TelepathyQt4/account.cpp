@@ -240,6 +240,12 @@ QVariantMap fileTransferCommonRequest(const Tp::FileTransferChannelCreationPrope
         request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
                        (qulonglong) properties.lastModificationTime().toTime_t());
     }
+
+    if (properties.hasUri()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".URI"),
+                       properties.uri());
+    }
+
     return request;
 }
 

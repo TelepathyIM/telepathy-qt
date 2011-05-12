@@ -52,6 +52,7 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : 
     QString contentHash;
     QString description;
     QDateTime lastModificationTime;
+    QString uri;
 };
 
 /**
@@ -135,6 +136,19 @@ FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::se
     }
 
     mPriv->lastModificationTime = lastModificationTime;
+    return *this;
+}
+
+FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::setUri(
+        const QString &uri)
+{
+    if (!isValid()) {
+        // there is no point in updating uri if not valid, as we miss filename, content
+        // type and size
+        return *this;
+    }
+
+    mPriv->uri = uri;
     return *this;
 }
 
@@ -226,6 +240,24 @@ QDateTime FileTransferChannelCreationProperties::lastModificationTime() const
     }
 
     return mPriv->lastModificationTime;
+}
+
+bool FileTransferChannelCreationProperties::hasUri() const
+{
+    if (!isValid()) {
+        return false;
+    }
+
+    return (!mPriv->uri.isEmpty());
+}
+
+QString FileTransferChannelCreationProperties::uri() const
+{
+    if (!isValid()) {
+        return QString();
+    }
+
+    return mPriv->uri;
 }
 
 } // Tp
