@@ -999,7 +999,8 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannelHandledChannels()
     QVERIFY(ourHandledChannels().contains(mChanPath));
 
     QVERIFY(!ourHandlers().isEmpty());
-    QCOMPARE(ourHandlers().size(), 2);
+    // only one handler will stay alive to properly report HandledChannels
+    QCOMPARE(ourHandlers().size(), 1);
 
     QStringList sortedOurHandledChannels = ourHandledChannels();
     sortedOurHandledChannels.sort();
@@ -1009,7 +1010,7 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannelHandledChannels()
 
     channel1.reset();
 
-    while (ourHandlers().size() != 1) {
+    while (ourHandledChannels().size() > 1) {
         mLoop->processEvents();
     }
 

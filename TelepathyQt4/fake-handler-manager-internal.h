@@ -39,15 +39,23 @@ class FakeHandler : public QObject
     Q_DISABLE_COPY(FakeHandler)
 
 public:
-    FakeHandler(const ClientRegistrarPtr &cr, const ChannelPtr &channel);
+    FakeHandler(const QDBusConnection &bus);
     ~FakeHandler();
 
+    QDBusConnection dbusConnection() const { return mBus; }
+    ObjectPathList handledChannels() const;
+    void registerChannel(const ChannelPtr &channel);
+
+Q_SIGNALS:
+    void invalidated(Tp::FakeHandler *self);
+
 private Q_SLOTS:
-    void onChannelInvalidated();
-    void onChannelDestroyed();
+    void onChannelInvalidated(Tp::DBusProxy *channel);
+    void onChannelDestroyed(QObject *channel);
 
 private:
-    ClientRegistrarPtr mCr;
+    QDBusConnection mBus;
+    QSet<Channel*> mChannels;
 };
 
 class FakeHandlerManager : public QObject
@@ -60,17 +68,19 @@ public:
 
     ~FakeHandlerManager();
 
-    void registerHandler(const ClientRegistrarPtr &registrar,
-            const ChannelPtr &channel);
+    ObjectPathList handledChannels(const QDBusConnection &bus) const;
+    void registerClientRegistrar(const ClientRegistrarPtr &cr);
+    void registerChannels(const QList<ChannelPtr> &channels);
 
 private Q_SLOTS:
-    void onFakeHandlerDestroyed(QObject *obj);
+    void onFakeHandlerInvalidated(Tp::FakeHandler *fakeHandler);
 
 private:
     FakeHandlerManager();
 
     static FakeHandlerManager *mInstance;
-    QSet<FakeHandler *> mFakeHandlers;
+    QHash<QPair<QString, QString>, ClientRegistrarPtr> mClientRegistrars;
+    QHash<QPair<QString, QString>, FakeHandler *> mFakeHandlers;
 };
 
 #endif // DOXYGEN_SHOULD_SKIP_THIS

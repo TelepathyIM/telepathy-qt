@@ -501,12 +501,12 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
     mPriv->immutableProperties = channel->immutableProperties();
     mPriv->channel = channel;
 
-    // Stash registrar away to keep the handler alive as long as at least
-    // one of the channels obtained via the createAndHandle* APIs are valid.
+    // register the CR in FakeHandlerManager so that at least one handler per bus stays alive
+    // until all channels requested using R&H gets invalidated/destroyed.
     // This is important in case Mission Control happens to restart while
-    // the channel is still in use, since it will close the channel if it
+    // the channel is still in use, since it will close each channel it
     // doesn't find a handler for it.
-    FakeHandlerManager::instance()->registerHandler(mPriv->cr, channel);
+    FakeHandlerManager::instance()->registerClientRegistrar(mPriv->cr);
 
     setFinished();
 }
@@ -514,7 +514,7 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
 void PendingChannel::onAccountCreateChannelFinished(PendingOperation *op)
 {
     if (isFinished()) {
-        if (!isError()) {
+        if (isError()) {
             warning() << "Creating/ensuring channel finished with a failure after the internal "
                 "handler already got a channel, ignoring";
         }

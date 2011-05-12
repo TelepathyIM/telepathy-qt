@@ -929,6 +929,14 @@ void TestClientFactories::testHandleChannels()
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText2ChanPath)));
 
+    // Handler.HandledChannels will now return all channels that are not invalidated/destroyed
+    // even if the handler for such channels was already unregistered
+    g_object_unref(mText1ChanService);
+    connect(client1,
+            SIGNAL(channelClosed()),
+            SLOT(expectSignalEmission()));
+    QCOMPARE(mLoop->exec(), 0);
+
     mClientRegistrar->unregisterClient(mClientObject1);
     QVERIFY(waitForProperty(handler2Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText2ChanPath)));

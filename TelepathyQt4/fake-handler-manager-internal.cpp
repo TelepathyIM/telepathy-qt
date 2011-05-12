@@ -29,29 +29,58 @@
 namespace Tp
 {
 
-FakeHandler::FakeHandler(const ClientRegistrarPtr &cr, const ChannelPtr &channel)
+FakeHandler::FakeHandler(const QDBusConnection &bus)
     : QObject(),
-      mCr(cr)
+      mBus(bus)
 {
-    connect(channel.data(),
-            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-            SLOT(onChannelInvalidated()));
-    connect(channel.data(), SIGNAL(destroyed()), SLOT(onChannelDestroyed()));
 }
 
 FakeHandler::~FakeHandler()
 {
 }
 
-void FakeHandler::onChannelInvalidated()
+ObjectPathList FakeHandler::handledChannels() const
 {
-    disconnect(sender(), SIGNAL(destroyed()), this, SLOT(onChannelDestroyed()));
-    onChannelDestroyed();
+    ObjectPathList ret;
+    foreach (const Channel *channel, mChannels) {
+        ret << QDBusObjectPath(channel->objectPath());
+    }
+    return ret;
 }
 
-void FakeHandler::onChannelDestroyed()
+void FakeHandler::registerChannel(const ChannelPtr &channel)
 {
-    deleteLater();
+    if (mChannels.contains(channel.data())) {
+        return;
+    }
+
+    mChannels.insert(channel.data());
+    connect(channel.data(),
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            SLOT(onChannelInvalidated(Tp::DBusProxy*)));
+    connect(channel.data(),
+            SIGNAL(destroyed(QObject*)),
+            SLOT(onChannelDestroyed(QObject*)));
+}
+
+void FakeHandler::onChannelInvalidated(DBusProxy *channel)
+{
+    disconnect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(onChannelDestroyed(QObject*)));
+    onChannelDestroyed(channel);
+}
+
+void FakeHandler::onChannelDestroyed(QObject *channel)
+{
+    Q_ASSERT(mChannels.contains((Channel*) channel));
+
+    mChannels.remove((Channel*) channel);
+    if (mChannels.isEmpty()) {
+        // emit invalidated here instead of relying on QObject::destroyed as FakeHandlerManager
+        // may reuse this fake handler if FakeHandlerManager::registerChannel is called before the
+        // slot from QObject::destroyed is invoked (deleteLater()).
+        emit invalidated(this);
+        deleteLater();
+    }
 }
 
 FakeHandlerManager *FakeHandlerManager::mInstance = 0;
@@ -74,25 +103,53 @@ FakeHandlerManager::~FakeHandlerManager()
     mInstance = 0;
 }
 
-void FakeHandlerManager::registerHandler(const ClientRegistrarPtr &cr,
-        const ChannelPtr &channel)
+ObjectPathList FakeHandlerManager::handledChannels(const QDBusConnection &bus) const
 {
-    // we need to keep one FakeHandler per ClientRegistrar as we create one client registrar per RAH
-    // request and the client registrar destructor will unregister all handlers registered by it
-    FakeHandler *handler = new FakeHandler(cr, channel);
-    mFakeHandlers.insert(handler);
-    connect(handler,
-            SIGNAL(destroyed(QObject*)),
-            SLOT(onFakeHandlerDestroyed(QObject*)));
+    QPair<QString, QString> busUniqueId(bus.name(), bus.baseService());
+    if (mFakeHandlers.contains(busUniqueId)) {
+        FakeHandler *fakeHandler = mFakeHandlers.value(busUniqueId);
+        return fakeHandler->handledChannels();
+    }
+    return ObjectPathList();
 }
 
-void FakeHandlerManager::onFakeHandlerDestroyed(QObject *obj)
+void FakeHandlerManager::registerClientRegistrar(const ClientRegistrarPtr &cr)
 {
-    FakeHandler *handler = (FakeHandler *) obj;
+    QDBusConnection bus(cr->dbusConnection());
+    QPair<QString, QString> busUniqueId(bus.name(), bus.baseService());
+    // keep one registrar around per bus so at least the handlers registered by it will be
+    // around until all channels on that bus gets invalidated/destroyed
+    if (!mClientRegistrars.contains(busUniqueId)) {
+        mClientRegistrars.insert(busUniqueId, cr);
+    }
+}
 
-    Q_ASSERT(mFakeHandlers.contains(handler));
+void FakeHandlerManager::registerChannels(const QList<ChannelPtr> &channels)
+{
+    foreach (const ChannelPtr &channel, channels) {
+        QDBusConnection bus(channel->dbusConnection());
+        QPair<QString, QString> busUniqueId(bus.name(), bus.baseService());
+        FakeHandler *fakeHandler = mFakeHandlers.value(busUniqueId);
+        if (!fakeHandler) {
+            fakeHandler = new FakeHandler(bus);
+            mFakeHandlers.insert(busUniqueId, fakeHandler);
+            connect(fakeHandler,
+                    SIGNAL(invalidated(Tp::FakeHandler*)),
+                    SLOT(onFakeHandlerInvalidated(Tp::FakeHandler*)));
+        }
+        fakeHandler->registerChannel(channel);
+    }
+}
 
-    mFakeHandlers.remove(handler);
+void FakeHandlerManager::onFakeHandlerInvalidated(FakeHandler *fakeHandler)
+{
+    QDBusConnection bus(fakeHandler->dbusConnection());
+    QPair<QString, QString> busUniqueId(bus.name(), bus.baseService());
+    mFakeHandlers.remove(busUniqueId);
+
+    // all channels for the bus represented by busUniqueId were already destroyed/invalidated,
+    // we can now free the CR (thus the handlers registered by it) registered for that bus
+    mClientRegistrars.remove(busUniqueId);
 
     if (mFakeHandlers.isEmpty()) {
         // set mInstance to 0 here as we don't want instance() to return a already
