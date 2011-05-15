@@ -2038,8 +2038,9 @@ void ContactManager::Roster::computeKnownContactsChanges(const Tp::Contacts& add
         realRemoved.subtract(channel->groupRemotePendingContacts());
     }
 
-    // ...and from the Conn.I.ContactList contacts
+    // ...and from the Conn.I.ContactList / Conn.I.ContactBlocking contacts
     realRemoved.subtract(contactListContacts);
+    realRemoved.subtract(blockedContacts);
 
     // Are there any real changes?
     if (!realAdded.isEmpty() || !realRemoved.isEmpty()) {
