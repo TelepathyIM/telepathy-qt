@@ -485,6 +485,23 @@ void TestConnRoster::testRoster()
         QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
     }
 
+    // now remove kctest1 from the server
+    ContactPtr kctest1;
+    Q_FOREACH (const ContactPtr &contact, contactsList) {
+        if (contact->id() == QLatin1String("kctest1@example.com")) {
+            kctest1 = contact;
+        }
+    }
+    QVERIFY(!kctest1.isNull());
+    QVERIFY(connect(mConn->contactManager()->removeContacts(QList<ContactPtr>() << kctest1),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    mLoop, SLOT(quit())));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // allKnownContacts must still contain kctest1, since it is in the deny list
+    QVERIFY(mConn->contactManager()->allKnownContacts().contains(kctest1));
+    kctest1.reset(); //no longer needed
+
     // unblock all contacts
     mBlockingContactsFinished = false;
     mContactsExpectingBlockStatusChange = contactIdsList;
@@ -498,12 +515,13 @@ void TestConnRoster::testRoster()
     Q_FOREACH (const ContactPtr &contact, contactsList) {
         QCOMPARE(contact->isBlocked(), false);
 
-        // ...and that bill and steve have also been removed from allKnownContacts()
-        // note: allKnownContacts() changes here because bill and steve, which were
-        // initially in the deny list, do not exist in any other list, so they are
-        // removed as soon as they get unblocked
+        // ...and that bill, steve and kctest1 have also been removed from allKnownContacts()
+        // note: allKnownContacts() changes here because bill, steve and kctest,
+        // which were only in the deny list, do not exist in any other list, so
+        // they are removed as soon as they get unblocked.
         if (contact->id() == QLatin1String("bill@example.com") ||
-            contact->id() == QLatin1String("steve@example.com")) {
+            contact->id() == QLatin1String("steve@example.com") ||
+            contact->id() == QLatin1String("kctest1@example.com")) {
             QVERIFY(!mConn->contactManager()->allKnownContacts().contains(contact));
         } else {
             QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
