@@ -1040,12 +1040,8 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             continue;
         }
 
-        if (!cachedAllKnownContacts.contains(contact)) {
-            cachedAllKnownContacts.insert(contact);
-            added << contact;
-        }
-
         contactListContacts.insert(contact);
+        added << contact;
 
         Contact::PresenceState oldContactPublishState = contact->publishState();
         QString oldContactPublishStateMessage = contact->publishStateMessage();
@@ -1086,15 +1082,12 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             continue;
         }
 
-        cachedAllKnownContacts.remove(contact);
         contactListContacts.remove(contact);
         removed << contact;
     }
 
-    if (!added.isEmpty() || !removed.isEmpty()) {
-        emit contactManager->allKnownContactsChanged(added, removed,
-                Channel::GroupMemberChangeDetails());
-    }
+    computeKnownContactsChanges(added, Contacts(), Contacts(),
+            removed, Channel::GroupMemberChangeDetails());
 
     foreach (const Tp::ContactPtr &contact, removed) {
         contact->setSubscriptionState(SubscriptionStateNo);
