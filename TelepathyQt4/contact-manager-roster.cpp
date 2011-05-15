@@ -1076,9 +1076,9 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             continue;
         }
 
-        if (!cachedAllKnownContacts.contains(contact)) {
-            warning() << "Contact" << contact->id() << "removed from ContactList but not cached, "
-                "ignoring.";
+        if (!contactListContacts.contains(contact)) {
+            warning() << "Contact" << contact->id() << "removed from ContactList "
+                "but it wasn't present, ignoring.";
             continue;
         }
 
