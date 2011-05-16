@@ -123,8 +123,8 @@ public:
         bool hasDBusError() const;
         QString dbusError() const;
 
-        bool hasEcho() const;
-        Message echo() const;
+        bool hasEchoedMessage() const;
+        Message echoedMessage() const;
 
     private:
         friend class ReceivedMessage;

@@ -588,7 +588,7 @@ QString ReceivedMessage::DeliveryDetails::dbusError() const
     return ret;
 }
 
-bool ReceivedMessage::DeliveryDetails::hasEcho() const
+bool ReceivedMessage::DeliveryDetails::hasEchoedMessage() const
 {
     if (!isValid()) {
         return false;
@@ -596,7 +596,7 @@ bool ReceivedMessage::DeliveryDetails::hasEcho() const
     return partContains(mPriv->parts, 0, "delivery-echo");
 }
 
-Message ReceivedMessage::DeliveryDetails::echo() const
+Message ReceivedMessage::DeliveryDetails::echoedMessage() const
 {
     if (!isValid()) {
         return Message();
