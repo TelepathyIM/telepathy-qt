@@ -142,7 +142,7 @@ public:
     ContactPtr sender() const;
     QString senderNickname() const;
 
-    QString supersedes() const;
+    QString supersededToken() const;
 
     bool isScrollback() const;
     bool isRescued() const;

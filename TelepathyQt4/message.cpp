@@ -691,7 +691,7 @@ QString ReceivedMessage::senderNickname() const
  *
  * \returns The token of the superseded message or an empty string if none.
  */
-QString ReceivedMessage::supersedes() const
+QString ReceivedMessage::supersededToken() const
 {
     return stringOrEmptyFromPart(mPriv->parts, 0, "supersedes");
 }
