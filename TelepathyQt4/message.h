@@ -29,9 +29,8 @@
 
 #include <QSharedDataPointer>
 
-#include <TelepathyQt4/Contact>
-#include <TelepathyQt4/Types>
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Contact>
 #include <TelepathyQt4/Types>
 
 class QDateTime;
@@ -98,14 +97,58 @@ private:
 class TELEPATHY_QT4_EXPORT ReceivedMessage : public Message
 {
 public:
+    class DeliveryDetails
+    {
+    public:
+        DeliveryDetails();
+        DeliveryDetails(const DeliveryDetails &other);
+        ~DeliveryDetails();
+
+        DeliveryDetails &operator=(const DeliveryDetails &other);
+
+        bool isValid() const { return mPriv.constData() != 0; }
+
+        DeliveryStatus status() const;
+
+        bool hasOriginalToken() const;
+        QString originalToken() const;
+
+        bool isError() const;
+        ChannelTextSendError error() const;
+
+        bool hasDebugMessage() const;
+        QString debugMessage() const;
+
+        QString dbusError() const;
+
+        bool hasEchoedMessage() const;
+        Message echoedMessage() const;
+
+    private:
+        friend class ReceivedMessage;
+
+        TELEPATHY_QT4_NO_EXPORT DeliveryDetails(const MessagePartList &parts);
+
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
+    };
+
     ReceivedMessage(const ReceivedMessage &other);
     ReceivedMessage &operator=(const ReceivedMessage &other);
     ~ReceivedMessage();
 
     QDateTime received() const;
     ContactPtr sender() const;
+    QString senderNickname() const;
+
+    QString supersededToken() const;
+
     bool isScrollback() const;
     bool isRescued() const;
+
+    bool isDeliveryReport() const;
+    DeliveryDetails deliveryDetails() const;
 
     bool isFromChannel(const TextChannelPtr &channel) const;
 

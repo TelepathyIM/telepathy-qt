@@ -34,10 +34,59 @@
 namespace Tp
 {
 
+namespace
+{
+
+QVariant valueFromPart(const MessagePartList &parts, uint index, const char *key)
+{
+    return parts.at(index).value(QLatin1String(key)).variant();
+}
+
+uint uintOrZeroFromPart(const MessagePartList &parts, uint index, const char *key)
+{
+    return valueFromPart(parts, index, key).toUInt();
+}
+
+QString stringOrEmptyFromPart(const MessagePartList &parts, uint index, const char *key)
+{
+    QString s = valueFromPart(parts, index, key).toString();
+    if (s.isNull()) {
+        s = QLatin1String("");
+    }
+    return s;
+}
+
+bool booleanFromPart(const MessagePartList &parts, uint index, const char *key,
+            bool assumeIfAbsent)
+{
+    QVariant v = valueFromPart(parts, index, key);
+    if (v.isValid() && v.type() == QVariant::Bool) {
+        return v.toBool();
+    }
+    return assumeIfAbsent;
+}
+
+MessagePartList partsFromPart(const MessagePartList &parts, uint index, const char *key)
+{
+    return qdbus_cast<MessagePartList>(valueFromPart(parts, index, key));
+}
+
+bool partContains(const MessagePartList &parts, uint index, const char *key)
+{
+    return parts.at(index).contains(QLatin1String(key));
+}
+
+}
+
 struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
 {
     Private(const MessagePartList &parts);
     ~Private();
+
+    uint senderHandle() const;
+    QString senderId() const;
+    uint pendingId() const;
+    void clearSenderHandle();
 
     MessagePartList parts;
 
@@ -48,16 +97,6 @@ struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
     // for received messages only
     QWeakPointer<TextChannel> textChannel;
     ContactPtr sender;
-
-    inline QVariant value(uint index, const char *key) const;
-    inline uint getUIntOrZero(uint index, const char *key) const;
-    inline QString getStringOrEmpty(uint index, const char *key) const;
-    inline bool getBoolean(uint index, const char *key,
-            bool assumeIfAbsent) const;
-    inline uint senderHandle() const;
-    inline QString senderId() const;
-    inline uint pendingId() const;
-    void clearSenderHandle();
 };
 
 Message::Private::Private(const MessagePartList &parts)
@@ -71,50 +110,19 @@ Message::Private::~Private()
 {
 }
 
-inline QVariant Message::Private::value(uint index, const char *key) const
-{
-    return parts.at(index).value(QLatin1String(key)).variant();
-}
-
-inline QString Message::Private::getStringOrEmpty(uint index, const char *key)
-    const
-{
-    QString s = value(index, key).toString();
-    if (s.isNull()) {
-        s = QLatin1String("");
-    }
-    return s;
-}
-
-inline uint Message::Private::getUIntOrZero(uint index, const char *key)
-    const
-{
-    return value(index, key).toUInt();
-}
-
-inline bool Message::Private::getBoolean(uint index, const char *key,
-        bool assumeIfAbsent) const
-{
-    QVariant v = value(index, key);
-    if (v.isValid() && v.type() == QVariant::Bool) {
-        return v.toBool();
-    }
-    return assumeIfAbsent;
-}
-
 inline uint Message::Private::senderHandle() const
 {
-    return getUIntOrZero(0, "message-sender");
+    return uintOrZeroFromPart(parts, 0, "message-sender");
 }
 
 inline QString Message::Private::senderId() const
 {
-    return getStringOrEmpty(0, "message-sender-id");
+    return stringOrEmptyFromPart(parts, 0, "message-sender-id");
 }
 
 inline uint Message::Private::pendingId() const
 {
-    return getUIntOrZero(0, "pending-message-id");
+    return uintOrZeroFromPart(parts, 0, "pending-message-id");
 }
 
 void Message::Private::clearSenderHandle()
@@ -231,7 +239,7 @@ Message::~Message()
 QDateTime Message::sent() const
 {
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    uint stamp = mPriv->value(0, "message-sent").toUInt();
+    uint stamp = valueFromPart(mPriv->parts, 0, "message-sent").toUInt();
     if (stamp != 0) {
         return QDateTime::fromTime_t(stamp);
     } else {
@@ -247,7 +255,7 @@ QDateTime Message::sent() const
  */
 ChannelTextMessageType Message::messageType() const
 {
-    uint raw = mPriv->value(0, "message-type").toUInt();
+    uint raw = valueFromPart(mPriv->parts, 0, "message-type").toUInt();
 
     if (raw < static_cast<uint>(NUM_CHANNEL_TEXT_MESSAGE_TYPES)) {
         return ChannelTextMessageType(raw);
@@ -262,7 +270,7 @@ ChannelTextMessageType Message::messageType() const
 bool Message::isTruncated() const
 {
     for (int i = 1; i < size(); i++) {
-        if (mPriv->getBoolean(i, "truncated", false)) {
+        if (booleanFromPart(mPriv->parts, i, "truncated", false)) {
             return true;
         }
     }
@@ -285,8 +293,8 @@ bool Message::hasNonTextContent() const
     QSet<QString> textNeeded;
 
     for (int i = 1; i < size(); i++) {
-        QString altGroup = mPriv->getStringOrEmpty(i, "alternative");
-        QString contentType = mPriv->getStringOrEmpty(i, "content-type");
+        QString altGroup = stringOrEmptyFromPart(mPriv->parts, i, "alternative");
+        QString contentType = stringOrEmptyFromPart(mPriv->parts, i, "content-type");
 
         if (contentType == QLatin1String("text/plain")) {
             if (!altGroup.isEmpty()) {
@@ -295,7 +303,7 @@ bool Message::hasNonTextContent() const
                 texts << altGroup;
             }
         } else {
-            QString alt = mPriv->getStringOrEmpty(i, "alternative");
+            QString alt = stringOrEmptyFromPart(mPriv->parts, i, "alternative");
             if (altGroup.isEmpty()) {
                 // we can't possibly rescue this part by using a text/plain
                 // alternative, because it's not in any alternative group
@@ -319,7 +327,7 @@ bool Message::hasNonTextContent() const
  */
 QString Message::messageToken() const
 {
-    return mPriv->getStringOrEmpty(0, "message-token");
+    return stringOrEmptyFromPart(mPriv->parts, 0, "message-token");
 }
 
 /**
@@ -345,7 +353,7 @@ bool Message::isSpecificToDBusInterface() const
  */
 QString Message::dbusInterface() const
 {
-    return mPriv->getStringOrEmpty(0, "interface");
+    return stringOrEmptyFromPart(mPriv->parts, 0, "interface");
 }
 
 QString Message::text() const
@@ -355,8 +363,8 @@ QString Message::text() const
     QString text;
 
     for (int i = 1; i < size(); i++) {
-        QString altGroup = mPriv->getStringOrEmpty(i, "alternative");
-        QString contentType = mPriv->getStringOrEmpty(i, "content-type");
+        QString altGroup = stringOrEmptyFromPart(mPriv->parts, i, "alternative");
+        QString contentType = stringOrEmptyFromPart(mPriv->parts, i, "content-type");
 
         if (contentType == QLatin1String("text/plain")) {
             if (!altGroup.isEmpty()) {
@@ -367,7 +375,7 @@ QString Message::text() const
                 }
             }
 
-            QVariant content = mPriv->value(i, "content");
+            QVariant content = valueFromPart(mPriv->parts, i, "content");
             if (content.type() == QVariant::String) {
                 text += content.toString();
             } else {
@@ -435,6 +443,152 @@ MessagePartList Message::parts() const
  */
 
 /**
+ * \class ReceivedMessage::DeliveryDetails
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
+ *
+ * \brief The ReceivedMessage::DeliveryDetails class represents the details of a delivery report.
+ */
+
+struct TELEPATHY_QT4_NO_EXPORT ReceivedMessage::DeliveryDetails::Private : public QSharedData
+{
+    Private(const MessagePartList &parts)
+        : parts(parts)
+    {
+    }
+
+    MessagePartList parts;
+};
+
+ReceivedMessage::DeliveryDetails::DeliveryDetails()
+{
+}
+
+ReceivedMessage::DeliveryDetails::DeliveryDetails(const DeliveryDetails &other)
+    : mPriv(other.mPriv)
+{
+}
+
+ReceivedMessage::DeliveryDetails::DeliveryDetails(const MessagePartList &parts)
+    : mPriv(new Private(parts))
+{
+}
+
+ReceivedMessage::DeliveryDetails::~DeliveryDetails()
+{
+}
+
+ReceivedMessage::DeliveryDetails &ReceivedMessage::DeliveryDetails::operator=(
+        const DeliveryDetails &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+DeliveryStatus ReceivedMessage::DeliveryDetails::status() const
+{
+    if (!isValid()) {
+        return DeliveryStatusUnknown;
+    }
+    return static_cast<DeliveryStatus>(uintOrZeroFromPart(mPriv->parts, 0, "delivery-status"));
+}
+
+bool ReceivedMessage::DeliveryDetails::hasOriginalToken() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-token");
+}
+
+QString ReceivedMessage::DeliveryDetails::originalToken() const
+{
+    if (!isValid()) {
+        return QString();
+    }
+    return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-token");
+}
+
+bool ReceivedMessage::DeliveryDetails::isError() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    DeliveryStatus st(status());
+    return st == DeliveryStatusTemporarilyFailed || st == DeliveryStatusPermanentlyFailed;
+}
+
+ChannelTextSendError ReceivedMessage::DeliveryDetails::error() const
+{
+    if (!isValid()) {
+        return ChannelTextSendErrorUnknown;
+    }
+    return static_cast<ChannelTextSendError>(uintOrZeroFromPart(mPriv->parts, 0, "delivery-error"));
+}
+
+bool ReceivedMessage::DeliveryDetails::hasDebugMessage() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-error-message");
+}
+
+QString ReceivedMessage::DeliveryDetails::debugMessage() const
+{
+    if (!isValid()) {
+        return QString();
+    }
+    return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-error-message");
+}
+
+QString ReceivedMessage::DeliveryDetails::dbusError() const
+{
+    if (!isValid()) {
+        return QString();
+    }
+    QString ret = stringOrEmptyFromPart(mPriv->parts, 0, "delivery-dbus-error");
+    if (ret.isEmpty()) {
+        switch (error()) {
+            case ChannelTextSendErrorOffline:
+                ret = TP_QT4_ERROR_OFFLINE;
+                break;
+            case ChannelTextSendErrorInvalidContact:
+                ret = TP_QT4_ERROR_DOES_NOT_EXIST;
+                break;
+            case ChannelTextSendErrorPermissionDenied:
+                ret = TP_QT4_ERROR_PERMISSION_DENIED;
+                break;
+            case ChannelTextSendErrorTooLong:
+                ret = TP_QT4_ERROR_INVALID_ARGUMENT;
+                break;
+            case ChannelTextSendErrorNotImplemented:
+                ret = TP_QT4_ERROR_NOT_IMPLEMENTED;
+                break;
+            default:
+                ret = TP_QT4_ERROR_NOT_AVAILABLE;
+        }
+    }
+    return ret;
+}
+
+bool ReceivedMessage::DeliveryDetails::hasEchoedMessage() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-echo");
+}
+
+Message ReceivedMessage::DeliveryDetails::echoedMessage() const
+{
+    if (!isValid()) {
+        return Message();
+    }
+    return Message(partsFromPart(mPriv->parts, 0, "delivery-echo"));
+}
+
+/**
  * Default constructor, only used internally.
  */
 ReceivedMessage::ReceivedMessage()
@@ -494,7 +648,7 @@ ReceivedMessage::~ReceivedMessage()
 QDateTime ReceivedMessage::received() const
 {
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    uint stamp = mPriv->value(0, "message-received").toUInt();
+    uint stamp = valueFromPart(mPriv->parts, 0, "message-received").toUInt();
     if (stamp != 0) {
         return QDateTime::fromTime_t(stamp);
     } else {
@@ -514,6 +668,35 @@ ContactPtr ReceivedMessage::sender() const
 }
 
 /**
+ * Return the nickname chosen by the sender of the message, which can be different for each
+ * message in a conversation.
+ *
+ * \return The nickname chosen by the sender of the message.
+ */
+QString ReceivedMessage::senderNickname() const
+{
+    QString ret = stringOrEmptyFromPart(mPriv->parts, 0, "sender-nickname");
+    if (ret.isEmpty() && mPriv->sender) {
+        ret = mPriv->sender->alias();
+    }
+    return ret;
+}
+
+/**
+ * If this message replaces a previous message, return the value of
+ * messageToken() for that previous message. Otherwise, return an empty string.
+ *
+ * For instance, a user interface could replace the superseded
+ * message with this message, or grey out the superseded message.
+ *
+ * \returns The token of the superseded message or an empty string if none.
+ */
+QString ReceivedMessage::supersededToken() const
+{
+    return stringOrEmptyFromPart(mPriv->parts, 0, "supersedes");
+}
+
+/**
  * Return whether the incoming message was part of a replay of message
  * history.
  *
@@ -525,7 +708,7 @@ ContactPtr ReceivedMessage::sender() const
  */
 bool ReceivedMessage::isScrollback() const
 {
-    return mPriv->getBoolean(0, "scrollback", false);
+    return booleanFromPart(mPriv->parts, 0, "scrollback", false);
 }
 
 /**
@@ -539,7 +722,29 @@ bool ReceivedMessage::isScrollback() const
  */
 bool ReceivedMessage::isRescued() const
 {
-    return mPriv->getBoolean(0, "rescued", false);
+    return booleanFromPart(mPriv->parts, 0, "rescued", false);
+}
+
+/**
+ * Return whether the incoming message is a delivery report.
+ *
+ * \return Whether the message is a delivery report.
+ */
+bool ReceivedMessage::isDeliveryReport() const
+{
+    return messageType() == ChannelTextMessageTypeDeliveryReport;
+}
+
+/**
+ * Return the details of a delivery report.
+ *
+ * This method should only be used if isDeliveryReport() returns \c true.
+ *
+ * \return The details of a delivery report.
+ */
+ReceivedMessage::DeliveryDetails ReceivedMessage::deliveryDetails() const
+{
+    return DeliveryDetails(parts());
 }
 
 bool ReceivedMessage::isFromChannel(const TextChannelPtr &channel) const
