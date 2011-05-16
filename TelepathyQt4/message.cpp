@@ -34,10 +34,49 @@
 namespace Tp
 {
 
+namespace
+{
+
+QVariant valueFromPart(const MessagePartList &parts, uint index, const char *key)
+{
+    return parts.at(index).value(QLatin1String(key)).variant();
+}
+
+uint uintOrZeroFromPart(const MessagePartList &parts, uint index, const char *key)
+{
+    return valueFromPart(parts, index, key).toUInt();
+}
+
+QString stringOrEmptyFromPart(const MessagePartList &parts, uint index, const char *key)
+{
+    QString s = valueFromPart(parts, index, key).toString();
+    if (s.isNull()) {
+        s = QLatin1String("");
+    }
+    return s;
+}
+
+bool booleanFromPart(const MessagePartList &parts, uint index, const char *key,
+            bool assumeIfAbsent)
+{
+    QVariant v = valueFromPart(parts, index, key);
+    if (v.isValid() && v.type() == QVariant::Bool) {
+        return v.toBool();
+    }
+    return assumeIfAbsent;
+}
+
+}
+
 struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
 {
     Private(const MessagePartList &parts);
     ~Private();
+
+    uint senderHandle() const;
+    QString senderId() const;
+    uint pendingId() const;
+    void clearSenderHandle();
 
     MessagePartList parts;
 
@@ -48,16 +87,6 @@ struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
     // for received messages only
     QWeakPointer<TextChannel> textChannel;
     ContactPtr sender;
-
-    inline QVariant value(uint index, const char *key) const;
-    inline uint getUIntOrZero(uint index, const char *key) const;
-    inline QString getStringOrEmpty(uint index, const char *key) const;
-    inline bool getBoolean(uint index, const char *key,
-            bool assumeIfAbsent) const;
-    inline uint senderHandle() const;
-    inline QString senderId() const;
-    inline uint pendingId() const;
-    void clearSenderHandle();
 };
 
 Message::Private::Private(const MessagePartList &parts)
@@ -71,50 +100,19 @@ Message::Private::~Private()
 {
 }
 
-inline QVariant Message::Private::value(uint index, const char *key) const
-{
-    return parts.at(index).value(QLatin1String(key)).variant();
-}
-
-inline QString Message::Private::getStringOrEmpty(uint index, const char *key)
-    const
-{
-    QString s = value(index, key).toString();
-    if (s.isNull()) {
-        s = QLatin1String("");
-    }
-    return s;
-}
-
-inline uint Message::Private::getUIntOrZero(uint index, const char *key)
-    const
-{
-    return value(index, key).toUInt();
-}
-
-inline bool Message::Private::getBoolean(uint index, const char *key,
-        bool assumeIfAbsent) const
-{
-    QVariant v = value(index, key);
-    if (v.isValid() && v.type() == QVariant::Bool) {
-        return v.toBool();
-    }
-    return assumeIfAbsent;
-}
-
 inline uint Message::Private::senderHandle() const
 {
-    return getUIntOrZero(0, "message-sender");
+    return uintOrZeroFromPart(parts, 0, "message-sender");
 }
 
 inline QString Message::Private::senderId() const
 {
-    return getStringOrEmpty(0, "message-sender-id");
+    return stringOrEmptyFromPart(parts, 0, "message-sender-id");
 }
 
 inline uint Message::Private::pendingId() const
 {
-    return getUIntOrZero(0, "pending-message-id");
+    return uintOrZeroFromPart(parts, 0, "pending-message-id");
 }
 
 void Message::Private::clearSenderHandle()
@@ -231,7 +229,7 @@ Message::~Message()
 QDateTime Message::sent() const
 {
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    uint stamp = mPriv->value(0, "message-sent").toUInt();
+    uint stamp = valueFromPart(mPriv->parts, 0, "message-sent").toUInt();
     if (stamp != 0) {
         return QDateTime::fromTime_t(stamp);
     } else {
@@ -247,7 +245,7 @@ QDateTime Message::sent() const
  */
 ChannelTextMessageType Message::messageType() const
 {
-    uint raw = mPriv->value(0, "message-type").toUInt();
+    uint raw = valueFromPart(mPriv->parts, 0, "message-type").toUInt();
 
     if (raw < static_cast<uint>(NUM_CHANNEL_TEXT_MESSAGE_TYPES)) {
         return ChannelTextMessageType(raw);
@@ -262,7 +260,7 @@ ChannelTextMessageType Message::messageType() const
 bool Message::isTruncated() const
 {
     for (int i = 1; i < size(); i++) {
-        if (mPriv->getBoolean(i, "truncated", false)) {
+        if (booleanFromPart(mPriv->parts, i, "truncated", false)) {
             return true;
         }
     }
@@ -285,8 +283,8 @@ bool Message::hasNonTextContent() const
     QSet<QString> textNeeded;
 
     for (int i = 1; i < size(); i++) {
-        QString altGroup = mPriv->getStringOrEmpty(i, "alternative");
-        QString contentType = mPriv->getStringOrEmpty(i, "content-type");
+        QString altGroup = stringOrEmptyFromPart(mPriv->parts, i, "alternative");
+        QString contentType = stringOrEmptyFromPart(mPriv->parts, i, "content-type");
 
         if (contentType == QLatin1String("text/plain")) {
             if (!altGroup.isEmpty()) {
@@ -295,7 +293,7 @@ bool Message::hasNonTextContent() const
                 texts << altGroup;
             }
         } else {
-            QString alt = mPriv->getStringOrEmpty(i, "alternative");
+            QString alt = stringOrEmptyFromPart(mPriv->parts, i, "alternative");
             if (altGroup.isEmpty()) {
                 // we can't possibly rescue this part by using a text/plain
                 // alternative, because it's not in any alternative group
@@ -319,7 +317,7 @@ bool Message::hasNonTextContent() const
  */
 QString Message::messageToken() const
 {
-    return mPriv->getStringOrEmpty(0, "message-token");
+    return stringOrEmptyFromPart(mPriv->parts, 0, "message-token");
 }
 
 /**
@@ -345,7 +343,7 @@ bool Message::isSpecificToDBusInterface() const
  */
 QString Message::dbusInterface() const
 {
-    return mPriv->getStringOrEmpty(0, "interface");
+    return stringOrEmptyFromPart(mPriv->parts, 0, "interface");
 }
 
 QString Message::text() const
@@ -355,8 +353,8 @@ QString Message::text() const
     QString text;
 
     for (int i = 1; i < size(); i++) {
-        QString altGroup = mPriv->getStringOrEmpty(i, "alternative");
-        QString contentType = mPriv->getStringOrEmpty(i, "content-type");
+        QString altGroup = stringOrEmptyFromPart(mPriv->parts, i, "alternative");
+        QString contentType = stringOrEmptyFromPart(mPriv->parts, i, "content-type");
 
         if (contentType == QLatin1String("text/plain")) {
             if (!altGroup.isEmpty()) {
@@ -367,7 +365,7 @@ QString Message::text() const
                 }
             }
 
-            QVariant content = mPriv->value(i, "content");
+            QVariant content = valueFromPart(mPriv->parts, i, "content");
             if (content.type() == QVariant::String) {
                 text += content.toString();
             } else {
@@ -494,7 +492,7 @@ ReceivedMessage::~ReceivedMessage()
 QDateTime ReceivedMessage::received() const
 {
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    uint stamp = mPriv->value(0, "message-received").toUInt();
+    uint stamp = valueFromPart(mPriv->parts, 0, "message-received").toUInt();
     if (stamp != 0) {
         return QDateTime::fromTime_t(stamp);
     } else {
@@ -525,7 +523,7 @@ ContactPtr ReceivedMessage::sender() const
  */
 bool ReceivedMessage::isScrollback() const
 {
-    return mPriv->getBoolean(0, "scrollback", false);
+    return booleanFromPart(mPriv->parts, 0, "scrollback", false);
 }
 
 /**
@@ -539,7 +537,7 @@ bool ReceivedMessage::isScrollback() const
  */
 bool ReceivedMessage::isRescued() const
 {
-    return mPriv->getBoolean(0, "rescued", false);
+    return booleanFromPart(mPriv->parts, 0, "rescued", false);
 }
 
 bool ReceivedMessage::isFromChannel(const TextChannelPtr &channel) const
