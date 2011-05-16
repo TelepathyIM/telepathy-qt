@@ -97,14 +97,57 @@ private:
 class TELEPATHY_QT4_EXPORT ReceivedMessage : public Message
 {
 public:
+    class DeliveryDetails
+    {
+    public:
+        DeliveryDetails();
+        DeliveryDetails(const DeliveryDetails &other);
+        ~DeliveryDetails();
+
+        DeliveryDetails &operator=(const DeliveryDetails &other);
+
+        bool isValid() const { return mPriv.constData() != 0; }
+
+        bool hasStatus() const;
+        DeliveryStatus status() const;
+
+        bool hasToken() const;
+        QString token() const;
+
+        bool hasError() const;
+        QString error() const;
+
+        bool hasErrorMessage() const;
+        QString errorMessage() const;
+
+        bool hasDBusError() const;
+        QString dbusError() const;
+
+        bool hasEcho() const;
+        Message echo() const;
+
+    private:
+        friend class ReceivedMessage;
+
+        TELEPATHY_QT4_NO_EXPORT DeliveryDetails(const MessagePartList &parts);
+
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
+    };
+
     ReceivedMessage(const ReceivedMessage &other);
     ReceivedMessage &operator=(const ReceivedMessage &other);
     ~ReceivedMessage();
 
     QDateTime received() const;
     ContactPtr sender() const;
+
     bool isScrollback() const;
     bool isRescued() const;
+
+    bool isDeliveryReport() const;
+    DeliveryDetails deliveryDetails() const;
 
     bool isFromChannel(const TextChannelPtr &channel) const;
 

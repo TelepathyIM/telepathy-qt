@@ -66,6 +66,16 @@ bool booleanFromPart(const MessagePartList &parts, uint index, const char *key,
     return assumeIfAbsent;
 }
 
+MessagePartList partsFromPart(const MessagePartList &parts, uint index, const char *key)
+{
+    return qdbus_cast<MessagePartList>(valueFromPart(parts, index, key));
+}
+
+bool partContains(const MessagePartList &parts, uint index, const char *key)
+{
+    return parts.at(index).contains(QLatin1String(key));
+}
+
 }
 
 struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
@@ -433,6 +443,145 @@ MessagePartList Message::parts() const
  */
 
 /**
+ * \class ReceivedMessage::DeliveryDetails
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
+ *
+ * \brief The ReceivedMessage::DeliveryDetails class represents the details of a delivery report.
+ */
+
+struct TELEPATHY_QT4_NO_EXPORT ReceivedMessage::DeliveryDetails::Private : public QSharedData
+{
+    Private(const MessagePartList &parts)
+        : parts(parts)
+    {
+    }
+
+    MessagePartList parts;
+};
+
+ReceivedMessage::DeliveryDetails::DeliveryDetails()
+{
+}
+
+ReceivedMessage::DeliveryDetails::DeliveryDetails(const DeliveryDetails &other)
+    : mPriv(other.mPriv)
+{
+}
+
+ReceivedMessage::DeliveryDetails::DeliveryDetails(const MessagePartList &parts)
+    : mPriv(new Private(parts))
+{
+}
+
+ReceivedMessage::DeliveryDetails::~DeliveryDetails()
+{
+}
+
+ReceivedMessage::DeliveryDetails &ReceivedMessage::DeliveryDetails::operator=(
+        const DeliveryDetails &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+bool ReceivedMessage::DeliveryDetails::hasStatus() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-status");
+}
+
+DeliveryStatus ReceivedMessage::DeliveryDetails::status() const
+{
+    if (!isValid()) {
+        return DeliveryStatusUnknown;
+    }
+    return (DeliveryStatus) uintOrZeroFromPart(mPriv->parts, 0, "delivery-status");
+}
+
+bool ReceivedMessage::DeliveryDetails::hasToken() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-token");
+}
+
+QString ReceivedMessage::DeliveryDetails::token() const
+{
+    if (!isValid()) {
+        return QString();
+    }
+    return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-token");
+}
+
+bool ReceivedMessage::DeliveryDetails::hasError() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-error");
+}
+
+QString ReceivedMessage::DeliveryDetails::error() const
+{
+    if (!isValid()) {
+        return QString();
+    }
+    return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-error");
+}
+
+bool ReceivedMessage::DeliveryDetails::hasErrorMessage() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-error-message");
+}
+
+QString ReceivedMessage::DeliveryDetails::errorMessage() const
+{
+    if (!isValid()) {
+        return QString();
+    }
+    return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-error-message");
+}
+
+bool ReceivedMessage::DeliveryDetails::hasDBusError() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-dbus-error");
+}
+
+QString ReceivedMessage::DeliveryDetails::dbusError() const
+{
+    if (!isValid()) {
+        return QString();
+    }
+    return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-dbus-error");
+}
+
+bool ReceivedMessage::DeliveryDetails::hasEcho() const
+{
+    if (!isValid()) {
+        return false;
+    }
+    return partContains(mPriv->parts, 0, "delivery-echo");
+}
+
+Message ReceivedMessage::DeliveryDetails::echo() const
+{
+    if (!isValid()) {
+        return Message();
+    }
+    return Message(partsFromPart(mPriv->parts, 0, "delivery-echo"));
+}
+
+/**
  * Default constructor, only used internally.
  */
 ReceivedMessage::ReceivedMessage()
@@ -538,6 +687,28 @@ bool ReceivedMessage::isScrollback() const
 bool ReceivedMessage::isRescued() const
 {
     return booleanFromPart(mPriv->parts, 0, "rescued", false);
+}
+
+/**
+ * Return whether the incoming message is a delivery report.
+ *
+ * \return Whether the message is a delivery report.
+ */
+bool ReceivedMessage::isDeliveryReport() const
+{
+    return messageType() == ChannelTextMessageTypeDeliveryReport;
+}
+
+/**
+ * Return the details of a delivery report.
+ *
+ * This method should only be used if isDeliveryReport() returns \c true.
+ *
+ * \return The details of a delivery report.
+ */
+ReceivedMessage::DeliveryDetails ReceivedMessage::deliveryDetails() const
+{
+    return DeliveryDetails(parts());
 }
 
 bool ReceivedMessage::isFromChannel(const TextChannelPtr &channel) const
