@@ -116,8 +116,8 @@ public:
         bool isError() const;
         ChannelTextSendError error() const;
 
-        bool hasErrorMessage() const;
-        QString errorMessage() const;
+        bool hasDebugMessage() const;
+        QString debugMessage() const;
 
         QString dbusError() const;
 

@@ -526,7 +526,7 @@ ChannelTextSendError ReceivedMessage::DeliveryDetails::error() const
     return static_cast<ChannelTextSendError>(uintOrZeroFromPart(mPriv->parts, 0, "delivery-error"));
 }
 
-bool ReceivedMessage::DeliveryDetails::hasErrorMessage() const
+bool ReceivedMessage::DeliveryDetails::hasDebugMessage() const
 {
     if (!isValid()) {
         return false;
@@ -534,7 +534,7 @@ bool ReceivedMessage::DeliveryDetails::hasErrorMessage() const
     return partContains(mPriv->parts, 0, "delivery-error-message");
 }
 
-QString ReceivedMessage::DeliveryDetails::errorMessage() const
+QString ReceivedMessage::DeliveryDetails::debugMessage() const
 {
     if (!isValid()) {
         return QString();
