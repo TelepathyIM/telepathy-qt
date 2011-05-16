@@ -517,19 +517,10 @@ void ClientHandlerAdaptor::onContextFinished(
     if (!context->isError()) {
         debug() << "HandleChannels context finished successfully, "
             "updating handled channels";
-        foreach (const ChannelPtr &channel, channels) {
-            self->mHandledChannels.insert(channel);
-            self->connect(channel.data(),
-                    SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-                    SLOT(onChannelInvalidated(Tp::DBusProxy*)));
-        }
-    }
-}
 
-void ClientHandlerAdaptor::onChannelInvalidated(DBusProxy *proxy)
-{
-    ChannelPtr channel(dynamic_cast<Channel*>(proxy));
-    mHandledChannels.remove(channel);
+        // register the channels in FakeHandlerManager so we report HandledChannels correctly
+        FakeHandlerManager::instance()->registerChannels(channels);
+    }
 }
 
 ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(

@@ -61,13 +61,15 @@ void RequestTemporaryHandler::handleChannels(
     Q_ASSERT(dbusHandlerInvoked);
 
     QString errorMessage;
+
+    ChannelPtr oldChannel = channel();
     if (channels.size() != 1 || requestsSatisfied.size() != 1) {
         errorMessage = QLatin1String("Only one channel and one channel request should be given "
                 "to HandleChannels");
     } else if (account != mAccount) {
         errorMessage = QLatin1String("Account received is not the same as the account which made "
                 "the request");
-    } else if (mChannel && mChannel != channels.first()) {
+    } else if (oldChannel && oldChannel != channels.first()) {
         errorMessage = QLatin1String("Received a channel that is not the same as the first "
                 "one received");
     }
@@ -77,7 +79,7 @@ void RequestTemporaryHandler::handleChannels(
             errorMessage;
 
         // Only emit error if we didn't receive any channel yet.
-        if (!mChannel) {
+        if (!oldChannel) {
             emit error(TP_QT4_ERROR_SERVICE_CONFUSED, errorMessage);
         }
         context->setFinishedWithError(TP_QT4_ERROR_SERVICE_CONFUSED, errorMessage);
@@ -86,14 +88,14 @@ void RequestTemporaryHandler::handleChannels(
 
     ChannelRequestPtr channelRequest = requestsSatisfied.first();
 
-    if (!mChannel) {
-        mChannel = channels.first();
-        emit channelReceived(mChannel, userActionTime, channelRequest->hints());
+    if (!oldChannel) {
+        mChannel = QWeakPointer<Channel>(channels.first().data());
+        emit channelReceived(channel(), userActionTime, channelRequest->hints());
     } else {
         if (mQueueChannelReceived) {
             mChannelReceivedQueue.enqueue(qMakePair(userActionTime, channelRequest->hints()));
         } else {
-            emit channelReceived(mChannel, userActionTime, channelRequest->hints());
+            emit channelReceived(oldChannel, userActionTime, channelRequest->hints());
         }
     }
 
@@ -116,7 +118,7 @@ void RequestTemporaryHandler::setDBusHandlerInvoked()
 void RequestTemporaryHandler::setDBusHandlerErrored(const QString &errorName, const QString &errorMessage)
 {
     Q_ASSERT(dbusHandlerInvoked);
-    if (!mChannel) {
+    if (!channel()) {
         emit error(errorName, errorMessage);
     }
 }
@@ -125,7 +127,7 @@ void RequestTemporaryHandler::processChannelReceivedQueue()
 {
     while (!mChannelReceivedQueue.isEmpty()) {
         QPair<QDateTime, ChannelRequestHints> info = mChannelReceivedQueue.dequeue();
-        emit channelReceived(mChannel, info.first, info.second);
+        emit channelReceived(channel(), info.first, info.second);
     }
 }
 
