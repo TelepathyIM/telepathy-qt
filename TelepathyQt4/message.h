@@ -142,6 +142,9 @@ public:
 
     QDateTime received() const;
     ContactPtr sender() const;
+    QString senderNickname() const;
+
+    QString supersedes() const;
 
     bool isScrollback() const;
     bool isRescued() const;

@@ -661,6 +661,31 @@ ContactPtr ReceivedMessage::sender() const
 }
 
 /**
+ * Return the nickname chosen by the sender of the message, which can be different for each
+ * message in a conversation.
+ *
+ * \return The nickname chosen by the sender of the message.
+ */
+QString ReceivedMessage::senderNickname() const
+{
+    return stringOrEmptyFromPart(mPriv->parts, 0, "sender-nickname");
+}
+
+/**
+ * If this message replaces a previous message, return the value of
+ * messageToken() for that previous message. Otherwise, return an empty string.
+ *
+ * For instance, a user interface could replace the superseded
+ * message with this message, or grey out the superseded message.
+ *
+ * \returns The token of the superseded message or an empty string if none.
+ */
+QString ReceivedMessage::supersedes() const
+{
+    return stringOrEmptyFromPart(mPriv->parts, 0, "supersedes");
+}
+
+/**
  * Return whether the incoming message was part of a replay of message
  * history.
  *
