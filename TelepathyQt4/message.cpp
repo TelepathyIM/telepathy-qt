@@ -485,14 +485,6 @@ ReceivedMessage::DeliveryDetails &ReceivedMessage::DeliveryDetails::operator=(
     return *this;
 }
 
-bool ReceivedMessage::DeliveryDetails::hasStatus() const
-{
-    if (!isValid()) {
-        return false;
-    }
-    return partContains(mPriv->parts, 0, "delivery-status");
-}
-
 DeliveryStatus ReceivedMessage::DeliveryDetails::status() const
 {
     if (!isValid()) {

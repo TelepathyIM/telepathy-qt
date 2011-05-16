@@ -108,7 +108,6 @@ public:
 
         bool isValid() const { return mPriv.constData() != 0; }
 
-        bool hasStatus() const;
         DeliveryStatus status() const;
 
         bool hasToken() const;
