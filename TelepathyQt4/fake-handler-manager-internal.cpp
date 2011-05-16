@@ -69,11 +69,14 @@ void FakeHandler::onChannelInvalidated(DBusProxy *channel)
     onChannelDestroyed(channel);
 }
 
-void FakeHandler::onChannelDestroyed(QObject *channel)
+void FakeHandler::onChannelDestroyed(QObject *obj)
 {
-    Q_ASSERT(mChannels.contains((Channel*) channel));
+    Channel *channel = reinterpret_cast<Channel*>(obj);
 
-    mChannels.remove((Channel*) channel);
+    Q_ASSERT(mChannels.contains(channel));
+
+    mChannels.remove(channel);
+
     if (mChannels.isEmpty()) {
         // emit invalidated here instead of relying on QObject::destroyed as FakeHandlerManager
         // may reuse this fake handler if FakeHandlerManager::registerChannel is called before the
