@@ -517,12 +517,13 @@ QString ReceivedMessage::DeliveryDetails::token() const
     return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-token");
 }
 
-bool ReceivedMessage::DeliveryDetails::hasError() const
+bool ReceivedMessage::DeliveryDetails::isError() const
 {
     if (!isValid()) {
         return false;
     }
-    return partContains(mPriv->parts, 0, "delivery-error");
+    DeliveryStatus st(status());
+    return st == DeliveryStatusTemporarilyFailed || st == DeliveryStatusPermanentlyFailed;
 }
 
 ChannelTextSendError ReceivedMessage::DeliveryDetails::error() const

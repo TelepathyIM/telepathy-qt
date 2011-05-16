@@ -114,7 +114,7 @@ public:
         bool hasToken() const;
         QString token() const;
 
-        bool hasError() const;
+        bool isError() const;
         ChannelTextSendError error() const;
 
         bool hasErrorMessage() const;
