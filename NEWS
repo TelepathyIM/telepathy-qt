@@ -8,11 +8,12 @@ following the 0.6 stable release series. Both 0.6 and 0.7 will continue to be
 backwards compatible API and ABI wise with the earlier 0.5 development series.
 
 Enhancements:
- * ...
+ * ReceivedMessage: Add accessors for retrieving delivery report information,
+   sender nickname and superseded message token
 
 Fixes:
  * Do not close channels created using the request and handle API if MC
-   restarts.
+   restarts
  * Pass new value correctly as variant in generated binding setProperty* methods
  * Properly initialize Connection account balance members
 
