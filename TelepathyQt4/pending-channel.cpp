@@ -25,6 +25,7 @@
 #include "TelepathyQt4/_gen/pending-channel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
+#include "TelepathyQt4/fake-handler-manager-internal.h"
 #include "TelepathyQt4/request-temporary-handler-internal.h"
 
 #include <TelepathyQt4/Channel>
@@ -499,13 +500,21 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
     mPriv->handle = channel->targetHandle();
     mPriv->immutableProperties = channel->immutableProperties();
     mPriv->channel = channel;
+
+    // register the CR in FakeHandlerManager so that at least one handler per bus stays alive
+    // until all channels requested using R&H gets invalidated/destroyed.
+    // This is important in case Mission Control happens to restart while
+    // the channel is still in use, since it will close each channel it
+    // doesn't find a handler for it.
+    FakeHandlerManager::instance()->registerClientRegistrar(mPriv->cr);
+
     setFinished();
 }
 
 void PendingChannel::onAccountCreateChannelFinished(PendingOperation *op)
 {
     if (isFinished()) {
-        if (!isError()) {
+        if (isError()) {
             warning() << "Creating/ensuring channel finished with a failure after the internal "
                 "handler already got a channel, ignoring";
         }

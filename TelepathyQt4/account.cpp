@@ -56,6 +56,9 @@
 
 #include <string.h>
 
+namespace Tp
+{
+
 namespace
 {
 
@@ -391,21 +394,27 @@ QVariantMap conferenceStreamedMediaCallRequest(const QList<Tp::ChannelPtr> &chan
     return request;
 }
 
-QVariantMap contactSearchRequest(const QString &server, uint limit)
+QVariantMap contactSearchRequest(const ConnectionCapabilities &capabilities,
+        const QString &server, uint limit)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server"),
-                   server);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), limit);
+    if (capabilities.contactSearchesWithSpecificServer()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server"),
+                       server);
+    } else if (!server.isEmpty()) {
+        warning() << "Ignoring Server parameter for contact search, since the protocol does not support it.";
+    }
+    if (capabilities.contactSearchesWithLimit()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), limit);
+    } else if (limit > 0) {
+        warning() << "Ignoring Limit parameter for contact search, since the protocol does not support it.";
+    }
     return request;
 }
 
-}
-
-namespace Tp
-{
+} // anonymous namespace
 
 struct TELEPATHY_QT4_NO_EXPORT Account::Private
 {
@@ -2804,7 +2813,7 @@ PendingChannelRequest *Account::createContactSearch(
         const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request = contactSearchRequest(server, limit);
+    QVariantMap request = contactSearchRequest(capabilities(), server, limit);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -3332,6 +3341,7 @@ PendingChannel *Account::createAndHandleConferenceStreamedMediaCall(
  * \param server For protocols which support searching for contacts on multiple servers with
  *               different DNS names (like XMPP), the DNS name of the server to be searched,
  *               e.g. "characters.shakespeare.lit". Otherwise, an empty string.
+ *               If the protocol does not support specifying a search server, this will be ignored.
  * \param limit The desired maximum number of results that should be returned by a doing a search.
  *              If the protocol does not support specifying a limit for the number of results
  *              returned at a time, this will be ignored.
@@ -3348,7 +3358,7 @@ PendingChannel *Account::createAndHandleContactSearch(
         uint limit,
         const QDateTime &userActionTime)
 {
-    QVariantMap request = contactSearchRequest(server, limit);
+    QVariantMap request = contactSearchRequest(capabilities(), server, limit);
 
     return createAndHandleChannel(request, userActionTime);
 }

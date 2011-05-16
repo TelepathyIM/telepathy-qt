@@ -31,6 +31,8 @@
 #include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/Types>
 
+#include "TelepathyQt4/fake-handler-manager-internal.h"
+
 namespace Tp
 {
 
@@ -265,20 +267,7 @@ public: // Properties
 
     inline Tp::ObjectPathList HandledChannels() const
     {
-        // mAdaptorsForConnection includes this, so no need to start the set
-        // with this->mHandledChannels
-        QList<ClientHandlerAdaptor*> adaptors(mAdaptorsForConnection.value(
-                    qMakePair(mBus.name(), mBus.baseService())));
-        QSet<ChannelPtr> handledChannels;
-        foreach (ClientHandlerAdaptor *handlerAdaptor, adaptors) {
-            handledChannels.unite(handlerAdaptor->mHandledChannels);
-        }
-
-        Tp::ObjectPathList ret;
-        foreach (const ChannelPtr &channel, handledChannels) {
-            ret.append(QDBusObjectPath(channel->objectPath()));
-        }
-        return ret;
+        return FakeHandlerManager::instance()->handledChannels(mBus);
     }
 
 public Q_SLOTS: // Methods
@@ -291,7 +280,6 @@ public Q_SLOTS: // Methods
             const QDBusMessage &message);
 
 private Q_SLOTS:
-    void onChannelInvalidated(Tp::DBusProxy *proxy);
     void onReadyOpFinished(Tp::PendingOperation *);
 
 private:
@@ -319,7 +307,6 @@ private:
     ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
-    QSet<ChannelPtr> mHandledChannels;
 
     static QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > mAdaptorsForConnection;
 };
