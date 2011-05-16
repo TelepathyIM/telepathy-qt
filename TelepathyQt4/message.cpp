@@ -691,7 +691,11 @@ ContactPtr ReceivedMessage::sender() const
  */
 QString ReceivedMessage::senderNickname() const
 {
-    return stringOrEmptyFromPart(mPriv->parts, 0, "sender-nickname");
+    QString ret = stringOrEmptyFromPart(mPriv->parts, 0, "sender-nickname");
+    if (ret.isEmpty() && mPriv->sender) {
+        ret = mPriv->sender->alias();
+    }
+    return ret;
 }
 
 /**
