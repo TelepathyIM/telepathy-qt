@@ -110,8 +110,8 @@ public:
 
         DeliveryStatus status() const;
 
-        bool hasToken() const;
-        QString token() const;
+        bool hasOriginalToken() const;
+        QString originalToken() const;
 
         bool isError() const;
         ChannelTextSendError error() const;

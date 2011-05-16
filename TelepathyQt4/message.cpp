@@ -493,7 +493,7 @@ DeliveryStatus ReceivedMessage::DeliveryDetails::status() const
     return static_cast<DeliveryStatus>(uintOrZeroFromPart(mPriv->parts, 0, "delivery-status"));
 }
 
-bool ReceivedMessage::DeliveryDetails::hasToken() const
+bool ReceivedMessage::DeliveryDetails::hasOriginalToken() const
 {
     if (!isValid()) {
         return false;
@@ -501,7 +501,7 @@ bool ReceivedMessage::DeliveryDetails::hasToken() const
     return partContains(mPriv->parts, 0, "delivery-token");
 }
 
-QString ReceivedMessage::DeliveryDetails::token() const
+QString ReceivedMessage::DeliveryDetails::originalToken() const
 {
     if (!isValid()) {
         return QString();
