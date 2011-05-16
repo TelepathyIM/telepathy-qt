@@ -119,7 +119,6 @@ public:
         bool hasErrorMessage() const;
         QString errorMessage() const;
 
-        bool hasDBusError() const;
         QString dbusError() const;
 
         bool hasEchoedMessage() const;

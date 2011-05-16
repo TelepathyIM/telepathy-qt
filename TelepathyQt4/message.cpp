@@ -542,14 +542,6 @@ QString ReceivedMessage::DeliveryDetails::errorMessage() const
     return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-error-message");
 }
 
-bool ReceivedMessage::DeliveryDetails::hasDBusError() const
-{
-    if (!isValid()) {
-        return false;
-    }
-    return partContains(mPriv->parts, 0, "delivery-dbus-error");
-}
-
 QString ReceivedMessage::DeliveryDetails::dbusError() const
 {
     if (!isValid()) {
