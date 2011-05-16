@@ -562,7 +562,29 @@ QString ReceivedMessage::DeliveryDetails::dbusError() const
     if (!isValid()) {
         return QString();
     }
-    return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-dbus-error");
+    QString ret = stringOrEmptyFromPart(mPriv->parts, 0, "delivery-dbus-error");
+    if (ret.isEmpty()) {
+        switch (error()) {
+            case ChannelTextSendErrorOffline:
+                ret = TP_QT4_ERROR_OFFLINE;
+                break;
+            case ChannelTextSendErrorInvalidContact:
+                ret = TP_QT4_ERROR_DOES_NOT_EXIST;
+                break;
+            case ChannelTextSendErrorPermissionDenied:
+                ret = TP_QT4_ERROR_PERMISSION_DENIED;
+                break;
+            case ChannelTextSendErrorTooLong:
+                ret = TP_QT4_ERROR_INVALID_ARGUMENT;
+                break;
+            case ChannelTextSendErrorNotImplemented:
+                ret = TP_QT4_ERROR_NOT_IMPLEMENTED;
+                break;
+            default:
+                ret = TP_QT4_ERROR_NOT_AVAILABLE;
+        }
+    }
+    return ret;
 }
 
 bool ReceivedMessage::DeliveryDetails::hasEcho() const
