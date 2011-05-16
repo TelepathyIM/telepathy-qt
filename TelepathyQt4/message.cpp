@@ -525,12 +525,12 @@ bool ReceivedMessage::DeliveryDetails::hasError() const
     return partContains(mPriv->parts, 0, "delivery-error");
 }
 
-QString ReceivedMessage::DeliveryDetails::error() const
+ChannelTextSendError ReceivedMessage::DeliveryDetails::error() const
 {
     if (!isValid()) {
-        return QString();
+        return ChannelTextSendErrorUnknown;
     }
-    return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-error");
+    return static_cast<ChannelTextSendError>(uintOrZeroFromPart(mPriv->parts, 0, "delivery-error"));
 }
 
 bool ReceivedMessage::DeliveryDetails::hasErrorMessage() const
