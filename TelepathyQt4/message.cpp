@@ -498,7 +498,7 @@ DeliveryStatus ReceivedMessage::DeliveryDetails::status() const
     if (!isValid()) {
         return DeliveryStatusUnknown;
     }
-    return (DeliveryStatus) uintOrZeroFromPart(mPriv->parts, 0, "delivery-status");
+    return static_cast<DeliveryStatus>(uintOrZeroFromPart(mPriv->parts, 0, "delivery-status"));
 }
 
 bool ReceivedMessage::DeliveryDetails::hasToken() const
