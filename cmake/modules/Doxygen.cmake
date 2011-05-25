@@ -9,6 +9,13 @@ if(DOXYGEN_FOUND)
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args(QHELPGENERATOR DEFAULT_MSG QHELPGENERATOR_EXECUTABLE)
 
+    set(QT_TAGS_FILE     ${QT_DOC_DIR}/html/qt.tags)
+    if(NOT EXISTS ${QT_TAGS_FILE})
+        message(WARNING "html/qt.tags not found in ${QT_DOC_DIR}. Set the QT_DOC_DIR variable to
+point to its location to enable crosslinking.")
+        unset(QT_TAGS_FILE)
+    endif(NOT EXISTS ${QT_TAGS_FILE})
+
     set(abs_top_builddir ${CMAKE_BINARY_DIR})
     set(abs_top_srcdir   ${CMAKE_SOURCE_DIR})
     set(GENERATE_HTML    YES)
