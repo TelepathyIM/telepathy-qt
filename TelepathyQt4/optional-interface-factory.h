@@ -63,7 +63,9 @@ private:
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 template <typename DBusProxySubclass> class OptionalInterfaceFactory
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     : private OptionalInterfaceCache
+#endif
 {
     Q_DISABLE_COPY(OptionalInterfaceFactory)
 
