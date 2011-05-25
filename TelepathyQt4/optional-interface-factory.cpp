@@ -32,6 +32,8 @@
 namespace Tp
 {
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 struct TELEPATHY_QT4_NO_EXPORT OptionalInterfaceCache::Private
 {
     QObject *proxy;
@@ -84,6 +86,8 @@ void OptionalInterfaceCache::cache(AbstractInterface *interface) const
 
     mPriv->interfaces[name] = interface;
 }
+
+#endif /* ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
  * \class OptionalInterfaceFactory

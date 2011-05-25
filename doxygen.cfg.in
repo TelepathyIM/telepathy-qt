@@ -1209,12 +1209,15 @@ SKIP_FUNCTION_MACROS   = YES
 # If a tag file is not located in the directory in which doxygen 
 # is run, you must also specify the path to the tagfile here.
 
-TAGFILES               = 
+# FIXME: for some reason, doxygen doesn't seem to emit a doxygen= attribute at all
+# in the <a> element if there is no location, in which case there is nothing for
+# installdox to rewrite.
+TAGFILES               = ${QT_TAGS_FILE}=/you/forgot/to/run/installdox
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads.
 
-GENERATE_TAGFILE       = ${abs_top_builddir}/doc/${PROJECT}.tag
+GENERATE_TAGFILE       = ${abs_top_builddir}/doc/html/${PACKAGE_NAME}.tags
 
 # If the ALLEXTERNALS tag is set to YES all external classes will be listed 
 # in the class index. If set to NO only the inherited external classes 
