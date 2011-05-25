@@ -35,7 +35,7 @@ if (PERL_FOUND)
 endif (PERL_FOUND)
 
 add_custom_target(maintainer-upload-release-docs
-        rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt4/
+        rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt4-0.6.x/
 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
