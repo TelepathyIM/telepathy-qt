@@ -1212,7 +1212,7 @@ SKIP_FUNCTION_MACROS   = YES
 # FIXME: for some reason, doxygen doesn't seem to emit a doxygen= attribute at all
 # in the <a> element if there is no location, in which case there is nothing for
 # installdox to rewrite.
-TAGFILES               = ${QT_TAGS_FILE}=/you/forgot/to/run/installdox/with/qt.tags/
+TAGFILES               = ${QT_TAGS_FILE}=/you/forgot/to/run/installdox
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads.

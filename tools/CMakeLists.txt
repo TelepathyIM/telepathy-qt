@@ -26,11 +26,24 @@ if (GIT_BRANCH_CURRENT)
     endif (HAVE_GIT_BRANCH)
 endif (GIT_BRANCH_CURRENT)
 
+if (PERL_FOUND)
+    add_custom_target(maintainer-fix-qt-links-in-docs
+        ${PERL_EXECUTABLE} doc/html/installdox -l qt.tags@http://doc.qt.nokia.com/latest/ doc/html/*.html
+
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    add_dependencies(maintainer-fix-qt-links-in-docs doxygen-doc _maintainer-upload-release-check)
+endif (PERL_FOUND)
+
 add_custom_target(maintainer-upload-release-docs
         rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt4/
 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-add_dependencies(maintainer-upload-release-docs doxygen-doc _maintainer-upload-release-check)
+
+if (PERL_FOUND)
+    add_dependencies(maintainer-upload-release-docs maintainer-fix-qt-links-in-docs)
+else (PERL_FOUND)
+    add_dependencies(maintainer-upload-release-docs doxygen-doc _maintainer-upload-release-check)
+endif (PERL_FOUND)
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/maintainer-upload-release-check.sh "
 #!/bin/sh
