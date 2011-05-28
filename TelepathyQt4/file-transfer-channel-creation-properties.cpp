@@ -24,8 +24,11 @@
 
 #include <TelepathyQt4/Global>
 
+#include "TelepathyQt4/debug-internal.h"
+
 #include <QSharedData>
 #include <QFileInfo>
+#include <QUrl>
 
 namespace Tp
 {
@@ -40,6 +43,26 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : 
     {
         QFileInfo fileInfo(suggestedFileName);
         this->suggestedFileName = fileInfo.fileName();
+    }
+
+    Private(const QString &path, const QString &contentType)
+        : contentType(contentType),
+          contentHashType(FileHashTypeNone)
+    {
+        QFileInfo fileInfo(path);
+
+        if (fileInfo.exists()) {
+            // Set mandatory parameters
+            suggestedFileName = fileInfo.fileName();
+            size = fileInfo.size();
+            QUrl fileUri = QUrl::fromLocalFile(fileInfo.canonicalFilePath());
+            uri = fileUri.toString();
+
+            // Set optional parameters
+            lastModificationTime = fileInfo.lastModified();
+        } else {
+            warning() << path << "is not a local file.";
+        }
     }
 
     /* mandatory parameters */
@@ -73,6 +96,15 @@ FileTransferChannelCreationProperties::FileTransferChannelCreationProperties(
         qulonglong size)
     : mPriv(new Private(suggestedFileName, contentType, size))
 {
+}
+
+FileTransferChannelCreationProperties::FileTransferChannelCreationProperties(
+        const QString &path, const QString &contentType)
+    : mPriv(new Private(path, contentType))
+{
+    if (mPriv->suggestedFileName.isEmpty()) {
+        mPriv = QSharedDataPointer<Private>(NULL);
+    }
 }
 
 FileTransferChannelCreationProperties::FileTransferChannelCreationProperties(

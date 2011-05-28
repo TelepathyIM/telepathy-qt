@@ -44,6 +44,8 @@ public:
     FileTransferChannelCreationProperties();
     FileTransferChannelCreationProperties(const QString &suggestedFileName,
             const QString &contentType, qulonglong size);
+    FileTransferChannelCreationProperties(const QString &path,
+            const QString &contentType);
     FileTransferChannelCreationProperties(
             const FileTransferChannelCreationProperties &other);
     ~FileTransferChannelCreationProperties();
