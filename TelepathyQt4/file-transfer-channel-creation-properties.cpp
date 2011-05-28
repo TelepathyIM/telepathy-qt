@@ -25,6 +25,7 @@
 #include <TelepathyQt4/Global>
 
 #include <QSharedData>
+#include <QFileInfo>
 
 namespace Tp
 {
@@ -33,13 +34,14 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : 
 {
     Private(const QString &suggestedFileName, const QString &contentType,
             qulonglong size)
-        : suggestedFileName(suggestedFileName),
-          contentType(contentType),
+        : contentType(contentType),
           size(size),
           hasContentHash(false), contentHashType(FileHashTypeNone),
           hasDescription(false),
           hasLastModificationTime(false)
     {
+        QFileInfo fileInfo(suggestedFileName);
+        this->suggestedFileName = fileInfo.fileName();
     }
 
     /* mandatory parameters */

@@ -217,9 +217,8 @@ QVariantMap fileTransferCommonRequest(const Tp::FileTransferChannelCreationPrope
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
 
-    QFileInfo fileInfo(properties.suggestedFileName());
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
-                   fileInfo.fileName());
+                   properties.suggestedFileName());
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
                    properties.contentType());
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
