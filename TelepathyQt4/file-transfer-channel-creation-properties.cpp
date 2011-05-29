@@ -36,9 +36,7 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : 
             qulonglong size)
         : contentType(contentType),
           size(size),
-          hasContentHash(false), contentHashType(FileHashTypeNone),
-          hasDescription(false),
-          hasLastModificationTime(false)
+          contentHashType(FileHashTypeNone)
     {
         QFileInfo fileInfo(suggestedFileName);
         this->suggestedFileName = fileInfo.fileName();
@@ -50,14 +48,9 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : 
     qulonglong size;
 
     /* optional parameters */
-    bool hasContentHash;
     FileHashType contentHashType;
     QString contentHash;
-
-    bool hasDescription;
     QString description;
-
-    bool hasLastModificationTime;
     QDateTime lastModificationTime;
 };
 
@@ -114,7 +107,6 @@ FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::se
         return *this;
     }
 
-    mPriv->hasContentHash = (contentHashType != FileHashTypeNone);
     mPriv->contentHashType = contentHashType;
     mPriv->contentHash = contentHash;
     return *this;
@@ -129,7 +121,6 @@ FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::se
         return *this;
     }
 
-    mPriv->hasDescription = (!description.isEmpty());
     mPriv->description = description;
     return *this;
 }
@@ -143,7 +134,6 @@ FileTransferChannelCreationProperties &FileTransferChannelCreationProperties::se
         return *this;
     }
 
-    mPriv->hasLastModificationTime = (lastModificationTime.isValid());
     mPriv->lastModificationTime = lastModificationTime;
     return *this;
 }
@@ -181,7 +171,7 @@ bool FileTransferChannelCreationProperties::hasContentHash() const
         return false;
     }
 
-    return mPriv->hasContentHash;
+    return (mPriv->contentHashType != FileHashTypeNone);
 }
 
 FileHashType FileTransferChannelCreationProperties::contentHashType() const
@@ -208,7 +198,7 @@ bool FileTransferChannelCreationProperties::hasDescription() const
         return false;
     }
 
-    return mPriv->hasDescription;
+    return (!mPriv->description.isEmpty());
 }
 
 QString FileTransferChannelCreationProperties::description() const
@@ -226,7 +216,7 @@ bool FileTransferChannelCreationProperties::hasLastModificationTime() const
         return false;
     }
 
-    return mPriv->hasLastModificationTime;
+    return (mPriv->lastModificationTime.isValid());
 }
 
 QDateTime FileTransferChannelCreationProperties::lastModificationTime() const
