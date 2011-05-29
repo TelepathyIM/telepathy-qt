@@ -51,6 +51,7 @@ public:
     QString fileName() const;
     QString contentType() const;
     qulonglong size() const;
+    QString uri() const;
 
     FileHashType contentHashType() const;
     QString contentHash() const;
@@ -92,6 +93,9 @@ private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onStateChanged(uint state, uint stateReason);
     TELEPATHY_QT4_NO_EXPORT void onInitialOffsetDefined(qulonglong initialOffset);
     TELEPATHY_QT4_NO_EXPORT void onTransferredBytesChanged(qulonglong count);
+
+protected Q_SLOTS:
+    TELEPATHY_QT4_NO_EXPORT void onUriDefined(const QString &uri);
 
 private:
     struct Private;
