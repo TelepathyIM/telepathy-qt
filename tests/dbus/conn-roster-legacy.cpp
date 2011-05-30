@@ -37,6 +37,10 @@ public:
 protected Q_SLOTS:
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
+    void expectBlockingContactsFinished(Tp::PendingOperation *op);
+    void expectBlockStatusChanged(bool blocked);
+    void expectBlockedContactsChanged(const Tp::Contacts &added, const Tp::Contacts &removed,
+            const Tp::Channel::GroupMemberChangeDetails &details);
     void expectPresenceStateChanged(Tp::Contact::PresenceState);
     void expectAllKnownContactsChanged(const Tp::Contacts &added, const Tp::Contacts &removed,
             const Tp::Channel::GroupMemberChangeDetails &details);
@@ -55,6 +59,8 @@ private:
     ExampleContactListConnection *mConnService;
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
+    QSet<QString> mContactsExpectingBlockStatusChange;
+    bool mBlockingContactsFinished;
     int mHowManyKnownContacts;
     bool mGotPresenceStateChanged;
 };
@@ -90,6 +96,68 @@ void TestConnRosterLegacy::expectPendingContactsFinished(PendingOperation *op)
     mContacts = pending->contacts();
 
     mLoop->exit(0);
+}
+
+void TestConnRosterLegacy::expectBlockingContactsFinished(Tp::PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    qDebug() << "blocking contacts finished";
+    mBlockingContactsFinished = true;
+
+    if (mContactsExpectingBlockStatusChange.isEmpty()) {
+        mLoop->exit(0);
+    }
+}
+
+void TestConnRosterLegacy::expectBlockStatusChanged(bool blocked)
+{
+    Q_UNUSED(blocked);
+
+    Contact *c = qobject_cast<Contact*>(sender());
+    QVERIFY(c);
+
+    ContactPtr contact(c);
+    mContactsExpectingBlockStatusChange.remove(contact->id());
+
+    if (mContactsExpectingBlockStatusChange.isEmpty() && mBlockingContactsFinished) {
+        mLoop->exit(0);
+    }
+}
+
+// This connects to allKnownContactsChanged() but it is only used in the last contact blocking test
+void TestConnRosterLegacy::expectBlockedContactsChanged(const Tp::Contacts &added,
+        const Tp::Contacts &removed, const Tp::Channel::GroupMemberChangeDetails &details)
+{
+    Q_UNUSED(details);
+
+    Q_FOREACH(const ContactPtr &contact, added) {
+        mContactsExpectingBlockStatusChange.remove(contact->id());
+    }
+    Q_FOREACH(const ContactPtr &contact, removed) {
+        mContactsExpectingBlockStatusChange.remove(contact->id());
+    }
+
+    if (mContactsExpectingBlockStatusChange.isEmpty() && mBlockingContactsFinished) {
+        mLoop->exit(0);
+    }
 }
 
 void TestConnRosterLegacy::expectAllKnownContactsChanged(const Tp::Contacts& added, const Tp::Contacts& removed,
@@ -188,7 +256,9 @@ void TestConnRosterLegacy::testRoster()
         QLatin1String("helen@example.com") <<
         QLatin1String("geraldine@example.com") <<
         QLatin1String("guillaume@example.com") <<
-        QLatin1String("christian@example.com");
+        QLatin1String("christian@example.com") <<
+        QLatin1String("bill@example.com") <<
+        QLatin1String("steve@example.com");
     QStringList ids;
     QList<ContactPtr> pendingSubscription;
     QList<ContactPtr> pendingPublish;
@@ -341,6 +411,160 @@ void TestConnRosterLegacy::testRoster()
 
         // allKnownContacts is supposed to change here.
         QCOMPARE(mLoop->exec(), 0);
+    }
+
+
+    QVERIFY(disconnect(mConn->contactManager().data(),
+                       SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts,
+                              Tp::Channel::GroupMemberChangeDetails)),
+                       this,
+                       SLOT(expectAllKnownContactsChanged(Tp::Contacts,Tp::Contacts,
+                            Tp::Channel::GroupMemberChangeDetails))));
+
+    // verify that the CM supports contact blocking
+    QVERIFY(mConn->contactManager()->canBlockContacts());
+
+    // check if the initially blocked contacts are there
+    ids.clear();
+    toCheck = QStringList() <<
+        QLatin1String("bill@example.com") <<
+        QLatin1String("steve@example.com");
+    Q_FOREACH (const ContactPtr &contact, mConn->contactManager()->allKnownContacts()) {
+        if (contact->isBlocked()) {
+            qDebug() << "blocked contact:" << contact->id();
+            ids << contact->id();
+        }
+    }
+    ids.sort();
+    toCheck.sort();
+    QCOMPARE(ids, toCheck);
+
+    // block all contacts
+    QList<ContactPtr> contactsList = mConn->contactManager()->allKnownContacts().toList();
+    QSet<QString> contactIdsList;
+    Q_FOREACH (const ContactPtr &contact, contactsList) {
+        QVERIFY(connect(contact.data(),
+                        SIGNAL(blockStatusChanged(bool)),
+                        SLOT(expectBlockStatusChanged(bool))));
+        contactIdsList.insert(contact->id());
+    }
+
+    mBlockingContactsFinished = false;
+    mContactsExpectingBlockStatusChange = contactIdsList;
+
+    // those are already blocked; do not expect their status to change
+    mContactsExpectingBlockStatusChange.remove(QLatin1String("bill@example.com"));
+    mContactsExpectingBlockStatusChange.remove(QLatin1String("steve@example.com"));
+
+    QVERIFY(connect(mConn->contactManager()->blockContacts(contactsList),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // verify all contacts have been blocked
+    Q_FOREACH (const ContactPtr &contact, contactsList) {
+        QCOMPARE(contact->isBlocked(), true);
+        QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
+    }
+
+    // now remove kctest1 from the server
+    ContactPtr kctest1;
+    Q_FOREACH (const ContactPtr &contact, contactsList) {
+        if (contact->id() == QLatin1String("kctest1@example.com")) {
+            kctest1 = contact;
+        }
+    }
+    QVERIFY(!kctest1.isNull());
+    QVERIFY(connect(mConn->contactManager()->removeContacts(QList<ContactPtr>() << kctest1),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    mLoop, SLOT(quit())));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // allKnownContacts must still contain kctest1, since it is in the deny list
+    QVERIFY(mConn->contactManager()->allKnownContacts().contains(kctest1));
+    kctest1.reset(); //no longer needed
+
+    // unblock all contacts
+    mBlockingContactsFinished = false;
+    mContactsExpectingBlockStatusChange = contactIdsList;
+
+    QVERIFY(connect(mConn->contactManager()->unblockContacts(contactsList),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // verify all contacts have been unblocked
+    Q_FOREACH (const ContactPtr &contact, contactsList) {
+        QCOMPARE(contact->isBlocked(), false);
+
+        // ...and that bill, steve and kctest1 have also been removed from allKnownContacts()
+        // note: allKnownContacts() changes here because bill, steve and kctest,
+        // which were only in the deny list, do not exist in any other list, so
+        // they are removed as soon as they get unblocked.
+        if (contact->id() == QLatin1String("bill@example.com") ||
+            contact->id() == QLatin1String("steve@example.com") ||
+            contact->id() == QLatin1String("kctest1@example.com")) {
+            QVERIFY(!mConn->contactManager()->allKnownContacts().contains(contact));
+        } else {
+            QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
+        }
+    }
+
+    // block some contacts that are not already known
+    ids = QStringList() <<
+        QLatin1String("blocktest1@example.com") <<
+        QLatin1String("blocktest2@example.com");
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Watch changes in allKnownContacts() instead of watching the Contacts' block status
+    // as we want to destroy the Contact objects and verify that they are being re-created correctly
+    QVERIFY(connect(mConn->contactManager().data(),
+                    SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts,
+                            Tp::Channel::GroupMemberChangeDetails)),
+                    SLOT(expectBlockedContactsChanged(Tp::Contacts,Tp::Contacts,
+                            Tp::Channel::GroupMemberChangeDetails))));
+
+    mBlockingContactsFinished = false;
+    mContactsExpectingBlockStatusChange = ids.toSet();
+
+    QVERIFY(connect(mConn->contactManager()->blockContacts(mContacts),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
+
+    // destroy the Contact objects to let them be re-created when the block operation finishes
+    mContacts.clear();
+    QCOMPARE(mLoop->exec(), 0);
+
+    // construct the same contacts again and verify that they are blocked
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    Q_FOREACH (const ContactPtr &contact, mContacts) {
+        QCOMPARE(contact->isBlocked(), true);
+        QVERIFY(mConn->contactManager()->allKnownContacts().contains(contact));
+    }
+
+    // now unblock them again
+    mBlockingContactsFinished = false;
+    mContactsExpectingBlockStatusChange = ids.toSet();
+
+    QVERIFY(connect(mConn->contactManager()->unblockContacts(mContacts),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectBlockingContactsFinished(Tp::PendingOperation*))));
+
+    // note: allKnownContacts() is expected to change again, so we expect
+    // to quit from expectBlockedContactsChanged()
+    QCOMPARE(mLoop->exec(), 0);
+
+    // and verify that they are not in allKnownContacts()
+    Q_FOREACH (const ContactPtr &contact, mContacts) {
+        QCOMPARE(contact->isBlocked(), false);
+        QVERIFY(!mConn->contactManager()->allKnownContacts().contains(contact));
     }
 }
 

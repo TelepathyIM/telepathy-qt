@@ -166,10 +166,14 @@ list_constructed (GObject *object)
           TP_CHANNEL_GROUP_FLAG_CAN_REMOVE, 0);
       break;
     case EXAMPLE_CONTACT_LIST_STORED:
+    case EXAMPLE_CONTACT_LIST_DENY:
       /* We can add people to our roster (not that that's very useful without
        * also adding them to subscribe), and we can remove them altogether
        * (which implicitly removes them from subscribe, publish, and all
        * user-defined groups).
+       *
+       * Similarly, we can block and unblock people (i.e. add/remove them
+       * to/from the deny list)
        */
       tp_group_mixin_change_flags (object,
           TP_CHANNEL_GROUP_FLAG_CAN_ADD | TP_CHANNEL_GROUP_FLAG_CAN_REMOVE, 0);

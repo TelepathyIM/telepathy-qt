@@ -294,7 +294,11 @@ void RosterWidget::onBlockActionTriggered(bool checked)
 
     Q_ASSERT(selectedItems.size() == 1);
     RosterItem *item = dynamic_cast<RosterItem*>(selectedItems.first());
-    item->contact()->block(checked);
+    if (checked) {
+        item->contact()->block();
+    } else {
+        item->contact()->unblock();
+    }
 }
 
 void RosterWidget::onContactRetrieved(Tp::PendingOperation *op)

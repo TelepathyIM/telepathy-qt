@@ -151,7 +151,10 @@ public:
      * Filter on being blocked or not
      */
     bool isBlocked() const;
-    PendingOperation *block(bool value = true);
+    TELEPATHY_QT4_DEPRECATED PendingOperation *block(bool value);
+    PendingOperation *block();
+    PendingOperation *blockAndReportAbuse();
+    PendingOperation *unblock();
 
     /*
      * Filter on the groups they're in - to show a specific group only

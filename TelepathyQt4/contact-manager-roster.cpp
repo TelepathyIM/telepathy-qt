@@ -33,6 +33,7 @@
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingHandles>
+#include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/PendingVariantMap>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReferencedHandles>
@@ -44,10 +45,13 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
     : QObject(),
       contactManager(contactManager),
       usingFallbackContactList(false),
+      hasContactBlockingInterface(false),
       introspectPendingOp(0),
       introspectGroupsPendingOp(0),
       pendingContactListState((uint) -1),
       contactListState((uint) -1),
+      canReportAbusive(false),
+      gotContactBlockingInitialBlockedContacts(false),
       canChangeContactList(false),
       contactListRequestUsesMessage(false),
       gotContactListInitialContacts(false),
@@ -79,17 +83,26 @@ PendingOperation *ContactManager::Roster::introspect()
 
         usingFallbackContactList = false;
 
-        debug() << "Requesting handle for deny channel";
+        if (conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_BLOCKING)) {
+            debug() << "Connection.ContactBlocking found. using it";
+            hasContactBlockingInterface = true;
+            introspectContactBlocking();
+        } else {
+            debug() << "Connection.ContactBlocking not found, falling back "
+                "to contact list deny channel";
 
-        contactListChannels.insert(ChannelInfo::TypeDeny,
-                ChannelInfo(ChannelInfo::TypeDeny));
+            debug() << "Requesting handle for deny channel";
 
-        PendingHandles *ph = conn->lowlevel()->requestHandles(HandleTypeList,
-                QStringList() << ChannelInfo::identifierForType(
-                    ChannelInfo::TypeDeny));
-        connect(ph,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(gotContactListChannelHandle(Tp::PendingOperation*)));
+            contactListChannels.insert(ChannelInfo::TypeDeny,
+                    ChannelInfo(ChannelInfo::TypeDeny));
+
+            PendingHandles *ph = conn->lowlevel()->requestHandles(HandleTypeList,
+                    QStringList() << ChannelInfo::identifierForType(
+                        ChannelInfo::TypeDeny));
+            connect(ph,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(gotContactListChannelHandle(Tp::PendingOperation*)));
+        }
     } else {
         debug() << "Connection.ContactList not found, falling back to contact list channels";
 
@@ -619,25 +632,136 @@ PendingOperation *ContactManager::Roster::removeContacts(
 
 bool ContactManager::Roster::canBlockContacts() const
 {
-    return (bool) denyChannel;
+    if (!usingFallbackContactList && hasContactBlockingInterface) {
+        return true;
+    } else {
+        return (bool) denyChannel;
+    }
+}
+
+bool ContactManager::Roster::canReportAbuse() const
+{
+    return canReportAbusive;
 }
 
 PendingOperation *ContactManager::Roster::blockContacts(
-        const QList<ContactPtr> &contacts, bool value)
+        const QList<ContactPtr> &contacts, bool value, bool reportAbuse)
 {
-    ConnectionPtr conn(contactManager->connection());
-
-    if (!denyChannel) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Cannot block contacts on this protocol"),
-                conn);
+    if (!contactManager->connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection is invalid"),
+                contactManager->connection());
+    } else if (!contactManager->connection()->isReady(Connection::FeatureRoster)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRoster is not ready"),
+                contactManager->connection());
     }
 
-    if (value) {
-        return denyChannel->groupAddContacts(contacts);
+    if (!usingFallbackContactList && hasContactBlockingInterface) {
+        ConnectionPtr conn(contactManager->connection());
+        Client::ConnectionInterfaceContactBlockingInterface *iface =
+            conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
+
+        UIntList handles;
+        foreach (const ContactPtr &contact, contacts) {
+            handles << contact->handle()[0];
+        }
+
+        Q_ASSERT(iface);
+        if(value) {
+            return queuedFinishVoid(iface->BlockContacts(handles, reportAbuse));
+        } else {
+            return queuedFinishVoid(iface->UnblockContacts(handles));
+        }
+
     } else {
-        return denyChannel->groupRemoveContacts(contacts);
+        ConnectionPtr conn(contactManager->connection());
+
+        if (!denyChannel) {
+            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                    QLatin1String("Cannot block contacts on this protocol"),
+                    conn);
+        }
+
+        if (value) {
+            return denyChannel->groupAddContacts(contacts);
+        } else {
+            return denyChannel->groupRemoveContacts(contacts);
+        }
     }
+}
+
+void ContactManager::Roster::gotContactBlockingCapabilities(PendingOperation *op)
+{
+    if (op->isError()) {
+        warning() << "Getting ContactBlockingCapabilities property failed with" <<
+            op->errorName() << ":" << op->errorMessage();
+        introspectContactList();
+        return;
+    }
+
+    debug() << "Got ContactBlockingCapabilities property";
+
+    PendingVariant *pv = qobject_cast<PendingVariant*>(op);
+
+    uint contactBlockingCaps = pv->result().toUInt();
+    canReportAbusive =
+        contactBlockingCaps & ContactBlockingCapabilityCanReportAbusive;
+
+    introspectContactBlockingBlockedContacts();
+}
+
+void ContactManager::Roster::gotContactBlockingBlockedContacts(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<HandleIdentifierMap> reply = *watcher;
+
+    if (watcher->isError()) {
+        warning() << "Getting initial ContactBlocking blocked "
+            "contacts failed with" <<
+            watcher->error().name() << ":" << watcher->error().message();
+        introspectContactList();
+        return;
+    }
+
+    debug() << "Got initial ContactBlocking blocked contacts";
+
+    gotContactBlockingInitialBlockedContacts = true;
+
+    ConnectionPtr conn(contactManager->connection());
+    HandleIdentifierMap contactIds = reply.value();
+
+    if (!contactIds.isEmpty()) {
+        conn->lowlevel()->injectContactIds(contactIds);
+
+        //fake change event where all the contacts are added
+        contactListBlockedContactsChangedQueue.enqueue(
+                BlockedContactsChangedInfo(contactIds, HandleIdentifierMap(), true));
+        contactListChangesQueue.enqueue(
+                &ContactManager::Roster::processContactListBlockedContactsChanged);
+        processContactListChanges();
+    } else {
+        introspectContactList();
+    }
+}
+
+void ContactManager::Roster::onContactBlockingBlockedContactsChanged(
+        const HandleIdentifierMap &added,
+        const HandleIdentifierMap &removed)
+{
+    if (!gotContactBlockingInitialBlockedContacts) {
+        return;
+    }
+
+    ConnectionPtr conn(contactManager->connection());
+    conn->lowlevel()->injectContactIds(added);
+    conn->lowlevel()->injectContactIds(removed);
+
+    contactListBlockedContactsChangedQueue.enqueue(
+            BlockedContactsChangedInfo(added, removed));
+    contactListChangesQueue.enqueue(
+            &ContactManager::Roster::processContactListBlockedContactsChanged);
+    processContactListChanges();
 }
 
 void ContactManager::Roster::gotContactListProperties(PendingOperation *op)
@@ -704,6 +828,7 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
                     HandleTypeContact, UIntList() << bareHandle),
                 conn->contactFactory()->features(), attrs);
         cachedAllKnownContacts.insert(contact);
+        contactListContacts.insert(contact);
     }
 
     if (contactManager->connection()->requestedFeatures().contains(
@@ -825,6 +950,68 @@ void ContactManager::Roster::onContactListContactsChanged(const Tp::ContactSubsc
     processContactListChanges();
 }
 
+void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::PendingOperation *op)
+{
+    BlockedContactsChangedInfo info = contactListBlockedContactsChangedQueue.dequeue();
+
+    if (op->isError()) {
+        if (info.continueIntrospectionWhenFinished) {
+            introspectContactList();
+        }
+        processingContactListChanges = false;
+        processContactListChanges();
+        return;
+    }
+
+    Contacts newBlockedContacts;
+    Contacts unblockedContacts;
+
+    HandleIdentifierMap::const_iterator begin = info.added.constBegin();
+    HandleIdentifierMap::const_iterator end = info.added.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+
+        ContactPtr contact = contactManager->lookupContactByHandle(bareHandle);
+        if (!contact) {
+            warning() << "Unable to construct contact for handle" << bareHandle;
+            continue;
+        }
+
+        debug() << "Contact" << contact->id() << "is now blocked";
+        blockedContacts.insert(contact);
+        newBlockedContacts.insert(contact);
+        contact->setBlocked(true);
+    }
+
+    begin = info.removed.constBegin();
+    end = info.removed.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+
+        ContactPtr contact = contactManager->lookupContactByHandle(bareHandle);
+        if (!contact) {
+            warning() << "Unable to construct contact for handle" << bareHandle;
+            continue;
+        }
+
+        debug() << "Contact" << contact->id() << "is now unblocked";
+        blockedContacts.remove(contact);
+        unblockedContacts.insert(contact);
+        contact->setBlocked(false);
+    }
+
+    // Perform the needed computation for allKnownContactsChanged
+    computeKnownContactsChanges(newBlockedContacts, Contacts(),
+            Contacts(), unblockedContacts, Channel::GroupMemberChangeDetails());
+
+    if (info.continueIntrospectionWhenFinished) {
+        introspectContactList();
+    }
+
+    processingContactListChanges = false;
+    processContactListChanges();
+}
+
 void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOperation *op)
 {
     if (op->isError()) {
@@ -853,10 +1040,8 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             continue;
         }
 
-        if (!cachedAllKnownContacts.contains(contact)) {
-            cachedAllKnownContacts.insert(contact);
-            added << contact;
-        }
+        contactListContacts.insert(contact);
+        added << contact;
 
         Contact::PresenceState oldContactPublishState = contact->publishState();
         QString oldContactPublishStateMessage = contact->publishStateMessage();
@@ -891,20 +1076,18 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             continue;
         }
 
-        if (!cachedAllKnownContacts.contains(contact)) {
-            warning() << "Contact" << contact->id() << "removed from ContactList but not cached, "
-                "ignoring.";
+        if (!contactListContacts.contains(contact)) {
+            warning() << "Contact" << contact->id() << "removed from ContactList "
+                "but it wasn't present, ignoring.";
             continue;
         }
 
-        cachedAllKnownContacts.remove(contact);
+        contactListContacts.remove(contact);
         removed << contact;
     }
 
-    if (!added.isEmpty() || !removed.isEmpty()) {
-        emit contactManager->allKnownContactsChanged(added, removed,
-                Channel::GroupMemberChangeDetails());
-    }
+    computeKnownContactsChanges(added, Contacts(), Contacts(),
+            removed, Channel::GroupMemberChangeDetails());
 
     foreach (const Tp::ContactPtr &contact, removed) {
         contact->setSubscriptionState(SubscriptionStateNo);
@@ -1075,6 +1258,10 @@ void ContactManager::Roster::onContactListChannelReady()
         setContactListChannelsReady();
 
         updateContactsBlockState();
+
+        if (denyChannel) {
+            cachedAllKnownContacts.unite(denyChannel->groupContacts());
+        }
 
         introspectContactList();
     } else if (++contactListChannelsReady == ChannelInfo::LastType) {
@@ -1385,6 +1572,10 @@ void ContactManager::Roster::onDenyChannelMembersChanged(
         debug() << "Contact" << contact->id() << "removed from deny list";
         contact->setBlocked(false);
     }
+
+    // Perform the needed computation for allKnownContactsChanged
+    computeKnownContactsChanges(groupMembersAdded, Contacts(),
+            Contacts(), groupMembersRemoved, details);
 }
 
 void ContactManager::Roster::onContactListGroupMembersChanged(
@@ -1427,6 +1618,41 @@ void ContactManager::Roster::onContactListGroupRemoved(Tp::DBusProxy *proxy,
     removedContactListGroupChannels.append(contactListGroupChannel);
     disconnect(contactListGroupChannel.data(), 0, 0, 0);
     emit contactManager->groupRemoved(id);
+}
+
+void ContactManager::Roster::introspectContactBlocking()
+{
+    debug() << "Requesting ContactBlockingCapabilities property";
+
+    ConnectionPtr conn(contactManager->connection());
+
+    Client::ConnectionInterfaceContactBlockingInterface *iface =
+        conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
+
+    PendingVariant *pv = iface->requestPropertyContactBlockingCapabilities();
+    connect(pv,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotContactBlockingCapabilities(Tp::PendingOperation*)));
+}
+
+void ContactManager::Roster::introspectContactBlockingBlockedContacts()
+{
+    ConnectionPtr conn(contactManager->connection());
+
+    Client::ConnectionInterfaceContactBlockingInterface *iface =
+        conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
+
+    Q_ASSERT(iface);
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            iface->RequestBlockedContacts(), contactManager);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotContactBlockingBlockedContacts(QDBusPendingCallWatcher*)));
+
+    connect(iface,
+            SIGNAL(BlockedContactsChanged(Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)),
+            SLOT(onContactBlockingBlockedContactsChanged(Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)));
 }
 
 void ContactManager::Roster::introspectContactList()
@@ -1489,6 +1715,35 @@ void ContactManager::Roster::processContactListChanges()
 
     processingContactListChanges = true;
     (this->*(contactListChangesQueue.dequeue()))();
+}
+
+void ContactManager::Roster::processContactListBlockedContactsChanged()
+{
+    BlockedContactsChangedInfo info = contactListBlockedContactsChangedQueue.head();
+
+    UIntList contacts;
+    HandleIdentifierMap::const_iterator begin = info.added.constBegin();
+    HandleIdentifierMap::const_iterator end = info.added.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+        contacts << bareHandle;
+    }
+
+    begin = info.removed.constBegin();
+    end = info.removed.constEnd();
+    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+        uint bareHandle = i.key();
+        contacts << bareHandle;
+    }
+
+    Features features;
+    if (contactManager->connection()->isReady(Connection::FeatureRosterGroups)) {
+        features << Contact::FeatureRosterGroups;
+    }
+    PendingContacts *pc = contactManager->contactsForHandles(contacts, features);
+    connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContactListBlockedContactsConstructed(Tp::PendingOperation*)));
 }
 
 void ContactManager::Roster::processContactListUpdates()
@@ -1699,6 +1954,8 @@ void ContactManager::Roster::setContactListChannelsReady()
 
 void ContactManager::Roster::updateContactsBlockState()
 {
+    Q_ASSERT(!hasContactBlockingInterface);
+
     if (!denyChannel) {
         return;
     }
@@ -1780,6 +2037,10 @@ void ContactManager::Roster::computeKnownContactsChanges(const Tp::Contacts& add
         realRemoved.subtract(channel->groupLocalPendingContacts());
         realRemoved.subtract(channel->groupRemotePendingContacts());
     }
+
+    // ...and from the Conn.I.ContactList / Conn.I.ContactBlocking contacts
+    realRemoved.subtract(contactListContacts);
+    realRemoved.subtract(blockedContacts);
 
     // Are there any real changes?
     if (!realAdded.isEmpty() || !realRemoved.isEmpty()) {

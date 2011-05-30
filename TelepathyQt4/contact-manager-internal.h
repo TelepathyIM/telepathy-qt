@@ -87,18 +87,26 @@ public:
             const QList<ContactPtr> &contacts, const QString &message);
 
     bool canBlockContacts() const;
-    PendingOperation *blockContacts(const QList<ContactPtr> &contacts, bool value);
+    bool canReportAbuse() const;
+    PendingOperation *blockContacts(const QList<ContactPtr> &contacts, bool value, bool reportAbuse);
 
 private Q_SLOTS:
+    void gotContactBlockingCapabilities(Tp::PendingOperation *op);
+    void gotContactBlockingBlockedContacts(QDBusPendingCallWatcher *watcher);
+    void onContactBlockingBlockedContactsChanged(
+            const Tp::HandleIdentifierMap &added,
+            const Tp::HandleIdentifierMap &removed);
+
     void gotContactListProperties(Tp::PendingOperation *op);
     void gotContactListContacts(QDBusPendingCallWatcher *watcher);
+    void setStateSuccess();
     void onContactListStateChanged(uint state);
     void onContactListContactsChangedWithId(const Tp::ContactSubscriptionMap &changes,
             const Tp::HandleIdentifierMap &ids, const Tp::HandleIdentifierMap &removals);
     void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
             const Tp::UIntList &removals);
-    void setStateSuccess();
 
+    void onContactListBlockedContactsConstructed(Tp::PendingOperation *op);
     void onContactListNewContactsConstructed(Tp::PendingOperation *op);
     void onContactListGroupsChanged(const Tp::UIntList &contacts,
             const QStringList &added, const QStringList &removed);
@@ -156,15 +164,19 @@ private Q_SLOTS:
 
 private:
     struct ChannelInfo;
+    struct BlockedContactsChangedInfo;
     struct UpdateInfo;
     struct GroupsUpdateInfo;
     struct GroupRenamedInfo;
     class ModifyFinishOp;
     class RemoveGroupOp;
 
+    void introspectContactBlocking();
+    void introspectContactBlockingBlockedContacts();
     void introspectContactList();
     void introspectContactListContacts();
     void processContactListChanges();
+    void processContactListBlockedContactsChanged();
     void processContactListUpdates();
     void processContactListGroupsUpdates();
     void processContactListGroupsCreated();
@@ -187,11 +199,14 @@ private:
     Contacts cachedAllKnownContacts;
 
     bool usingFallbackContactList;
+    bool hasContactBlockingInterface;
 
     PendingOperation *introspectPendingOp;
     PendingOperation *introspectGroupsPendingOp;
     uint pendingContactListState;
     uint contactListState;
+    bool canReportAbusive;
+    bool gotContactBlockingInitialBlockedContacts;
     bool canChangeContactList;
     bool contactListRequestUsesMessage;
     bool gotContactListInitialContacts;
@@ -200,6 +215,7 @@ private:
     QSet<QString> cachedAllKnownGroups;
     bool contactListGroupPropertiesReceived;
     QQueue<void (ContactManager::Roster::*)()> contactListChangesQueue;
+    QQueue<BlockedContactsChangedInfo> contactListBlockedContactsChangedQueue;
     QQueue<UpdateInfo> contactListUpdatesQueue;
     QQueue<GroupsUpdateInfo> contactListGroupsUpdatesQueue;
     QQueue<QStringList> contactListGroupsCreatedQueue;
@@ -227,6 +243,11 @@ private:
 
     // If RosterGroups introspection completing should advance the ContactManager state to Success
     bool groupsSetSuccess;
+
+    // Contact list contacts using the Conn.I.ContactList API
+    Contacts contactListContacts;
+    // Blocked contacts using the new ContactBlocking API
+    Contacts blockedContacts;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
@@ -255,6 +276,22 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
     Type type;
     ReferencedHandles handle;
     ChannelPtr channel;
+};
+
+struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInfo
+{
+    BlockedContactsChangedInfo(const HandleIdentifierMap &added,
+            const HandleIdentifierMap &removed,
+            bool continueIntrospectionWhenFinished = false)
+        : added(added),
+          removed(removed),
+          continueIntrospectionWhenFinished(continueIntrospectionWhenFinished)
+    {
+    }
+
+    HandleIdentifierMap added;
+    HandleIdentifierMap removed;
+    bool continueIntrospectionWhenFinished;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::UpdateInfo

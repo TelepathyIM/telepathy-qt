@@ -755,6 +755,20 @@ bool ContactManager::canBlockContacts() const
 }
 
 /**
+ * Return whether this protocol can report abusive contacts.
+ *
+ * \return Whether reporting abuse when blocking contacts is supported.
+ */
+bool ContactManager::canReportAbuse() const
+{
+    if (!connection()->isReady(Connection::FeatureRoster)) {
+        return false;
+    }
+
+    return mPriv->roster->canReportAbuse();
+}
+
+/**
  * Set whether the given contacts are blocked. Blocked contacts cannot send
  * messages to the user; depending on the protocol, blocking a contact may
  * have other effects.
@@ -762,26 +776,69 @@ bool ContactManager::canBlockContacts() const
  * This method requires Connection::FeatureRoster to be ready.
  *
  * \param contacts Contacts who should be added to, or removed from, the list
- *                 of blocked contacts
- * \param value If true, add the contacts to the list of blocked contacts;
- *              if false, remove them from the list
- * \return A pending operation which will return when an attempt has been made
- *         to take the requested action
+ *                 of blocked contacts.
+ * \param value If \c true, add the contacts to the list of blocked contacts;
+ *              otherwise remove them from the list.
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
+ * \sa canBlockContacts()
  */
 PendingOperation *ContactManager::blockContacts(
         const QList<ContactPtr> &contacts, bool value)
 {
-    if (!connection()->isValid()) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Connection is invalid"),
-                connection());
-    } else if (!connection()->isReady(Connection::FeatureRoster)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Connection::FeatureRoster is not ready"),
-                connection());
-    }
+    return mPriv->roster->blockContacts(contacts, value, false);
+}
 
-    return mPriv->roster->blockContacts(contacts, value);
+/**
+ * Block the given contacts. Blocked contacts cannot send messages
+ * to the user; depending on the protocol, blocking a contact may
+ * have other effects.
+ *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \param contacts Contacts that should be blocked.
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
+ * \sa canBlockContacts(), unblockContacts()
+ */
+PendingOperation *ContactManager::blockContacts(const QList<ContactPtr> &contacts)
+{
+    return mPriv->roster->blockContacts(contacts, true, false);
+}
+
+/**
+ * Block the given contacts and additionally report abusive behaviour
+ * to the server.
+ *
+ * If reporting abusive behaviour is not supported by the protocol,
+ * this method has the same effect as blockContacts().
+ *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \param contacts Contacts who should be added to the list of blocked contacts.
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
+ * \sa canBlockContacts(), canReportAbuse(), blockContacts()
+ */
+PendingOperation *ContactManager::blockContactsAndReportAbuse(
+        const QList<ContactPtr> &contacts)
+{
+    return mPriv->roster->blockContacts(contacts, true, true);
+}
+
+/**
+ * Unblock the given contacts.
+ *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \param contacts Contacts that should be unblocked.
+ * \return A PendingOperation which will return when an attempt has been made
+ *         to take the requested action.
+ * \sa canBlockContacts(), blockContacts()
+ */
+PendingOperation *ContactManager::unblockContacts(const QList<ContactPtr> &contacts)
+{
+    return mPriv->roster->blockContacts(contacts, false, false);
 }
 
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
