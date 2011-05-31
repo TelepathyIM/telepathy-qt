@@ -1240,6 +1240,56 @@ void Channel::Private::processConferenceChannelRemoved()
     }
 }
 
+struct TELEPATHY_QT4_NO_EXPORT Channel::GroupMemberChangeDetails::Private : public QSharedData
+{
+    Private(const ContactPtr &actor, const QVariantMap &details)
+        : actor(actor), details(details) {}
+
+    ContactPtr actor;
+    QVariantMap details;
+};
+
+Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()
+{
+}
+
+Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const GroupMemberChangeDetails &other)
+    : mPriv(other.mPriv)
+{
+}
+
+Channel::GroupMemberChangeDetails::~GroupMemberChangeDetails()
+{
+}
+
+Channel::GroupMemberChangeDetails &Channel::GroupMemberChangeDetails::operator=(
+        const GroupMemberChangeDetails &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+bool Channel::GroupMemberChangeDetails::hasActor() const
+{
+    return isValid() && !mPriv->actor.isNull();
+}
+
+ContactPtr Channel::GroupMemberChangeDetails::actor() const
+{
+    return isValid() ? mPriv->actor : ContactPtr();
+}
+
+QVariantMap Channel::GroupMemberChangeDetails::allDetails() const
+{
+    return isValid() ? mPriv->details : QVariantMap();
+}
+
+Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const ContactPtr &actor,
+        const QVariantMap &details)
+    : mPriv(new Private(actor, details))
+{
+}
+
 /**
  * \class Channel
  * \ingroup clientchannel
@@ -2226,56 +2276,6 @@ Contacts Channel::groupRemotePendingContacts() const
     }
 
     return mPriv->groupRemotePendingContacts.values().toSet();
-}
-
-struct TELEPATHY_QT4_NO_EXPORT Channel::GroupMemberChangeDetails::Private : public QSharedData
-{
-    Private(const ContactPtr &actor, const QVariantMap &details)
-        : actor(actor), details(details) {}
-
-    ContactPtr actor;
-    QVariantMap details;
-};
-
-Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()
-{
-}
-
-Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const GroupMemberChangeDetails &other)
-    : mPriv(other.mPriv)
-{
-}
-
-Channel::GroupMemberChangeDetails::~GroupMemberChangeDetails()
-{
-}
-
-Channel::GroupMemberChangeDetails &Channel::GroupMemberChangeDetails::operator=(
-        const GroupMemberChangeDetails &other)
-{
-    this->mPriv = other.mPriv;
-    return *this;
-}
-
-bool Channel::GroupMemberChangeDetails::hasActor() const
-{
-    return isValid() && !mPriv->actor.isNull();
-}
-
-ContactPtr Channel::GroupMemberChangeDetails::actor() const
-{
-    return isValid() ? mPriv->actor : ContactPtr();
-}
-
-QVariantMap Channel::GroupMemberChangeDetails::allDetails() const
-{
-    return isValid() ? mPriv->details : QVariantMap();
-}
-
-Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const ContactPtr &actor,
-        const QVariantMap &details)
-    : mPriv(new Private(actor, details))
-{
 }
 
 /**
