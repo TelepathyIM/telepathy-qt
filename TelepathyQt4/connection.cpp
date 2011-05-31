@@ -1148,10 +1148,6 @@ Connection::ErrorDetails::ErrorDetails()
 
 /**
  * Construct a error details instance with the given details. The instance will indicate it's valid.
- *
- * This is primarily useful for wrapping lower-level APIs with, like presently
- * Account::connectionErrorDetails() and Account::statusChanged(), neither of which we can
- * compatibly change to return Connection::ErrorDetails yet.
  */
 Connection::ErrorDetails::ErrorDetails(const QVariantMap &details)
     : mPriv(new Private(details))
@@ -1167,7 +1163,7 @@ Connection::ErrorDetails::ErrorDetails(const ErrorDetails &other)
 }
 
 /**
- * Destructs an ErrorDetails instance.
+ * Class destructor.
  */
 Connection::ErrorDetails::~ErrorDetails()
 {
