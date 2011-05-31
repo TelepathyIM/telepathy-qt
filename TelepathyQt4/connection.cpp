@@ -904,6 +904,8 @@ const Feature Connection::FeatureCore = Feature(QLatin1String(Connection::static
  * Feature used to retrieve the connection self contact.
  *
  * See self contact specific methods' documentation for more details.
+ *
+ * \sa selfContact(), selfContactChanged()
  */
 const Feature Connection::FeatureSelfContact = Feature(QLatin1String(Connection::staticMetaObject.className()), 1);
 
@@ -918,6 +920,8 @@ const Feature Connection::FeatureSimplePresence = Feature(QLatin1String(Connecti
  * Feature used to enable roster support on Connection::contactManager.
  *
  * See ContactManager roster specific methods' documentation for more details.
+ *
+ * \sa ContactManager::allKnownContacts()
  */
 const Feature Connection::FeatureRoster = Feature(QLatin1String(Connection::staticMetaObject.className()), 4);
 
@@ -926,6 +930,8 @@ const Feature Connection::FeatureRoster = Feature(QLatin1String(Connection::stat
  *
  * See ContactManager roster groups specific methods' documentation for more
  * details.
+ *
+ * \sa ContactManager::allKnownGroups()
  */
 const Feature Connection::FeatureRosterGroups = Feature(QLatin1String(Connection::staticMetaObject.className()), 5);
 
@@ -933,6 +939,8 @@ const Feature Connection::FeatureRosterGroups = Feature(QLatin1String(Connection
  * Feature used to retrieve/keep track of the connection account balance.
  *
  * See account balance specific methods' documentation for more details.
+ *
+ * \sa accountBalance(), accountBalanceChanged()
  */
 const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connection::staticMetaObject.className()), 6);
 
@@ -1147,7 +1155,8 @@ Connection::ErrorDetails::ErrorDetails()
 }
 
 /**
- * Construct a error details instance with the given details. The instance will indicate it's valid.
+ * Construct a error details instance with the given details. The instance will indicate that
+ * it is valid.
  */
 Connection::ErrorDetails::ErrorDetails(const QVariantMap &details)
     : mPriv(new Private(details))
