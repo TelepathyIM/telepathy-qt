@@ -55,6 +55,23 @@
  */
 
 /**
+ * \page contact_messenger_example Contact Messenger Example
+ *
+ * \li \subpage contact_messenger_example_sender_cpp
+ * \li \subpage contact_messenger_example_sender_h
+ */
+
+/**
+ * \page contact_messenger_example_sender_cpp contact-messenger/sender.cpp
+ * \include examples/contact-messenger/sender.cpp
+ */
+
+/**
+ * \page contact_messenger_example_sender_h contact-messenger/sender.h
+ * \include examples/contact-messenger/sender.h
+ */
+
+/**
  * \page protocols_example Protocols Example
  *
  * \li \subpage protocols_example_main

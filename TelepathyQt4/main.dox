@@ -52,6 +52,7 @@
  * programming practices.
  *
  * \li \subpage accounts_example
+ * \li \subpage contact_messenger_example
  * \li \subpage protocols_example
  * \li \subpage roster_example
  *
