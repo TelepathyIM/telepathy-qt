@@ -680,10 +680,13 @@ QMap<QString, QSharedPointer<Account::Private::DispatcherContext> > Account::Pri
  * enable the feature Account::FeatureProtocolInfo.
  * See the individual methods descriptions for more details.
  *
- * Enabling Account features can be achieved by calling becomeReady()
- * with the desired set of features as an argument, and waiting for the resulting
- * PendingOperation to finish, or by enabling the feature in the AccountFactory
- * used by the AccountManager owning the Account object.
+ * Account features can be enabled by constructing an AccountFactory and enabling
+ * the desired features, and passing it to AccountManager or ClientRegistrar
+ * when creating them as appropriate. However, if a particular
+ * feature is only ever used in a specific circumstance, such as an user opening
+ * some settings dialog separate from the general view of the application,
+ * features can be later enabled as needed by calling becomeReady() with the additional
+ * features, and waiting for the resulting PendingOperation to finish.
  *
  * As an addition to accessors, signals are emitted to indicate that properties have
  * changed, for example displayNameChanged(), iconNameChanged(), etc.
@@ -911,7 +914,7 @@ Account::~Account()
  * situations where objects constructed at different times by the account would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the connection factory used by this account.
+ * \return Read-only pointer to the factory.
  */
 ConnectionFactoryConstPtr Account::connectionFactory() const
 {
@@ -926,7 +929,7 @@ ConnectionFactoryConstPtr Account::connectionFactory() const
  * situations where objects constructed at different times by the account would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the channel factory used by this account.
+ * \return Read-only pointer to the factory.
  */
 ChannelFactoryConstPtr Account::channelFactory() const
 {
@@ -941,7 +944,7 @@ ChannelFactoryConstPtr Account::channelFactory() const
  * situations where objects constructed at different times by the account would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the contact factory used by this account.
+ * \return Read-only pointer to the factory.
  */
 ContactFactoryConstPtr Account::contactFactory() const
 {
@@ -1052,13 +1055,12 @@ QString Account::serviceName() const
  * Set the service name of this account.
  *
  * Some protocols, like XMPP and SIP, are used by various different user-recognised brands,
- * such as Google Talk and Ovi by Nokia. On accounts for such services, this method can be used
+ * such as Google Talk. On accounts for such services, this method can be used
  * to set the name describing the service, which must consist only of ASCII letters, numbers and
  * hyphen/minus signs, and start with a letter.
  * For the jabber protocol, one of the following service names should be used if possible:
  *
  *   google-talk (for Google's IM service)
- *   ovi-chat (for Ovi's IM service)
  *   facebook (for Facebook's IM service)
  *   lj-talk (for LiveJournal's IM service)
  *
@@ -1278,7 +1280,7 @@ PendingOperation *Account::setNickname(const QString &value)
  * For now this method will only return the avatar requirements found in protocolInfo() if
  * Account::FeatureProtocolInfo is ready, otherwise an invalid AvatarSpec instance is returned.
  *
- * \return The avatar requirements for avatars passed to setAvatar() on this account.
+ * \return The avatar requirements for avatars passed to setAvatar().
  * \sa avatar(), setAvatar()
  */
 AvatarSpec Account::avatarRequirements() const
@@ -3558,7 +3560,7 @@ PendingChannelRequest *Account::ensureChannel(
  * The caller is responsible for closing the channel with
  * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
  *
- * A possible error returned by this method is #TELEPATHY_ERROR_NOT_AVAILABLE, in case a conflicting
+ * A possible error returned by this method is #TP_QT4_ERROR_NOT_AVAILABLE, in case a conflicting
  * channel that matches \a request already exists.
  *
  * \param request A dictionary containing desirable properties.
@@ -3587,7 +3589,7 @@ PendingChannel *Account::createAndHandleChannel(
  * The caller is responsible for closing the channel with
  * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
  *
- * A possible error returned by this method is #TELEPATHY_ERROR_NOT_YOURS, in case somebody else is
+ * A possible error returned by this method is #TP_QT4_ERROR_NOT_YOURS, in case somebody else is
  * already handling a channel that matches \a request.
  *
  * \param request A dictionary containing desirable properties.
@@ -4234,8 +4236,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::validityChanged(bool validity)
  *
- * This signal is emitted when the value of isValidAccount() of this account
- * changes.
+ * This signal is emitted when the value of isValidAccount() changes.
  *
  * \param validity The new validity of this account.
  * \sa isValidAccount()
@@ -4244,8 +4245,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::stateChanged(bool state)
  *
- * This signal is emitted when the value of isEnabled() of this account
- * changes.
+ * This signal is emitted when the value of isEnabled() changes.
  *
  * \param state The new state of this account.
  * \sa isEnabled()
@@ -4254,8 +4254,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::serviceNameChanged(const QString &serviceName)
  *
- * This signal is emitted when the value of serviceName() of this account
- * changes.
+ * This signal is emitted when the value of serviceName() changes.
  *
  * \param serviceName The new service name of this account.
  * \sa serviceName(), setServiceName()
@@ -4264,8 +4263,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::profileChanged(const Tp::ProfilePtr &profile)
  *
- * This signal is emitted when the value of profile() of this account
- * changes.
+ * This signal is emitted when the value of profile() changes.
  *
  * \param profile The new profile of this account.
  * \sa profile()
@@ -4274,8 +4272,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::displayNameChanged(const QString &displayName)
  *
- * This signal is emitted when the value of displayName() of this account
- * changes.
+ * This signal is emitted when the value of displayName() changes.
  *
  * \param displayName The new display name of this account.
  * \sa displayName(), setDisplayName()
@@ -4284,7 +4281,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::iconNameChanged(const QString &iconName)
  *
- * This signal is emitted when the value of iconName() of this account changes.
+ * This signal is emitted when the value of iconName() changes.
  *
  * \param iconName The new icon name of this account.
  * \sa iconName(), setIconName()
@@ -4293,7 +4290,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::nicknameChanged(const QString &nickname)
  *
- * This signal is emitted when the value of nickname() of this account changes.
+ * This signal is emitted when the value of nickname() changes.
  *
  * \param nickname The new nickname of this account.
  * \sa nickname(), setNickname()
@@ -4302,8 +4299,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::normalizedNameChanged(const QString &normalizedName)
  *
- * This signal is emitted when the value of normalizedName() of this account
- * changes.
+ * This signal is emitted when the value of normalizedName() changes.
  *
  * \param normalizedName The new normalized name of this account.
  * \sa normalizedName()
@@ -4312,7 +4308,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::capabilitiesChanged(const Tp::ConnectionCapabilities &capabilities)
  *
- * This signal is emitted when the value of capabilities() of this account changes.
+ * This signal is emitted when the value of capabilities() changes.
  *
  * \param capabilities The new capabilities of this account.
  * \sa capabilities()
@@ -4321,8 +4317,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::connectsAutomaticallyPropertyChanged(bool connectsAutomatically)
  *
- * This signal is emitted when the value of connectsAutomatically() of this
- * account changes.
+ * This signal is emitted when the value of connectsAutomatically() changes.
  *
  * \param connectsAutomatically The new value of connects automatically property
  *                              of this account.
@@ -4340,8 +4335,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::parametersChanged(const QVariantMap &parameters)
  *
- * This signal is emitted when the value of parameters() of this
- * account changes.
+ * This signal is emitted when the value of parameters() changes.
  *
  * \param parameters The new parameters of this account.
  * \sa parameters()
@@ -4350,8 +4344,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::changingPresence(bool value)
  *
- * This signal is emitted when the value of isChangingPresence() of this
- * account changes.
+ * This signal is emitted when the value of isChangingPresence() changes.
  *
  * \param value Whether this account's connection is changing presence.
  * \sa isChangingPresence()
@@ -4360,8 +4353,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::automaticPresenceChanged(const Tp::Presence &automaticPresence)
  *
- * This signal is emitted when the value of automaticPresence() of this
- * account changes.
+ * This signal is emitted when the value of automaticPresence() changes.
  *
  * \param automaticPresence The new value of automatic presence property of this
  *                          account.
@@ -4371,8 +4363,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::currentPresenceChanged(const Tp::Presence &currentPresence)
  *
- * This signal is emitted when the value of currentPresence() of this
- * account changes.
+ * This signal is emitted when the value of currentPresence() changes.
  *
  * \param currentPresence The new value of the current presence property of this
  *                        account.
@@ -4382,8 +4373,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::requestedPresenceChanged(const Tp::Presence &requestedPresence)
  *
- * This signal is emitted when the value of requestedPresence() of this
- * account changes.
+ * This signal is emitted when the value of requestedPresence() changes.
  *
  * \param requestedPresence The new value of the requested presence property of this
  *                          account.
@@ -4393,8 +4383,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::onlinenessChanged(bool online)
  *
- * This signal is emitted when the value of isOnline() of this
- * account changes.
+ * This signal is emitted when the value of isOnline() changes.
  *
  * \param online Whether this account is online.
  * \sa isOnline(), currentPresence()
@@ -4403,8 +4392,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::avatarChanged(const Tp::Avatar &avatar)
  *
- * This signal is emitted when the value of avatar() of this
- * account changes.
+ * This signal is emitted when the value of avatar() changes.
  *
  * \param avatar The new avatar of this account.
  * \sa avatar()
@@ -4413,7 +4401,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status)
  *
- * This signal is emitted when the connection status of this account changes.
+ * This signal is emitted when the connection status changes.
  *
  * \param status The new status of this account connection.
  * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails(),
@@ -4423,8 +4411,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
 /**
  * \fn void Account::connectionChanged(const Tp::ConnectionPtr &connection)
  *
- * This signal is emitted when the value of connection() of this
- * account changes.
+ * This signal is emitted when the value of connection() changes.
  *
  * The \a connection will have the features set in the ConnectionFactory used by this account ready
  * and the same channel and contact factories used by this account.
