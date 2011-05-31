@@ -1249,6 +1249,23 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::GroupMemberChangeDetails::Private : publ
     QVariantMap details;
 };
 
+/**
+ * \class Channel::GroupMemberChangeDetails
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/channel.h <TelepathyQt4/Channel>
+ *
+ * Class opaquely storing information on a group membership change for a
+ * single member.
+ *
+ * Extended information is not always available; this will be reflected by
+ * the return value of isValid().
+ */
+
+/**
+ * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()
+ *
+ * \internal
+ */
 Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()
 {
 }
@@ -1269,21 +1286,61 @@ Channel::GroupMemberChangeDetails &Channel::GroupMemberChangeDetails::operator=(
     return *this;
 }
 
+/**
+ * \fn bool Channel::GroupMemberChangeDetails::isValid() const;
+ *
+ * Return whether or not this object actually contains valid
+ * information received from the service. If the returned value is
+ * false, the values returned by the other methods for this object are
+ * undefined.
+ *
+ * \return Whether the information stored in this object is valid.
+ */
+
 bool Channel::GroupMemberChangeDetails::hasActor() const
 {
     return isValid() && !mPriv->actor.isNull();
 }
 
+/**
+ * Return the contact requesting or causing the change.
+ *
+ * \return The handle of the contact.
+ */
 ContactPtr Channel::GroupMemberChangeDetails::actor() const
 {
     return isValid() ? mPriv->actor : ContactPtr();
 }
+
+/**
+ * \fn ChannelGroupChangeReason Channel::GroupMemberChangeDetails::reason() const
+ *
+ * Return the reason for the change.
+ *
+ * \return The reason, as specified in #ChannelGroupChangeReason.
+ */
+
+/**
+ * \fn const QString &Channel::GroupMemberChangeDetails::message() const
+ *
+ * Return a human-readable message from the contact represented by
+ * actor() pertaining to the change, or an empty string if there is no
+ * message.
+ *
+ * \return The message as a string.
+ */
 
 QVariantMap Channel::GroupMemberChangeDetails::allDetails() const
 {
     return isValid() ? mPriv->details : QVariantMap();
 }
 
+/**
+ * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(
+ *     const ContactPtr &actor, const QVariantMap &details)
+ *
+ * \internal
+ */
 Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const ContactPtr &actor,
         const QVariantMap &details)
     : mPriv(new Private(actor, details))
@@ -3422,66 +3479,5 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
     mPriv->buildingConferenceChannelRemovedActorContact = false;
     mPriv->processConferenceChannelRemoved();
 }
-
-/**
- * \class Channel::GroupMemberChangeDetails
- * \ingroup clientchannel
- * \headerfile TelepathyQt4/channel.h <TelepathyQt4/Channel>
- *
- * Class opaquely storing information on a group membership change for a
- * single member.
- *
- * Extended information is not always available; this will be reflected by
- * the return value of isValid().
- */
-
-/**
- * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()
- *
- * \internal
- */
-
-/**
- * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(
- *     const ContactPtr &actor, const QVariantMap &details)
- *
- * \internal
- */
-
-/**
- * \fn bool Channel::GroupMemberChangeDetails::isValid() const;
- *
- * Return whether or not this object actually contains valid
- * information received from the service. If the returned value is
- * false, the values returned by the other methods for this object are
- * undefined.
- *
- * \return Whether the information stored in this object is valid.
- */
-
-/**
- * \fn uint Channel::GroupMemberChangeDetails::actor() const
- *
- * Return the contact requesting or causing the change.
- *
- * \return The handle of the contact.
- */
-
-/**
- * \fn ChannelGroupChangeReason Channel::GroupMemberChangeDetails::reason() const
- *
- * Return the reason for the change.
- *
- * \return The reason, as specified in #ChannelGroupChangeReason.
- */
-
-/**
- * \fn const QString &Channel::GroupMemberChangeDetails::message() const
- * Return a human-readable message from the contact represented by
- * actor() pertaining to the change, or an empty string if there is no
- * message.
- *
- * \return The message as a string.
- */
 
 } // Tp
