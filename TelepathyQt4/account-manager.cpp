@@ -246,7 +246,7 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  * information after AccountManager::FeatureCore has been enabled.
  * See the individual methods descriptions for more details.
  *
- * Enabling AccountManager features can be achieved by calling becomeReady()
+ * AccountManager features can be enabled by calling becomeReady()
  * with the desired set of features as an argument (currently only AccountManager::FeatureCore is
  * supported), and waiting for the resulting PendingOperation to finish.
  *
@@ -340,10 +340,10 @@ const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager
 /**
  * Create a new AccountManager object using the given \a bus.
  *
- * The instance will use an account factory creating Account objects with Account::FeatureCore
- * ready, a connection factory creating Connection objects with no features ready, a channel
- * factory creating stock Channel subclasses, as appropriate, with no features ready, and a contact
- * factory creating Contact objects with no features ready.
+ * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
+ * ready, a connection factory creating Tp::Connection objects with no features ready, a channel
+ * factory creating stock Tp::Channel subclasses, as appropriate, with no features ready, and a
+ * contact factory creating Tp::Contact objects with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \return An AccountManagerPtr object pointing to the newly created
@@ -455,7 +455,7 @@ AccountManager::~AccountManager()
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the account factory used by this account manager.
+ * \return Read-only pointer to the factory.
  */
 AccountFactoryConstPtr AccountManager::accountFactory() const
 {
@@ -470,7 +470,7 @@ AccountFactoryConstPtr AccountManager::accountFactory() const
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the connection factory used by this account manager.
+ * \return Read-only pointer to the factory.
  */
 ConnectionFactoryConstPtr AccountManager::connectionFactory() const
 {
@@ -485,7 +485,7 @@ ConnectionFactoryConstPtr AccountManager::connectionFactory() const
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the channel factory by this account manager.
+ * \return Read-only pointer to the factory.
  */
 ChannelFactoryConstPtr AccountManager::channelFactory() const
 {
@@ -500,7 +500,7 @@ ChannelFactoryConstPtr AccountManager::channelFactory() const
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the contact factory used by this account manager.
+ * \return Read-only pointer to the factory.
  */
 ContactFactoryConstPtr AccountManager::contactFactory() const
 {
@@ -510,7 +510,7 @@ ContactFactoryConstPtr AccountManager::contactFactory() const
 /**
  * Return a list containing all accounts.
  *
- * Newly accounts are signaled via newAccount().
+ * Newly accounts added and/or discovered are signaled via newAccount().
  *
  * This method requires AccountManager::FeatureCore to be enabled.
  *
@@ -1116,7 +1116,7 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
  * This signal is emitted when a new account is created.
  *
  * The new \a account will have the features set in the AccountFactory used by this
- * account manager ready and the same connection, channel and contact factories used by this
+ * account manager ready and the same connection, channel and contact factories as used by this
  * account manager.
  *
  * \param account The newly created account.
