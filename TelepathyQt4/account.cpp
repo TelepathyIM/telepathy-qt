@@ -793,6 +793,8 @@ const Feature Account::FeatureCore = Feature(QLatin1String(Account::staticMetaOb
  * Feature used in order to access account avatar info.
  *
  * See avatar specific methods' documentation for more details.
+ *
+ * \sa avatar(), avatarChanged()
  */
 const Feature Account::FeatureAvatar = Feature(QLatin1String(Account::staticMetaObject.className()), 1);
 
@@ -800,6 +802,8 @@ const Feature Account::FeatureAvatar = Feature(QLatin1String(Account::staticMeta
  * Feature used in order to access account protocol info.
  *
  * See protocol info specific methods' documentation for more details.
+ *
+ * \sa protocolInfo()
  */
 const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::staticMetaObject.className()), 2);
 
@@ -809,6 +813,8 @@ const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::stat
  * Enabling this feature will also enable FeatureProtocolInfo and FeatureProfile.
  *
  * See capabilities specific methods' documentation for more details.
+ *
+ * \sa capabilities(), capabilitiesChanged()
  */
 const Feature Account::FeatureCapabilities = Feature(QLatin1String(Account::staticMetaObject.className()), 3);
 
@@ -816,6 +822,8 @@ const Feature Account::FeatureCapabilities = Feature(QLatin1String(Account::stat
  * Feature used in order to access account profile info.
  *
  * See profile specific methods' documentation for more details.
+ *
+ * \sa profile(), profileChanged()
  */
 const Feature Account::FeatureProfile = FeatureProtocolInfo;
 // FeatureProfile is the same as FeatureProtocolInfo for now, as it only needs
