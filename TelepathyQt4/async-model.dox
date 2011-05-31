@@ -32,27 +32,26 @@
  * When dealing with D-Bus, method calls can take some time to return,
  * and in this case is not desirable to make synchronous calls,
  * which could turn into applications hanging waiting for method returns.
-
- * Telepathy-Qt4 introduces a new model in which objects needs to become ready
- * before usage. This model became necessary as we needed a completelly
- * asynchronous API for D-Bus proxy objects.
+ * In order to avoid this issue, all Telepathy-Qt4 high-level methods requiring
+ * D-Bus method calls will return a \link Tp::PendingOperation \endlink which will
+ * emit a signal \link Tp::PendingOperation::finished() \endlink when the operation
+ * has ended. See individual methods' documentation for more details.
  *
- * In order to do this new classes so called PendingOperations were created,
- * and all methods that need to be asynchronous will return a \link
- * Tp::PendingOperation \endlink which will emit a signal \link
- * Tp::PendingOperation::finished() \endlink when the operation
- * has ended. See PendingOperation documentation for more details.
+ * Additionally Telepathy-Qt4 introduces a concept model in which object features need
+ * to be enabled before usage. Information corresponding to enabled features can be inspected
+ * synchronously with no need for asynchronous D-Bus method calls and the associated
+ * programming complexity.
  *
- * So when instantiating a new object (\link Tp::Account \endlink,
- * \link Tp::AccountManager \endlink, \link
- * Tp::Connection \endlink, and so on), one needs to call \link
- * Tp::ReadyObject::becomeReady() \endlink and wait the returned
- * PendingOperation to finish before using the object.
+ * To avoid the complexity of doing asynchronous calls when making object features ready
+ * Telepathy-Qt4 also provides so called factories for the main objects.
+ * These object features can be enabled by constructing a corresponding factory and enabling the
+ * desired features, and passing these factories to the objects responsible for creating
+ * the objects whose features are required.
+ * Doing that, applications are guaranteed that the specified features are ready in objects
+ * signaled to them by the library.
  *
- * This assures that the initial object introspection process is completed and
- * the object is ready to use.
- *
- * Many objects cache the returned values of a previous introspection run
- * for future access, allowing some methods to be synchronous. See the
- * individual methods descriptions for more details.
+ * However, if a particular feature is only ever used in a specific circumstance, such as an user
+ * opening some settings dialog separate from the general view of the application,
+ * features can be later enabled as needed by calling becomeReady() with the additional
+ * features on the object, and waiting for the resulting PendingOperation to finish.
  */
