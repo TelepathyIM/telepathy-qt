@@ -128,7 +128,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::InfoFields::Private : public QSharedData
  */
 
 /**
- * Construct a info fields instance with the given details. The instance will indicate it's valid.
+ * Construct a info fields instance with the given fields. The instance will indicate that
+ * it is valid.
  */
 Contact::InfoFields::InfoFields(const ContactInfoFieldList &allFields)
     : mPriv(new Private(allFields))
@@ -231,6 +232,8 @@ ContactInfoFieldList Contact::InfoFields::allFields() const
  * Feature used in order to access contact alias info.
  *
  * See alias specific methods' documentation for more details.
+ *
+ * \sa alias(), aliasChanged()
  */
 const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaObject.className()), 0, false);
 
@@ -240,6 +243,8 @@ const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaO
  * Enabling this feature will also enable FeatureAvatarToken.
  *
  * See avatar data specific methods' documentation for more details.
+ *
+ * \sa avatarData(), avatarDataChanged()
  */
 const Feature Contact::FeatureAvatarData = Feature(QLatin1String(Contact::staticMetaObject.className()), 1, false);
 
@@ -247,6 +252,8 @@ const Feature Contact::FeatureAvatarData = Feature(QLatin1String(Contact::static
  * Feature used in order to access contact avatar token info.
  *
  * See avatar token specific methods' documentation for more details.
+ *
+ * \sa isAvatarTokenKnown(), avatarToken(), avatarTokenChanged()
  */
 const Feature Contact::FeatureAvatarToken = Feature(QLatin1String(Contact::staticMetaObject.className()), 2, false);
 
@@ -254,6 +261,8 @@ const Feature Contact::FeatureAvatarToken = Feature(QLatin1String(Contact::stati
  * Feature used in order to access contact capabilities info.
  *
  * See capabilities specific methods' documentation for more details.
+ *
+ * \sa capabilities(), capabilitiesChanged()
  */
 const Feature Contact::FeatureCapabilities = Feature(QLatin1String(Contact::staticMetaObject.className()), 3, false);
 
@@ -261,6 +270,8 @@ const Feature Contact::FeatureCapabilities = Feature(QLatin1String(Contact::stat
  * Feature used in order to access contact info fields.
  *
  * See info fields specific methods' documentation for more details.
+ *
+ * \sa infoFields(), infoFieldsChanged()
  */
 const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaObject.className()), 4, false);
 
@@ -268,6 +279,8 @@ const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaOb
  * Feature used in order to access contact location info.
  *
  * See location specific methods' documentation for more details.
+ *
+ * \sa location(), locationUpdated()
  */
 const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMetaObject.className()), 5, false);
 
@@ -275,6 +288,8 @@ const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMe
  * Feature used in order to access contact presence info.
  *
  * See presence specific methods' documentation for more details.
+ *
+ * \sa presence(), presenceChanged()
  */
 const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::staticMetaObject.className()), 6, false);
 
@@ -282,6 +297,8 @@ const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::st
  * Feature used in order to access contact roster groups.
  *
  * See roster groups specific methods' documentation for more details.
+ *
+ * \sa groups(), addedToGroup(), removedFromGroup()
  */
 const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::staticMetaObject.className()), 7, false);
 
@@ -544,7 +561,7 @@ LocationInfo Contact::location() const
 }
 
 /**
- * Return whether the information for this contact has been received.
+ * Return whether the info card for this contact has been received.
  *
  * With some protocols (notably XMPP) information is not pushed from the server
  * and must be requested explicitely using refreshInfo() or requestInfo(). This
@@ -738,7 +755,7 @@ PendingOperation *Contact::requestPresenceSubscription(const QString &message)
 }
 
 /**
- * Start a request that the local user stops receiving presence from this contact.
+ * Start a request for the local user to stop receiving presence from this contact.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
@@ -751,7 +768,7 @@ PendingOperation *Contact::removePresenceSubscription(const QString &message)
 }
 
 /**
- * Start a request that the local user's presence is sent to this contact
+ * Start a request to authorize this contact's request to see the local user presence
  * (i.e. that this contact publish attribute becomes Contact::PresenceStateYes).
  *
  * \return A PendingOperation which will emit PendingOperation::finished
@@ -765,7 +782,7 @@ PendingOperation *Contact::authorizePresencePublication(const QString &message)
 }
 
 /**
- * Start a request that the local user stops sending presence to this contact.
+ * Start a request for the local user to stop sending presence to this contact.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
@@ -791,8 +808,7 @@ bool Contact::isBlocked() const
 }
 
 /**
- * Start a request to block/unblock this contact (i.e. whether this contact stops receiving presence
- * from the local user while blocked).
+ * Start a request to block/unblock this contact.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
@@ -1270,7 +1286,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::addedToGroup(const QString &group)
  *
- * This signal is emitted when this contact is added to the contact list \a group.
+ * This signal is emitted when this contact is added to \a group of the contact list.
  *
  * \param group Group name.
  * \sa groups(), removedFromGroup()
@@ -1279,7 +1295,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::removedFromGroup(const QString &group)
  *
- * This signal is emitted when this contact is removed from the contact list \a group.
+ * This signal is emitted when this contact is removed from \a group of the contact list.
  *
  * \param group Group name.
  * \sa groups(), addedToGroup()
