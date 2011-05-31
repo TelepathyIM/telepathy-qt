@@ -151,6 +151,7 @@ public:
      * Filter on being blocked or not
      */
     bool isBlocked() const;
+    // FIXME: split block in block()/unblock() and deprecate this method
     PendingOperation *block(bool value = true);
 
     /*
