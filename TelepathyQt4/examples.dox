@@ -55,6 +55,41 @@
  */
 
 /**
+ * \page protocols_example Protocols Example
+ *
+ * \li \subpage protocols_example_main
+ * \li \subpage protocols_example_cm_wrapper_cpp
+ * \li \subpage protocols_example_cm_wrapper_h
+ * \li \subpage protocols_example_protocols_cpp
+ * \li \subpage protocols_example_protocols_h
+ */
+
+/**
+ * \page protocols_example_main protocols/main.cpp
+ * \include examples/protocols/main.cpp
+ */
+
+/**
+ * \page protocols_example_cm_wrapper_cpp protocols/cm-wrapper.cpp
+ * \include examples/protocols/cm-wrapper.cpp
+ */
+
+/**
+ * \page protocols_example_cm_wrapper_h protocols/cm-wrapper.h
+ * \include examples/protocols/cm-wrapper.h
+ */
+
+/**
+ * \page protocols_example_protocols_cpp protocols/protocols.cpp
+ * \include examples/protocols/protocols.cpp
+ */
+
+/**
+ * \page protocols_example_protocols_h protocols/protocols.h
+ * \include examples/protocols/protocols.h
+ */
+
+/**
  * \page roster_example Roster Example
  *
  * \li \subpage roster_example_main
