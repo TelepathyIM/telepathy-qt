@@ -34,10 +34,10 @@
  * which could turn into applications hanging waiting for method returns.
  * In order to avoid this issue, all Telepathy-Qt4 high-level methods requiring
  * D-Bus method calls will return a \link Tp::PendingOperation \endlink which will
- * emit a signal \link Tp::PendingOperation::finished() \endlink when the operation
+ * emit the signal \link Tp::PendingOperation::finished() \endlink when the operation
  * has ended. See individual methods' documentation for more details.
  *
- * Additionally Telepathy-Qt4 introduces a concept model in which object features need
+ * Additionally Telepathy-Qt4 introduces a concept in which object features need
  * to be enabled before usage. Information corresponding to enabled features can be inspected
  * synchronously with no need for asynchronous D-Bus method calls and the associated
  * programming complexity.
@@ -52,6 +52,8 @@
  *
  * However, if a particular feature is only ever used in a specific circumstance, such as an user
  * opening some settings dialog separate from the general view of the application,
- * features can be later enabled as needed by calling becomeReady() with the additional
- * features on the object, and waiting for the resulting PendingOperation to finish.
+ * features can be later enabled as needed by calling becomeReady(), or in the
+ * \link Tp::Contact \endlink case by calling \link Tp::ContactManager::upgradeContacts() \endlink,
+ * with the additional features on the object, and waiting for the resulting PendingOperation to
+ * finish.
  */
