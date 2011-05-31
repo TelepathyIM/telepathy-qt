@@ -1335,11 +1335,11 @@ ContactPtr Channel::GroupMemberChangeDetails::actor() const
  */
 
 /**
- * \fn QString Channel::GroupMemberChangeDetails::reason() const
+ * \fn ChannelGroupChangeReason Channel::GroupMemberChangeDetails::reason() const
  *
  * Return the reason for the change, if known.
  *
- * \return The reason for the change, or an empty string if the reason is unknown.
+ * \return The reason for the change, or ChannelGroupChangeReasonNone if the reason is unknown.
  * \sa hasReason()
  */
 
@@ -1542,7 +1542,7 @@ const Feature Channel::FeatureCore = Feature(QLatin1String(Channel::staticMetaOb
 /**
  * Feature used in order to access the conference initial invitee contacts info.
  *
- * See conferenceInitialInviteeContacts() documentation for more details.
+ * \sa conferenceInitialInviteeContacts()
  */
 const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(QLatin1String(Channel::staticMetaObject.className()), 1, true);
 
@@ -1996,9 +1996,7 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
  * \name Group interface
  *
  * Cached access to state of the group interface on the associated remote
- * object, if the interface is present. Almost all methods return undefined
- * values if the list returned by interfaces() doesn't include
- * #TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP or if the object is not ready.
+ * object, if the interface is present.
  *
  * Some methods can be used when targetHandleType() == #HandleTypeContact, such
  * as groupFlags(), groupCanAddContacts(), groupCanRemoveContacts(),
@@ -2454,7 +2452,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  * This method should be called only after you've left the channel.
  * This is useful for getting the remove information after missing the
  * corresponding groupMembersChanged() signal, as the local user being
- * removed usually causes the remote channel to be closed.
+ * removed usually causes the channel to be closed.
  *
  * The returned information is not guaranteed to be correct if
  * groupIsSelfHandleTracked() returns false and a self handle change has
@@ -2547,8 +2545,11 @@ HandleOwnerMap Channel::groupHandleOwners() const
 
 /**
  * Return whether the value returned by groupSelfContact() is guaranteed to
- * stay synchronized with what group interface SelfHandle property would
- * return. Older services not providing group properties don't necessarily
+ * accurately represent the local user even after nickname changes, etc.
+ *
+ * This should always be \c true for new services implementing the group interface.
+ *
+ * Older services not providing group properties don't necessarily
  * emit the SelfHandleChanged signal either, so self contact changes can't be
  * reliably tracked.
  *
@@ -2678,6 +2679,7 @@ Contacts Channel::conferenceInitialInviteeContacts() const
  * This method requires Channel::FeatureCore to be enabled.
  *
  * \return A List of individual channels that are part of this conference.
+ * \sa conferenceInitialChannels(), conferenceOriginalChannels()
  */
 QList<ChannelPtr> Channel::conferenceChannels() const
 {
@@ -2694,6 +2696,7 @@ QList<ChannelPtr> Channel::conferenceChannels() const
  *
  * \return A list of individual channels that were initially part of this
  *         conference.
+ * \sa conferenceChannels(), conferenceOriginalChannels()
  */
 QList<ChannelPtr> Channel::conferenceInitialChannels() const
 {
@@ -2739,6 +2742,7 @@ QList<ChannelPtr> Channel::conferenceInitialChannels() const
  * This method requires Channel::FeatureCore to be enabled.
  *
  * \return A map of channel specific handles to channels.
+ * \sa conferenceChannels(), conferenceInitialChannels()
  */
 QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
 {
@@ -2746,11 +2750,12 @@ QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
 }
 
 /**
- * Return whether this channel implements the mergeable conference interface.
+ * Return whether this channel supports conference merging using conferenceMergeChannel().
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
  * \return \c true if the interface is supported, \c false otherwise.
+ * \sa conferenceMergeChannel()
  */
 bool Channel::supportsConferenceMerging() const
 {
@@ -2765,6 +2770,7 @@ bool Channel::supportsConferenceMerging() const
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa supportsConferenceMerging()
  */
 PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 {
@@ -2780,11 +2786,12 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 }
 
 /**
- * Return whether this channel implements the splittable interface.
+ * Return whether this channel supports splitting using conferenceSplitChannel().
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
  * \return \c true if the interface is supported, \c false otherwise.
+ * \sa conferenceSplitChannel()
  */
 bool Channel::supportsConferenceSplitting() const
 {
@@ -2800,6 +2807,7 @@ bool Channel::supportsConferenceSplitting() const
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa supportsConferenceSplitting()
  */
 PendingOperation *Channel::conferenceSplitChannel()
 {
@@ -2819,7 +2827,7 @@ PendingOperation *Channel::conferenceSplitChannel()
  * directly.
  *
  * \return A pointer to the existing Client::ChannelInterface object for this
- *         Account object.
+ *         Channel object.
  */
 Client::ChannelInterface *Channel::baseInterface() const
 {
