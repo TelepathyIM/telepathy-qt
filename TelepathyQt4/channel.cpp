@@ -2813,101 +2813,6 @@ PendingOperation *Channel::conferenceSplitChannel()
 }
 
 /**
- * \fn void Channel::groupFlagsChanged(uint flags, uint added, uint removed)
- *
- * This signal is emitted when the value of groupFlags() changes.
- *
- * \param flags The value which would now be returned by groupFlags().
- * \param added Flags added compared to the previous value.
- * \param removed Flags removed compared to the previous value.
- */
-
-/**
- * \fn void Channel::groupCanAddContactsChanged(bool canAddContacts)
- *
- * This signal is emitted when the value of groupCanAddContacts() changes.
- *
- * \param canAddContacts Whether a contact can be added to this channel.
- * \sa groupCanAddContacts()
- */
-
-/**
- * \fn void Channel::groupCanRemoveContactsChanged(bool canRemoveContacts)
- *
- * This signal is emitted when the value of groupCanRemoveContacts() changes.
- *
- * \param canRemoveContacts Whether a contact can be removed from this channel.
- * \sa groupCanRemoveContacts()
- */
-
-/**
- * \fn void Channel::groupCanRescindContactsChanged(bool canRescindContacts)
- *
- * This signal is emitted when the value of groupCanRescindContacts() changes.
- *
- * \param canRescindContacts Whether contact invitations can be rescinded.
- * \sa groupCanRescindContacts()
- */
-
-/**
- * \fn void Channel::groupMembersChanged(
- *     const Tp::Contacts &groupMembersAdded,
- *     const Tp::Contacts &groupLocalPendingMembersAdded,
- *     const Tp::Contacts &groupRemotePendingMembersAdded,
- *     const Tp::Contacts &groupMembersRemoved,
- *     const Channel::GroupMemberChangeDetails &details);
- *
- * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
- * groupRemotePendingContacts() changes.
- *
- * \param groupMembersAdded The contacts that were added to this channel.
- * \param groupLocalPendingMembersAdded The local pending contacts that were
- *                                      added to this channel.
- * \param groupRemotePendingMembersAdded The remote pending contacts that were
- *                                       added to this channel.
- * \param groupMembersRemoved The contacts removed from this channel.
- * \param details Additional details such as the contact requesting or causing
- *                the change.
- */
-
-/**
- * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners,
- *            const Tp::UIntList &added, const Tp::UIntList &removed)
- *
- * Emitted when the value returned by groupHandleOwners() changes.
- *
- * \param owners The value which would now be returned by
- *               groupHandleOwners().
- * \param added Handles which have been added to the mapping as keys, or
- *              existing handle keys for which the mapped-to value has changed.
- * \param removed Handles which have been removed from the mapping.
- */
-
-/**
- * \fn void Channel::groupSelfContactChanged()
- *
- * Emitted when the value returned by groupSelfContact() changes.
- */
-
-/**
- * \fn void Channel::conferenceChannelMerged(const Tp::ChannelPtr &channel);
- *
- * Emitted when a new channel is added to the value of conferenceChannels().
- *
- * \param channel The channel that was added to conferenceChannels().
- */
-
-/**
- * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel,
-            const Tp::Channel::GroupMemberChangeDetails &details);
- *
- * Emitted when a new channel is removed from the value of conferenceChannels().
- *
- * \param channel The channel that was removed from conferenceChannels().
- * \param details The change details.
- */
-
-/**
  * Return the Client::ChannelInterface interface proxy object for this channel.
  * This method is protected since the convenience methods provided by this
  * class should generally be used instead of calling D-Bus methods
@@ -3583,5 +3488,100 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
     mPriv->buildingConferenceChannelRemovedActorContact = false;
     mPriv->processConferenceChannelRemoved();
 }
+
+/**
+ * \fn void Channel::groupFlagsChanged(uint flags, uint added, uint removed)
+ *
+ * This signal is emitted when the value of groupFlags() changes.
+ *
+ * \param flags The value which would now be returned by groupFlags().
+ * \param added Flags added compared to the previous value.
+ * \param removed Flags removed compared to the previous value.
+ */
+
+/**
+ * \fn void Channel::groupCanAddContactsChanged(bool canAddContacts)
+ *
+ * This signal is emitted when the value of groupCanAddContacts() changes.
+ *
+ * \param canAddContacts Whether a contact can be added to this channel.
+ * \sa groupCanAddContacts()
+ */
+
+/**
+ * \fn void Channel::groupCanRemoveContactsChanged(bool canRemoveContacts)
+ *
+ * This signal is emitted when the value of groupCanRemoveContacts() changes.
+ *
+ * \param canRemoveContacts Whether a contact can be removed from this channel.
+ * \sa groupCanRemoveContacts()
+ */
+
+/**
+ * \fn void Channel::groupCanRescindContactsChanged(bool canRescindContacts)
+ *
+ * This signal is emitted when the value of groupCanRescindContacts() changes.
+ *
+ * \param canRescindContacts Whether contact invitations can be rescinded.
+ * \sa groupCanRescindContacts()
+ */
+
+/**
+ * \fn void Channel::groupMembersChanged(
+ *     const Tp::Contacts &groupMembersAdded,
+ *     const Tp::Contacts &groupLocalPendingMembersAdded,
+ *     const Tp::Contacts &groupRemotePendingMembersAdded,
+ *     const Tp::Contacts &groupMembersRemoved,
+ *     const Channel::GroupMemberChangeDetails &details);
+ *
+ * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
+ * groupRemotePendingContacts() changes.
+ *
+ * \param groupMembersAdded The contacts that were added to this channel.
+ * \param groupLocalPendingMembersAdded The local pending contacts that were
+ *                                      added to this channel.
+ * \param groupRemotePendingMembersAdded The remote pending contacts that were
+ *                                       added to this channel.
+ * \param groupMembersRemoved The contacts removed from this channel.
+ * \param details Additional details such as the contact requesting or causing
+ *                the change.
+ */
+
+/**
+ * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners,
+ *            const Tp::UIntList &added, const Tp::UIntList &removed)
+ *
+ * Emitted when the value returned by groupHandleOwners() changes.
+ *
+ * \param owners The value which would now be returned by
+ *               groupHandleOwners().
+ * \param added Handles which have been added to the mapping as keys, or
+ *              existing handle keys for which the mapped-to value has changed.
+ * \param removed Handles which have been removed from the mapping.
+ */
+
+/**
+ * \fn void Channel::groupSelfContactChanged()
+ *
+ * Emitted when the value returned by groupSelfContact() changes.
+ */
+
+/**
+ * \fn void Channel::conferenceChannelMerged(const Tp::ChannelPtr &channel);
+ *
+ * Emitted when a new channel is added to the value of conferenceChannels().
+ *
+ * \param channel The channel that was added to conferenceChannels().
+ */
+
+/**
+ * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel,
+            const Tp::Channel::GroupMemberChangeDetails &details);
+ *
+ * Emitted when a new channel is removed from the value of conferenceChannels().
+ *
+ * \param channel The channel that was removed from conferenceChannels().
+ * \param details The change details.
+ */
 
 } // Tp
