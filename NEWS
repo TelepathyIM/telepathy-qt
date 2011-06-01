@@ -20,6 +20,9 @@ Fixes:
    restarts
  * Pass new value correctly as variant in generated binding setProperty* methods
  * Properly initialize Connection account balance members
+ * fd.o #36881 - Wrong documentation for Tp::Account::connectionStatusChanged
+   (and a bunch of other parts of the API)
+ * fd.o #31769 - The documentation of TextChannel's features is not very helpful
  * Skip docs generation for internal OptionalInterfaceCache
 
 telepathy-qt4 0.5.16 (2011-05-01)
