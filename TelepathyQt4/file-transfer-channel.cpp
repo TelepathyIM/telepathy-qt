@@ -488,6 +488,34 @@ PendingOperation *FileTransferChannel::cancel()
 }
 
 /**
+ * \fn void FileTransferChannel::stateChanged(Tp::FileTransferState state, Tp::FileTransferStateChangeReason reason);
+ *
+ * This signal is emitted when the value state() of this file transfer channel
+ * changes.
+ *
+ * \param state The new state of this file transfer channel.
+ * \param reason The reason for the change of state.
+ * \sa state()
+ */
+
+/**
+ * \fn void FileTransferChannel::initialOffsetDefined(qulonglong initialOffset);
+ *
+ * This signal is emitted when the initial offset for the file transfer is
+ * defined.
+ *
+ * \param initialOffset The new initial offset for the file transfer.
+ */
+
+/**
+ * \fn void FileTransferChannel::transferredBytesChanged(qulonglong count);
+ *
+ * This signal is emitted when the number of bytes transferred changes.
+ *
+ * \param count The new number of bytes transferred.
+ */
+
+/**
  * Protected virtual method called when the state becomes
  * %FileTransferStateOpen.
  *
