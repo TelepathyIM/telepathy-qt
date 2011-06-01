@@ -1,21 +1,26 @@
-telepathy-qt4 0.7.0 (UNRELEASED)
+telepathy-qt4 0.7.0 (2011-06-01)
 ================================
 
-The "..." release.
+The "Doctor Love knew this so he made another great invention just for the
+lonely you!" release.
 
 This release begins the new 0.7 development series series for feature additions
 following the 0.6 stable release series. Both 0.6 and 0.7 will continue to be
 backwards compatible API and ABI wise with the earlier 0.5 development series.
 
 Enhancements:
+ * fd.o #35341: Use the new ContactBlocking D-Bus interface for better
+   performance in Tp::ContactManager (George Kiagiadakis)
  * ReceivedMessage: Add accessors for retrieving delivery report information,
    sender nickname and superseded message token
+ * Crosslink our doxygen docs to Qt documentation
 
 Fixes:
  * Do not close channels created using the request and handle API if MC
    restarts
  * Pass new value correctly as variant in generated binding setProperty* methods
  * Properly initialize Connection account balance members
+ * Skip docs generation for internal OptionalInterfaceCache
 
 telepathy-qt4 0.5.16 (2011-05-01)
 =================================
