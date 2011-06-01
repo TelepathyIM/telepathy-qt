@@ -47,7 +47,7 @@ namespace Tp
  * \ingroup clientproxies
  * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/DBusProxy>
  *
- * Base class representing a remote object available over D-Bus.
+ * \brief Base class representing a remote object available over D-Bus.
  *
  * All TelepathyQt4 client convenience classes that wrap Telepathy interfaces
  * inherit from this class in order to provide basic D-Bus interface

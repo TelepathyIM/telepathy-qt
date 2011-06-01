@@ -24,12 +24,10 @@
  *
  * \section Introduction
  *
- * Telepathy-Qt4 is a Qt4 high-level binding for <a
- * href="http://telepathy.freedesktop.org">Telepathy</a>.
+ * Telepathy-Qt4 is a Qt4 high-level binding for \telepathy.
  *
- * <a href="http://telepathy.freedesktop.org">Telepathy</a> is a D-Bus
- * framework for unifying real time communication, including instant messaging,
- * voice calls and video calls. It abstracts differences between protocols to
+ * \telepathy is a \dbus framework for unifying real time communication, including instant
+ * messaging, voice calls and video calls. It abstracts differences between protocols to
  * provide a unified interface for applications.
  *
  * Releases can be found <a
@@ -120,16 +118,16 @@
  *
  * <a href="http://lists.freedesktop.org/mailman/listinfo/telepathy">General
  * discussion list</a>\n
- * This list should be used for general discussion about telepathy usage,
+ * This list should be used for general discussion about \telepathy usage,
  * development.
  *
  * <a
  * href="http://lists.freedesktop.org/mailman/listinfo/telepathy-commits">
  * Commits list</a>\n
- * Subscribe to this list to follow the telepathy commits.
+ * Subscribe to this list to follow the commits.
  *
  * <a
  * href="http://lists.freedesktop.org/mailman/listinfo/telepathy-bugs">
  * Bugs list</a>\n
- * Subscribe to this list to follow the telepathy bug reports.
+ * Subscribe to this list to follow the bug reports.
  */

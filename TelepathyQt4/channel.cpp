@@ -1611,8 +1611,8 @@ ConnectionPtr Channel::connection() const
  * org.freedesktop.Telepathy.Channel.TargetHandle and
  * org.freedesktop.Telepathy.Channel.Requested.
  *
- * The keys and values in this map are defined by the Telepathy D-Bus
- * specification, or by third-party extensions to that specification.
+ * The keys and values in this map are defined by the \telepathy_spec,
+ * or by third-party extensions to that specification.
  * These are the properties that cannot change over the lifetime of the
  * channel; they're announced in the result of the request, for efficiency.
  *

@@ -56,7 +56,7 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private : public QSharedData
  * \ingroup clientcm
  * \headerfile TelepathyQt4/protocol-info.h <TelepathyQt4/ProtocolInfo>
  *
- * \brief The ProtocolInfo class represents a Telepathy protocol information.
+ * \brief The ProtocolInfo class represents a \telepathy protocol information.
  */
 
 ProtocolInfo::ProtocolInfo()
@@ -107,8 +107,8 @@ QString ProtocolInfo::cmName() const
 }
 
 /**
- * Return the string identifying this protocol as described in the Telepathy
- * D-Bus API Specification (e.g. "jabber").
+ * Return the string identifying this protocol as described in the \telepathy_spec
+ * (e.g. "jabber").
  *
  * This identifier is not intended to be displayed to users directly; user
  * interfaces are responsible for mapping them to localized strings.
@@ -126,9 +126,8 @@ QString ProtocolInfo::name() const
 
 /**
  * Return all supported parameters for this protocol. The parameters' names
- * may either be the well-known strings specified by the Telepathy D-Bus
- * API Specification (e.g. "account" and "password"), or
- * implementation-specific strings.
+ * may either be the well-known strings specified by the \telepathy_spec
+ * (e.g. "account" and "password"), or implementation-specific strings.
  *
  * \return A list of parameters for this protocol.
  */

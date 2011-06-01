@@ -781,8 +781,7 @@ ContactFactoryConstPtr ConnectionManager::contactFactory() const
 
 /**
  * Return a list of strings identifying the protocols supported by this
- * connection manager, as described in the Telepathy
- * D-Bus API Specification (e.g. "jabber").
+ * connection manager, as described in the \telepathy_spec (e.g. "jabber").
  *
  * These identifiers are not intended to be displayed to users directly; user
  * interfaces are responsible for mapping them to localized strings.
