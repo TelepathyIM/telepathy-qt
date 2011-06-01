@@ -57,7 +57,7 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private : public QSharedData
  * \headerfile TelepathyQt4/protocol-info.h <TelepathyQt4/ProtocolInfo>
  *
  * \brief The ProtocolInfo class represents a <a
- * href="http://telepathy.freedesktop.org/spec/Protocol.html">Telepathy Protocol</a> information.
+ * href="http://telepathy.freedesktop.org/spec/Protocol.html">Telepathy Protocol</a>.
  */
 
 ProtocolInfo::ProtocolInfo()
