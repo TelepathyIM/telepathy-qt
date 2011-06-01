@@ -1241,7 +1241,7 @@ QVariantMap Connection::ErrorDetails::allDetails() const
 }
 
 /**
- * Returns detailed information about the reason for the connection going invalidated().
+ * Return detailed information about the reason for the connection going invalidated().
  *
  * Some services may provide additional error information in the ConnectionError D-Bus signal, when
  * a Connection is disconnected / has become unusable. If the service didn't provide any, or has not
