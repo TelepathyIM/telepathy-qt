@@ -1603,12 +1603,7 @@ QString Account::connectionError() const
 }
 
 /**
- * Return a map containing extensible error details related to
- * connectionError().
- *
- * The keys for this map are defined by the \telepathy_spec.
- * They will typically include <literal>debug-message</literal>, which is a debugging
- * message in the C locale.
+ * Return detailed information related to connectionError().
  *
  * Note that this method may return a different value from the one returned by
  * Connection::errorDetails() on this account connection.
@@ -1616,8 +1611,7 @@ QString Account::connectionError() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return A map containing extensible error details related to
- *         connectionError().
+ * \return The error details.
  * \sa connectionError(), connectionStatus(), connectionStatusReason(), connectionStatusChanged(),
  *     Connection::ErrorDetails.
  */
