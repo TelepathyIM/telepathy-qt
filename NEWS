@@ -1,13 +1,16 @@
-telepathy-qt4 0.6.1 (UNRELEASED)
+telepathy-qt4 0.6.1 (2011-06-01)
 ================================
 
-The "..." release.
+The "Doc(tor) Love" release.
 
 Enhancements:
- * ...
+ * Crosslink our doxygen docs to Qt documentation
 
 Fixes:
- * ...
+ * fd.o #36881 - Wrong documentation for Tp::Account::connectionStatusChanged
+   (and a bunch of other parts of the API)
+ * fd.o #31769 - The documentation of TextChannel's features is not very helpful
+ * Skip docs generation for internal OptionalInterfaceCache
 
 telepathy-qt4 0.6.0 (2011-05-16)
 ================================
