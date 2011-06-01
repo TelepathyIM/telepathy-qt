@@ -165,10 +165,8 @@ void StreamTubeChannel::Private::introspectStreamTube(
  * \class StreamTubeChannel
  * \headerfile TelepathyQt4/stream-tube-channel.h <TelepathyQt4/StreamTubeChannel>
  *
- * A class representing a Stream Tube
+ * \brief A class representing a Telepathy stream tube.
  *
- * \c StreamTubeChannel is an high level wrapper for managing Telepathy interface
- * #TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE.
  * It provides a transport for reliable and ordered data transfer, similar to SOCK_STREAM sockets.
  *
  * This class provides high level methods for managing both incoming and outgoing tubes - however,
@@ -176,7 +174,7 @@ void StreamTubeChannel::Private::introspectStreamTube(
  * #IncomingStreamTubeChannel, which both provide higher level methods for accepting
  * or offering tubes.
  *
- * For more details, please refer to Telepathy spec.
+ * For more details, please refer to \telepathy_spec.
  */
 
 // Features declaration and documentation

@@ -24,10 +24,7 @@
  *
  * \section async_model_overview Overview
  *
- * Telepathy-Qt4 uses <a href="http://dbus.freedesktop.org">D-Bus</a> to
- * communicate with applications implementing the
- * <a href="http://telepathy.freedesktop.org/spec.html">Telepathy
- * specification</a>.
+ * Telepathy-Qt4 uses \dbus to communicate with applications implementing the \telepathy_spec.
  *
  * When dealing with D-Bus, method calls can take some time to return,
  * and in this case is not desirable to make synchronous calls,

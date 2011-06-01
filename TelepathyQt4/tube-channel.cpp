@@ -117,10 +117,8 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/tube-channel.h <TelepathyQt4/TubeChannel>
  *
- * A class representing an abstract Tube
+ * \brief A class representing a Telepathy abstract tube.
  *
- * \c TubeChannel is an high level wrapper for managing Telepathy interface
- * #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE.
  * A tube is a mechanism for arbitrary data transfer between two or more IM users,
  * used to allow applications on the users' systems to communicate without having
  * to establish network connections themselves.
@@ -128,7 +126,7 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
  * \note You should \b never create an abstract tube: you should use one of its
  * subclasses instead. At the moment, \c StreamTube and \c DBusTube are available.
  *
- * For more details, please refer to Telepathy spec.
+ * For more details, please refer to \telepathy_spec.
  */
 
 // Features declaration and documentation

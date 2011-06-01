@@ -1201,7 +1201,7 @@ PendingOperation *Account::setDisplayName(const QString &value)
  *
  * As a last resort, "im-" + protocolName() will be returned.
  *
- * This matches the fallbacks recommended by the Telepathy specification.
+ * This matches the fallbacks recommended by the \telepathy_spec.
  *
  * Change notification is via the iconNameChanged() signal.
  *
@@ -1606,11 +1606,9 @@ QString Account::connectionError() const
  * Return a map containing extensible error details related to
  * connectionError().
  *
- * The keys for this map are defined by
- * <a href="http://telepathy.freedesktop.org/spec/">the Telepathy D-Bus
- * Interface Specification</a>. They will typically include
- * <literal>debug-message</literal>, which is a debugging message in the C
- * locale.
+ * The keys for this map are defined by the \telepathy_spec.
+ * They will typically include <literal>debug-message</literal>, which is a debugging
+ * message in the C locale.
  *
  * Note that this method may return a different value from the one returned by
  * Connection::errorDetails() on this account connection.

@@ -149,8 +149,8 @@ Message::Message()
 /**
  * Constructor.
  *
- * \param parts The parts of a message as defined by the Telepathy D-Bus
- *              specification. This list must have length at least 1.
+ * \param parts The parts of a message as defined by the \telepathy_spec.
+ *              This list must have length at least 1.
  */
 Message::Message(const MessagePartList &parts)
     : mPriv(new Private(parts))
@@ -389,8 +389,8 @@ QString Message::text() const
 }
 
 /**
- * Return the message's header part, as defined by the Telepathy D-Bus API
- * specification. This is provided for advanced clients that need to access
+ * Return the message's header part, as defined by the \telepathy_spec.
+ * This is provided for advanced clients that need to access
  * additional information not available through the normal Message API.
  *
  * \return The same thing as messagepart(0)
@@ -411,8 +411,8 @@ int Message::size() const
 }
 
 /**
- * Return the message's header part, as defined by the Telepathy D-Bus API
- * specification. This is provided for advanced clients that need to access
+ * Return the message's header part, as defined by the \telepathy_spec.
+ * This is provided for advanced clients that need to access
  * additional information not available through the normal Message API.
  *
  * \param index The part to access, which must be strictly less than size();
@@ -598,8 +598,8 @@ ReceivedMessage::ReceivedMessage()
 /**
  * Constructor.
  *
- * \param parts The parts of a message as defined by the Telepathy D-Bus
- *              specification. This list must have length at least 1.
+ * \param parts The parts of a message as defined by the \telepathy_spec.
+ *              This list must have length at least 1.
  */
 ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
         const TextChannelPtr &channel)
