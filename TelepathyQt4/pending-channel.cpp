@@ -311,8 +311,8 @@ uint PendingChannel::targetHandle() const
  * If this channel request has finished, return the immutable properties of
  * the resulting channel. Otherwise, return an empty map.
  *
- * The keys and values in this map are defined by the Telepathy D-Bus
- * specification, or by third-party extensions to that specification.
+ * The keys and values in this map are defined by the \telepathy_spec,
+ * or by third-party extensions to that specification.
  * These are the properties that cannot change over the lifetime of the
  * channel; they're announced in the result of the request, for efficiency.
  * This map should be passed to the constructor of Channel or its subclasses

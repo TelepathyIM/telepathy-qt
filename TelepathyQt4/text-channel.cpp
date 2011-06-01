@@ -508,19 +508,25 @@ const Feature TextChannel::FeatureCore = Feature(QLatin1String(Channel::staticMe
 /**
  * Feature used in order to access the message queue info.
  *
- * Se message queue methods' documentation for more details.
+ * See message queue methods' documentation for more details.
+ *
+ * \sa messageQueue(), messageReceived(), pendingMessageRemoved()
  */
 const Feature TextChannel::FeatureMessageQueue = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 0);
 
 /**
  * Feature used in order to access message capabilities info.
  *
- * Se message capabilities methods' documentation for more details.
+ * See message capabilities methods' documentation for more details.
+ *
+ * \sa supportedContentTypes(), messagePartSupport(), deliveryReportingSupport()
  */
 const Feature TextChannel::FeatureMessageCapabilities = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 1);
 
 /**
  * Feature used in order to receive notification when a message is sent.
+ *
+ * \sa messageSent()
  */
 const Feature TextChannel::FeatureMessageSentSignal = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 2);
 
@@ -529,6 +535,8 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(QLatin1String(Text
  *
  * The chatStateChanged() signal will be emitted when a remote contact chat
  * state changes.
+ *
+ * \sa chatState(), chatStateChanged()
  */
 const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 3);
 

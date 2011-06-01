@@ -668,38 +668,35 @@ QMap<QString, QSharedPointer<Account::Private::DispatcherContext> > Account::Pri
  *
  * \brief The Account class represents a Telepathy account.
  *
- * Account adds the following features compared to using
- * Client::AccountManagerInterface directly:
- * <ul>
- *  <li>Status tracking</li>
- *  <li>Getting the list of supported interfaces automatically</li>
- * </ul>
- *
  * The remote object accessor functions on this object (isValidAccount(),
  * isEnabled(), and so on) don't make any D-Bus calls; instead, they return/use
  * values cached from a previous introspection run. The introspection process
  * populates their values in the most efficient way possible based on what the
- * service implements. Their return value is mostly undefined until the
- * introspection process is completed, i.e. isReady() returns true. See the
- * individual accessor descriptions for more details.
+ * service implements.
  *
- * Signals are emitted to indicate that properties have changed, for example
- * displayNameChanged(), iconNameChanged(), etc.
+ * To avoid unnecessary D-Bus traffic, some accessors only return valid
+ * information after specific features have been enabled.
+ * For instance, to retrieve the account protocol information, it is necessary to
+ * enable the feature Account::FeatureProtocolInfo.
+ * See the individual methods descriptions for more details.
+ *
+ * Account features can be enabled by constructing an AccountFactory and enabling
+ * the desired features, and passing it to AccountManager or ClientRegistrar
+ * when creating them as appropriate. However, if a particular
+ * feature is only ever used in a specific circumstance, such as an user opening
+ * some settings dialog separate from the general view of the application,
+ * features can be later enabled as needed by calling becomeReady() with the additional
+ * features, and waiting for the resulting PendingOperation to finish.
+ *
+ * As an addition to accessors, signals are emitted to indicate that properties have
+ * changed, for example displayNameChanged(), iconNameChanged(), etc.
  *
  * Convenience methods to create channels using the channel dispatcher such as
- * ensureTextChat(), createFileTransfer() are provided.
- *
- * To avoid unnecessary D-Bus traffic, some methods only return valid
- * information after a specific feature has been enabled by calling
- * becomeReady() with the desired set of features as an argument, and waiting
- * for the resulting PendingOperation to finish. For instance, to retrieve the
- * account protocol information, it is necessary to call becomeReady() with
- * Account::FeatureProtocolInfo included in the argument.
- * The required features are documented by each method.
+ * ensureTextChat(), createFileTransfer() are also provided.
  *
  * If the account is deleted from the AccountManager, this object
  * will not be deleted automatically; however, it will emit invalidated()
- * with error code #TELEPATHY_QT4_ERROR_OBJECT_REMOVED and will cease to
+ * with error code #TP_QT4_ERROR_OBJECT_REMOVED and will cease to
  * be useful.
  *
  * \section account_usage_sec Usage
@@ -796,6 +793,8 @@ const Feature Account::FeatureCore = Feature(QLatin1String(Account::staticMetaOb
  * Feature used in order to access account avatar info.
  *
  * See avatar specific methods' documentation for more details.
+ *
+ * \sa avatar(), avatarChanged()
  */
 const Feature Account::FeatureAvatar = Feature(QLatin1String(Account::staticMetaObject.className()), 1);
 
@@ -803,15 +802,19 @@ const Feature Account::FeatureAvatar = Feature(QLatin1String(Account::staticMeta
  * Feature used in order to access account protocol info.
  *
  * See protocol info specific methods' documentation for more details.
+ *
+ * \sa protocolInfo()
  */
 const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::staticMetaObject.className()), 2);
 
 /**
  * Feature used in order to access account capabilities.
  *
- * This feature will enable FeatureProtocolInfo and FeatureProfile.
+ * Enabling this feature will also enable FeatureProtocolInfo and FeatureProfile.
  *
  * See capabilities specific methods' documentation for more details.
+ *
+ * \sa capabilities(), capabilitiesChanged()
  */
 const Feature Account::FeatureCapabilities = Feature(QLatin1String(Account::staticMetaObject.className()), 3);
 
@@ -819,6 +822,8 @@ const Feature Account::FeatureCapabilities = Feature(QLatin1String(Account::stat
  * Feature used in order to access account profile info.
  *
  * See profile specific methods' documentation for more details.
+ *
+ * \sa profile(), profileChanged()
  */
 const Feature Account::FeatureProfile = FeatureProtocolInfo;
 // FeatureProfile is the same as FeatureProtocolInfo for now, as it only needs
@@ -832,7 +837,7 @@ const Feature Account::FeatureProfile = FeatureProtocolInfo;
  *
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
- *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ *                bus name #TP_QT4_ACCOUNT_MANAGER_BUS_NAME.
  * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
@@ -856,7 +861,7 @@ AccountPtr Account::create(const QString &busName, const QString &objectPath,
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
- *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ *                bus name #TP_QT4_ACCOUNT_MANAGER_BUS_NAME.
  * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
@@ -881,7 +886,7 @@ AccountPtr Account::create(const QDBusConnection &bus,
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
- *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ *                bus name #TP_QT4_ACCOUNT_MANAGER_BUS_NAME.
  * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
@@ -955,17 +960,20 @@ ContactFactoryConstPtr Account::contactFactory() const
 }
 
 /**
- * Return whether this is a valid account.
+ * Return whether this account is valid.
  *
- * If true, this account is considered by the account manager to be complete
- * and usable. If false, user action is required to make it usable, and it will
- * never attempt to connect (for instance, this might be caused by the absence
- * of a required parameter).
+ * If \c true, this account is considered by the account manager to be complete
+ * and usable. If \c false, user action is required to make it usable, and it will
+ * never attempt to connect. For instance, this might be caused by the absence
+ * or misconfiguration of a required parameter, in which case updateParameters()
+ * may be used to properly set the parameters values.
+ *
+ * Change notification is via the validityChanged() signal.
  *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return \c true if the account is valid, \c false otherwise.
- * \sa validityChanged()
+ * \sa validityChanged(), updateParameters()
  */
 bool Account::isValidAccount() const
 {
@@ -975,13 +983,12 @@ bool Account::isValidAccount() const
 /**
  * Return whether this account is enabled.
  *
- * Gives the users the possibility to prevent an account from
- * being used. This flag does not change the validity of the account.
+ * Change notification is via the stateChanged() signal.
  *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return \c true if the account is enabled, \c false otherwise.
- * \sa stateChanged()
+ * \sa stateChanged(), setEnabled()
  */
 bool Account::isEnabled() const
 {
@@ -991,10 +998,15 @@ bool Account::isEnabled() const
 /**
  * Set whether this account should be enabled or disabled.
  *
+ * This gives users the possibility to prevent an account from
+ * being used.
+ *
+ * Note that changing this property won't change the validity of the account.
+ *
  * \param value Whether this account should be enabled or disabled.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
- * \sa stateChanged()
+ * \sa stateChanged(), isEnabled()
  */
 PendingOperation *Account::setEnabled(bool value)
 {
@@ -1009,8 +1021,6 @@ PendingOperation *Account::setEnabled(bool value)
 /**
  * Return the connection manager name of this account.
  *
- * This method requires Account::FeatureCore to be enabled.
- *
  * \return The connection manager name of this account.
  */
 QString Account::cmName() const
@@ -1020,8 +1030,6 @@ QString Account::cmName() const
 
 /**
  * Return the protocol name of this account.
- *
- * This method requires Account::FeatureCore to be enabled.
  *
  * \return The protocol name of this account.
  */
@@ -1036,10 +1044,12 @@ QString Account::protocolName() const
  * Note that this method will fallback to protocolName() if service name
  * is not known.
  *
+ * Change notification is via the serviceNameChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The service name of this account.
- * \sa serviceNameChanged(), protocolName()
+ * \sa serviceNameChanged(), setServiceName(), protocolName()
  */
 QString Account::serviceName() const
 {
@@ -1052,10 +1062,27 @@ QString Account::serviceName() const
 /**
  * Set the service name of this account.
  *
+ * Some protocols, like XMPP and SIP, are used by various different user-recognised brands,
+ * such as Google Talk. On accounts for such services, this method can be used
+ * to set the name describing the service, which must consist only of ASCII letters, numbers and
+ * hyphen/minus signs, and start with a letter.
+ * For the jabber protocol, one of the following service names should be used if possible:
+ *
+ *   google-talk (for Google's IM service)
+ *   facebook (for Facebook's IM service)
+ *   lj-talk (for LiveJournal's IM service)
+ *
+ * The service name may also be set, if appropriate, when creating the account. See
+ * AccountManager::createAccount() for more details.
+ *
+ * Note that changing this property may also change the profile() used by this account,
+ * in which case profileChanged() will be emitted in addition to serviceNameChanged(), if
+ * Account::FeatureProfile is enabled.
+ *
  * \param value The service name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
- * \sa serviceNameChanged()
+ * \sa serviceNameChanged(), serviceName()
  */
 PendingOperation *Account::setServiceName(const QString &value)
 {
@@ -1068,15 +1095,23 @@ PendingOperation *Account::setServiceName(const QString &value)
 }
 
 /**
- * Return the profile used for this account.
+ * Return the profile used by this account.
+ *
+ * Profiles are intended to describe variants of the basic protocols supported by Telepathy
+ * connection managers.
+ * An example of this would be Google Talk vs Facebook chat vs Jabber/XMPP. Google Talk is a
+ * specific case of XMPP with well-known capabilities, quirks and settings, and Facebook chat is
+ * a subset of the standard XMPP offering.
+ *
+ * This method will return the profile for this account based on the service used by it.
  *
  * Note that if a profile for serviceName() is not available, a fake profile
- * (Profile::isFake() will return \c true) will be returned in case protocolInfo() is valid.
+ * (Profile::isFake() is \c true) will be returned in case protocolInfo() is valid.
  *
  * The fake profile will contain the following info:
  *  - Profile::type() will return "IM"
  *  - Profile::provider() will return an empty string
- *  - Profile::serviceName() will return cmName()-serviceName()
+ *  - Profile::serviceName() will return "cmName()-serviceName()"
  *  - Profile::name() and Profile::protocolName() will return protocolName()
  *  - Profile::iconName() will return "im-protocolName()"
  *  - Profile::cmName() will return cmName()
@@ -1087,10 +1122,12 @@ PendingOperation *Account::setServiceName(const QString &value)
  *    presences should be used
  *  - Profile::unsupportedChannelClassSpecs() will return an empty list
  *
+ * Change notification is via the profileChanged() signal.
+ *
  * This method requires Account::FeatureProfile to be enabled.
  *
  * \return The profile for this account.
- * \sa profileChanged()
+ * \sa profileChanged(), serviceName()
  */
 ProfilePtr Account::profile() const
 {
@@ -1119,10 +1156,12 @@ ProfilePtr Account::profile() const
 /**
  * Return the display name of this account.
  *
+ * Change notification is via the displayNameChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The display name of this account.
- * \sa displayNameChanged()
+ * \sa displayNameChanged(), setDisplayName()
  */
 QString Account::displayName() const
 {
@@ -1132,10 +1171,14 @@ QString Account::displayName() const
 /**
  * Set the display name of this account.
  *
+ * The display name is the user-visible name of this account.
+ * This is usually chosen by the user at account creation time.
+ * See AccountManager::createAccount() for more details.
+ *
  * \param value The display name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
- * \sa displayNameChanged()
+ * \sa displayNameChanged(), displayName()
  */
 PendingOperation *Account::setDisplayName(const QString &value)
 {
@@ -1150,8 +1193,6 @@ PendingOperation *Account::setDisplayName(const QString &value)
 /**
  * Return the icon name of this account.
  *
- * This method requires Account::FeatureCore to be enabled.
- *
  * If the account has no icon, and Account::FeatureProfile is enabled, the icon from the result of
  * profile() will be used.
  *
@@ -1160,10 +1201,14 @@ PendingOperation *Account::setDisplayName(const QString &value)
  *
  * As a last resort, "im-" + protocolName() will be returned.
  *
- * This matches the fallbacks recommended by the Telepathy specification.
+ * This matches the fallbacks recommended by the \telepathy_spec.
+ *
+ * Change notification is via the iconNameChanged() signal.
+ *
+ * This method requires Account::FeatureCore to be enabled.
  *
  * \return The icon name of this account.
- * \sa iconNameChanged()
+ * \sa iconNameChanged(), setIconName()
  */
 QString Account::iconName() const
 {
@@ -1191,7 +1236,7 @@ QString Account::iconName() const
  * \param value The icon name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
- * \sa iconNameChanged()
+ * \sa iconNameChanged(), iconName()
  */
 PendingOperation *Account::setIconName(const QString &value)
 {
@@ -1206,10 +1251,12 @@ PendingOperation *Account::setIconName(const QString &value)
 /**
  * Return the nickname of this account.
  *
+ * Change notification is via the nicknameChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The nickname of this account.
- * \sa nicknameChanged()
+ * \sa nicknameChanged(), setNickname()
  */
 QString Account::nickname() const
 {
@@ -1217,12 +1264,12 @@ QString Account::nickname() const
 }
 
 /**
- * Set the nickname of this account.
+ * Set the nickname of this account as seen to other contacts.
  *
  * \param value The nickname of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
- * \sa nicknameChanged()
+ * \sa nicknameChanged(), nickname()
  */
 PendingOperation *Account::setNickname(const QString &value)
 {
@@ -1235,13 +1282,14 @@ PendingOperation *Account::setNickname(const QString &value)
 }
 
 /**
- * Return a AvatarSpec representing the avatar requirements (size limits, supported MIME types, etc)
- * for avatars passed to setAvatar().
+ * Return the avatar requirements (size limits, supported MIME types, etc)
+ * for avatars passed to setAvatar() on this account.
  *
  * For now this method will only return the avatar requirements found in protocolInfo() if
- * FeatureProtocolInfo is ready.
+ * Account::FeatureProtocolInfo is ready, otherwise an invalid AvatarSpec instance is returned.
  *
  * \return The avatar requirements for avatars passed to setAvatar().
+ * \sa avatar(), setAvatar()
  */
 AvatarSpec Account::avatarRequirements() const
 {
@@ -1256,10 +1304,12 @@ AvatarSpec Account::avatarRequirements() const
 /**
  * Return the avatar of this account.
  *
+ * Change notification is via the avatarChanged() signal.
+ *
  * This method requires Account::FeatureAvatar to be enabled.
  *
  * \return The avatar of this account.
- * \sa avatarChanged()
+ * \sa avatarChanged(), setAvatar()
  */
 const Avatar &Account::avatar() const
 {
@@ -1273,12 +1323,14 @@ const Avatar &Account::avatar() const
 }
 
 /**
- * Set avatar of this account.
+ * Set avatar of this account as seen to other contacts.
+ *
+ * Note that \a avatar must match the requirements as returned by avatarRequirements().
  *
  * \param avatar The avatar of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
- * \sa avatarChanged()
+ * \sa avatarChanged(), avatar(), avatarRequirements()
  */
 PendingOperation *Account::setAvatar(const Avatar &avatar)
 {
@@ -1300,10 +1352,15 @@ PendingOperation *Account::setAvatar(const Avatar &avatar)
 /**
  * Return the parameters of this account.
  *
+ * The account parameters are represented as a map from connection manager parameter names
+ * to their values.
+ *
+ * Change notification is via the parametersChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The parameters of this account.
- * \sa parametersChanged()
+ * \sa parametersChanged(), updateParameters()
  */
 QVariantMap Account::parameters() const
 {
@@ -1313,7 +1370,7 @@ QVariantMap Account::parameters() const
 /**
  * Update this account parameters.
  *
- * On success, the pending operation returned by this method will produce a
+ * On success, the PendingOperation returned by this method will produce a
  * list of strings, which are the names of parameters whose changes will not
  * take effect until the account is disconnected and reconnected (for instance
  * by calling reconnect()).
@@ -1322,7 +1379,7 @@ QVariantMap Account::parameters() const
  * \param unset Parameters to unset.
  * \return A PendingStringList which will emit PendingStringList::finished
  *         when the request has been made
- * \sa parametersChanged(), reconnect()
+ * \sa parametersChanged(), parameters(), reconnect()
  */
 PendingStringList *Account::updateParameters(const QVariantMap &set,
         const QStringList &unset)
@@ -1354,14 +1411,17 @@ ProtocolInfo Account::protocolInfo() const
 /**
  * Return the capabilities for this account.
  *
- * This method requires Account::FeatureCapabilities to be enabled.
- *
  * Note that this method will return the connection() capabilities if the
  * account is online and ready. If the account is disconnected, it will fallback
- * to return the subtraction of the protocolInfo() capabilities and the profile unsupported
+ * to return the subtraction of the protocolInfo() capabilities and the profile() unsupported
  * capabilities.
  *
+ * Change notification is via the capabilitiesChanged() signal.
+ *
+ * This method requires Account::FeatureCapabilities to be enabled.
+ *
  * \return The capabilities for this account.
+ * \sa capabilitiesChanged(), protocolInfo(), profile()
  */
 ConnectionCapabilities Account::capabilities() const
 {
@@ -1432,11 +1492,13 @@ ConnectionCapabilities Account::capabilities() const
  * Return whether this account should be put online automatically whenever
  * possible.
  *
+ * Change notification is via the connectsAutomaticallyPropertyChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return \c true if it should try to connect automatically, \c false
  *         otherwise.
- * \sa connectsAutomaticallyPropertyChanged()
+ * \sa connectsAutomaticallyPropertyChanged(), setConnectsAutomatically()
  */
 bool Account::connectsAutomatically() const
 {
@@ -1451,7 +1513,7 @@ bool Account::connectsAutomatically() const
  *              possible.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
- * \sa connectsAutomaticallyPropertyChanged()
+ * \sa connectsAutomaticallyPropertyChanged(), connectsAutomatically()
  */
 PendingOperation *Account::setConnectsAutomatically(bool value)
 {
@@ -1466,7 +1528,7 @@ PendingOperation *Account::setConnectsAutomatically(bool value)
 /**
  * Return whether this account has ever been put online successfully.
  *
- * This property cannot change from true to false, only from false to true.
+ * This property cannot change from \c true to \c false, only from \c false to \c true.
  * When the account successfully goes online for the first time, or when it
  * is detected that this has already happened, the firstOnline() signal is
  * emitted.
@@ -1483,10 +1545,22 @@ bool Account::hasBeenOnline() const
 /**
  * Return the status of this account connection.
  *
+ * Note that this method may return a different value from the one returned by Connection::status()
+ * on this account connection. This happens because this value will change whenever the connection
+ * status of this account connection changes and won't consider the Connection introspection
+ * process. The same rationale also applies to connectionStatusReason() and
+ * connectionErrorDetails().
+ *
+ * A valid use case for this is for account creation UIs that wish to display the accounts
+ * connection status and nothing else on the connections (e.g. retrieve the contact list).
+ *
+ * Change notification is via the connectionStatusChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The status of this account connection.
- * \sa connectionStatusChanged()
+ * \sa connectionStatusChanged(), connectionStatusReason(), connectionError(),
+ *     connectionErrorDetails()
  */
 ConnectionStatus Account::connectionStatus() const
 {
@@ -1494,12 +1568,18 @@ ConnectionStatus Account::connectionStatus() const
 }
 
 /**
- * Return the status reason of this account connection.
+ * Return the reason for this account connection status.
+ *
+ * This represents the reason for the last change to connectionStatus().
+ *
+ * Note that this method may return a different value from the one returned by
+ * Connection::statusReason() on this account connection.
+ * See connectionStatus() for more details.
  *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The status reason of this account connection.
- * \sa connectionStatusChanged()
+ * \sa connectionStatusChanged(), connectionStatus(), connectionError(), connectionErrorDetails()
  */
 ConnectionStatusReason Account::connectionStatusReason() const
 {
@@ -1508,7 +1588,7 @@ ConnectionStatusReason Account::connectionStatusReason() const
 
 /**
  * Return the D-Bus error name for the last disconnection or connection failure,
- * (in particular, #TELEPATHY_ERROR_CANCELLED if it was disconnected by user
+ * (in particular, #TP_QT4_ERROR_CANCELLED if it was disconnected by user
  * request), or an empty string if the account is connected.
  *
  * This method requires Account::FeatureCore to be enabled.
@@ -1523,19 +1603,15 @@ QString Account::connectionError() const
 }
 
 /**
- * Return a map containing extensible error details related to
- * connectionError().
+ * Return detailed information related to connectionError().
  *
- * The keys for this map are defined by
- * <a href="http://telepathy.freedesktop.org/spec/">the Telepathy D-Bus
- * Interface Specification</a>. They will typically include
- * <literal>debug-message</literal>, which is a debugging message in the C
- * locale.
+ * Note that this method may return a different value from the one returned by
+ * Connection::errorDetails() on this account connection.
+ * See connectionStatus() for more details.
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return A map containing extensible error details related to
- *         connectionError().
+ * \return The error details.
  * \sa connectionError(), connectionStatus(), connectionStatusReason(), connectionStatusChanged(),
  *     Connection::ErrorDetails.
  */
@@ -1545,13 +1621,12 @@ Connection::ErrorDetails Account::connectionErrorDetails() const
 }
 
 /**
- * Return the ConnectionPtr object of this account.
+ * Return the object representing the connection of this account.
  *
- * Note that the returned ConnectionPtr object will not be cached by the Account
- * instance; applications should do it themselves.
+ * Note that the Connection object returned by this method will have the
+ * features set in the connectionFactory() used by this account ready.
  *
- * Remember to call Connection::becomeReady on the new connection to
- * make sure it is ready before using it.
+ * Change notification is via the connectionChanged() signal.
  *
  * This method requires Account::FeatureCore to be enabled.
  *
@@ -1566,7 +1641,9 @@ ConnectionPtr Account::connection() const
 }
 
 /**
- * Return whether this account's connection is changing presence.
+ * Return whether this account connection is changing presence.
+ *
+ * Change notification is via the changingPresence() signal.
  *
  * This method requires Account::FeatureCore to be enabled.
  *
@@ -1598,17 +1675,19 @@ bool Account::isChangingPresence() const
  * An offline presence status is always included, because it's always valid to make an account
  * offline by setting the requested presence to an offline status.
  *
- * Full functionality requires FeatureProtocolInfo and FeatureProfile to be ready as well as
- * Connection with Connection::FeatureSimplePresence enabled. If the connection is online and
- * Connection::FeatureSimplePresence is enabled, it will return the connection allowed statuses,
+ * Full functionality requires Account::FeatureProtocolInfo and Account::FeatureProfile to be ready
+ * as well as connection with Connection::FeatureSimplePresence enabled. If the connection is online
+ * and Connection::FeatureSimplePresence is enabled, it will return the connection allowed statuses,
  * otherwise it will return a list os statuses based on profile() and protocolInfo() information
  * if the corresponding features are enabled.
  *
  * If there's a mismatch between the presence status info provided in the .profile file and/or the
  * .manager file and what an online Connection actually reports (for example, the said data files
  * are missing or too old to include presence information), the returned value can change, in
- * particular when connectionChanged() is emitted with a connection for which connection->status()
- * == Tp::ConnectionStatusConnected.
+ * particular when connectionChanged() is emitted with a connection for which Connection::status()
+ * is Tp::ConnectionStatusConnected.
+ *
+ * This method requires Account::FeatureCore to be enabled.
  *
  * \param includeAllStatuses Whether the returned list will include all statuses or just the ones
  *                           that can are settable using setRequestedPresence().
@@ -1728,6 +1807,8 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
  * enabled, it will return the connection maximum status message length,
  * otherwise it will return 0.
  *
+ * This method requires Account::FeatureCore to be enabled.
+ *
  * \return The maximum length for a presence status message, or 0 if there is no limit.
  */
 uint Account::maxPresenceStatusMessageLength() const
@@ -1746,11 +1827,13 @@ uint Account::maxPresenceStatusMessageLength() const
  * Return the presence status that this account will have set on it by the
  * account manager if it brings it online automatically.
  *
+ * Change notification is via the automaticPresenceChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The presence that will be set by the account manager if this
  *         account is brought online automatically by it.
- * \sa automaticPresenceChanged()
+ * \sa automaticPresenceChanged(), setAutomaticPresence()
  */
 Presence Account::automaticPresence() const
 {
@@ -1761,11 +1844,18 @@ Presence Account::automaticPresence() const
  * Set the presence status that this account should have if it is brought
  * online automatically by the account manager.
  *
+ * Note that changing this property won't actually change the account's status
+ * until the next time it is (re)connected for some reason.
+ *
+ * The value of this property must be one that would be acceptable for setRequestedPresence(),
+ * as returned by allowedPresenceStatuses(), with the additional restriction that the offline
+ * presence cannot be used.
+ *
  * \param presence The presence to set when this account is brought
  *                 online automatically by the account manager.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
- * \sa automaticPresenceChanged(), setRequestedPresence()
+ * \sa automaticPresenceChanged(), automaticPresence(), setRequestedPresence()
  */
 PendingOperation *Account::setAutomaticPresence(const Presence &presence)
 {
@@ -1780,6 +1870,8 @@ PendingOperation *Account::setAutomaticPresence(const Presence &presence)
 /**
  * Return the actual presence of this account.
  *
+ * Change notification is via the currentPresenceChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The actual presence of this account.
@@ -1793,6 +1885,8 @@ Presence Account::currentPresence() const
 /**
  * Return the requested presence of this account.
  *
+ * Change notification is via the requestedPresenceChanged() signal.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The requested presence of this account.
@@ -1804,9 +1898,9 @@ Presence Account::requestedPresence() const
 }
 
 /**
- * Set the requested presence.
+ * Set the requested presence of this account.
  *
- * When requested presence is changed, the account manager should attempt to
+ * When the requested presence is changed, the account manager will attempt to
  * manipulate the connection to make currentPresence() match requestedPresence()
  * as closely as possible.
  *
@@ -1828,7 +1922,12 @@ PendingOperation *Account::setRequestedPresence(const Presence &presence)
 /**
  * Return whether this account is online.
  *
+ * Change notification is via the onlinenessChanged() signal.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
  * \return \c true if this account is online, otherwise \c false.
+ * \sa onlinenessChanged()
  */
 bool Account::isOnline() const
 {
@@ -1837,9 +1936,6 @@ bool Account::isOnline() const
 
 /**
  * Return the unique identifier of this account.
- *
- * This identifier should be unique per AccountManager implementation,
- * i.e. at least per QDBusConnection.
  *
  * \return The unique identifier of this account.
  */
@@ -1893,6 +1989,7 @@ PendingOperation *Account::reconnect()
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
+ * \sa removed()
  */
 PendingOperation *Account::remove()
 {
@@ -1902,7 +1999,7 @@ PendingOperation *Account::remove()
 /**
  * Return whether passing hints on channel requests on this account is known to be supported.
  *
- * The return value is undefined unless Account::FeatureCore is ready on this account proxy.
+ * This method requires Account::FeatureCore to be enabled.
  *
  * \return \c true if supported, \c false if not.
  */
@@ -1912,14 +2009,14 @@ bool Account::supportsRequestHints() const
 }
 
 /**
- * Return whether the ChannelRequest::succeeded(const Tp::ChannelPtr &) signal is expected to be
- * emitted with a non-NULL \a channel parameter for requests made using this account.
+ * Return whether the ChannelRequest::succeeded(const Tp::ChannelPtr &channel) signal is expected to
+ * be emitted with a non-NULL channel parameter for requests made using this account.
  *
  * This can be used as a run-time check for the Channel Dispatcher implementation being new enough.
- * In particular, similarly old Channel Dispatchers don't support request hints either, so the return
- * value for this function and Account::supportsRequestHints() will bet he same.
+ * In particular, similarly old Channel Dispatchers don't support request hints either, so the
+ * return value for this function and Account::supportsRequestHints() will bet he same.
  *
- * The return value is undefined unless Account::FeatureCore is ready on this account proxy.
+ * This method requires Account::FeatureCore to be enabled.
  *
  * \return \c true if supported, \c false if not.
  */
@@ -2352,7 +2449,6 @@ PendingChannelRequest *Account::createFileTransfer(
  * contact \a contact.
  *
  * \param contactIdentifier The identifier of the contact to send a file.
- * \param fileName The suggested filename for the receiver.
  * \param properties The desired properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
@@ -2476,7 +2572,7 @@ PendingChannelRequest *Account::createStreamTube(
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createStreamTube(
-        const Tp::ContactPtr &contact,
+        const ContactPtr &contact,
         const QString &service,
         const QDateTime &userActionTime,
         const QString &preferredHandler,
@@ -2654,6 +2750,8 @@ PendingChannelRequest *Account::createConferenceTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
  * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
  *         when the request has been made.
  * \sa ensureChannel(), createChannel()
@@ -3462,7 +3560,7 @@ PendingChannelRequest *Account::ensureChannel(
  * The caller is responsible for closing the channel with
  * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
  *
- * A possible error returned by this method is #TELEPATHY_ERROR_NOT_AVAILABLE, in case a conflicting
+ * A possible error returned by this method is #TP_QT4_ERROR_NOT_AVAILABLE, in case a conflicting
  * channel that matches \a request already exists.
  *
  * \param request A dictionary containing desirable properties.
@@ -3491,7 +3589,7 @@ PendingChannel *Account::createAndHandleChannel(
  * The caller is responsible for closing the channel with
  * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
  *
- * A possible error returned by this method is #TELEPATHY_ERROR_NOT_YOURS, in case somebody else is
+ * A possible error returned by this method is #TP_QT4_ERROR_NOT_YOURS, in case somebody else is
  * already handling a channel that matches \a request.
  *
  * \param request A dictionary containing desirable properties.
@@ -3508,201 +3606,6 @@ PendingChannel *Account::ensureAndHandleChannel(
 {
     return new PendingChannel(AccountPtr(this), request, userActionTime, false);
 }
-
-/**
- * \fn void Account::serviceNameChanged(const QString &serviceName);
- *
- * This signal is emitted when the value of serviceName() of this account
- * changes.
- *
- * \param serviceName The new service name of this account.
- * \sa serviceName(), setServiceName()
- */
-
-/**
- * \fn void Account::profileChanged(const Tp::ProfilePtr &profile);
- *
- * This signal is emitted when the value of profile() of this account
- * changes.
- *
- * \param profile The new profile of this account.
- * \sa profile()
- */
-
-/**
- * \fn void Account::displayNameChanged(const QString &displayName);
- *
- * This signal is emitted when the value of displayName() of this account
- * changes.
- *
- * \param displayName The new display name of this account.
- * \sa displayName(), setDisplayName()
- */
-
-/**
- * \fn void Account::iconNameChanged(const QString &iconName);
- *
- * This signal is emitted when the value of iconName() of this account changes.
- *
- * \param iconName The new icon name of this account.
- * \sa iconName(), setIconName()
- */
-
-/**
- * \fn void Account::nicknameChanged(const QString &nickname);
- *
- * This signal is emitted when the value of nickname() of this account changes.
- *
- * \param nickname The new nickname of this account.
- * \sa nickname(), setNickname()
- */
-
-/**
- * \fn void Account::normalizedNameChanged(const QString &normalizedName);
- *
- * This signal is emitted when the value of normalizedName() of this account
- * changes.
- *
- * \param normalizedName The new normalized name of this account.
- * \sa normalizedName()
- */
-
-/**
- * \fn void Account::validityChanged(bool validity);
- *
- * This signal is emitted when the value of isValidAccount() of this account
- * changes.
- *
- * \param validity The new validity of this account.
- * \sa isValidAccount()
- */
-
-/**
- * \fn void Account::stateChanged(bool state);
- *
- * This signal is emitted when the value of isEnabled() of this account
- * changes.
- *
- * \param state The new state of this account.
- * \sa isEnabled()
- */
-
-/**
- * \fn void Account::connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
- *
- * This signal is emitted when the value of connectsAutomatically() of this
- * account changes.
- *
- * \param connectsAutomatically The new value of connects automatically property
- *                              of this account.
- * \sa isEnabled()
- */
-
-/**
- * \fn void Account::firstOnline();
- *
- * This signal is emitted when this account is first put online.
- *
- * \sa hasBeenOnline()
- */
-
-/**
- * \fn void Account::parametersChanged(const QVariantMap &parameters);
- *
- * This signal is emitted when the value of parameters() of this
- * account changes.
- *
- * \param parameters The new parameters of this account.
- * \sa parameters()
- */
-
-/**
- * \fn void Account::changingPresence(bool value);
- *
- * This signal is emitted when the value of isChangingPresence() of this
- * account changes.
- *
- * \param value Whether this account's connection is changing presence.
- * \sa isChangingPresence()
- */
-
-/**
- * \fn void Account::automaticPresenceChanged(const Tp::Presence &automaticPresence) const;
- *
- * This signal is emitted when the value of automaticPresence() of this
- * account changes.
- *
- * \param automaticPresence The new value of automatic presence property of this
- *                          account.
- * \sa automaticPresence()
- */
-
-/**
- * \fn void Account::currentPresenceChanged(const Tp::Presence &currentPresence) const;
- *
- * This signal is emitted when the value of currentPresence() of this
- * account changes.
- *
- * \param currentPresence The new value of current presence property of this
- *                        account.
- * \sa currentPresence()
- */
-
-/**
- * \fn void Account::requestedPresenceChanged(const Tp::Presence &requestedPresence) const;
- *
- * This signal is emitted when the value of requestedPresence() of this
- * account changes.
- *
- * \param requestedPresence The new value of requested presence property of this
- *                          account.
- * \sa requestedPresence()
- */
-
-/**
- * \fn void Account::onlinenessChanged(bool online) const;
- *
- * This signal is emitted when the value of isOnline() of this
- * account changes.
- *
- * \param online Whether this account is online.
- * \sa currentPresence()
- */
-
-/**
- * \fn void Account::avatarChanged(const Tp::Avatar &avatar);
- *
- * This signal is emitted when the value of avatar() of this
- * account changes.
- *
- * \param avatar The new avatar of this account.
- * \sa avatar()
- */
-
-/**
- * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status);
- *
- * This signal is emitted when the connection status of this account changes.
- *
- * \param status The new status of this account connection.
- * \param statusReason The new status reason of this account connection.
- * \param errorName The D-Bus error name for the last disconnection or
- *                  connection failure,
- * \param errorDetails The error details related to errorName.
- * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails(),
- *     Connection::ErrorDetails
- */
-
-/**
- * \fn void Account::connectionChanged(const Tp::ConnectionPtr &connection);
- *
- * This signal is emitted when the value of connection() of this
- * account changes.
- *
- * \param connection A ConnectionPtr pointing to the new Connection object or a null ConnectionPtr
- *                   if there is no connection.
- * \sa connection()
- */
 
 /**
  * Return the Client::AccountInterface interface proxy object for this account.
@@ -4321,5 +4224,201 @@ void Account::onConnectionBuilt(PendingOperation *op)
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
 }
+
+/**
+ * \fn void Account::removed()
+ *
+ * This signal is emitted when this account is removed from the account manager it belonged.
+ *
+ * \sa remove().
+ */
+
+/**
+ * \fn void Account::validityChanged(bool validity)
+ *
+ * This signal is emitted when the value of isValidAccount() changes.
+ *
+ * \param validity The new validity of this account.
+ * \sa isValidAccount()
+ */
+
+/**
+ * \fn void Account::stateChanged(bool state)
+ *
+ * This signal is emitted when the value of isEnabled() changes.
+ *
+ * \param state The new state of this account.
+ * \sa isEnabled()
+ */
+
+/**
+ * \fn void Account::serviceNameChanged(const QString &serviceName)
+ *
+ * This signal is emitted when the value of serviceName() changes.
+ *
+ * \param serviceName The new service name of this account.
+ * \sa serviceName(), setServiceName()
+ */
+
+/**
+ * \fn void Account::profileChanged(const Tp::ProfilePtr &profile)
+ *
+ * This signal is emitted when the value of profile() changes.
+ *
+ * \param profile The new profile of this account.
+ * \sa profile()
+ */
+
+/**
+ * \fn void Account::displayNameChanged(const QString &displayName)
+ *
+ * This signal is emitted when the value of displayName() changes.
+ *
+ * \param displayName The new display name of this account.
+ * \sa displayName(), setDisplayName()
+ */
+
+/**
+ * \fn void Account::iconNameChanged(const QString &iconName)
+ *
+ * This signal is emitted when the value of iconName() changes.
+ *
+ * \param iconName The new icon name of this account.
+ * \sa iconName(), setIconName()
+ */
+
+/**
+ * \fn void Account::nicknameChanged(const QString &nickname)
+ *
+ * This signal is emitted when the value of nickname() changes.
+ *
+ * \param nickname The new nickname of this account.
+ * \sa nickname(), setNickname()
+ */
+
+/**
+ * \fn void Account::normalizedNameChanged(const QString &normalizedName)
+ *
+ * This signal is emitted when the value of normalizedName() changes.
+ *
+ * \param normalizedName The new normalized name of this account.
+ * \sa normalizedName()
+ */
+
+/**
+ * \fn void Account::capabilitiesChanged(const Tp::ConnectionCapabilities &capabilities)
+ *
+ * This signal is emitted when the value of capabilities() changes.
+ *
+ * \param capabilities The new capabilities of this account.
+ * \sa capabilities()
+ */
+
+/**
+ * \fn void Account::connectsAutomaticallyPropertyChanged(bool connectsAutomatically)
+ *
+ * This signal is emitted when the value of connectsAutomatically() changes.
+ *
+ * \param connectsAutomatically The new value of connects automatically property
+ *                              of this account.
+ * \sa isEnabled()
+ */
+
+/**
+ * \fn void Account::firstOnline()
+ *
+ * This signal is emitted when this account is first put online.
+ *
+ * \sa hasBeenOnline()
+ */
+
+/**
+ * \fn void Account::parametersChanged(const QVariantMap &parameters)
+ *
+ * This signal is emitted when the value of parameters() changes.
+ *
+ * \param parameters The new parameters of this account.
+ * \sa parameters()
+ */
+
+/**
+ * \fn void Account::changingPresence(bool value)
+ *
+ * This signal is emitted when the value of isChangingPresence() changes.
+ *
+ * \param value Whether this account's connection is changing presence.
+ * \sa isChangingPresence()
+ */
+
+/**
+ * \fn void Account::automaticPresenceChanged(const Tp::Presence &automaticPresence)
+ *
+ * This signal is emitted when the value of automaticPresence() changes.
+ *
+ * \param automaticPresence The new value of automatic presence property of this
+ *                          account.
+ * \sa automaticPresence(), currentPresenceChanged()
+ */
+
+/**
+ * \fn void Account::currentPresenceChanged(const Tp::Presence &currentPresence)
+ *
+ * This signal is emitted when the value of currentPresence() changes.
+ *
+ * \param currentPresence The new value of the current presence property of this
+ *                        account.
+ * \sa currentPresence()
+ */
+
+/**
+ * \fn void Account::requestedPresenceChanged(const Tp::Presence &requestedPresence)
+ *
+ * This signal is emitted when the value of requestedPresence() changes.
+ *
+ * \param requestedPresence The new value of the requested presence property of this
+ *                          account.
+ * \sa requestedPresence(), currentPresenceChanged()
+ */
+
+/**
+ * \fn void Account::onlinenessChanged(bool online)
+ *
+ * This signal is emitted when the value of isOnline() changes.
+ *
+ * \param online Whether this account is online.
+ * \sa isOnline(), currentPresence()
+ */
+
+/**
+ * \fn void Account::avatarChanged(const Tp::Avatar &avatar)
+ *
+ * This signal is emitted when the value of avatar() changes.
+ *
+ * \param avatar The new avatar of this account.
+ * \sa avatar()
+ */
+
+/**
+ * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status)
+ *
+ * This signal is emitted when the connection status changes.
+ *
+ * \param status The new status of this account connection.
+ * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails(),
+ *     Connection::ErrorDetails
+ */
+
+/**
+ * \fn void Account::connectionChanged(const Tp::ConnectionPtr &connection)
+ *
+ * This signal is emitted when the value of connection() changes.
+ *
+ * The \a connection will have the features set in the ConnectionFactory used by this account ready
+ * and the same channel and contact factories used by this account.
+ *
+ * \param connection A ConnectionPtr pointing to the new Connection object or a null ConnectionPtr
+ *                   if there is no connection.
+ * \sa connection()
+ */
 
 } // Tp

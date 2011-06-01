@@ -54,9 +54,9 @@ namespace Tp
  *
  * As an optimization, service-activatable clients should install a file
  * $XDG_DATA_DIRS/telepathy/clients/clientname.client containing a cached version
- * of their immutable properties. The syntax of these files is <a
+ * of their immutable properties. The syntax of these files is documented in the <a
  * href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.html">
- * documented in the Telepathy D-Bus API Specification</a>.
+ * Telepathy specification</a>.
  *
  * Non-activatable clients may install a .client file, but there's not much
  * point in them doing so.
@@ -279,7 +279,7 @@ AbstractClientObserver::~AbstractClientObserver()
  *
  * See <a
  * href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.Observer.html#org.freedesktop.Telepathy.Client.Observer.ObserverChannelFilter">
- * the Telepathy D-Bus API Specification</a> for documentation about the allowed
+ * the Telepathy specification</a> for documentation about the allowed
  * types and how to define filters.
  *
  * This property never changes while the observer process owns its client bus

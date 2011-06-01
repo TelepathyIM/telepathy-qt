@@ -524,7 +524,7 @@ void Profile::Private::invalidate()
  * \ingroup utils
  * \headerfile TelepathyQt4/profile.h <TelepathyQt4/Profile>
  *
- * \brief The Profile class provides an easy way to read telepathy profile
+ * \brief The Profile class provides an easy way to read Telepathy profile
  * files according to http://telepathy.freedesktop.org/wiki/service-profile-v1.
  *
  * Note that profiles with xml element <type> different than "IM" are considered
@@ -667,8 +667,8 @@ bool Profile::isFake() const
 /**
  * Return the type of the service to which this profile applies.
  *
- * In general, services of interest of telepathy should be of type 'IM'.
- * Other service types exist but are unlikely to affect telepathy in any way.
+ * In general, services of interest of Telepathy should be of type 'IM'.
+ * Other service types exist but are unlikely to affect Telepathy in any way.
  *
  * \return The type of the service.
  */
@@ -914,7 +914,7 @@ Profile::Parameter::Parameter(const Parameter &other)
  * Construct a new Profile::Parameter object.
  *
  * \param name The parameter name.
- * \param dbusSignature The parameter dbus signature.
+ * \param dbusSignature The parameter D-Bus signature.
  * \param value The parameter value.
  * \param label The parameter label.
  * \param mandatory Whether this parameter is mandatory.
@@ -1114,9 +1114,9 @@ Profile::Presence::~Presence()
 }
 
 /**
- * Return the telepathy presence id for this presence.
+ * Return the Telepathy presence id for this presence.
  *
- * \return The telepathy presence id for this presence.
+ * \return The Telepathy presence id for this presence.
  */
 QString Profile::Presence::id() const
 {

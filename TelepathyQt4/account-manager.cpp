@@ -240,9 +240,18 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  * validAccounts(), and so on) don't make any D-Bus calls; instead, they return/use
  * values cached from a previous introspection run. The introspection process
  * populates their values in the most efficient way possible based on what the
- * service implements. Their return value is mostly undefined until the
- * introspection process is completed, i.e. isReady() returns true. See the
- * individual accessor descriptions for more details.
+ * service implements.
+ *
+ * To avoid unnecessary D-Bus traffic, some accessors only return valid
+ * information after AccountManager::FeatureCore has been enabled.
+ * See the individual methods descriptions for more details.
+ *
+ * AccountManager features can be enabled by calling becomeReady()
+ * with the desired set of features as an argument (currently only AccountManager::FeatureCore is
+ * supported), and waiting for the resulting PendingOperation to finish.
+ *
+ * All accounts returned by AccountManager are guaranteed to have the features set in the
+ * AccountFactory used by it ready.
  *
  * A signal is emitted to indicate that accounts are added. See newCreated() for more details.
  *
@@ -320,8 +329,8 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  * Feature representing the core that needs to become ready to make the
  * AccountManager object usable.
  *
- * Note that this feature must be enabled in order to use any AccountManager
- * method.
+ * Note that this feature must be enabled in order to use most AccountManager
+ * methods.
  *
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
@@ -332,8 +341,9 @@ const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager
  * Create a new AccountManager object using the given \a bus.
  *
  * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
- * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
- * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
+ * ready, a connection factory creating Tp::Connection objects with no features ready, a channel
+ * factory creating stock Tp::Channel subclasses, as appropriate, with no features ready, and a
+ * contact factory creating Tp::Contact objects with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \return An AccountManagerPtr object pointing to the newly created
@@ -350,8 +360,8 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
 /**
  * Create a new AccountManager using QDBusConnection::sessionBus() and the given factories.
  *
- * The connection and channel factories are passed to any Account objects created by this manager
- * object. In fact, they're not used directly by AccountManager at all.
+ * The connection, channel and contact factories are passed to any Account objects created by this
+ * account manager object. In fact, they're not used directly by AccountManager at all.
  *
  * A warning is printed if the factories are for a bus different from QDBusConnection::sessionBus().
  *
@@ -375,8 +385,8 @@ AccountManagerPtr AccountManager::create(const AccountFactoryConstPtr &accountFa
 /**
  * Create a new AccountManager using the given \a bus and the given factories.
  *
- * The connection and channel factories are passed to any Account objects created by this manager
- * object. In fact, they're not used directly by AccountManager at all.
+ * The connection, channel and contact factories are passed to any Account objects created by this
+ * account manager object. In fact, they're not used directly by AccountManager at all.
  *
  * A warning is printed if the factories are not for \a bus.
  *
@@ -401,6 +411,9 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
 
 /**
  * Construct a new AccountManager object using the given \a bus and the given factories.
+ *
+ * The connection, channel and contact factories are passed to any Account objects created by this
+ * account manager object. In fact, they're not used directly by AccountManager at all.
  *
  * A warning is printed if the factories are not for \a bus.
  *
@@ -435,14 +448,14 @@ AccountManager::~AccountManager()
 }
 
 /**
- * Return the account factory used by this manager.
+ * Return the account factory used by this account manager.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the account factory.
+ * \return Read-only pointer to the factory.
  */
 AccountFactoryConstPtr AccountManager::accountFactory() const
 {
@@ -450,14 +463,14 @@ AccountFactoryConstPtr AccountManager::accountFactory() const
 }
 
 /**
- * Return the connection factory used by this manager.
+ * Return the connection factory used by this account manager.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the connection factory.
+ * \return Read-only pointer to the factory.
  */
 ConnectionFactoryConstPtr AccountManager::connectionFactory() const
 {
@@ -465,14 +478,14 @@ ConnectionFactoryConstPtr AccountManager::connectionFactory() const
 }
 
 /**
- * Return the channel factory used by this manager.
+ * Return the channel factory used by this account manager.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the channel factory.
+ * \return Read-only pointer to the factory.
  */
 ChannelFactoryConstPtr AccountManager::channelFactory() const
 {
@@ -480,14 +493,14 @@ ChannelFactoryConstPtr AccountManager::channelFactory() const
 }
 
 /**
- * Return the contact factory used by this manager.
+ * Return the contact factory used by this account manager.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the contact factory.
+ * \return Read-only pointer to the factory.
  */
 ContactFactoryConstPtr AccountManager::contactFactory() const
 {
@@ -496,6 +509,8 @@ ContactFactoryConstPtr AccountManager::contactFactory() const
 
 /**
  * Return a list containing all accounts.
+ *
+ * Newly accounts added and/or discovered are signaled via newAccount().
  *
  * This method requires AccountManager::FeatureCore to be enabled.
  *
@@ -1099,6 +1114,10 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
  * \fn void AccountManager::newAccount(const Tp::AccountPtr &account)
  *
  * This signal is emitted when a new account is created.
+ *
+ * The new \a account will have the features set in the AccountFactory used by this
+ * account manager ready and the same connection, channel and contact factories as used by this
+ * account manager.
  *
  * \param account The newly created account.
  */
