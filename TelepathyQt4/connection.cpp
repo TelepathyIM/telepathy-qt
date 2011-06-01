@@ -782,27 +782,34 @@ QMutex Connection::Private::handleContextsLock;
  * \brief The Connection class represents a Telepathy connection.
  *
  * This models a connection to a single user account on a communication service.
- * Its basic capability is to provide the facility to request and receive
- * channels of differing types (such as text channels or streaming media
- * channels) which are used to carry out further communication.
  *
  * Contacts, and server-stored lists (such as subscribed contacts,
  * block lists, or allow lists) on a service are all represented using the
  * ContactManager object on the connection, which is valid only for the lifetime
  * of the connection object.
  *
- * The remote object state accessor functions on this object (status(),
- * statusReason(), and so on) don't make any DBus calls; instead,
- * they return values cached from a previous introspection run. The
- * introspection process populates their values in the most efficient way
- * possible based on what the service implements.
- * Their return value is mostly undefined until the
- * introspection process is completed, i.e. isReady() returns true. See the
- * individual accessor descriptions for more details. A status change to
- * ConnectionStatusConnected indicates that the introspection process is finished
+ * The remote object accessor functions on this object (status(),
+ * statusReason(), and so on) don't make any D-Bus calls; instead, they return/use
+ * values cached from a previous introspection run. The introspection process
+ * populates their values in the most efficient way possible based on what the
+ * service implements.
  *
- * Signals are emitted to indicate that properties have changed for example
- * statusChanged()(), selfContactChanged(), etc.
+ * To avoid unnecessary D-Bus traffic, some accessors only return valid
+ * information after specific features have been enabled.
+ * For instance, to retrieve the connection self contact, it is necessary to
+ * enable the feature Connection::FeatureSelfContact.
+ * See the individual methods descriptions for more details.
+ *
+ * Connection features can be enabled by constructing a ConnectionFactory and enabling
+ * the desired features, and passing it to AccountManager, Account or ClientRegistrar
+ * when creating them as appropriate. However, if a particular
+ * feature is only ever used in a specific circumstance, such as an user opening
+ * some settings dialog separate from the general view of the application,
+ * features can be later enabled as needed by calling becomeReady() with the additional
+ * features, and waiting for the resulting PendingOperation to finish.
+ *
+ * As an addition to accessors, signals are emitted to indicate that properties have changed,
+ * for example statusChanged()(), selfContactChanged(), etc.
  *
  * \section conn_usage_sec Usage
  *
@@ -897,6 +904,8 @@ const Feature Connection::FeatureCore = Feature(QLatin1String(Connection::static
  * Feature used to retrieve the connection self contact.
  *
  * See self contact specific methods' documentation for more details.
+ *
+ * \sa selfContact(), selfContactChanged()
  */
 const Feature Connection::FeatureSelfContact = Feature(QLatin1String(Connection::staticMetaObject.className()), 1);
 
@@ -911,6 +920,8 @@ const Feature Connection::FeatureSimplePresence = Feature(QLatin1String(Connecti
  * Feature used to enable roster support on Connection::contactManager.
  *
  * See ContactManager roster specific methods' documentation for more details.
+ *
+ * \sa ContactManager::allKnownContacts()
  */
 const Feature Connection::FeatureRoster = Feature(QLatin1String(Connection::staticMetaObject.className()), 4);
 
@@ -919,6 +930,8 @@ const Feature Connection::FeatureRoster = Feature(QLatin1String(Connection::stat
  *
  * See ContactManager roster groups specific methods' documentation for more
  * details.
+ *
+ * \sa ContactManager::allKnownGroups()
  */
 const Feature Connection::FeatureRosterGroups = Feature(QLatin1String(Connection::staticMetaObject.className()), 5);
 
@@ -926,6 +939,8 @@ const Feature Connection::FeatureRosterGroups = Feature(QLatin1String(Connection
  * Feature used to retrieve/keep track of the connection account balance.
  *
  * See account balance specific methods' documentation for more details.
+ *
+ * \sa accountBalance(), accountBalanceChanged()
  */
 const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connection::staticMetaObject.className()), 6);
 
@@ -949,7 +964,7 @@ const Feature Connection::FeatureConnected = Feature(QLatin1String(Connection::s
  * \param objectPath The connection object path.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
- * \return A ConnectionPtr pointing to the newly created Connection.
+ * \return A ConnectionPtr object pointing to the newly created Connection object.
  */
 ConnectionPtr Connection::create(const QString &busName,
         const QString &objectPath,
@@ -972,7 +987,7 @@ ConnectionPtr Connection::create(const QString &busName,
  * \param objectPath The connection object path.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
- * \return A ConnectionPtr pointing to the newly created Connection.
+ * \return A ConnectionPtr object pointing to the newly created Connection object.
  */
 ConnectionPtr Connection::create(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath,
@@ -1018,7 +1033,7 @@ Connection::~Connection()
 }
 
 /**
- * Get the channel factory used by this connection.
+ * Return the channel factory used by this connection.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
@@ -1033,7 +1048,7 @@ ChannelFactoryConstPtr Connection::channelFactory() const
 }
 
 /**
- * Get the contact factory used by this connection.
+ * Return the contact factory used by this connection.
  *
  * Only read access is provided. This allows constructing object instances and examining the object
  * construction settings, but not changing settings. Allowing changes would lead to tricky
@@ -1047,24 +1062,35 @@ ContactFactoryConstPtr Connection::contactFactory() const
     return mPriv->contactFactory;
 }
 
+/**
+ * Return the connection manager name of this connection.
+ *
+ * \return The connection manager name of this connection.
+ */
 QString Connection::cmName() const
 {
     return mPriv->cmName;
 }
 
+/**
+ * Return the protocol name of this connection.
+ *
+ * \return The protocol name of this connection.
+ */
 QString Connection::protocolName() const
 {
     return mPriv->protocolName;
 }
 
-
 /**
  * Return the status of this connection.
+ *
+ * Change notification is via the statusChanged() signal.
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
  * \return The status of this connection, as defined in ConnectionStatus.
- * \sa statusChanged()
+ * \sa statusChanged(), statusReason(), errorDetails()
  */
 ConnectionStatus Connection::status() const
 {
@@ -1072,14 +1098,15 @@ ConnectionStatus Connection::status() const
 }
 
 /**
- * Return the reason for this connection's status (which is returned by
- * status()). The validity and change rules are the same as for status().
+ * Return the reason for this connection status.
  *
- * This method requires Connection::FeatureCore to be enabled.
+ * The validity and change rules are the same as for status().
  *
  * The status reason should be only used as a fallback in error handling when the application
  * doesn't understand an error name given as the invalidation reason, which may in some cases be
  * domain/UI-specific.
+ *
+ * This method requires Connection::FeatureCore to be enabled.
  *
  * \sa invalidated(), invalidationReason()
  * \return The reason, as defined in ConnectionStatusReason.
@@ -1102,7 +1129,9 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::ErrorDetails::Private : public QShare
  * \ingroup clientconn
  * \headerfile TelepathyQt4/connection.h <TelepathyQt4/Connection>
  *
- * Contains detailed information about the reason for the connection going invalidated().
+ * \brief The Connection::ErrorDetails class represents the details of a connection error.
+ *
+ * It contains detailed information about the reason for the connection going invalidated().
  *
  * Some services may provide additional error information in the ConnectionError D-Bus signal, when
  * a Connection is disconnected / has become unusable. If the service didn't provide any, or has not
@@ -1126,11 +1155,8 @@ Connection::ErrorDetails::ErrorDetails()
 }
 
 /**
- * Construct a error details instance with the given details. The instance will indicate it's valid.
- *
- * This is primarily useful for wrapping lower-level APIs with, like presently
- * Account::connectionErrorDetails() and Account::statusChanged(), neither of which we can
- * compatibly change to return Connection::ErrorDetails yet.
+ * Construct a error details instance with the given details. The instance will indicate that
+ * it is valid.
  */
 Connection::ErrorDetails::ErrorDetails(const QVariantMap &details)
     : mPriv(new Private(details))
@@ -1138,7 +1164,7 @@ Connection::ErrorDetails::ErrorDetails(const QVariantMap &details)
 }
 
 /**
- * Copy-constructs an ErrorDetails instance, with value copy semantics.
+ * Copy constructor.
  */
 Connection::ErrorDetails::ErrorDetails(const ErrorDetails &other)
     : mPriv(other.mPriv)
@@ -1146,7 +1172,7 @@ Connection::ErrorDetails::ErrorDetails(const ErrorDetails &other)
 }
 
 /**
- * Destructs an ErrorDetails instance.
+ * Class destructor.
  */
 Connection::ErrorDetails::~ErrorDetails()
 {
@@ -1167,39 +1193,47 @@ Connection::ErrorDetails &Connection::ErrorDetails::operator=(
 /**
  * \fn bool Connection::ErrorDetails::isValid() const
  *
- * Returns whether or not the details are valid (have actually been received from the service).
+ * Return whether or not the details are valid (have actually been received from the service).
  *
- * \return Validity of the details
+ * \return Validity of the details.
  */
 
 /**
  * \fn bool Connection::ErrorDetails::hasDebugMessage() const
  *
- * Returns whether or not the details specify a debug message. If present, the debug message will
- * likely be the same string as the one returned by invalidationMessage().
+ * Return whether or not the details specify a debug message.
+ *
+ * If present, the debug message will likely be the same string as the one returned by
+ * invalidationMessage().
  *
  * The debug message is purely informational, offered for display for bug reporting purposes, and
  * should not be attempted to be parsed.
  *
- * \returns Whether there is a debug message or not.
+ * \return Whether there is a debug message or not.
+ * \sa debugMessage()
  */
 
 /**
  * \fn QString Connection::ErrorDetails::debugMessage() const
  *
- * Returns the debug message specified by the details, if any. If present, the debug message will
- * likely be the same string as the one returned by invalidationMessage().
+ * Return the debug message specified by the details, if any.
+ *
+ * If present, the debug message will likely be the same string as the one returned by
+ * invalidationMessage().
  *
  * The debug message is purely informational, offered for display for bug reporting purposes, and
  * should not be attempted to be parsed.
  *
- * \returns The debug message, or an empty string if there is none.
+ * \return The debug message, or an empty string if there is none.
+ * \sa hasDebugMessage()
  */
 
 /**
- * Returns a map containing all details given in the low-level ConnectionError signal.
+ * Return a map containing all details given in the low-level ConnectionError signal.
  *
  * This is useful for accessing domain-specific additional details.
+ *
+ * \return A map containing all details given in the low-level ConnectionError signal.
  */
 QVariantMap Connection::ErrorDetails::allDetails() const
 {
@@ -1207,7 +1241,7 @@ QVariantMap Connection::ErrorDetails::allDetails() const
 }
 
 /**
- * Returns detailed information about the reason for the connection going invalidated().
+ * Return detailed information about the reason for the connection going invalidated().
  *
  * Some services may provide additional error information in the ConnectionError D-Bus signal, when
  * a Connection is disconnected / has become unusable. If the service didn't provide any, or has not
@@ -1219,6 +1253,7 @@ QVariantMap Connection::ErrorDetails::allDetails() const
  * as it may be domain-specific with some services.
  *
  * \return The error details.
+ * \sa status(), statusReason(), invalidationReason()
  */
 const Connection::ErrorDetails &Connection::errorDetails() const
 {
@@ -1230,15 +1265,17 @@ const Connection::ErrorDetails &Connection::errorDetails() const
 }
 
 /**
- * Return the handle which represents the user on this connection, which will
- * remain valid for the lifetime of this connection, or until a change in the
- * user's identifier is signalled by the selfHandleChanged() signal. If the
- * connection is not yet in the ConnectionStatusConnected state, the value of this
- * property may be zero.
+ * Return the handle representing the user on this connection.
+ *
+ * Note that if the connection is not yet in the ConnectionStatusConnected state,
+ * the value of this property may be zero.
+ *
+ * Change notification is via the selfHandleChanged() signal.
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
- * \return Self handle.
+ * \return The handle representing the user on this connection.
+ * \sa selfHandleChanged(), selfContact()
  */
 uint Connection::selfHandle() const
 {
@@ -1254,8 +1291,8 @@ uint Connection::selfHandle() const
  *
  * This method requires Connection::FeatureSimplePresence to be enabled.
  *
- * \return Dictionary from string identifiers to structs for each valid
- * status.
+ * \return A dictionary from string identifiers to structs for each valid
+ *         status.
  */
 SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 {
@@ -1349,11 +1386,17 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
 }
 
 /**
- * Return the object that represents the contact of this connection.
+ * Return the object representing the user on this connection.
+ *
+ * Note that if the connection is not yet in the ConnectionStatusConnected state, the value of this
+ * property may be null.
+ *
+ * Change notification is via the selfContactChanged() signal.
  *
  * This method requires Connection::FeatureSelfContact to be enabled.
  *
- * \return The connection self contact.
+ * \return The object representing the user on this connection.
+ * \sa selfContactChanged(), selfHandle()
  */
 ContactPtr Connection::selfContact() const
 {
@@ -1366,9 +1409,14 @@ ContactPtr Connection::selfContact() const
 }
 
 /**
- * Return the user's balance on the account corresponding to this connection. A
- * negative amount may be possible on some services, and indicates that the user
+ * Return the user's balance on the account corresponding to this connection.
+ *
+ * A negative amount may be possible on some services, and indicates that the user
  * owes money to the service provider.
+ *
+ * Change notification is via the accountBalanceChanged() signal.
+ *
+ * This method requires Connection::FeatureAccountBalance to be enabled.
  *
  * \return The user's balance.
  * \sa accountBalanceChanged()
@@ -1384,16 +1432,16 @@ CurrencyAmount Connection::accountBalance() const
 }
 
 /**
- * Return the capabilities that are expected to be available on this connection,
- * i.e. those for which createChannel() can reasonably be expected to succeed.
+ * Return the capabilities for this connection.
+ *
  * User interfaces can use this information to show or hide UI components.
  *
- * This property cannot change after the connection has gone to state()
- * %Tp::Connection_Status_Connected, so there is no change notification.
+ * This property cannot change after the connection has gone to state
+ * ConnectionStatusConnected, so there is no change notification.
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
- * @return An object representing the connection capabilities.
+ * @return The capabilities of this connection.
  */
 ConnectionCapabilities Connection::capabilities() const
 {
@@ -1404,16 +1452,6 @@ ConnectionCapabilities Connection::capabilities() const
 
     return mPriv->caps;
 }
-
-/**
- * \fn void Connection::accountBalanceChanged(const Tp::CurrencyAmount &accountBalance) const
- *
- * Signal emitted when the user's balance on the account corresponding to this
- * connection changes.
- *
- * \param accountBalance The new user's balance.
- * \sa accountBalance()
- */
 
 void Connection::onStatusReady(uint status)
 {
@@ -1761,13 +1799,14 @@ void Connection::gotBalance(QDBusPendingCallWatcher *watcher)
 }
 
 /**
- * Return the ConnectionInterface for this Connection. This
- * method is protected since the convenience methods provided by this
+ * Return the Client::ConnectionInterface interface proxy object for this connection.
+ * This method is protected since the convenience methods provided by this
  * class should generally be used instead of calling D-Bus methods
  * directly.
  *
- * \return A pointer to the existing ConnectionInterface for this
- *         Connection.
+ * \return A pointer to the existing Client::ConnectionInterface object for this
+ *         Connection object.
+
  */
 Client::ConnectionInterface *Connection::baseInterface() const
 {
@@ -2105,14 +2144,14 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  *
  * If the remote object doesn't support the Contacts interface (as signified by
  * the list returned by interfaces() not containing
- * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS), the returned
+ * #TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACTS), the returned
  * PendingContactAttributes instance will fail instantly with the error
- * TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ * #TP_QT4_ERROR_NOT_IMPLEMENTED.
  *
  * Similarly, if the connection isn't both connected and ready
  * (<code>status() == ConnectionStatusConnected && isReady()</code>), the returned
  * PendingContactAttributes instance will fail instantly with the
- * error %TELEPATHY_ERROR_NOT_AVAILABLE.
+ * error #TP_QT4_ERROR_NOT_AVAILABLE.
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
@@ -2497,7 +2536,7 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
  *
  * This signal doesn't contain the status reason as an argument, because statusChanged() shouldn't
  * be used for error-handling. There are numerous cases in which a Connection may become unusable
- * without there being an status change to ConnectionStatusDisconnected. All of these cases, and
+ * without there being a status change to ConnectionStatusDisconnected. All of these cases, and
  * being disconnected itself, are signaled by invalidated() with appropriate error names. On the
  * other hand, the reason for the status going to ConnectionStatusConnecting or
  * ConnectionStatusConnected will always be ConnectionStatusReasonRequested, so signaling that would
@@ -2508,6 +2547,32 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
  * particular (likely domain-specific if so) error name given by invalidateReason().
  *
  * \param newStatus The new status of the connection, as would be returned by status().
+ */
+
+/**
+ * \fn void Connection::selfHandleChanged(uint newHandle)
+ *
+ * This signal is emitted when the value of selfHandle() changes.
+ *
+ * \param newHandle The new connection self handle.
+ * \sa selfHandle()
+ */
+
+/**
+ * \fn void Connection::selfContactChanged()
+ *
+ * This signal is emitted when the value of selfContact() changes.
+ *
+ * \sa selfContact()
+ */
+
+/**
+ * \fn void Connection::accountBalanceChanged(const Tp::CurrencyAmount &accountBalance)
+ *
+ * This signal is emitted when the value of accountBalance() changes.
+ *
+ * \param accountBalance The new user's balance of this connection.
+ * \sa accountBalance()
  */
 
 } // Tp

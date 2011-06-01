@@ -127,7 +127,7 @@ CapabilitiesBase &CapabilitiesBase::operator=(const CapabilitiesBase &other)
  * Return the list of requestable channel class spec representing the requests that can succeed.
  *
  * This can be used by advanced clients to determine whether an unusually
- * complex request would succeed. See the Telepathy D-Bus API Specification
+ * complex request would succeed. See the \telepathy_spec
  * for details of how to interpret the returned list.
  *
  * The higher-level methods like textChats() are likely to be more

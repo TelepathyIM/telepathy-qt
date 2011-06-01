@@ -1458,6 +1458,7 @@ ALIASES = \
 	"FIXME=\xrefitem fixme \"Fixme\" \"Fixme\"" \
 	"bc=\xrefitem bc \"Binary Compatible\" \"Binary Compatible\"" \
 	"telepathy=<a href=\"http://telepathy.freedesktop.org\">Telepathy</a>" \
+	"telepathy_spec=<a href=\"http://telepathy.freedesktop.org/spec/\">Telepathy specification</a>" \
 	"dbus=<a href=\"http://dbus.freedesktop.org\">D-Bus</a>" \
 	"artistic=<a href=\"http://www.opensource.org/licenses/artistic-license.php\">Artistic</a>" \
 	"bsd=<a href=\"http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5\">BSD</a>" \
