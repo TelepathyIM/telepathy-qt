@@ -37,6 +37,7 @@ tpqt4_add_generic_unit_test(ManagerFile manager-file)
 tpqt4_add_generic_unit_test(Profile profile)
 tpqt4_add_generic_unit_test(Ptr ptr)
 tpqt4_add_generic_unit_test(RCCSpec rccspec)
+tpqt4_add_generic_unit_test(FileTransferChannelCreationProperties file-transfer-channel-creation-properties)
 
 add_subdirectory(dbus-1)
 add_subdirectory(dbus)
