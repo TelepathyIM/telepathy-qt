@@ -23,6 +23,7 @@
 #include "TelepathyQt/_gen/dbus-tube-channel.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/outgoing-stream-tube-channel-internal.h"
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
@@ -51,10 +52,16 @@ struct TP_QT_NO_EXPORT DBusTubeChannel::Private
     QString serviceName;
     QHash<ContactPtr, QString> busNames;
     QString address;
+
+    QHash<QUuid, QString> pendingNewBusNamesToAdd;
+    QList<QUuid> pendingNewBusNamesToRemove;
+
+    QueuedContactFactory *queuedContactFactory;
 };
 
 DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
-        : parent(parent)
+        : parent(parent),
+          queuedContactFactory(new QueuedContactFactory(parent->connection()->contactManager(), parent))
 {
     // Initialize readinessHelper + introspectables here
     readinessHelper = parent->readinessHelper();
@@ -97,8 +104,8 @@ void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipant
     for (DBusTubeParticipants::const_iterator i = participants.constBegin();
          i != participants.constEnd();
          ++i) {
-        busNames.insert(parent->connection()->contactManager()->lookupContactByHandle(i.key()),
-                        i.value());
+        QUuid uuid = queuedContactFactory->appendNewRequest(UIntList() << i.key());
+        pendingNewBusNamesToAdd.insert(uuid, i.value());
     }
 }
 
@@ -212,6 +219,10 @@ DBusTubeChannel::DBusTubeChannel(const ConnectionPtr &connection,
     : TubeChannel(connection, objectPath, immutableProperties),
       mPriv(new Private(this))
 {
+    connect(mPriv->queuedContactFactory,
+            SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
+            this,
+            SLOT(onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
 }
 
 /**
@@ -339,27 +350,52 @@ void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher *watcher)
 void DBusTubeChannel::onDBusNamesChanged(const Tp::DBusTubeParticipants &added,
         const Tp::UIntList &removed)
 {
-    QHash<ContactPtr, QString> realAdded;
-    QList<ContactPtr> realRemoved;
-
     for (DBusTubeParticipants::const_iterator i = added.constBegin();
          i != added.constEnd();
          ++i) {
-        ContactPtr contact = connection()->contactManager()->lookupContactByHandle(i.key());
-        realAdded.insert(contact, i.value());
+        QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(UIntList() << i.key());
         // Add it to our hash as well
-        mPriv->busNames.insert(contact, i.value());
+        mPriv->pendingNewBusNamesToAdd.insert(uuid, i.value());
     }
 
     foreach (uint handle, removed) {
-        ContactPtr contact = connection()->contactManager()->lookupContactByHandle(handle);
-        realRemoved << contact;
-        // Remove it from our hash as well
-        mPriv->busNames.remove(contact);
+        QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(UIntList() << handle);
+        // Add it to pending removed as well
+        mPriv->pendingNewBusNamesToRemove << uuid;
     }
+}
 
-    // Emit the "real" signal
-    emit busNamesChanged(realAdded, realRemoved);
+void DBusTubeChannel::onContactsRetrieved(const QUuid &uuid, const QList<ContactPtr> &contacts)
+{
+    // Retrieve our hash
+    if (mPriv->pendingNewBusNamesToAdd.contains(uuid)) {
+        QString busName = mPriv->pendingNewBusNamesToAdd.take(uuid);
+        QHash<ContactPtr, QString> added;
+
+        // Add it to our connections hash
+        foreach (const Tp::ContactPtr &contact, contacts) {
+            mPriv->busNames.insertMulti(contact, busName);
+            added.insert(contact, busName);
+        }
+
+        // Time for us to emit the signal
+        emit busNamesChanged(added, QList<ContactPtr>());
+    } else if (mPriv->pendingNewBusNamesToRemove.contains(uuid)) {
+        mPriv->pendingNewBusNamesToRemove.removeOne(uuid);
+        QList<ContactPtr> removed;
+
+        // Remove it from our connections hash
+        foreach (const Tp::ContactPtr &contact, contacts) {
+            mPriv->busNames.remove(contact);
+            removed << contact;
+        }
+
+        // Time for us to emit the signal
+        emit busNamesChanged(QHash<ContactPtr, QString>(), removed);
+    } else {
+        warning() << "Contacts retrieved but no pending bus names were found";
+        return;
+    }
 }
 
 void DBusTubeChannel::setAddress(const QString& address)
