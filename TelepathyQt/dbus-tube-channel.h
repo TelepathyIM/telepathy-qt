@@ -39,7 +39,7 @@ class TP_QT_EXPORT DBusTubeChannel : public TubeChannel
 
 public:
     static const Feature FeatureDBusTube;
-    static const Feature FeatureBusNamesMonitoring;
+    static const Feature FeatureBusNameMonitoring;
 
     static DBusTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);

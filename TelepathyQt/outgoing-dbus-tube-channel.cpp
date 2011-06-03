@@ -100,7 +100,7 @@ OutgoingDBusTubeChannel::Private::~Private()
  *
  * To learn more on how to use introspectable and features, please see \ref account_ready_sec.
  *
- * You can also enable DBusTubeChannel::FeatureBusNamesMonitoring to monitor connections
+ * You can also enable DBusTubeChannel::FeatureBusNameMonitoring to monitor connections
  * to the tube.
  *
  * Once your object is ready, you can use offerTube to create a brand new DBus connection and offer

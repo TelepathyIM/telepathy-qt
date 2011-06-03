@@ -53,7 +53,7 @@ DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
         QStringList(),                                                          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectBusNamesMonitoring,
         this);
-    introspectables[DBusTubeChannel::FeatureBusNamesMonitoring] = introspectableBusNamesMonitoring;
+    introspectables[DBusTubeChannel::FeatureBusNameMonitoring] = introspectableBusNamesMonitoring;
 
     readinessHelper->addIntrospectables(introspectables);
 }
@@ -95,10 +95,10 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Pri
         parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)),
                         parent, SLOT(onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)));
     } else {
-        warning() << "FeatureBusNamesMonitoring does not make sense in a P2P context";
+        warning() << "FeatureBusNameMonitoring does not make sense in a P2P context";
     }
 
-    self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNamesMonitoring, true);
+    self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
 }
 
 void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self)
@@ -157,7 +157,7 @@ const Feature DBusTubeChannel::FeatureDBusTube = Feature(QLatin1String(DBusTubeC
  *
  * %busNamesChanged will be emitted when the participants of this tube change
  */
-const Feature DBusTubeChannel::FeatureBusNamesMonitoring = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 1);
+const Feature DBusTubeChannel::FeatureBusNameMonitoring = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 1);
 
 /**
  * Create a new DBusTubeChannel channel.
@@ -288,9 +288,9 @@ QString DBusTubeChannel::address() const
  */
 QHash<ContactPtr, QString> DBusTubeChannel::busNames() const
 {
-    if (!isReady(FeatureBusNamesMonitoring)) {
+    if (!isReady(FeatureBusNameMonitoring)) {
         warning() << "DBusTubeChannel::busNames() used with "
-            "FeatureBusNamesMonitoring not ready";
+            "FeatureBusNameMonitoring not ready";
         return QHash<ContactPtr, QString>();
     }
 
