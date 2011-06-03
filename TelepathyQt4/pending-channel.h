@@ -90,6 +90,8 @@ private:
     TELEPATHY_QT4_NO_EXPORT PendingChannel(const AccountPtr &account,
             const QVariantMap &request, const QDateTime &userActionTime,
             bool create);
+    TELEPATHY_QT4_NO_EXPORT PendingChannel(const QString &errorName,
+            const QString &errorMessage);
 
     struct Private;
     friend struct Private;
