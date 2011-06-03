@@ -58,6 +58,8 @@ protected:
     DBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
+    void setAddress(const QString &address);
+
 Q_SIGNALS:
     void busNamesChanged(const QHash<ContactPtr, QString> &added, const QList<ContactPtr> &removed);
 

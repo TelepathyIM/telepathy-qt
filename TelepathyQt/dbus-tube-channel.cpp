@@ -19,7 +19,6 @@
  */
 
 #include <TelepathyQt/DBusTubeChannel>
-#include "TelepathyQt/dbus-tube-channel-internal.h"
 
 #include "TelepathyQt/_gen/dbus-tube-channel.moc.hpp"
 
@@ -30,6 +29,29 @@
 
 namespace Tp
 {
+
+struct TP_QT_NO_EXPORT DBusTubeChannel::Private
+{
+    Private(DBusTubeChannel *parent);
+    virtual ~Private();
+
+    void extractProperties(const QVariantMap &props);
+    void extractParticipants(const Tp::DBusTubeParticipants &participants);
+
+    static void introspectDBusTube(Private *self);
+    static void introspectBusNamesMonitoring(Private *self);
+
+    ReadinessHelper *readinessHelper;
+
+    // Public object
+    DBusTubeChannel *parent;
+
+    // Properties
+    UIntList accessControls;
+    QString serviceName;
+    QHash<ContactPtr, QString> busNames;
+    QString address;
+};
 
 DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
         : parent(parent)
@@ -338,6 +360,11 @@ void DBusTubeChannel::onDBusNamesChanged(const Tp::DBusTubeParticipants &added,
 
     // Emit the "real" signal
     emit busNamesChanged(realAdded, realRemoved);
+}
+
+void DBusTubeChannel::setAddress(const QString& address)
+{
+    mPriv->address = address;
 }
 
 // Signals documentation
