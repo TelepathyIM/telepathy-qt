@@ -156,6 +156,21 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
 }
 
 /**
+ * Construct a new PendingChannelRequest object that always fails.
+ *
+ * \param account Account to use.
+ * \param errorName The name of a D-Bus error.
+ * \param errorMessage The error message.
+ */
+PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
+        const QString &errorName, const QString &errorMessage)
+    : PendingOperation(ConnectionPtr()),
+      mPriv(new Private(account->dbusConnection()))
+{
+    setFinishedWithError(errorName, errorMessage);
+}
+
+/**
  * Class destructor.
  */
 PendingChannelRequest::~PendingChannelRequest()
