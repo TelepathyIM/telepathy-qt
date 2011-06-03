@@ -94,8 +94,7 @@ set(telepathy_qt_SRCS
     pending-contact-attributes.cpp
     pending-contact-info.cpp
     pending-contacts.cpp
-    pending-dbus-tube-accept.cpp
-    pending-dbus-tube-offer.cpp
+    pending-dbus-tube.cpp
     pending-debug-message-list.cpp
     pending-handles.cpp
     pending-operation.cpp
@@ -402,10 +401,8 @@ set(telepathy_qt_HEADERS
     pending-contact-info.h
     PendingContacts
     pending-contacts.h
-    PendingDBusTubeAccept
-    pending-dbus-tube-accept.h
-    PendingDBusTubeOffer
-    pending-dbus-tube-offer.h
+    PendingDBusTube
+    pending-dbus-tube.h
     PendingDebugMessageList
     pending-debug-message-list.h
     PendingFailure
@@ -583,8 +580,7 @@ set(telepathy_qt_MOC_SRCS
     pending-contact-info.h
     pending-contacts.h
     pending-contacts-internal.h
-    pending-dbus-tube-accept.h
-    pending-dbus-tube-offer.h
+    pending-dbus-tube.h
     pending-debug-message-list.h
     pending-handles.h
     pending-operation.h

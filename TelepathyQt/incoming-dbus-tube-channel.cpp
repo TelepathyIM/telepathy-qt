@@ -26,7 +26,7 @@
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
-#include <TelepathyQt/PendingDBusTubeAccept>
+#include <TelepathyQt/PendingDBusTube>
 #include <TelepathyQt/PendingString>
 #include <TelepathyQt/Types>
 
@@ -122,12 +122,12 @@ IncomingDBusTubeChannel::Private::~Private()
  * Once your object is ready, you can use #acceptTube to accept the tube and create a brand
  * new private DBus connection.
  *
- * The returned PendingDBusTubeAccept serves both for monitoring the state of the tube and for
+ * The returned PendingDBusTube serves both for monitoring the state of the tube and for
  * obtaining, upon success, the address of the new connection.
  * When the operation finishes, you can do:
  *
  * \code
- * void MyTubeReceiver::onDBusTubeAccepted(PendingDBusTubeAccept *op)
+ * void MyTubeReceiver::onDBusTubeAccepted(PendingDBusTube *op)
  * {
  *     if (op->isError()) {
  *        return;
@@ -190,7 +190,7 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  *
  * Once called, this method will try opening the tube, and will create a new private DBus connection
  * which can be used to communicate with the other end. You can then
- * retrieve the address either from \c PendingDBusTubeAccept or from %address().
+ * retrieve the address either from \c PendingDBusTube or from %address().
  *
  * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
  *
@@ -199,10 +199,10 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *
- * \return A %PendingDBusTubeAccept which will finish as soon as the tube is ready to be used
+ * \return A %PendingDBusTube which will finish as soon as the tube is ready to be used
  *         (hence in the Open state)
  */
-PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
+PendingDBusTube *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
 {
     SocketAccessControl accessControl = requireCredentials ?
                                         SocketAccessControlCredentials :
@@ -211,14 +211,14 @@ PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(bool requireCredentia
     if (!isReady(DBusTubeChannel::FeatureDBusTube)) {
         warning() << "DBusTubeChannel::FeatureDBusTube must be ready before "
             "calling offerTube";
-        return new PendingDBusTubeAccept(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
+        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"), IncomingDBusTubeChannelPtr(this));
     }
 
     // The tube must be in local pending state
     if (state() != TubeChannelStateLocalPending) {
         warning() << "You can accept tubes only when they are in LocalPending state";
-        return new PendingDBusTubeAccept(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
+        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel busy"), IncomingDBusTubeChannelPtr(this));
     }
 
@@ -226,7 +226,7 @@ PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(bool requireCredentia
     if (requireCredentials && !supportsCredentials()) {
         warning() << "You requested an access control "
             "not supported by this channel";
-        return new PendingDBusTubeAccept(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
+        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("The requested access control is not supported"),
                 IncomingDBusTubeChannelPtr(this));
     }
@@ -236,7 +236,7 @@ PendingDBusTubeAccept *IncomingDBusTubeChannel::acceptTube(bool requireCredentia
             accessControl),
         IncomingDBusTubeChannelPtr(this));
 
-    PendingDBusTubeAccept *op = new PendingDBusTubeAccept(ps, IncomingDBusTubeChannelPtr(this));
+    PendingDBusTube *op = new PendingDBusTube(ps, IncomingDBusTubeChannelPtr(this));
     return op;
 }
 

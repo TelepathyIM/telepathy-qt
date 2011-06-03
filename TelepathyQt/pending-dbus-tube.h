@@ -1,7 +1,7 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt_pending_dbus_tube_offer_h_HEADER_GUARD_
-#define _TelepathyQt_pending_dbus_tube_offer_h_HEADER_GUARD_
+#ifndef _TelepathyQt_pending_dbus_tube_h_HEADER_GUARD_
+#define _TelepathyQt_pending_dbus_tube_h_HEADER_GUARD_
 
 #ifndef IN_TP_QT_HEADER
 #error IN_TP_QT_HEADER
@@ -32,27 +32,30 @@ namespace Tp {
 
 class PendingString;
 
-class TP_QT_EXPORT PendingDBusTubeOffer : public PendingOperation
+class TP_QT_EXPORT PendingDBusTube : public PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(PendingDBusTubeOffer)
+    Q_DISABLE_COPY(PendingDBusTube)
 
 public:
-    virtual ~PendingDBusTubeOffer();
+    virtual ~PendingDBusTube();
 
     QString address() const;
 
 private Q_SLOTS:
+    TP_QT_NO_EXPORT void onAcceptFinished(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onOfferFinished(Tp::PendingOperation *op);
-    TP_QT_NO_EXPORT void onTubeStateChanged(Tp::TubeChannelState state);
+    TP_QT_NO_EXPORT void onStateChanged(Tp::TubeChannelState state);
 
 private:
-    PendingDBusTubeOffer(PendingString *string, const OutgoingDBusTubeChannelPtr &object);
-    PendingDBusTubeOffer(const QString &errorName, const QString &errorMessage,
-                         const OutgoingDBusTubeChannelPtr &object);
+    PendingDBusTube(PendingString *string, const OutgoingDBusTubeChannelPtr &object);
+    PendingDBusTube(PendingString *string, const IncomingDBusTubeChannelPtr &object);
+    PendingDBusTube(const QString &errorName, const QString &errorMessage,
+                         const DBusTubeChannelPtr &object);
 
     struct Private;
     friend class OutgoingDBusTubeChannel;
+    friend class IncomingDBusTubeChannel;
     friend struct Private;
     Private *mPriv;
 };

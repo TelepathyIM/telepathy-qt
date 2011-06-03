@@ -1,7 +1,7 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,51 +18,69 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt/PendingDBusTubeOffer>
+#include <TelepathyQt/PendingDBusTube>
 
-#include "TelepathyQt/_gen/pending-dbus-tube-offer.moc.hpp"
-
+#include "TelepathyQt/_gen/pending-dbus-tube.moc.hpp"
 
 #include "TelepathyQt/dbus-tube-channel-internal.h"
 #include "TelepathyQt/debug-internal.h"
 
+#include <TelepathyQt/IncomingDBusTubeChannel>
+#include <TelepathyQt/OutgoingDBusTubeChannel>
 #include <TelepathyQt/PendingString>
 #include <TelepathyQt/Types>
 
 namespace Tp
 {
 
-struct TP_QT_NO_EXPORT PendingDBusTubeOffer::Private
+struct TP_QT_NO_EXPORT PendingDBusTube::Private
 {
-    Private(PendingDBusTubeOffer *parent);
+    Private(PendingDBusTube *parent);
     ~Private();
 
     // Public object
-    PendingDBusTubeOffer *parent;
+    PendingDBusTube *parent;
 
-    OutgoingDBusTubeChannelPtr tube;
+    DBusTubeChannelPtr tube;
 };
 
-PendingDBusTubeOffer::Private::Private(PendingDBusTubeOffer *parent)
+PendingDBusTube::Private::Private(PendingDBusTube *parent)
     : parent(parent)
 {
 }
 
-PendingDBusTubeOffer::Private::~Private()
+PendingDBusTube::Private::~Private()
 {
 }
 
 /**
- * \class PendingDBusTubeOffer
- * \headerfile TelepathyQt4/pending-dbus-tube-offer.h <TelepathyQt4/PendingDBusTubeOffer>
+ * \class PendingDBusTube
+ * \headerfile TelepathyQt/pending-dbus-tube.h <TelepathyQt/PendingDBusTube>
  *
- * A pending operation for offering a DBus tube
+ * A pending operation for accepting or offering a DBus tube
  *
- * This class represents an asynchronous operation for offering a DBus tube.
+ * This class represents an asynchronous operation for accepting or offering a DBus tube.
  * Upon completion, the address of the opened tube is returned as a QString.
  */
 
-PendingDBusTubeOffer::PendingDBusTubeOffer(
+PendingDBusTube::PendingDBusTube(
+        PendingString *string,
+        const IncomingDBusTubeChannelPtr &object)
+    : PendingOperation(object)
+    , mPriv(new Private(this))
+{
+    mPriv->tube = object;
+
+    if (string->isFinished()) {
+        onAcceptFinished(string);
+    } else {
+        // Connect the pending void
+        connect(string, SIGNAL(finished(Tp::PendingOperation*)),
+                this, SLOT(onAcceptFinished(Tp::PendingOperation*)));
+    }
+}
+
+PendingDBusTube::PendingDBusTube(
         PendingString *string,
         const OutgoingDBusTubeChannelPtr &object)
     : PendingOperation(object)
@@ -79,12 +97,12 @@ PendingDBusTubeOffer::PendingDBusTubeOffer(
     }
 }
 
-PendingDBusTubeOffer::PendingDBusTubeOffer(
+PendingDBusTube::PendingDBusTube(
         const QString &errorName,
         const QString &errorMessage,
-        const OutgoingDBusTubeChannelPtr &object)
+        const DBusTubeChannelPtr &object)
     : PendingOperation(object)
-    , mPriv(new PendingDBusTubeOffer::Private(this))
+    , mPriv(new PendingDBusTube::Private(this))
 {
     setFinishedWithError(errorName, errorMessage);
 }
@@ -92,7 +110,7 @@ PendingDBusTubeOffer::PendingDBusTubeOffer(
 /**
  * Class destructor
  */
-PendingDBusTubeOffer::~PendingDBusTubeOffer()
+PendingDBusTube::~PendingDBusTube()
 {
     delete mPriv;
 }
@@ -106,12 +124,36 @@ PendingDBusTubeOffer::~PendingDBusTubeOffer()
  *
  * \returns The address of the opened DBus connection.
  */
-QString PendingDBusTubeOffer::address() const
+QString PendingDBusTube::address() const
 {
     return mPriv->tube->address();
 }
 
-void PendingDBusTubeOffer::onOfferFinished(PendingOperation *op)
+void PendingDBusTube::onAcceptFinished(PendingOperation *op)
+{
+    if (op->isError()) {
+        // Fail
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    debug() << "Accept tube finished successfully";
+
+    // Now get the address and set it
+    PendingString *ps = qobject_cast<PendingString*>(op);
+    mPriv->tube->mPriv->address = ps->result();
+
+    // It might have been already opened - check
+    if (mPriv->tube->state() == TubeChannelStateOpen) {
+        onStateChanged(mPriv->tube->state());
+    } else {
+        // Wait until the tube gets opened on the other side
+        connect(mPriv->tube.data(), SIGNAL(stateChanged(Tp::TubeChannelState)),
+                this, SLOT(onStateChanged(Tp::TubeChannelState)));
+    }
+}
+
+void PendingDBusTube::onOfferFinished(PendingOperation *op)
 {
     if (op->isError()) {
         // Fail
@@ -123,25 +165,25 @@ void PendingDBusTubeOffer::onOfferFinished(PendingOperation *op)
 
     // Now get the address and set it
     PendingString *ps = qobject_cast<PendingString*>(op);
-    DBusTubeChannelPtr::qObjectCast<DBusTubeChannel>(mPriv->tube)->mPriv->address = ps->result();
+    mPriv->tube->mPriv->address = ps->result();
 
     // It might have been already opened - check
     if (mPriv->tube->state() == TubeChannelStateOpen) {
-        onTubeStateChanged(mPriv->tube->state());
+        onStateChanged(mPriv->tube->state());
     } else {
         // Wait until the tube gets opened on the other side
-        connect(mPriv->tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
-                this, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
+        connect(mPriv->tube.data(), SIGNAL(stateChanged(Tp::TubeChannelState)),
+                this, SLOT(onStateChanged(Tp::TubeChannelState)));
     }
 }
 
-void PendingDBusTubeOffer::onTubeStateChanged(TubeChannelState state)
+void PendingDBusTube::onStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
-        // The tube is ready: let's finish the operation
+        // The tube is ready: let's inject the address into the tube itself
         setFinished();
-    } else if (state != TubeChannelStateRemotePending) {
+    } else if (state != TubeChannelStateLocalPending) {
         // Something happened
         setFinishedWithError(QLatin1String("Connection refused"),
                 QLatin1String("The connection to this tube was refused"));
