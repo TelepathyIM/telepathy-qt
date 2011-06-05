@@ -4,7 +4,9 @@ telepathy-qt4 0.7.1 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * fd.o #37034: The URI property can now be set when requesting file transfers,
+   and can be read by the Handler (and any Observers) from
+   Tp::FileTransferChannel (Daniele E. Domenichelli)
 
 Fixes:
  * ...
