@@ -70,7 +70,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
 /**
  * Construct a new PendingChannelRequest object.
  *
- * \param dbusConnection QDBusConnection to use.
+ * \param account Account to use.
  * \param requestedProperties A dictionary containing the desirable properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
