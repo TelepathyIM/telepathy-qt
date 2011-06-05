@@ -211,15 +211,19 @@ QVariantMap streamedMediaVideoCallRequest(const Tp::ContactPtr &contact, bool wi
 
 QVariantMap fileTransferCommonRequest(const Tp::FileTransferChannelCreationProperties &properties)
 {
+    if (!properties.isValid()) {
+        warning() << "Invalid file transfer creation properties";
+        return QVariantMap();
+    }
+
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
 
-    QFileInfo fileInfo(properties.suggestedFileName());
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
-                   fileInfo.fileName());
+                   properties.suggestedFileName());
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
                    properties.contentType());
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
@@ -241,6 +245,12 @@ QVariantMap fileTransferCommonRequest(const Tp::FileTransferChannelCreationPrope
         request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
                        (qulonglong) properties.lastModificationTime().toTime_t());
     }
+
+    if (properties.hasUri()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".URI"),
+                       properties.uri());
+    }
+
     return request;
 }
 
@@ -248,8 +258,12 @@ QVariantMap fileTransferRequest(const QString &contactIdentifier,
         const Tp::FileTransferChannelCreationProperties &properties)
 {
     QVariantMap request = fileTransferCommonRequest(properties);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   contactIdentifier);
+
+    if  (!request.isEmpty()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                       contactIdentifier);
+    }
+
     return request;
 }
 
@@ -257,8 +271,12 @@ QVariantMap fileTransferRequest(const Tp::ContactPtr &contact,
         const Tp::FileTransferChannelCreationProperties &properties)
 {
     QVariantMap request = fileTransferCommonRequest(properties);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+
+    if  (!request.isEmpty()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                       contact ? contact->handle().at(0) : (uint) 0);
+    }
+
     return request;
 }
 
@@ -2472,6 +2490,11 @@ PendingChannelRequest *Account::createFileTransfer(
 {
     QVariantMap request = fileTransferRequest(contactIdentifier, properties);
 
+    if (request.isEmpty()) {
+        return new PendingChannelRequest(AccountPtr(this), TP_QT4_ERROR_INVALID_ARGUMENT,
+                QLatin1String("Cannot create a file transfer with invalid parameters"));
+    }
+
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
 }
@@ -2515,6 +2538,11 @@ PendingChannelRequest *Account::createFileTransfer(
         const ChannelRequestHints &hints)
 {
     QVariantMap request = fileTransferRequest(contact, properties);
+
+    if (request.isEmpty()) {
+        return new PendingChannelRequest(AccountPtr(this), TP_QT4_ERROR_INVALID_ARGUMENT,
+                QLatin1String("Cannot create a file transfer with invalid parameters"));
+    }
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -3174,6 +3202,11 @@ PendingChannel *Account::createAndHandleFileTransfer(
 {
     QVariantMap request = fileTransferRequest(contactIdentifier, properties);
 
+    if (request.isEmpty()) {
+        return new PendingChannel(TP_QT4_ERROR_INVALID_ARGUMENT,
+                QLatin1String("Cannot create a file transfer with invalid parameters"));
+    }
+
     return createAndHandleChannel(request, userActionTime);
 }
 
@@ -3199,6 +3232,11 @@ PendingChannel *Account::createAndHandleFileTransfer(
         const QDateTime &userActionTime)
 {
     QVariantMap request = fileTransferRequest(contact, properties);
+
+    if (request.isEmpty()) {
+        return new PendingChannel(TP_QT4_ERROR_INVALID_ARGUMENT,
+                QLatin1String("Cannot create a file transfer with invalid parameters"));
+    }
 
     return createAndHandleChannel(request, userActionTime);
 }

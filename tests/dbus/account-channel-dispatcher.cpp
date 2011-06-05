@@ -407,13 +407,19 @@ private Q_SLOTS:
     void testEnsureChannel();
     void testEnsureChannelFail();
     void testEnsureChannelCancel();
+    void testCreateFileTransferChannel();
+    void testCreateFileTransferChannelFail();
+    void testCreateFileTransferChannelCancel();
+    void testCreateFileTransferChannelInvalidParameters();
 
     void testCreateAndHandleChannel();
     void testCreateAndHandleChannelNotYours();
     void testCreateAndHandleChannelFail();
     void testCreateAndHandleChannelHandledAgain();
     void testCreateAndHandleChannelHandledChannels();
-
+    void testCreateAndHandleFileTransferChannel();
+    void testCreateAndHandleFileTransferChannelFail();
+    void testCreateAndHandleFileTransferChannelInvalidParameters();
     void cleanup();
     void cleanupTestCase();
 
@@ -440,6 +446,7 @@ private:
     ChannelRequestHints mHints;
     QString mConnPath, mChanPath;
     QVariantMap mConnProps, mChanProps;
+    QString mFilePath;
 };
 
 void TestAccountChannelDispatcher::onPendingChannelRequestFinished(
@@ -531,6 +538,7 @@ void TestAccountChannelDispatcher::init()
     mConnProps.clear();
     mChanPath.clear();
     mChanProps.clear();
+    mFilePath = QDir::currentPath() + QLatin1String("/test-account-channel-dispatcher");
 }
 
 void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
@@ -548,18 +556,20 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
         QCOMPARE(mChannelRequest->channel()->objectPath(), mChanPath);
         QCOMPARE(mChannelRequest->channel()->immutableProperties(), mChanProps);
     } else {
-        QVERIFY(mChannelRequest->channel().isNull());
+        QVERIFY(mChannelRequest.isNull() || mChannelRequest->channel().isNull());
     }
 
-    QVERIFY(connect(mChannelRequest->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    mLoop->exec(0);
-    QCOMPARE(mChannelRequest->userActionTime(), mUserActionTime);
-    QCOMPARE(mChannelRequest->account().data(), mAccount.data());
+    if (!mChannelRequest.isNull()) {
+        QVERIFY(connect(mChannelRequest->becomeReady(),
+                        SIGNAL(finished(Tp::PendingOperation *)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+        mLoop->exec(0);
+        QCOMPARE(mChannelRequest->userActionTime(), mUserActionTime);
+        QCOMPARE(mChannelRequest->account().data(), mAccount.data());
 
-    QVERIFY(mChannelRequest->hints().isValid());
-    QCOMPARE(mChannelRequest->hints().allHints(), mHints.allHints());
+        QVERIFY(mChannelRequest->hints().isValid());
+        QCOMPARE(mChannelRequest->hints().allHints(), mHints.allHints());
+    }
 }
 
 void TestAccountChannelDispatcher::testPC(PendingChannel *pc, PendingChannel **pcOut, ChannelPtr *channelOut)
@@ -774,6 +784,60 @@ void TestAccountChannelDispatcher::testEnsureMediaCallFail()
 void TestAccountChannelDispatcher::testEnsureMediaCallCancel()
 {
     TEST_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, true, TELEPATHY_ERROR_CANCELLED);
+}
+
+#define TEST_CREATE_FILE_TRANSFER_CHANNEL(shouldFail, proceedNoop, invalidProps, expectedError) \
+    mChannelDispatcherAdaptor->mInvokeHandler = false; \
+    mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
+    mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
+    if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) { \
+        mChannelDispatcherAdaptor->setChan(mConnPath, mConnProps, mChanPath, mChanProps); \
+    } else { \
+        mChannelDispatcherAdaptor->clearChan(); \
+    } \
+    PendingChannelRequest *pcr; \
+    if (!invalidProps) { \
+        QFileInfo fileInfo(mFilePath); \
+        FileTransferChannelCreationProperties ftprops(fileInfo.fileName(), \
+                QLatin1String("application/octet-stream"), fileInfo.size()); \
+        pcr = mAccount->createFileTransfer(QLatin1String("foo@bar"), \
+                ftprops, mUserActionTime, QString(), mHints); \
+    } else { \
+        FileTransferChannelCreationProperties ftprops; \
+        pcr = mAccount->createFileTransfer(QLatin1String("foo@bar"), \
+                ftprops, mUserActionTime, QString(), mHints); \
+    } \
+    if (shouldFail && proceedNoop) { \
+        pcr->cancel(); \
+    } \
+    testPCR(pcr); \
+    QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
+    if (shouldFail) {\
+        QCOMPARE(mChannelRequestFinishedErrorName, QString(QLatin1String(expectedError))); \
+    }
+
+void TestAccountChannelDispatcher::testCreateFileTransferChannel()
+{
+    mConnPath.clear();
+    mChanPath.clear();
+    mChanProps = ChannelClassSpec::outgoingFileTransfer().allProperties();
+
+    TEST_CREATE_FILE_TRANSFER_CHANNEL(false, false, false, "");
+}
+
+void TestAccountChannelDispatcher::testCreateFileTransferChannelFail()
+{
+    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, false, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+}
+
+void TestAccountChannelDispatcher::testCreateFileTransferChannelCancel()
+{
+    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, true, false, TELEPATHY_ERROR_CANCELLED);
+}
+
+void TestAccountChannelDispatcher::testCreateFileTransferChannelInvalidParameters()
+{
+    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, false, true, TP_QT4_ERROR_INVALID_ARGUMENT);
 }
 
 void TestAccountChannelDispatcher::testCreateChannel()
@@ -1025,6 +1089,54 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannelHandledChannels()
     }
 
     QVERIFY(ourHandledChannels().isEmpty());
+}
+
+#define TEST_CREATE_AND_HANDLE_FILE_TRANSFER_CHANNEL(channelRequestShouldFail, shouldFail, invalidProps, invokeHandler, expectedError, channelOut, pcOut) \
+  { \
+    mChannelDispatcherAdaptor->mInvokeHandler = invokeHandler; \
+    mChannelDispatcherAdaptor->mChannelRequestShouldFail = channelRequestShouldFail; \
+    mChannelDispatcherAdaptor->mChannelRequestProceedNoop = false; \
+    if (!mConnPath.isEmpty() && !mChanPath.isEmpty()) { \
+        mChannelDispatcherAdaptor->setChan(mConnPath, mConnProps, mChanPath, mChanProps); \
+    } else { \
+        mChannelDispatcherAdaptor->clearChan(); \
+    } \
+    PendingChannel *pc; \
+    if (!invalidProps) { \
+        QFileInfo fileInfo(mFilePath); \
+        FileTransferChannelCreationProperties ftprops(fileInfo.fileName(), \
+                QLatin1String("application/octet-stream"), fileInfo.size()); \
+        pc = mAccount->createAndHandleFileTransfer(QLatin1String("foo@bar"), \
+                ftprops, mUserActionTime); \
+    } else { \
+        FileTransferChannelCreationProperties ftprops; \
+        pc = mAccount->createAndHandleFileTransfer(QLatin1String("foo@bar"), \
+                ftprops, mUserActionTime); \
+    } \
+    testPC(pc, pcOut, channelOut); \
+    QCOMPARE(mChannelRequestAndHandleFinishedWithError, shouldFail); \
+    if (shouldFail) { \
+        QCOMPARE(mChannelRequestAndHandleFinishedErrorName, QString(QLatin1String(expectedError))); \
+    } \
+  }
+
+void TestAccountChannelDispatcher::testCreateAndHandleFileTransferChannel()
+{
+    mConnPath = QLatin1String("/org/freedesktop/Telepathy/Connection/cmname/proto/account");
+    mChanPath = mConnPath + QLatin1String("/channel");
+    mChanProps = ChannelClassSpec::incomingFileTransfer().allProperties();
+
+    TEST_CREATE_AND_HANDLE_FILE_TRANSFER_CHANNEL(false, false, false, true, "", 0, 0);
+}
+
+void TestAccountChannelDispatcher::testCreateAndHandleFileTransferChannelFail()
+{
+    TEST_CREATE_AND_HANDLE_FILE_TRANSFER_CHANNEL(true, true, false, true, TELEPATHY_ERROR_NOT_AVAILABLE, 0, 0);
+}
+
+void TestAccountChannelDispatcher::testCreateAndHandleFileTransferChannelInvalidParameters()
+{
+    TEST_CREATE_AND_HANDLE_FILE_TRANSFER_CHANNEL(true, true, true, true, TP_QT4_ERROR_INVALID_ARGUMENT, 0, 0);
 }
 
 void TestAccountChannelDispatcher::cleanupTestCase()

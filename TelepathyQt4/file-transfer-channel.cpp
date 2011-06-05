@@ -56,6 +56,7 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannel::Private
     uint stateReason;
     QString contentType;
     QString fileName;
+    QString uri;
     QString contentHash;
     QString description;
     QDateTime lastModificationTime;
@@ -130,6 +131,7 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
     pendingState = state = qdbus_cast<uint>(props[QLatin1String("State")]);
     contentType = qdbus_cast<QString>(props[QLatin1String("ContentType")]);
     fileName = qdbus_cast<QString>(props[QLatin1String("Filename")]);
+    uri = qdbus_cast<QString>(props[QLatin1String("URI")]);
     contentHash = qdbus_cast<QString>(props[QLatin1String("ContentHash")]);
     description = qdbus_cast<QString>(props[QLatin1String("Description")]);
     lastModificationTime.setTime_t((uint) qdbus_cast<qulonglong>(props[QLatin1String("Date")]));
@@ -311,6 +313,29 @@ qulonglong FileTransferChannel::size() const
 }
 
 /**
+ * The URI of the file.
+ *
+ * On outgoing file transfers, this property cannot change after the channel
+ * is requested. For incoming file transfers, this property may be set by the
+ * channel handler before calling AcceptFile to inform observers where the
+ * incoming file will be saved. When the URI property is set, the signal
+ * IncomingFileTransferChannel::uriDefined() is emitted.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
+ * \return The uri of the file transfer.
+ */
+QString FileTransferChannel::uri() const
+{
+    if (!isReady(FeatureCore)) {
+        warning() << "FileTransferChannel::FeatureCore must be ready before "
+            "calling uri";
+    }
+
+    return mPriv->uri;
+}
+
+/**
  * Return the type of the contentHash().
  *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
@@ -461,6 +486,34 @@ PendingOperation *FileTransferChannel::cancel()
 {
     return requestClose();
 }
+
+/**
+ * \fn void FileTransferChannel::stateChanged(Tp::FileTransferState state, Tp::FileTransferStateChangeReason reason);
+ *
+ * This signal is emitted when the value state() of this file transfer channel
+ * changes.
+ *
+ * \param state The new state of this file transfer channel.
+ * \param reason The reason for the change of state.
+ * \sa state()
+ */
+
+/**
+ * \fn void FileTransferChannel::initialOffsetDefined(qulonglong initialOffset);
+ *
+ * This signal is emitted when the initial offset for the file transfer is
+ * defined.
+ *
+ * \param initialOffset The new initial offset for the file transfer.
+ */
+
+/**
+ * \fn void FileTransferChannel::transferredBytesChanged(qulonglong count);
+ *
+ * This signal is emitted when the number of bytes transferred changes.
+ *
+ * \param count The new number of bytes transferred.
+ */
 
 /**
  * Protected virtual method called when the state becomes
@@ -623,6 +676,12 @@ void FileTransferChannel::onTransferredBytesChanged(qulonglong count)
 {
     mPriv->transferredBytes = count;
     emit transferredBytesChanged(count);
+}
+
+void FileTransferChannel::onUriDefined(const QString &uri)
+{
+    mPriv->uri = uri;
+    // Signal is emitted only by IncomingFileTransferChannels
 }
 
 } // Tp

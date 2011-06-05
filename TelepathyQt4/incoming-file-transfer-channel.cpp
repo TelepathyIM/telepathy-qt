@@ -64,6 +64,12 @@ IncomingFileTransferChannel::Private::Private(IncomingFileTransferChannel *paren
       requestedOffset(0),
       pos(0)
 {
+    parent->connect(fileTransferInterface,
+            SIGNAL(URIDefined(QString)),
+            SLOT(onUriDefined(QString)));
+    parent->connect(fileTransferInterface,
+            SIGNAL(URIDefined(QString)),
+            SIGNAL(uriDefined(QString)));
 }
 
 IncomingFileTransferChannel::Private::~Private()
@@ -133,6 +139,37 @@ IncomingFileTransferChannel::IncomingFileTransferChannel(
 IncomingFileTransferChannel::~IncomingFileTransferChannel()
 {
     delete mPriv;
+}
+
+/**
+ * Set the URI where the file will be saved. This property may be set by the
+ * channel handler before calling AcceptFile to inform observers where the
+ * incoming file will be saved. When the URI property is set, the signal
+ * uriDefined() is emitted.
+ *
+ * \param uri The URI where the file will be saved.
+ * \return A PendingOperation object which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa FileTransferChannel::uri(), uriDefined()
+ */
+PendingOperation *IncomingFileTransferChannel::setUri(const QString& uri)
+{
+    if (!isReady(FileTransferChannel::FeatureCore)) {
+        warning() << "FileTransferChannel::FeatureCore must be ready before "
+            "calling setUri";
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Channel not ready"),
+                IncomingFileTransferChannelPtr(this));
+    }
+
+    if (state() != FileTransferStatePending) {
+        warning() << "setUri must be called before calling acceptFile";
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Cannot set URI after calling acceptFile"),
+                IncomingFileTransferChannelPtr(this));
+    }
+
+    return mPriv->fileTransferInterface->setPropertyURI(uri);
 }
 
 /**
@@ -206,6 +243,16 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
             SLOT(onAcceptFileFinished(Tp::PendingOperation*)));
     return pv;
 }
+
+/**
+ * \fn void IncomingFileTransferChannel::uriDefined(const QString &uri);
+ *
+ * This signal is emitted when the value of uri() of this file transfer channel
+ * changes.
+ *
+ * \param uri The new URI of this file transfer channel.
+ * \sa FileTransferChannel::uri(), setUri()
+ */
 
 void IncomingFileTransferChannel::onAcceptFileFinished(PendingOperation *op)
 {

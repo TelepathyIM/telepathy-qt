@@ -71,6 +71,8 @@ private:
     TELEPATHY_QT4_NO_EXPORT PendingChannelRequest(const AccountPtr &account,
             const QVariantMap &requestedProperties, const QDateTime &userActionTime,
             const QString &preferredHandler, bool create, const ChannelRequestHints &hints);
+    TELEPATHY_QT4_NO_EXPORT PendingChannelRequest(const AccountPtr &account,
+            const QString &errorName, const QString &errorMessage);
 
     struct Private;
     friend struct Private;

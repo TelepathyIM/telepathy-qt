@@ -224,6 +224,17 @@ PendingChannel::PendingChannel(const AccountPtr &account,
 }
 
 /**
+ * Construct a new PendingChannel object that always fails.
+ *
+ * \param errorName The name of a D-Bus error.
+ * \param errorMessage The error message.
+ */
+PendingChannel::PendingChannel(const QString &errorName, const QString &errorMessage)
+    : PendingOperation(ConnectionPtr()), mPriv(new Private)
+{
+    setFinishedWithError(errorName, errorMessage);
+}
+/**
  * Class destructor.
  */
 PendingChannel::~PendingChannel()

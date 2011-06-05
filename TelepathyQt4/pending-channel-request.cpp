@@ -70,7 +70,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
 /**
  * Construct a new PendingChannelRequest object.
  *
- * \param dbusConnection QDBusConnection to use.
+ * \param account Account to use.
  * \param requestedProperties A dictionary containing the desirable properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
@@ -153,6 +153,21 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(onWatcherFinished(QDBusPendingCallWatcher*)));
     }
+}
+
+/**
+ * Construct a new PendingChannelRequest object that always fails.
+ *
+ * \param account Account to use.
+ * \param errorName The name of a D-Bus error.
+ * \param errorMessage The error message.
+ */
+PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
+        const QString &errorName, const QString &errorMessage)
+    : PendingOperation(ConnectionPtr()),
+      mPriv(new Private(account->dbusConnection()))
+{
+    setFinishedWithError(errorName, errorMessage);
 }
 
 /**
