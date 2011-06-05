@@ -82,7 +82,6 @@ include(TelepathyDefaults)
 # This file contains all the tpqt4 macros used in the buildsystem
 include(TpQt4Macros)
 
-include(Doxygen)
 include(MacroLogFeature)
 
 # external dependencies
@@ -91,6 +90,9 @@ include(MacroLogFeature)
 # Find qt4 version >= 4.5
 set (QT_MIN_VERSION "4.6.0")
 find_package(Qt4 REQUIRED)
+
+# The doxygen macro requires Qt to have been looked up to enable crosslinking
+include(Doxygen)
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_BINARY_DIR}
