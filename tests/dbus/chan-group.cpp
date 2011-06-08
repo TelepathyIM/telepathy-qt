@@ -5,11 +5,8 @@
 #include <tests/lib/glib/contactlist/conn.h>
 #include <tests/lib/glib/textchan-group.h>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
-
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContacts>
@@ -29,7 +26,6 @@ public:
     { }
 
 protected Q_SLOTS:
-    void expectEnsureChannelFinished(Tp::PendingOperation *);
     void onGroupMembersChanged(
             const Tp::Contacts &groupMembersAdded,
             const Tp::Contacts &groupLocalPendingMembersAdded,
@@ -67,33 +63,6 @@ private:
     Channel::GroupMemberChangeDetails mDetails;
     UIntList mInitialMembers;
 };
-
-void TestChanGroup::expectEnsureChannelFinished(PendingOperation* op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = pc->channel();
-    mChanObjectPath = mChan->objectPath();
-    mLoop->exit(0);
-}
 
 void TestChanGroup::onGroupMembersChanged(
         const Contacts &groupMembersAdded,
@@ -169,19 +138,10 @@ void TestChanGroup::init()
 
 void TestChanGroup::testCreateChannel()
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeGroup);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   QLatin1String("Cambridge"));
-
-    QVERIFY(connect(mConn->client()->lowlevel()->ensureChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = mConn->ensureChannel(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_LIST,
+            Tp::HandleTypeGroup, QLatin1String("Cambridge"));
     QVERIFY(mChan);
+    mChanObjectPath = mChan->objectPath();
 
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -323,19 +283,10 @@ void TestChanGroup::commonTest(gboolean properties)
 
 void TestChanGroup::testLeave()
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeGroup);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-                   QLatin1String("Cambridge"));
-
-    QVERIFY(connect(mConn->client()->lowlevel()->ensureChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = mConn->ensureChannel(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_LIST,
+            Tp::HandleTypeGroup, QLatin1String("Cambridge"));
     QVERIFY(mChan);
+    mChanObjectPath = mChan->objectPath();
 
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
