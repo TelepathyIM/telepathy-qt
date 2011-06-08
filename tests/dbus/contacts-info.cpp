@@ -1,19 +1,16 @@
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#include <tests/lib/test.h>
 
-#include <TelepathyQt4/ChannelFactory>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
+
+#include <tests/lib/glib/contacts-conn.h>
+
 #include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/Contact>
-#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingContactInfo>
-#include <TelepathyQt4/PendingReady>
 
-#include <telepathy-glib/telepathy-glib.h>
-
-#include <tests/lib/glib/contacts-conn.h>
-#include <tests/lib/test.h>
+#include <telepathy-glib/debug.h>
 
 using namespace Tp;
 
@@ -23,11 +20,10 @@ class TestContactsInfo : public Test
 
 public:
     TestContactsInfo(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+        : Test(parent), mConn(0)
     { }
 
 protected Q_SLOTS:
-    void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
     void onContactInfoFieldsChanged(const Tp::Contact::InfoFields &);
 
@@ -41,17 +37,10 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    QString mConnName, mConnPath;
-    TpTestsContactsConnection *mConnService;
-    ConnectionPtr mConn;
+    TestConnHelper *mConn;
     QList<ContactPtr> mContacts;
     int mContactsInfoFieldsUpdated;
 };
-
-void TestContactsInfo::expectConnInvalidated()
-{
-    mLoop->exit(0);
-}
 
 void TestContactsInfo::expectPendingContactsFinished(PendingOperation *op)
 {
@@ -97,43 +86,12 @@ void TestContactsInfo::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "foo",
-            NULL));
-    QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "foo", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-
-    QCOMPARE(mConn->status(), ConnectionStatusConnected);
-
-    QVERIFY(mConn->contactManager()->supportedFeatures().contains(Contact::FeatureInfo));
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 }
 
 void TestContactsInfo::init()
@@ -144,10 +102,14 @@ void TestContactsInfo::init()
 
 void TestContactsInfo::testInfo()
 {
+    ContactManagerPtr contactManager = mConn->client()->contactManager();
+
+    QVERIFY(contactManager->supportedFeatures().contains(Contact::FeatureInfo));
+
     QStringList validIDs = QStringList() << QLatin1String("foo")
         << QLatin1String("bar");
 
-    PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(
+    PendingContacts *pending = contactManager->contactsForIdentifiers(
             validIDs, Features() << Contact::FeatureInfo);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -194,15 +156,17 @@ void TestContactsInfo::testInfo()
 
     TpHandle handles[] = { 0, 0 };
     TpHandleRepoIface *serviceRepo = tp_base_connection_get_handles(
-            (TpBaseConnection *) mConnService, TP_HANDLE_TYPE_CONTACT);
+            TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
 
     for (unsigned i = 0; i < 2; i++) {
         handles[i] = tp_handle_ensure(serviceRepo, qPrintable(validIDs[i]),
                 NULL, NULL);
     }
 
-    tp_tests_contacts_connection_change_contact_info(mConnService, handles[0], info_1);
-    tp_tests_contacts_connection_change_contact_info(mConnService, handles[1], info_2);
+    tp_tests_contacts_connection_change_contact_info(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
+            handles[0], info_1);
+    tp_tests_contacts_connection_change_contact_info(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
+            handles[1], info_2);
 
     while (mContactsInfoFieldsUpdated != 2)  {
         QCOMPARE(mLoop->exec(), 0);
@@ -268,26 +232,8 @@ void TestContactsInfo::cleanup()
 
 void TestContactsInfo::cleanupTestCase()
 {
-    if (mConn) {
-        // Disconnect and wait for invalidated
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
-
-    if (mConnService != 0) {
-        g_object_unref(mConnService);
-        mConnService = 0;
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     cleanupTestCaseImpl();
 }
