@@ -306,4 +306,4 @@ void TestContactSearchChan::cleanupTestCase()
 }
 
 QTEST_MAIN(TestContactSearchChan)
-#include "_gen/chan-contact-search.cpp.moc.hpp"
+#include "_gen/contact-search-chan.cpp.moc.hpp"
