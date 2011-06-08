@@ -1,31 +1,25 @@
-#include <QtCore/QEventLoop>
-#include <QtTest/QtTest>
+#include <tests/lib/test.h>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
-#include <TelepathyQt4/AndFilter>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Types>
+#include <tests/lib/glib/echo2/conn.h>
+
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountCapabilityFilter>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/AccountPropertyFilter>
 #include <TelepathyQt4/AccountSet>
+#include <TelepathyQt4/AndFilter>
 #include <TelepathyQt4/ConnectionCapabilities>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/NotFilter>
 #include <TelepathyQt4/OrFilter>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/Profile>
-#include <TelepathyQt4/NotFilter>
 
 #include <telepathy-glib/debug.h>
-
-#include <tests/lib/glib/echo2/conn.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 
@@ -36,7 +30,7 @@ class TestAccountBasics : public Test
 public:
     TestAccountBasics(QObject *parent = 0)
         : Test(parent),
-          mConnService(0),
+          mConn(0),
           mServiceNameChanged(false),
           mIconNameChanged(false),
           mCapabilitiesChanged(false),
@@ -45,7 +39,6 @@ public:
     { }
 
 protected Q_SLOTS:
-    void expectConnInvalidated();
     void onNewAccount(const Tp::AccountPtr &);
     void onAccountServiceNameChanged(const QString &);
     void onAccountIconNameChanged(const QString &);
@@ -66,12 +59,7 @@ private:
     QStringList pathsForAccountSet(const Tp::AccountSetPtr &set);
 
     Tp::AccountManagerPtr mAM;
-
-    QString mConnName, mConnPath;
-    ExampleEcho2Connection *mConnService;
-    ConnectionPtr mConn;
-    bool mConnInvalidated;
-
+    TestConnHelper *mConn;
     bool mServiceNameChanged;
     QString mServiceName;
     bool mIconNameChanged;
@@ -80,12 +68,6 @@ private:
     int mAccountsCount;
     bool mGotAvatarChanged;
 };
-
-void TestAccountBasics::expectConnInvalidated()
-{
-    mConnInvalidated = true;
-    mLoop->exit(0);
-}
 
 void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
 {
@@ -146,47 +128,21 @@ void TestAccountBasics::initTestCase()
 {
     initTestCaseImpl();
 
-    mAM = AccountManager::create(AccountFactory::create(QDBusConnection::sessionBus(),
-                Account::FeatureCore | Account::FeatureCapabilities));
-    QCOMPARE(mAM->isReady(), false);
-
     g_type_init();
     g_set_prgname("account-basics");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
+    mAM = AccountManager::create(AccountFactory::create(QDBusConnection::sessionBus(),
+                Account::FeatureCore | Account::FeatureCapabilities));
+    QCOMPARE(mAM->isReady(), false);
 
-    mConnService = EXAMPLE_ECHO_2_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_ECHO_2_CONNECTION,
             "account", "me@example.com",
-            "protocol", "foo",
-            NULL));
-    QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "foo", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(mConn->status(), ConnectionStatusConnected);
-
-    g_free(name);
-    g_free(connPath);
+            "protocol", "echo2",
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 }
 
 void TestAccountBasics::init()
@@ -625,7 +581,7 @@ void TestAccountBasics::testBasics()
                         accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
                             QLatin1String("Connection"),
-                            QDBusVariant(mConnPath)),
+                            QDBusVariant(mConn->objectPath())),
                         acc),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -700,19 +656,8 @@ void TestAccountBasics::cleanup()
 void TestAccountBasics::cleanupTestCase()
 {
     if (mConn) {
-        // Disconnect and wait for invalidated
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
+        QCOMPARE(mConn->disconnect(), true);
+        delete mConn;
     }
 
     cleanupTestCaseImpl();
