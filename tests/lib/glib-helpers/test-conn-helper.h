@@ -11,6 +11,11 @@
 
 #include <telepathy-glib/telepathy-glib.h>
 
+namespace Tp
+{
+class PendingContacts;
+}
+
 class TestConnHelper : public QObject
 {
     Q_OBJECT
@@ -63,7 +68,8 @@ public:
 
 private Q_SLOTS:
     void expectConnInvalidated();
-    void expectPendingContactsFinished(Tp::PendingOperation *op);
+    void expectContactsForIdentifiersFinished(Tp::PendingOperation *op);
+    void expectContactsForHandlesFinished(Tp::PendingOperation *op);
     void expectCreateChannelFinished(Tp::PendingOperation *op);
     void expectEnsureChannelFinished(Tp::PendingOperation *op);
 
@@ -76,6 +82,8 @@ private:
             const Tp::ChannelFactoryConstPtr &channelFactory,
             const Tp::ContactFactoryConstPtr &contactFactory,
             GType gType, const char *firstPropertyName, va_list varArgs);
+
+    void expectPendingContactsFinished(Tp::PendingContacts *pc);
 
     Test *mParent;
     QEventLoop *mLoop;
