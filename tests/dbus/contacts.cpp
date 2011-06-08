@@ -98,26 +98,8 @@ void TestContacts::expectConnInvalidated()
 
 void TestContacts::expectPendingContactsFinished(PendingOperation *op)
 {
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
+    TEST_VERIFY_OP(op);
 
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
     PendingContacts *pending = qobject_cast<PendingContacts *>(op);
     mContacts = pending->contacts();
 
