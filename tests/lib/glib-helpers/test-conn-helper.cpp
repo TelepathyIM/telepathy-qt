@@ -198,7 +198,7 @@ QList<Tp::ContactPtr> TestConnHelper::contacts(const QStringList &ids,
     Tp::PendingContacts *pc = mClient->contactManager()->contactsForIdentifiers(ids, features);
     QObject::connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectPendingContactsFinished(Tp::PendingOperation*)));
+            SLOT(expectContactsForIdentifiersFinished(Tp::PendingOperation*)));
     if (mLoop->exec() == 0) {
         ret = mContacts;
     }
@@ -215,7 +215,7 @@ QList<Tp::ContactPtr> TestConnHelper::contacts(const Tp::UIntList &handles,
     Tp::PendingContacts *pc = mClient->contactManager()->contactsForHandles(handles, features);
     QObject::connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(expectPendingContactsFinished(Tp::PendingOperation*)));
+            SLOT(expectContactsForHandlesFinished(Tp::PendingOperation*)));
     if (mLoop->exec() == 0) {
         ret = mContacts;
     }
@@ -336,14 +336,35 @@ void TestConnHelper::expectConnInvalidated()
     mLoop->exit(0);
 }
 
-void TestConnHelper::expectPendingContactsFinished(Tp::PendingOperation *op)
+void TestConnHelper::expectContactsForIdentifiersFinished(Tp::PendingOperation *op)
 {
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName() << ": " << op->errorMessage();
+    Tp::PendingContacts *pc = qobject_cast<Tp::PendingContacts *>(op);
+    QCOMPARE(pc->isForHandles(), false);
+    QCOMPARE(pc->isForIdentifiers(), true);
+    QCOMPARE(pc->isUpgrade(), false);
+
+    expectPendingContactsFinished(pc);
+}
+
+void TestConnHelper::expectContactsForHandlesFinished(Tp::PendingOperation *op)
+{
+    Tp::PendingContacts *pc = qobject_cast<Tp::PendingContacts *>(op);
+    QCOMPARE(pc->isForHandles(), true);
+    QCOMPARE(pc->isForIdentifiers(), false);
+    QCOMPARE(pc->isUpgrade(), false);
+
+    expectPendingContactsFinished(pc);
+}
+
+void TestConnHelper::expectPendingContactsFinished(Tp::PendingContacts *pc)
+{
+    QCOMPARE(pc->manager(), mClient->contactManager());
+
+    if (pc->isError()) {
+        qWarning().nospace() << pc->errorName() << ": " << pc->errorMessage();
         mContacts.clear();
         mLoop->exit(1);
     } else {
-        Tp::PendingContacts *pc = qobject_cast<Tp::PendingContacts *>(op);
         mContacts = pc->contacts();
         mLoop->exit(0);
     }
