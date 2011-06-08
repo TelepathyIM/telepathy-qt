@@ -59,7 +59,6 @@ public:
     { }
 
 protected Q_SLOTS:
-    void expectPendingContactsFinished(Tp::PendingOperation *);
     void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
     void onAvatarDataChanged(const Tp::AvatarData &);
     void createContactWithFakeAvatar(const char *);
@@ -78,34 +77,6 @@ private:
     QList<ContactPtr> mContacts;
     bool mAvatarRetrievedCalled;
 };
-
-void TestContactsAvatar::expectPendingContactsFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
-    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
-    mContacts = pending->contacts();
-
-    mLoop->exit(0);
-}
 
 void TestContactsAvatar::onAvatarRetrieved(uint handle, const QString &token,
     const QByteArray &data, const QString &mimeType)
@@ -148,13 +119,8 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
         << Contact::FeatureAvatarToken
         << Contact::FeatureAvatarData;
 
-    PendingContacts *pending = mConn->client()->contactManager()->contactsForHandles(
-            handles, features);
-    QVERIFY(connect(pending,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mContacts.size(), 1);
+    mContacts = mConn->contacts(handles, features);
+    QCOMPARE(mContacts.size(), handles.size());
 
     if (mContacts[0]->avatarData().fileName.isEmpty()) {
         QVERIFY(connect(mContacts[0].data(),
