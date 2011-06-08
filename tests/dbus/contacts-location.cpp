@@ -20,11 +20,10 @@ class TestContactsLocation : public Test
 
 public:
     TestContactsLocation(QObject *parent = 0)
-        : Test(parent), mConn(0)
+        : Test(parent), mConn(0), mContactsLocationUpdated(0)
     { }
 
 protected Q_SLOTS:
-    void expectPendingContactsFinished(Tp::PendingOperation *op);
     void onLocationInfoUpdated(const Tp::LocationInfo &location);
 
 private Q_SLOTS:
@@ -38,37 +37,8 @@ private Q_SLOTS:
 
 private:
     TestConnHelper *mConn;
-    QList<ContactPtr> mContacts;
     int mContactsLocationUpdated;
 };
-
-void TestContactsLocation::expectPendingContactsFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
-    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
-    mContacts = pending->contacts();
-
-    mLoop->exit(0);
-}
 
 void TestContactsLocation::onLocationInfoUpdated(const Tp::LocationInfo &location)
 {
@@ -108,16 +78,10 @@ void TestContactsLocation::testLocation()
 
     QStringList validIDs = QStringList() << QLatin1String("foo")
         << QLatin1String("bar");
-
-    PendingContacts *pending = contactManager->contactsForIdentifiers(
-            validIDs, Features() << Contact::FeatureLocation);
-    QVERIFY(connect(pending,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    for (int i = 0; i < mContacts.size(); i++) {
-        ContactPtr contact = mContacts[i];
+    QList<ContactPtr> contacts = mConn->contacts(validIDs, Contact::FeatureLocation);
+    QCOMPARE(contacts.size(), validIDs.size());
+    for (int i = 0; i < contacts.size(); i++) {
+        ContactPtr contact = contacts[i];
 
         QCOMPARE(contact->requestedFeatures().contains(Contact::FeatureLocation), true);
         QCOMPARE(contact->actualFeatures().contains(Contact::FeatureLocation), true);
@@ -153,8 +117,8 @@ void TestContactsLocation::testLocation()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    for (int i = 0; i < mContacts.size(); i++) {
-        ContactPtr contact = mContacts[i];
+    for (int i = 0; i < contacts.size(); i++) {
+        ContactPtr contact = contacts[i];
 
         QCOMPARE(contact->location().country(),
                  QLatin1String(tp_asv_get_string(locations[i], "country")));
