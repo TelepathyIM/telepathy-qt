@@ -1,23 +1,15 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <tests/lib/test.h>
 
-#include <QtDBus/QtDBus>
-
-#include <QtTest/QtTest>
+#include <tests/lib/glib/simple-manager.h>
+#include <tests/lib/glib/echo2/connection-manager.h>
 
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionManager>
-#include <TelepathyQt4/Debug>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/PresenceSpec>
 
-#include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
-
-#include <tests/lib/glib/simple-manager.h>
-#include <tests/lib/glib/echo2/connection-manager.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 
@@ -45,12 +37,16 @@ public:
         : Test(parent), mCMService(0)
     { }
 
+protected Q_SLOTS:
+    void expectListNamesFinished(Tp::PendingOperation *);
+
 private Q_SLOTS:
     void initTestCase();
     void init();
 
     void testBasics();
     void testLegacy();
+    void testListNames();
 
     void cleanup();
     void cleanupTestCase();
@@ -61,7 +57,35 @@ private:
 
     TpBaseConnectionManager *mCMServiceLegacy;
     Tp::ConnectionManagerPtr mCMLegacy;
+
+    QStringList mCMNames;
 };
+
+void TestCmBasics::expectListNamesFinished(PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    PendingStringList *ps = qobject_cast<PendingStringList*>(op);
+    mCMNames = ps->result();
+    mLoop->exit(0);
+}
 
 void TestCmBasics::initTestCase()
 {
@@ -252,7 +276,17 @@ void TestCmBasics::testLegacy()
 // TODO add a test for the case of getting the information from a .manager file, and if possible,
 // also for using the fallbacks for the CM::Protocols property not being present.
 
-// TODO also one for CM::listNames()
+void TestCmBasics::testListNames()
+{
+    QVERIFY(connect(ConnectionManager::listNames(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectListNamesFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mCMNames.size(), 3);
+    QVERIFY(mCMNames.contains(QLatin1String("simple")));
+    QVERIFY(mCMNames.contains(QLatin1String("example_echo_2")));
+    QVERIFY(mCMNames.contains(QLatin1String("spurious")));
+}
 
 void TestCmBasics::cleanup()
 {
