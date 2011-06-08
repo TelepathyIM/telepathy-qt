@@ -20,7 +20,7 @@ if(ENABLE_TP_GLIB_TESTS)
         tpqt4_add_dbus_unit_test(ClientFactories client-factories tp-glib-tests)
     endif(HAVE_TEST_PYTHON)
 
-    tpqt4_add_dbus_unit_test(AccountConnectionFactory account-connection-factory tp-glib-tests)
+    tpqt4_add_dbus_unit_test(AccountConnectionFactory account-connection-factory tp-glib-tests tp-qt4-tests-glib-helpers)
     tpqt4_add_dbus_unit_test(ChannelBasics chan-basics tp-glib-tests)
     tpqt4_add_dbus_unit_test(ChannelConference chan-conference tp-glib-tests)
     tpqt4_add_dbus_unit_test(ChannelContactSearch chan-contact-search tp-glib-tests)
