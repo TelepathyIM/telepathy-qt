@@ -30,7 +30,6 @@ public:
 
 protected Q_SLOTS:
     void expectEnsureChannelFinished(Tp::PendingOperation *);
-    void expectPendingContactsFinished(Tp::PendingOperation *);
     void onGroupMembersChanged(
             const Tp::Contacts &groupMembersAdded,
             const Tp::Contacts &groupLocalPendingMembersAdded,
@@ -42,7 +41,6 @@ private Q_SLOTS:
     void initTestCase();
     void init();
 
-    void testCreateContacts();
     void testCreateChannel();
     void testMCDGroup();
     void testPropertylessGroup();
@@ -97,34 +95,6 @@ void TestChanGroup::expectEnsureChannelFinished(PendingOperation* op)
     mLoop->exit(0);
 }
 
-void TestChanGroup::expectPendingContactsFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
-    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
-    mContacts = pending->contacts();
-
-    mLoop->exit(0);
-}
-
 void TestChanGroup::onGroupMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -176,6 +146,14 @@ void TestChanGroup::initTestCase()
             "simulation-delay", 1,
             NULL);
     QCOMPARE(mConn->connect(Connection::FeatureSelfContact), true);
+
+    QStringList ids;
+    ids << QLatin1String("sjoerd@example.com");
+
+    // Check that the contact is properly built
+    mContacts = mConn->contacts(ids);
+    QCOMPARE(mContacts.size(), 1);
+    QVERIFY(!mContacts.first().isNull());
 }
 
 void TestChanGroup::init()
@@ -187,23 +165,6 @@ void TestChanGroup::init()
     mChangedRP.clear();
     mChangedRemoved.clear();
     mDetails = Channel::GroupMemberChangeDetails();
-}
-
-void TestChanGroup::testCreateContacts()
-{
-    QStringList ids;
-    ids << QLatin1String("sjoerd@example.com");
-
-    // Wait for the contacts to be built
-    PendingOperation *op = mConn->client()->contactManager()->contactsForIdentifiers(ids);
-    QVERIFY(connect(op,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(op,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                this,
-                SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
 }
 
 void TestChanGroup::testCreateChannel()
