@@ -79,6 +79,34 @@ private:
     bool mAvatarRetrievedCalled;
 };
 
+void TestContactsAvatar::expectPendingContactsFinished(PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    qDebug() << "finished";
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+    mContacts = pending->contacts();
+
+    mLoop->exit(0);
+}
+
 void TestContactsAvatar::onAvatarRetrieved(uint handle, const QString &token,
     const QByteArray &data, const QString &mimeType)
 {
@@ -152,7 +180,27 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
     QCOMPARE(avatar.mimeType, QString(QLatin1String(avatarMimeType)));
 }
 
-#define RAND_STR_LEN 6
+void TestContactsAvatar::initTestCase()
+{
+    initTestCaseImpl();
+
+    g_type_init();
+    g_set_prgname("contacts-avatar");
+    tp_debug_set_flags("all");
+    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+
+    mConn = new TestConnHelper(this,
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
+            "account", "me@example.com",
+            "protocol", "foo",
+            NULL);
+    QCOMPARE(mConn->connect(), true);
+}
+
+void TestContactsAvatar::init()
+{
+    initImpl();
+}
 
 void TestContactsAvatar::testAvatar()
 {
@@ -192,56 +240,6 @@ void TestContactsAvatar::testAvatar()
     QVERIFY(!mAvatarRetrievedCalled);
 
     QVERIFY(SmartDir(tmpDir).removeDirectory());
-}
-
-void TestContactsAvatar::expectPendingContactsFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
-    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
-    mContacts = pending->contacts();
-
-    mLoop->exit(0);
-}
-
-void TestContactsAvatar::initTestCase()
-{
-    initTestCaseImpl();
-
-    g_type_init();
-    g_set_prgname("contacts-avatar");
-    tp_debug_set_flags("all");
-    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
-
-    mConn = new TestConnHelper(this,
-            TP_TESTS_TYPE_CONTACTS_CONNECTION,
-            "account", "me@example.com",
-            "protocol", "foo",
-            NULL);
-    QCOMPARE(mConn->connect(), true);
-}
-
-void TestContactsAvatar::init()
-{
-    initImpl();
 }
 
 void TestContactsAvatar::cleanup()
