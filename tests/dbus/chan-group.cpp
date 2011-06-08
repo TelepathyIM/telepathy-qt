@@ -1,31 +1,21 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <tests/lib/test.h>
 
-#include <QtDBus/QtDBus>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
-#include <QtTest/QtTest>
+#include <tests/lib/glib/contactlist/conn.h>
+#include <tests/lib/glib/textchan-group.h>
 
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/Channel>
-#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
-#include <telepathy-glib/handle.h>
-
-#include <tests/lib/glib/contactlist/conn.h>
-#include <tests/lib/glib/textchan-group.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 
@@ -35,11 +25,10 @@ class TestChanGroup : public Test
 
 public:
     TestChanGroup(QObject *parent = 0)
-        : Test(parent), mConnService(0), mChanService(0)
+        : Test(parent), mConn(0), mChanService(0)
     { }
 
 protected Q_SLOTS:
-    void expectConnInvalidated();
     void expectEnsureChannelFinished(Tp::PendingOperation *);
     void expectPendingContactsFinished(Tp::PendingOperation *);
     void onGroupMembersChanged(
@@ -68,10 +57,8 @@ private:
 
     void commonTest(gboolean properties);
 
-    QString mConnName, mConnPath;
-    ExampleContactListConnection *mConnService;
+    TestConnHelper *mConn;
     TpTestsTextChannelGroup *mChanService;
-    ConnectionPtr mConn;
     ChannelPtr mChan;
     QString mChanObjectPath;
     QList<ContactPtr> mContacts;
@@ -82,11 +69,6 @@ private:
     Channel::GroupMemberChangeDetails mDetails;
     UIntList mInitialMembers;
 };
-
-void TestChanGroup::expectConnInvalidated()
-{
-    mLoop->exit(0);
-}
 
 void TestChanGroup::expectEnsureChannelFinished(PendingOperation* op)
 {
@@ -187,42 +169,13 @@ void TestChanGroup::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = EXAMPLE_CONTACT_LIST_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,
             "account", "me@example.com",
             "protocol", "example-contact-list",
             "simulation-delay", 1,
-            NULL));
-    QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "foo", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(Connection::FeatureSelfContact),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(static_cast<uint>(mConn->status()),
-             static_cast<uint>(ConnectionStatusConnected));
+            NULL);
+    QCOMPARE(mConn->connect(Connection::FeatureSelfContact), true);
 }
 
 void TestChanGroup::init()
@@ -242,7 +195,7 @@ void TestChanGroup::testCreateContacts()
     ids << QLatin1String("sjoerd@example.com");
 
     // Wait for the contacts to be built
-    PendingOperation *op = mConn->contactManager()->contactsForIdentifiers(ids);
+    PendingOperation *op = mConn->client()->contactManager()->contactsForIdentifiers(ids);
     QVERIFY(connect(op,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
@@ -263,7 +216,7 @@ void TestChanGroup::testCreateChannel()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    QLatin1String("Cambridge"));
 
-    QVERIFY(connect(mConn->lowlevel()->ensureChannel(request),
+    QVERIFY(connect(mConn->client()->lowlevel()->ensureChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -340,7 +293,7 @@ void TestChanGroup::commonTest(gboolean properties)
 
     mChanService = TP_TESTS_TEXT_CHANNEL_GROUP(g_object_new(
                 TP_TESTS_TYPE_TEXT_CHANNEL_GROUP,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPathLatin1.data(),
                 "detailed", TRUE,
                 "properties", properties,
@@ -356,7 +309,7 @@ void TestChanGroup::commonTest(gboolean properties)
 
     tp_intset_destroy(members);
 
-    mChan = Channel::create(mConn, mChanObjectPath, QVariantMap());
+    mChan = Channel::create(mConn->client(), mChanObjectPath, QVariantMap());
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(),
@@ -417,7 +370,7 @@ void TestChanGroup::testLeave()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    QLatin1String("Cambridge"));
 
-    QVERIFY(connect(mConn->lowlevel()->ensureChannel(request),
+    QVERIFY(connect(mConn->client()->lowlevel()->ensureChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -429,12 +382,12 @@ void TestChanGroup::testLeave()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
-    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->selfContact()),
+    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+    QVERIFY(mChan->groupContacts().contains(mConn->client()->selfContact()));
 
     QString leaveMessage(QLatin1String("I'm sick of this lot"));
     QVERIFY(connect(mChan->requestLeave(leaveMessage),
@@ -442,7 +395,7 @@ void TestChanGroup::testLeave()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(!mChan->groupContacts().contains(mConn->selfContact()));
+    QVERIFY(!mChan->groupContacts().contains(mConn->client()->selfContact()));
 
     // We left gracefully, which we have details for.
     // Unfortunately, the test CM used here ignores the message and the reason specified, so can't
@@ -451,7 +404,7 @@ void TestChanGroup::testLeave()
     // verified by dbus-monitor.
     QVERIFY(mChan->groupSelfContactRemoveInfo().isValid());
     QVERIFY(mChan->groupSelfContactRemoveInfo().hasActor());
-    QVERIFY(mChan->groupSelfContactRemoveInfo().actor() == mConn->selfContact());
+    QVERIFY(mChan->groupSelfContactRemoveInfo().actor() == mConn->client()->selfContact());
 
     // Another leave should no-op succeed, because we aren't a member
     QVERIFY(connect(mChan->requestLeave(leaveMessage),
@@ -469,7 +422,7 @@ void TestChanGroup::testLeaveWithFallback()
     // The text channel doesn't support removing, so will trigger the fallback
     mChanService = TP_TESTS_TEXT_CHANNEL_GROUP(g_object_new(
                 TP_TESTS_TYPE_TEXT_CHANNEL_GROUP,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPathLatin1.data(),
                 "detailed", TRUE,
                 "properties", TRUE,
@@ -477,14 +430,14 @@ void TestChanGroup::testLeaveWithFallback()
     QVERIFY(mChanService != 0);
 
     TpIntSet *members = tp_intset_sized_new(1);
-    tp_intset_add(members, mConn->selfHandle());
+    tp_intset_add(members, mConn->client()->selfHandle());
 
     QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be there or be []",
                 members, NULL, NULL, NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
 
     tp_intset_destroy(members);
 
-    mChan = Channel::create(mConn, mChanObjectPath, QVariantMap());
+    mChan = Channel::create(mConn->client(), mChanObjectPath, QVariantMap());
     QVERIFY(mChan);
 
     // Should fail, because not ready (and thus we can't know how to leave)
@@ -520,7 +473,7 @@ void TestChanGroup::cleanup()
 
     // Avoid D-Bus event leak from one test case to another - I've seen this with the
     // testCreateChannel groupMembersChanged leaking at least
-    processDBusQueue(mConn.data());
+    processDBusQueue(mConn->client().data());
     mChan.reset();
 
     cleanupImpl();
@@ -528,26 +481,8 @@ void TestChanGroup::cleanup()
 
 void TestChanGroup::cleanupTestCase()
 {
-    if (mConn) {
-        // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
-
-    if (mConnService != 0) {
-        g_object_unref(mConnService);
-        mConnService = 0;
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     cleanupTestCaseImpl();
 }
