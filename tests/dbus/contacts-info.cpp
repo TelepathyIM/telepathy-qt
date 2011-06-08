@@ -20,11 +20,10 @@ class TestContactsInfo : public Test
 
 public:
     TestContactsInfo(QObject *parent = 0)
-        : Test(parent), mConn(0)
+        : Test(parent), mConn(0), mContactsInfoFieldsUpdated(0)
     { }
 
 protected Q_SLOTS:
-    void expectPendingContactsFinished(Tp::PendingOperation *);
     void onContactInfoFieldsChanged(const Tp::Contact::InfoFields &);
 
 private Q_SLOTS:
@@ -38,37 +37,8 @@ private Q_SLOTS:
 
 private:
     TestConnHelper *mConn;
-    QList<ContactPtr> mContacts;
     int mContactsInfoFieldsUpdated;
 };
-
-void TestContactsInfo::expectPendingContactsFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
-    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
-    mContacts = pending->contacts();
-
-    mLoop->exit(0);
-}
 
 void TestContactsInfo::onContactInfoFieldsChanged(const Tp::Contact::InfoFields &info)
 {
@@ -108,16 +78,10 @@ void TestContactsInfo::testInfo()
 
     QStringList validIDs = QStringList() << QLatin1String("foo")
         << QLatin1String("bar");
-
-    PendingContacts *pending = contactManager->contactsForIdentifiers(
-            validIDs, Features() << Contact::FeatureInfo);
-    QVERIFY(connect(pending,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    for (int i = 0; i < mContacts.size(); i++) {
-        ContactPtr contact = mContacts[i];
+    QList<ContactPtr> contacts = mConn->contacts(validIDs, Contact::FeatureInfo);
+    QCOMPARE(contacts.size(), validIDs.size());
+    for (int i = 0; i < contacts.size(); i++) {
+        ContactPtr contact = contacts[i];
 
         QCOMPARE(contact->requestedFeatures().contains(Contact::FeatureInfo), true);
         QCOMPARE(contact->actualFeatures().contains(Contact::FeatureInfo), true);
@@ -175,8 +139,8 @@ void TestContactsInfo::testInfo()
     QCOMPARE(mContactsInfoFieldsUpdated, 2);
 
     mContactsInfoFieldsUpdated = 0;
-    ContactPtr contactFoo = mContacts[0];
-    ContactPtr contactBar = mContacts[1];
+    ContactPtr contactFoo = contacts[0];
+    ContactPtr contactBar = contacts[1];
 
     QCOMPARE(contactFoo->infoFields().isValid(), true);
     QCOMPARE(contactFoo->infoFields().allFields().size(), 1);
@@ -187,7 +151,7 @@ void TestContactsInfo::testInfo()
     QCOMPARE(contactBar->infoFields().allFields()[0].fieldName, QLatin1String("n"));
     QCOMPARE(contactBar->infoFields().allFields()[0].fieldValue[0], QLatin1String("Bar"));
 
-    Q_FOREACH (const ContactPtr &contact, mContacts) {
+    Q_FOREACH (const ContactPtr &contact, contacts) {
         PendingOperation *op = contact->refreshInfo();
         QVERIFY(connect(op,
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -198,8 +162,8 @@ void TestContactsInfo::testInfo()
     /* nothing changed */
     QCOMPARE(mContactsInfoFieldsUpdated, 0);
 
-    for (int i = 0; i < mContacts.size(); i++) {
-        ContactPtr contact = mContacts[i];
+    for (int i = 0; i < contacts.size(); i++) {
+        ContactPtr contact = contacts[i];
         disconnect(contact.data(),
                 SIGNAL(infoChanged(const Tp::ContactInfoFieldList &)),
                 this,
