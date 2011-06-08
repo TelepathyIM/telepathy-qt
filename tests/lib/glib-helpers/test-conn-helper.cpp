@@ -196,12 +196,14 @@ QList<Tp::ContactPtr> TestConnHelper::contacts(const QStringList &ids,
 
     QList<Tp::ContactPtr> ret;
     Tp::PendingContacts *pc = mClient->contactManager()->contactsForIdentifiers(ids, features);
+    mContactFeatures = features;
     QObject::connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(expectContactsForIdentifiersFinished(Tp::PendingOperation*)));
     if (mLoop->exec() == 0) {
         ret = mContacts;
     }
+    mContactFeatures.clear();
     mContacts.clear();
     return ret;
 }
@@ -213,12 +215,14 @@ QList<Tp::ContactPtr> TestConnHelper::contacts(const Tp::UIntList &handles,
 
     QList<Tp::ContactPtr> ret;
     Tp::PendingContacts *pc = mClient->contactManager()->contactsForHandles(handles, features);
+    mContactFeatures = features;
     QObject::connect(pc,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(expectContactsForHandlesFinished(Tp::PendingOperation*)));
     if (mLoop->exec() == 0) {
         ret = mContacts;
     }
+    mContactFeatures.clear();
     mContacts.clear();
     return ret;
 }
@@ -366,6 +370,9 @@ void TestConnHelper::expectPendingContactsFinished(Tp::PendingContacts *pc)
         mLoop->exit(1);
     } else {
         mContacts = pc->contacts();
+        Q_FOREACH (const Tp::ContactPtr &contact, mContacts) {
+            QVERIFY(contact->requestedFeatures().contains(mContactFeatures));
+        }
         mLoop->exit(0);
     }
 }

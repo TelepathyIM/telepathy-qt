@@ -92,6 +92,8 @@ private:
 
     // The property retrieved by expectPendingContactsFinished()
     QList<Tp::ContactPtr> mContacts;
+    // Property used by expectPendingContactsFinished()
+    Tp::Features mContactFeatures;
     // The property retrieved by expectCreate/EnsureChannelFinished()
     Tp::ChannelPtr mChannel;
 };
