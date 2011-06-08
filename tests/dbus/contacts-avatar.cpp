@@ -1,19 +1,16 @@
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#include <tests/lib/test.h>
 
-#include <TelepathyQt4/AvatarData>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/Contact>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
-
-#include <telepathy-glib/telepathy-glib.h>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
 #include <tests/lib/glib/contacts-conn.h>
-#include <tests/lib/test.h>
+
+#include <TelepathyQt4/AvatarData>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingContacts>
+
+#include <telepathy-glib/debug.h>
 
 using namespace Tp;
 
@@ -58,11 +55,10 @@ class TestContactsAvatar : public Test
 
 public:
     TestContactsAvatar(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+        : Test(parent), mConn(0)
     { }
 
 protected Q_SLOTS:
-    void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
     void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
     void onAvatarDataChanged(const Tp::AvatarData &);
@@ -78,9 +74,7 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    QString mConnName, mConnPath;
-    TpTestsContactsConnection *mConnService;
-    ConnectionPtr mConn;
+    TestConnHelper *mConn;
     QList<ContactPtr> mContacts;
     bool mAvatarRetrievedCalled;
 };
@@ -105,7 +99,7 @@ void TestContactsAvatar::onAvatarDataChanged(const AvatarData &avatar)
 void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
 {
     TpHandleRepoIface *serviceRepo = tp_base_connection_get_handles(
-        (TpBaseConnection *) mConnService, TP_HANDLE_TYPE_CONTACT);
+            TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
     const gchar avatarData[] = "fake-avatar-data";
     const gchar avatarToken[] = "fake-avatar-token";
     const gchar avatarMimeType[] = "fake-avatar-mime-type";
@@ -114,10 +108,11 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
 
     handle = tp_handle_ensure(serviceRepo, id, NULL, NULL);
     array = g_array_new(FALSE, FALSE, sizeof(gchar));
-    g_array_append_vals (array, avatarData, strlen(avatarData));
+    g_array_append_vals(array, avatarData, strlen(avatarData));
 
-    tp_tests_contacts_connection_change_avatar_data(mConnService, handle,
-        array, avatarMimeType, avatarToken);
+    tp_tests_contacts_connection_change_avatar_data(
+            TP_TESTS_CONTACTS_CONNECTION(mConn->service()), handle,
+            array, avatarMimeType, avatarToken);
     g_array_unref(array);
 
     Tp::UIntList handles = Tp::UIntList() << handle;
@@ -125,8 +120,8 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
         << Contact::FeatureAvatarToken
         << Contact::FeatureAvatarData;
 
-    PendingContacts *pending = mConn->contactManager()->contactsForHandles(
-        handles, features);
+    PendingContacts *pending = mConn->client()->contactManager()->contactsForHandles(
+            handles, features);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
@@ -161,6 +156,9 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
 
 void TestContactsAvatar::testAvatar()
 {
+    QVERIFY(mConn->client()->contactManager()->supportedFeatures().contains(
+                Contact::FeatureAvatarData));
+
     /* Make sure our tests does not mess up user's avatar cache */
     qsrand(time(0));
     static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -174,7 +172,7 @@ void TestContactsAvatar::testAvatar()
     setenv ("XDG_CACHE_HOME", a.constData(), true);
 
     Client::ConnectionInterfaceAvatarsInterface *connAvatarsInterface =
-        mConn->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>();
+        mConn->client()->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>();
 
     /* Check if AvatarRetrieved gets called */
     connect(connAvatarsInterface,
@@ -194,11 +192,6 @@ void TestContactsAvatar::testAvatar()
     QVERIFY(!mAvatarRetrievedCalled);
 
     QVERIFY(SmartDir(tmpDir).removeDirectory());
-}
-
-void TestContactsAvatar::expectConnInvalidated()
-{
-    mLoop->exit(0);
 }
 
 void TestContactsAvatar::expectPendingContactsFinished(PendingOperation *op)
@@ -238,43 +231,12 @@ void TestContactsAvatar::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "foo",
-            NULL));
-    QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "foo", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-
-    QCOMPARE(mConn->status(), ConnectionStatusConnected);
-
-    QVERIFY(mConn->contactManager()->supportedFeatures().contains(Contact::FeatureAvatarData));
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 }
 
 void TestContactsAvatar::init()
@@ -289,26 +251,8 @@ void TestContactsAvatar::cleanup()
 
 void TestContactsAvatar::cleanupTestCase()
 {
-    if (mConn) {
-        // Disconnect and wait for invalidated
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
-
-    if (mConnService != 0) {
-        g_object_unref(mConnService);
-        mConnService = 0;
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     cleanupTestCaseImpl();
 }
