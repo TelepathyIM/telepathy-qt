@@ -31,7 +31,7 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt4_add_dbus_unit_test(ConnectionIntrospectCornercases conn-introspect-cornercases tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionRequests conn-requests tp-glib-tests tp-qt4-tests-glib-helpers)
     tpqt4_add_dbus_unit_test(ConnectionRosterLegacy conn-roster-legacy tp-glib-tests tp-qt4-tests-glib-helpers)
-    tpqt4_add_dbus_unit_test(ConnectionRoster conn-roster example-cm-contactlist2
+    tpqt4_add_dbus_unit_test(ConnectionRoster conn-roster example-cm-contactlist2 tp-qt4-tests-glib-helpers
         ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${TELEPATHY_GLIB_LIBRARIES})
     tpqt4_add_dbus_unit_test(ConnectionRosterGroupsLegacy conn-roster-groups-legacy tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionRosterGroups conn-roster-groups example-cm-contactlist2

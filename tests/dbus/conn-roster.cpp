@@ -1,27 +1,17 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <tests/lib/test.h>
 
-#include <QtDBus/QtDBus>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
-#include <QtTest/QtTest>
-
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#include <tests/lib/glib/contactlist2/conn.h>
 
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
-
-#include <tests/lib/glib/contactlist2/conn.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 
@@ -31,11 +21,10 @@ class TestConnRoster : public Test
 
 public:
     TestConnRoster(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+        : Test(parent), mConn(0)
     { }
 
 protected Q_SLOTS:
-    void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
     void expectBlockingContactsFinished(Tp::PendingOperation *op);
     void expectBlockStatusChanged(bool blocked);
@@ -56,9 +45,7 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    QString mConnName, mConnPath;
-    ExampleContactListConnection *mConnService;
-    ConnectionPtr mConn;
+    TestConnHelper *mConn;
     QList<ContactPtr> mContacts;
     QSet<QString> mContactsExpectingBlockStatusChange;
     bool mBlockingContactsFinished;
@@ -66,11 +53,6 @@ private:
     bool mGotPresenceStateChanged;
     bool mGotPPR;
 };
-
-void TestConnRoster::expectConnInvalidated()
-{
-    mLoop->exit(0);
-}
 
 void TestConnRoster::expectPendingContactsFinished(PendingOperation *op)
 {
@@ -173,9 +155,9 @@ void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, co
         QCOMPARE(details.message(), QLatin1String("add me now"));
     }
 
-    if (mConn->contactManager()->allKnownContacts().size() != mHowManyKnownContacts) {
-        qWarning() << "Contacts number mismatch! Watched value: " << mHowManyKnownContacts
-                   << "allKnownContacts(): " << mConn->contactManager()->allKnownContacts().size();
+    if (mConn->client()->contactManager()->allKnownContacts().size() != mHowManyKnownContacts) {
+        qWarning() << "Contacts number mismatch! Watched value: " << mHowManyKnownContacts <<
+            "allKnownContacts(): " << mConn->client()->contactManager()->allKnownContacts().size();
         mLoop->exit(1);
     } else {
         mLoop->exit(0);
@@ -206,59 +188,30 @@ void TestConnRoster::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = EXAMPLE_CONTACT_LIST_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create(Contact::FeatureAlias),
             EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,
             "account", "me@example.com",
             "protocol", "contactlist",
             "simulation-delay", 1,
-            NULL));
-    QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "contacts", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 }
 
 void TestConnRoster::init()
 {
     initImpl();
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create(Contact::FeatureAlias));
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(mConn->status(), ConnectionStatusConnected);
 }
 
 void TestConnRoster::testRoster()
 {
     Features features = Features() << Connection::FeatureRoster;
-    QVERIFY(connect(mConn->becomeReady(features),
-            SIGNAL(finished(Tp::PendingOperation*)),
-            this,
-            SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(features), true);
+    QCOMPARE(mConn->enableFeatures(features), true);
 
-    QCOMPARE(static_cast<uint>(mConn->contactManager()->state()),
-             static_cast<uint>(ContactListStateSuccess));
+    ContactManagerPtr contactManager = mConn->client()->contactManager();
+
+    QCOMPARE(contactManager->state(), ContactListStateSuccess);
 
     QStringList toCheck = QStringList() <<
         QLatin1String("sjoerd@example.com") <<
@@ -274,8 +227,7 @@ void TestConnRoster::testRoster()
     QStringList ids;
     QList<ContactPtr> pendingSubscription;
     QList<ContactPtr> pendingPublish;
-    Q_FOREACH (const ContactPtr &contact,
-            mConn->contactManager()->allKnownContacts()) {
+    Q_FOREACH (const ContactPtr &contact, contactManager->allKnownContacts()) {
         QVERIFY(contact->requestedFeatures().contains(Contact::FeatureAlias));
         qDebug() << " contact:" << contact->id() <<
             "- subscription:" << contact->subscriptionState() <<
@@ -296,14 +248,14 @@ void TestConnRoster::testRoster()
     // Wait for the contacts to be built
     ids = QStringList() << QString(QLatin1String("john@example.com"))
         << QString(QLatin1String("mary@example.com"));
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
+    QVERIFY(connect(contactManager->contactsForIdentifiers(ids),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     int i = 0;
 
-    QVERIFY(connect(mConn->contactManager().data(),
+    QVERIFY(connect(contactManager.data(),
                     SIGNAL(presencePublicationRequested(Tp::Contacts,QString)),
                     SLOT(expectPresencePublicationRequested(Tp::Contacts))));
 
@@ -408,9 +360,9 @@ void TestConnRoster::testRoster()
     // Test allKnownContactsChanged.
     // In this test, everytime a subscription is requested or rejected, allKnownContacts changes
     // Cache the current value
-    mHowManyKnownContacts = mConn->contactManager()->allKnownContacts().size();
+    mHowManyKnownContacts = contactManager->allKnownContacts().size();
     // Watch for contacts changed
-    QVERIFY(connect(mConn->contactManager().data(),
+    QVERIFY(connect(contactManager.data(),
                     SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts,
                             Tp::Channel::GroupMemberChangeDetails)),
                     SLOT(expectAllKnownContactsChanged(Tp::Contacts,Tp::Contacts,
@@ -419,7 +371,7 @@ void TestConnRoster::testRoster()
     // Wait for the contacts to be built
     ids = QStringList() << QString(QLatin1String("kctest1@example.com"))
         << QString(QLatin1String("kctest2@example.com"));
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
+    QVERIFY(connect(contactManager->contactsForIdentifiers(ids),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -588,31 +540,13 @@ void TestConnRoster::testRoster()
 
 void TestConnRoster::cleanup()
 {
-    if (mConn) {
-        // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
-
     cleanupImpl();
 }
 
 void TestConnRoster::cleanupTestCase()
 {
-    if (mConnService != 0) {
-        g_object_unref(mConnService);
-        mConnService = 0;
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     cleanupTestCaseImpl();
 }
