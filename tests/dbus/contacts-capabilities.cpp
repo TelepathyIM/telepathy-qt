@@ -23,9 +23,6 @@ public:
         : Test(parent), mConn(0)
     { }
 
-protected Q_SLOTS:
-    void expectPendingContactsFinished(Tp::PendingOperation *);
-
 private Q_SLOTS:
     void initTestCase();
     void init();
@@ -37,36 +34,7 @@ private Q_SLOTS:
 
 private:
     TestConnHelper *mConn;
-    QList<ContactPtr> mContacts;
 };
-
-void TestContactsCapabilities::expectPendingContactsFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
-    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
-    mContacts = pending->contacts();
-
-    mLoop->exit(0);
-}
 
 void TestContactsCapabilities::initTestCase()
 {
@@ -159,15 +127,10 @@ void TestContactsCapabilities::testCapabilities()
             TP_TESTS_CONTACTS_CONNECTION(mConn->service()), capabilities);
     g_hash_table_destroy(capabilities);
 
-    PendingContacts *pending = contactManager->contactsForIdentifiers(
-            ids, Features() << Contact::FeatureCapabilities);
-    QVERIFY(connect(pending,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    for (int i = 0; i < mContacts.size(); i++) {
-        ContactPtr contact = mContacts[i];
+    QList<ContactPtr> contacts = mConn->contacts(ids, Contact::FeatureCapabilities);
+    QCOMPARE(contacts.size(), ids.size());
+    for (int i = 0; i < contacts.size(); i++) {
+        ContactPtr contact = contacts[i];
 
         QCOMPARE(contact->requestedFeatures().contains(Contact::FeatureCapabilities), true);
         QCOMPARE(contact->actualFeatures().contains(Contact::FeatureCapabilities), true);
