@@ -8,6 +8,7 @@
 #include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
 
@@ -222,6 +223,114 @@ QList<Tp::ContactPtr> TestConnHelper::contacts(const Tp::UIntList &handles,
     return ret;
 }
 
+Tp::ChannelPtr TestConnHelper::createChannel(const QVariantMap &request)
+{
+    mLoop->processEvents();
+
+    Tp::ChannelPtr ret;
+    Tp::PendingChannel *pc = mClient->lowlevel()->createChannel(request);
+    QObject::connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectCreateChannelFinished(Tp::PendingOperation*)));
+    if (mLoop->exec() == 0) {
+        ret = mChannel;
+    }
+    mChannel.reset();
+    return ret;
+}
+
+Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType, const Tp::ContactPtr &target)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   channelType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   target->handle()[0]);
+    return createChannel(request);
+}
+
+Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType,
+        Tp::HandleType targetHandleType, uint targetHandle)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   channelType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) targetHandleType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   targetHandle);
+    return createChannel(request);
+}
+
+Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType,
+        Tp::HandleType targetHandleType, const QString &targetID)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   channelType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) targetHandleType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   targetID);
+    return ensureChannel(request);
+}
+
+Tp::ChannelPtr TestConnHelper::ensureChannel(const QVariantMap &request)
+{
+    mLoop->processEvents();
+
+    Tp::ChannelPtr ret;
+    Tp::PendingChannel *pc = mClient->lowlevel()->ensureChannel(request);
+    QObject::connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectEnsureChannelFinished(Tp::PendingOperation*)));
+    if (mLoop->exec() == 0) {
+        ret = mChannel;
+    }
+    mChannel.reset();
+    return ret;
+}
+
+Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType, const Tp::ContactPtr &target)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   channelType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   target->handle()[0]);
+    return ensureChannel(request);
+}
+
+Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType,
+        Tp::HandleType targetHandleType, uint targetHandle)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   channelType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) targetHandleType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   targetHandle);
+    return ensureChannel(request);
+}
+
+Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType,
+        Tp::HandleType targetHandleType, const QString &targetID)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   channelType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) targetHandleType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   targetID);
+    return ensureChannel(request);
+}
+
 void TestConnHelper::expectConnInvalidated()
 {
     mLoop->exit(0);
@@ -236,6 +345,34 @@ void TestConnHelper::expectPendingContactsFinished(Tp::PendingOperation *op)
     } else {
         Tp::PendingContacts *pc = qobject_cast<Tp::PendingContacts *>(op);
         mContacts = pc->contacts();
+        mLoop->exit(0);
+    }
+}
+
+void TestConnHelper::expectCreateChannelFinished(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName() << ": " << op->errorMessage();
+        mChannel.reset();
+        mLoop->exit(1);
+    } else {
+        Tp::PendingChannel *pc = qobject_cast<Tp::PendingChannel *>(op);
+        QCOMPARE(pc->yours(), true);
+        mChannel = pc->channel();
+        mLoop->exit(0);
+    }
+}
+
+void TestConnHelper::expectEnsureChannelFinished(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName() << ": " << op->errorMessage();
+        mChannel.reset();
+        mLoop->exit(1);
+    } else {
+        Tp::PendingChannel *pc = qobject_cast<Tp::PendingChannel *>(op);
+        QCOMPARE(pc->yours(), false);
+        mChannel = pc->channel();
         mLoop->exit(0);
     }
 }

@@ -48,9 +48,24 @@ public:
     QList<Tp::ContactPtr> contacts(const Tp::UIntList &handles,
             const Tp::Features &features = Tp::Features());
 
+    Tp::ChannelPtr createChannel(const QVariantMap &request);
+    Tp::ChannelPtr createChannel(const QString &channelType, const Tp::ContactPtr &target);
+    Tp::ChannelPtr createChannel(const QString &channelType,
+            Tp::HandleType targetHandleType, uint targetHandle);
+    Tp::ChannelPtr createChannel(const QString &channelType,
+            Tp::HandleType targetHandleType, const QString &targetID);
+    Tp::ChannelPtr ensureChannel(const QVariantMap &request);
+    Tp::ChannelPtr ensureChannel(const QString &channelType, const Tp::ContactPtr &target);
+    Tp::ChannelPtr ensureChannel(const QString &channelType,
+            Tp::HandleType targetHandleType, uint targetHandle);
+    Tp::ChannelPtr ensureChannel(const QString &channelType,
+            Tp::HandleType targetHandleType, const QString &targetID);
+
 private Q_SLOTS:
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *op);
+    void expectCreateChannelFinished(Tp::PendingOperation *op);
+    void expectEnsureChannelFinished(Tp::PendingOperation *op);
 
 private:
     void init(Test *parent,
@@ -69,6 +84,8 @@ private:
 
     // The property retrieved by expectPendingContactsFinished()
     QList<Tp::ContactPtr> mContacts;
+    // The property retrieved by expectCreate/EnsureChannelFinished()
+    Tp::ChannelPtr mChannel;
 };
 
 #endif // _TelepathyQt4_tests_lib_glib_helpers_test_conn_helper_h_HEADER_GUARD_
