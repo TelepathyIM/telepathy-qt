@@ -1,28 +1,15 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <tests/lib/test.h>
 
-#include <QtDBus/QtDBus>
-
-#include <QtTest/QtTest>
-
-#define TP_QT4_ENABLE_LOWLEVEL_API
-
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/Message>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReceivedMessage>
-#include <TelepathyQt4/TextChannel>
-#include <TelepathyQt4/Debug>
-
-#include <telepathy-glib/debug.h>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
 #include <tests/lib/glib/echo/chan.h>
 #include <tests/lib/glib/echo/conn.h>
 #include <tests/lib/glib/future/conference/chan.h>
-#include <tests/lib/test.h>
+
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/PendingReady>
+
+#include <telepathy-glib/debug.h>
 
 using namespace Tp;
 
@@ -33,7 +20,7 @@ class TestConferenceChan : public Test
 public:
     TestConferenceChan(QObject *parent = 0)
         : Test(parent),
-          mConnService(0), mBaseConnService(0), mContactRepo(0),
+          mConn(0), mContactRepo(0),
           mTextChan1Service(0), mTextChan2Service(0), mConferenceChanService(0)
     { }
 
@@ -52,15 +39,10 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    ExampleEchoConnection *mConnService;
-    TpBaseConnection *mBaseConnService;
+    TestConnHelper *mConn;
     TpHandleRepoIface *mContactRepo;
 
-    QString mConnName;
-    QString mConnPath;
-    ConnectionPtr mConn;
     ChannelPtr mChan;
-
     QString mTextChan1Path;
     ExampleEchoChannel *mTextChan1Service;
     QString mTextChan2Path;
@@ -98,48 +80,15 @@ void TestConferenceChan::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = EXAMPLE_ECHO_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_ECHO_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
-            NULL));
-    QVERIFY(mConnService != 0);
-    mBaseConnService = TP_BASE_CONNECTION(mConnService);
-    QVERIFY(mBaseConnService != 0);
-
-    QVERIFY(tp_base_connection_register(mBaseConnService,
-                "example", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(static_cast<uint>(mConn->status()),
-             static_cast<uint>(ConnectionStatusConnected));
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 
     // create a Channel by magic, rather than doing D-Bus round-trips for it
-
-    mContactRepo = tp_base_connection_get_handles(mBaseConnService,
+    mContactRepo = tp_base_connection_get_handles(TP_BASE_CONNECTION(mConn->service()),
             TP_HANDLE_TYPE_CONTACT);
     guint handle1 = tp_handle_ensure(mContactRepo, "someone1@localhost", 0, 0);
     guint handle2 = tp_handle_ensure(mContactRepo, "someone2@localhost", 0, 0);
@@ -148,41 +97,41 @@ void TestConferenceChan::initTestCase()
     QByteArray chanPath;
     GPtrArray *initialChannels = g_ptr_array_new();
 
-    mTextChan1Path = mConnPath + QLatin1String("/TextChannel/1");
+    mTextChan1Path = mConn->objectPath() + QLatin1String("/TextChannel/1");
     chanPath = mTextChan1Path.toAscii();
     mTextChan1Service = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPath.data(),
                 "handle", handle1,
                 NULL));
     g_ptr_array_add(initialChannels, g_strdup(chanPath.data()));
 
-    mTextChan2Path = mConnPath + QLatin1String("/TextChannel/2");
+    mTextChan2Path = mConn->objectPath() + QLatin1String("/TextChannel/2");
     chanPath = mTextChan2Path.toAscii();
     mTextChan2Service = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPath.data(),
                 "handle", handle2,
                 NULL));
     g_ptr_array_add(initialChannels, g_strdup(chanPath.data()));
 
     // let's not add this one to initial channels
-    mTextChan3Path = mConnPath + QLatin1String("/TextChannel/3");
+    mTextChan3Path = mConn->objectPath() + QLatin1String("/TextChannel/3");
     chanPath = mTextChan3Path.toAscii();
     mTextChan3Service = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPath.data(),
                 "handle", handle3,
                 NULL));
 
-    mConferenceChanPath = mConnPath + QLatin1String("/ConferenceChannel");
+    mConferenceChanPath = mConn->objectPath() + QLatin1String("/ConferenceChannel");
     chanPath = mConferenceChanPath.toAscii();
     mConferenceChanService = TP_TESTS_CONFERENCE_CHANNEL(g_object_new(
                 TP_TESTS_TYPE_CONFERENCE_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPath.data(),
                 "initial-channels", initialChannels,
                 NULL));
@@ -202,7 +151,7 @@ void TestConferenceChan::init()
 
 void TestConferenceChan::testConference()
 {
-    mChan = Channel::create(mConn, mConferenceChanPath, QVariantMap());
+    mChan = Channel::create(mConn->client(), mConferenceChanPath, QVariantMap());
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -229,7 +178,7 @@ void TestConferenceChan::testConference()
     QCOMPARE(mChan->isConference(), true);
     QCOMPARE(mChan->supportsConferenceMerging(), true);
 
-    ChannelPtr otherChannel = Channel::create(mConn, mTextChan3Path, QVariantMap());
+    ChannelPtr otherChannel = Channel::create(mConn->client(), mTextChan3Path, QVariantMap());
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(conferenceChannelMerged(const Tp::ChannelPtr &)),
@@ -288,22 +237,8 @@ void TestConferenceChan::cleanup()
 
 void TestConferenceChan::cleanupTestCase()
 {
-    if (mConn) {
-        // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            mLoop,
-                            SLOT(quit())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     if (mTextChan1Service != 0) {
         g_object_unref(mTextChan1Service);
@@ -318,12 +253,6 @@ void TestConferenceChan::cleanupTestCase()
     if (mConferenceChanService != 0) {
         g_object_unref(mConferenceChanService);
         mConferenceChanService = 0;
-    }
-
-    if (mConnService != 0) {
-        mBaseConnService = 0;
-        g_object_unref(mConnService);
-        mConnService = 0;
     }
 
     cleanupTestCaseImpl();
