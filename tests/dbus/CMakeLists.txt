@@ -47,7 +47,7 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt4_add_dbus_unit_test(Handles handles tp-glib-tests tp-qt4-tests-glib-helpers)
     tpqt4_add_dbus_unit_test(SimpleObserver simple-observer tp-glib-tests)
     tpqt4_add_dbus_unit_test(StatefulProxy stateful-proxy tp-glib-tests)
-    tpqt4_add_dbus_unit_test(StreamedMediaChannel streamed-media-chan tp-glib-tests)
+    tpqt4_add_dbus_unit_test(StreamedMediaChannel streamed-media-chan tp-glib-tests tp-qt4-tests-glib-helpers)
     tpqt4_add_dbus_unit_test(TextChannel text-chan tp-glib-tests)
 endif(ENABLE_TP_GLIB_TESTS)
 
