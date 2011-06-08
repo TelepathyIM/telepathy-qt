@@ -63,24 +63,7 @@ private:
 
 void TestCmBasics::expectListNamesFinished(PendingOperation *op)
 {
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
+    TEST_VERIFY_OP(op);
 
     PendingStringList *ps = qobject_cast<PendingStringList*>(op);
     mCMNames = ps->result();
