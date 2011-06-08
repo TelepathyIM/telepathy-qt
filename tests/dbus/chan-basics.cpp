@@ -30,8 +30,6 @@ public:
 protected Q_SLOTS:
     void expectInvalidated();
     void expectPendingHandleFinished(Tp::PendingOperation *);
-    void expectCreateChannelFinished(Tp::PendingOperation *);
-    void expectEnsureChannelFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
@@ -83,61 +81,6 @@ void TestChanBasics::expectPendingHandleFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestChanBasics::expectCreateChannelFinished(PendingOperation* op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = pc->channel();
-    mChanObjectPath = mChan->objectPath();
-    mLoop->exit(0);
-}
-
-void TestChanBasics::expectEnsureChannelFinished(PendingOperation* op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = pc->channel();
-    QCOMPARE(pc->yours(), false);
-    QCOMPARE(mChan->objectPath(), mChanObjectPath);
-    mLoop->exit(0);
-}
-
 void TestChanBasics::initTestCase()
 {
     initTestCaseImpl();
@@ -184,19 +127,9 @@ void TestChanBasics::testRequestHandle()
 
 void TestChanBasics::testCreateChannel()
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   mHandle);
-    QVERIFY(connect(mConn->client()->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    Q_ASSERT(!mChan.isNull());
+    mChan = mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_TEXT, Tp::HandleTypeContact, mHandle);
+    QVERIFY(mChan);
+    mChanObjectPath = mChan->objectPath();
 
     QVERIFY(connect(mChan->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -228,19 +161,11 @@ void TestChanBasics::testCreateChannel()
 
 void TestChanBasics::testEnsureChannel()
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   mHandle);
-    QVERIFY(connect(mConn->client()->lowlevel()->ensureChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    QVERIFY(!mChan.isNull());
+    ChannelPtr chan = mConn->ensureChannel(TP_QT4_IFACE_CHANNEL_TYPE_TEXT,
+            Tp::HandleTypeContact, mHandle);
+    QVERIFY(chan);
+    QCOMPARE(chan->objectPath(), mChanObjectPath);
+    mChan = chan;
 
     QVERIFY(connect(mChan->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
