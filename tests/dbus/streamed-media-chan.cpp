@@ -28,7 +28,6 @@ public:
     { }
 
 protected Q_SLOTS:
-    void expectRequestContactsFinished(Tp::PendingOperation *);
     void expectCreateChannelFinished(Tp::PendingOperation *);
     void expectRequestStreamsFinished(Tp::PendingOperation *);
     void expectBusyRequestStreamsFinished(Tp::PendingOperation *);
@@ -99,7 +98,7 @@ private Q_SLOTS:
 private:
     TestConnHelper *mConn;
     StreamedMediaChannelPtr mChan;
-    QList<ContactPtr> mRequestContactsReturn;
+    QList<ContactPtr> mContacts;
     StreamedMediaStreams mRequestStreamsReturn;
     Contacts mChangedCurrent;
     Contacts mChangedLP;
@@ -136,34 +135,6 @@ private:
         TerminateStateTerminated
     } mTerminateState;
 };
-
-void TestStreamedMediaChan::expectRequestContactsFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "contacts requested successfully";
-
-    PendingContacts *pc = qobject_cast<PendingContacts*>(op);
-    mRequestContactsReturn = pc->contacts();
-    mLoop->exit(0);
-}
 
 void TestStreamedMediaChan::expectCreateChannelFinished(PendingOperation* op)
 {
@@ -257,10 +228,10 @@ void TestStreamedMediaChan::expectOutgoingRequestStreamsFinished(PendingOperatio
     PendingStreamedMediaStreams *pms = qobject_cast<PendingStreamedMediaStreams*>(op);
     mRequestStreamsReturn = pms->streams();
 
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QCOMPARE(mRequestContactsReturn.size(), 1);
+    QCOMPARE(mContacts.size(), 1);
     StreamedMediaStreamPtr stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
     QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
@@ -300,9 +271,9 @@ void TestStreamedMediaChan::onOutgoingGroupMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    // At this point, mRequestContactsReturn should still contain the contact we requested the
+    // At this point, mContacts should still contain the contact we requested the
     // stream for
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    ContactPtr otherContact = mContacts.first();
 
     if (mOutgoingState == OutgoingStateInitial || mOutgoingState == OutgoingStateRequested) {
         // The target should have become remote pending now
@@ -447,9 +418,9 @@ void TestStreamedMediaChan::onTerminateGroupMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    // At this point, mRequestContactsReturn should still contain the contact we requested the
+    // At this point, mContacts should still contain the contact we requested the
     // stream for
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    ContactPtr otherContact = mContacts.first();
 
     if (mTerminateState == TerminateStateInitial || mTerminateState == TerminateStateRequested) {
         // The target should have become remote pending now
@@ -560,7 +531,7 @@ void TestStreamedMediaChan::init()
 {
     initImpl();
 
-    mRequestContactsReturn.clear();
+    mContacts.clear();
     mRequestStreamsReturn.clear();
     mChangedCurrent.clear();
     mChangedLP.clear();
@@ -580,15 +551,9 @@ void TestStreamedMediaChan::init()
 
 void TestStreamedMediaChan::testOutgoingCall()
 {
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("alice")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("alice"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -783,15 +748,9 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
 {
     // This identifier contains the magic string (busy), which means the example
     // will simulate rejection of the call as busy rather than accepting it.
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("alice (busy)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("alice (busy)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -851,15 +810,9 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
 {
     // This identifier contains the magic string (no answer), which means the example
     // will never answer.
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("alice (no answer)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QCOMPARE(mRequestContactsReturn.size(), 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("alice (no answer)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -938,15 +891,9 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
 {
     // This identifier contains the magic string (terminate), which means the example
     // will simulate answering the call but then terminating it.
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("alice (terminate)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QCOMPARE(mRequestContactsReturn.size(), 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("alice (terminate)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -1183,15 +1130,9 @@ void TestStreamedMediaChan::testIncomingCall()
 
 void TestStreamedMediaChan::testHold()
 {
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("bob")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("bob"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -1255,15 +1196,9 @@ void TestStreamedMediaChan::testHold()
 
 void TestStreamedMediaChan::testHoldNoUnhold()
 {
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("bob (no unhold)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("bob (no unhold)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -1322,15 +1257,10 @@ void TestStreamedMediaChan::testHoldNoUnhold()
 
 void TestStreamedMediaChan::testHoldInabilityUnhold()
 {
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("bob (inability to unhold)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(
+            QStringList() << QLatin1String("bob (inability to unhold)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -1407,15 +1337,9 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
 
 void TestStreamedMediaChan::testDTMF()
 {
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("john")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("john"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -1497,15 +1421,10 @@ void TestStreamedMediaChan::testDTMF()
 
 void TestStreamedMediaChan::testDTMFNoContinuousTone()
 {
-    QVERIFY(connect(mConn->client()->contactManager()->contactsForIdentifiers(
-                        QStringList() << QLatin1String("john (no continuous tone)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(
+            QStringList() << QLatin1String("john (no continuous tone)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
     QVariantMap request;
@@ -1557,7 +1476,7 @@ void TestStreamedMediaChan::testDTMFNoContinuousTone()
 void TestStreamedMediaChan::cleanup()
 {
     mChan.reset();
-    mRequestContactsReturn.clear();
+    mContacts.clear();
     mRequestStreamsReturn.clear();
     mStreamRemovedReturn.reset();
     mChangedCurrent.clear();
