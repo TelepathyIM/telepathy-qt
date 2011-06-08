@@ -56,26 +56,8 @@ void TestChanBasics::expectInvalidated()
 
 void TestChanBasics::expectPendingHandleFinished(PendingOperation *op)
 {
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
+    TEST_VERIFY_OP(op);
 
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
     PendingHandles *pending = qobject_cast<PendingHandles*>(op);
     mHandle = pending->handles().at(0);
     mLoop->exit(0);
