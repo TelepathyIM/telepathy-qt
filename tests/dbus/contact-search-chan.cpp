@@ -89,7 +89,8 @@ void TestContactSearchChan::onSearchResultReceived(
 
 void TestContactSearchChan::onSearchReturned(Tp::PendingOperation *op)
 {
-    QCOMPARE(op->isError(), false);
+    TEST_VERIFY_OP(op);
+
     QVERIFY(mChan->searchState() != ChannelContactSearchStateNotStarted);
     mSearchReturned = true;
     mLoop->exit(0);
