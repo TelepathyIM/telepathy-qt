@@ -52,6 +52,8 @@ public:
             const Tp::Features &features = Tp::Features());
     QList<Tp::ContactPtr> contacts(const Tp::UIntList &handles,
             const Tp::Features &features = Tp::Features());
+    QList<Tp::ContactPtr> upgradeContacts(const QList<Tp::ContactPtr> &contacts,
+            const Tp::Features &features = Tp::Features());
 
     Tp::ChannelPtr createChannel(const QVariantMap &request);
     Tp::ChannelPtr createChannel(const QString &channelType, const Tp::ContactPtr &target);
@@ -70,6 +72,7 @@ private Q_SLOTS:
     void expectConnInvalidated();
     void expectContactsForIdentifiersFinished(Tp::PendingOperation *op);
     void expectContactsForHandlesFinished(Tp::PendingOperation *op);
+    void expectUpgradeContactsFinished(Tp::PendingOperation *op);
     void expectCreateChannelFinished(Tp::PendingOperation *op);
     void expectEnsureChannelFinished(Tp::PendingOperation *op);
 

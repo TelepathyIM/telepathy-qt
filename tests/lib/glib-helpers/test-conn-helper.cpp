@@ -227,6 +227,25 @@ QList<Tp::ContactPtr> TestConnHelper::contacts(const Tp::UIntList &handles,
     return ret;
 }
 
+QList<Tp::ContactPtr> TestConnHelper::upgradeContacts(const QList<Tp::ContactPtr> &contacts,
+        const Tp::Features &features)
+{
+    mLoop->processEvents();
+
+    QList<Tp::ContactPtr> ret;
+    Tp::PendingContacts *pc = mClient->contactManager()->upgradeContacts(contacts, features);
+    mContactFeatures = features;
+    QObject::connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectUpgradeContactsFinished(Tp::PendingOperation*)));
+    if (mLoop->exec() == 0) {
+        ret = mContacts;
+    }
+    mContactFeatures.clear();
+    mContacts.clear();
+    return ret;
+}
+
 Tp::ChannelPtr TestConnHelper::createChannel(const QVariantMap &request)
 {
     mLoop->processEvents();
@@ -356,6 +375,14 @@ void TestConnHelper::expectContactsForHandlesFinished(Tp::PendingOperation *op)
     QCOMPARE(pc->isForHandles(), true);
     QCOMPARE(pc->isForIdentifiers(), false);
     QCOMPARE(pc->isUpgrade(), false);
+
+    expectPendingContactsFinished(pc);
+}
+
+void TestConnHelper::expectUpgradeContactsFinished(Tp::PendingOperation *op)
+{
+    Tp::PendingContacts *pc = qobject_cast<Tp::PendingContacts *>(op);
+    QCOMPARE(pc->isUpgrade(), true);
 
     expectPendingContactsFinished(pc);
 }
