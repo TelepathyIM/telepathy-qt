@@ -36,7 +36,7 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt4_add_dbus_unit_test(ConnectionRosterGroupsLegacy conn-roster-groups-legacy tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionRosterGroups conn-roster-groups example-cm-contactlist2
         ${GLIB2_LIBRARIES} ${GOBJECT_LIBRARIES} ${DBUS_GLIB_LIBRARIES} ${TELEPATHY_GLIB_LIBRARIES})
-    tpqt4_add_dbus_unit_test(ContactFactory contact-factory tp-glib-tests)
+    tpqt4_add_dbus_unit_test(ContactFactory contact-factory tp-glib-tests tp-qt4-tests-glib-helpers)
     tpqt4_add_dbus_unit_test(ContactMessenger contact-messenger tp-glib-tests)
     tpqt4_add_dbus_unit_test(Contacts contacts tp-glib-tests)
     tpqt4_add_dbus_unit_test(ContactsAvatar contacts-avatar tp-glib-tests)
