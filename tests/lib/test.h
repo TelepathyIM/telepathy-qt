@@ -1,5 +1,7 @@
-#include <QtDBus>
+#ifndef _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_
+#define _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_
 
+#include <QtDBus>
 #include <QtTest>
 
 #include <TelepathyQt4/PendingOperation>
@@ -60,3 +62,5 @@ bool Test::waitForProperty(Tp::PendingVariant *pv, T *value)
         return false;
     }
 }
+
+#endif // _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_
