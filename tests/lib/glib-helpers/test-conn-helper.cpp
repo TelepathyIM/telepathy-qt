@@ -7,6 +7,8 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
 
 TestConnHelper::TestConnHelper(Test *parent,
@@ -186,7 +188,54 @@ bool TestConnHelper::disconnectWithDBusError(
             !mClient->isValid() && (mClient->status() == Tp::ConnectionStatusDisconnected));
 }
 
+QList<Tp::ContactPtr> TestConnHelper::contacts(const QStringList &ids,
+        const Tp::Features &features)
+{
+    mLoop->processEvents();
+
+    QList<Tp::ContactPtr> ret;
+    Tp::PendingContacts *pc = mClient->contactManager()->contactsForIdentifiers(ids, features);
+    QObject::connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectPendingContactsFinished(Tp::PendingOperation*)));
+    if (mLoop->exec() == 0) {
+        ret = mContacts;
+    }
+    mContacts.clear();
+    return ret;
+}
+
+QList<Tp::ContactPtr> TestConnHelper::contacts(const Tp::UIntList &handles,
+        const Tp::Features &features)
+{
+    mLoop->processEvents();
+
+    QList<Tp::ContactPtr> ret;
+    Tp::PendingContacts *pc = mClient->contactManager()->contactsForHandles(handles, features);
+    QObject::connect(pc,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(expectPendingContactsFinished(Tp::PendingOperation*)));
+    if (mLoop->exec() == 0) {
+        ret = mContacts;
+    }
+    mContacts.clear();
+    return ret;
+}
+
 void TestConnHelper::expectConnInvalidated()
 {
     mLoop->exit(0);
+}
+
+void TestConnHelper::expectPendingContactsFinished(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName() << ": " << op->errorMessage();
+        mContacts.clear();
+        mLoop->exit(1);
+    } else {
+        Tp::PendingContacts *pc = qobject_cast<Tp::PendingContacts *>(op);
+        mContacts = pc->contacts();
+        mLoop->exit(0);
+    }
 }

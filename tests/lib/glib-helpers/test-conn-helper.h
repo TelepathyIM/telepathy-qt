@@ -43,8 +43,14 @@ public:
     bool disconnectWithDBusError(const char *errorName, GHashTable *details,
             Tp::ConnectionStatusReason reason);
 
+    QList<Tp::ContactPtr> contacts(const QStringList &ids,
+            const Tp::Features &features = Tp::Features());
+    QList<Tp::ContactPtr> contacts(const Tp::UIntList &handles,
+            const Tp::Features &features = Tp::Features());
+
 private Q_SLOTS:
     void expectConnInvalidated();
+    void expectPendingContactsFinished(Tp::PendingOperation *op);
 
 private:
     void init(Test *parent,
@@ -60,6 +66,9 @@ private:
     QEventLoop *mLoop;
     GObject *mService;
     Tp::ConnectionPtr mClient;
+
+    // The property retrieved by expectPendingContactsFinished()
+    QList<Tp::ContactPtr> mContacts;
 };
 
 #endif // _TelepathyQt4_tests_lib_glib_helpers_test_conn_helper_h_HEADER_GUARD_
