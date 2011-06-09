@@ -9,7 +9,8 @@ Enhancements:
    Tp::FileTransferChannel (Daniele E. Domenichelli)
 
 Fixes:
- * ...
+ * Fixed documentation for Contact::publishStateChanged()
+   (Daniele E. Domenichelli)
 
 telepathy-qt4 0.7.0 (2011-06-01)
 ================================
