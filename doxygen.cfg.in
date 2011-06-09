@@ -1437,7 +1437,7 @@ GENERATE_QHP           = ${GENERATE_QHP}
 QHP_NAMESPACE          = "org.freedesktop.Telepathy.Qt4"
 QHP_VIRTUAL_FOLDER     = "${PROJECT_NAME}-${PACKAGE_VERSION}"
 QCH_FILE               = ${abs_top_builddir}/doc/help/telepathy-qt4.qch
-QHG_LOCATION           = ${QHELPGENERATOR_EXECUTABLE}"
+QHG_LOCATION           = ${QHELPGENERATOR_EXECUTABLE}
 
 ### TelepathyQt4 Settings
 ALIASES = \

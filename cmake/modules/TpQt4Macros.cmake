@@ -209,6 +209,7 @@ function(tpqt4_client_generator spec group pretty_include namespace)
         DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
                 ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
     add_custom_target(generate_cli-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp)
+    add_dependencies(all-generated-sources generate_cli-${spec}-body)
 
     if (client_generator_depends)
         add_dependencies(generate_cli-${spec}-body ${client_generator_depends})
@@ -245,6 +246,7 @@ function(tpqt4_future_client_generator spec namespace)
         DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
                 ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
     add_custom_target(generate_future-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp)
+    add_dependencies(all-generated-sources generate_future-${spec}-body)
 
     if (future_client_generator_depends)
         add_dependencies(generate_future-${spec}-body ${future_client_generator_depends})
@@ -315,6 +317,7 @@ function(tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
                                ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
                                ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE})
+    add_dependencies(all-generated-sources ${_TARGET_NAME})
 
     if (constants_gen_depends)
         add_dependencies(${_TARGET_NAME} ${constants_gen_depends})
@@ -341,6 +344,7 @@ function(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAM
                                ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
                                ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE_IMPL})
+    add_dependencies(all-generated-sources ${_TARGET_NAME})
 
     if (types_gen_depends)
         add_dependencies(${_TARGET_NAME} ${types_gen_depends})
