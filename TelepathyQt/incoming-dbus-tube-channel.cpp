@@ -92,7 +92,7 @@ IncomingDBusTubeChannel::Private::~Private()
  *
  *             // Handle the channel
  *             Tp::IncomingDBusTubeChannelPtr myTube =
- *                      Tp::IncomingDBusTubeChannelPtr::dynamicCast(channel);
+ *                      Tp::IncomingDBusTubeChannelPtr::qObjectCast(channel);
  *
  *          }
  *     }
