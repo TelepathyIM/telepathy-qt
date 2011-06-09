@@ -71,11 +71,11 @@ PendingDBusTube::PendingDBusTube(
     mPriv->tube = object;
 
     if (string->isFinished()) {
-        onAcceptFinished(string);
+        onConnectionFinished(string);
     } else {
         // Connect the pending void
         connect(string, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onAcceptFinished(Tp::PendingOperation*)));
+                this, SLOT(onConnectionFinished(Tp::PendingOperation*)));
     }
 }
 
@@ -88,11 +88,11 @@ PendingDBusTube::PendingDBusTube(
     mPriv->tube = object;
 
     if (string->isFinished()) {
-        onOfferFinished(string);
+        onConnectionFinished(string);
     } else {
         // Connect the pending void
         connect(string, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onOfferFinished(Tp::PendingOperation*)));
+                this, SLOT(onConnectionFinished(Tp::PendingOperation*)));
     }
 }
 
@@ -128,7 +128,7 @@ QString PendingDBusTube::address() const
     return mPriv->tube->address();
 }
 
-void PendingDBusTube::onAcceptFinished(PendingOperation *op)
+void PendingDBusTube::onConnectionFinished(PendingOperation *op)
 {
     if (op->isError()) {
         // Fail
@@ -136,31 +136,7 @@ void PendingDBusTube::onAcceptFinished(PendingOperation *op)
         return;
     }
 
-    debug() << "Accept tube finished successfully";
-
-    // Now get the address and set it
-    PendingString *ps = qobject_cast<PendingString*>(op);
-    mPriv->tube->setAddress(ps->result());
-
-    // It might have been already opened - check
-    if (mPriv->tube->state() == TubeChannelStateOpen) {
-        onStateChanged(mPriv->tube->state());
-    } else {
-        // Wait until the tube gets opened on the other side
-        connect(mPriv->tube.data(), SIGNAL(stateChanged(Tp::TubeChannelState)),
-                this, SLOT(onStateChanged(Tp::TubeChannelState)));
-    }
-}
-
-void PendingDBusTube::onOfferFinished(PendingOperation *op)
-{
-    if (op->isError()) {
-        // Fail
-        setFinishedWithError(op->errorName(), op->errorMessage());
-        return;
-    }
-
-    debug() << "Offer tube finished successfully";
+    debug() << "Accept/Offer tube finished successfully";
 
     // Now get the address and set it
     PendingString *ps = qobject_cast<PendingString*>(op);

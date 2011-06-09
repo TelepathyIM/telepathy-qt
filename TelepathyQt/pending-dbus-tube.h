@@ -43,8 +43,7 @@ public:
     QString address() const;
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void onAcceptFinished(Tp::PendingOperation *op);
-    TP_QT_NO_EXPORT void onOfferFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onConnectionFinished(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onStateChanged(Tp::TubeChannelState state);
 
 private:
