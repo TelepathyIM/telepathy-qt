@@ -171,24 +171,6 @@ bool TestConnHelper::disconnect()
             !mClient->isValid() && (mClient->status() == Tp::ConnectionStatusDisconnected));
 }
 
-bool TestConnHelper::disconnectWithDBusError(
-        const char *errorName, GHashTable *details, Tp::ConnectionStatusReason reason)
-{
-    if (!mClient->isValid()) {
-        return false;
-    }
-
-    mLoop->processEvents();
-
-    QObject::connect(mClient.data(),
-            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-            SLOT(expectConnInvalidated()));
-    tp_base_connection_disconnect_with_dbus_error(
-            TP_BASE_CONNECTION(mService), errorName, details, (TpConnectionStatusReason) reason);
-    return ((mLoop->exec() == 0) &&
-            !mClient->isValid() && (mClient->status() == Tp::ConnectionStatusDisconnected));
-}
-
 QList<Tp::ContactPtr> TestConnHelper::contacts(const QStringList &ids,
         const Tp::Features &features)
 {

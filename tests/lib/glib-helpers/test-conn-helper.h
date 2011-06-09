@@ -45,8 +45,6 @@ public:
     bool enableFeatures(const Tp::Features &features);
     bool connect(const Tp::Features &features = Tp::Features());
     bool disconnect();
-    bool disconnectWithDBusError(const char *errorName, GHashTable *details,
-            Tp::ConnectionStatusReason reason);
 
     QList<Tp::ContactPtr> contacts(const QStringList &ids,
             const Tp::Features &features = Tp::Features());
