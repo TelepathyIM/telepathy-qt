@@ -84,6 +84,47 @@ ContactCapabilities::~ContactCapabilities()
 }
 
 /**
+ * Return whether creating a DBusTube channel, using the given \a serviceName, by providing a
+ * contact identifier is supported.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ContactCapabilities::dbusTubes(const QString &serviceName) const
+{
+    RequestableChannelClassSpec dbusTubeSpec = RequestableChannelClassSpec::dbusTube(serviceName);
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.supports(dbusTubeSpec)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return the supported DBusTube services.
+ *
+ * \return A list of supported DBusTube services.
+ */
+QStringList ContactCapabilities::dbusTubeServices() const
+{
+    QSet<QString> ret;
+
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE &&
+            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.hasFixedProperty(
+                    TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"))) {
+            ret << rccSpec.fixedProperty(
+                    TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName")).toString();
+        }
+    }
+
+    return ret.toList();
+}
+
+/**
  * Return whether creating a StreamTube channel, using the given \a service, by providing a
  * contact identifier is supported.
  *

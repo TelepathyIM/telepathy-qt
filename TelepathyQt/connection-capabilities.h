@@ -54,6 +54,7 @@ public:
     bool contactSearchesWithSpecificServer() const;
     bool contactSearchesWithLimit() const;
 
+    bool dbusTubes() const;
     bool streamTubes() const;
 
 protected:
