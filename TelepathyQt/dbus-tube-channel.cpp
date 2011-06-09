@@ -387,8 +387,12 @@ void DBusTubeChannel::onContactsRetrieved(const QUuid &uuid, const QList<Contact
 
         // Remove it from our connections hash
         foreach (const Tp::ContactPtr &contact, contacts) {
-            mPriv->busNames.remove(contact);
-            removed << contact;
+            if (mPriv->busNames.contains(contact)) {
+                mPriv->busNames.remove(contact);
+                removed << contact;
+            } else {
+                warning() << "Trying to remove a bus name which has not been retrieved previously!";
+            }
         }
 
         // Time for us to emit the signal
