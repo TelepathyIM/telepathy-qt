@@ -13,6 +13,8 @@ Enhancements:
 Fixes:
  * Fixed documentation for Contact::publishStateChanged()
    (Daniele E. Domenichelli)
+ * Properly crosslink our doxygen docs to Qt documentation on fresh builds
+ * Properly generate docs for auto generated classes
 
 telepathy-qt4 0.7.0 (2011-06-01)
 ================================
