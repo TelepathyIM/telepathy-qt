@@ -139,24 +139,7 @@ void TestStreamedMediaChan::expectRequestStreamsFinished(PendingOperation *op)
 {
     mRequestStreamsReturn.clear();
 
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
+    TEST_VERIFY_OP(op);
 
     qDebug() << "request streams finished successfully";
 
