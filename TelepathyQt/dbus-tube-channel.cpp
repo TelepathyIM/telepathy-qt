@@ -337,8 +337,8 @@ void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher *watcher)
 
     if (!reply.isError()) {
         QVariantMap props = reply.value();
-        mPriv->extractProperties(props);
         debug() << "Got reply to Properties::GetAll(DBusTubeChannel)";
+        mPriv->extractProperties(props);
         mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
     } else {
         warning().nospace() << "Properties::GetAll(DBusTubeChannel) failed "
