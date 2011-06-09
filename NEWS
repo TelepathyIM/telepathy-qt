@@ -1,7 +1,7 @@
-telepathy-qt4 0.7.1 (UNRELEASED)
+telepathy-qt4 0.7.1 (2011-06-09)
 ================================
 
-The "..." release.
+The "where is the file?" release.
 
 Enhancements:
  * fd.o #37034: The URI property can now be set when requesting file transfers,
