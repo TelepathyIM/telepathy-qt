@@ -87,6 +87,9 @@ PendingDBusTube::PendingDBusTube(
 {
     mPriv->tube = object;
 
+    connect(mPriv->tube.data(), SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            this, SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
+
     if (string->isFinished()) {
         onConnectionFinished(string);
     } else {
@@ -158,11 +161,15 @@ void PendingDBusTube::onStateChanged(TubeChannelState state)
     if (state == TubeChannelStateOpen) {
         // The tube is ready: mark the operation as finished
         setFinished();
-    } else if (state != TubeChannelStateLocalPending) {
-        // Something happened
-        setFinishedWithError(QLatin1String("Connection refused"),
-                QLatin1String("The connection to this tube was refused"));
     }
+}
+
+void PendingDBusTube::onChannelInvalidated(DBusProxy* proxy,
+        const QString& errorName, const QString& errorMessage)
+{
+    Q_UNUSED(proxy);
+
+    setFinishedWithError(errorName, errorMessage);
 }
 
 }

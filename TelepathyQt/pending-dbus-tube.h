@@ -45,6 +45,9 @@ public:
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onConnectionFinished(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onStateChanged(Tp::TubeChannelState state);
+    TP_QT_NO_EXPORT void onChannelInvalidated(Tp::DBusProxy *proxy,
+                                        const QString &errorName,
+                                        const QString &errorMessage);
 
 private:
     PendingDBusTube(PendingString *string, const OutgoingDBusTubeChannelPtr &object);
