@@ -1301,7 +1301,7 @@ void Contact::setRemovedFromGroup(const QString &group)
  */
 
 /**
- * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state)
+ * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state, const QString &message)
  *
  * This signal is emitted when the value of publishState() changes.
  *
@@ -1313,7 +1313,7 @@ void Contact::setRemovedFromGroup(const QString &group)
  * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state,
  *          const Tp::Channel::GroupMemberChangeDetails &details)
  *
- * \deprecated Use publishStateChanged(Tp::Contact::PresenceState state) instead.
+ * \deprecated Use publishStateChanged(Tp::Contact::PresenceState state, const QString &message) instead.
  */
 
 /**
