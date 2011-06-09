@@ -7,6 +7,8 @@ Enhancements:
  * fd.o #37034: The URI property can now be set when requesting file transfers,
    and can be read by the Handler (and any Observers) from
    Tp::FileTransferChannel (Daniele E. Domenichelli)
+ * Improved tests readability by moving common code into helper classes,
+   macros, etc, in preparation for increasing the test coverage
 
 Fixes:
  * Fixed documentation for Contact::publishStateChanged()
