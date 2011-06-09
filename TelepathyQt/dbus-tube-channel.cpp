@@ -375,7 +375,7 @@ void DBusTubeChannel::onContactsRetrieved(const QUuid &uuid, const QList<Contact
 
         // Add it to our connections hash
         foreach (const Tp::ContactPtr &contact, contacts) {
-            mPriv->busNames.insertMulti(contact, busName);
+            mPriv->busNames.insert(contact, busName);
             added.insert(contact, busName);
         }
 
