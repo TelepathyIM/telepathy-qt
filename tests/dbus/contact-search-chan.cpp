@@ -1,25 +1,15 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <tests/lib/test.h>
 
-#include <QtDBus/QtDBus>
-
-#include <QtTest/QtTest>
-
-#define TP_QT4_ENABLE_LOWLEVEL_API
-
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ContactSearchChannel>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Debug>
-
-#include <telepathy-glib/debug.h>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
 #include <tests/lib/glib/echo/conn.h>
 #include <tests/lib/glib/contact-search-chan.h>
-#include <tests/lib/test.h>
+
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ContactSearchChannel>
+#include <TelepathyQt4/PendingReady>
+
+#include <telepathy-glib/debug.h>
 
 using namespace Tp;
 
@@ -30,8 +20,8 @@ class TestContactSearchChan : public Test
 public:
     TestContactSearchChan(QObject *parent = 0)
         : Test(parent),
-          mConnService(0), mBaseConnService(0),
-          mChan1Service(0), mSearchReturned(false)
+          mConn(0),
+          mChan1Service(0), mChan2Service(0), mSearchReturned(false)
     { }
 
 protected Q_SLOTS:
@@ -51,13 +41,9 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    ExampleEchoConnection *mConnService;
-    TpBaseConnection *mBaseConnService;
+    TestConnHelper *mConn;
     TpHandleRepoIface *mContactRepo;
 
-    QString mConnName;
-    QString mConnPath;
-    ConnectionPtr mConn;
     ContactSearchChannelPtr mChan;
     ContactSearchChannelPtr mChan1;
     ContactSearchChannelPtr mChan2;
@@ -103,7 +89,8 @@ void TestContactSearchChan::onSearchResultReceived(
 
 void TestContactSearchChan::onSearchReturned(Tp::PendingOperation *op)
 {
-    QCOMPARE(op->isError(), false);
+    TEST_VERIFY_OP(op);
+
     QVERIFY(mChan->searchState() != ChannelContactSearchStateNotStarted);
     mSearchReturned = true;
     mLoop->exit(0);
@@ -118,60 +105,28 @@ void TestContactSearchChan::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = EXAMPLE_ECHO_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_ECHO_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
-            NULL));
-    QVERIFY(mConnService != 0);
-    mBaseConnService = TP_BASE_CONNECTION(mConnService);
-    QVERIFY(mBaseConnService != 0);
-
-    QVERIFY(tp_base_connection_register(mBaseConnService,
-                "example", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(static_cast<uint>(mConn->status()),
-             static_cast<uint>(ConnectionStatusConnected));
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 
     QByteArray chan1Path;
-    mChan1Path = mConnPath + QLatin1String("/ContactSearchChannel/1");
+    mChan1Path = mConn->objectPath() + QLatin1String("/ContactSearchChannel/1");
     chan1Path = mChan1Path.toAscii();
     mChan1Service = TP_TESTS_CONTACT_SEARCH_CHANNEL(g_object_new(
                 TP_TESTS_TYPE_CONTACT_SEARCH_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chan1Path.data(),
                 NULL));
 
     QByteArray chan2Path;
-    mChan2Path = mConnPath + QLatin1String("/ContactSearchChannel/2");
+    mChan2Path = mConn->objectPath() + QLatin1String("/ContactSearchChannel/2");
     chan2Path = mChan2Path.toAscii();
     mChan2Service = TP_TESTS_CONTACT_SEARCH_CHANNEL(g_object_new(
                 TP_TESTS_TYPE_CONTACT_SEARCH_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chan2Path.data(),
                 NULL));
 }
@@ -186,7 +141,7 @@ void TestContactSearchChan::init()
 
 void TestContactSearchChan::testContactSearch()
 {
-    mChan1 = ContactSearchChannel::create(mConn, mChan1Path, QVariantMap());
+    mChan1 = ContactSearchChannel::create(mConn->client(), mChan1Path, QVariantMap());
     mChan = mChan1;
     // becomeReady with no args should implicitly enable ContactSearchChannel::FeatureCore
     QVERIFY(connect(mChan1->becomeReady(),
@@ -272,7 +227,7 @@ void TestContactSearchChan::testContactSearch()
 
 void TestContactSearchChan::testContactSearchEmptyResult()
 {
-    mChan2 = ContactSearchChannel::create(mConn, mChan2Path, QVariantMap());
+    mChan2 = ContactSearchChannel::create(mConn->client(), mChan2Path, QVariantMap());
     mChan = mChan2;
     QVERIFY(connect(mChan2->becomeReady(ContactSearchChannel::FeatureCore),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -335,22 +290,8 @@ void TestContactSearchChan::cleanup()
 
 void TestContactSearchChan::cleanupTestCase()
 {
-    if (mConn) {
-        // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            mLoop,
-                            SLOT(quit())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     if (mChan1Service != 0) {
         g_object_unref(mChan1Service);
@@ -362,14 +303,8 @@ void TestContactSearchChan::cleanupTestCase()
         mChan2Service = 0;
     }
 
-    if (mConnService != 0) {
-        mBaseConnService = 0;
-        g_object_unref(mConnService);
-        mConnService = 0;
-    }
-
     cleanupTestCaseImpl();
 }
 
 QTEST_MAIN(TestContactSearchChan)
-#include "_gen/chan-contact-search.cpp.moc.hpp"
+#include "_gen/contact-search-chan.cpp.moc.hpp"

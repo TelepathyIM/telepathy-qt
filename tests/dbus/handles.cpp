@@ -1,26 +1,17 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <tests/lib/test.h>
 
-#include <QtDBus/QtDBus>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
-#include <QtTest/QtTest>
+#include <tests/lib/glib/simple-conn.h>
 
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingHandles>
-#include <TelepathyQt4/PendingVoid>
-#include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
-
-#include <tests/lib/glib/simple-conn.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 
@@ -30,12 +21,10 @@ class TestHandles : public Test
 
 public:
     TestHandles(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+        : Test(parent), mConn(0)
     { }
 
 protected Q_SLOTS:
-    void expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason);
-    void expectConnInvalidated();
     void expectPendingHandlesFinished(Tp::PendingOperation*);
 
 private Q_SLOTS:
@@ -48,62 +37,14 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    QString mConnName, mConnPath;
-    TpTestsSimpleConnection *mConnService;
-    ConnectionPtr mConn;
+    TestConnHelper *mConn;
     ReferencedHandles mHandles;
 };
 
-void TestHandles::expectConnReady(Tp::ConnectionStatus newStatus,
-        Tp::ConnectionStatusReason newStatusReason)
-{
-    switch (newStatus) {
-    case ConnectionStatusDisconnected:
-        qWarning() << "Disconnected";
-        mLoop->exit(1);
-        break;
-    case ConnectionStatusConnecting:
-        /* do nothing */
-        break;
-    case ConnectionStatusConnected:
-        qDebug() << "Ready";
-        mLoop->exit(0);
-        break;
-    default:
-        qWarning().nospace() << "What sort of status is "
-            << newStatus << "?!";
-        mLoop->exit(2);
-        break;
-    }
-}
-
-void TestHandles::expectConnInvalidated()
-{
-    mLoop->exit(0);
-}
-
 void TestHandles::expectPendingHandlesFinished(PendingOperation *op)
 {
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
+    TEST_VERIFY_OP(op);
 
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
     PendingHandles *pending = qobject_cast<PendingHandles*>(op);
     mHandles = pending->handles();
     mLoop->exit(0);
@@ -118,51 +59,12 @@ void TestHandles::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = TP_TESTS_SIMPLE_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_SIMPLE_CONNECTION,
             "account", "me@example.com",
             "protocol", "simple",
-            NULL));
-    QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "simple", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-
-    if (mConn->status() != ConnectionStatusConnected) {
-        QVERIFY(connect(mConn.data(),
-                        SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
-                        SLOT(expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason))));
-        QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn.data(),
-                           SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
-                           this,
-                           SLOT(expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason))));
-        QCOMPARE(mConn->status(), ConnectionStatusConnected);
-    }
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 }
 
 void TestHandles::init()
@@ -177,7 +79,7 @@ void TestHandles::testRequestAndRelease()
         << QLatin1String("bob") << QLatin1String("chris");
 
     // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->lowlevel()->requestHandles(Tp::HandleTypeContact, ids);
+    PendingHandles *pending = mConn->client()->lowlevel()->requestHandles(Tp::HandleTypeContact, ids);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
@@ -194,7 +96,7 @@ void TestHandles::testRequestAndRelease()
 
     // Verify by directly poking the service that the handles correspond to the requested IDs
     TpHandleRepoIface *serviceRepo =
-        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
     for (int i = 0; i < 3; i++) {
         uint handle = handles[i];
         QCOMPARE(QString::fromUtf8(tp_handle_inspect(serviceRepo, handle)), ids[i]);
@@ -206,7 +108,7 @@ void TestHandles::testRequestAndRelease()
     // Start releasing the handles, RAII style, and complete the asynchronous process doing that
     handles = ReferencedHandles();
     mLoop->processEvents();
-    processDBusQueue(mConn.data());
+    processDBusQueue(mConn->client().data());
 }
 
 void TestHandles::cleanup()
@@ -216,25 +118,8 @@ void TestHandles::cleanup()
 
 void TestHandles::cleanupTestCase()
 {
-    if (mConn) {
-        // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
-
-    if (mConnService != 0) {
-        g_object_unref(mConnService);
-        mConnService = 0;
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     cleanupTestCaseImpl();
 }

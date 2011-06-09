@@ -1,31 +1,20 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <tests/lib/test.h>
 
-#include <QtDBus/QtDBus>
-
-#include <QtTest/QtTest>
-
-#define TP_QT4_ENABLE_LOWLEVEL_API
-
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/Message>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReceivedMessage>
-#include <TelepathyQt4/TextChannel>
-#include <TelepathyQt4/Debug>
-
-#include <telepathy-glib/debug.h>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
 #include <tests/lib/glib/contacts-conn.h>
 #include <tests/lib/glib/echo/chan.h>
 #include <tests/lib/glib/echo2/chan.h>
-#include <tests/lib/test.h>
+
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Message>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/ReceivedMessage>
+#include <TelepathyQt4/TextChannel>
+
+#include <telepathy-glib/debug.h>
 
 using namespace Tp;
-using Tp::UIntList;
 
 struct SentMessageDetails
 {
@@ -45,9 +34,8 @@ class TestTextChan : public Test
 public:
     TestTextChan(QObject *parent = 0)
         : Test(parent),
-          // service side (telepathy-glib)
-          mConnService(0), mBaseConnService(0), mContactRepo(0),
-            mTextChanService(0), mMessagesChanService(0)
+          mConn(0), mContactRepo(0),
+          mTextChanService(0), mMessagesChanService(0)
     { }
 
 protected Q_SLOTS:
@@ -70,22 +58,16 @@ private:
     void commonTest(bool withMessages);
     void sendText(const char *text);
 
+    TestConnHelper *mConn;
+    TpHandleRepoIface *mContactRepo;
+    TextChannelPtr mChan;
+    ExampleEchoChannel *mTextChanService;
+    QString mTextChanPath;
+    ExampleEcho2Channel *mMessagesChanService;
+    QString mMessagesChanPath;
     QList<SentMessageDetails> sent;
     QList<ReceivedMessage> received;
     QList<ReceivedMessage> removed;
-
-    TpTestsContactsConnection *mConnService;
-    TpBaseConnection *mBaseConnService;
-    TpHandleRepoIface *mContactRepo;
-    ExampleEchoChannel *mTextChanService;
-    ExampleEcho2Channel *mMessagesChanService;
-
-    ConnectionPtr mConn;
-    TextChannelPtr mChan;
-    QString mTextChanPath;
-    QString mMessagesChanPath;
-    QString mConnName;
-    QString mConnPath;
 };
 
 void TestTextChan::onMessageReceived(const ReceivedMessage &message)
@@ -128,65 +110,32 @@ void TestTextChan::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
-            NULL));
-    QVERIFY(mConnService != 0);
-    mBaseConnService = TP_BASE_CONNECTION(mConnService);
-    QVERIFY(mBaseConnService != 0);
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 
-    QVERIFY(tp_base_connection_register(mBaseConnService,
-                "example", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(static_cast<uint>(mConn->status()),
-            static_cast<uint>(ConnectionStatusConnected));
-
-    // create a Channel by magic, rather than doing D-Bus round-trips for it
-
-    mContactRepo = tp_base_connection_get_handles(mBaseConnService,
+    mContactRepo = tp_base_connection_get_handles(TP_BASE_CONNECTION(mConn->service()),
             TP_HANDLE_TYPE_CONTACT);
     guint handle = tp_handle_ensure(mContactRepo, "someone@localhost", 0, 0);
 
-    mTextChanPath = mConnPath + QLatin1String("/TextChannel");
+    // create a Channel by magic, rather than doing D-Bus round-trips for it
+    mTextChanPath = mConn->objectPath() + QLatin1String("/TextChannel");
     QByteArray chanPath(mTextChanPath.toAscii());
     mTextChanService = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPath.data(),
                 "handle", handle,
                 NULL));
 
-    mMessagesChanPath = mConnPath + QLatin1String("/MessagesChannel");
+    mMessagesChanPath = mConn->objectPath() + QLatin1String("/MessagesChannel");
     chanPath = mMessagesChanPath.toAscii();
     mMessagesChanService = EXAMPLE_ECHO_2_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_2_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPath.data(),
                 "handle", handle,
                 NULL));
@@ -424,14 +373,14 @@ void TestTextChan::commonTest(bool withMessages)
 
 void TestTextChan::testMessages()
 {
-    mChan = TextChannel::create(mConn, mMessagesChanPath, QVariantMap());
+    mChan = TextChannel::create(mConn->client(), mMessagesChanPath, QVariantMap());
 
     commonTest(true);
 }
 
 void TestTextChan::testLegacyText()
 {
-    mChan = TextChannel::create(mConn, mTextChanPath, QVariantMap());
+    mChan = TextChannel::create(mConn->client(), mTextChanPath, QVariantMap());
 
     commonTest(false);
 }
@@ -447,22 +396,8 @@ void TestTextChan::cleanup()
 
 void TestTextChan::cleanupTestCase()
 {
-    if (mConn) {
-        // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            mLoop,
-                            SLOT(quit())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     if (mTextChanService != 0) {
         g_object_unref(mTextChanService);
@@ -472,12 +407,6 @@ void TestTextChan::cleanupTestCase()
     if (mMessagesChanService != 0) {
         g_object_unref(mMessagesChanService);
         mMessagesChanService = 0;
-    }
-
-    if (mConnService != 0) {
-        mBaseConnService = 0;
-        g_object_unref(mConnService);
-        mConnService = 0;
     }
 
     cleanupTestCaseImpl();

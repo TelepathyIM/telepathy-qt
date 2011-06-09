@@ -1,24 +1,20 @@
-#include <QtCore/QDebug>
-#include <QtCore/QPointer>
-#include <QtTest/QtTest>
+#include <tests/lib/test.h>
+
+#include <tests/lib/glib-helpers/test-conn-helper.h>
+
+#include <tests/lib/glib/callable/conn.h>
 
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/StreamedMediaChannel>
-#include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
-
-#include <tests/lib/glib/callable/conn.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 
@@ -28,12 +24,10 @@ class TestStreamedMediaChan : public Test
 
 public:
     TestStreamedMediaChan(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+        : Test(parent), mConn(0)
     { }
 
 protected Q_SLOTS:
-    void expectRequestContactsFinished(Tp::PendingOperation *);
-    void expectCreateChannelFinished(Tp::PendingOperation *);
     void expectRequestStreamsFinished(Tp::PendingOperation *);
     void expectBusyRequestStreamsFinished(Tp::PendingOperation *);
 
@@ -101,13 +95,9 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    ExampleCallableConnection *mConnService;
-
-    ConnectionPtr mConn;
-    QString mConnName;
-    QString mConnPath;
+    TestConnHelper *mConn;
     StreamedMediaChannelPtr mChan;
-    QList<ContactPtr> mRequestContactsReturn;
+    QList<ContactPtr> mContacts;
     StreamedMediaStreams mRequestStreamsReturn;
     Contacts mChangedCurrent;
     Contacts mChangedLP;
@@ -145,84 +135,11 @@ private:
     } mTerminateState;
 };
 
-void TestStreamedMediaChan::expectRequestContactsFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "contacts requested successfully";
-
-    PendingContacts *pc = qobject_cast<PendingContacts*>(op);
-    mRequestContactsReturn = pc->contacts();
-    mLoop->exit(0);
-}
-
-void TestStreamedMediaChan::expectCreateChannelFinished(PendingOperation* op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "channel created successfully";
-
-    PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = StreamedMediaChannelPtr::qObjectCast(pc->channel());
-    mLoop->exit(0);
-}
-
 void TestStreamedMediaChan::expectRequestStreamsFinished(PendingOperation *op)
 {
     mRequestStreamsReturn.clear();
 
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
+    TEST_VERIFY_OP(op);
 
     qDebug() << "request streams finished successfully";
 
@@ -265,10 +182,10 @@ void TestStreamedMediaChan::expectOutgoingRequestStreamsFinished(PendingOperatio
     PendingStreamedMediaStreams *pms = qobject_cast<PendingStreamedMediaStreams*>(op);
     mRequestStreamsReturn = pms->streams();
 
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QCOMPARE(mRequestContactsReturn.size(), 1);
+    QCOMPARE(mContacts.size(), 1);
     StreamedMediaStreamPtr stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
     QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
@@ -308,9 +225,9 @@ void TestStreamedMediaChan::onOutgoingGroupMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    // At this point, mRequestContactsReturn should still contain the contact we requested the
+    // At this point, mContacts should still contain the contact we requested the
     // stream for
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    ContactPtr otherContact = mContacts.first();
 
     if (mOutgoingState == OutgoingStateInitial || mOutgoingState == OutgoingStateRequested) {
         // The target should have become remote pending now
@@ -455,9 +372,9 @@ void TestStreamedMediaChan::onTerminateGroupMembersChanged(
         const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    // At this point, mRequestContactsReturn should still contain the contact we requested the
+    // At this point, mContacts should still contain the contact we requested the
     // stream for
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    ContactPtr otherContact = mContacts.first();
 
     if (mTerminateState == TerminateStateInitial || mTerminateState == TerminateStateRequested) {
         // The target should have become remote pending now
@@ -530,9 +447,8 @@ void TestStreamedMediaChan::onNewChannels(const Tp::ChannelDetailsList &channels
 
         if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
             !requested) {
-            mChan = StreamedMediaChannel::create(mConn,
-                        details.channel.path(),
-                        details.properties);
+            mChan = StreamedMediaChannel::create(mConn->client(),
+                    details.channel.path(), details.properties);
             mLoop->exit(0);
         }
     }
@@ -552,53 +468,24 @@ void TestStreamedMediaChan::initTestCase()
     initTestCaseImpl();
 
     g_type_init();
-    g_set_prgname("text-streamed-media");
+    g_set_prgname("streamed-media-chan");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = EXAMPLE_CALLABLE_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_CALLABLE_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
             "simulation-delay", 1,
-            NULL));
-    QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "example", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(Connection::FeatureSelfContact),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(static_cast<uint>(mConn->status()),
-             static_cast<uint>(ConnectionStatusConnected));
+            NULL);
+    QCOMPARE(mConn->connect(Connection::FeatureSelfContact), true);
 }
 
 void TestStreamedMediaChan::init()
 {
     initImpl();
 
-    mRequestContactsReturn.clear();
+    mContacts.clear();
     mRequestStreamsReturn.clear();
     mChangedCurrent.clear();
     mChangedLP.clear();
@@ -618,27 +505,13 @@ void TestStreamedMediaChan::init()
 
 void TestStreamedMediaChan::testOutgoingCall()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("alice"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -652,7 +525,7 @@ void TestStreamedMediaChan::testOutgoingCall()
     QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
     QCOMPARE(mChan->awaitingLocalAnswer(), false);
-    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+    QVERIFY(mChan->groupContacts().contains(mConn->client()->selfContact()));
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
@@ -820,27 +693,13 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
 {
     // This identifier contains the magic string (busy), which means the example
     // will simulate rejection of the call as busy rather than accepting it.
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice (busy)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("alice (busy)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -854,7 +713,7 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
     QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
     QCOMPARE(mChan->awaitingLocalAnswer(), false);
-    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+    QVERIFY(mChan->groupContacts().contains(mConn->client()->selfContact()));
 
     // Request audio stream
     QVERIFY(connect(mChan->requestStreams(otherContact,
@@ -887,27 +746,13 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
 {
     // This identifier contains the magic string (no answer), which means the example
     // will never answer.
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice (no answer)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QCOMPARE(mRequestContactsReturn.size(), 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("alice (no answer)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -921,7 +766,7 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
     QCOMPARE(mChan->awaitingLocalAnswer(), false);
-    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+    QVERIFY(mChan->groupContacts().contains(mConn->client()->selfContact()));
 
     // Request audio stream
     QVERIFY(connect(mChan->requestStreams(otherContact,
@@ -931,7 +776,7 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     QCOMPARE(mLoop->exec(), 0);
 
     /* After the initial flurry of D-Bus messages, alice still hasn't answered */
-    processDBusQueue(mConn.data());
+    processDBusQueue(mConn->client().data());
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
@@ -973,27 +818,13 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
 {
     // This identifier contains the magic string (terminate), which means the example
     // will simulate answering the call but then terminating it.
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice (terminate)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QCOMPARE(mRequestContactsReturn.size(), 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("alice (terminate)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -1007,7 +838,7 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
     QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
     QCOMPARE(mChan->awaitingLocalAnswer(), false);
-    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+    QVERIFY(mChan->groupContacts().contains(mConn->client()->selfContact()));
 
     // Request audio stream, and verify that following doing so, we get events for:
     //  [0-2].5) the stream request finishing (sadly this can happen before, or between, any of the
@@ -1061,15 +892,15 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
 
 void TestStreamedMediaChan::testIncomingCall()
 {
-    mConn->lowlevel()->setSelfPresence(QLatin1String("away"), QLatin1String("preparing for a test"));
+    mConn->client()->lowlevel()->setSelfPresence(QLatin1String("away"), QLatin1String("preparing for a test"));
 
     Client::ConnectionInterfaceRequestsInterface *connRequestsInterface =
-        mConn->optionalInterface<Client::ConnectionInterfaceRequestsInterface>();
+        mConn->client()->optionalInterface<Client::ConnectionInterfaceRequestsInterface>();
 
     QVERIFY(connect(connRequestsInterface,
                     SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
                     SLOT(onNewChannels(const Tp::ChannelDetailsList&))));
-    mConn->lowlevel()->setSelfPresence(QLatin1String("available"), QLatin1String("call me?"));
+    mConn->client()->lowlevel()->setSelfPresence(QLatin1String("available"), QLatin1String("call me?"));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(mChan);
@@ -1087,7 +918,7 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
     QCOMPARE(mChan->awaitingLocalAnswer(), true);
     QCOMPARE(mChan->awaitingRemoteAnswer(), false);
-    QVERIFY(mChan->groupLocalPendingContacts().contains(mConn->selfContact()));
+    QVERIFY(mChan->groupLocalPendingContacts().contains(mConn->client()->selfContact()));
 
     ContactPtr otherContact = *mChan->groupContacts().begin();
     QCOMPARE(otherContact, mChan->initiatorContact());
@@ -1100,7 +931,7 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
     QCOMPARE(mChan->awaitingLocalAnswer(), false);
-    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+    QVERIFY(mChan->groupContacts().contains(mConn->client()->selfContact()));
 
     QCOMPARE(mChan->streams().size(), 1);
     StreamedMediaStreamPtr stream = mChan->streams().first();
@@ -1217,27 +1048,13 @@ void TestStreamedMediaChan::testIncomingCall()
 
 void TestStreamedMediaChan::testHold()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("bob"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureLocalHoldState),
@@ -1288,27 +1105,13 @@ void TestStreamedMediaChan::testHold()
 
 void TestStreamedMediaChan::testHoldNoUnhold()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob (no unhold)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("bob (no unhold)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureLocalHoldState),
@@ -1354,27 +1157,14 @@ void TestStreamedMediaChan::testHoldNoUnhold()
 
 void TestStreamedMediaChan::testHoldInabilityUnhold()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob (inability to unhold)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(
+            QStringList() << QLatin1String("bob (inability to unhold)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureLocalHoldState),
@@ -1438,27 +1228,13 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
 
 void TestStreamedMediaChan::testDTMF()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("john")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(QStringList() << QLatin1String("john"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -1527,27 +1303,14 @@ void TestStreamedMediaChan::testDTMF()
 
 void TestStreamedMediaChan::testDTMFNoContinuousTone()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("john (no continuous tone)")),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
-    while (mRequestContactsReturn.size() != 1) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QVERIFY(mRequestContactsReturn.size() == 1);
-    ContactPtr otherContact = mRequestContactsReturn.first();
+    mContacts = mConn->contacts(
+            QStringList() << QLatin1String("john (no continuous tone)"));
+    QCOMPARE(mContacts.size(), 1);
+    ContactPtr otherContact = mContacts.first();
     QVERIFY(otherContact);
 
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   otherContact->handle()[0]);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    mChan = StreamedMediaChannelPtr::qObjectCast(
+            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -1586,7 +1349,7 @@ void TestStreamedMediaChan::testDTMFNoContinuousTone()
 void TestStreamedMediaChan::cleanup()
 {
     mChan.reset();
-    mRequestContactsReturn.clear();
+    mContacts.clear();
     mRequestStreamsReturn.clear();
     mStreamRemovedReturn.reset();
     mChangedCurrent.clear();
@@ -1601,30 +1364,8 @@ void TestStreamedMediaChan::cleanup()
 
 void TestStreamedMediaChan::cleanupTestCase()
 {
-    if (mConn) {
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            mLoop,
-                            SLOT(quit())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-
-        processDBusQueue(mConn.data());
-
-        mConn.reset();
-    }
-
-    if (mConnService) {
-        g_object_unref(mConnService);
-        mConnService = 0;
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     cleanupTestCaseImpl();
 }
