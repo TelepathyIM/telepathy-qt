@@ -439,7 +439,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::dbusTube(const QString 
     if (!spec.isValid()) {
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE);
+                TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeContact);
         spec = RequestableChannelClassSpec(rcc);

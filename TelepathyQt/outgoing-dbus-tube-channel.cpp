@@ -157,13 +157,14 @@ OutgoingDBusTubeChannel::~OutgoingDBusTubeChannel()
 /**
  * Offer the tube
  *
- * This method creates a brand new private DBus connection, and offers it through the tube.
+ * This method sets up a private DBus connection to the channel target(s), and offers it through the tube.
  *
  * The %PendingDBusTube returned by this method will be completed as soon as the tube is
  * opened and ready to be used.
  *
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
- *                   Please read the specification for more details.
+ *                   The other end will receive this QVariantMap in the parameters() method
+ *                   of the corresponding IncomingStreamTubeChannel.
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *

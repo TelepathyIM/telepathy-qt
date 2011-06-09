@@ -180,7 +180,7 @@ void PendingDBusTube::onStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
-        // The tube is ready: let's inject the address into the tube itself
+        // The tube is ready: mark the operation as finished
         setFinished();
     } else if (state != TubeChannelStateLocalPending) {
         // Something happened

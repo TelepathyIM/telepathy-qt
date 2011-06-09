@@ -124,7 +124,7 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Pri
         parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)),
                         parent, SLOT(onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)));
     } else {
-        warning() << "FeatureBusNameMonitoring does not make sense in a P2P context";
+        debug() << "FeatureBusNameMonitoring does not make sense in a P2P context";
     }
 
     self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
@@ -234,9 +234,7 @@ DBusTubeChannel::~DBusTubeChannel()
 }
 
 /**
- * Returns the service name which will be used over the tube. This should be a
- * well-known and valid DBus service name, in the form "org.domain.service". Tubes
- * providing invalid service names might cause non-predictable behavior.
+ * Returns the service name which will be used over the tube.
  *
  * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
  *
@@ -292,7 +290,7 @@ bool DBusTubeChannel::supportsCredentials() const
 }
 
 /**
- * If the tube has been opened, this function returns the private bus address you should be listening
+ * If the tube has been opened, this function returns the private bus address you should be connecting
  * to for using this tube.
  *
  * Please note this function will return a meaningful value only if the tube has already
@@ -313,9 +311,12 @@ QString DBusTubeChannel::address() const
 }
 
 /**
- * This function returns all the known active connections since FeatureConnectionMonitoring has
+ * This function returns all the known active connections since FeatureBusNameMonitoring has
  * been enabled. For this method to return all known connections, you need to make
- * FeatureConnectionMonitoring ready before accepting or offering the tube.
+ * FeatureBusNameMonitoring ready before accepting or offering the tube.
+ *
+ * This function will always return an empty hash in case the tube is p2p, even if
+ * FeatureBusNameMonitoring has been activated.
  *
  * \returns A list of active connection ids known to this tube
  */
@@ -407,7 +408,11 @@ void DBusTubeChannel::setAddress(const QString& address)
 /**
  * \fn void DBusTubeChannel::busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr > &removed)
  *
- * Emitted when the participants of this tube change
+ * Emitted when the participants of this tube change.
+ *
+ * This signal will be emitted only if the tube is a group tube (not p2p), and if the
+ * FeatureBusNameMonitoring feature has been enabled. You usually want to wait until the
+ * aforementioned feature is ready before connecting to this signal.
  *
  * \param added An hash containing the contacts who joined this tube, with their respective bus name.
  * \param removed A list containing the contacts who left this tube.
