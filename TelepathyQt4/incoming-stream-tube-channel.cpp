@@ -43,10 +43,6 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
 
     // Public object
     IncomingStreamTubeChannel *parent;
-
-    // Properties
-    QPair<QHostAddress, quint16> ipAddress;
-    QString localAddress;
 };
 
 IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
@@ -342,8 +338,6 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
 
     PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, addressType(),
             IncomingStreamTubeChannelPtr(this));
-    connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-            this, SLOT(onAcceptTubeFinished(Tp::PendingOperation*)));
     return op;
 }
 
@@ -477,11 +471,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
  */
 QString IncomingStreamTubeChannel::localAddress() const
 {
-    if (tubeState() == TubeChannelStateOpen) {
-        return mPriv->localAddress;
-    } else {
-        return QString();
-    }
+    return StreamTubeChannel::localAddress();
 }
 
 /**
@@ -498,19 +488,7 @@ QString IncomingStreamTubeChannel::localAddress() const
  */
 QPair<QHostAddress, quint16> IncomingStreamTubeChannel::ipAddress() const
 {
-    if (tubeState() == TubeChannelStateOpen) {
-        return mPriv->ipAddress;
-    } else {
-        return QPair<QHostAddress, quint16>();
-    }
-}
-
-void IncomingStreamTubeChannel::onAcceptTubeFinished(PendingOperation *op)
-{
-    PendingStreamTubeConnection *pendingDevice = qobject_cast<PendingStreamTubeConnection*>(op);
-
-    mPriv->ipAddress = pendingDevice->ipAddress();
-    mPriv->localAddress = pendingDevice->localAddress();
+    return StreamTubeChannel::ipAddress();
 }
 
 void IncomingStreamTubeChannel::onNewLocalConnection(uint connectionId)
