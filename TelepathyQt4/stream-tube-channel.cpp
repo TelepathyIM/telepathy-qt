@@ -586,6 +586,7 @@ UIntList StreamTubeChannel::connections() const
 QString StreamTubeChannel::localAddress() const
 {
     if (tubeState() != TubeChannelStateOpen) {
+        warning() << "Tube not open, returning invalid local socket address";
         return QString();
     }
 
@@ -608,6 +609,7 @@ QString StreamTubeChannel::localAddress() const
 QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 {
     if (tubeState() != TubeChannelStateOpen) {
+        warning() << "Tube not open, returning invalid IP address";
         return qMakePair<QHostAddress, quint16>(QHostAddress::Null, 0);
     }
 
