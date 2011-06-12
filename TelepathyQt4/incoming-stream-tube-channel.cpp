@@ -452,8 +452,6 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 
     PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, addressType(),
             IncomingStreamTubeChannelPtr(this));
-    connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-            this, SLOT(onAcceptTubeFinished(Tp::PendingOperation*)));
     return op;
 }
 
