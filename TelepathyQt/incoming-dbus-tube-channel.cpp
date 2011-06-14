@@ -107,17 +107,11 @@ IncomingDBusTubeChannel::Private::~Private()
  * are ready. In this case, we need to enable TubeChannel::FeatureTube and
  * DBusTubeChannel::FeatureDBusTube.
  *
- * \code
- *
- * Features features = Features() << TubeChannel::FeatureTube
- *                                << DBusTubeChannel::FeatureDBusTube;
- * connect(myTube->becomeReady(features),
- *         SIGNAL(finished(Tp::PendingOperation *)),
- *         SLOT(onDBusTubeChannelReady(Tp::PendingOperation *)));
- *
- * \endcode
- *
- * To learn more on how to use introspectable and features, please see \ref account_ready_sec.
+ * DBusTubeChannel features can be enabled by constructing a ChannelFactory and enabling the desired features,
+ * and passing it to ChannelRequest or ClientRegistrar when creating them as appropriate. However,
+ * if a particular feature is only ever used in a specific circumstance, such as an user opening
+ * some settings dialog separate from the general view of the application, features can be later
+ * enabled as needed by calling becomeReady().
  *
  * Once your object is ready, you can use #acceptTube to accept the tube and create a brand
  * new private DBus connection.
@@ -134,7 +128,7 @@ IncomingDBusTubeChannel::Private::~Private()
  *     }
  *
  *     QString address = op->address();
- *     // Do some stuff here
+ *     // Connect to the address
  * }
  * \endcode
  *
@@ -193,8 +187,6 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  * retrieve the address either from \c PendingDBusTube or from %address().
  *
  * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
- *
- * \note When using QHostAddress::Any, the allowedPort parameter is ignored.
  *
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.

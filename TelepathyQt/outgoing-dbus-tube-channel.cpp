@@ -80,25 +80,17 @@ OutgoingDBusTubeChannel::Private::~Private()
  * PendingChannelRequest *tube = myaccount->createDBusTube(myfriend, "org.my.service");
  * \endcode
  *
- * Be sure to track the pending request to retrieve your outgoing DBus tube upon success.
- *
  * \subsection outgoing_dbus_tube_offer_sec Offering the tube
  *
  * Before being ready to offer the tube, we must be sure the required features on our object
  * are ready. In this case, we need to enable TubeChannel::FeatureTube
- * and StreamTubeChannel::FeatureDBusTube.
+ * and DBusTubeChannel::FeatureDBusTube.
  *
- * \code
- *
- * Features features = Features() << TubeChannel::FeatureTube
- *                                << DBusTubeChannel::FeatureDBusTube;
- * connect(myTube->becomeReady(features),
- *         SIGNAL(finished(Tp::PendingOperation *)),
- *         SLOT(onDBusTubeChannelReady(Tp::PendingOperation *)));
- *
- * \endcode
- *
- * To learn more on how to use introspectable and features, please see \ref account_ready_sec.
+ * DBusTubeChannel features can be enabled by constructing a ChannelFactory and enabling the desired features,
+ * and passing it to ChannelRequest or ClientRegistrar when creating them as appropriate. However,
+ * if a particular feature is only ever used in a specific circumstance, such as an user opening
+ * some settings dialog separate from the general view of the application, features can be later
+ * enabled as needed by calling becomeReady().
  *
  * You can also enable DBusTubeChannel::FeatureBusNameMonitoring to monitor connections
  * to the tube.

@@ -84,8 +84,8 @@ ContactCapabilities::~ContactCapabilities()
 }
 
 /**
- * Return whether creating a DBusTube channel, using the given \a serviceName, by providing a
- * contact identifier is supported.
+ * Returns whether creating a DBusTube channel with the given service targeting this contact is
+ * expected to succeed.
  *
  * \return \c true if supported, \c false otherwise.
  */

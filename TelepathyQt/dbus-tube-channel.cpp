@@ -415,8 +415,7 @@ void DBusTubeChannel::setAddress(const QString& address)
  * Emitted when the participants of this tube change.
  *
  * This signal will be emitted only if the tube is a group tube (not p2p), and if the
- * FeatureBusNameMonitoring feature has been enabled. You usually want to wait until the
- * aforementioned feature is ready before connecting to this signal.
+ * FeatureBusNameMonitoring feature has been enabled.
  *
  * \param added An hash containing the contacts who joined this tube, with their respective bus name.
  * \param removed A list containing the contacts who left this tube.
