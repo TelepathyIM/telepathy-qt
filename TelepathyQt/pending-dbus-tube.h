@@ -50,8 +50,7 @@ private Q_SLOTS:
                                         const QString &errorMessage);
 
 private:
-    PendingDBusTube(PendingString *string, const OutgoingDBusTubeChannelPtr &object);
-    PendingDBusTube(PendingString *string, const IncomingDBusTubeChannelPtr &object);
+    PendingDBusTube(PendingString *string, const DBusTubeChannelPtr &object);
     PendingDBusTube(const QString &errorName, const QString &errorMessage,
                          const DBusTubeChannelPtr &object);
 

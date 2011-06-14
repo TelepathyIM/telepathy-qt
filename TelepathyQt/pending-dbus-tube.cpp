@@ -64,24 +64,7 @@ PendingDBusTube::Private::~Private()
 
 PendingDBusTube::PendingDBusTube(
         PendingString *string,
-        const IncomingDBusTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new Private(this))
-{
-    mPriv->tube = object;
-
-    if (string->isFinished()) {
-        onConnectionFinished(string);
-    } else {
-        // Connect the pending void
-        connect(string, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onConnectionFinished(Tp::PendingOperation*)));
-    }
-}
-
-PendingDBusTube::PendingDBusTube(
-        PendingString *string,
-        const OutgoingDBusTubeChannelPtr &object)
+        const DBusTubeChannelPtr &object)
     : PendingOperation(object)
     , mPriv(new Private(this))
 {
