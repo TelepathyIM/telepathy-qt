@@ -28,6 +28,7 @@
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/PendingVariant>
+#include <TelepathyQt/PendingVariantMap>
 
 namespace Tp
 {
@@ -138,18 +139,19 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
 
     debug() << "Introspect dbus tube properties";
 
-    Client::DBus::PropertiesInterface *properties =
-            parent->interface<Client::DBus::PropertiesInterface>();
+    if (parent->immutableProperties().contains(QLatin1String("Service")) &&
+        parent->immutableProperties().contains(QLatin1String("SupportedAccessControls"))) {
+        self->extractProperties(parent->immutableProperties());
+        self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
+    } else {
+        Client::ChannelTypeDBusTubeInterface *dbusTubeInterface =
+                parent->interface<Client::ChannelTypeDBusTubeInterface>();
 
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                properties->GetAll(
-                    QLatin1String(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE)),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            parent,
-            SLOT(gotDBusTubeProperties(QDBusPendingCallWatcher*)));
+        parent->connect(dbusTubeInterface->requestAllProperties(),
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        parent,
+                        SLOT(onRequestAllPropertiesFinished(Tp::PendingOperation*)));
+    }
 }
 
 /**
@@ -333,20 +335,17 @@ QHash<ContactPtr, QString> DBusTubeChannel::busNames() const
     return mPriv->busNames;
 }
 
-void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher *watcher)
+void DBusTubeChannel::onRequestAllPropertiesFinished(PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-
-    if (!reply.isError()) {
-        QVariantMap props = reply.value();
-        debug() << "Got reply to Properties::GetAll(DBusTubeChannel)";
-        mPriv->extractProperties(props);
+    if (!op->isError()) {
+        debug() << "RequestAllProperties succeeded";
+        PendingVariantMap *result = qobject_cast<PendingVariantMap*>(op);
+        mPriv->extractProperties(result->result());
         mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
     } else {
-        warning().nospace() << "Properties::GetAll(DBusTubeChannel) failed "
-            "with " << reply.error().name() << ": " << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, false,
-                reply.error());
+        warning().nospace() << "RequestAllProperties failed "
+            "with " << op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, false);
     }
 }
 
