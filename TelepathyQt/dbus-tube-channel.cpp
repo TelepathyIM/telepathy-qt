@@ -27,6 +27,7 @@
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingVariant>
 
 namespace Tp
 {
@@ -95,7 +96,6 @@ void DBusTubeChannel::Private::extractProperties(const QVariantMap &props)
 {
     serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
     accessControls = qdbus_cast<UIntList>(props[QLatin1String("SupportedAccessControls")]);
-    extractParticipants(qdbus_cast<DBusTubeParticipants>(props[QLatin1String("DBusNames")]));
 }
 
 void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipants &participants)
@@ -127,7 +127,9 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Pri
         debug() << "FeatureBusNameMonitoring does not make sense in a P2P context";
     }
 
-    self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
+    // Request the current DBusNames property
+    connect(dbusTubeInterface->requestPropertyDBusNames(), SIGNAL(finished(Tp::PendingOperation*)),
+            parent, SLOT(onRequestPropertyDBusNamesFinished(Tp::PendingOperation*)));
 }
 
 void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self)
@@ -345,6 +347,20 @@ void DBusTubeChannel::gotDBusTubeProperties(QDBusPendingCallWatcher *watcher)
             "with " << reply.error().name() << ": " << reply.error().message();
         mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, false,
                 reply.error());
+    }
+}
+
+void DBusTubeChannel::onRequestPropertyDBusNamesFinished(PendingOperation *op)
+{
+    if (!op->isError()) {
+        debug() << "RequestPropertyDBusNames succeeded";
+        PendingVariant *result = qobject_cast<PendingVariant*>(op);
+        mPriv->extractParticipants(qdbus_cast<DBusTubeParticipants>(result->result()));
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
+    } else {
+        warning().nospace() << "RequestPropertyDBusNames failed "
+            "with " << op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, false);
     }
 }
 
