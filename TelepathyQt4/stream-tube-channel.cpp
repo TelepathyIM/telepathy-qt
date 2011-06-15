@@ -97,7 +97,7 @@ void StreamTubeChannel::Private::init()
     ReadinessHelper::Introspectable introspectableConnectionMonitoring(
             QSet<uint>() << 0,                                                            // makesSenseForStatuses
             Features() << StreamTubeChannel::FeatureStreamTube,                           // dependsOnFeatures (core)
-            QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE), // dependsOnInterfaces
+            QStringList(),                                                                // dependsOnInterfaces
             (ReadinessHelper::IntrospectFunc)
                     &StreamTubeChannel::Private::introspectConnectionMonitoring,
             this);
