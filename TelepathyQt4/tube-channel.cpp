@@ -234,7 +234,7 @@ void TubeChannel::onTubeChannelStateChanged(uint newstate)
 {
     mPriv->state = (Tp::TubeChannelState)newstate;
     emit tubeStateChanged((Tp::TubeChannelState)newstate);
-    debug() << "staete changed to" << newstate;
+    debug() << "Tube state changed to" << newstate;
 }
 
 void TubeChannel::gotTubeProperties(QDBusPendingCallWatcher *watcher)
