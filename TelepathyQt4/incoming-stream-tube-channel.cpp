@@ -43,10 +43,12 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
 
     // Public object
     IncomingStreamTubeChannel *parent;
+    bool initRandom;
 };
 
 IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
-    : parent(parent)
+    : parent(parent),
+      initRandom(true)
 {
 }
 
@@ -442,12 +444,27 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
                 IncomingStreamTubeChannelPtr(this));
     }
 
+    QDBusVariant accessControlParam;
+    uchar credentialByte = 0;
+    if (accessControl == SocketAccessControlLocalhost) {
+        accessControlParam.setVariant(qVariantFromValue(static_cast<uint>(0)));
+    } else if (accessControl == SocketAccessControlCredentials) {
+        if (mPriv->initRandom) {
+            qsrand(QTime::currentTime().msec());
+            mPriv->initRandom = false;
+        }
+        credentialByte = static_cast<uchar>(qrand());
+        accessControlParam.setVariant(qVariantFromValue(credentialByte));
+    } else {
+        Q_ASSERT(false);
+    }
+
     // Perform the actual call
     PendingVariant *pv = new PendingVariant(
             interface<Client::ChannelTypeStreamTubeInterface>()->Accept(
                     addressType(),
                     accessControl,
-                    QDBusVariant(QVariant(QString()))),
+                    accessControlParam),
             IncomingStreamTubeChannelPtr(this));
 
     PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, addressType(),
