@@ -475,7 +475,7 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
         return false;
     }
 
-    return mPriv->socketTypes[SocketAddressTypeAbstractUnix].contains(SocketAccessControlCredentials);
+    return mPriv->socketTypes[SocketAddressTypeUnix].contains(SocketAccessControlCredentials);
 }
 
 /**
