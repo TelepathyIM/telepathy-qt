@@ -339,7 +339,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
             IncomingStreamTubeChannelPtr(this));
 
     PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, addressType(),
-            IncomingStreamTubeChannelPtr(this));
+            false, 0, IncomingStreamTubeChannelPtr(this));
     return op;
 }
 
@@ -468,7 +468,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
             IncomingStreamTubeChannelPtr(this));
 
     PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, addressType(),
-            IncomingStreamTubeChannelPtr(this));
+            requireCredentials, credentialByte, IncomingStreamTubeChannelPtr(this));
     return op;
 }
 

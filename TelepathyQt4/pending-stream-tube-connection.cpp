@@ -46,10 +46,14 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
     QHostAddress hostAddress;
     quint16 port;
     QString socketPath;
+    bool requireCredentials;
+    uchar credentialByte;
 };
 
 PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection *parent)
-    : parent(parent)
+    : parent(parent),
+      requireCredentials(false),
+      credentialByte(0)
 {
 
 }
@@ -62,13 +66,16 @@ PendingStreamTubeConnection::Private::~Private()
 PendingStreamTubeConnection::PendingStreamTubeConnection(
         PendingVariant *acceptOperation,
         SocketAddressType type,
+        bool requireCredentials,
+        uchar credentialByte,
         const IncomingStreamTubeChannelPtr &object)
     : PendingOperation(object),
       mPriv(new Private(this))
 {
     mPriv->tube = object;
     mPriv->type = type;
-
+    mPriv->requireCredentials = requireCredentials;
+    mPriv->credentialByte = credentialByte;
     // Connect the pending void
     connect(acceptOperation, SIGNAL(finished(Tp::PendingOperation*)),
             this, SLOT(onAcceptFinished(Tp::PendingOperation*)));
@@ -167,6 +174,33 @@ QString PendingStreamTubeConnection::localAddress() const
 QPair<QHostAddress, quint16> PendingStreamTubeConnection::ipAddress() const
 {
     return mPriv->tube->ipAddress();
+}
+
+/**
+ * Return whether sending a credential byte once connecting to the socket is required.
+ *
+ * Note that if this method returns \c true, one should send a SCM_CREDS or SCM_CREDENTIALS
+ * and the credentialByte() once connected. If SCM_CREDS or SCM_CREDENTIALS cannot be sent,
+ * the credentialByte() should still be sent.
+ *
+ * \return \c true if sending credentials is required, \c false otherwise.
+ * \sa credentialByte()
+ */
+bool PendingStreamTubeConnection::requireCredentials() const
+{
+    return mPriv->requireCredentials;
+}
+
+/**
+ * Return the credential byte to send once connecting to the socket if requireCredentials() is \c
+ * true.
+ *
+ * \return The credential byte.
+ * \sa requireCredentials()
+ */
+uchar PendingStreamTubeConnection::credentialByte() const
+{
+    return mPriv->credentialByte;
 }
 
 void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
