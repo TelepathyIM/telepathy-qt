@@ -95,8 +95,8 @@ DBusTubeChannel::Private::~Private()
 
 void DBusTubeChannel::Private::extractProperties(const QVariantMap &props)
 {
-    serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
-    accessControls = qdbus_cast<UIntList>(props[QLatin1String("SupportedAccessControls")]);
+    serviceName = qdbus_cast<QString>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName")]);
+    accessControls = qdbus_cast<UIntList>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".SupportedAccessControls")]);
 }
 
 void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipants &participants)
@@ -140,8 +140,8 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
 
     debug() << "Introspect dbus tube properties";
 
-    if (parent->immutableProperties().contains(QLatin1String("Service")) &&
-        parent->immutableProperties().contains(QLatin1String("SupportedAccessControls"))) {
+    if (parent->immutableProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName")) &&
+        parent->immutableProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".SupportedAccessControls"))) {
         self->extractProperties(parent->immutableProperties());
         self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
     } else {
@@ -341,7 +341,16 @@ void DBusTubeChannel::onRequestAllPropertiesFinished(PendingOperation *op)
     if (!op->isError()) {
         debug() << "RequestAllProperties succeeded";
         PendingVariantMap *result = qobject_cast<PendingVariantMap*>(op);
-        mPriv->extractProperties(result->result());
+
+        QVariantMap map = result->result();
+        QVariantMap qualifiedMap;
+
+        for (QVariantMap::const_iterator i = map.constBegin(); i != map.constEnd(); ++i) {
+            qualifiedMap.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1Char('.') + i.key(),
+                                i.value());
+        }
+
+        mPriv->extractProperties(qualifiedMap);
         mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
     } else {
         warning().nospace() << "RequestAllProperties failed "
