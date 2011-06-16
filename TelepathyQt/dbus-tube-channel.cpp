@@ -436,7 +436,8 @@ void DBusTubeChannel::onContactsRetrieved(const QUuid &uuid, const QList<Contact
                 mPriv->busNames.remove(contact);
                 removed << contact;
             } else {
-                warning() << "Trying to remove a bus name which has not been retrieved previously!";
+                warning() << "Trying to remove a bus name for contact " << contact->id()
+                          << " which has not been retrieved previously!";
             }
         }
 
