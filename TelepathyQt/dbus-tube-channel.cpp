@@ -355,13 +355,33 @@ void DBusTubeChannel::onRequestPropertyDBusNamesFinished(PendingOperation *op)
     if (!op->isError()) {
         debug() << "RequestPropertyDBusNames succeeded";
         PendingVariant *result = qobject_cast<PendingVariant*>(op);
-        mPriv->extractParticipants(qdbus_cast<DBusTubeParticipants>(result->result()));
-        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
+        DBusTubeParticipants participants = qdbus_cast<DBusTubeParticipants>(result->result());
+
+        if (participants.isEmpty()) {
+            // Nothing to do actually, simply mark the feature as ready.
+            mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
+        } else {
+            // Extract the participants, populating the QueuedContactFactory
+            mPriv->extractParticipants(participants);
+
+            // Wait for the queue to complete
+            connect(mPriv->queuedContactFactory, SIGNAL(queueCompleted()),
+                    this, SLOT(onQueueCompleted()));
+        }
     } else {
         warning().nospace() << "RequestPropertyDBusNames failed "
             "with " << op->errorName() << ": " << op->errorMessage();
         mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, false);
     }
+}
+
+void DBusTubeChannel::onQueueCompleted()
+{
+    // Set the feature as completed, and disconnect the signal as it's no longer useful
+    mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
+
+    disconnect(mPriv->queuedContactFactory, SIGNAL(queueCompleted()),
+               this, SLOT(onQueueCompleted()));
 }
 
 void DBusTubeChannel::onDBusNamesChanged(const Tp::DBusTubeParticipants &added,

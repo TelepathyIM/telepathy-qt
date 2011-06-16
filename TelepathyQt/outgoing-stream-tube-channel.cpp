@@ -129,8 +129,14 @@ QueuedContactFactory::~QueuedContactFactory()
 
 void QueuedContactFactory::processNextRequest()
 {
-    if (m_isProcessing || m_queue.isEmpty()) {
+    if (m_isProcessing) {
         // Return, nothing to do
+        return;
+    }
+
+    if (m_queue.isEmpty()) {
+        // Queue completed, notify and return
+        emit queueCompleted();
         return;
     }
 
@@ -154,8 +160,8 @@ QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList &handles)
     entry.handles = handles;
     m_queue.enqueue(entry);
 
-    // Check if we can process a request
-    processNextRequest();
+    // Enqueue a process request in the event loop
+    QTimer::singleShot(0, this, SLOT(processNextRequest()));
 
     // Return the UUID
     return entry.uuid;

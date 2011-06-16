@@ -64,17 +64,17 @@ public:
 
 Q_SIGNALS:
     void contactsRetrieved(QUuid uuid, QList<Tp::ContactPtr> contacts);
+    void queueCompleted();
 
 private Q_SLOTS:
     void onPendingContactsFinished(Tp::PendingOperation *operation);
+    void processNextRequest();
 
 private:
     struct Entry {
         QUuid uuid;
         UIntList handles;
     };
-
-    void processNextRequest();
 
     bool m_isProcessing;
     ContactManagerPtr m_manager;

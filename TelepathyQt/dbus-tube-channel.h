@@ -68,6 +68,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onRequestPropertyDBusNamesFinished(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onDBusNamesChanged(const Tp::DBusTubeParticipants &added, const Tp::UIntList &removed);
     TP_QT_NO_EXPORT void onContactsRetrieved(const QUuid &uuid, const QList<Tp::ContactPtr> &contacts);
+    TP_QT_NO_EXPORT void onQueueCompleted();
 
 private:
     struct Private;
