@@ -124,13 +124,14 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Pri
     if (parent->targetHandleType() == static_cast<uint>(Tp::HandleTypeRoom)) {
         parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)),
                         parent, SLOT(onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)));
+
+        // Request the current DBusNames property
+        connect(dbusTubeInterface->requestPropertyDBusNames(), SIGNAL(finished(Tp::PendingOperation*)),
+                parent, SLOT(onRequestPropertyDBusNamesFinished(Tp::PendingOperation*)));
     } else {
         debug() << "FeatureBusNameMonitoring does not make sense in a P2P context";
+        self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, false);
     }
-
-    // Request the current DBusNames property
-    connect(dbusTubeInterface->requestPropertyDBusNames(), SIGNAL(finished(Tp::PendingOperation*)),
-            parent, SLOT(onRequestPropertyDBusNamesFinished(Tp::PendingOperation*)));
 }
 
 void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self)
