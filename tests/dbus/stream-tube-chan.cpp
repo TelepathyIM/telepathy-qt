@@ -36,13 +36,13 @@ TestContext contexts[] = {
   { FALSE, TP_SOCKET_ADDRESS_TYPE_IPV4, TP_SOCKET_ACCESS_CONTROL_LOCALHOST },
   //{ FALSE, TP_SOCKET_ADDRESS_TYPE_IPV6, TP_SOCKET_ACCESS_CONTROL_LOCALHOST },
   { FALSE, TP_SOCKET_ADDRESS_TYPE_UNIX, TP_SOCKET_ACCESS_CONTROL_CREDENTIALS },
-  //{ FALSE, TP_SOCKET_ADDRESS_TYPE_IPV4, TP_SOCKET_ACCESS_CONTROL_PORT },
+  { FALSE, TP_SOCKET_ADDRESS_TYPE_IPV4, TP_SOCKET_ACCESS_CONTROL_PORT },
 
   { TRUE, TP_SOCKET_ADDRESS_TYPE_UNIX, TP_SOCKET_ACCESS_CONTROL_LOCALHOST },
   { TRUE, TP_SOCKET_ADDRESS_TYPE_IPV4, TP_SOCKET_ACCESS_CONTROL_LOCALHOST },
   //{ TRUE, TP_SOCKET_ADDRESS_TYPE_IPV6, TP_SOCKET_ACCESS_CONTROL_LOCALHOST },
   { TRUE, TP_SOCKET_ADDRESS_TYPE_UNIX, TP_SOCKET_ACCESS_CONTROL_CREDENTIALS },
-  //{ TRUE, TP_SOCKET_ADDRESS_TYPE_IPV4, TP_SOCKET_ACCESS_CONTROL_PORT },
+  { TRUE, TP_SOCKET_ADDRESS_TYPE_IPV4, TP_SOCKET_ACCESS_CONTROL_PORT },
 
   { FALSE, (TpSocketAddressType) NUM_TP_SOCKET_ADDRESS_TYPES, (TpSocketAccessControl) NUM_TP_SOCKET_ACCESS_CONTROLS }
 };
@@ -66,6 +66,56 @@ GHashTable *createSupportedSocketTypesHash(TpSocketAddressType addressType,
     g_hash_table_insert(ret, GUINT_TO_POINTER(addressType), tab);
 
     return ret;
+}
+
+GSocket *createTcpClientGSocket(TpSocketAddressType socketType)
+{
+    Q_ASSERT(socketType != TP_SOCKET_ADDRESS_TYPE_UNIX);
+
+    GSocketFamily family = (GSocketFamily) 0;
+    switch (socketType) {
+        case TP_SOCKET_ADDRESS_TYPE_UNIX:
+            family = G_SOCKET_FAMILY_UNIX;
+            break;
+
+        case TP_SOCKET_ADDRESS_TYPE_IPV4:
+            family = G_SOCKET_FAMILY_IPV4;
+            break;
+
+        case TP_SOCKET_ADDRESS_TYPE_IPV6:
+            family = G_SOCKET_FAMILY_IPV6;
+            break;
+
+        default:
+            Q_ASSERT(false);
+    }
+
+    /* Create socket to connect to the CM */
+    GError *error = NULL;
+    GSocket *clientSocket = g_socket_new(family, G_SOCKET_TYPE_STREAM,
+            G_SOCKET_PROTOCOL_DEFAULT, &error);
+    Q_ASSERT(clientSocket != NULL);
+
+    if (socketType == TP_SOCKET_ADDRESS_TYPE_IPV4 ||
+        socketType == TP_SOCKET_ADDRESS_TYPE_IPV6) {
+        /* Bind local address */
+        GSocketAddress *localAddress;
+        GInetAddress *tmp;
+        gboolean success;
+
+        tmp = g_inet_address_new_loopback(family);
+        localAddress = g_inet_socket_address_new(tmp, 0);
+
+        success = g_socket_bind(clientSocket, localAddress,
+                TRUE, &error);
+
+        g_object_unref(tmp);
+        g_object_unref(localAddress);
+
+        Q_ASSERT(success);
+    }
+
+    return clientSocket;
 }
 
 }
@@ -315,6 +365,7 @@ void TestStreamTubeChan::testAcceptSuccess()
         QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
         QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
 
+        mGotConnection = false;
         QVERIFY(connect(mChan.data(),
                     SIGNAL(newConnection(uint)),
                     SLOT(onNewConnection(uint))));
@@ -322,45 +373,85 @@ void TestStreamTubeChan::testAcceptSuccess()
         bool requireCredentials = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) ?
             true : false);
 
+        GSocket *gSocket = 0;
+        QHostAddress addr;
+        quint16 port = 0;
         IncomingStreamTubeChannelPtr chan = IncomingStreamTubeChannelPtr::qObjectCast(mChan);
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
             QVERIFY(connect(chan->acceptTubeAsUnixSocket(requireCredentials),
                         SIGNAL(finished(Tp::PendingOperation *)),
                         SLOT(expectPendingTubeConnectionFinished(Tp::PendingOperation *))));
         } else {
-            // FIXME: Pass the addr+port when calling acceptTubeAsTcpSocket for Port access control
-            //if (contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_PORT) {
-            //
-            //} else {
-            //
-            //}
-            QVERIFY(connect(chan->acceptTubeAsTcpSocket(),
+            if (contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_PORT) {
+                gSocket = createTcpClientGSocket(contexts[i].addressType);
+
+                // There is no way to bind a QTcpSocket and using
+                // QAbstractSocket::setSocketDescriptor does not work either, so using glib sockets
+                // for this test. See http://bugreports.qt.nokia.com/browse/QTBUG-121
+                GSocketAddress *localAddr;
+
+                localAddr = g_socket_get_local_address(gSocket, NULL);
+                QVERIFY(localAddr != NULL);
+                addr = QHostAddress(QLatin1String(g_inet_address_to_string(
+                        g_inet_socket_address_get_address(G_INET_SOCKET_ADDRESS(localAddr)))));
+                port = g_inet_socket_address_get_port(G_INET_SOCKET_ADDRESS(localAddr));
+                g_object_unref(localAddr);
+            } else {
+                addr = QHostAddress::Any;
+                port = 0;
+            }
+
+            QVERIFY(connect(chan->acceptTubeAsTcpSocket(addr, port),
                         SIGNAL(finished(Tp::PendingOperation *)),
                         SLOT(expectPendingTubeConnectionFinished(Tp::PendingOperation *))));
         }
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
         QCOMPARE(mRequireCredentials, requireCredentials);
-        qDebug() << "Connecting to host";
-        QLocalSocket *localSocket = 0;
-        QTcpSocket *tcpSocket = 0;
+
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
+            qDebug() << "Connecting to host" << mChan->localAddress();
+
             QLocalSocket *socket = new QLocalSocket(this);
             socket->connectToServer(mChan->localAddress());
+
             if (requireCredentials) {
                 qDebug() << "Sending credential byte" << mCredentialByte;
                 socket->write(reinterpret_cast<const char*>(&mCredentialByte), 1);
             }
-        } else {
-            QTcpSocket *socket = new QTcpSocket(this);
-            socket->connectToHost(mChan->ipAddress().first, mChan->ipAddress().second);
-        }
-        QCOMPARE(mLoop->exec(), 0);
-        qDebug() << "Connected to host";
-        QCOMPARE(mGotConnection, true);
 
-        delete localSocket;
-        delete tcpSocket;
+            QCOMPARE(mLoop->exec(), 0);
+            QCOMPARE(mGotConnection, true);
+            qDebug() << "Connected to host";
+
+            delete socket;
+        } else {
+            qDebug().nospace() << "Connecting to host " << mChan->ipAddress().first << ":" <<
+                mChan->ipAddress().second;
+
+            QTcpSocket *socket = 0;
+
+            if (contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_PORT) {
+                GSocketAddress *remoteAddr = (GSocketAddress*) g_inet_socket_address_new(
+                        g_inet_address_new_from_string(
+                            mChan->ipAddress().first.toString().toLatin1().constData()),
+                        mChan->ipAddress().second);
+                g_socket_connect(gSocket, remoteAddr, NULL, NULL);
+            } else {
+                socket = new QTcpSocket();
+                socket->connectToHost(mChan->ipAddress().first, mChan->ipAddress().second);
+            }
+
+            QCOMPARE(mLoop->exec(), 0);
+            QCOMPARE(mGotConnection, true);
+            qDebug() << "Connected to host";
+
+            if (gSocket) {
+                tp_clear_object(&gSocket);
+            }
+
+            delete socket;
+        }
     }
 }
 
