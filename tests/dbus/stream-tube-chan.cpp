@@ -128,7 +128,7 @@ public:
     TestStreamTubeChan(QObject *parent = 0)
         : Test(parent),
           mConn(0), mChanService(0), mGotConnection(false),
-          mRequireCredentials(false), mCredentialByte(0)
+          mRequiresCredentials(false), mCredentialByte(0)
     { }
 
 protected Q_SLOTS:
@@ -154,7 +154,7 @@ private:
     TpTestsStreamTubeChannel *mChanService;
     StreamTubeChannelPtr mChan;
     bool mGotConnection;
-    bool mRequireCredentials;
+    bool mRequiresCredentials;
     uchar mCredentialByte;
 };
 
@@ -171,7 +171,7 @@ void TestStreamTubeChan::expectPendingTubeConnectionFinished(PendingOperation *o
     TEST_VERIFY_OP(op);
 
     PendingStreamTubeConnection *pstc = qobject_cast<PendingStreamTubeConnection*>(op);
-    mRequireCredentials = pstc->requireCredentials();
+    mRequiresCredentials = pstc->requiresCredentials();
     mCredentialByte = pstc->credentialByte();
     mLoop->exit(0);
 }
@@ -257,7 +257,7 @@ void TestStreamTubeChan::init()
     initImpl();
 
     mGotConnection = false;
-    mRequireCredentials = false;
+    mRequiresCredentials = false;
     mCredentialByte = 0;
 }
 
@@ -370,7 +370,7 @@ void TestStreamTubeChan::testAcceptSuccess()
                     SIGNAL(newConnection(uint)),
                     SLOT(onNewConnection(uint))));
 
-        bool requireCredentials = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) ?
+        bool requiresCredentials = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) ?
             true : false);
 
         GSocket *gSocket = 0;
@@ -378,7 +378,7 @@ void TestStreamTubeChan::testAcceptSuccess()
         quint16 port = 0;
         IncomingStreamTubeChannelPtr chan = IncomingStreamTubeChannelPtr::qObjectCast(mChan);
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
-            QVERIFY(connect(chan->acceptTubeAsUnixSocket(requireCredentials),
+            QVERIFY(connect(chan->acceptTubeAsUnixSocket(requiresCredentials),
                         SIGNAL(finished(Tp::PendingOperation *)),
                         SLOT(expectPendingTubeConnectionFinished(Tp::PendingOperation *))));
         } else {
@@ -407,7 +407,7 @@ void TestStreamTubeChan::testAcceptSuccess()
         }
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
-        QCOMPARE(mRequireCredentials, requireCredentials);
+        QCOMPARE(mRequiresCredentials, requiresCredentials);
 
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
             qDebug() << "Connecting to host" << mChan->localAddress();
@@ -415,7 +415,7 @@ void TestStreamTubeChan::testAcceptSuccess()
             QLocalSocket *socket = new QLocalSocket(this);
             socket->connectToServer(mChan->localAddress());
 
-            if (requireCredentials) {
+            if (requiresCredentials) {
                 qDebug() << "Sending credential byte" << mCredentialByte;
                 socket->write(reinterpret_cast<const char*>(&mCredentialByte), 1);
             }

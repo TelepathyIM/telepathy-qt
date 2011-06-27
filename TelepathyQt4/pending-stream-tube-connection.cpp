@@ -46,13 +46,13 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
     QHostAddress hostAddress;
     quint16 port;
     QString socketPath;
-    bool requireCredentials;
+    bool requiresCredentials;
     uchar credentialByte;
 };
 
 PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection *parent)
     : parent(parent),
-      requireCredentials(false),
+      requiresCredentials(false),
       credentialByte(0)
 {
 
@@ -66,7 +66,7 @@ PendingStreamTubeConnection::Private::~Private()
 PendingStreamTubeConnection::PendingStreamTubeConnection(
         PendingVariant *acceptOperation,
         SocketAddressType type,
-        bool requireCredentials,
+        bool requiresCredentials,
         uchar credentialByte,
         const IncomingStreamTubeChannelPtr &object)
     : PendingOperation(object),
@@ -74,7 +74,7 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
 {
     mPriv->tube = object;
     mPriv->type = type;
-    mPriv->requireCredentials = requireCredentials;
+    mPriv->requiresCredentials = requiresCredentials;
     mPriv->credentialByte = credentialByte;
     // Connect the pending void
     connect(acceptOperation, SIGNAL(finished(Tp::PendingOperation*)),
@@ -186,17 +186,17 @@ QPair<QHostAddress, quint16> PendingStreamTubeConnection::ipAddress() const
  * \return \c true if sending credentials is required, \c false otherwise.
  * \sa credentialByte()
  */
-bool PendingStreamTubeConnection::requireCredentials() const
+bool PendingStreamTubeConnection::requiresCredentials() const
 {
-    return mPriv->requireCredentials;
+    return mPriv->requiresCredentials;
 }
 
 /**
- * Return the credential byte to send once connecting to the socket if requireCredentials() is \c
+ * Return the credential byte to send once connecting to the socket if requiresCredentials() is \c
  * true.
  *
  * \return The credential byte.
- * \sa requireCredentials()
+ * \sa requiresCredentials()
  */
 uchar PendingStreamTubeConnection::credentialByte() const
 {
