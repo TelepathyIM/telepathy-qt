@@ -53,7 +53,7 @@ public:
     QPair<QHostAddress, quint16> ipAddress() const;
     QString localAddress() const;
 
-    bool requireCredentials() const;
+    bool requiresCredentials() const;
     uchar credentialByte() const;
 
 private Q_SLOTS:
@@ -62,7 +62,7 @@ private Q_SLOTS:
 
 private:
     TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,
-            bool requireCredentials, uchar credentialByte,
+            bool requiresCredentials, uchar credentialByte,
             const IncomingStreamTubeChannelPtr &object);
     TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection(const QString &errorName, const QString &errorMessage,
             const IncomingStreamTubeChannelPtr &object);
