@@ -426,18 +426,28 @@ service_incoming_cb (GSocketService *service,
     }
   else if (self->priv->access_control == TP_SOCKET_ACCESS_CONTROL_PORT)
     {
-      GSocketAddress *addr;
-      guint16 port;
+      GSocketAddress *remote_addr;
+      gchar *host, *remote_host;
+      guint16 port, remote_port;
 
-      addr = g_socket_connection_get_remote_address (connection, &error);
+      dbus_g_type_struct_get (self->priv->access_control_param,
+              0, &host,
+              1, &port,
+              G_MAXUINT);
+
+      remote_addr = g_socket_connection_get_remote_address (connection, &error);
       g_assert_no_error (error);
 
-      port = g_inet_socket_address_get_port (G_INET_SOCKET_ADDRESS (addr));
+      remote_host = g_inet_address_to_string (
+              g_inet_socket_address_get_address (G_INET_SOCKET_ADDRESS (remote_addr)));
+      remote_port = g_inet_socket_address_get_port (G_INET_SOCKET_ADDRESS (remote_addr));
 
-      g_assert_cmpuint (port, ==,
-          g_value_get_uint (self->priv->access_control_param));
+      g_assert_cmpuint (remote_port, ==, port);
+      g_assert_cmpstr (remote_host, ==, host);
 
-      g_object_unref (addr);
+      g_free (host);
+      g_free (remote_host);
+      g_object_unref (remote_addr);
     }
 
   tp_svc_channel_type_stream_tube_emit_new_local_connection (self,
