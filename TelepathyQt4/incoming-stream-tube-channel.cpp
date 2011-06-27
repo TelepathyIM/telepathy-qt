@@ -43,12 +43,13 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
 
     // Public object
     IncomingStreamTubeChannel *parent;
-    bool initRandom;
+    static bool initRandom;
 };
 
+bool IncomingStreamTubeChannel::Private::initRandom = true;
+
 IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
-    : parent(parent),
-      initRandom(true)
+    : parent(parent)
 {
 }
 
