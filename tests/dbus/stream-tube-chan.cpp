@@ -344,8 +344,8 @@ void TestStreamTubeChan::testAcceptTwice()
     /* try to re-accept the tube */
     QVERIFY(connect(chan->acceptTubeAsUnixSocket(),
                 SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 1);
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
 }
 
