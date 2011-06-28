@@ -62,6 +62,10 @@ void tp_tests_stream_tube_channel_peer_connected (
     GIOStream *stream,
     TpHandle handle);
 
+void tp_tests_stream_tube_channel_peer_connected_no_stream (TpTestsStreamTubeChannel *self,
+    const GValue *connection_param,
+    TpHandle handle);
+
 void tp_tests_stream_tube_channel_last_connection_disconnected (
     TpTestsStreamTubeChannel *self,
     const gchar *error);
