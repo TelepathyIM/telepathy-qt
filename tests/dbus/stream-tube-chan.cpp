@@ -10,13 +10,18 @@
 #include <TelepathyQt4/OutgoingStreamTubeChannel>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStreamTubeConnection>
+#include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/StreamTubeChannel>
 
 #include <telepathy-glib/telepathy-glib.h>
 
 #include <QHostAddress>
+#include <QLocalServer>
 #include <QLocalSocket>
+#include <QTcpServer>
 #include <QTcpSocket>
+
+#include <stdio.h>
 
 using namespace Tp;
 
@@ -127,12 +132,15 @@ class TestStreamTubeChan : public Test
 public:
     TestStreamTubeChan(QObject *parent = 0)
         : Test(parent),
-          mConn(0), mChanService(0), mGotConnection(false),
-          mRequiresCredentials(false), mCredentialByte(0)
+          mConn(0), mChanService(0), mConnectionId(-1),
+          mGotConnection(false), mGotSocketConnection(false),
+          mOfferFinished(false), mRequiresCredentials(false), mCredentialByte(0)
     { }
 
 protected Q_SLOTS:
     void onNewConnection(uint connectionId);
+    void onNewSocketConnection();
+    void onOfferFinished(Tp::PendingOperation *op);
     void expectPendingTubeConnectionFinished(Tp::PendingOperation *op);
 
 private Q_SLOTS:
@@ -142,6 +150,7 @@ private Q_SLOTS:
     void testCreation();
     void testAcceptTwice();
     void testAcceptSuccess();
+    void testOfferSuccess();
 
     void cleanup();
     void cleanupTestCase();
@@ -153,16 +162,34 @@ private:
     TestConnHelper *mConn;
     TpTestsStreamTubeChannel *mChanService;
     StreamTubeChannelPtr mChan;
+    uint mConnectionId;
     bool mGotConnection;
+    bool mGotSocketConnection;
+    bool mOfferFinished;
     bool mRequiresCredentials;
     uchar mCredentialByte;
 };
 
 void TestStreamTubeChan::onNewConnection(uint connectionId)
 {
-    Q_UNUSED(connectionId);
     qDebug() << "Got connection with id:" << connectionId;
+    mConnectionId = connectionId;
     mGotConnection = true;
+    mLoop->exit(0);
+}
+
+void TestStreamTubeChan::onNewSocketConnection()
+{
+    qDebug() << "Got new socket connection";
+    mGotSocketConnection = true;
+    mLoop->exit(0);
+}
+
+void TestStreamTubeChan::onOfferFinished(Tp::PendingOperation *op)
+{
+    TEST_VERIFY_OP(op);
+
+    mOfferFinished = true;
     mLoop->exit(0);
 }
 
@@ -256,7 +283,10 @@ void TestStreamTubeChan::init()
 {
     initImpl();
 
+    mConnectionId = -1;
     mGotConnection = false;
+    mGotSocketConnection = false;
+    mOfferFinished = false;
     mRequiresCredentials = false;
     mCredentialByte = 0;
 }
@@ -365,6 +395,7 @@ void TestStreamTubeChan::testAcceptSuccess()
         QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
         QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
 
+        mConnectionId = -1;
         mGotConnection = false;
         QVERIFY(connect(mChan.data(),
                     SIGNAL(newConnection(uint)),
@@ -452,6 +483,167 @@ void TestStreamTubeChan::testAcceptSuccess()
 
             delete socket;
         }
+    }
+}
+
+void TestStreamTubeChan::testOfferSuccess()
+{
+    /* incoming tube */
+    for (int i = 0; contexts[i].addressType != NUM_TP_SOCKET_ADDRESS_TYPES; i++) {
+        qDebug() << "Testing context:" << i;
+        createTubeChannel(true, contexts[i].addressType,
+                contexts[i].accessControl, contexts[i].withContact);
+        QVERIFY(connect(mChan->becomeReady(StreamTubeChannel::FeatureStreamTube |
+                            StreamTubeChannel::FeatureConnectionMonitoring),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+        QCOMPARE(mLoop->exec(), 0);
+        QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureStreamTube), true);
+        QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
+        QCOMPARE(mChan->tubeState(), TubeChannelStateNotOffered);
+        QCOMPARE(mChan->parameters().isEmpty(), false);
+        QCOMPARE(mChan->parameters().size(), 1);
+        QCOMPARE(mChan->parameters().contains(QLatin1String("badger")), true);
+        QCOMPARE(mChan->parameters().value(QLatin1String("badger")), QVariant(42));
+
+        mConnectionId = -1;
+        mGotConnection = false;
+        QVERIFY(connect(mChan.data(),
+                    SIGNAL(newConnection(uint)),
+                    SLOT(onNewConnection(uint))));
+
+        bool requiresCredentials = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) ?
+            true : false);
+
+        mOfferFinished = false;
+        mGotSocketConnection = false;
+        QLocalServer *localServer = 0;
+        QTcpServer *tcpServer = 0;
+        OutgoingStreamTubeChannelPtr chan = OutgoingStreamTubeChannelPtr::qObjectCast(mChan);
+        if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
+            localServer = new QLocalServer(this);
+            localServer->listen(QLatin1String(tmpnam(NULL)));
+            connect(localServer, SIGNAL(newConnection()), SLOT(onNewSocketConnection()));
+
+            QVERIFY(connect(chan->offerUnixSocket(localServer, mChan->parameters(), requiresCredentials),
+                        SIGNAL(finished(Tp::PendingOperation *)),
+                        SLOT(onOfferFinished(Tp::PendingOperation *))));
+        } else {
+            tcpServer = new QTcpServer(this);
+            tcpServer->listen();
+            connect(tcpServer, SIGNAL(newConnection()), SLOT(onNewSocketConnection()));
+
+            QVERIFY(connect(chan->offerTcpSocket(tcpServer, mChan->parameters()),
+                        SIGNAL(finished(Tp::PendingOperation *)),
+                        SLOT(onOfferFinished(Tp::PendingOperation *))));
+        }
+
+        while (mChan->tubeState() != TubeChannelStateRemotePending) {
+            mLoop->processEvents();
+        }
+
+        QCOMPARE(mGotSocketConnection, false);
+
+        // A client now connects to the tube
+        QLocalSocket *localSocket = 0;
+        QTcpSocket *tcpSocket = 0;
+        if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
+            qDebug() << "Connecting to host" << localServer->fullServerName();
+            localSocket = new QLocalSocket(this);
+            localSocket->connectToServer(localServer->fullServerName());
+        } else {
+            qDebug().nospace() << "Connecting to host" << tcpServer->serverAddress() <<
+                ":" << tcpServer->serverPort();
+            tcpSocket = new QTcpSocket(this);
+            tcpSocket->connectToHost(tcpServer->serverAddress(), tcpServer->serverPort());
+        }
+
+        QCOMPARE(mGotSocketConnection, false);
+        QCOMPARE(mLoop->exec(), 0);
+        QCOMPARE(mGotSocketConnection, true);
+
+        /* simulate CM when peer connects */
+        GValue *connParam = 0;
+        mCredentialByte = 0;
+        switch (contexts[i].accessControl) {
+            case TP_SOCKET_ACCESS_CONTROL_LOCALHOST:
+                connParam = tp_g_value_slice_new_static_string("");
+                break;
+
+            case TP_SOCKET_ACCESS_CONTROL_CREDENTIALS:
+                {
+                    mCredentialByte = g_random_int_range(0, G_MAXUINT8);
+
+                    localSocket->write(reinterpret_cast<const char*>(&mCredentialByte), 1);
+                    connParam = tp_g_value_slice_new_byte(mCredentialByte);
+                }
+                break;
+
+            case TP_SOCKET_ACCESS_CONTROL_PORT:
+                {
+                    connParam = tp_g_value_slice_new_take_boxed(
+                            TP_STRUCT_TYPE_SOCKET_ADDRESS_IPV4,
+                            dbus_g_type_specialized_construct(TP_STRUCT_TYPE_SOCKET_ADDRESS_IPV4));
+                    dbus_g_type_struct_set(connParam,
+                            0, tcpSocket->localAddress().toString().toLatin1().constData(),
+                            1, tcpSocket->localPort(),
+                            G_MAXUINT);
+                }
+                break;
+
+            default:
+                Q_ASSERT(false);
+        }
+
+        TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
+            TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
+        TpHandle bobHandle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
+        tp_tests_stream_tube_channel_peer_connected_no_stream(mChanService,
+                connParam, bobHandle);
+
+        tp_g_value_slice_free(connParam);
+
+        QCOMPARE(mChan->tubeState(), TubeChannelStateRemotePending);
+
+        while (!mOfferFinished) {
+            QCOMPARE(mLoop->exec(), 0);
+        }
+
+        QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
+
+        if (!mGotConnection) {
+            QCOMPARE(mLoop->exec(), 0);
+        }
+
+        QCOMPARE(mGotConnection, true);
+
+        qDebug() << "Connected to host";
+
+        QCOMPARE(chan->contactsForConnections().isEmpty(), false);
+        QCOMPARE(chan->contactsForConnections().contains(mConnectionId), true);
+        QCOMPARE(chan->contactsForConnections().value(mConnectionId)->handle()[0], bobHandle);
+        QCOMPARE(chan->contactsForConnections().value(mConnectionId)->id(), QLatin1String("bob"));
+
+        if (contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_PORT) {
+            // qDebug() << "+++ conn for source addresses" << chan->connectionsForSourceAddresses();
+            QCOMPARE(chan->connectionsForSourceAddresses().isEmpty(), false);
+            QPair<QHostAddress, quint16> srcAddr(tcpSocket->localAddress(), tcpSocket->localPort());
+            QCOMPARE(chan->connectionsForSourceAddresses().contains(srcAddr), true);
+            QCOMPARE(chan->connectionsForSourceAddresses().value(srcAddr), mConnectionId);
+        }
+        // FIXME - uncomment code below once connectionsForCredentials is implemented
+        /*
+        else if (contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) {
+            QCOMPARE(chan->connectionsForCredentials().isEmpty(), false);
+            QCOMPARE(chan->connectionsForCredentials().contains(mCredentialByte), true);
+            QCOMPARE(chan->connectionsForCredentials().value(mCredentialByte), mConnectionId);
+        }
+        */
+
+        delete localServer;
+        delete localSocket;
+        delete tcpServer;
+        delete tcpSocket;
     }
 }
 
