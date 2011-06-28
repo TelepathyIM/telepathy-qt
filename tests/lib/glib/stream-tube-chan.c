@@ -678,6 +678,23 @@ tp_tests_stream_tube_channel_peer_connected (TpTestsStreamTubeChannel *self,
   tp_g_value_slice_free (connection_param);
 }
 
+/* Called to emulate a peer connecting to an offered tube */
+void
+tp_tests_stream_tube_channel_peer_connected_no_stream (TpTestsStreamTubeChannel *self,
+    const GValue *connection_param,
+    TpHandle handle)
+{
+  if (self->priv->state == TP_TUBE_CHANNEL_STATE_REMOTE_PENDING)
+    change_state (self, TP_TUBE_CHANNEL_STATE_OPEN);
+
+  g_assert (self->priv->state == TP_TUBE_CHANNEL_STATE_OPEN);
+
+  tp_svc_channel_type_stream_tube_emit_new_remote_connection (self, handle,
+      connection_param, self->priv->connection_id);
+
+  self->priv->connection_id++;
+}
+
 void
 tp_tests_stream_tube_channel_last_connection_disconnected (
     TpTestsStreamTubeChannel *self,
