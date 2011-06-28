@@ -428,7 +428,7 @@ service_incoming_cb (GSocketService *service,
     {
       GSocketAddress *remote_addr;
       gchar *host, *remote_host;
-      guint16 port, remote_port;
+      guint port, remote_port;
 
       dbus_g_type_struct_get (self->priv->access_control_param,
               0, &host,
