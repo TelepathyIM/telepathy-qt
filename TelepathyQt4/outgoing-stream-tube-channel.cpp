@@ -62,6 +62,7 @@ PendingOpenTube::PendingOpenTube(
 {
     mPriv->tube = object;
 
+    debug() << "Calling StreamTube.Offer";
     if (offerOperation->isFinished()) {
         onOfferFinished(offerOperation);
     } else {
@@ -79,36 +80,43 @@ PendingOpenTube::~PendingOpenTube()
 void PendingOpenTube::onOfferFinished(PendingOperation *op)
 {
     if (op->isError()) {
-        // Fail
+        warning().nospace() << "StreamTube.Offer failed with " <<
+            op->errorName() << ": " << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Offer tube finished successfully";
-    debug() << mPriv->tube->tubeState() << TubeChannelStateOpen;
+    debug() << "StreamTube.Offer returned successfully";
 
     // It might have been already opened - check
-    if (mPriv->tube->tubeState() == TubeChannelStateOpen) {
-        onTubeStateChanged(mPriv->tube->tubeState());
-    } else {
+    if (mPriv->tube->tubeState() != TubeChannelStateOpen) {
+        debug() << "Awaiting tube to be opened";
         // Wait until the tube gets opened on the other side
-        connect(mPriv->tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
-                this, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
+        connect(mPriv->tube.data(),
+                SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
+                SLOT(onTubeStateChanged(Tp::TubeChannelState)));
     }
+
+    onTubeStateChanged(mPriv->tube->tubeState());
 }
 
 void PendingOpenTube::onTubeStateChanged(TubeChannelState state)
 {
-    debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
+        debug() << "Tube is now opened";
         // Inject the parameters into the tube
         mPriv->tube->setParameters(mPriv->parameters);
         // The tube is ready: let's notify
         setFinished();
-    } else if (state != TubeChannelStateRemotePending) {
-        // Something happened
-        setFinishedWithError(QLatin1String("Connection refused"),
-                QLatin1String("The connection to this tube was refused"));
+    } else {
+        if (state != TubeChannelStateRemotePending) {
+            warning() << "Offering tube failed with" << TP_QT4_ERROR_CONNECTION_REFUSED;
+            // Something happened
+            setFinishedWithError(TP_QT4_ERROR_CONNECTION_REFUSED,
+                    QLatin1String("The connection to this tube was refused"));
+        } else {
+            debug() << "Awaiting remote to accept the tube";
+        }
     }
 }
 
