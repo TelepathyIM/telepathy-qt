@@ -306,8 +306,6 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
                         immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
-    setBaseTubeType(1);
-
     connect(this, SIGNAL(connectionClosed(uint,QString,QString)),
             this, SLOT(onConnectionClosed(uint,QString,QString)));
     connect(mPriv->queuedContactFactory,

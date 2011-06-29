@@ -36,12 +36,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
 {
-    enum BaseTubeType {
-        NoKnownType = 0,
-        OutgoingTubeType = 1,
-        IncomingTubeType = 2
-    };
-
     Private(StreamTubeChannel *parent);
     ~Private();
 
@@ -62,8 +56,6 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     SupportedSocketMap socketTypes;
     QString serviceName;
 
-    BaseTubeType baseType;
-
     QPair<QHostAddress, quint16> ipAddress;
     QString unixAddress;
     SocketAddressType addressType;
@@ -72,7 +64,6 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
 
 StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
     : parent(parent),
-      baseType(NoKnownType),
       addressType(SocketAddressTypeUnix),
       accessControl(SocketAccessControlLocalhost)
 {
@@ -123,23 +114,22 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
     Client::ChannelTypeStreamTubeInterface *streamTubeInterface =
             parent->interface<Client::ChannelTypeStreamTubeInterface>();
 
-    // It must be present
-    Q_ASSERT(streamTubeInterface);
+    parent->connect(streamTubeInterface,
+            SIGNAL(ConnectionClosed(uint,QString,QString)),
+            SLOT(onConnectionClosed(uint,QString,QString)));
 
-    parent->connect(streamTubeInterface, SIGNAL(ConnectionClosed(uint,QString,QString)),
-            parent, SLOT(onConnectionClosed(uint,QString,QString)));
-
-    // Depending on the base type given by the inheriter, let's connect to some additional signals
-    if (self->baseType == OutgoingTubeType) {
-        parent->connect(streamTubeInterface, SIGNAL(NewRemoteConnection(uint,QDBusVariant,uint)),
-                parent, SLOT(onNewRemoteConnection(uint,QDBusVariant,uint)));
-    } else if (self->baseType == IncomingTubeType) {
-        parent->connect(streamTubeInterface, SIGNAL(NewLocalConnection(uint)),
-                parent, SLOT(onNewLocalConnection(uint)));
+    if (parent->isRequested()) {
+        parent->connect(streamTubeInterface,
+                SIGNAL(NewRemoteConnection(uint,QDBusVariant,uint)),
+                SLOT(onNewRemoteConnection(uint,QDBusVariant,uint)));
+    } else {
+        parent->connect(streamTubeInterface,
+                SIGNAL(NewLocalConnection(uint)),
+                SLOT(onNewLocalConnection(uint)));
     }
 
-    self->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureConnectionMonitoring,
-                true);
+    self->readinessHelper->setIntrospectCompleted(
+            StreamTubeChannel::FeatureConnectionMonitoring, true);
 }
 
 void StreamTubeChannel::Private::introspectStreamTube(
@@ -644,11 +634,6 @@ SocketAddressType StreamTubeChannel::addressType() const
 SocketAccessControl StreamTubeChannel::accessControl() const
 {
     return mPriv->accessControl;
-}
-
-void StreamTubeChannel::setBaseTubeType(uint type)
-{
-    mPriv->baseType = (StreamTubeChannel::Private::BaseTubeType)type;
 }
 
 void StreamTubeChannel::setConnections(UIntList connections)
