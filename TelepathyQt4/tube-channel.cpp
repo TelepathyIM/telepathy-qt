@@ -210,9 +210,19 @@ void TubeChannel::setParameters(const QVariantMap &parameters)
 
 void TubeChannel::onTubeChannelStateChanged(uint newState)
 {
+    if (newState == mPriv->state) {
+        return;
+    }
+
+    uint oldState = mPriv->state;
+
     debug() << "Tube state changed to" << newState;
     mPriv->state = (Tp::TubeChannelState) newState;
-    emit tubeStateChanged((Tp::TubeChannelState) newState);
+
+    /* only emit tubeStateChanged if we already received the state from initial introspection */
+    if (oldState != (uint) -1) {
+        emit tubeStateChanged((Tp::TubeChannelState) newState);
+    }
 }
 
 void TubeChannel::gotTubeProperties(PendingOperation *op)
