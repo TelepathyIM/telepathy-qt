@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -60,7 +60,7 @@ protected:
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onTubeChannelStateChanged(uint newstate);
-    TELEPATHY_QT4_NO_EXPORT void gotTubeProperties(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotTubeProperties(Tp::PendingOperation *op);
 
 private:
     struct Private;

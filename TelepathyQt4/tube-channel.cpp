@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -25,6 +25,8 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/PendingVariantMap>
+
 namespace Tp
 {
 
@@ -33,36 +35,25 @@ struct TELEPATHY_QT4_NO_EXPORT TubeChannel::Private
     Private(TubeChannel *parent);
     ~Private();
 
-    void init();
+    static void introspectTube(TubeChannel::Private *self);
 
     void extractTubeProperties(const QVariantMap &props);
 
-    static void introspectTube(TubeChannel::Private *self);
+    // Public object
+    TubeChannel *parent;
 
     ReadinessHelper *readinessHelper;
 
-    TubeChannel *parent;
-
-    // Properties
+    // Introspection
     TubeChannelState state;
-    TubeType type;
     QVariantMap parameters;
 };
 
 TubeChannel::Private::Private(TubeChannel *parent)
-    : parent(parent)
+    : parent(parent),
+      readinessHelper(parent->readinessHelper()),
+      state((TubeChannelState) -1)
 {
-}
-
-TubeChannel::Private::~Private()
-{
-}
-
-void TubeChannel::Private::init()
-{
-    // Initialize readinessHelper + introspectables here
-    readinessHelper = parent->readinessHelper();
-
     ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableTube(
@@ -76,39 +67,32 @@ void TubeChannel::Private::init()
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void TubeChannel::Private::extractTubeProperties(const QVariantMap &props)
+TubeChannel::Private::~Private()
 {
-    state = (Tp::TubeChannelState)qdbus_cast<uint>(props[QLatin1String("State")]);
-    parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
 }
 
 void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
 {
     TubeChannel *parent = self->parent;
 
-    debug() << "Introspect tube state";
-
-    Client::ChannelInterfaceTubeInterface *tubeInterface = 
+    debug() << "Introspecting tube properties";
+    Client::ChannelInterfaceTubeInterface *tubeInterface =
             parent->interface<Client::ChannelInterfaceTubeInterface>();
 
-    // It must be present
-    Q_ASSERT(tubeInterface);
+    parent->connect(tubeInterface,
+            SIGNAL(TubeChannelStateChanged(uint)),
+            SLOT(onTubeChannelStateChanged(uint)));
 
-    parent->connect(tubeInterface, SIGNAL(TubeChannelStateChanged(uint)),
-            parent, SLOT(onTubeChannelStateChanged(uint)));
+    PendingVariantMap *pvm = tubeInterface->requestAllProperties();
+    parent->connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(gotTubeProperties(Tp::PendingOperation *)));
+}
 
-    Client::DBus::PropertiesInterface *properties =
-            parent->interface<Client::DBus::PropertiesInterface>();
-
-    QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(
-                    properties->GetAll(
-                            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE)),
-                    parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            parent,
-            SLOT(gotTubeProperties(QDBusPendingCallWatcher *)));
+void TubeChannel::Private::extractTubeProperties(const QVariantMap &props)
+{
+    state = (Tp::TubeChannelState) qdbus_cast<uint>(props[QLatin1String("State")]);
+    parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
 }
 
 /**
@@ -137,8 +121,7 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
  * TubeChannel methods.
  * See specific methods documentation for more details.
  */
-const Feature TubeChannel::FeatureTube =
-        Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
+const Feature TubeChannel::FeatureTube = Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
 
 /**
  * Create a new TubeChannel channel.
@@ -172,8 +155,6 @@ TubeChannel::TubeChannel(const ConnectionPtr &connection,
     : Channel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
-    // Initialize
-    mPriv->init();
 }
 
 /**
@@ -197,8 +178,7 @@ TubeChannel::~TubeChannel()
 QVariantMap TubeChannel::parameters() const
 {
     if (!isReady(FeatureTube)) {
-        warning() << "TubeChannel::parameters() used with "
-                "FeatureTube not ready";
+        warning() << "TubeChannel::parameters() used with FeatureTube not ready";
         return QVariantMap();
     }
 
@@ -216,8 +196,7 @@ QVariantMap TubeChannel::parameters() const
 TubeChannelState TubeChannel::tubeState() const
 {
     if (!isReady(FeatureTube)) {
-        warning() << "TubeChannel::tubeState() used with "
-                "FeatureTube not ready";
+        warning() << "TubeChannel::tubeState() used with FeatureTube not ready";
         return TubeChannelStateNotOffered;
     }
 
@@ -229,28 +208,27 @@ void TubeChannel::setParameters(const QVariantMap &parameters)
     mPriv->parameters = parameters;
 }
 
-void TubeChannel::onTubeChannelStateChanged(uint newstate)
+void TubeChannel::onTubeChannelStateChanged(uint newState)
 {
-    mPriv->state = (Tp::TubeChannelState)newstate;
-    emit tubeStateChanged((Tp::TubeChannelState)newstate);
-    debug() << "Tube state changed to" << newstate;
+    debug() << "Tube state changed to" << newState;
+    mPriv->state = (Tp::TubeChannelState) newState;
+    emit tubeStateChanged((Tp::TubeChannelState) newState);
 }
 
-void TubeChannel::gotTubeProperties(QDBusPendingCallWatcher *watcher)
+void TubeChannel::gotTubeProperties(PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
+    if (!op->isError()) {
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap *>(op);
 
-    if (!reply.isError()) {
-        QVariantMap props = reply.value();
-        mPriv->extractTubeProperties(props);
+        mPriv->extractTubeProperties(pvm->result());
+
         debug() << "Got reply to Properties::GetAll(TubeChannel)";
         mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, true);
-    }
-    else {
+    } else {
         warning().nospace() << "Properties::GetAll(TubeChannel) failed "
-                "with " << reply.error().name() << ": " << reply.error().message();
+            "with " << op->errorName() << ": " << op->errorMessage();
         mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, false,
-                reply.error());
+                op->errorName(), op->errorMessage());
     }
 }
 
