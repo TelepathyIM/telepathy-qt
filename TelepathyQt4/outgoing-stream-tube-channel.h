@@ -57,7 +57,8 @@ public:
 
     QHash<uint, Tp::ContactPtr> contactsForConnections() const;
 
-    QHash<QPair<QHostAddress,quint16>,uint> connectionsForSourceAddresses() const;
+    QHash<QPair<QHostAddress,quint16>, uint> connectionsForSourceAddresses() const;
+    QHash<uchar, uint> connectionsForCredentials() const;
 
 protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
