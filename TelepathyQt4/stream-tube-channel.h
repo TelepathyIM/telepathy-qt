@@ -64,6 +64,7 @@ public:
     UIntList connections() const;
 
     SocketAddressType addressType() const;
+    SocketAccessControl accessControl() const;
 
     QPair< QHostAddress, quint16 > ipAddress() const;
     QString localAddress() const;
@@ -80,6 +81,7 @@ protected:
 
     void setBaseTubeType(uint type);
     void setAddressType(SocketAddressType type);
+    void setAccessControl(SocketAccessControl accessControl);
     void setConnections(UIntList connections);
     void setIpAddress(const QPair<QHostAddress, quint16> &address);
     void setLocalAddress(const QString &address);

@@ -67,12 +67,14 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     QPair<QHostAddress, quint16> ipAddress;
     QString unixAddress;
     SocketAddressType addressType;
+    SocketAccessControl accessControl;
 };
 
 StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
     : parent(parent),
       baseType(NoKnownType),
-      addressType(SocketAddressTypeUnix)
+      addressType(SocketAddressTypeUnix),
+      accessControl(SocketAccessControlLocalhost)
 {
 }
 
@@ -631,6 +633,19 @@ SocketAddressType StreamTubeChannel::addressType() const
     return mPriv->addressType;
 }
 
+/**
+ * Return the access control used by this stream tube.
+ *
+ * Note that this function will only return a valid value after the tube has been opened.
+ *
+ * \return The access control used by this stream tube.
+ * \sa addressType(), TubeChannel::tubeState()
+ */
+SocketAccessControl StreamTubeChannel::accessControl() const
+{
+    return mPriv->accessControl;
+}
+
 void StreamTubeChannel::setBaseTubeType(uint type)
 {
     mPriv->baseType = (StreamTubeChannel::Private::BaseTubeType)type;
@@ -644,6 +659,11 @@ void StreamTubeChannel::setConnections(UIntList connections)
 void StreamTubeChannel::setAddressType(SocketAddressType type)
 {
     mPriv->addressType = type;
+}
+
+void StreamTubeChannel::setAccessControl(SocketAccessControl accessControl)
+{
+    mPriv->accessControl = accessControl;
 }
 
 void StreamTubeChannel::setIpAddress(const QPair<QHostAddress, quint16> &address)

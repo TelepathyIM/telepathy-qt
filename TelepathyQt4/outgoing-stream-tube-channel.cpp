@@ -402,6 +402,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         }
 
         setAddressType(SocketAddressTypeIPv4);
+        setAccessControl(accessControl);
         setIpAddress(qMakePair<QHostAddress, quint16>(address, port));
 
         SocketAddressIPv4 addr;
@@ -437,6 +438,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         }
 
         setAddressType(SocketAddressTypeIPv6);
+        setAccessControl(accessControl);
         setIpAddress(qMakePair<QHostAddress, quint16>(address, port));
 
         SocketAddressIPv6 addr;
@@ -575,6 +577,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
         }
 
         setAddressType(SocketAddressTypeAbstractUnix);
+        setAccessControl(accessControl);
         setLocalAddress(socketAddress);
 
         PendingVoid *pv = new PendingVoid(
@@ -605,6 +608,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
         }
 
         setAddressType(SocketAddressTypeUnix);
+        setAccessControl(accessControl);
         setLocalAddress(socketAddress);
 
         PendingVoid *pv = new PendingVoid(
