@@ -701,6 +701,53 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
 }
 
 /**
+ * Returns a map from a credential byte to the corresponding connections ids.
+ *
+ * This method is only useful if TubeChannel::addressType() is either #SocketAddressTypeUnix or
+ * #SocketAddressTypeAbstractUnix and TubeChannel::accessControl() is
+ * #SocketAccessControlCredentials.
+ *
+ * The connection ids retrieved here can be used to track an address
+ * which connected to your socket to a contact (by using contactsForConnections()).
+ *
+ * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
+ *
+ * Note that this function will only return valid data after the tube has been opened.
+ *
+ * \return an hash mapping a source address to its connection ID
+ * \sa contactsForConnections(), connectionsForSourceAddresses(),
+ *     TubeChannel::addressType(), TubeChannel::accessControl()
+ */
+QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
+{
+    if (addressType() != SocketAddressTypeUnix && addressType() != SocketAddressTypeAbstractUnix) {
+        warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
+                "just when offering an Unix socket";
+        return QHash<uchar, uint>();
+    }
+
+    if (accessControl() != SocketAccessControlCredentials) {
+        warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
+                "just when using SocketAccessControlCredentials";
+        return QHash<uchar, uint>();
+    }
+
+    if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
+        warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
+                "calling OutgoingStreamTubeChannel::connectionsForCredentials()";
+        return QHash<uchar, uint>();
+    }
+
+    if (tubeState() != TubeChannelStateOpen) {
+        warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
+                "just when the tube is opened";
+        return QHash<uchar, uint>();
+    }
+
+    return mPriv->connectionsForCredentials;
+}
+
+/**
  * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, this function
  * returns a map from a connection ID to the associated contact.
  *
@@ -780,6 +827,12 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
                 qdbus_cast<Tp::SocketAddressIPv6>(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
+    } else if (addressType() == SocketAddressTypeUnix ||
+               addressType() == SocketAddressTypeAbstractUnix) {
+        if (accessControl() == SocketAccessControlCredentials) {
+            uchar credentialByte = qdbus_cast<uchar>(connectionProperties.second.variant());
+            mPriv->connectionsForCredentials.insertMulti(credentialByte, connectionProperties.first);
+        }
     }
 
     if (address.first != QHostAddress::Null) {
@@ -799,14 +852,26 @@ void OutgoingStreamTubeChannel::onConnectionClosed(
     // Remove stuff from our hashes
     mPriv->contactsForConnections.remove(connectionId);
 
-    QHash<QPair<QHostAddress, quint16>, uint>::iterator i =
+    {
+        QHash<QPair<QHostAddress, quint16>, uint>::iterator i =
             mPriv->connectionsForSourceAddresses.begin();
+        while (i != mPriv->connectionsForSourceAddresses.end()) {
+            if (i.value() == connectionId) {
+                i = mPriv->connectionsForSourceAddresses.erase(i);
+            } else {
+                ++i;
+            }
+        }
+    }
 
-    while (i != mPriv->connectionsForSourceAddresses.end()) {
-        if (i.value() == connectionId) {
-            i = mPriv->connectionsForSourceAddresses.erase(i);
-        } else {
-            ++i;
+    {
+        QHash<uchar, uint>::iterator i = mPriv->connectionsForCredentials.begin();
+        while (i != mPriv->connectionsForCredentials.end()) {
+            if (i.value() == connectionId) {
+                i = mPriv->connectionsForCredentials.erase(i);
+            } else {
+                ++i;
+            }
         }
     }
 }

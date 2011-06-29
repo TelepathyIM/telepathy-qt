@@ -102,6 +102,7 @@ struct TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannel::Private
 
     QHash<uint, Tp::ContactPtr> contactsForConnections;
     QHash<QPair<QHostAddress, quint16>, uint> connectionsForSourceAddresses;
+    QHash<uchar, uint> connectionsForCredentials;
 
     QHash<QUuid, QPair<uint, QDBusVariant> > pendingNewConnections;
 
