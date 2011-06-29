@@ -310,6 +310,8 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
                 SocketAddressTypeIPv6);
     }
 
+    setAccessControl(accessControl);
+
     // Fail early if the combination is not supported
     if ((accessControl == SocketAccessControlLocalhost &&
             addressType() == SocketAddressTypeIPv4 &&
@@ -423,6 +425,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
             SocketAccessControlCredentials :
             SocketAccessControlLocalhost;
     setAddressType(SocketAddressTypeUnix);
+    setAccessControl(accessControl);
 
     // Fail early if the combination is not supported
     if ((accessControl == SocketAccessControlLocalhost &&
