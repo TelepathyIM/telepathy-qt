@@ -303,10 +303,7 @@ void TestStreamTubeChan::testCreation()
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureStreamTube), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), false);
     QCOMPARE(mChan->tubeState(), TubeChannelStateNotOffered);
-    QCOMPARE(mChan->parameters().isEmpty(), false);
-    QCOMPARE(mChan->parameters().size(), 1);
-    QCOMPARE(mChan->parameters().contains(QLatin1String("badger")), true);
-    QCOMPARE(mChan->parameters().value(QLatin1String("badger")), QVariant(42));
+    QCOMPARE(mChan->parameters().isEmpty(), true);
     QCOMPARE(mChan->service(), QLatin1String("test-service"));
     QCOMPARE(mChan->supportsIPv4SocketsOnLocalhost(), false);
     QCOMPARE(mChan->supportsIPv4SocketsWithSpecifiedAddress(), false);
@@ -501,10 +498,7 @@ void TestStreamTubeChan::testOfferSuccess()
         QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureStreamTube), true);
         QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
         QCOMPARE(mChan->tubeState(), TubeChannelStateNotOffered);
-        QCOMPARE(mChan->parameters().isEmpty(), false);
-        QCOMPARE(mChan->parameters().size(), 1);
-        QCOMPARE(mChan->parameters().contains(QLatin1String("badger")), true);
-        QCOMPARE(mChan->parameters().value(QLatin1String("badger")), QVariant(42));
+        QCOMPARE(mChan->parameters().isEmpty(), true);
 
         mConnectionId = -1;
         mGotConnection = false;
@@ -520,12 +514,14 @@ void TestStreamTubeChan::testOfferSuccess()
         QLocalServer *localServer = 0;
         QTcpServer *tcpServer = 0;
         OutgoingStreamTubeChannelPtr chan = OutgoingStreamTubeChannelPtr::qObjectCast(mChan);
+        QVariantMap offerParameters;
+        offerParameters.insert(QLatin1String("mushroom"), 44);
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
             localServer = new QLocalServer(this);
             localServer->listen(QLatin1String(tmpnam(NULL)));
             connect(localServer, SIGNAL(newConnection()), SLOT(onNewSocketConnection()));
 
-            QVERIFY(connect(chan->offerUnixSocket(localServer, mChan->parameters(), requiresCredentials),
+            QVERIFY(connect(chan->offerUnixSocket(localServer, offerParameters, requiresCredentials),
                         SIGNAL(finished(Tp::PendingOperation *)),
                         SLOT(onOfferFinished(Tp::PendingOperation *))));
         } else {
@@ -533,7 +529,7 @@ void TestStreamTubeChan::testOfferSuccess()
             tcpServer->listen();
             connect(tcpServer, SIGNAL(newConnection()), SLOT(onNewSocketConnection()));
 
-            QVERIFY(connect(chan->offerTcpSocket(tcpServer, mChan->parameters()),
+            QVERIFY(connect(chan->offerTcpSocket(tcpServer, offerParameters),
                         SIGNAL(finished(Tp::PendingOperation *)),
                         SLOT(onOfferFinished(Tp::PendingOperation *))));
         }
@@ -610,6 +606,10 @@ void TestStreamTubeChan::testOfferSuccess()
         }
 
         QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
+        QCOMPARE(mChan->parameters().isEmpty(), false);
+        QCOMPARE(mChan->parameters().size(), 1);
+        QCOMPARE(mChan->parameters().contains(QLatin1String("mushroom")), true);
+        QCOMPARE(mChan->parameters().value(QLatin1String("mushroom")), QVariant(44));
 
         if (!mGotConnection) {
             QCOMPARE(mLoop->exec(), 0);

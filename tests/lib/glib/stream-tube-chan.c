@@ -52,6 +52,8 @@ struct _TpTestsStreamTubeChannelPrivate {
     guint connection_id;
 
     TpSocketAccessControl access_control;
+
+    GHashTable *parameters;
 };
 
 static void
@@ -101,9 +103,7 @@ tp_tests_stream_tube_channel_get_property (GObject *object,
         break;
 
       case PROP_PARAMETERS:
-        g_value_take_boxed (value, tp_asv_new (
-              "badger", G_TYPE_UINT, 42,
-              NULL));
+        g_value_set_boxed (value, self->priv->parameters);
         break;
 
       case PROP_STATE:
@@ -128,6 +128,12 @@ tp_tests_stream_tube_channel_set_property (GObject *object,
     {
       case PROP_SUPPORTED_SOCKET_TYPES:
         self->priv->supported_socket_types = g_value_dup_boxed (value);
+        break;
+
+      case PROP_PARAMETERS:
+        if (self->priv->parameters != NULL)
+          g_hash_table_destroy (self->priv->parameters);
+        self->priv->parameters = g_value_dup_boxed (value);
         break;
 
       default:
@@ -172,9 +178,16 @@ constructor (GType type,
   TpTestsStreamTubeChannel *self = TP_TESTS_STREAM_TUBE_CHANNEL (object);
 
   if (tp_base_channel_is_requested (TP_BASE_CHANNEL (self)))
-    self->priv->state = TP_TUBE_CHANNEL_STATE_NOT_OFFERED;
+    {
+      self->priv->state = TP_TUBE_CHANNEL_STATE_NOT_OFFERED;
+      self->priv->parameters = tp_asv_new (NULL, NULL);
+    }
   else
-    self->priv->state = TP_TUBE_CHANNEL_STATE_LOCAL_PENDING;
+    {
+      self->priv->state = TP_TUBE_CHANNEL_STATE_LOCAL_PENDING;
+      self->priv->parameters = tp_asv_new ("badger", G_TYPE_UINT, 42,
+            NULL);
+    }
 
   if (self->priv->supported_socket_types == NULL)
     create_supported_socket_types (self);
@@ -289,7 +302,7 @@ tp_tests_stream_tube_channel_class_init (TpTestsStreamTubeChannelClass *klass)
       "parameters", "Parameters",
       "parameters of the tube",
       TP_HASH_TYPE_STRING_VARIANT_MAP,
-      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_PARAMETERS,
       param_spec);
 
@@ -390,6 +403,8 @@ stream_tube_offer (TpSvcChannelTypeStreamTube *iface,
   self->priv->address_type = address_type;
   self->priv->address = tp_g_value_slice_dup (address);
   self->priv->access_control = access_control;
+
+  g_object_set (self, "parameters", parameters, NULL);
 
   change_state (self, TP_TUBE_CHANNEL_STATE_REMOTE_PENDING);
 
