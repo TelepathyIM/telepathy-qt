@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -28,6 +28,7 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingVariantMap>
 
 #include <QHostAddress>
 
@@ -39,23 +40,21 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     Private(StreamTubeChannel *parent);
     ~Private();
 
-    void init();
-
     void extractStreamTubeProperties(const QVariantMap &props);
 
     static void introspectConnectionMonitoring(Private *self);
     static void introspectStreamTube(Private *self);
 
-    UIntList connections;
+    // Public object
+    StreamTubeChannel *parent;
 
     ReadinessHelper *readinessHelper;
 
-    StreamTubeChannel *parent;
-
-    // Properties
+    // Introspection
     SupportedSocketMap socketTypes;
     QString serviceName;
 
+    UIntList connections;
     QPair<QHostAddress, quint16> ipAddress;
     QString unixAddress;
     SocketAddressType addressType;
@@ -64,19 +63,10 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
 
 StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
     : parent(parent),
+      readinessHelper(parent->readinessHelper()),
       addressType(SocketAddressTypeUnix),
       accessControl(SocketAccessControlLocalhost)
 {
-}
-
-StreamTubeChannel::Private::~Private()
-{
-}
-
-void StreamTubeChannel::Private::init()
-{
-    readinessHelper = parent->readinessHelper();
-
     ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableStreamTube(
@@ -98,6 +88,10 @@ void StreamTubeChannel::Private::init()
             introspectableConnectionMonitoring;
 
     readinessHelper->addIntrospectables(introspectables);
+}
+
+StreamTubeChannel::Private::~Private()
+{
 }
 
 void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &props)
@@ -137,20 +131,14 @@ void StreamTubeChannel::Private::introspectStreamTube(
 {
     StreamTubeChannel *parent = self->parent;
 
-    debug() << "Introspect stream tube properties";
+    debug() << "Introspecting stream tube properties";
+    Client::ChannelTypeStreamTubeInterface *streamTubeInterface =
+            parent->interface<Client::ChannelTypeStreamTubeInterface>();
 
-    Client::DBus::PropertiesInterface *properties =
-            parent->interface<Client::DBus::PropertiesInterface>();
-
-    QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(
-                    properties->GetAll(
-                            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE)),
-                    parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            parent,
-            SLOT(gotStreamTubeProperties(QDBusPendingCallWatcher *)));
+    PendingVariantMap *pvm = streamTubeInterface->requestAllProperties();
+    parent->connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(gotStreamTubeProperties(Tp::PendingOperation *)));
 }
 
 /**
@@ -222,7 +210,6 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
     : TubeChannel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
-    mPriv->init();
 }
 
 /**
@@ -661,29 +648,27 @@ void StreamTubeChannel::setLocalAddress(const QString &address)
     mPriv->unixAddress = address;
 }
 
-void StreamTubeChannel::onConnectionClosed(
-        uint connectionId,
-        const QString &error,
-        const QString &message)
+void StreamTubeChannel::onConnectionClosed(uint connectionId,
+        const QString &error, const QString &message)
 {
     emit connectionClosed(connectionId, error, message);
 }
 
-void StreamTubeChannel::gotStreamTubeProperties(QDBusPendingCallWatcher *watcher)
+void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
+    if (!op->isError()) {
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap *>(op);
 
-    if (!reply.isError()) {
-        QVariantMap props = reply.value();
-        mPriv->extractStreamTubeProperties(props);
+        mPriv->extractStreamTubeProperties(pvm->result());
+
         debug() << "Got reply to Properties::GetAll(StreamTubeChannel)";
         mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, true);
     }
     else {
         warning().nospace() << "Properties::GetAll(StreamTubeChannel) failed "
-                "with " << reply.error().name() << ": " << reply.error().message();
+                "with " << op->errorName() << ": " << op->errorMessage();
         mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, false,
-                reply.error());
+                op->errorName(), op->errorMessage());
     }
 }
 
