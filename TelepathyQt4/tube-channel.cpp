@@ -100,19 +100,20 @@ void TubeChannel::Private::extractTubeProperties(const QVariantMap &props)
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/tube-channel.h <TelepathyQt4/TubeChannel>
  *
- * \brief This is the base class for all tube types.
+ * \brief The TubeChannel class is a base class for all tube types.
  *
  * A tube is a mechanism for arbitrary data transfer between two or more IM users,
  * used to allow applications on the users' systems to communicate without having
  * to establish network connections themselves.
  *
- * \note You should \b never create an abstract tube: you should use one of its
- * subclasses instead. At the moment, \c StreamTube and \c DBusTube are available.
+ * Note that TubeChannel should never be instantiated directly, instead one of its
+ * subclasses (e.g. IncomingStreamTube or OutgoingStreamTube) should be used.
  *
  * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
-// Features declaration and documentation
 /**
  * Feature representing the core that needs to become ready to make the
  * TubeChannel object usable.
@@ -128,8 +129,8 @@ const Feature TubeChannel::FeatureTube = Feature(QLatin1String(TubeChannel::stat
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \return A TubeChannelPtr object pointing to the newly created
  *         TubeChannel object.
  */
@@ -145,8 +146,10 @@ TubeChannelPtr TubeChannel::create(const ConnectionPtr &connection,
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \param coreFeature The core feature of the channel type. The corresponding introspectable should
+ *                    depend on Channel::FeatureCore.
  */
 TubeChannel::TubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -166,14 +169,15 @@ TubeChannel::~TubeChannel()
 }
 
 /**
- * Returns the parameters associated with this tube, if any.
+ * Return the parameters associated with this tube, if any.
+ *
+ * Note that for outgoing tubes, this function will only return a valid value after the tube has
+ * been offered successfully.
  *
  * This method requires TubeChannel::FeatureTube to be enabled.
  *
- * \return A dictionary of arbitrary parameters. Please refer to the spec for more details.
- *
- * \note For outgoing tubes, this function will return a valid value only after the tube has
- *       been offered successfully.
+ * \return A dictionary of arbitrary parameters.
+ *         Please refer to the \telepathy_spec for more details.
  */
 QVariantMap TubeChannel::parameters() const
 {
@@ -186,12 +190,13 @@ QVariantMap TubeChannel::parameters() const
 }
 
 /**
- * This methods returns the state of the tube in this channel. It can be used to find out
- * whether the tube is already opened.
+ * Return the state of this tube.
  *
- * \return The State of the tube in this channel.
+ * Change notification is via the tubeStateChanged() signal.
  *
- * \note This method requires TubeChannel::FeatureTube to be enabled.
+ * This method requires TubeChannel::FeatureTube to be enabled.
+ *
+ * \return The state of this tube.
  */
 TubeChannelState TubeChannel::tubeState() const
 {
@@ -242,12 +247,13 @@ void TubeChannel::gotTubeProperties(PendingOperation *op)
     }
 }
 
-// Signals documentation
 /**
  * \fn void TubeChannel::tubeStateChanged(Tp::TubeChannelState state)
  *
- * Emitted when the state of the tube has changed, if
- * FeatureTube has been enabled.
+ * This signal is emitted when the value of tubeState() changes.
+ *
+ * \sa state The new state of this tube.
+ * \sa tubeState()
  */
 
 } // Tp
