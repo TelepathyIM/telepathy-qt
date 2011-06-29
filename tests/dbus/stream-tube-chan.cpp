@@ -630,15 +630,12 @@ void TestStreamTubeChan::testOfferSuccess()
             QPair<QHostAddress, quint16> srcAddr(tcpSocket->localAddress(), tcpSocket->localPort());
             QCOMPARE(chan->connectionsForSourceAddresses().contains(srcAddr), true);
             QCOMPARE(chan->connectionsForSourceAddresses().value(srcAddr), mConnectionId);
-        }
-        // FIXME - uncomment code below once connectionsForCredentials is implemented
-        /*
-        else if (contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) {
+        } else if (contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) {
+            // qDebug() << "+++ conn for credentials" << chan->connectionsForCredentials();
             QCOMPARE(chan->connectionsForCredentials().isEmpty(), false);
             QCOMPARE(chan->connectionsForCredentials().contains(mCredentialByte), true);
             QCOMPARE(chan->connectionsForCredentials().value(mCredentialByte), mConnectionId);
         }
-        */
 
         delete localServer;
         delete localSocket;
