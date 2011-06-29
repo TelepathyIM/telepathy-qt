@@ -40,10 +40,10 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     Private(StreamTubeChannel *parent);
     ~Private();
 
-    void extractStreamTubeProperties(const QVariantMap &props);
-
-    static void introspectConnectionMonitoring(Private *self);
     static void introspectStreamTube(Private *self);
+    static void introspectConnectionMonitoring(Private *self);
+
+    void extractStreamTubeProperties(const QVariantMap &props);
 
     // Public object
     StreamTubeChannel *parent;
@@ -94,10 +94,19 @@ StreamTubeChannel::Private::~Private()
 {
 }
 
-void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &props)
+void StreamTubeChannel::Private::introspectStreamTube(
+        StreamTubeChannel::Private *self)
 {
-    serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
-    socketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
+    StreamTubeChannel *parent = self->parent;
+
+    debug() << "Introspecting stream tube properties";
+    Client::ChannelTypeStreamTubeInterface *streamTubeInterface =
+            parent->interface<Client::ChannelTypeStreamTubeInterface>();
+
+    PendingVariantMap *pvm = streamTubeInterface->requestAllProperties();
+    parent->connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(gotStreamTubeProperties(Tp::PendingOperation *)));
 }
 
 void StreamTubeChannel::Private::introspectConnectionMonitoring(
@@ -126,19 +135,10 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
             StreamTubeChannel::FeatureConnectionMonitoring, true);
 }
 
-void StreamTubeChannel::Private::introspectStreamTube(
-        StreamTubeChannel::Private *self)
+void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &props)
 {
-    StreamTubeChannel *parent = self->parent;
-
-    debug() << "Introspecting stream tube properties";
-    Client::ChannelTypeStreamTubeInterface *streamTubeInterface =
-            parent->interface<Client::ChannelTypeStreamTubeInterface>();
-
-    PendingVariantMap *pvm = streamTubeInterface->requestAllProperties();
-    parent->connect(pvm,
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(gotStreamTubeProperties(Tp::PendingOperation *)));
+    serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
+    socketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
 }
 
 /**
@@ -550,52 +550,6 @@ UIntList StreamTubeChannel::connections() const
 }
 
 /**
- * Return the local address used by this StreamTube as a QString.
- *
- * This method will return a meaningful value only if the socket is local, hence when #addressType
- * returns either SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
- *
- * \return The local address used by this StreamTube as a QString, if this tube is using
- *         a SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
- *
- * \note This function will return a valid value only after the tube has been opened
- *
- * \sa addressType
- */
-QString StreamTubeChannel::localAddress() const
-{
-    if (tubeState() != TubeChannelStateOpen) {
-        warning() << "Tube not open, returning invalid local socket address";
-        return QString();
-    }
-
-    return mPriv->unixAddress;
-}
-
-/**
- * Return the IP address/port combination used by this StreamTube as a QHostAddress.
- *
- * This method will return a meaningful value only if the socket is an IP socket, hence when
- * #addressType returns either SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
- *
- * \return The IP address and port used by this StreamTube as a QHostAddress, if this tube is using
- *         a SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
- *
- * \note This function will return a valid value only after the tube has been opened
- *
- * \sa addressType
- */
-QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
-{
-    if (tubeState() != TubeChannelStateOpen) {
-        warning() << "Tube not open, returning invalid IP address";
-        return qMakePair<QHostAddress, quint16>(QHostAddress::Null, 0);
-    }
-
-    return mPriv->ipAddress;
-}
-
-/**
  * Return the type of socket this StreamTube is using.
  *
  * \return The type of socket this StreamTube is using
@@ -623,6 +577,52 @@ SocketAccessControl StreamTubeChannel::accessControl() const
     return mPriv->accessControl;
 }
 
+/**
+ * Return the IP address/port combination used by this StreamTube as a QHostAddress.
+ *
+ * This method will return a meaningful value only if the socket is an IP socket, hence when
+ * #addressType returns either SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
+ *
+ * \return The IP address and port used by this StreamTube as a QHostAddress, if this tube is using
+ *         a SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
+ *
+ * \note This function will return a valid value only after the tube has been opened
+ *
+ * \sa addressType
+ */
+QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
+{
+    if (tubeState() != TubeChannelStateOpen) {
+        warning() << "Tube not open, returning invalid IP address";
+        return qMakePair<QHostAddress, quint16>(QHostAddress::Null, 0);
+    }
+
+    return mPriv->ipAddress;
+}
+
+/**
+ * Return the local address used by this StreamTube as a QString.
+ *
+ * This method will return a meaningful value only if the socket is local, hence when #addressType
+ * returns either SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
+ *
+ * \return The local address used by this StreamTube as a QString, if this tube is using
+ *         a SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
+ *
+ * \note This function will return a valid value only after the tube has been opened
+ *
+ * \sa addressType
+ */
+QString StreamTubeChannel::localAddress() const
+{
+    if (tubeState() != TubeChannelStateOpen) {
+        warning() << "Tube not open, returning invalid local socket address";
+        return QString();
+    }
+
+    return mPriv->unixAddress;
+}
+
 void StreamTubeChannel::setConnections(UIntList connections)
 {
     mPriv->connections = connections;
@@ -648,12 +648,6 @@ void StreamTubeChannel::setLocalAddress(const QString &address)
     mPriv->unixAddress = address;
 }
 
-void StreamTubeChannel::onConnectionClosed(uint connectionId,
-        const QString &error, const QString &message)
-{
-    emit connectionClosed(connectionId, error, message);
-}
-
 void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
 {
     if (!op->isError()) {
@@ -670,6 +664,12 @@ void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
         mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, false,
                 op->errorName(), op->errorMessage());
     }
+}
+
+void StreamTubeChannel::onConnectionClosed(uint connectionId,
+        const QString &error, const QString &message)
+{
+    emit connectionClosed(connectionId, error, message);
 }
 
 // Signals documentation

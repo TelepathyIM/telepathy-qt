@@ -79,9 +79,9 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
 
+    void setConnections(UIntList connections);
     void setAddressType(SocketAddressType type);
     void setAccessControl(SocketAccessControl accessControl);
-    void setConnections(UIntList connections);
     void setIpAddress(const QPair<QHostAddress, quint16> &address);
     void setLocalAddress(const QString &address);
 
