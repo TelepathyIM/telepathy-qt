@@ -548,7 +548,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
     if (!isReady(StreamTubeChannel::FeatureStreamTube)) {
         warning() << "StreamTubeChannel::FeatureStreamTube must be ready before "
                 "calling offerTube";
-    return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),
                 OutgoingStreamTubeChannelPtr(this));
     }
