@@ -194,7 +194,6 @@ IncomingStreamTubeChannel::IncomingStreamTubeChannel(const ConnectionPtr &connec
             immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
-    setBaseTubeType(2);
 }
 
 /**
