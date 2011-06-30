@@ -116,6 +116,11 @@ QString PendingDBusTube::address() const
 
 void PendingDBusTube::onConnectionFinished(PendingOperation *op)
 {
+    if (isFinished()) {
+        // The operation has already failed
+        return;
+    }
+
     if (op->isError()) {
         // Fail
         setFinishedWithError(op->errorName(), op->errorMessage());
@@ -151,6 +156,11 @@ void PendingDBusTube::onChannelInvalidated(DBusProxy* proxy,
         const QString& errorName, const QString& errorMessage)
 {
     Q_UNUSED(proxy);
+
+    if (isFinished()) {
+        // The operation has already finished
+        return;
+    }
 
     setFinishedWithError(errorName, errorMessage);
 }
