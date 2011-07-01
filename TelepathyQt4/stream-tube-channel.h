@@ -64,7 +64,6 @@ public:
     UIntList connections() const;
 
     SocketAddressType addressType() const;
-    SocketAccessControl accessControl() const;
 
     QPair< QHostAddress, quint16 > ipAddress() const;
     QString localAddress() const;
@@ -81,6 +80,7 @@ protected:
 
     void setConnections(UIntList connections);
     void setAddressType(SocketAddressType type);
+    SocketAccessControl accessControl() const;
     void setAccessControl(SocketAccessControl accessControl);
     void setIpAddress(const QPair<QHostAddress, quint16> &address);
     void setLocalAddress(const QString &address);
