@@ -68,17 +68,23 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
         SocketAddressType type,
         bool requiresCredentials,
         uchar credentialByte,
-        const IncomingStreamTubeChannelPtr &object)
-    : PendingOperation(object),
+        const IncomingStreamTubeChannelPtr &channel)
+    : PendingOperation(channel),
       mPriv(new Private(this))
 {
-    mPriv->tube = object;
+    mPriv->tube = channel;
     mPriv->type = type;
     mPriv->requiresCredentials = requiresCredentials;
     mPriv->credentialByte = credentialByte;
-    // Connect the pending void
-    connect(acceptOperation, SIGNAL(finished(Tp::PendingOperation*)),
-            this, SLOT(onAcceptFinished(Tp::PendingOperation*)));
+
+    /* keep track of channel invalidation */
+    connect(channel.data(),
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
+
+    connect(acceptOperation,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onAcceptFinished(Tp::PendingOperation*)));
 }
 
 /**
@@ -98,8 +104,8 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
 PendingStreamTubeConnection::PendingStreamTubeConnection(
         const QString& errorName,
         const QString& errorMessage,
-        const IncomingStreamTubeChannelPtr &object)
-    : PendingOperation(object),
+        const IncomingStreamTubeChannelPtr &channel)
+    : PendingOperation(channel),
       mPriv(new PendingStreamTubeConnection::Private(this))
 {
     setFinishedWithError(errorName, errorMessage);
@@ -203,8 +209,24 @@ uchar PendingStreamTubeConnection::credentialByte() const
     return mPriv->credentialByte;
 }
 
+void PendingStreamTubeConnection::onChannelInvalidated(DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage)
+{
+    Q_UNUSED(proxy);
+
+    if (isFinished()) {
+        return;
+    }
+
+    setFinishedWithError(errorName, errorMessage);
+}
+
 void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
 {
+    if (isFinished()) {
+        return;
+    }
+
     if (op->isError()) {
         setFinishedWithError(op->errorName(), op->errorMessage());
         return;
