@@ -154,6 +154,7 @@ private Q_SLOTS:
     void testCreation();
     void testAcceptTwice();
     void testAcceptSuccess();
+    void testAcceptFail();
     void testOfferSuccess();
 
     void cleanup();
@@ -571,6 +572,40 @@ void TestStreamTubeChan::testAcceptSuccess()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mGotConnectionClosed, true);
     }
+}
+
+void TestStreamTubeChan::testAcceptFail()
+{
+    /* incoming tube */
+    createTubeChannel(false, TP_SOCKET_ADDRESS_TYPE_UNIX,
+            TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
+    QVERIFY(connect(mChan->becomeReady(StreamTubeChannel::FeatureStreamTube |
+                        StreamTubeChannel::FeatureConnectionMonitoring),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureStreamTube), true);
+    QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
+    QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
+
+    /* when accept is called the channel will be closed service side */
+    tp_tests_stream_tube_channel_set_close_on_accept (mChanService, TRUE);
+
+    /* calling accept should fail */
+    IncomingStreamTubeChannelPtr chan = IncomingStreamTubeChannelPtr::qObjectCast(mChan);
+    QVERIFY(connect(chan->acceptTubeAsUnixSocket(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mChan->isValid(), false);
+
+    /* trying to accept again should fail immediately */
+    QVERIFY(connect(chan->acceptTubeAsUnixSocket(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
 }
 
 void TestStreamTubeChan::testOfferSuccess()
