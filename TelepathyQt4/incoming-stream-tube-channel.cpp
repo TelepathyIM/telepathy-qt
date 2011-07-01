@@ -39,7 +39,6 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
 {
     Private(IncomingStreamTubeChannel *parent);
-    ~Private();
 
     // Public object
     IncomingStreamTubeChannel *parent;
@@ -50,10 +49,6 @@ bool IncomingStreamTubeChannel::Private::initRandom = true;
 
 IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
     : parent(parent)
-{
-}
-
-IncomingStreamTubeChannel::Private::~Private()
 {
 }
 
