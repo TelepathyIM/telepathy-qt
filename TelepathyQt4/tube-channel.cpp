@@ -102,7 +102,7 @@ void TubeChannel::Private::extractTubeProperties(const QVariantMap &props)
  * to establish network connections themselves.
  *
  * Note that TubeChannel should never be instantiated directly, instead one of its
- * subclasses (e.g. IncomingStreamTube or OutgoingStreamTube) should be used.
+ * subclasses (e.g. IncomingStreamTubeChannel or OutgoingStreamTubeChannel) should be used.
  *
  * For more details, please refer to \telepathy_spec.
  *
