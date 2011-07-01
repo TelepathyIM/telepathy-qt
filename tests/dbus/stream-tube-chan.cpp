@@ -460,6 +460,9 @@ void TestStreamTubeChan::testAcceptSuccess()
 {
     /* incoming tube */
     for (int i = 0; contexts[i].addressType != NUM_TP_SOCKET_ADDRESS_TYPES; i++) {
+        /* as we run several tests here, let's init/cleanup properly */
+        init();
+
         qDebug() << "Testing context:" << i;
         mCurrentContext = i;
 
@@ -571,6 +574,9 @@ void TestStreamTubeChan::testAcceptSuccess()
                 TP_ERROR_STR_DISCONNECTED);
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mGotConnectionClosed, true);
+
+        /* as we run several tests here, let's init/cleanup properly */
+        cleanup();
     }
 }
 
@@ -612,6 +618,9 @@ void TestStreamTubeChan::testOfferSuccess()
 {
     /* incoming tube */
     for (int i = 0; contexts[i].addressType != NUM_TP_SOCKET_ADDRESS_TYPES; i++) {
+        /* as we run several tests here, let's init/cleanup properly */
+        init();
+
         qDebug() << "Testing context:" << i;
         mCurrentContext = i;
 
@@ -776,6 +785,9 @@ void TestStreamTubeChan::testOfferSuccess()
         delete localSocket;
         delete tcpServer;
         delete tcpSocket;
+
+        /* as we run several tests here, let's init/cleanup properly */
+        cleanup();
     }
 }
 
@@ -783,13 +795,25 @@ void TestStreamTubeChan::cleanup()
 {
     cleanupImpl();
 
+    if (mChan && mChan->isValid()) {
+        qDebug() << "waiting for the channel to become invalidated";
+
+        QVERIFY(connect(mChan.data(),
+                SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                mLoop,
+                SLOT(quit())));
+        tp_base_channel_close(TP_BASE_CHANNEL(mChanService));
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
     mChan.reset();
-    mLoop->processEvents();
 
     if (mChanService != 0) {
         g_object_unref(mChanService);
         mChanService = 0;
     }
+
+    mLoop->processEvents();
 }
 
 void TestStreamTubeChan::cleanupTestCase()
