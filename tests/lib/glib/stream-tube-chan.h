@@ -70,6 +70,10 @@ void tp_tests_stream_tube_channel_last_connection_disconnected (
     TpTestsStreamTubeChannel *self,
     const gchar *error);
 
+void tp_tests_stream_tube_channel_set_close_on_accept (
+    TpTestsStreamTubeChannel *self,
+    gboolean close_on_accept);
+
 /* Contact Stream Tube */
 
 typedef struct _TpTestsContactStreamTubeChannel TpTestsContactStreamTubeChannel;

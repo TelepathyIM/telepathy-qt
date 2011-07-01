@@ -54,6 +54,8 @@ struct _TpTestsStreamTubeChannelPrivate {
     TpSocketAccessControl access_control;
 
     GHashTable *parameters;
+
+    gboolean close_on_accept;
 };
 
 static void
@@ -594,6 +596,12 @@ stream_tube_accept (TpSvcChannelTypeStreamTube *iface,
       goto fail;
     }
 
+  if (self->priv->close_on_accept)
+    {
+      tp_base_channel_close (TP_BASE_CHANNEL (self));
+      return;
+    }
+
   address = create_local_socket (self, address_type, access_control, &error);
 
   self->priv->access_control = access_control;
@@ -717,6 +725,14 @@ tp_tests_stream_tube_channel_last_connection_disconnected (
 {
   tp_svc_channel_type_stream_tube_emit_connection_closed (self,
       self->priv->connection_id - 1, error, "kaboum");
+}
+
+void
+tp_tests_stream_tube_channel_set_close_on_accept (
+    TpTestsStreamTubeChannel *self,
+    gboolean close_on_accept)
+{
+    self->priv->close_on_accept = close_on_accept;
 }
 
 /* Contact Stream Tube */
