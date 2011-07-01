@@ -45,12 +45,6 @@ PendingOpenTube::Private::Private(const QVariantMap &parameters, PendingOpenTube
     : parent(parent),
       parameters(parameters)
 {
-
-}
-
-PendingOpenTube::Private::~Private()
-{
-
 }
 
 PendingOpenTube::PendingOpenTube(
@@ -183,10 +177,6 @@ void QueuedContactFactory::onPendingContactsFinished(PendingOperation *op)
 OutgoingStreamTubeChannel::Private::Private(OutgoingStreamTubeChannel *parent)
     : parent(parent),
       queuedContactFactory(new QueuedContactFactory(parent->connection()->contactManager(), parent))
-{
-}
-
-OutgoingStreamTubeChannel::Private::~Private()
 {
 }
 
