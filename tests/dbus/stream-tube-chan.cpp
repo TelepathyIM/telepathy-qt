@@ -133,7 +133,8 @@ public:
     TestStreamTubeChan(QObject *parent = 0)
         : Test(parent),
           mConn(0), mChanService(0), mLocalConnectionId(-1), mRemoteConnectionId(-1),
-          mGotLocalConnection(false), mGotRemoteConnection(false), mGotSocketConnection(false),
+          mGotLocalConnection(false), mGotRemoteConnection(false),
+          mGotSocketConnection(false), mGotConnectionClosed(false),
           mOfferFinished(false), mRequiresCredentials(false), mCredentialByte(0)
     { }
 
@@ -141,6 +142,8 @@ protected Q_SLOTS:
     void onNewLocalConnection(uint connectionId);
     void onNewRemoteConnection(uint connectionId);
     void onNewSocketConnection();
+    void onConnectionClosed(uint connectionId, const QString &errorName,
+            const QString &errorMesssage);
     void onOfferFinished(Tp::PendingOperation *op);
     void expectPendingTubeConnectionFinished(Tp::PendingOperation *op);
 
@@ -157,7 +160,7 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    void testCheckConnectionsCommon();
+    void testCheckRemoteConnectionsCommon();
 
     void createTubeChannel(bool requested, TpSocketAddressType addressType,
             TpSocketAccessControl accessControl, bool withContact);
@@ -173,6 +176,7 @@ private:
     bool mGotLocalConnection;
     bool mGotRemoteConnection;
     bool mGotSocketConnection;
+    bool mGotConnectionClosed;
     bool mOfferFinished;
     bool mRequiresCredentials;
     uchar mCredentialByte;
@@ -197,13 +201,26 @@ void TestStreamTubeChan::onNewRemoteConnection(uint connectionId)
     mRemoteConnectionId = connectionId;
     mGotRemoteConnection = true;
 
-    testCheckConnectionsCommon();
+    testCheckRemoteConnectionsCommon();
 }
 
 void TestStreamTubeChan::onNewSocketConnection()
 {
     qDebug() << "Got new socket connection";
     mGotSocketConnection = true;
+    mLoop->exit(0);
+}
+
+void TestStreamTubeChan::onConnectionClosed(uint connectionId,
+        const QString &errorName, const QString &errorMesssage)
+{
+    qDebug() << "Got connetion closed for connection" << connectionId;
+    mGotConnectionClosed = true;
+
+    if (mChan->isRequested()) {
+        testCheckRemoteConnectionsCommon();
+    }
+
     mLoop->exit(0);
 }
 
@@ -311,6 +328,7 @@ void TestStreamTubeChan::init()
     mRemoteConnectionId = -1;
     mGotLocalConnection = false;
     mGotRemoteConnection = false;
+    mGotConnectionClosed = false;
     mGotSocketConnection = false;
     mOfferFinished = false;
     mRequiresCredentials = false;
@@ -322,7 +340,7 @@ void TestStreamTubeChan::init()
     mExpectedId = QString();
 }
 
-void TestStreamTubeChan::testCheckConnectionsCommon()
+void TestStreamTubeChan::testCheckRemoteConnectionsCommon()
 {
     OutgoingStreamTubeChannelPtr chan = OutgoingStreamTubeChannelPtr::qObjectCast(mChan);
     QVERIFY(chan);
@@ -543,6 +561,15 @@ void TestStreamTubeChan::testAcceptSuccess()
 
             delete socket;
         }
+
+        mGotConnectionClosed = false;
+        QVERIFY(connect(mChan.data(),
+                    SIGNAL(connectionClosed(uint,QString,QString)),
+                    SLOT(onConnectionClosed(uint,QString,QString))));
+        tp_tests_stream_tube_channel_last_connection_disconnected(mChanService,
+                TP_ERROR_STR_DISCONNECTED);
+        QCOMPARE(mLoop->exec(), 0);
+        QCOMPARE(mGotConnectionClosed, true);
     }
 }
 
@@ -696,6 +723,19 @@ void TestStreamTubeChan::testOfferSuccess()
         QCOMPARE(mGotRemoteConnection, true);
 
         qDebug() << "Connected to host";
+
+        mGotConnectionClosed = false;
+        QVERIFY(connect(mChan.data(),
+                    SIGNAL(connectionClosed(uint,QString,QString)),
+                    SLOT(onConnectionClosed(uint,QString,QString))));
+        tp_tests_stream_tube_channel_last_connection_disconnected(mChanService,
+                TP_ERROR_STR_DISCONNECTED);
+        QCOMPARE(mLoop->exec(), 0);
+        QCOMPARE(mGotConnectionClosed, true);
+
+        QCOMPARE(chan->contactsForConnections().isEmpty(), true);
+        QCOMPARE(chan->connectionsForSourceAddresses().isEmpty(), true);
+        QCOMPARE(chan->connectionsForCredentials().isEmpty(), true);
 
         delete localServer;
         delete localSocket;
