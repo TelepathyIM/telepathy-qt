@@ -667,9 +667,17 @@ void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
 }
 
 void StreamTubeChannel::onConnectionClosed(uint connectionId,
-        const QString &error, const QString &message)
+        const QString &errorName, const QString &errorMessage)
 {
-    emit connectionClosed(connectionId, error, message);
+    emit connectionClosed(connectionId, errorName, errorMessage);
+
+    processConnectionClosed(connectionId, errorName, errorMessage);
+}
+
+void StreamTubeChannel::processConnectionClosed(uint connectionId, const QString &errorName,
+            const QString &errorMessage)
+{
+    /* does nothing */
 }
 
 // Signals documentation

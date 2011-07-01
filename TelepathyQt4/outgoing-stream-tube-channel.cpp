@@ -306,8 +306,6 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
                         immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
-    connect(this, SIGNAL(connectionClosed(uint,QString,QString)),
-            this, SLOT(onConnectionClosed(uint,QString,QString)));
     connect(mPriv->queuedContactFactory,
             SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
             this,
@@ -842,11 +840,11 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
     emit newConnection(connectionProperties.first);
 }
 
-void OutgoingStreamTubeChannel::onConnectionClosed(
-        uint connectionId,
-        const QString&,
-        const QString&)
+void OutgoingStreamTubeChannel::processConnectionClosed(uint connectionId,
+        const QString &errorName, const QString &errorMessage)
 {
+    StreamTubeChannel::processConnectionClosed(connectionId, errorName, errorMessage);
+
     // Remove stuff from our hashes
     mPriv->contactsForConnections.remove(connectionId);
 
