@@ -71,8 +71,8 @@ public:
 
 Q_SIGNALS:
     void newConnection(uint connectionId);
-    void connectionClosed(uint connectionId, const QString &error,
-            const QString &message);
+    void connectionClosed(uint connectionId, const QString &errorName,
+            const QString &errorMessage);
 
 protected:
     StreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
@@ -85,9 +85,13 @@ protected:
     void setIpAddress(const QPair<QHostAddress, quint16> &address);
     void setLocalAddress(const QString &address);
 
+    virtual void processConnectionClosed(uint connectionId, const QString &errorName,
+            const QString &errorMessage);
+
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void gotStreamTubeProperties(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId,
+            const QString &errorName, const QString &errorMessage);
 
 private:
     struct Private;

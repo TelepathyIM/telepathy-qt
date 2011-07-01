@@ -65,10 +65,14 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
 
+    virtual void processConnectionClosed(uint connectionId, const QString &errorName,
+            const QString &errorMessage);
+
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onNewRemoteConnection(uint contactId, const QDBusVariant &paramenter, uint connectionId);
-    TELEPATHY_QT4_NO_EXPORT void onContactsRetrieved(const QUuid &uuid, const QList<Tp::ContactPtr> &contacts);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId, const QString &, const QString &);
+    TELEPATHY_QT4_NO_EXPORT void onNewRemoteConnection(uint contactId,
+            const QDBusVariant &parameter, uint connectionId);
+    TELEPATHY_QT4_NO_EXPORT void onContactsRetrieved(const QUuid &uuid,
+            const QList<Tp::ContactPtr> &contacts);
 
 private:
     struct Private;
