@@ -33,7 +33,6 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT TubeChannel::Private
 {
     Private(TubeChannel *parent);
-    ~Private();
 
     static void introspectTube(TubeChannel::Private *self);
 
@@ -65,10 +64,6 @@ TubeChannel::Private::Private(TubeChannel *parent)
     introspectables[TubeChannel::FeatureTube] = introspectableTube;
 
     readinessHelper->addIntrospectables(introspectables);
-}
-
-TubeChannel::Private::~Private()
-{
 }
 
 void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
