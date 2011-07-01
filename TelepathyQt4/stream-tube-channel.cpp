@@ -38,7 +38,6 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
 {
     Private(StreamTubeChannel *parent);
-    ~Private();
 
     static void introspectStreamTube(Private *self);
     static void introspectConnectionMonitoring(Private *self);
@@ -88,10 +87,6 @@ StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
             introspectableConnectionMonitoring;
 
     readinessHelper->addIntrospectables(introspectables);
-}
-
-StreamTubeChannel::Private::~Private()
-{
 }
 
 void StreamTubeChannel::Private::introspectStreamTube(
