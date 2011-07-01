@@ -699,16 +699,14 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
 /**
  * Returns a map from a credential byte to the corresponding connections ids.
  *
- * This method is only useful if TubeChannel::addressType() is either #SocketAddressTypeUnix or
- * #SocketAddressTypeAbstractUnix and TubeChannel::accessControl() is
- * #SocketAccessControlCredentials.
+ * This method is only useful if this tube was offered using an Unix socket requiring credentials.
  *
  * The connection ids retrieved here can be used to track an address
  * which connected to your socket to a contact (by using contactsForConnections()).
  *
- * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
- *
  * Note that this function will only return valid data after the tube has been opened.
+ *
+ * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
  *
  * \return an hash mapping a source address to its connection ID
  * \sa contactsForConnections(), connectionsForSourceAddresses(),
@@ -724,7 +722,7 @@ QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
 
     if (accessControl() != SocketAccessControlCredentials) {
         warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
-                "just when using SocketAccessControlCredentials";
+                "just when offering an Unix socket requiring credentials";
         return QHash<uchar, uint>();
     }
 
