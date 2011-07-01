@@ -138,21 +138,23 @@ void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &
 
 /**
  * \class StreamTubeChannel
+ * \ingroup clientchannel
  * \headerfile TelepathyQt4/stream-tube-channel.h <TelepathyQt4/StreamTubeChannel>
  *
- * \brief A class representing a Telepathy stream tube.
+ * \brief The StreamTubeChannel class represents a Telepathy channel of type StreamTube.
  *
  * It provides a transport for reliable and ordered data transfer, similar to SOCK_STREAM sockets.
  *
- * This class provides high level methods for managing both incoming and outgoing tubes - however,
- * you probably want to use one of its subclasses, #OutgoingStreamTubeChannel or
- * #IncomingStreamTubeChannel, which both provide higher level methods for accepting
+ * This class provides high-level methods for managing both incoming and outgoing stream tubes -
+ * however, you probably want to use one of its subclasses, OutgoingStreamTubeChannel or
+ * IncomingStreamTubeChannel, which both provide higher level methods for accepting
  * or offering tubes.
  *
  * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
-// Features declaration and documentation
 /**
  * Feature representing the core that needs to become ready to make the
  * StreamTubeChannel object usable.
@@ -165,10 +167,11 @@ const Feature StreamTubeChannel::FeatureStreamTube =
         Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0);
 
 /**
- * Feature used in order to monitor connections to this tube.
+ * Feature used in order to monitor connections to this stream tube.
  *
- * %newConnection will be emitted upon a new connection
- * %connectionClosed will be emitted when an existing connection gets closed
+ * See connection monitoring specific methods' documentation for more details.
+ *
+ * \sa newConnection(), connectionClosed()
  */
 const Feature StreamTubeChannel::FeatureConnectionMonitoring =
         Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 1);
@@ -178,8 +181,8 @@ const Feature StreamTubeChannel::FeatureConnectionMonitoring =
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \return A StreamTubeChannelPtr object pointing to the newly created
  *         StreamTubeChannel object.
  */
@@ -195,8 +198,10 @@ StreamTubeChannelPtr StreamTubeChannel::create(const ConnectionPtr &connection,
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \param coreFeature The core feature of the channel type. The corresponding introspectable should
+ *                    depend on Channel::FeatureCore.
  */
 StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -216,12 +221,12 @@ StreamTubeChannel::~StreamTubeChannel()
 }
 
 /**
- * Returns the service name which will be used over the tube. This should be a
+ * Return the service name which will be used over this stream tube. This should be a
  * well-known TCP service name, for instance "rsync" or "daap".
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \return the service name that will be used over the tube
+ * \return The service name that will be used over this stream tube.
  */
 QString StreamTubeChannel::service() const
 {
@@ -235,22 +240,23 @@ QString StreamTubeChannel::service() const
 }
 
 /**
- * Checks if this tube is capable to accept or offer an IPv4 socket accepting all incoming
- * connections coming from localhost. When this capability is available, the tube can be
- * accepted or offered without any restriction on the access control on the other end.
+ * Return whether this stream tube is capable to accept or offer an IPv4 socket accepting all
+ * incoming connections coming from localhost.
+ *
+ * When this capability is available, the stream tube can be accepted or offered without any
+ * restriction on the access control on the other end.
+ *
+ * Note that the \telepathy_spec implies that any connection manager, if capable of providing
+ * stream tubes, must at least support IPv4 sockets with localhost access control.
+ * For this reason, this method should always return \c true.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \note Please note that the spec implies that any connection manager, if capable of providing
- *       stream tubes, \b MUST at least support IPv4 sockets with Localhost access control.
- *       For this reason, this method should always return \c true.
- *
  * \return Whether this stream tube is capable to accept or offer an IPv4 socket
  *         accepting all incoming connections coming from localhost.
- *
- * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket
- * \sa OutgoingStreamTubeChannel::offerTcpSocket
- * \sa supportsIPv4SocketsWithSpecifiedAddress
+ * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket(),
+ *     OutgoingStreamTubeChannel::offerTcpSocket(),
+ *     supportsIPv4SocketsWithSpecifiedAddress()
  */
 bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 {
@@ -264,36 +270,36 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 }
 
 /**
- * In case of an incoming tube, checks if this tube is capable to accept or offer an IPv4 socket
- * accepting all incoming connections coming from a specific address only.
- * When this capability is available, the tube can be accepted specifying an IPv4 address.
- * Every connection coming from any other address than the specified one will be rejected.
+ * Return whether this stream tube is capable to accept an IPv4 socket accepting all
+ * incoming connections coming from a specific address for incoming tubes or whether
+ * this stream tube is capable of mapping connections to the socket's source address for outgoing
+ * tubes.
  *
- * In case of an outgoing tube, checks if this tube is capable of mapping connections to the
- * socket's source address. If this is the case, to keep track of incoming connections
- * you should enable StreamTubeChannel::FeatureConnectionMonitoring (possibly before
- * opening the tube itself), and call either
- * #OutgoingStreamTubeChannel::contactsForConnections or
- * #OutgoingStreamTubeChannel::connectionsForSourceAddresses.
+ * For incoming tubes, when this capability is available, the stream tube can be accepted specifying
+ * an IPv4 address. Every connection coming from any other address than the specified one will be
+ * rejected.
+ *
+ * For outgoing tubes, when this capability is available, one can keep track of incoming connections
+ * by enabling StreamTubeChannel::FeatureConnectionMonitoring (possibly before
+ * opening the stream tube itself), and checking OutgoingStreamTubeChannel::contactsForConnections()
+ * or OutgoingStreamTubeChannel::connectionsForSourceAddresses().
+ *
+ * Note that it is strongly advised to call this method before attempting to call
+ * IncomingStreamTubeChannel::acceptTubeAsTcpSocket() or
+ * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
+ * as the spec implies this feature is not compulsory for connection managers.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \note It is strongly advised to call this method before attempting to call
- *       #IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
- *       #OutgoingStreamTubeChannel::offerTcpSocket with  a specified address to prevent failures,
- *       as the spec implies this feature is not compulsory for connection managers.
- *
- * \return When dealing with an incoming tube, whether this tube is capable
- *         to accept or offer an IPv4 socket when specifying an allowed address
- *         for connecting to the socket.
- *         When dealing with an outgoing tube, whether this tube will be able to
- *         map connections to the socket's source address.
- *
- * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket
- * \sa OutgoingStreamTubeChannel::offerTcpSocket
- * \sa OutgoingStreamTubeChannel::connectionsForSourceAddresses
- * \sa OutgoingStreamTubeChannel::contactsForConnections
- * \sa supportsIPv4SocketsOnLocalhost
+ * \return Whether this stream tube is capable to accept an IPv4 socket accepting all
+ *         incoming connections coming from a specific address for incoming tubes or whether
+ *         this stream tube is capable of mapping connections to the socket's source address for
+ *         outgoing tubes.
+ * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket(),
+ *     OutgoingStreamTubeChannel::offerTcpSocket(),
+ *     OutgoingStreamTubeChannel::connectionsForSourceAddresses(),
+ *     OutgoingStreamTubeChannel::contactsForConnections(),
+ *     supportsIPv4SocketsOnLocalhost()
  */
 bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
 {
@@ -307,25 +313,24 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
 }
 
 /**
- * Checks if this tube is capable to accept or offer an IPv6 socket accepting all
- * incoming connections coming from localhost. When this capability is available,
- * the tube can be accepted or offered without any restriction on
- * the access control on the other end.
+ * Return whether this stream tube is capable to accept or offer an IPv6 socket accepting all
+ * incoming connections coming from localhost.
+ *
+ * When this capability is available, the stream tube can be accepted or offered without any
+ * restriction on the access control on the other end.
+ *
+ * Note that it is strongly advised to call this method before attempting to call
+ * IncomingStreamTubeChannel::acceptTubeAsTcpSocket() or
+ * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
+ * as the spec implies this feature is not compulsory for connection managers.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \note It is strongly advised to call this method before attempting to call
- *       #IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
- *       #OutgoingStreamTubeChannel::offerTcpSocket with an IPv6 socket to prevent failures,
- *       as the spec implies this feature is not compulsory for connection
- *       managers.
- *
  * \return Whether this stream tube is capable to accept or offer an IPv6 socket
- *          accepting all incoming connections coming from localhost.
- *
- * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket
- * \sa OutgoingStreamTubeChannel::offerTcpSocket
- * \sa supportsIPv6SocketsWithSpecifiedAddress
+ *         accepting all incoming connections coming from localhost.
+ * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket(),
+ *     OutgoingStreamTubeChannel::offerTcpSocket(),
+ *     supportsIPv6SocketsWithSpecifiedAddress()
  */
 bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
 {
@@ -339,36 +344,36 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
 }
 
 /**
- * In case of an incoming tube, checks if this tube is capable to accept or offer
- * an IPv6 socket accepting all incoming connections coming from a specific address only.
- * When this capability is available, the tube can be accepted specifying an IPv6 address.
- * Every connection coming from any other address than the specified one will be rejected.
+ * Return whether this stream tube is capable to accept an IPv6 socket accepting all
+ * incoming connections coming from a specific address for incoming tubes or whether
+ * this stream tube is capable of mapping connections to the socket's source address for outgoing
+ * tubes.
  *
- * In case of an outgoing tube, checks if this tube is capable of mapping connections
- * to the socket's source address. If this is the case, to keep track of incoming connections
- * you should enable StreamTubeChannel::FeatureConnectionMonitoring (possibly before
- * opening the tube itself), and call either #OutgoingStreamTubeChannel::contactsForConnections or
- * #OutgoingStreamTubeChannel::connectionsForSourceAddresses.
+ * For incoming tubes, when this capability is available, the stream tube can be accepted specifying
+ * an IPv6 address. Every connection coming from any other address than the specified one will be
+ * rejected.
+ *
+ * For outgoing tubes, when this capability is available, one can keep track of incoming connections
+ * by enabling StreamTubeChannel::FeatureConnectionMonitoring (possibly before
+ * opening the stream tube itself), and checking OutgoingStreamTubeChannel::contactsForConnections()
+ * or OutgoingStreamTubeChannel::connectionsForSourceAddresses().
+ *
+ * Note that it is strongly advised to call this method before attempting to call
+ * IncomingStreamTubeChannel::acceptTubeAsTcpSocket() or
+ * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
+ * as the spec implies this feature is not compulsory for connection managers.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \note It is strongly advised to call this method before attempting to call
- *       #IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
- *       #OutgoingStreamTubeChannel::offerTcpSocket with
- *       an IPv6 socket and a specified address to prevent failures,
- *       as the spec implies this feature is not compulsory for connection managers.
- *
- * \return When dealing with an incoming tube, whether this tube is capable
- *         to accept or offer an IPv6 socket when specifying an allowed address
- *         for connecting to the socket.
- *         When dealing with an outgoing tube, whether this tube will be able to
- *         map connections to the socket's source address.
- *
- * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket
- * \sa OutgoingStreamTubeChannel::offerTcpSocket
- * \sa OutgoingStreamTubeChannel::connectionsForSourceAddresses
- * \sa OutgoingStreamTubeChannel::contactsForConnections
- * \sa supportsIPv6SocketsOnLocalhost
+ * \return Whether this stream tube is capable to accept an IPv6 socket accepting all
+ *         incoming connections coming from a specific address for incoming tubes or whether
+ *         this stream tube is capable of mapping connections to the socket's source address for
+ *         outgoing tubes.
+ * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket(),
+ *     OutgoingStreamTubeChannel::offerTcpSocket(),
+ *     OutgoingStreamTubeChannel::connectionsForSourceAddresses(),
+ *     OutgoingStreamTubeChannel::contactsForConnections(),
+ *     supportsIPv6SocketsOnLocalhost()
  */
 bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
 {
@@ -382,25 +387,26 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
 }
 
 /**
- * Checks if this tube is capable to accept or offer an Unix socket accepting
- * all incoming connections coming from localhost. When this capability is available,
- * the tube can be accepted or offered without any restriction on the access control
- * on the other end.
+ * Return whether this stream tube is capable to accept or offer an Unix socket accepting all
+ * incoming connections coming from localhost.
+ *
+ * When this capability is available, the stream tube can be accepted or offered without any
+ * restriction on the access control on the other end.
+ *
+ * Note that it is strongly advised to call this method before attempting to call
+ * IncomingStreamTubeChannel::acceptTubeAsUnixSocket() or
+ * OutgoingStreamTubeChannel::offerUnixSocket() without credentials enabled, as the spec implies
+ * this feature is not compulsory for connection managers.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \note It is strongly advised to call this method before attempting to call
- *       #IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
- *       #OutgoingStreamTubeChannel::offerTcpSocket with
- *       an Unix socket to prevent failures, as the spec implies
- *       this feature is not compulsory for connection managers.
- *
  * \return Whether this stream tube is capable to accept or offer an Unix socket
  *         accepting all incoming connections coming from localhost.
- *
- * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket
- * \sa OutgoingStreamTubeChannel::offerUnixSocket
- * \sa supportsUnixSocketsWithCredentials
+ * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket(),
+ *     OutgoingStreamTubeChannel::offerUnixSocket(),
+ *     supportsUnixSocketsWithCredentials()
+ *     supportsAbstractUnixSocketsOnLocalhost(),
+ *     supportsAbstractUnixSocketsWithCredentials(),
  */
 bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
 {
@@ -414,8 +420,8 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
 }
 
 /**
- * Checks if this tube is capable to accept or offer an Unix socket which
- * will require credentials upon connection.
+ * Return whether this stream tube is capable to accept or offer an Unix socket which will require
+ * credentials upon connection.
  *
  * When this capability is available and enabled, the connecting process must send a byte when
  * it first connects, which is not considered to be part of the data stream.
@@ -426,20 +432,20 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
  * The listening process will disconnect the connection unless it can determine
  * by OS-specific means that the connecting process has the same user ID as the listening process.
  *
+ * Note that it is strongly advised to call this method before attempting to call
+ * IncomingStreamTubeChannel::acceptTubeAsUnixSocket() or
+ * OutgoingStreamTubeChannel::offerUnixSocket() with credentials enabled, as the spec implies
+ * this feature is not compulsory for connection managers.
+ *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \note It is strongly advised to call this method before attempting to call
- *       #IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
- *       #OutgoingStreamTubeChannel::offerTcpSocket with
- *       an Unix socket with credentials to prevent failures, as the spec implies
- *       this feature is not compulsory for connection managers.
- *
  * \return Whether this stream tube is capable to accept or offer an Unix socket
- *         requiring credentials for connecting to it.
- *
- * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket
- * \sa OutgoingStreamTubeChannel::offerUnixSocket
- * \sa supportsUnixSocketsOnLocalhost
+ *         which will require credentials upon connection.
+ * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket(),
+ *     OutgoingStreamTubeChannel::offerUnixSocket(),
+ *     supportsUnixSocketsOnLocalhost(),
+ *     supportsAbstractUnixSocketsOnLocalhost(),
+ *     supportsAbstractUnixSocketsWithCredentials(),
  */
 bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
 {
@@ -453,26 +459,26 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
 }
 
 /**
- * Checks if this tube is capable to accept or offer an abstract Unix socket accepting
+ * Return whether this stream tube is capable to accept or offer an abstract Unix socket accepting
  * all incoming connections coming from localhost.
  *
- * When this capability is available, the tube can be accepted or offered without
- * any restriction on the access control on the other end.
+ * When this capability is available, the stream tube can be accepted or offered without any
+ * restriction on the access control on the other end.
+ *
+ * Note that it is strongly advised to call this method before attempting to call
+ * IncomingStreamTubeChannel::acceptTubeAsUnixSocket() or
+ * OutgoingStreamTubeChannel::offerUnixSocket() without credentials enabled, as the spec implies
+ * this feature is not compulsory for connection managers.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \note It is strongly advised to call this method before attempting to call
- *       #IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
- *       #OutgoingStreamTubeChannel::offerTcpSocket with
- *       an abstract Unix socket to prevent failures, as the spec implies
- *       this feature is not compulsory for connection managers.
- *
- * \return Whether this stream tube is capable to accept or offer an Abstract Unix socket
- *          accepting all incoming connections coming from localhost.
- *
- * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket
- * \sa OutgoingStreamTubeChannel::offerUnixSocket
- * \sa supportsUnixSocketsWithCredentials
+ * \return Whether this stream tube is capable to accept or offer an abstract Unix socket
+ *         accepting all incoming connections coming from localhost.
+ * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket(),
+ *     OutgoingStreamTubeChannel::offerUnixSocket(),
+ *     supportsUnixSocketsOnLocalhost(),
+ *     supportsUnixSocketsWithCredentials(),
+ *     supportsAbstractUnixSocketsWithCredentials()
  */
 bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
 {
@@ -486,8 +492,8 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
 }
 
 /**
- * Checks if this tube is capable to accept or offer an abstract Unix socket
- * which will require credentials upon connection.
+ * Return whether this stream tube is capable to accept or offer an abstract Unix socket which will
+ * require credentials upon connection.
  *
  * When this capability is available and enabled, the connecting process must send a byte when
  * it first connects, which is not considered to be part of the data stream.
@@ -495,23 +501,23 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
  * credentials over sockets, the connecting process must do so if possible;
  * if not, it must still send the byte.
  *
- * The listening process will disconnect the connection unless it can determine by
- * OS-specific means that the connecting process has the same user ID as the listening process.
+ * The listening process will disconnect the connection unless it can determine
+ * by OS-specific means that the connecting process has the same user ID as the listening process.
+ *
+ * Note that it is strongly advised to call this method before attempting to call
+ * IncomingStreamTubeChannel::acceptTubeAsUnixSocket() or
+ * OutgoingStreamTubeChannel::offerUnixSocket() with credentials enabled, as the spec implies
+ * this feature is not compulsory for connection managers.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \note It is strongly advised to call this method before attempting to call
- *       #IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
- *       #OutgoingStreamTubeChannel::offerTcpSocket with
- *       an abstract Unix socket with credentials to prevent failures, as the spec implies
- *       this feature is not compulsory for connection managers.
- *
- * \return Whether this Stream tube supports offering or accepting it as an
- *         abstract Unix socket and requiring credentials for connecting to it.
- *
- * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket
- * \sa OutgoingStreamTubeChannel::offerUnixSocket
- * \sa supportsUnixSockets
+ * \return Whether this stream tube is capable to accept or offer an abstract Unix socket
+ *         which will require credentials upon connection.
+ * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket(),
+ *     OutgoingStreamTubeChannel::offerUnixSocket(),
+ *     supportsUnixSocketsOnLocalhost(),
+ *     supportsUnixSocketsWithCredentials(),
+ *     supportsAbstractUnixSocketsOnLocalhost()
  */
 bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
 {
@@ -525,13 +531,16 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
 }
 
 /**
- * This function returns all the known active connections since FeatureConnectionMonitoring has
- * been enabled. For this method to return all known connections, you need to make
- * FeatureConnectionMonitoring ready before accepting or offering the tube.
+ * Return all the known active connections since StreamTubeChannel::FeatureConnectionMonitoring has
+ * been enabled.
  *
- * \return A list of active connection ids known to this tube
+ * For this method to return all known connections, you need to make
+ * StreamTubeChannel::FeatureConnectionMonitoring ready before accepting or offering the stream
+ * tube.
  *
- * \note This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
+ * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
+ *
+ * \return A list of active connection ids known to this stream tube.
  */
 UIntList StreamTubeChannel::connections() const
 {
@@ -549,7 +558,7 @@ UIntList StreamTubeChannel::connections() const
  *
  * \return The type of socket this StreamTube is using
  *
- * \note This function will return a valid value only after the tube has been opened
+ * \note This function will return a valid value only after the stream tube has been opened
  *
  * \sa localAddress
  * \sa tcpAddress
@@ -562,7 +571,7 @@ SocketAddressType StreamTubeChannel::addressType() const
 /**
  * Return the access control used by this stream tube.
  *
- * Note that this function will only return a valid value after the tube has been opened.
+ * Note that this function will only return a valid value after the stream tube has been opened.
  *
  * \return The access control used by this stream tube.
  * \sa addressType(), TubeChannel::tubeState()
@@ -573,17 +582,14 @@ SocketAccessControl StreamTubeChannel::accessControl() const
 }
 
 /**
- * Return the IP address/port combination used by this StreamTube as a QHostAddress.
+ * Return the IP address/port combination used by this stream tube.
  *
- * This method will return a meaningful value only if the socket is an IP socket, hence when
- * #addressType returns either SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
+ * This method will return a meaningful value only if this stream tube socket is a TCP socket.
  *
- * \return The IP address and port used by this StreamTube as a QHostAddress, if this tube is using
- *         a SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
+ * Note that this function will return a valid value only after the stream tube has been opened.
  *
- * \note This function will return a valid value only after the tube has been opened
- *
- * \sa addressType
+ * \return The IP address and port used by this stream tube.
+ * \sa addressType()
  */
 QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 {
@@ -596,17 +602,14 @@ QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 }
 
 /**
- * Return the local address used by this StreamTube as a QString.
+ * Return the local address used by this stream tube.
  *
- * This method will return a meaningful value only if the socket is local, hence when #addressType
- * returns either SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
+ * This method will return a meaningful value only if this stream tube socket is a Unix socket.
  *
- * \return The local address used by this StreamTube as a QString, if this tube is using
- *         a SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
+ * Note that this function will return a valid value only after the stream tube has been opened.
  *
- * \note This function will return a valid value only after the tube has been opened
- *
- * \sa addressType
+ * \return The local address used by this stream tube.
+ * \sa addressType()
  */
 QString StreamTubeChannel::localAddress() const
 {
@@ -675,16 +678,15 @@ void StreamTubeChannel::processConnectionClosed(uint connectionId, const QString
     /* does nothing */
 }
 
-// Signals documentation
 /**
  * \fn void StreamTubeChannel::connectionClosed(uint connectionId,
- *             const QString &error, const QString &message)
+ *             const QString &errorName, const QString &errorMessage)
  *
- * Emitted when a connection has been closed.
+ * This signal is emitted when a connection on this stream tube has been closed.
  *
- * \param connectionId The unique ID associated with this connection.
- * \param error The error occurred
- * \param message A debug message
+ * \param connectionId The unique ID associated with the connection that was closed.
+ * \param errorName The name of a D-Bus error describing the error that occurred.
+ * \param errorMessage A debugging message associated with the error.
  */
 
 } // Tp
