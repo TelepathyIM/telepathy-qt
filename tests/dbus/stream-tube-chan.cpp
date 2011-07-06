@@ -382,7 +382,7 @@ void TestStreamTubeChan::testCreation()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(OutgoingStreamTubeChannel::FeatureCore), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), false);
-    QCOMPARE(mChan->tubeState(), TubeChannelStateNotOffered);
+    QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
     QCOMPARE(mChan->parameters().isEmpty(), true);
     QCOMPARE(mChan->service(), QLatin1String("test-service"));
     QCOMPARE(mChan->supportsIPv4SocketsOnLocalhost(), false);
@@ -407,7 +407,7 @@ void TestStreamTubeChan::testCreation()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(IncomingStreamTubeChannel::FeatureCore), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), false);
-    QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
+    QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
     QCOMPARE(mChan->parameters().isEmpty(), false);
     QCOMPARE(mChan->parameters().size(), 1);
     QCOMPARE(mChan->parameters().contains(QLatin1String("badger")), true);
@@ -439,21 +439,21 @@ void TestStreamTubeChan::testAcceptTwice()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(IncomingStreamTubeChannel::FeatureCore), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
-    QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
+    QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
 
     IncomingStreamTubeChannelPtr chan = IncomingStreamTubeChannelPtr::qObjectCast(mChan);
     QVERIFY(connect(chan->acceptTubeAsUnixSocket(),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
+    QCOMPARE(mChan->state(), TubeChannelStateOpen);
 
     /* try to re-accept the tube */
     QVERIFY(connect(chan->acceptTubeAsUnixSocket(),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectFailure(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
+    QCOMPARE(mChan->state(), TubeChannelStateOpen);
 }
 
 void TestStreamTubeChan::testAcceptSuccess()
@@ -475,7 +475,7 @@ void TestStreamTubeChan::testAcceptSuccess()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(IncomingStreamTubeChannel::FeatureCore), true);
         QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
-        QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
+        QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
 
         mLocalConnectionId = -1;
         mGotLocalConnection = false;
@@ -519,7 +519,7 @@ void TestStreamTubeChan::testAcceptSuccess()
                         SLOT(expectPendingTubeConnectionFinished(Tp::PendingOperation *))));
         }
         QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
+        QCOMPARE(mChan->state(), TubeChannelStateOpen);
         QCOMPARE(mRequiresCredentials, requiresCredentials);
 
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
@@ -592,7 +592,7 @@ void TestStreamTubeChan::testAcceptFail()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(IncomingStreamTubeChannel::FeatureCore), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
-    QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
+    QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
 
     /* when accept is called the channel will be closed service side */
     tp_tests_stream_tube_channel_set_close_on_accept (mChanService, TRUE);
@@ -633,7 +633,7 @@ void TestStreamTubeChan::testOfferSuccess()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(OutgoingStreamTubeChannel::FeatureCore), true);
         QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
-        QCOMPARE(mChan->tubeState(), TubeChannelStateNotOffered);
+        QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
         QCOMPARE(mChan->parameters().isEmpty(), true);
 
         mRemoteConnectionId = -1;
@@ -675,7 +675,7 @@ void TestStreamTubeChan::testOfferSuccess()
                         SLOT(onOfferFinished(Tp::PendingOperation *))));
         }
 
-        while (mChan->tubeState() != TubeChannelStateRemotePending) {
+        while (mChan->state() != TubeChannelStateRemotePending) {
             mLoop->processEvents();
         }
 
@@ -748,13 +748,13 @@ void TestStreamTubeChan::testOfferSuccess()
         mExpectedHandle = bobHandle;
         mExpectedId = QLatin1String("bob");
 
-        QCOMPARE(mChan->tubeState(), TubeChannelStateRemotePending);
+        QCOMPARE(mChan->state(), TubeChannelStateRemotePending);
 
         while (!mOfferFinished) {
             QCOMPARE(mLoop->exec(), 0);
         }
 
-        QCOMPARE(mChan->tubeState(), TubeChannelStateOpen);
+        QCOMPARE(mChan->state(), TubeChannelStateOpen);
         QCOMPARE(mChan->parameters().isEmpty(), false);
         QCOMPARE(mChan->parameters().size(), 1);
         QCOMPARE(mChan->parameters().contains(QLatin1String("mushroom")), true);

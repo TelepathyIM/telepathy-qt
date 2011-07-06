@@ -85,15 +85,15 @@ void PendingOpenTube::onOfferFinished(PendingOperation *op)
     debug() << "StreamTube.Offer returned successfully";
 
     // It might have been already opened - check
-    if (mPriv->tube->tubeState() != TubeChannelStateOpen) {
+    if (mPriv->tube->state() != TubeChannelStateOpen) {
         debug() << "Awaiting tube to be opened";
         // Wait until the tube gets opened on the other side
         connect(mPriv->tube.data(),
-                SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
+                SIGNAL(stateChanged(Tp::TubeChannelState)),
                 SLOT(onTubeStateChanged(Tp::TubeChannelState)));
     }
 
-    onTubeStateChanged(mPriv->tube->tubeState());
+    onTubeStateChanged(mPriv->tube->state());
 }
 
 void PendingOpenTube::onTubeStateChanged(TubeChannelState state)
@@ -308,7 +308,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
     }
 
     // The tube must be not offered
-    if (tubeState() != TubeChannelStateNotOffered) {
+    if (state() != TubeChannelStateNotOffered) {
         warning() << "You can not expose more than a socket for each Stream Tube";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel busy"),
@@ -487,7 +487,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
     }
 
     // The tube must be not offered
-    if (tubeState() != TubeChannelStateNotOffered) {
+    if (state() != TubeChannelStateNotOffered) {
         warning() << "You can not expose more than a socket for each Stream Tube";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel busy"), OutgoingStreamTubeChannelPtr(this));
@@ -623,7 +623,7 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
         return QHash<QPair<QHostAddress, quint16>, uint>();
     }
 
-    if (tubeState() != TubeChannelStateOpen) {
+    if (state() != TubeChannelStateOpen) {
         warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
                 "just when the tube is open";
         return QHash<QPair<QHostAddress, quint16>, uint>();
@@ -670,7 +670,7 @@ QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
         return QHash<uchar, uint>();
     }
 
-    if (tubeState() != TubeChannelStateOpen) {
+    if (state() != TubeChannelStateOpen) {
         warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
                 "just when the tube is opened";
         return QHash<uchar, uint>();
@@ -698,7 +698,7 @@ QHash<uint, ContactPtr> OutgoingStreamTubeChannel::contactsForConnections() cons
         return QHash<uint, ContactPtr>();
     }
 
-    if (tubeState() != TubeChannelStateOpen) {
+    if (state() != TubeChannelStateOpen) {
         warning() << "OutgoingStreamTubeChannel::contactsForConnections() makes sense "
                 "just when the tube is open";
         return QHash<uint, ContactPtr>();

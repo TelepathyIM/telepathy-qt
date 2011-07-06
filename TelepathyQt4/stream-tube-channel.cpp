@@ -563,7 +563,7 @@ UIntList StreamTubeChannel::connections() const
  * Note that this function will return a valid value only after the stream tube has been opened.
  *
  * \return The type of socket this stream tube is using.
- * \sa localAddress(), ipAddress(), TubeChannel::tubeState()
+ * \sa localAddress(), ipAddress(), TubeChannel::state()
  */
 SocketAddressType StreamTubeChannel::addressType() const
 {
@@ -576,7 +576,7 @@ SocketAddressType StreamTubeChannel::addressType() const
  * Note that this function will only return a valid value after the stream tube has been opened.
  *
  * \return The access control used by this stream tube.
- * \sa addressType(), TubeChannel::tubeState()
+ * \sa addressType(), TubeChannel::state()
  */
 SocketAccessControl StreamTubeChannel::accessControl() const
 {
@@ -591,11 +591,11 @@ SocketAccessControl StreamTubeChannel::accessControl() const
  * Note that this function will return a valid value only after the stream tube has been opened.
  *
  * \return The IP address and port used by this stream tube.
- * \sa addressType(), TubeChannel::tubeState()
+ * \sa addressType(), TubeChannel::state()
  */
 QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 {
-    if (tubeState() != TubeChannelStateOpen) {
+    if (state() != TubeChannelStateOpen) {
         warning() << "Tube not open, returning invalid IP address";
         return qMakePair<QHostAddress, quint16>(QHostAddress::Null, 0);
     }
@@ -611,11 +611,11 @@ QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
  * Note that this function will return a valid value only after the stream tube has been opened.
  *
  * \return The local address used by this stream tube.
- * \sa addressType(), TubeChannel::tubeState()
+ * \sa addressType(), TubeChannel::state()
  */
 QString StreamTubeChannel::localAddress() const
 {
-    if (tubeState() != TubeChannelStateOpen) {
+    if (state() != TubeChannelStateOpen) {
         warning() << "Tube not open, returning invalid local socket address";
         return QString();
     }

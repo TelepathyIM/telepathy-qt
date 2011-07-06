@@ -163,7 +163,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     }
 
     // The tube must be in local pending state
-    if (tubeState() != TubeChannelStateLocalPending) {
+    if (state() != TubeChannelStateLocalPending) {
         warning() << "You can accept tubes only when they are in LocalPending state";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),
@@ -317,7 +317,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     }
 
     // The tube must be in local pending state
-    if (tubeState() != TubeChannelStateLocalPending) {
+    if (state() != TubeChannelStateLocalPending) {
         warning() << "You can accept tubes only when they are in LocalPending state";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),

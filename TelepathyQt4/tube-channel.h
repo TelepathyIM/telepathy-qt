@@ -46,12 +46,14 @@ public:
 
     virtual ~TubeChannel();
 
-    TubeChannelState tubeState() const;
+    TubeChannelState state() const;
+    TELEPATHY_QT4_DEPRECATED TubeChannelState tubeState() const;
 
     QVariantMap parameters() const;
 
 Q_SIGNALS:
-    void tubeStateChanged(Tp::TubeChannelState newstate);
+    void stateChanged(Tp::TubeChannelState state);
+    void tubeStateChanged(Tp::TubeChannelState state);
 
 protected:
     TubeChannel(const ConnectionPtr &connection, const QString &objectPath,
@@ -59,6 +61,9 @@ protected:
             const Feature &coreFeature = TubeChannel::FeatureCore);
 
     void setParameters(const QVariantMap &parameters);
+
+    // FIXME (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onTubeChannelStateChanged(uint newstate);
