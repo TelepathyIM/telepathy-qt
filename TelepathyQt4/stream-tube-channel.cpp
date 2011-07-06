@@ -145,10 +145,8 @@ void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &
  *
  * It provides a transport for reliable and ordered data transfer, similar to SOCK_STREAM sockets.
  *
- * This class provides high-level methods for managing both incoming and outgoing stream tubes -
- * however, you probably want to use one of its subclasses, OutgoingStreamTubeChannel or
- * IncomingStreamTubeChannel, which both provide higher level methods for accepting
- * or offering tubes.
+ * For more specialized stream tube classes, please refer to
+ * OutgoingStreamTubeChannel and IncomingStreamTubeChannel.
  *
  * For more details, please refer to \telepathy_spec.
  *
@@ -200,8 +198,8 @@ StreamTubeChannelPtr StreamTubeChannel::create(const ConnectionPtr &connection,
  *                   service.
  * \param objectPath The channel object path.
  * \param immutableProperties The channel immutable properties.
- * \param coreFeature The core feature of the channel type. The corresponding introspectable should
- *                    depend on Channel::FeatureCore.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ *                    depend on StreamTubeChannel::FeatureStreamTube.
  */
 StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -541,6 +539,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
  *
  * \return A list of active connection ids known to this stream tube.
+ * \sa newConnection(), connectionClosed()
  */
 UIntList StreamTubeChannel::connections() const
 {
@@ -554,14 +553,12 @@ UIntList StreamTubeChannel::connections() const
 }
 
 /**
- * Return the type of socket this StreamTube is using.
+ * Return the type of socket used by this stream tube.
  *
- * \return The type of socket this StreamTube is using
+ * Note that this function will return a valid value only after the stream tube has been opened.
  *
- * \note This function will return a valid value only after the stream tube has been opened
- *
- * \sa localAddress
- * \sa tcpAddress
+ * \return The type of socket this stream tube is using.
+ * \sa localAddress(), ipAddress(), TubeChannel::tubeState()
  */
 SocketAddressType StreamTubeChannel::addressType() const
 {
@@ -589,7 +586,7 @@ SocketAccessControl StreamTubeChannel::accessControl() const
  * Note that this function will return a valid value only after the stream tube has been opened.
  *
  * \return The IP address and port used by this stream tube.
- * \sa addressType()
+ * \sa addressType(), TubeChannel::tubeState()
  */
 QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 {
@@ -609,7 +606,7 @@ QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
  * Note that this function will return a valid value only after the stream tube has been opened.
  *
  * \return The local address used by this stream tube.
- * \sa addressType()
+ * \sa addressType(), TubeChannel::tubeState()
  */
 QString StreamTubeChannel::localAddress() const
 {
@@ -687,6 +684,7 @@ void StreamTubeChannel::processConnectionClosed(uint connectionId, const QString
  * \param connectionId The unique ID associated with the connection that was closed.
  * \param errorName The name of a D-Bus error describing the error that occurred.
  * \param errorMessage A debugging message associated with the error.
+ * \sa newConnection(), connections()
  */
 
 } // Tp
