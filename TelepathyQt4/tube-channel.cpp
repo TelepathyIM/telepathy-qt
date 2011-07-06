@@ -61,7 +61,7 @@ TubeChannel::Private::Private(TubeChannel *parent)
             QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE), // dependsOnInterfaces
             (ReadinessHelper::IntrospectFunc) &TubeChannel::Private::introspectTube,
             this);
-    introspectables[TubeChannel::FeatureTube] = introspectableTube;
+    introspectables[TubeChannel::FeatureCore] = introspectableTube;
 
     readinessHelper->addIntrospectables(introspectables);
 }
@@ -117,7 +117,12 @@ void TubeChannel::Private::extractTubeProperties(const QVariantMap &props)
  * TubeChannel methods.
  * See specific methods documentation for more details.
  */
-const Feature TubeChannel::FeatureTube = Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
+const Feature TubeChannel::FeatureCore = Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
+
+/**
+ * \deprecated Use TubeChannel::FeatureCore instead.
+ */
+const Feature TubeChannel::FeatureTube = TubeChannel::FeatureCore;
 
 /**
  * Create a new TubeChannel channel.
@@ -144,7 +149,7 @@ TubeChannelPtr TubeChannel::create(const ConnectionPtr &connection,
  * \param objectPath The channel object path.
  * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- *                    depend on TubeChannel::FeatureTube.
+ *                    depend on TubeChannel::FeatureCore.
  */
 TubeChannel::TubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -169,15 +174,15 @@ TubeChannel::~TubeChannel()
  * Note that for outgoing tubes, this function will only return a valid value after the tube has
  * been offered successfully.
  *
- * This method requires TubeChannel::FeatureTube to be enabled.
+ * This method requires TubeChannel::FeatureCore to be enabled.
  *
  * \return A dictionary of arbitrary parameters.
  *         For more details, please refer to \telepathy_spec.
  */
 QVariantMap TubeChannel::parameters() const
 {
-    if (!isReady(FeatureTube)) {
-        warning() << "TubeChannel::parameters() used with FeatureTube not ready";
+    if (!isReady(FeatureCore)) {
+        warning() << "TubeChannel::parameters() used with FeatureCore not ready";
         return QVariantMap();
     }
 
@@ -189,14 +194,14 @@ QVariantMap TubeChannel::parameters() const
  *
  * Change notification is via the tubeStateChanged() signal.
  *
- * This method requires TubeChannel::FeatureTube to be enabled.
+ * This method requires TubeChannel::FeatureCore to be enabled.
  *
  * \return The state of this tube.
  */
 TubeChannelState TubeChannel::tubeState() const
 {
-    if (!isReady(FeatureTube)) {
-        warning() << "TubeChannel::tubeState() used with FeatureTube not ready";
+    if (!isReady(FeatureCore)) {
+        warning() << "TubeChannel::tubeState() used with FeatureCore not ready";
         return TubeChannelStateNotOffered;
     }
 
@@ -233,11 +238,11 @@ void TubeChannel::gotTubeProperties(PendingOperation *op)
         mPriv->extractTubeProperties(pvm->result());
 
         debug() << "Got reply to Properties::GetAll(TubeChannel)";
-        mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, true);
+        mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureCore, true);
     } else {
         warning().nospace() << "Properties::GetAll(TubeChannel) failed "
             "with " << op->errorName() << ": " << op->errorMessage();
-        mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, false,
+        mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureCore, false,
                 op->errorName(), op->errorMessage());
     }
 }

@@ -70,7 +70,7 @@ StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
 
     ReadinessHelper::Introspectable introspectableStreamTube(
             QSet<uint>() << 0,                                                      // makesSenseForStatuses
-            Features() << TubeChannel::FeatureTube,                                 // dependsOnFeatures (core)
+            Features() << TubeChannel::FeatureCore,                                 // dependsOnFeatures (core)
             QStringList(),                                                          // dependsOnInterfaces
             (ReadinessHelper::IntrospectFunc) &StreamTubeChannel::Private::introspectStreamTube,
             this);
