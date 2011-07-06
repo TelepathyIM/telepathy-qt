@@ -61,7 +61,7 @@ protected:
     IncomingStreamTubeChannel(const ConnectionPtr &connection,
             const QString &objectPath,
             const QVariantMap &immutableProperties,
-            const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
+            const Feature &coreFeature = StreamTubeChannel::FeatureCore);
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onNewLocalConnection(uint connectionId);

@@ -63,7 +63,7 @@ public:
 protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
-            const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
+            const Feature &coreFeature = StreamTubeChannel::FeatureCore);
 
     virtual void processConnectionClosed(uint connectionId, const QString &errorName,
             const QString &errorMessage);
