@@ -255,11 +255,11 @@ void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
     }
 
     // It might have been already opened - check
-    if (mPriv->tube->tubeState() == TubeChannelStateOpen) {
-        onTubeStateChanged(mPriv->tube->tubeState());
+    if (mPriv->tube->state() == TubeChannelStateOpen) {
+        onTubeStateChanged(mPriv->tube->state());
     } else {
         // Wait until the tube gets opened on the other side
-        connect(mPriv->tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
+        connect(mPriv->tube.data(), SIGNAL(stateChanged(Tp::TubeChannelState)),
                 this, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
     }
 }

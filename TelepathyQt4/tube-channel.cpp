@@ -192,20 +192,29 @@ QVariantMap TubeChannel::parameters() const
 /**
  * Return the state of this tube.
  *
- * Change notification is via the tubeStateChanged() signal.
+ * Change notification is via the stateChanged() signal.
  *
  * This method requires TubeChannel::FeatureCore to be enabled.
  *
  * \return The state of this tube.
+ * \sa stateChanged()
  */
-TubeChannelState TubeChannel::tubeState() const
+TubeChannelState TubeChannel::state() const
 {
     if (!isReady(FeatureCore)) {
-        warning() << "TubeChannel::tubeState() used with FeatureCore not ready";
+        warning() << "TubeChannel::state() used with FeatureCore not ready";
         return TubeChannelStateNotOffered;
     }
 
     return mPriv->state;
+}
+
+/**
+ * \deprecated Use state() instead.
+ */
+TubeChannelState TubeChannel::tubeState() const
+{
+    return state();
 }
 
 void TubeChannel::setParameters(const QVariantMap &parameters)
@@ -224,8 +233,10 @@ void TubeChannel::onTubeChannelStateChanged(uint newState)
     debug() << "Tube state changed to" << newState;
     mPriv->state = (Tp::TubeChannelState) newState;
 
-    /* only emit tubeStateChanged if we already received the state from initial introspection */
+    /* only emit stateChanged if we already received the state from initial introspection */
     if (oldState != (uint) -1) {
+        emit stateChanged((Tp::TubeChannelState) newState);
+        // FIXME (API/ABI break) Remove tubeStateChanged call
         emit tubeStateChanged((Tp::TubeChannelState) newState);
     }
 }
@@ -248,12 +259,26 @@ void TubeChannel::gotTubeProperties(PendingOperation *op)
 }
 
 /**
- * \fn void TubeChannel::tubeStateChanged(Tp::TubeChannelState state)
+ * \fn void TubeChannel::stateChanged(Tp::TubeChannelState state)
  *
- * This signal is emitted when the value of tubeState() changes.
+ * This signal is emitted when the value of state() changes.
  *
  * \sa state The new state of this tube.
- * \sa tubeState()
+ * \sa state()
  */
+
+/**
+ * \fn void TubeChannel::tubeStateChanged(Tp::TubeChannelState state)
+ *
+ * \deprecated Use stateChanged() instead.
+ */
+
+void TubeChannel::connectNotify(const char *signalName)
+{
+    if (qstrcmp(signalName, SIGNAL(tubeStateChanged(Tp::TubeChannelState))) == 0) {
+        warning() << "Connecting to deprecated signal tubeStateChanged(Tp::TubeChannelState)";
+    }
+}
+
 
 } // Tp
