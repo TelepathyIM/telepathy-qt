@@ -201,6 +201,18 @@ OutgoingStreamTubeChannel::Private::Private(OutgoingStreamTubeChannel *parent)
  */
 
 /**
+ * Feature representing the core that needs to become ready to make the
+ * OutgoingStreamTubeChannel object usable.
+ *
+ * This is currently the same as StreamTubeChannel::FeatureCore, but may change to include more.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
+const Feature OutgoingStreamTubeChannel::FeatureCore =
+    Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0); // ST::FeatureCore
+
+/**
  * Create a new OutgoingStreamTubeChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
@@ -214,7 +226,7 @@ OutgoingStreamTubeChannelPtr OutgoingStreamTubeChannel::create(const ConnectionP
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return OutgoingStreamTubeChannelPtr(new OutgoingStreamTubeChannel(connection, objectPath,
-            immutableProperties, StreamTubeChannel::FeatureCore));
+            immutableProperties, OutgoingStreamTubeChannel::FeatureCore));
 }
 
 /**
@@ -225,7 +237,7 @@ OutgoingStreamTubeChannelPtr OutgoingStreamTubeChannel::create(const ConnectionP
  * \param objectPath The channel object path.
  * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- *                    depend on StreamTubeChannel::FeatureCore.
+ *                    depend on OutgoingStreamTubeChannel::FeatureCore.
  */
 OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -269,7 +281,7 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * enable the connection tracking feature, as long as
  * StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires OutgoingStreamTubeChannel::FeatureCore to be enabled.
  *
  * \param address A valid IPv4 or IPv6 address pointing to an existing socket.
  * \param port The port the socket is listening for connections to.
@@ -287,8 +299,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         quint16 port,
         const QVariantMap &parameters)
 {
-    if (!isReady(StreamTubeChannel::FeatureCore)) {
-        warning() << "StreamTubeChannel::FeatureCore must be ready before "
+    if (!isReady(OutgoingStreamTubeChannel::FeatureCore)) {
+        warning() << "OutgoingStreamTubeChannel::FeatureCore must be ready before "
                 "calling offerTube";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),
@@ -408,7 +420,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * enable the connection tracking feature, as long as
  * StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires OutgoingStreamTubeChannel::FeatureCore to be enabled.
  *
  * \param server A valid QTcpServer, which should be already listening for incoming connections.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
@@ -443,7 +455,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
  * It is guaranteed that when the PendingOperation returned by this method will be completed,
  * the tube will be opened and ready to be used.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires OutgoingStreamTubeChannel::FeatureCore to be enabled.
  *
  * \param address A valid path to an existing Unix socket or abstract Unix socket.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
@@ -466,8 +478,8 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
             SocketAccessControlCredentials :
             SocketAccessControlLocalhost;
 
-    if (!isReady(StreamTubeChannel::FeatureCore)) {
-        warning() << "StreamTubeChannel::FeatureCore must be ready before "
+    if (!isReady(OutgoingStreamTubeChannel::FeatureCore)) {
+        warning() << "OutgoingStreamTubeChannel::FeatureCore must be ready before "
                 "calling offerTube";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),
@@ -554,7 +566,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
  * It is guaranteed that when the PendingOperation returned by this method will be completed,
  * the tube will be opened and ready to be used.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires OutgoingStreamTubeChannel::FeatureCore to be enabled.
  *
  * \param server A valid QLocalServer, which should be already listening for incoming connections.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
