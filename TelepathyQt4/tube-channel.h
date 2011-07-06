@@ -37,6 +37,8 @@ class TELEPATHY_QT4_EXPORT TubeChannel : public Channel
     Q_DISABLE_COPY(TubeChannel)
 
 public:
+    static const Feature FeatureCore;
+    // FIXME (API/ABI break) Remove FeatureTube in favour of FeatureCore
     static const Feature FeatureTube;
 
     static TubeChannelPtr create(const ConnectionPtr &connection,
