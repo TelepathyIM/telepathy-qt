@@ -143,8 +143,8 @@ TubeChannelPtr TubeChannel::create(const ConnectionPtr &connection,
  *                   service.
  * \param objectPath The channel object path.
  * \param immutableProperties The channel immutable properties.
- * \param coreFeature The core feature of the channel type. The corresponding introspectable should
- *                    depend on Channel::FeatureCore.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ *                    depend on TubeChannel::FeatureTube.
  */
 TubeChannel::TubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -172,7 +172,7 @@ TubeChannel::~TubeChannel()
  * This method requires TubeChannel::FeatureTube to be enabled.
  *
  * \return A dictionary of arbitrary parameters.
- *         Please refer to the \telepathy_spec for more details.
+ *         For more details, please refer to \telepathy_spec.
  */
 QVariantMap TubeChannel::parameters() const
 {
