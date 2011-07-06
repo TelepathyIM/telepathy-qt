@@ -42,6 +42,8 @@ class TELEPATHY_QT4_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
     Q_DISABLE_COPY(OutgoingStreamTubeChannel)
 
 public:
+    static const Feature FeatureCore;
+
     static OutgoingStreamTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
@@ -63,7 +65,7 @@ public:
 protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
-            const Feature &coreFeature = StreamTubeChannel::FeatureCore);
+            const Feature &coreFeature = OutgoingStreamTubeChannel::FeatureCore);
 
     virtual void processConnectionClosed(uint connectionId, const QString &errorName,
             const QString &errorMessage);

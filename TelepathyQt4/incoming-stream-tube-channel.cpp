@@ -71,6 +71,18 @@ IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
  */
 
 /**
+ * Feature representing the core that needs to become ready to make the
+ * IncomingStreamTubeChannel object usable.
+ *
+ * This is currently the same as StreamTubeChannel::FeatureCore, but may change to include more.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
+const Feature IncomingStreamTubeChannel::FeatureCore =
+    Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0); // ST::FeatureCore
+
+/**
  * Create a new IncomingStreamTubeChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
@@ -84,7 +96,7 @@ IncomingStreamTubeChannelPtr IncomingStreamTubeChannel::create(const ConnectionP
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return IncomingStreamTubeChannelPtr(new IncomingStreamTubeChannel(connection, objectPath,
-            immutableProperties, StreamTubeChannel::FeatureCore));
+            immutableProperties, IncomingStreamTubeChannel::FeatureCore));
 }
 
 /**
@@ -95,7 +107,7 @@ IncomingStreamTubeChannelPtr IncomingStreamTubeChannel::create(const ConnectionP
  * \param objectPath The channel object path.
  * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- *                    depend on StreamTubeChannel::FeatureCore.
+ *                    depend on IncomingStreamTubeChannel::FeatureCore.
  */
 IncomingStreamTubeChannel::IncomingStreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -127,7 +139,7 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  *
  * Note that when using QHostAddress::Any, \a allowedPort is ignored.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires IncomingStreamTubeChannel::FeatureCore to be enabled.
  *
  * \param allowedAddress An allowed address for connecting to the socket, or QHostAddress::Any
  * \param allowedPort An allowed port for connecting to the socket.
@@ -142,8 +154,8 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         const QHostAddress &allowedAddress,
         quint16 allowedPort)
 {
-    if (!isReady(StreamTubeChannel::FeatureCore)) {
-        warning() << "StreamTubeChannel::FeatureCore must be ready before "
+    if (!isReady(IncomingStreamTubeChannel::FeatureCore)) {
+        warning() << "IncomingStreamTubeChannel::FeatureCore must be ready before "
                 "calling acceptTubeAsTcpSocket";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),
@@ -259,7 +271,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
  *
  * Note that this is the equivalent of calling acceptTubeAsTcpSocket(QHostAddress::Any, 0).
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires IncomingStreamTubeChannel::FeatureCore to be enabled.
  *
  * \return A PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
  *         (hence in the #TubeStateOpen state).
@@ -282,7 +294,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
  * You can also specify whether the server should require an SCM_CRED or SCM_CREDENTIALS message
  * upon connection instead of accepting every incoming connection from localhost.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires IncomingStreamTubeChannel::FeatureCore to be enabled.
  *
  * \param requireCredentials Whether the server should require an SCM_CRED or SCM_CREDENTIALS message
  *                           upon connection.
@@ -296,8 +308,8 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
 PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
         bool requireCredentials)
 {
-    if (!isReady(StreamTubeChannel::FeatureCore)) {
-        warning() << "StreamTubeChannel::FeatureCore must be ready before "
+    if (!isReady(IncomingStreamTubeChannel::FeatureCore)) {
+        warning() << "IncomingStreamTubeChannel::FeatureCore must be ready before "
                 "calling acceptTubeAsUnixSocket";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),

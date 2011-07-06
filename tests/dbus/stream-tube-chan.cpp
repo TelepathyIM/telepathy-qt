@@ -376,11 +376,11 @@ void TestStreamTubeChan::testCreation()
     /* Outgoing tube */
     createTubeChannel(true, TP_SOCKET_ADDRESS_TYPE_UNIX,
             TP_SOCKET_ACCESS_CONTROL_LOCALHOST, true);
-    QVERIFY(connect(mChan->becomeReady(StreamTubeChannel::FeatureCore),
+    QVERIFY(connect(mChan->becomeReady(OutgoingStreamTubeChannel::FeatureCore),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureCore), true);
+    QCOMPARE(mChan->isReady(OutgoingStreamTubeChannel::FeatureCore), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), false);
     QCOMPARE(mChan->tubeState(), TubeChannelStateNotOffered);
     QCOMPARE(mChan->parameters().isEmpty(), true);
@@ -401,11 +401,11 @@ void TestStreamTubeChan::testCreation()
     /* incoming tube */
     createTubeChannel(false, TP_SOCKET_ADDRESS_TYPE_UNIX,
             TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
-    QVERIFY(connect(mChan->becomeReady(StreamTubeChannel::FeatureCore),
+    QVERIFY(connect(mChan->becomeReady(IncomingStreamTubeChannel::FeatureCore),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureCore), true);
+    QCOMPARE(mChan->isReady(IncomingStreamTubeChannel::FeatureCore), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), false);
     QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
     QCOMPARE(mChan->parameters().isEmpty(), false);
@@ -432,12 +432,12 @@ void TestStreamTubeChan::testAcceptTwice()
     /* incoming tube */
     createTubeChannel(false, TP_SOCKET_ADDRESS_TYPE_UNIX,
             TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
-    QVERIFY(connect(mChan->becomeReady(StreamTubeChannel::FeatureCore |
+    QVERIFY(connect(mChan->becomeReady(IncomingStreamTubeChannel::FeatureCore |
                         StreamTubeChannel::FeatureConnectionMonitoring),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureCore), true);
+    QCOMPARE(mChan->isReady(IncomingStreamTubeChannel::FeatureCore), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
     QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
 
@@ -468,12 +468,12 @@ void TestStreamTubeChan::testAcceptSuccess()
 
         createTubeChannel(false, contexts[i].addressType,
                 contexts[i].accessControl, contexts[i].withContact);
-        QVERIFY(connect(mChan->becomeReady(StreamTubeChannel::FeatureCore |
+        QVERIFY(connect(mChan->becomeReady(IncomingStreamTubeChannel::FeatureCore |
                             StreamTubeChannel::FeatureConnectionMonitoring),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
         QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureCore), true);
+        QCOMPARE(mChan->isReady(IncomingStreamTubeChannel::FeatureCore), true);
         QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
         QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
 
@@ -585,12 +585,12 @@ void TestStreamTubeChan::testAcceptFail()
     /* incoming tube */
     createTubeChannel(false, TP_SOCKET_ADDRESS_TYPE_UNIX,
             TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
-    QVERIFY(connect(mChan->becomeReady(StreamTubeChannel::FeatureCore |
+    QVERIFY(connect(mChan->becomeReady(IncomingStreamTubeChannel::FeatureCore |
                         StreamTubeChannel::FeatureConnectionMonitoring),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureCore), true);
+    QCOMPARE(mChan->isReady(IncomingStreamTubeChannel::FeatureCore), true);
     QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
     QCOMPARE(mChan->tubeState(), TubeChannelStateLocalPending);
 
@@ -626,12 +626,12 @@ void TestStreamTubeChan::testOfferSuccess()
 
         createTubeChannel(true, contexts[i].addressType,
                 contexts[i].accessControl, contexts[i].withContact);
-        QVERIFY(connect(mChan->becomeReady(StreamTubeChannel::FeatureCore |
+        QVERIFY(connect(mChan->becomeReady(OutgoingStreamTubeChannel::FeatureCore |
                             StreamTubeChannel::FeatureConnectionMonitoring),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
         QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureCore), true);
+        QCOMPARE(mChan->isReady(OutgoingStreamTubeChannel::FeatureCore), true);
         QCOMPARE(mChan->isReady(StreamTubeChannel::FeatureConnectionMonitoring), true);
         QCOMPARE(mChan->tubeState(), TubeChannelStateNotOffered);
         QCOMPARE(mChan->parameters().isEmpty(), true);
