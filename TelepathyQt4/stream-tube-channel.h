@@ -39,6 +39,8 @@ class TELEPATHY_QT4_EXPORT StreamTubeChannel : public TubeChannel
     Q_DISABLE_COPY(StreamTubeChannel)
 
 public:
+    static const Feature FeatureCore;
+    // FIXME (API/ABI break) Remove FeatureStreamTube in favour of FeatureCore
     static const Feature FeatureStreamTube;
     static const Feature FeatureConnectionMonitoring;
 
@@ -76,7 +78,7 @@ Q_SIGNALS:
 protected:
     StreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
-            const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
+            const Feature &coreFeature = StreamTubeChannel::FeatureCore);
 
     void setConnections(UIntList connections);
     void setAddressType(SocketAddressType type);

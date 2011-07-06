@@ -74,11 +74,11 @@ StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
             QStringList(),                                                          // dependsOnInterfaces
             (ReadinessHelper::IntrospectFunc) &StreamTubeChannel::Private::introspectStreamTube,
             this);
-    introspectables[StreamTubeChannel::FeatureStreamTube] = introspectableStreamTube;
+    introspectables[StreamTubeChannel::FeatureCore] = introspectableStreamTube;
 
     ReadinessHelper::Introspectable introspectableConnectionMonitoring(
             QSet<uint>() << 0,                                                            // makesSenseForStatuses
-            Features() << StreamTubeChannel::FeatureStreamTube,                           // dependsOnFeatures (core)
+            Features() << StreamTubeChannel::FeatureCore,                                 // dependsOnFeatures (core)
             QStringList(),                                                                // dependsOnInterfaces
             (ReadinessHelper::IntrospectFunc)
                     &StreamTubeChannel::Private::introspectConnectionMonitoring,
@@ -161,8 +161,13 @@ void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &
  * StreamTubeChannel methods.
  * See specific methods documentation for more details.
  */
-const Feature StreamTubeChannel::FeatureStreamTube =
+const Feature StreamTubeChannel::FeatureCore =
         Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0);
+
+/**
+ * \deprecated Use StreamTubeChannel::FeatureCore instead.
+ */
+const Feature StreamTubeChannel::FeatureStreamTube = StreamTubeChannel::FeatureCore;
 
 /**
  * Feature used in order to monitor connections to this stream tube.
@@ -188,7 +193,7 @@ StreamTubeChannelPtr StreamTubeChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return StreamTubeChannelPtr(new StreamTubeChannel(connection, objectPath,
-            immutableProperties, StreamTubeChannel::FeatureStreamTube));
+            immutableProperties, StreamTubeChannel::FeatureCore));
 }
 
 /**
@@ -199,7 +204,7 @@ StreamTubeChannelPtr StreamTubeChannel::create(const ConnectionPtr &connection,
  * \param objectPath The channel object path.
  * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- *                    depend on StreamTubeChannel::FeatureStreamTube.
+ *                    depend on StreamTubeChannel::FeatureCore.
  */
 StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -222,15 +227,15 @@ StreamTubeChannel::~StreamTubeChannel()
  * Return the service name which will be used over this stream tube. This should be a
  * well-known TCP service name, for instance "rsync" or "daap".
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return The service name that will be used over this stream tube.
  */
 QString StreamTubeChannel::service() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::service() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return QString();
     }
 
@@ -248,7 +253,7 @@ QString StreamTubeChannel::service() const
  * stream tubes, must at least support IPv4 sockets with localhost access control.
  * For this reason, this method should always return \c true.
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return Whether this stream tube is capable to accept or offer an IPv4 socket
  *         accepting all incoming connections coming from localhost.
@@ -258,9 +263,9 @@ QString StreamTubeChannel::service() const
  */
 bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::supportsIPv4SocketsOnLocalhost() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return false;
     }
 
@@ -287,7 +292,7 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
  * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
  * as the spec implies this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return Whether this stream tube is capable to accept an IPv4 socket accepting all
  *         incoming connections coming from a specific address for incoming tubes or whether
@@ -301,9 +306,9 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
  */
 bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return false;
     }
 
@@ -322,7 +327,7 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
  * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
  * as the spec implies this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return Whether this stream tube is capable to accept or offer an IPv6 socket
  *         accepting all incoming connections coming from localhost.
@@ -332,9 +337,9 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
  */
 bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::supportsIPv6SocketsOnLocalhost() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return false;
     }
 
@@ -361,7 +366,7 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
  * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
  * as the spec implies this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return Whether this stream tube is capable to accept an IPv6 socket accepting all
  *         incoming connections coming from a specific address for incoming tubes or whether
@@ -375,9 +380,9 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
  */
 bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return false;
     }
 
@@ -396,7 +401,7 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
  * OutgoingStreamTubeChannel::offerUnixSocket() without credentials enabled, as the spec implies
  * this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return Whether this stream tube is capable to accept or offer an Unix socket
  *         accepting all incoming connections coming from localhost.
@@ -408,9 +413,9 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
  */
 bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::supportsUnixSocketsOnLocalhost() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return false;
     }
 
@@ -435,7 +440,7 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
  * OutgoingStreamTubeChannel::offerUnixSocket() with credentials enabled, as the spec implies
  * this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return Whether this stream tube is capable to accept or offer an Unix socket
  *         which will require credentials upon connection.
@@ -447,9 +452,9 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
  */
 bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::supportsUnixSocketsWithCredentials() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return false;
     }
 
@@ -468,7 +473,7 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
  * OutgoingStreamTubeChannel::offerUnixSocket() without credentials enabled, as the spec implies
  * this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return Whether this stream tube is capable to accept or offer an abstract Unix socket
  *         accepting all incoming connections coming from localhost.
@@ -480,9 +485,9 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
  */
 bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return false;
     }
 
@@ -507,7 +512,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
  * OutgoingStreamTubeChannel::offerUnixSocket() with credentials enabled, as the spec implies
  * this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
  * \return Whether this stream tube is capable to accept or offer an abstract Unix socket
  *         which will require credentials upon connection.
@@ -519,9 +524,9 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
  */
 bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
 {
-    if (!isReady(FeatureStreamTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() used with "
-                "FeatureStreamTube not ready";
+                "FeatureCore not ready";
         return false;
     }
 
@@ -651,12 +656,12 @@ void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
         mPriv->extractStreamTubeProperties(pvm->result());
 
         debug() << "Got reply to Properties::GetAll(StreamTubeChannel)";
-        mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, true);
+        mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureCore, true);
     }
     else {
         warning().nospace() << "Properties::GetAll(StreamTubeChannel) failed "
                 "with " << op->errorName() << ": " << op->errorMessage();
-        mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, false,
+        mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureCore, false,
                 op->errorName(), op->errorMessage());
     }
 }
