@@ -56,6 +56,8 @@ PendingOpenTube::PendingOpenTube(
 {
     mPriv->tube = object;
 
+    // FIXME: connect to channel invalidation here also
+
     debug() << "Calling StreamTube.Offer";
     if (offerOperation->isFinished()) {
         onOfferFinished(offerOperation);
@@ -193,83 +195,18 @@ OutgoingStreamTubeChannel::Private::Private(OutgoingStreamTubeChannel *parent)
  * It provides a set of overloads for exporting a variety of sockets over
  * a stream tube.
  *
- * \section outgoing_stream_tube_usage_sec Usage
- *
- * \subsection outgoing_stream_tube_create_sec Creating an outgoing stream tube
- *
- * The easiest way to create account objects is through Account. One can
- * just use the Account convenience methods such as
- * Account::createStreamTube() to get a brand new stream tube channel ready to be used.
- *
- * To create such a channel, it is required to pass Account::createStreamTube()
- * the contact identifier and the service name which will be used over the tube.
- * For example:
- *
- * \code
- * AccountPtr myaccount = getMyAccountSomewhere();
- * ContactPtr myfriend = getMyFriendSomewhereElse();
- *
- * PendingChannelRequest *tube = myaccount->createStreamTube(myfriend, "rsync");
- * \endcode
- *
- * Be sure to track the pending request to retrieve your outgoing stream tube upon success.
- *
- * \subsection outgoing_stream_tube_offer_sec Offering the tube
- *
- * Before being ready to offer the tube, we must be sure the required features on our object
- * are ready. In this case, we need to enable TubeChannel::FeatureTube
- * and StreamTubeChannel::FeatureStreamTube.
- *
- * \code
- *
- * Features features = Features() << TubeChannel::FeatureTube
- *                                << StreamTubeChannel::FeatureStreamTube;
- * connect(myTube->becomeReady(features),
- *         SIGNAL(finished(Tp::PendingOperation *)),
- *         SLOT(onStreamTubeChannelReady(Tp::PendingOperation *)));
- *
- * \endcode
- *
- * To learn more on how to use introspectable and features, please see \ref account_ready_sec.
- *
- * You can also enable StreamTubeChannel::FeatureConnectionMonitoring if the tube supports it.
- * Have a look at #StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
- * to learn more about this.
- *
- * Once your object is ready, you can use one of the overloads of #offerTcpSocket or
- * #offerUnixSocket to offer an existing socket over the tube. For example,
- * if you wanted to offer an existing QTcpServer without applying any restrictions
- * on the access control, you would simply do
- *
- * \code
- * QTcpServer *server = getMyServer();
- *
- * PendingOperation *op = myTube->offerTcpSocket(server, QVariantMap());
- * \endcode
- *
- * You can now monitor the returned operation to know when the tube will be ready.
- * It is guaranteed that when the operation finishes,
- * the tube will be already opened and ready to be used.
+ * For more details, please refer to \telepathy_spec
  *
  * See \ref async_model, \ref shared_ptr
  */
 
-// Signals documentation
 /**
- * \fn void StreamTubeChannel::newRemoteConnection(uint connectionId)
- *
- * Emitted when a new participant opens a connection to this tube
- *
- * \param connectionId The unique ID associated with this connection.
- */
-
-/**
- * Create a new OutgoingStreamTubeChannel channel.
+ * Create a new OutgoingStreamTubeChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \return A OutgoingStreamTubeChannelPtr object pointing to the newly created
  *         OutgoingStreamTubeChannel object.
  */
@@ -285,8 +222,10 @@ OutgoingStreamTubeChannelPtr OutgoingStreamTubeChannel::create(const ConnectionP
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ *                    depend on StreamTubeChannel::FeatureStreamTube.
  */
 OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -311,37 +250,37 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
 }
 
 /**
- * Offer an IPv4/IPv6 socket over the tube
+ * Offer a TCP socket over this stream tube.
  *
- * This method offers an IPv4/IPv6 socket over this tube. The socket is represented through
- * a QHostAddress. If you are already handling a Tcp logic in your application, you can also
+ * This method offers a TCP socket over this tube. The socket is represented through
+ * a QHostAddress.
+ *
+ * If you are already handling a TCP logic in your application, you can also
  * use an overload which accepts a QTcpServer.
  *
  * It is guaranteed that when the PendingOperation returned by this method will be completed,
- * the tube will be open and ready to be used.
+ * the tube will be opened and ready to be used.
+ *
+ * Note that the library will try to use #SocketAccessControlPort access control whenever possible,
+ * as it allows to map connections to the socket's source address. This means that if
+ * StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() (or
+ * StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress(), depending on
+ * the type of the offered socket) returns \c true, this method will automatically
+ * enable the connection tracking feature, as long as
+ * StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \param address A valid IPv4 or IPv6 address pointing to an existing socket
- * \param port The port the socket is listening for connections to
- * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
- *                   Please read the specification for more details.
- *
+ * \param address A valid IPv4 or IPv6 address pointing to an existing socket.
+ * \param port The port the socket is listening for connections to.
+ * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
+ *                   For more details, please refer to \telepathy_spec.
  * \return A PendingOperation which will finish as soon as the tube is ready to be used
- *         (hence in the Open state)
- *
- * \note The library will try to use Port access control whenever possible, as it allows to
- *       map connections to the socket's source address. This means that if
- *       #StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress (or
- *       #StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress, depending on
- *       the type of the offered socket) returns true, this method will automatically
- *       enable the connection tracking feature, as long as
- *       StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
- *
- * \sa StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
- * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost
- * \sa StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress
- * \sa StreamTubeChannel::supportsIPv6SocketsOnLocalhost
+ *         (hence in the #TubeStateOpen state)
+ * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost(),
+ *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
+ *     StreamTubeChannel::supportsIPv6SocketsOnLocalhost(),
+ *     StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress()
  */
 PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         const QHostAddress &address,
@@ -453,35 +392,33 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
 }
 
 /**
- * \overload
- * Offer an IPv4/IPv6 socket over the tube.
+ * Offer a TCP socket over this stream tube.
  *
- * This method offers an IPv4/IPv6 socket over this tube through a QTcpServer.
+ * This method offers a TCP socket over this tube. The socket is represented through
+ * a QTcpServer.
  *
  * It is guaranteed that when the PendingOperation returned by this method will be completed,
- * the tube will be open and ready to be used.
+ * the tube will be opened and ready to be used.
+ *
+ * Note that the library will try to use #SocketAccessControlPort access control whenever possible,
+ * as it allows to map connections to the socket's source address. This means that if
+ * StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() (or
+ * StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress(), depending on
+ * the type of the offered socket) returns \c true, this method will automatically
+ * enable the connection tracking feature, as long as
+ * StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
  * \param server A valid QTcpServer, which should be already listening for incoming connections.
- * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
- *                   Please read the specification for more details.
- *
+ * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
+ *                   For more details, please refer to \telepathy_spec.
  * \return A PendingOperation which will finish as soon as the tube is ready to be used
- *          (hence in the Open state)
- *
- * \note The library will try to use Port access control whenever possible, as it allows to
- *       map connections to the socket's source address. This means that if
- *       #StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress (or
- *       #StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress, depending on the type of
- *       the offered socket) returns true, this method will automatically enable
- *       the connection tracking feature, as long as
- *       StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
- *
- * \sa StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
- * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost
- * \sa StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress
- * \sa StreamTubeChannel::supportsIPv6SocketsOnLocalhost
+ *         (hence in the #TubeStateOpen state)
+ * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost(),
+ *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
+ *     StreamTubeChannel::supportsIPv6SocketsOnLocalhost(),
+ *     StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress()
  */
 PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
         const QTcpServer *server,
@@ -494,33 +431,31 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
 }
 
 /**
- * Offer a Unix socket over the tube.
+ * Offer an Unix socket over this stream tube.
  *
- * This method offers a Unix socket over this tube. The socket is represented through
+ * This method offers an Unix socket over this stream tube. The socket is represented through
  * a QString, which should contain the path to the socket. You can also expose an
- * abstract Unix socket, by including the leading null byte in the address
+ * abstract Unix socket, by including the leading null byte in the address.
  *
  * If you are already handling a local socket logic in your application, you can also
  * use an overload which accepts a QLocalServer.
  *
  * It is guaranteed that when the PendingOperation returned by this method will be completed,
- * the tube will be open and ready to be used.
+ * the tube will be opened and ready to be used.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
- * \param address A valid path to an existing Unix socket or abstract Unix socket
- * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
- *                   Please read the specification for more details.
- * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
+ * \param address A valid path to an existing Unix socket or abstract Unix socket.
+ * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
+ *                   For more details, please refer to \telepathy_spec.
+ * \param requireCredentials Whether the server should require a SCM_CRED or SCM_CREDENTIALS message
  *                           upon connection.
- *
  * \return A PendingOperation which will finish as soon as the tube is ready to be used
- *          (hence in the Open state)
- *
- * \sa StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost
- * \sa StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials
- * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost
- * \sa StreamTubeChannel::supportsUnixSocketsWithCredentials
+ *         (hence in the #TubeStateOpen state)
+ * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost(),
+ *     StreamTubeChannel::supportsUnixSocketsWithCredentials(),
+ *     StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost(),
+ *     StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials()
  */
 PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
         const QString &socketAddress,
@@ -611,29 +546,27 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
 }
 
 /**
- * \overload
  * Offer a Unix socket over the tube.
  *
- * This method offers a Unix socket over this tube through a QLocalServer.
+ * This method offers an Unix socket over this stream tube. The socket is represented through
+ * a QLocalServer.
  *
  * It is guaranteed that when the PendingOperation returned by this method will be completed,
- * the tube will be open and ready to be used.
+ * the tube will be opened and ready to be used.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
  * \param server A valid QLocalServer, which should be already listening for incoming connections.
- * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
- *                   Please read the specification for more details.
- * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
+ * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
+ *                   For more details, please refer to \telepathy_spec.
+ * \param requireCredentials Whether the server should require a SCM_CRED or SCM_CREDENTIALS message
  *                           upon connection.
- *
  * \return A PendingOperation which will finish as soon as the tube is ready to be used
- *          (hence in the Open state)
- *
- * \sa StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost
- * \sa StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials
- * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost
- * \sa StreamTubeChannel::supportsUnixSocketsWithCredentials
+ *         (hence in the #TubeStateOpen state)
+ * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost(),
+ *     StreamTubeChannel::supportsUnixSocketsWithCredentials(),
+ *     StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost(),
+ *     StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials()
  */
 PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
         const QLocalServer *server,
@@ -646,22 +579,23 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
 }
 
 /**
- * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled,
- * the socket address type of this tube is IPv4 or IPv6, and if the tube supports connection
- * with an specified address, this function returns a map from a source address to
- * its connection ID. It is useful to track an address
- * which connected to your socket to a contact (by using contactsForConnections).
+ * Return a map from a source address to the corresponding connections ids.
+ *
+ * This method is only useful if this tube was offered using a TCP socket with
+ * #SocketAccessControlPort access control.
+ *
+ * The connection ids retrieved here can be used to track an address
+ * which connected to your socket to a contact (by using contactsForConnections()).
+ *
+ * Note that this function will only return valid data after the tube has been opened.
  *
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
  *
- * \return an hash mapping a source address to its connection ID
- *
- * \note The tube has to be open for calling this function
- *
- * \sa contactsForConnections
- * \sa StreamTubeChannel::addressType
- * \sa StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
- * \sa StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress
+ * \return A map from source addresses to the corresponding connection ids.
+ * \sa contactsForConnections(), connectionsForCredentials(),
+ *     TubeChannel::addressType(),
+ *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
+ *     StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress()
  */
 QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
 {
@@ -687,7 +621,7 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
 }
 
 /**
- * Returns a map from a credential byte to the corresponding connections ids.
+ * Return a map from a credential byte to the corresponding connections ids.
  *
  * This method is only useful if this tube was offered using an Unix socket requiring credentials.
  *
@@ -698,9 +632,11 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
  *
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
  *
- * \return an hash mapping a source address to its connection ID
+ * \return A map from credential bytes to the corresponding connection ids.
  * \sa contactsForConnections(), connectionsForSourceAddresses(),
- *     TubeChannel::addressType(), TubeChannel::accessControl()
+ *     TubeChannel::addressType(),
+ *     supportsUnixSocketsWithCredentials(),
+ *     supportsAbstractUnixSocketsWithCredentials()
  */
 QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
 {
@@ -732,17 +668,15 @@ QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
 }
 
 /**
- * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, this function
- * returns a map from a connection ID to the associated contact.
+ * Return a map from connection ids to the associated contact.
+ *
+ * Note that this function will only return valid data after the tube has been opened.
  *
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
- *
- * \return an hash mapping a connection ID to the associated contact.
- *
- * \note The tube has to be open for calling this function
- *
- * \sa connectionsForSourceAddresses
- * \sa StreamTubeChannel::addressType
+
+ * \return A map from connection ids to the associated contact.
+ * \sa connectionsForSourceAddresses(), connectionsForCredentials(),
+ *     StreamTubeChannel::addressType()
  */
 QHash<uint, ContactPtr> OutgoingStreamTubeChannel::contactsForConnections() const
 {
