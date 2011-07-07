@@ -114,7 +114,7 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
 
     parent->connect(streamTubeInterface,
             SIGNAL(ConnectionClosed(uint,QString,QString)),
-            SLOT(onConnectionClosed(uint,QString,QString)));
+            SIGNAL(connectionClosed(uint,QString,QString)));
 
     if (parent->isRequested()) {
         parent->connect(streamTubeInterface,
@@ -664,20 +664,6 @@ void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
         mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureCore, false,
                 op->errorName(), op->errorMessage());
     }
-}
-
-void StreamTubeChannel::onConnectionClosed(uint connectionId,
-        const QString &errorName, const QString &errorMessage)
-{
-    emit connectionClosed(connectionId, errorName, errorMessage);
-
-    processConnectionClosed(connectionId, errorName, errorMessage);
-}
-
-void StreamTubeChannel::processConnectionClosed(uint connectionId, const QString &errorName,
-            const QString &errorMessage)
-{
-    /* does nothing */
 }
 
 /**

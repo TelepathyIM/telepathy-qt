@@ -777,6 +777,10 @@ void TestStreamTubeChan::testOfferSuccess()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mGotConnectionClosed, true);
 
+        /* let the internal OutgoingStreamTubeChannel::onConnectionClosed slot be called before
+         * checking the data for that connection */
+        mLoop->processEvents();
+
         QCOMPARE(chan->contactsForConnections().isEmpty(), true);
         QCOMPARE(chan->connectionsForSourceAddresses().isEmpty(), true);
         QCOMPARE(chan->connectionsForCredentials().isEmpty(), true);
