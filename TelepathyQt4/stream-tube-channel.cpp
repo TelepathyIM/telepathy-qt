@@ -670,7 +670,7 @@ void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
  * \fn void StreamTubeChannel::connectionClosed(uint connectionId,
  *             const QString &errorName, const QString &errorMessage)
  *
- * This signal is emitted when a connection on this stream tube has been closed.
+ * Emitted when a connection on this stream tube has been closed.
  *
  * \param connectionId The unique ID associated with the connection that was closed.
  * \param errorName The name of a D-Bus error describing the error that occurred.
