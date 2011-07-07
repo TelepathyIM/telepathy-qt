@@ -82,9 +82,14 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
 
-    connect(acceptOperation,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onAcceptFinished(Tp::PendingOperation*)));
+    debug() << "Calling StreamTube.Accept";
+    if (acceptOperation->isFinished()) {
+        onAcceptFinished(acceptOperation);
+    } else {
+        connect(acceptOperation,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onAcceptFinished(Tp::PendingOperation*)));
+    }
 }
 
 /**
@@ -237,7 +242,7 @@ void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
         return;
     }
 
-    debug() << "StreamTube.Accept finished successfully";
+    debug() << "StreamTube.Accept returned successfully";
 
     PendingVariant *pv = qobject_cast<PendingVariant *>(op);
     // Build the address
