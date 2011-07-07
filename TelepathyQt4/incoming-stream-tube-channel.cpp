@@ -134,14 +134,14 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * only if the tube is in the #TubeStateLocalPending state.
  *
  * This overload lets you specify an allowed address/port combination for connecting to the socket.
- * Otherwise, you can specify QHostAddress::Any to accept every incoming connection from localhost,
- * or use the other overload.
+ * Otherwise, you can specify QHostAddress::Any or QHostAddress::AnyIPv6 to accept every incoming
+ * connection from localhost, or use the other overload.
  *
- * Note that when using QHostAddress::Any, \a allowedPort is ignored.
+ * Note that when using QHostAddress::Any or QHostAddress::AnyIPv6, \a allowedPort is ignored.
  *
  * This method requires IncomingStreamTubeChannel::FeatureCore to be enabled.
  *
- * \param allowedAddress An allowed address for connecting to the socket, or QHostAddress::Any
+ * \param allowedAddress An allowed address for connecting to the socket.
  * \param allowedPort An allowed port for connecting to the socket.
  * \return A PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
  *         (hence in the #TubeStateOpen state).
@@ -174,7 +174,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     SocketAccessControl accessControl;
 
     // Now, let's check what we need to do with accessControl. There is just one special case, Port.
-    if (allowedAddress != QHostAddress::Any) {
+    if (allowedAddress != QHostAddress::Any && allowedAddress != QHostAddress::AnyIPv6) {
         // We need to have a valid QHostAddress AND Port.
         if (allowedAddress.isNull() || allowedPort == 0) {
             warning() << "You have to set a valid allowed address+port to use Port access control";
@@ -215,16 +215,10 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         controlParameter = QVariant(QString());
     }
 
-    // Set the correct address type
-    if (allowedAddress == QHostAddress::Any) {
-        // Use IPv4 by default
-        setAddressType(SocketAddressTypeIPv4);
-    } else {
-        setAddressType(allowedAddress.protocol() == QAbstractSocket::IPv4Protocol ?
-                SocketAddressTypeIPv4 :
-                SocketAddressTypeIPv6);
-    }
-
+    // Set the correct address type and access control
+    setAddressType(allowedAddress.protocol() == QAbstractSocket::IPv4Protocol ?
+            SocketAddressTypeIPv4 :
+            SocketAddressTypeIPv6);
     setAccessControl(accessControl);
 
     // Fail early if the combination is not supported
