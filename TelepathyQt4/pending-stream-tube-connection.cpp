@@ -218,6 +218,9 @@ void PendingStreamTubeConnection::onChannelInvalidated(DBusProxy *proxy,
         return;
     }
 
+    warning().nospace() << "StreamTube.Accept failed because channel was invalidated with " <<
+        errorName << ": " << errorMessage;
+
     setFinishedWithError(errorName, errorMessage);
 }
 
@@ -228,24 +231,24 @@ void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
     }
 
     if (op->isError()) {
+        warning().nospace() << "StreamTube.Accept failed with " <<
+            op->errorName() << ": " << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Accept tube finished successfully";
+    debug() << "StreamTube.Accept finished successfully";
 
     PendingVariant *pv = qobject_cast<PendingVariant *>(op);
     // Build the address
     if (mPriv->type == SocketAddressTypeIPv4) {
         SocketAddressIPv4 addr = qdbus_cast<SocketAddressIPv4>(pv->result());
-        debug().nospace() << "Got address " << addr.address <<
-                ":" << addr.port;
+        debug().nospace() << "Got address " << addr.address << ":" << addr.port;
         mPriv->hostAddress = QHostAddress(addr.address);
         mPriv->port = addr.port;
     } else if (mPriv->type == SocketAddressTypeIPv6) {
         SocketAddressIPv6 addr = qdbus_cast<SocketAddressIPv6>(pv->result());
-        debug().nospace() << "Got address " << addr.address <<
-                ":" << addr.port;
+        debug().nospace() << "Got address " << addr.address << ":" << addr.port;
         mPriv->hostAddress = QHostAddress(addr.address);
         mPriv->port = addr.port;
     } else {
