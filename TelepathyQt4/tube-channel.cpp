@@ -261,7 +261,7 @@ void TubeChannel::gotTubeProperties(PendingOperation *op)
 /**
  * \fn void TubeChannel::stateChanged(Tp::TubeChannelState state)
  *
- * This signal is emitted when the value of state() changes.
+ * Emitted when the value of state() changes.
  *
  * \sa state The new state of this tube.
  * \sa state()
