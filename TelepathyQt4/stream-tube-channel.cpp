@@ -246,9 +246,6 @@ QString StreamTubeChannel::service() const
  * Return whether this stream tube is capable to accept or offer an IPv4 socket accepting all
  * incoming connections coming from localhost.
  *
- * When this capability is available, the stream tube can be accepted or offered without any
- * restriction on the access control on the other end.
- *
  * Note that the \telepathy_spec implies that any connection manager, if capable of providing
  * stream tubes, must at least support IPv4 sockets with localhost access control.
  * For this reason, this method should always return \c true.
@@ -318,9 +315,6 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
 /**
  * Return whether this stream tube is capable to accept or offer an IPv6 socket accepting all
  * incoming connections coming from localhost.
- *
- * When this capability is available, the stream tube can be accepted or offered without any
- * restriction on the access control on the other end.
  *
  * Note that it is strongly advised to call this method before attempting to call
  * IncomingStreamTubeChannel::acceptTubeAsTcpSocket() or
@@ -393,9 +387,6 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
  * Return whether this stream tube is capable to accept or offer an Unix socket accepting all
  * incoming connections coming from localhost.
  *
- * When this capability is available, the stream tube can be accepted or offered without any
- * restriction on the access control on the other end.
- *
  * Note that it is strongly advised to call this method before attempting to call
  * IncomingStreamTubeChannel::acceptTubeAsUnixSocket() or
  * OutgoingStreamTubeChannel::offerUnixSocket() without credentials enabled, as the spec implies
@@ -464,9 +455,6 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
 /**
  * Return whether this stream tube is capable to accept or offer an abstract Unix socket accepting
  * all incoming connections coming from localhost.
- *
- * When this capability is available, the stream tube can be accepted or offered without any
- * restriction on the access control on the other end.
  *
  * Note that it is strongly advised to call this method before attempting to call
  * IncomingStreamTubeChannel::acceptTubeAsUnixSocket() or
