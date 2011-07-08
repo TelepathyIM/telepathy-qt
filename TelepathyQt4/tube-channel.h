@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -37,6 +37,8 @@ class TELEPATHY_QT4_EXPORT TubeChannel : public Channel
     Q_DISABLE_COPY(TubeChannel)
 
 public:
+    static const Feature FeatureCore;
+    // FIXME (API/ABI break) Remove FeatureTube in favour of FeatureCore
     static const Feature FeatureTube;
 
     static TubeChannelPtr create(const ConnectionPtr &connection,
@@ -44,12 +46,14 @@ public:
 
     virtual ~TubeChannel();
 
-    TubeChannelState tubeState() const;
+    TubeChannelState state() const;
+    TELEPATHY_QT4_DEPRECATED TubeChannelState tubeState() const;
 
     QVariantMap parameters() const;
 
 Q_SIGNALS:
-    void tubeStateChanged(Tp::TubeChannelState newstate);
+    void stateChanged(Tp::TubeChannelState state);
+    void tubeStateChanged(Tp::TubeChannelState state);
 
 protected:
     TubeChannel(const ConnectionPtr &connection, const QString &objectPath,
@@ -58,9 +62,12 @@ protected:
 
     void setParameters(const QVariantMap &parameters);
 
+    // FIXME (API/ABI break) Remove connectNotify
+    void connectNotify(const char *);
+
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onTubeChannelStateChanged(uint newstate);
-    TELEPATHY_QT4_NO_EXPORT void gotTubeProperties(QDBusPendingCallWatcher *watcher);
+    TELEPATHY_QT4_NO_EXPORT void gotTubeProperties(Tp::PendingOperation *op);
 
 private:
     struct Private;

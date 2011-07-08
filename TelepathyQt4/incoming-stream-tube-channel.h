@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -43,6 +43,8 @@ class TELEPATHY_QT4_EXPORT IncomingStreamTubeChannel : public StreamTubeChannel
     Q_DISABLE_COPY(IncomingStreamTubeChannel)
 
 public:
+    static const Feature FeatureCore;
+
     static IncomingStreamTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
@@ -53,6 +55,7 @@ public:
             quint16 allowedPort);
     PendingStreamTubeConnection *acceptTubeAsUnixSocket(bool requireCredentials = false);
 
+    // FIXME: (API/ABI break) Remove ipAddress() and localAddress() (already in StreamTubeChannel)
     QPair<QHostAddress, quint16> ipAddress() const;
     QString localAddress() const;
 
@@ -60,7 +63,7 @@ protected:
     IncomingStreamTubeChannel(const ConnectionPtr &connection,
             const QString &objectPath,
             const QVariantMap &immutableProperties,
-            const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
+            const Feature &coreFeature = IncomingStreamTubeChannel::FeatureCore);
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onNewLocalConnection(uint connectionId);
