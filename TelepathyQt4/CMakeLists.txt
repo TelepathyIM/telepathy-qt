@@ -603,7 +603,9 @@ tpqt4_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::C
 tpqt4_future_client_generator(channel-dispatcher TpFuture::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-future-xincludator)
 tpqt4_future_client_generator(misc TpFuture::Client DEPENDS misc-future-xincludator)
 
-add_dependencies(doxygen-doc all-generated-sources)
+if (TARGET doxygen-doc)
+    add_dependencies(doxygen-doc all-generated-sources)
+endif (TARGET doxygen-doc)
 
 # Create the library
 if (ENABLE_COMPILER_COVERAGE)
