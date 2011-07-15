@@ -1359,7 +1359,6 @@ uint ConnectionLowlevel::maxPresenceStatusMessageLength() const
  * \param statusMessage The desired status message.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
- *
  * \sa allowedPresenceStatuses()
  */
 PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
@@ -1805,7 +1804,6 @@ void Connection::gotBalance(QDBusPendingCallWatcher *watcher)
  *
  * \return A pointer to the existing Client::ConnectionInterface object for this
  *         Connection object.
-
  */
 Client::ConnectionInterface *Connection::baseInterface() const
 {
