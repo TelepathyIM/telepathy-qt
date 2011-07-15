@@ -3606,6 +3606,7 @@ PendingChannelRequest *Account::ensureChannel(
  * \return A PendingChannel which will emit PendingChannel::finished
  *         successfully, when the Channel is available for handling using
  *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel()
  */
 PendingChannel *Account::createAndHandleChannel(
         const QVariantMap &request,
@@ -3635,6 +3636,7 @@ PendingChannel *Account::createAndHandleChannel(
  * \return A PendingChannel which will emit PendingChannel::finished
  *         successfully, when the Channel is available for handling using
  *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa createAndHandleChannel()
  */
 PendingChannel *Account::ensureAndHandleChannel(
         const QVariantMap &request,
