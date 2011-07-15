@@ -43,7 +43,7 @@ namespace Tp
  */
 
 /**
- * Creates a new AccountFactory.
+ * Create a new AccountFactory object.
  *
  * Optionally, the \a features to make ready on all constructed proxies can be specified. The
  * default is to make no features ready. It should be noted that unlike Account::becomeReady(),
@@ -61,7 +61,7 @@ AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus, const Featu
 }
 
 /**
- * Class constructor.
+ * Construct a new AccountFactory object.
  *
  * As in create(), it should be noted that unlike Account::becomeReady(), FeatureCore isn't assumed.
  * If no \a features are specified, no Account::becomeReady() call is made at all and the proxy
