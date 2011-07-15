@@ -60,8 +60,18 @@ PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection *paren
 
 PendingStreamTubeConnection::Private::~Private()
 {
-
 }
+
+/**
+ * \class PendingStreamTubeConnection
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/PendingStreamTubeConnection>
+ *
+ * \brief The PendingStreamTubeConnection class represents an asynchronous
+ * operation for accepting an incoming stream tube.
+ *
+ * See \ref async_model
+ */
 
 PendingStreamTubeConnection::PendingStreamTubeConnection(
         PendingVariant *acceptOperation,
@@ -91,20 +101,6 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
                 SLOT(onAcceptFinished(Tp::PendingOperation*)));
     }
 }
-
-/**
- * \class PendingStreamTubeConnection
- * \ingroup clientchannel
- * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/PendingStreamTubeConnection>
- *
- * \brief The PendingStreamTubeConnection class represents an asynchronous
- * operation for accepting a stream tube.
- *
- * When the operation is finished, you can access the resulting device
- * through device().
- * Otherwise, you can access the bare address through either tcpAddress() or
- * localAddress().
- */
 
 PendingStreamTubeConnection::PendingStreamTubeConnection(
         const QString& errorName,
