@@ -399,6 +399,7 @@ set(telepathy_qt4_HEADERS
     stream-tube-channel.h
     StreamedMediaChannel
     streamed-media-channel.h
+    StreamedMediaStream
     TextChannel
     text-channel.h
     TubeChannel
