@@ -612,7 +612,7 @@ ConnectionManagerPtr ConnectionManagerLowlevel::connectionManager() const
  * Connection managers allow connections to be made on one or more protocols.
  *
  * Most client applications should use this functionality via the
- * %AccountManager, to allow connections to be shared between client
+ * AccountManager, to allow connections to be shared between client
  * applications.
  */
 
