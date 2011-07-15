@@ -78,6 +78,10 @@ OutgoingFileTransferChannel::Private::~Private()
  *
  * \brief The OutgoingFileTransferChannel class represents a Telepathy channel
  * of type FileTransfer for outgoing file transfers.
+ *
+ * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
@@ -89,34 +93,36 @@ OutgoingFileTransferChannel::Private::~Private()
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Feature OutgoingFileTransferChannel::FeatureCore = Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0);
+const Feature OutgoingFileTransferChannel::FeatureCore =
+    Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0); // FT::FeatureCore
 
 /**
  * Create a new OutgoingFileTransferChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \return An OutgoingFileTransferChannelPtr object pointing to the newly created
  *         OutgoingFileTransferChannel object.
  */
 OutgoingFileTransferChannelPtr OutgoingFileTransferChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
-    return OutgoingFileTransferChannelPtr(new OutgoingFileTransferChannel(connection, objectPath,
-                immutableProperties));
+    return OutgoingFileTransferChannelPtr(new OutgoingFileTransferChannel(
+                connection, objectPath, immutableProperties,
+                OutgoingFileTransferChannel::FeatureCore));
 }
 
 /**
- * Construct a new outgoing file transfer channel associated with the given
- * \a objectPath on the same service as the given \a connection.
+ * Construct a new OutgoingFileTransferChannel object.
  *
- * \param connection Connection owning this channel, and specifying the service.
- * \param objectPath Path to the object on the service.
- * \param immutableProperties The immutable properties of the channel.
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- * depend on OutgoingFileTransferChannel::FeatureCore.
+ *                    depend on OutgoingFileTransferChannel::FeatureCore.
  */
 OutgoingFileTransferChannel::OutgoingFileTransferChannel(
         const ConnectionPtr &connection,
@@ -138,12 +144,13 @@ OutgoingFileTransferChannel::~OutgoingFileTransferChannel()
 
 /**
  * Provide the file for an outgoing file transfer which has been offered.
- * The state will change to %FileTransferStateOpen as soon as the transfer
+ *
+ * The state will change to #FileTransferStateOpen as soon as the transfer
  * starts.
  * The given input device should not be destroyed until the state()
- * changes to %FileTransferStateCompleted or %FileTransferStateCancelled.
+ * changes to #FileTransferStateCompleted or #FileTransferStateCancelled.
  * If input is a sequential device QIODevice::isSequential(), it should be
- * closed when no more data is available, so we know when to stop reading.
+ * closed when no more data is available, so that it's known when to stop reading.
  *
  * Only the primary handler of a file transfer channel may call this method.
  *
