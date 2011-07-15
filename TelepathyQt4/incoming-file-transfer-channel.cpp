@@ -147,6 +147,8 @@ IncomingFileTransferChannel::~IncomingFileTransferChannel()
  * incoming file will be saved. When the URI property is set, the signal
  * uriDefined() is emitted.
  *
+ * This method requires IncomingFileTransferChannel::FeatureCore to be ready.
+ *
  * \param uri The URI where the file will be saved.
  * \return A PendingOperation object which will emit PendingOperation::finished
  *         when the call has finished.
@@ -181,7 +183,7 @@ PendingOperation *IncomingFileTransferChannel::setUri(const QString& uri)
  *
  * Only the primary handler of a file transfer channel may call this method.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires IncomingFileTransferChannel::FeatureCore to be ready.
  *
  * \param offset The desired offset in bytes where the file transfer should
  *               start. The offset is taken from the beginning of the file.

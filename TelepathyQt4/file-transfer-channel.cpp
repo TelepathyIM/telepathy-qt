@@ -216,7 +216,7 @@ FileTransferChannel::~FileTransferChannel()
  *
  * Change notification is via the stateChanged() signal.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The state as #FileTransferState.
  * \sa stateReason()
@@ -236,7 +236,7 @@ FileTransferState FileTransferChannel::state() const
  *
  * Change notification is via the stateChanged() signal.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The state reason as #FileTransferStateChangeReason.
  * \sa state()
@@ -261,7 +261,7 @@ FileTransferStateChangeReason FileTransferChannel::stateReason() const
  *
  * This property cannot change once the channel has been created.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The suggested filename for the receiver.
  */
@@ -280,7 +280,7 @@ QString FileTransferChannel::fileName() const
  *
  * This property cannot change once the channel has been created.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The file's MIME type.
  */
@@ -305,7 +305,7 @@ QString FileTransferChannel::contentType() const
  *
  * This property cannot change once the channel has been created.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The file size.
  */
@@ -328,7 +328,7 @@ qulonglong FileTransferChannel::size() const
  * incoming file will be saved. When the URI property is set, the signal
  * IncomingFileTransferChannel::uriDefined() is emitted.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The file uri.
  * \sa IncomingFileTransferChannel::uriDefined()
@@ -346,7 +346,7 @@ QString FileTransferChannel::uri() const
 /**
  * Return the type of the contentHash().
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The content hash type as #FileHashType.
  * \sa contentHash()
@@ -369,7 +369,7 @@ FileHashType FileTransferChannel::contentHashType() const
  * If the contentHashType() is set to #FileHashTypeNone, then the
  * returned value is an empty string.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The hash of the contents.
  * \sa contentHashType()
@@ -393,7 +393,7 @@ QString FileTransferChannel::contentHash() const
  *
  * This property cannot change once the channel has been created.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The description.
  */
@@ -411,7 +411,7 @@ QString FileTransferChannel::description() const
  * Return the last modification time of the file being transferred. This cannot
  * change once the channel has been created.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The file modification time as QDateTime.
  */
@@ -428,7 +428,7 @@ QDateTime FileTransferChannel::lastModificationTime() const
 /**
  * Return the offset in bytes from which the file will be sent.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The offset in bytes.
  * \sa initialOffsetDefined()
@@ -448,7 +448,7 @@ qulonglong FileTransferChannel::initialOffset() const
  *
  * Change notification is via the transferredBytesChanged() signal.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The number of bytes.
  * \sa transferredBytesChanged()
@@ -472,7 +472,7 @@ qulonglong FileTransferChannel::transferredBytes() const
  * it is assumed to support accepting it. All CMs support at least
  * SocketAddressTypeIPv4.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The available socket types as a map from address types to arrays of access-control type.
  */

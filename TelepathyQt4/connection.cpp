@@ -1087,7 +1087,7 @@ QString Connection::protocolName() const
  *
  * Change notification is via the statusChanged() signal.
  *
- * This method requires Connection::FeatureCore to be enabled.
+ * This method requires Connection::FeatureCore to be ready.
  *
  * \return The status as #ConnectionStatus.
  * \sa statusChanged(), statusReason(), errorDetails()
@@ -1106,7 +1106,7 @@ ConnectionStatus Connection::status() const
  * doesn't understand an error name given as the invalidation reason, which may in some cases be
  * domain/UI-specific.
  *
- * This method requires Connection::FeatureCore to be enabled.
+ * This method requires Connection::FeatureCore to be ready.
  *
  * \return The status reason as #ConnectionStatusReason.
  * \sa invalidated(), invalidationReason()
@@ -1272,7 +1272,7 @@ const Connection::ErrorDetails &Connection::errorDetails() const
  *
  * Change notification is via the selfHandleChanged() signal.
  *
- * This method requires Connection::FeatureCore to be enabled.
+ * This method requires Connection::FeatureCore to be ready.
  *
  * \return The user handle.
  * \sa selfHandleChanged(), selfContact()
@@ -1289,7 +1289,7 @@ uint Connection::selfHandle() const
  * Connection spends in status ConnectionStatusConnecting,
  * again staying fixed for the entire time in ConnectionStatusConnected.
  *
- * This method requires Connection::FeatureSimplePresence to be enabled.
+ * This method requires Connection::FeatureSimplePresence to be ready.
  *
  * \return The allowed statuses as a map from string identifiers to SimpleStatusSpec objects.
  */
@@ -1319,7 +1319,7 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
  * Connection spends in status ConnectionStatusConnecting,
  * again staying fixed for the entire time in ConnectionStatusConnected.
  *
- * This method requires Connection::FeatureSimplePresence to be enabled.
+ * This method requires Connection::FeatureSimplePresence to be ready.
  *
  * \return The maximum length, or 0 if there is no limit.
  */
@@ -1392,7 +1392,7 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
  *
  * Change notification is via the selfContactChanged() signal.
  *
- * This method requires Connection::FeatureSelfContact to be enabled.
+ * This method requires Connection::FeatureSelfContact to be ready.
  *
  * \return A pointer to the Contact object, or a null ContactPtr if unknown.
  * \sa selfContactChanged(), selfHandle()
@@ -1415,7 +1415,7 @@ ContactPtr Connection::selfContact() const
  *
  * Change notification is via the accountBalanceChanged() signal.
  *
- * This method requires Connection::FeatureAccountBalance to be enabled.
+ * This method requires Connection::FeatureAccountBalance to be ready.
  *
  * \return The account balance as #CurrencyAmount.
  * \sa accountBalanceChanged()
@@ -1438,7 +1438,7 @@ CurrencyAmount Connection::accountBalance() const
  * This property cannot change after the connection has gone to state
  * ConnectionStatusConnected, so there is no change notification.
  *
- * This method requires Connection::FeatureCore to be enabled.
+ * This method requires Connection::FeatureCore to be ready.
  *
  * @return The capabilities of this connection.
  */
@@ -2155,7 +2155,7 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  * PendingContactAttributes instance will fail instantly with the
  * error #TP_QT4_ERROR_NOT_AVAILABLE.
  *
- * This method requires Connection::FeatureCore to be enabled.
+ * This method requires Connection::FeatureCore to be ready.
  *
  * \sa PendingContactAttributes
  *

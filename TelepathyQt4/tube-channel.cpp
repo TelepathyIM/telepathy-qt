@@ -174,7 +174,7 @@ TubeChannel::~TubeChannel()
  * Note that for outgoing tubes, this function will only return a valid value after the tube has
  * been offered successfully.
  *
- * This method requires TubeChannel::FeatureCore to be enabled.
+ * This method requires TubeChannel::FeatureCore to be ready.
  *
  * \return The parameters as QVariantMap.
  *         For more details, please refer to \telepathy_spec.
@@ -194,7 +194,7 @@ QVariantMap TubeChannel::parameters() const
  *
  * Change notification is via the stateChanged() signal.
  *
- * This method requires TubeChannel::FeatureCore to be enabled.
+ * This method requires TubeChannel::FeatureCore to be ready.
  *
  * \return The state as #TubeChannelState.
  * \sa stateChanged()

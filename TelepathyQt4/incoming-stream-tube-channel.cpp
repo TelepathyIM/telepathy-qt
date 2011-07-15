@@ -139,7 +139,7 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  *
  * Note that when using QHostAddress::Any or QHostAddress::AnyIPv6, \a allowedPort is ignored.
  *
- * This method requires IncomingStreamTubeChannel::FeatureCore to be enabled.
+ * This method requires IncomingStreamTubeChannel::FeatureCore to be ready.
  *
  * \param allowedAddress An allowed address for connecting to the socket.
  * \param allowedPort An allowed port for connecting to the socket.
@@ -266,7 +266,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
  *
  * Note that this is the equivalent of calling acceptTubeAsTcpSocket(QHostAddress::Any, 0).
  *
- * This method requires IncomingStreamTubeChannel::FeatureCore to be enabled.
+ * This method requires IncomingStreamTubeChannel::FeatureCore to be ready.
  *
  * \return A PendingStreamTubeConnection which will emit PendingStreamTubeConnection::finished
  *         when the stream tube is ready to be used
@@ -290,7 +290,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
  * You can also specify whether the server should require an SCM_CRED or SCM_CREDENTIALS message
  * upon connection instead of accepting every incoming connection from localhost.
  *
- * This method requires IncomingStreamTubeChannel::FeatureCore to be enabled.
+ * This method requires IncomingStreamTubeChannel::FeatureCore to be ready.
  *
  * \param requireCredentials Whether the server should require an SCM_CRED or SCM_CREDENTIALS message
  *                           upon connection.

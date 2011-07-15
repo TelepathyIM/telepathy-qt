@@ -147,7 +147,7 @@ OutgoingFileTransferChannel::~OutgoingFileTransferChannel()
  *
  * Only the primary handler of a file transfer channel may call this method.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \param input A QIODevice object where the data will be read from.
  * \return A PendingOperation object which will emit PendingOperation::finished

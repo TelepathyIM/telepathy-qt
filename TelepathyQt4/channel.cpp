@@ -1670,7 +1670,7 @@ QVariantMap Channel::immutableProperties() const
 /**
  * Return the D-Bus interface name for the type of this channel.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return The D-Bus interface name for the type of the channel.
  */
@@ -1693,7 +1693,7 @@ QString Channel::channelType() const
  * Return the type of the handle returned by targetHandle() as specified in
  * #HandleType.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return The target handle type as #HandleType.
  * \sa targetHandle(), targetId()
@@ -1711,7 +1711,7 @@ HandleType Channel::targetHandleType() const
  * Return the handle of the remote party with which this channel
  * communicates.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A integer representing the target handle, which is of the type
  *         targetHandleType() indicates.
@@ -1737,7 +1737,7 @@ uint Channel::targetHandle() const
  * elements for them across reconnects, though, at which point the old channels and contacts are
  * invalidated.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return The target identifier.
  * \sa targetHandle(), targetContact()
@@ -1754,7 +1754,7 @@ QString Channel::targetId() const
 /**
  * Return the contact with which this channel communicates for its lifetime, if applicable.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A pointer to the Contact object, or a null ContactPtr if targetHandleType() is not
  *         #HandleTypeContact.
@@ -1775,7 +1775,7 @@ ContactPtr Channel::targetContact() const
  * Return whether this channel was created in response to a
  * local request.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if the channel was created in response to a local request,
  *         \c false otherwise.
@@ -1792,7 +1792,7 @@ bool Channel::isRequested() const
 /**
  * Return the contact who initiated this channel.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A pointer to the Contact object representing the contact who initiated the channel,
  *         or a null ContactPtr if it can't be retrieved.
@@ -2021,7 +2021,7 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
  *
  * Change notification is via the groupFlagsChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return The bitfield combination of flags as #ChannelGroupFlags.
  * \sa groupFlagsChanged()
@@ -2040,7 +2040,7 @@ ChannelGroupFlags Channel::groupFlags() const
  *
  * Change notification is via the groupCanAddContactsChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if contacts can be added or invited to the channel,
  *         \c false otherwise.
@@ -2059,7 +2059,7 @@ bool Channel::groupCanAddContacts() const
  * Return whether a message is expected when adding/inviting contacts, who
  * are not already members, to this channel.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupFlags(), groupAddContacts()
@@ -2077,7 +2077,7 @@ bool Channel::groupCanAddContactsWithMessage() const
  * Return whether a message is expected when accepting contacts' requests to
  * join this channel.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupFlags(), groupAddContacts()
@@ -2105,7 +2105,7 @@ bool Channel::groupCanAcceptContactsWithMessage() const
  * expected when doing this, and if not, the message parameter is likely to be
  * ignored.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \param contacts Contacts to be added.
  * \param message A string message, which can be blank if desired.
@@ -2158,7 +2158,7 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
  *
  * Change notification is via the groupCanRescindContactsChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if contacts can be removed, \c false otherwise.
  * \sa groupFlags(), groupRemoveContacts()
@@ -2177,7 +2177,7 @@ bool Channel::groupCanRescindContacts() const
  * groupRemotePendingContacts() from this channel (i.e. rescinding an
  * invitation).
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupFlags(), groupRemoveContacts()
@@ -2199,7 +2199,7 @@ bool Channel::groupCanRescindContactsWithMessage() const
  *
  * Change notification is via the groupCanRemoveContactsChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if contacts can be removed, \c false otherwise.
  * \sa groupFlags(), groupRemoveContacts()
@@ -2217,7 +2217,7 @@ bool Channel::groupCanRemoveContacts() const
  * Return whether a message is expected when removing contacts who are in
  * groupContacts() from this channel.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupFlags(), groupRemoveContacts()
@@ -2236,7 +2236,7 @@ bool Channel::groupCanRemoveContactsWithMessage() const
  * groupLocalPendingContacts() from this channel (i.e. rejecting a request to
  * join).
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupFlags(), groupRemoveContacts()
@@ -2294,7 +2294,7 @@ bool Channel::groupCanDepartWithMessage() const
  * expected when doing this, and if not, the message parameter is likely to be
  * ignored.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \param contacts Contacts to be removed.
  * \param message A string message, which can be blank if desired.
@@ -2355,7 +2355,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
  *
  * Change notification is via the groupMembersChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A set of pointers to the Contact objects.
  * \sa groupLocalPendingContacts(), groupRemotePendingContacts()
@@ -2375,7 +2375,7 @@ Contacts Channel::groupContacts() const
  *
  * Change notification is via the groupMembersChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupRemotePendingContacts()
@@ -2397,7 +2397,7 @@ Contacts Channel::groupLocalPendingContacts() const
  *
  * Change notification is via the groupMembersChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupLocalPendingContacts()
@@ -2419,7 +2419,7 @@ Contacts Channel::groupRemotePendingContacts() const
  * no information is available, an object for which
  * GroupMemberChangeDetails::isValid() returns <code>false</code> is returned.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \param contact A Contact object that is on the local pending contacts list.
  * \return The change info as a GroupMemberChangeDetails object.
@@ -2454,7 +2454,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  * groupIsSelfHandleTracked() returns false and a self handle change has
  * occurred on the remote object.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return The remove info as a GroupMemberChangeDetails object.
  */
@@ -2491,7 +2491,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
  * The value returned by this function will stay fixed for the entire time
  * the object is ready, so no change notification is provided.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if handle owner lookup functionality is available, \c false otherwise.
  */
@@ -2519,7 +2519,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
  *
  * Change notification is via the groupHandleOwnersChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A mapping from group-specific handles to globally valid handles.
  */
@@ -2549,7 +2549,7 @@ HandleOwnerMap Channel::groupHandleOwners() const
  * emit the SelfHandleChanged signal either, so self contact changes can't be
  * reliably tracked.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if changes to the self contact are tracked, \c false otherwise.
  */
@@ -2571,7 +2571,7 @@ bool Channel::groupIsSelfContactTracked() const
  *
  * Change notification is via the groupSelfContactChanged() signal.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A pointer to the Contact object.
  */
@@ -2589,7 +2589,7 @@ ContactPtr Channel::groupSelfContact() const
  * indicates that the local user needs to take action to accept an invitation,
  * an incoming call, etc.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if local user is in the channel's local-pending set, \c false otherwise.
  */
@@ -2609,7 +2609,7 @@ bool Channel::groupSelfHandleIsLocalPending() const
  * such as Text and StreamedMedia, this is used to accept an invitation or an
  * incoming call.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -2643,7 +2643,7 @@ PendingOperation *Channel::groupAddSelfHandle()
  * Return whether this channel implements the conference interface
  * (#TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE is in the list returned by interfaces()).
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if the conference interface is supported, \c false otherwise.
  */
@@ -2655,7 +2655,7 @@ bool Channel::isConference() const
 /**
  * Return a list of contacts invited to this conference when it was created.
  *
- * This method requires Channel::FeatureConferenceInitialInviteeContacts to be enabled.
+ * This method requires Channel::FeatureConferenceInitialInviteeContacts to be ready.
  *
  * \return A set of pointers to the Contact objects.
  */
@@ -2673,7 +2673,7 @@ Contacts Channel::conferenceInitialInviteeContacts() const
  * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A list of pointers to Channel objects containing all channels in the conference.
  * \sa conferenceInitialChannels(), conferenceOriginalChannels()
@@ -2689,7 +2689,7 @@ QList<ChannelPtr> Channel::conferenceChannels() const
  * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A list of pointers to Channel objects containing all channels that were initially
  *         part of the conference.
@@ -2736,7 +2736,7 @@ QList<ChannelPtr> Channel::conferenceInitialChannels() const
  * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A map of channel specific handles to pointers to Channel objects.
  * \sa conferenceChannels(), conferenceInitialChannels()
@@ -2749,7 +2749,7 @@ QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
 /**
  * Return whether this channel supports conference merging using conferenceMergeChannel().
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if the interface is supported, \c false otherwise.
  * \sa conferenceMergeChannel()
@@ -2763,7 +2763,7 @@ bool Channel::supportsConferenceMerging() const
 /**
  * Request that the given channel be incorporated into this channel.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -2785,7 +2785,7 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 /**
  * Return whether this channel supports splitting using conferenceSplitChannel().
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if the interface is supported, \c false otherwise.
  * \sa conferenceSplitChannel()
@@ -2800,7 +2800,7 @@ bool Channel::supportsConferenceSplitting() const
  * Request that this channel is removed from any conference of which it is
  * a part.
  *
- * This method requires Channel::FeatureCore to be enabled.
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.

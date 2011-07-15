@@ -227,7 +227,7 @@ StreamTubeChannel::~StreamTubeChannel()
  * Return the service name which will be used over this stream tube. This should be a
  * well-known TCP service name, for instance "rsync" or "daap".
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return The service name.
  */
@@ -250,7 +250,7 @@ QString StreamTubeChannel::service() const
  * stream tubes, must at least support IPv4 sockets with localhost access control.
  * For this reason, this method should always return \c true.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return \c true if the stream tube is capable to accept or offer an IPv4 socket
  *         accepting all incoming connections coming from localhost, \c false otherwise.
@@ -289,7 +289,7 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
  * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
  * as the spec implies this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return \c true if the stream tube is capable to accept an IPv4 socket accepting all
  *         incoming connections coming from a specific address for incoming tubes or
@@ -321,7 +321,7 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
  * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
  * as the spec implies this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return \c true if the stream tube is capable to accept or offer an IPv6 socket
  *         accepting all incoming connections coming from localhost, \c false otherwise.
@@ -360,7 +360,7 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
  * OutgoingStreamTubeChannel::offerTcpSocket() with a specified address to prevent failures,
  * as the spec implies this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return \c true if the stream tube is capable to accept an IPv6 socket accepting all
  *         incoming connections coming from a specific address for incoming tubes or
@@ -392,7 +392,7 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
  * OutgoingStreamTubeChannel::offerUnixSocket() without credentials enabled, as the spec implies
  * this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return \c true if the stream tube is capable to accept or offer an Unix socket
  *         accepting all incoming connections coming from localhost, \c false otherwise.
@@ -431,7 +431,7 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
  * OutgoingStreamTubeChannel::offerUnixSocket() with credentials enabled, as the spec implies
  * this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return \c true if the stream tube is capable to accept or offer an Unix socket
  *         which will require credentials upon connection, \c false otherwise.
@@ -461,7 +461,7 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
  * OutgoingStreamTubeChannel::offerUnixSocket() without credentials enabled, as the spec implies
  * this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return \c true if the stream tube is capable to accept or offer an abstract Unix socket
  *         accepting all incoming connections coming from localhost, \c false otherwise.
@@ -500,7 +500,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
  * OutgoingStreamTubeChannel::offerUnixSocket() with credentials enabled, as the spec implies
  * this feature is not compulsory for connection managers.
  *
- * This method requires StreamTubeChannel::FeatureCore to be enabled.
+ * This method requires StreamTubeChannel::FeatureCore to be ready.
  *
  * \return \c true if the stream tube is capable to accept or offer an abstract Unix socket
  *         which will require credentials upon connection, \c false otherwise.
@@ -529,7 +529,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
  * StreamTubeChannel::FeatureConnectionMonitoring ready before accepting or offering the stream
  * tube.
  *
- * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
+ * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be ready.
  *
  * \return The list of active connection ids.
  * \sa newConnection(), connectionClosed()

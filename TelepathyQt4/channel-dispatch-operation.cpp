@@ -368,7 +368,7 @@ ChannelDispatchOperation::~ChannelDispatchOperation()
  * Return the connection with which the channels for this dispatch
  * operation are associated.
  *
- * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
  * \return A pointer to the Connection object.
  */
@@ -381,7 +381,7 @@ ConnectionPtr ChannelDispatchOperation::connection() const
  * Return the account with which the connection and channels for this dispatch
  * operation are associated.
  *
- * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
  * \return A pointer to the Account object.
  */
@@ -393,7 +393,7 @@ AccountPtr ChannelDispatchOperation::account() const
 /**
  * Return the channels to be dispatched.
  *
- * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
  * \return A list of pointers to Channel objects.
  */
@@ -414,7 +414,7 @@ QList<ChannelPtr> ChannelDispatchOperation::channels() const
  * As a result, approvers should use the first handler by default, unless they
  * have a reason to do otherwise.
  *
- * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
  * \return List of possible handlers names.
  */

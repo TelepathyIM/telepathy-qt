@@ -786,7 +786,7 @@ ContactFactoryConstPtr ConnectionManager::contactFactory() const
  * These identifiers are not intended to be displayed to users directly; user
  * interfaces are responsible for mapping them to localized strings.
  *
- * This method requires ConnectionManager::FeatureCore to be enabled.
+ * This method requires ConnectionManager::FeatureCore to be ready.
  *
  * \return A list of supported protocols.
  */
@@ -804,7 +804,7 @@ QStringList ConnectionManager::supportedProtocols() const
  *
  * Note that the returned ProtocolInfoList contents should not be freed.
  *
- * This method requires ConnectionManager::FeatureCore to be enabled.
+ * This method requires ConnectionManager::FeatureCore to be ready.
  *
  * \return A list of ṔrotocolInfo.
  */
@@ -817,7 +817,7 @@ const ProtocolInfoList &ConnectionManager::protocols() const
  * Return whether this connection manager implements the protocol specified by
  * \a protocolName.
  *
- * This method requires ConnectionManager::FeatureCore to be enabled.
+ * This method requires ConnectionManager::FeatureCore to be ready.
  *
  * \return \c true if the protocol is supported, \c false otherwise.
  * \sa protocol(), protocols()
@@ -836,7 +836,7 @@ bool ConnectionManager::hasProtocol(const QString &protocolName) const
  * Return the ProtocolInfo object for the protocol specified by
  * \a protocolName.
  *
- * This method requires ConnectionManager::FeatureCore to be enabled.
+ * This method requires ConnectionManager::FeatureCore to be ready.
  *
  * \param protocolName The name of the protocol.
  * \return A ProtocolInfo object which will return \c for ProtocolInfo::isValid() if the protocol
