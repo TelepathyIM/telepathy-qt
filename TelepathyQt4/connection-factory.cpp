@@ -42,7 +42,7 @@ namespace Tp
  */
 
 /**
- * Creates a new ConnectionFactory.
+ * Create a new ConnectionFactory object.
  *
  * Optionally, the \a features to make ready on all constructed proxies can be specified. The
  * default is to make no features ready. It should be noted that unlike Connection::becomeReady(),
@@ -61,7 +61,7 @@ ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus,
 }
 
 /**
- * Class constructor.
+ * Construct a new ConnectionFactory object.
  *
  * As in create(), it should be noted that unlike Connection::becomeReady(), FeatureCore isn't
  * assumed.  If no \a features are specified, no Connection::becomeReady() call is made at all and
