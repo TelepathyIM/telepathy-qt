@@ -513,15 +513,16 @@ PendingOperation *StreamedMediaStream::requestDirection(
 }
 
 /**
- * Start sending a DTMF tone on this media stream. Where possible, the tone will
- * continue until stopDTMFTone() is called. On certain protocols, it may only be
- * possible to send events with a predetermined length. In this case, the
- * implementation may emit a fixed-length tone, and the stopDTMFTone() method
- * call should return #TELEPATHY_ERROR_NOT_AVAILABLE.
+ * Start sending a DTMF tone on this media stream.
  *
- * If the channel() does not support the #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF
+ * Where possible, the tone will continue until stopDTMFTone() is called.
+ * On certain protocols, it may only be possible to send events with a predetermined
+ * length. In this case, the implementation may emit a fixed-length tone,
+ * and the stopDTMFTone() method call should return #TP_QT4_ERROR_NOT_AVAILABLE.
+ *
+ * If the channel() does not support the #TP_QT4_IFACE_CHANNEL_INTERFACE_DTMF
  * interface, the resulting PendingOperation will fail with error code
- * #TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ * #TP_QT4_ERROR_NOT_IMPLEMENTED.
 
  * \param event A numeric event code from the DTMFEvent enum.
  * \return A PendingOperation which will emit PendingOperation::finished
@@ -551,11 +552,11 @@ PendingOperation *StreamedMediaStream::startDTMFTone(DTMFEvent event)
  * finish successfully.
  *
  * If continuous tones are not supported by this media stream, the resulting
- * PendingOperation will fail with error code #TELEPATHY_ERROR_NOT_AVAILABLE.
+ * PendingOperation will fail with error code #TP_QT4_ERROR_NOT_AVAILABLE.
  *
- * If the channel() does not support the #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF
+ * If the channel() does not support the #TP_QT4_IFACE_CHANNEL_INTERFACE_DTMF
  * interface, the resulting PendingOperation will fail with error code
- * #TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ * #TP_QT4_ERROR_NOT_IMPLEMENTED.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request finishes.
@@ -1097,8 +1098,8 @@ PendingOperation *StreamedMediaChannel::hangupCall()
 /**
  * Check whether media streaming by the handler is required for this channel.
  *
- * For channels with the MediaSignalling interface, the main handler of the
- * channel is responsible for doing the actual streaming, for instance by
+ * For channels with the #TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING interface,
+ * the main handler of the channel is responsible for doing the actual streaming, for instance by
  * calling createFarsightChannel(channel) from TelepathyQt4-Farsight library
  * and using the telepathy-farsight API on the resulting TfChannel.
  *
@@ -1154,7 +1155,7 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  *
  * If the connection manager can immediately tell that the requested state
  * change could not possibly succeed, the resulting PendingOperation will fail
- * with error code #TELEPATHY_ERROR_NOT_AVAILABLE.
+ * with error code #TP_QT4_ERROR_NOT_AVAILABLE.
  * If the requested state is the same as the current state, the resulting
  * PendingOperation will finish successfully.
  *
@@ -1171,9 +1172,9 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  * another, it will attempt to revert all streams to their previous hold
  * states.
  *
- * If the channel does not support the #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD
+ * If the channel does not support the #TP_QT4_IFACE_CHANNEL_INTERFACE_HOLD
  * interface, the PendingOperation will fail with error code
- * #TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ * #TP_QT4_ERROR_NOT_IMPLEMENTED.
  *
  * \param hold A boolean indicating whether or not the channel should be on hold
  * \return A %PendingOperation, which will emit PendingOperation::finished

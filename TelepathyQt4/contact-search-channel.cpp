@@ -526,10 +526,10 @@ void ContactSearchChannel::continueSearch()
 /**
  * Stop the current search.
  *
- * This may not be called while the searchState() is ChannelContactSearchStateNotStarted.
- * If called while the searchState() is ChannelContactSearchStateInProgress,
- * searchStateChanged() will be emitted, with the state ChannelContactSearchStateFailed and
- * the error #TELEPATHY_ERROR_CANCELLED.
+ * This may not be called while the searchState() is #ChannelContactSearchStateNotStarted.
+ * If called while the searchState() is #ChannelContactSearchStateInProgress,
+ * searchStateChanged() will be emitted, with the state #ChannelContactSearchStateFailed and
+ * the error #TP_QT4_ERROR_CANCELLED.
  *
  * \return A PendingOperation, which will emit PendingOperation::finished
  *         when the call has finished.

@@ -252,15 +252,15 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
  *
  * Because all approvers are launched simultaneously, the user might respond
  * to another approver; if this happens, the invalidated signal will be
- * emitted with the error code #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * emitted with the error code #TP_QT4_ERROR_OBJECT_REMOVED.
  *
  * If a channel closes, the signal channelLost() is emitted. If all channels
  * close, there is nothing more to dispatch, so the invalidated signal will be
- * emitted with the error code #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * emitted with the error code #TP_QT4_ERROR_OBJECT_REMOVED.
  *
  * If the channel dispatcher crashes or exits, the invalidated
  * signal will be emitted with the error code
- * #TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
+ * #TP_QT4_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
  * the dispatcher should be restarted, at which point it will create new
  * channel dispatch operations for any undispatched channels, and the approver
  * will be notified again.
@@ -429,7 +429,7 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
  *
  * If successful, this method will cause the ChannelDispatchOperation object to
  * disappear, emitting invalidated with error
- * #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * #TP_QT4_ERROR_OBJECT_REMOVED.
  *
  * However, this method may fail because the dispatch has already been completed
  * and the object has already gone. If this occurs, it indicates that another
@@ -501,7 +501,7 @@ PendingOperation *ChannelDispatchOperation::claim()
  * A channel has closed before it could be claimed or handled. If this is
  * emitted for the last remaining channel in a channel dispatch operation, it
  * will immediately be followed by invalidated() with error
- * #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * #TP_QT4_ERROR_OBJECT_REMOVED.
  *
  * \param channel The Channel that closed.
  * \param error The name of a D-Bus error indicating why the channel closed.
