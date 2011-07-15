@@ -184,21 +184,6 @@ QString DBusProxy::invalidationMessage() const
 }
 
 /**
- * \fn void DBusProxy::invalidated(Tp::DBusProxy *proxy,
- *          const QString &errorName, const QString &errorMessage)
- *
- * Emitted when this object is no longer usable.
- *
- * After this signal is emitted, any D-Bus method calls on the object
- * will fail, but it may be possible to retrieve information that has
- * already been retrieved and cached.
- *
- * \param proxy This proxy.
- * \param errorName The name of a D-Bus error describing the reason for the invalidation.
- * \param errorMessage A debugging message associated with the error.
- */
-
-/**
  * Called by subclasses when the DBusProxy should become invalid.
  *
  * This method takes care of setting the invalidationReason,
@@ -244,6 +229,21 @@ void DBusProxy::emitInvalidated()
 
     emit invalidated(this, mPriv->invalidationReason, mPriv->invalidationMessage);
 }
+
+/**
+ * \fn void DBusProxy::invalidated(Tp::DBusProxy *proxy,
+ *          const QString &errorName, const QString &errorMessage)
+ *
+ * Emitted when this object is no longer usable.
+ *
+ * After this signal is emitted, any D-Bus method calls on the object
+ * will fail, but it may be possible to retrieve information that has
+ * already been retrieved and cached.
+ *
+ * \param proxy This proxy.
+ * \param errorName The name of a D-Bus error describing the reason for the invalidation.
+ * \param errorMessage A debugging message associated with the error.
+ */
 
 // ==== StatefulDBusProxy ==============================================
 
