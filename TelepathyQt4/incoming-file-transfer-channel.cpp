@@ -255,16 +255,6 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
     return pv;
 }
 
-/**
- * \fn void IncomingFileTransferChannel::uriDefined(const QString &uri);
- *
- * This signal is emitted when the value of uri() of this file transfer channel
- * changes.
- *
- * \param uri The new URI of this file transfer channel.
- * \sa FileTransferChannel::uri(), setUri()
- */
-
 void IncomingFileTransferChannel::onAcceptFileFinished(PendingOperation *op)
 {
     if (op->isError()) {
@@ -387,5 +377,14 @@ void IncomingFileTransferChannel::setFinished()
 
     FileTransferChannel::setFinished();
 }
+
+/**
+ * \fn void IncomingFileTransferChannel::uriDefined(const QString &uri)
+ *
+ * Emitted when the value of uri() changes.
+ *
+ * \param uri The new URI of this file transfer channel.
+ * \sa FileTransferChannel::uri(), setUri()
+ */
 
 } // Tp
