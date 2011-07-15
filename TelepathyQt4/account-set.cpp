@@ -210,7 +210,7 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  *
  * The easiest way to create AccountSet objects is through AccountManager. One
  * can just use the AccountManager convenience methods such as
- * AccountManager::validAccountsSet() to get a set of account objects
+ * AccountManager::validAccounts() to get a set of account objects
  * representing valid accounts.
  *
  * For example:
@@ -252,7 +252,7 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  *         return;
  *     }
  *
- *     validAccountsSet = am->validAccountsSet();
+ *     validAccountsSet = am->validAccounts();
  *     connect(validAccountsSet.data(),
  *             SIGNAL(accountAdded(const Tp::AccountPtr &)),
  *             SLOT(onValidAccountAdded(const Tp::AccountPtr &)));
