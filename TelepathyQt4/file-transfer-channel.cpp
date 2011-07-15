@@ -502,36 +502,6 @@ PendingOperation *FileTransferChannel::cancel()
 }
 
 /**
- * \fn void FileTransferChannel::stateChanged(Tp::FileTransferState state,
- *          Tp::FileTransferStateChangeReason reason)
- *
- * Emitted when the value of state() changes.
- *
- * \param state The new state of this file transfer channel.
- * \param reason The reason for the change of state.
- * \sa state()
- */
-
-/**
- * \fn void FileTransferChannel::initialOffsetDefined(qulonglong initialOffset)
- *
- * Emitted when the initial offset for the file transfer is
- * defined.
- *
- * \param initialOffset The new initial offset for the file transfer.
- * \sa initialOffset()
- */
-
-/**
- * \fn void FileTransferChannel::transferredBytesChanged(qulonglong count);
- *
- * Emitted when the value of transferredBytes() changes.
- *
- * \param count The new number of bytes transferred.
- * \sa transferredBytes()
- */
-
-/**
  * Protected virtual method called when the state becomes
  * #FileTransferStateOpen.
  *
@@ -699,5 +669,35 @@ void FileTransferChannel::onUriDefined(const QString &uri)
     mPriv->uri = uri;
     // Signal is emitted only by IncomingFileTransferChannels
 }
+
+/**
+ * \fn void FileTransferChannel::stateChanged(Tp::FileTransferState state,
+ *          Tp::FileTransferStateChangeReason reason)
+ *
+ * Emitted when the value of state() changes.
+ *
+ * \param state The new state of this file transfer channel.
+ * \param reason The reason for the change of state.
+ * \sa state()
+ */
+
+/**
+ * \fn void FileTransferChannel::initialOffsetDefined(qulonglong initialOffset)
+ *
+ * Emitted when the initial offset for the file transfer is
+ * defined.
+ *
+ * \param initialOffset The new initial offset for the file transfer.
+ * \sa initialOffset()
+ */
+
+/**
+ * \fn void FileTransferChannel::transferredBytesChanged(qulonglong count);
+ *
+ * Emitted when the value of transferredBytes() changes.
+ *
+ * \param count The new number of bytes transferred.
+ * \sa transferredBytes()
+ */
 
 } // Tp
