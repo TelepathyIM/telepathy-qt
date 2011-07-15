@@ -229,7 +229,7 @@ StreamTubeChannel::~StreamTubeChannel()
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return The service name that will be used over this stream tube.
+ * \return The service name.
  */
 QString StreamTubeChannel::service() const
 {
@@ -252,8 +252,8 @@ QString StreamTubeChannel::service() const
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return Whether this stream tube is capable to accept or offer an IPv4 socket
- *         accepting all incoming connections coming from localhost.
+ * \return \c true if the stream tube is capable to accept or offer an IPv4 socket
+ *         accepting all incoming connections coming from localhost, \c false otherwise.
  * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket(),
  *     OutgoingStreamTubeChannel::offerTcpSocket(),
  *     supportsIPv4SocketsWithSpecifiedAddress()
@@ -291,10 +291,10 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return Whether this stream tube is capable to accept an IPv4 socket accepting all
- *         incoming connections coming from a specific address for incoming tubes or whether
- *         this stream tube is capable of mapping connections to the socket's source address for
- *         outgoing tubes.
+ * \return \c true if the stream tube is capable to accept an IPv4 socket accepting all
+ *         incoming connections coming from a specific address for incoming tubes or
+ *         the stream tube is capable of mapping connections to the socket's source address for
+ *         outgoing tubes, \c false otherwise.
  * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket(),
  *     OutgoingStreamTubeChannel::offerTcpSocket(),
  *     OutgoingStreamTubeChannel::connectionsForSourceAddresses(),
@@ -323,8 +323,8 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return Whether this stream tube is capable to accept or offer an IPv6 socket
- *         accepting all incoming connections coming from localhost.
+ * \return \c true if the stream tube is capable to accept or offer an IPv6 socket
+ *         accepting all incoming connections coming from localhost, \c false otherwise.
  * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket(),
  *     OutgoingStreamTubeChannel::offerTcpSocket(),
  *     supportsIPv6SocketsWithSpecifiedAddress()
@@ -362,10 +362,10 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return Whether this stream tube is capable to accept an IPv6 socket accepting all
- *         incoming connections coming from a specific address for incoming tubes or whether
- *         this stream tube is capable of mapping connections to the socket's source address for
- *         outgoing tubes.
+ * \return \c true if the stream tube is capable to accept an IPv6 socket accepting all
+ *         incoming connections coming from a specific address for incoming tubes or
+ *         the stream tube is capable of mapping connections to the socket's source address for
+ *         outgoing tubes, \c false otherwise.
  * \sa IncomingStreamTubeChannel::acceptTubeAsTcpSocket(),
  *     OutgoingStreamTubeChannel::offerTcpSocket(),
  *     OutgoingStreamTubeChannel::connectionsForSourceAddresses(),
@@ -394,8 +394,8 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return Whether this stream tube is capable to accept or offer an Unix socket
- *         accepting all incoming connections coming from localhost.
+ * \return \c true if the stream tube is capable to accept or offer an Unix socket
+ *         accepting all incoming connections coming from localhost, \c false otherwise.
  * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket(),
  *     OutgoingStreamTubeChannel::offerUnixSocket(),
  *     supportsUnixSocketsWithCredentials()
@@ -433,8 +433,8 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return Whether this stream tube is capable to accept or offer an Unix socket
- *         which will require credentials upon connection.
+ * \return \c true if the stream tube is capable to accept or offer an Unix socket
+ *         which will require credentials upon connection, \c false otherwise.
  * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket(),
  *     OutgoingStreamTubeChannel::offerUnixSocket(),
  *     supportsUnixSocketsOnLocalhost(),
@@ -463,8 +463,8 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return Whether this stream tube is capable to accept or offer an abstract Unix socket
- *         accepting all incoming connections coming from localhost.
+ * \return \c true if the stream tube is capable to accept or offer an abstract Unix socket
+ *         accepting all incoming connections coming from localhost, \c false otherwise.
  * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket(),
  *     OutgoingStreamTubeChannel::offerUnixSocket(),
  *     supportsUnixSocketsOnLocalhost(),
@@ -502,8 +502,8 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
  *
  * This method requires StreamTubeChannel::FeatureCore to be enabled.
  *
- * \return Whether this stream tube is capable to accept or offer an abstract Unix socket
- *         which will require credentials upon connection.
+ * \return \c true if the stream tube is capable to accept or offer an abstract Unix socket
+ *         which will require credentials upon connection, \c false otherwise.
  * \sa IncomingStreamTubeChannel::acceptTubeAsUnixSocket(),
  *     OutgoingStreamTubeChannel::offerUnixSocket(),
  *     supportsUnixSocketsOnLocalhost(),
@@ -531,7 +531,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
  *
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
  *
- * \return A list of active connection ids known to this stream tube.
+ * \return The list of active connection ids.
  * \sa newConnection(), connectionClosed()
  */
 UIntList StreamTubeChannel::connections() const
@@ -550,7 +550,7 @@ UIntList StreamTubeChannel::connections() const
  *
  * Note that this function will return a valid value only after the stream tube has been opened.
  *
- * \return The type of socket this stream tube is using.
+ * \return The socket type as #SocketAddressType.
  * \sa localAddress(), ipAddress(), TubeChannel::state()
  */
 SocketAddressType StreamTubeChannel::addressType() const
@@ -563,7 +563,7 @@ SocketAddressType StreamTubeChannel::addressType() const
  *
  * Note that this function will only return a valid value after the stream tube has been opened.
  *
- * \return The access control used by this stream tube.
+ * \return The access control as #SocketAccessControl.
  * \sa addressType(), TubeChannel::state()
  */
 SocketAccessControl StreamTubeChannel::accessControl() const
@@ -578,8 +578,9 @@ SocketAccessControl StreamTubeChannel::accessControl() const
  *
  * Note that this function will return a valid value only after the stream tube has been opened.
  *
- * \return The IP address and port used by this stream tube.
- * \sa addressType(), TubeChannel::state()
+ * \return Pair of IP address as QHostAddress and port if using a TCP socket,
+ *         or an undefined value otherwise.
+ * \sa addressType(), localAddress(), TubeChannel::state()
  */
 QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 {
@@ -598,8 +599,9 @@ QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
  *
  * Note that this function will return a valid value only after the stream tube has been opened.
  *
- * \return The local address used by this stream tube.
- * \sa addressType(), TubeChannel::state()
+ * \return Unix socket address if using an Unix socket,
+ *         or an undefined value otherwise.
+ * \sa addressType(), ipAddress(), TubeChannel::state()
  */
 QString StreamTubeChannel::localAddress() const
 {

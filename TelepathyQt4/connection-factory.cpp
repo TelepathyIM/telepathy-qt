@@ -51,7 +51,8 @@ namespace Tp
  *
  * \param bus The QDBusConnection for proxies constructed using this factory to use.
  * \param features The features to make ready on constructed Connections.
- * \returns A pointer to the created factory.
+ * \return A ConnectionFactoryPtr object pointing to the newly created
+ *         ConnectionFactory object.
  */
 ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus,
         const Features &features)
@@ -126,7 +127,7 @@ PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &ob
  * \param objectPath The object path of the connection.
  * \param chanFactory The channel factory to use for the Connection.
  * \param contactFactory The channel factory to use for the Connection.
- * \return A pointer to the constructed proxy.
+ * \return A pointer to the constructed Connection object.
  */
 ConnectionPtr ConnectionFactory::construct(const QString &busName, const QString &objectPath,
         const ChannelFactoryConstPtr &chanFactory,

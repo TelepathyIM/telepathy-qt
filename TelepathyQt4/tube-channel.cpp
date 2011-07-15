@@ -176,7 +176,7 @@ TubeChannel::~TubeChannel()
  *
  * This method requires TubeChannel::FeatureCore to be enabled.
  *
- * \return A dictionary of arbitrary parameters.
+ * \return The parameters as QVariantMap.
  *         For more details, please refer to \telepathy_spec.
  */
 QVariantMap TubeChannel::parameters() const
@@ -196,7 +196,7 @@ QVariantMap TubeChannel::parameters() const
  *
  * This method requires TubeChannel::FeatureCore to be enabled.
  *
- * \return The state of this tube.
+ * \return The state as #TubeChannelState.
  * \sa stateChanged()
  */
 TubeChannelState TubeChannel::state() const

@@ -940,7 +940,7 @@ Account::~Account()
  * situations where objects constructed at different times by the account would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the ConnectionFactory object.
  */
 ConnectionFactoryConstPtr Account::connectionFactory() const
 {
@@ -955,7 +955,7 @@ ConnectionFactoryConstPtr Account::connectionFactory() const
  * situations where objects constructed at different times by the account would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the ChannelFactory object.
  */
 ChannelFactoryConstPtr Account::channelFactory() const
 {
@@ -970,7 +970,7 @@ ChannelFactoryConstPtr Account::channelFactory() const
  * situations where objects constructed at different times by the account would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the ContactFactory object.
  */
 ContactFactoryConstPtr Account::contactFactory() const
 {
@@ -990,7 +990,7 @@ ContactFactoryConstPtr Account::contactFactory() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return \c true if the account is valid, \c false otherwise.
+ * \return \c true if valid, \c false otherwise.
  * \sa validityChanged(), updateParameters()
  */
 bool Account::isValidAccount() const
@@ -1005,7 +1005,7 @@ bool Account::isValidAccount() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return \c true if the account is enabled, \c false otherwise.
+ * \return \c true if enabled, \c false otherwise.
  * \sa stateChanged(), setEnabled()
  */
 bool Account::isEnabled() const
@@ -1039,7 +1039,7 @@ PendingOperation *Account::setEnabled(bool value)
 /**
  * Return the connection manager name of this account.
  *
- * \return The connection manager name of this account.
+ * \return The connection manager name.
  */
 QString Account::cmName() const
 {
@@ -1049,7 +1049,7 @@ QString Account::cmName() const
 /**
  * Return the protocol name of this account.
  *
- * \return The protocol name of this account.
+ * \return The protocol name.
  */
 QString Account::protocolName() const
 {
@@ -1066,7 +1066,7 @@ QString Account::protocolName() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The service name of this account.
+ * \return The service name.
  * \sa serviceNameChanged(), setServiceName(), protocolName()
  */
 QString Account::serviceName() const
@@ -1144,7 +1144,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  *
  * This method requires Account::FeatureProfile to be enabled.
  *
- * \return The profile for this account.
+ * \return A pointer to the Profile object.
  * \sa profileChanged(), serviceName()
  */
 ProfilePtr Account::profile() const
@@ -1178,7 +1178,7 @@ ProfilePtr Account::profile() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The display name of this account.
+ * \return The display name.
  * \sa displayNameChanged(), setDisplayName()
  */
 QString Account::displayName() const
@@ -1225,7 +1225,7 @@ PendingOperation *Account::setDisplayName(const QString &value)
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The icon name of this account.
+ * \return The icon name.
  * \sa iconNameChanged(), setIconName()
  */
 QString Account::iconName() const
@@ -1273,7 +1273,7 @@ PendingOperation *Account::setIconName(const QString &value)
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The nickname of this account.
+ * \return The nickname.
  * \sa nicknameChanged(), setNickname()
  */
 QString Account::nickname() const
@@ -1306,7 +1306,7 @@ PendingOperation *Account::setNickname(const QString &value)
  * For now this method will only return the avatar requirements found in protocolInfo() if
  * Account::FeatureProtocolInfo is ready, otherwise an invalid AvatarSpec instance is returned.
  *
- * \return The avatar requirements for avatars passed to setAvatar().
+ * \return The requirements as an AvatarSpec object.
  * \sa avatar(), setAvatar()
  */
 AvatarSpec Account::avatarRequirements() const
@@ -1326,7 +1326,7 @@ AvatarSpec Account::avatarRequirements() const
  *
  * This method requires Account::FeatureAvatar to be enabled.
  *
- * \return The avatar of this account.
+ * \return The avatar as an Avatar object.
  * \sa avatarChanged(), setAvatar()
  */
 const Avatar &Account::avatar() const
@@ -1377,7 +1377,7 @@ PendingOperation *Account::setAvatar(const Avatar &avatar)
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The parameters of this account.
+ * \return The parameters as QVariantMap.
  * \sa parametersChanged(), updateParameters()
  */
 QVariantMap Account::parameters() const
@@ -1412,7 +1412,7 @@ PendingStringList *Account::updateParameters(const QVariantMap &set,
  *
  * This method requires Account::FeatureProtocolInfo to be enabled.
  *
- * \return The protocol info of this account protocol.
+ * \return The protocol info as a ProtocolInfo object.
  */
 ProtocolInfo Account::protocolInfo() const
 {
@@ -1438,7 +1438,7 @@ ProtocolInfo Account::protocolInfo() const
  *
  * This method requires Account::FeatureCapabilities to be enabled.
  *
- * \return The capabilities for this account.
+ * \return The capabilities as a ConnectionCapabilities object.
  * \sa capabilitiesChanged(), protocolInfo(), profile()
  */
 ConnectionCapabilities Account::capabilities() const
@@ -1553,7 +1553,7 @@ PendingOperation *Account::setConnectsAutomatically(bool value)
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return Whether the account has ever been online.
+ * \return \c true if ever been online, \c false otherwise.
  */
 bool Account::hasBeenOnline() const
 {
@@ -1576,7 +1576,7 @@ bool Account::hasBeenOnline() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The status of this account connection.
+ * \return The connection status as #ConnectionStatus.
  * \sa connectionStatusChanged(), connectionStatusReason(), connectionError(),
  *     connectionErrorDetails()
  */
@@ -1596,7 +1596,7 @@ ConnectionStatus Account::connectionStatus() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The status reason of this account connection.
+ * \return The connection status reason as #ConnectionStatusReason.
  * \sa connectionStatusChanged(), connectionStatus(), connectionError(), connectionErrorDetails()
  */
 ConnectionStatusReason Account::connectionStatusReason() const
@@ -1629,7 +1629,7 @@ QString Account::connectionError() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The error details.
+ * \return The connection error details as a Connection::ErrorDetails object.
  * \sa connectionError(), connectionStatus(), connectionStatusReason(), connectionStatusChanged(),
  *     Connection::ErrorDetails.
  */
@@ -1648,9 +1648,8 @@ Connection::ErrorDetails Account::connectionErrorDetails() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return A ConnectionPtr object pointing to the Connection object of this
- *         account, or a null ConnectionPtr if this account does not currently
- *         have a connection or if an error occurred.
+ * \return A pointer to the Connection object, or a null ConnectionPtr if
+ *         there is no connection currently or if an error occurred.
  * \sa connectionChanged()
  */
 ConnectionPtr Account::connection() const
@@ -1665,7 +1664,7 @@ ConnectionPtr Account::connection() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return Whether this account's connection is changing presence.
+ * \return \c true if changing presence, \c false otherwise.
  * \sa changingPresence(), currentPresenceChanged(), setRequestedPresence()
  */
 bool Account::isChangingPresence() const
@@ -1709,7 +1708,7 @@ bool Account::isChangingPresence() const
  *
  * \param includeAllStatuses Whether the returned list will include all statuses or just the ones
  *                           that can are settable using setRequestedPresence().
- * \return A list of presences allowed by a connection to this account.
+ * \return The allowed statuses as a list of PresenceSpec objects.
  */
 PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
 {
@@ -1813,7 +1812,7 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
 }
 
 /**
- * Returns the maximum length for a presence status message.
+ * Return the maximum length for a presence status message.
  *
  * If a status message set using setCurrentPresence() is longer than
  * the maximum length allowed, the message will be truncated and
@@ -1827,7 +1826,7 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The maximum length for a presence status message, or 0 if there is no limit.
+ * \return The maximum length, or 0 if there is no limit.
  */
 uint Account::maxPresenceStatusMessageLength() const
 {
@@ -1849,8 +1848,7 @@ uint Account::maxPresenceStatusMessageLength() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The presence that will be set by the account manager if this
- *         account is brought online automatically by it.
+ * \return The automatic presence as a Presence object.
  * \sa automaticPresenceChanged(), setAutomaticPresence()
  */
 Presence Account::automaticPresence() const
@@ -1892,7 +1890,7 @@ PendingOperation *Account::setAutomaticPresence(const Presence &presence)
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The actual presence of this account.
+ * \return The current presence as a Presence object.
  * \sa currentPresenceChanged(), setRequestedPresence(), requestedPresence(), automaticPresence()
  */
 Presence Account::currentPresence() const
@@ -1907,7 +1905,7 @@ Presence Account::currentPresence() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return The requested presence of this account.
+ * \return The requested presence as a Presence object.
  * \sa requestedPresenceChanged(), setRequestedPresence(), currentPresence(), automaticPresence()
  */
 Presence Account::requestedPresence() const
@@ -1944,7 +1942,7 @@ PendingOperation *Account::setRequestedPresence(const Presence &presence)
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return \c true if this account is online, otherwise \c false.
+ * \return \c true if online, otherwise \c false.
  * \sa onlinenessChanged()
  */
 bool Account::isOnline() const
@@ -1955,7 +1953,7 @@ bool Account::isOnline() const
 /**
  * Return the unique identifier of this account.
  *
- * \return The unique identifier of this account.
+ * \return The unique identifier.
  */
 QString Account::uniqueIdentifier() const
 {
@@ -1981,7 +1979,7 @@ QString Account::uniqueIdentifier() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return Account normalized user ID of the local user.
+ * \return The normalized user ID of the local user.
  * \sa normalizedNameChanged()
  */
 QString Account::normalizedName() const
@@ -2019,7 +2017,7 @@ PendingOperation *Account::remove()
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return \c true if supported, \c false if not.
+ * \return \c true if supported, \c false otherwise.
  */
 bool Account::supportsRequestHints() const
 {
@@ -2036,7 +2034,7 @@ bool Account::supportsRequestHints() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
- * \return \c true if supported, \c false if not.
+ * \return \c true if supported, \c false otherwise.
  */
 bool Account::requestsSucceedWithChannel() const
 {

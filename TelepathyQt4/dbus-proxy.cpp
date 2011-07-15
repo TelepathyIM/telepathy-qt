@@ -108,10 +108,10 @@ DBusProxy::~DBusProxy()
 }
 
 /**
- * Returns the D-Bus connection through which the remote object is
+ * Return the D-Bus connection through which the remote object is
  * accessed.
  *
- * \return The connection the object is associated with.
+ * \return A QDBusConnection object.
  */
 QDBusConnection DBusProxy::dbusConnection() const
 {
@@ -119,9 +119,9 @@ QDBusConnection DBusProxy::dbusConnection() const
 }
 
 /**
- * Returns the D-Bus object path of the remote object within the service.
+ * Return the D-Bus object path of the remote object within the service.
  *
- * \return The object path the object is associated with.
+ * \return The D-Bus object path.
  */
 QString DBusProxy::objectPath() const
 {
@@ -129,10 +129,10 @@ QString DBusProxy::objectPath() const
 }
 
 /**
- * Returns the D-Bus bus name (either a unique name or a well-known
+ * Return the D-Bus bus name (either a unique name or a well-known
  * name) of the service that provides the remote object.
  *
- * \return The service name the object is associated with.
+ * \return The D-Bus bus name.
  */
 QString DBusProxy::busName() const
 {
@@ -149,10 +149,9 @@ void DBusProxy::setBusName(const QString &busName)
 }
 
 /**
- * If this object is usable (has not emitted #invalidated()), returns
- * <code>true</code>. Otherwise returns <code>false</code>.
+ * Return whether this proxy is still valid (has not emitted invalidated()).
  *
- * \return <code>true</code> if this object is still fully usable
+ * \return \c true if still valid, \c false otherwise.
  */
 bool DBusProxy::isValid() const
 {
@@ -160,11 +159,9 @@ bool DBusProxy::isValid() const
 }
 
 /**
- * If this object is no longer usable (has emitted #invalidated()),
- * returns the error name indicating the reason it became invalid in a
- * machine-readable way. Otherwise, returns a null QString.
+ * Return the error name indicating the reason this proxy became invalid.
  *
- * \return A D-Bus error name, or QString() if this object is still valid
+ * \return A D-Bus error name, or QString() if this object is still valid.
  */
 QString DBusProxy::invalidationReason() const
 {
@@ -172,11 +169,9 @@ QString DBusProxy::invalidationReason() const
 }
 
 /**
- * If this object is no longer usable (has emitted #invalidated()),
- * returns a debugging message indicating the reason it became invalid.
- * Otherwise, returns a null QString.
+ * Return a debugging message indicating the reason this proxy became invalid.
  *
- * \return A debugging message, or QString() if this object is still valid
+ * \return A debugging message, or QString() if this object is still valid.
  */
 QString DBusProxy::invalidationMessage() const
 {

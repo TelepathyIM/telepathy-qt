@@ -52,7 +52,8 @@ namespace Tp
  *
  * \param bus The QDBusConnection for proxies constructed using this factory to use.
  * \param features The features to make ready on constructed Accounts.
- * \returns A pointer to the created factory.
+ * \return An AccountFactoryPtr object pointing to the newly created
+ *         AccountFactory object.
  */
 AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus, const Features &features)
 {
@@ -131,7 +132,7 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
  * \param connFactory The connection factory to use for the Account.
  * \param chanFactory The channel factory to use for the Account.
  * \param contactFactory The channel factory to use for the Account.
- * \return A pointer to the constructed proxy.
+ * \return A pointer to the constructed Account object.
  */
 AccountPtr AccountFactory::construct(const QString &busName, const QString &objectPath,
         const ConnectionFactoryConstPtr &connFactory,

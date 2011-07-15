@@ -102,7 +102,7 @@ AccountManagerPtr PendingAccount::manager() const
 }
 
 /**
- * Returns the newly created AccountPtr object.
+ * Return the newly created AccountPtr object.
  *
  * \return An AccountPtr object pointing to the newly create Account object, or
  *         a null AccountPtr if an error occurred.

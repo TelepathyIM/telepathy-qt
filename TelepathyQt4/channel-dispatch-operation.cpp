@@ -291,8 +291,8 @@ const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(Chan
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
- * \return A ChannelDispatchOperationPtr pointing to the newly created
- *         ChannelDispatchOperation.
+ * \return A ChannelDispatchOperationPtr object pointing to the newly created
+ *         ChannelDispatchOperation object.
  */
 ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties,
@@ -370,7 +370,7 @@ ChannelDispatchOperation::~ChannelDispatchOperation()
  *
  * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
  *
- * \return Connection with which the channels are associated.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr ChannelDispatchOperation::connection() const
 {
@@ -383,7 +383,7 @@ ConnectionPtr ChannelDispatchOperation::connection() const
  *
  * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
  *
- * \return Account with which the connection and channels are associated.
+ * \return A pointer to the Account object.
  */
 AccountPtr ChannelDispatchOperation::account() const
 {
@@ -395,7 +395,7 @@ AccountPtr ChannelDispatchOperation::account() const
  *
  * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
  *
- * \return The channels to be dispatched.
+ * \return A list of pointers to Channel objects.
  */
 QList<ChannelPtr> ChannelDispatchOperation::channels() const
 {
@@ -416,7 +416,7 @@ QList<ChannelPtr> ChannelDispatchOperation::channels() const
  *
  * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
  *
- * \return Possible handlers for this dispatch operation channels.
+ * \return List of possible handlers names.
  */
 QStringList ChannelDispatchOperation::possibleHandlers() const
 {
@@ -514,8 +514,8 @@ PendingOperation *ChannelDispatchOperation::claim()
  * this class should always be used instead of the interface by users of the
  * class.
  *
- * \return A pointer to the existing ChannelDispatchOperationInterface for this
- *         ChannelDispatchOperation
+ * \return A pointer to the existing Client::ChannelDispatchOperationInterface object for this
+ *         ChannelDispatchOperation object.
  */
 Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterface() const
 {

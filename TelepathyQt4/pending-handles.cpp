@@ -131,7 +131,7 @@ PendingHandles::~PendingHandles()
 }
 
 /**
- * Returns the Connection object through which the operation was made.
+ * Return the Connection object through which the operation was made.
  *
  * \return Pointer to the Connection.
  */
@@ -141,7 +141,7 @@ ConnectionPtr PendingHandles::connection() const
 }
 
 /**
- * Returns the handle type specified in the operation.
+ * Return the handle type specified in the operation.
  *
  * \return The handle type, as specified in #HandleType.
  */
@@ -151,7 +151,7 @@ HandleType PendingHandles::handleType() const
 }
 
 /**
- * Returns whether the operation was a handle request (as opposed to a
+ * Return whether the operation was a handle request (as opposed to a
  * reference of existing handles).
  *
  * \sa isReference()
@@ -164,7 +164,7 @@ bool PendingHandles::isRequest() const
 }
 
 /**
- * Returns whether the operation was a handle reference (as opposed to a
+ * Return whether the operation was a handle reference (as opposed to a
  * request for new handles).
  *
  * \sa isRequest()
@@ -224,7 +224,7 @@ const UIntList &PendingHandles::handlesToReference() const
 }
 
 /**
- * Returns the now-referenced handles resulting from the operation. If the
+ * Return the now-referenced handles resulting from the operation. If the
  * operation has not (yet) finished successfully (isFinished() returns
  * <code>false</code>), the return value is undefined.
  *

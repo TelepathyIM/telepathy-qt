@@ -92,7 +92,7 @@ ContactPtr PendingContactInfo::contact() const
 }
 
 /**
- * Returns the information for contact().
+ * Return the information for contact().
  *
  * \return An object representing the contact information.
  */

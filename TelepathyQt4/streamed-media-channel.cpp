@@ -101,9 +101,9 @@ PendingStreamedMediaStreams::~PendingStreamedMediaStreams()
 }
 
 /**
- * Returns the StreamedMediaStream object through which the request was made.
+ * Return the channel through which the request was made.
  *
- * \return Pointer to the Connection.
+ * \return A pointer to the StreamedMediaChannel object.
  */
 StreamedMediaChannelPtr PendingStreamedMediaStreams::channel() const
 {
@@ -114,8 +114,7 @@ StreamedMediaChannelPtr PendingStreamedMediaStreams::channel() const
 /**
  * Return a list of the newly created StreamedMediaStreamPtr objects.
  *
- * \return A list of the StreamedMediaStreamPtr objects pointing to the newly created
- *         StreamedMediaStream objects, or an empty list if an error occurred.
+ * \return A list of pointers to StreamedMediaStream objects, or an empty list if an error occurred.
  */
 StreamedMediaStreams PendingStreamedMediaStreams::streams() const
 {
@@ -372,7 +371,7 @@ StreamedMediaStream::~StreamedMediaStream()
 /**
  * Return the channel owning this media stream.
  *
- * \return The channel owning this media stream.
+ * \return A pointer to the StreamedMediaChannel object.
  */
 StreamedMediaChannelPtr StreamedMediaStream::channel() const
 {
@@ -392,7 +391,7 @@ uint StreamedMediaStream::id() const
 /**
  * Return the contact who this media stream is with.
  *
- * \return The contact who this media stream is with.
+ * \return A pointer to the Contact object.
  */
 ContactPtr StreamedMediaStream::contact() const
 {
@@ -402,7 +401,7 @@ ContactPtr StreamedMediaStream::contact() const
 /**
  * Return the state of this media stream.
  *
- * \return The state of this media stream.
+ * \return The state as #MediaStreamState.
  */
 MediaStreamState StreamedMediaStream::state() const
 {
@@ -412,7 +411,7 @@ MediaStreamState StreamedMediaStream::state() const
 /**
  * Return the type of this media stream.
  *
- * \return The type of this media stream.
+ * \return The type as #MediaStreamType.
  */
 MediaStreamType StreamedMediaStream::type() const
 {
@@ -422,7 +421,7 @@ MediaStreamType StreamedMediaStream::type() const
 /**
  * Return whether media is being sent on this media stream.
  *
- * \return \c true if media being sent on this media stream, \c false otherwise.
+ * \return \c true if media is being sent, \c false otherwise.
  * \sa localSendingStateChanged()
  */
 bool StreamedMediaStream::sending() const
@@ -433,8 +432,7 @@ bool StreamedMediaStream::sending() const
 /**
  * Return whether media is being received on this media stream.
  *
- * \return \c true if media is being received on this media stream, \c false
- *         otherwise.
+ * \return \c true if media is being received, \c false otherwise.
  * \sa remoteSendingStateChanged()
  */
 bool StreamedMediaStream::receiving() const
@@ -447,7 +445,7 @@ bool StreamedMediaStream::receiving() const
  * remote user on this media stream.
  *
  * \return \c true if the local user has been asked to send media by the
- *         remote user on this media stream, \c false otherwise.
+ *         remote user, \c false otherwise.
  * \sa localSendingStateChanged()
  */
 bool StreamedMediaStream::localSendingRequested() const
@@ -460,7 +458,7 @@ bool StreamedMediaStream::localSendingRequested() const
  * user on this media stream.
  *
  * \return \c true if the remote user has been asked to send media by the
- *         local user on this media stream, \c false otherwise.
+ *         local user, \c false otherwise.
  * \sa remoteSendingStateChanged()
  */
 bool StreamedMediaStream::remoteSendingRequested() const
@@ -471,8 +469,10 @@ bool StreamedMediaStream::remoteSendingRequested() const
 /**
  * Return the direction of this media stream.
  *
- * \return The direction of this media stream.
- * \sa localSendingStateChanged(), remoteSendingStateChanged()
+ * \return The direction as #MediaStreamDirection.
+ * \sa localSendingState(), remoteSendingState(),
+ *     localSendingStateChanged(), remoteSendingStateChanged(),
+ *     sending(), receiving()
  */
 MediaStreamDirection StreamedMediaStream::direction() const
 {
@@ -482,7 +482,7 @@ MediaStreamDirection StreamedMediaStream::direction() const
 /**
  * Return the pending send flags of this media stream.
  *
- * \return The pending send flags of this media stream.
+ * \return The pending send flags as #MediaStreamPendingSend.
  * \sa localSendingStateChanged()
  */
 MediaStreamPendingSend StreamedMediaStream::pendingSend() const
@@ -548,7 +548,9 @@ PendingOperation *StreamedMediaStream::startDTMFTone(DTMFEvent event)
 
 /**
  * Stop sending any DTMF tone which has been started using the startDTMFTone()
- * method. If there is no current tone, the resulting PendingOperation will
+ * method.
+ *
+ * If there is no current tone, the resulting PendingOperation will
  * finish successfully.
  *
  * If continuous tones are not supported by this media stream, the resulting
@@ -580,14 +582,15 @@ PendingOperation *StreamedMediaStream::stopDTMFTone()
 }
 
 /**
- * Request a change in the direction of this media stream. In particular, this
- * might be useful to stop sending media of a particular type, or inform the
- * peer that you are no longer using media that is being sent to you.
+ * Request a change in the direction of this media stream.
+ *
+ * In particular, this might be useful to stop sending media of a particular type,
+ * or inform the peer that you are no longer using media that is being sent to you.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa requestDirection(Tp::MediaStreamDirection direction)
- * \sa localSendingStateChanged(), remoteSendingStateChanged()
+ * \sa requestDirection(Tp::MediaStreamDirection direction),
+ *     localSendingStateChanged(), remoteSendingStateChanged()
  */
 PendingOperation *StreamedMediaStream::requestDirection(bool send, bool receive)
 {
@@ -605,7 +608,7 @@ PendingOperation *StreamedMediaStream::requestDirection(bool send, bool receive)
 /**
  * Return the media stream local sending state.
  *
- * \return The media stream local sending state.
+ * \return The local sending state as StreamedMediaStream::SendingState.
  * \sa localSendingStateChanged()
  */
 StreamedMediaStream::SendingState StreamedMediaStream::localSendingState() const
@@ -616,7 +619,7 @@ StreamedMediaStream::SendingState StreamedMediaStream::localSendingState() const
 /**
  * Return the media stream remote sending state.
  *
- * \return The media stream remote sending state.
+ * \return The remote sending state as StreamedMediaStream::SendingState.
  * \sa remoteSendingStateChanged()
  */
 StreamedMediaStream::SendingState StreamedMediaStream::remoteSendingState() const
@@ -629,7 +632,7 @@ StreamedMediaStream::SendingState StreamedMediaStream::remoteSendingState() cons
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa localSendingStateChanged()
+ * \sa localSendingStateChanged(), requestDirection()
  */
 PendingOperation *StreamedMediaStream::requestSending(bool send)
 {
@@ -643,7 +646,7 @@ PendingOperation *StreamedMediaStream::requestSending(bool send)
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa remoteSendingStateChanged()
+ * \sa remoteSendingStateChanged(), requestDirection()
  */
 PendingOperation *StreamedMediaStream::requestReceiving(bool receive)
 {
@@ -865,6 +868,10 @@ const Feature StreamedMediaChannel::FeatureCore = Feature(QLatin1String(Channel:
  * Feature used in order to access media stream specific methods.
  *
  * See media stream specific methods' documentation for more details.
+ * \sa streams(), streamsForType(),
+ *     requestStream(), requestStreams(), streamAdded()
+ *     removeStream(), removeStreams(), streamRemoved(),
+ *     streamDirectionChanged(), streamStateChanged(), streamError()
  */
 const Feature StreamedMediaChannel::FeatureStreams = Feature(QLatin1String(StreamedMediaChannel::staticMetaObject.className()), 0);
 
@@ -872,6 +879,7 @@ const Feature StreamedMediaChannel::FeatureStreams = Feature(QLatin1String(Strea
  * Feature used in order to access local hold state info.
  *
  * See local hold state specific methods' documentation for more details.
+ * \sa localHoldState(), localHoldStateReason(), requestHold(), localHoldStateChanged()
  */
 const Feature StreamedMediaChannel::FeatureLocalHoldState = Feature(QLatin1String(StreamedMediaChannel::staticMetaObject.className()), 1);
 
@@ -925,7 +933,7 @@ StreamedMediaChannel::~StreamedMediaChannel()
  *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
- * \return The media streams in this channel.
+ * \return A list of pointers to StreamedMediaStream objects.
  * \sa streamAdded(), streamRemoved(), streamsForType(), requestStreams()
  */
 StreamedMediaStreams StreamedMediaChannel::streams() const
@@ -939,7 +947,7 @@ StreamedMediaStreams StreamedMediaChannel::streams() const
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
  * \param type The interested type.
- * \return A list of media streams in this channel for the given type \a type.
+ * \return A list of pointers to StreamedMediaStream objects.
  * \sa streamAdded(), streamRemoved(), streams(), requestStreams()
  */
 StreamedMediaStreams StreamedMediaChannel::streamsForType(MediaStreamType type) const
@@ -957,7 +965,7 @@ StreamedMediaStreams StreamedMediaChannel::streamsForType(MediaStreamType type) 
  * Return whether this channel is awaiting local answer.
  *
  * \return \c true if awaiting local answer, \c false otherwise.
- * \sa awaitingRemoteAnswer()
+ * \sa awaitingRemoteAnswer(), acceptCall()
  */
 bool StreamedMediaChannel::awaitingLocalAnswer() const
 {
@@ -980,6 +988,7 @@ bool StreamedMediaChannel::awaitingRemoteAnswer() const
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa awaitingLocalAnswer(), hangupCall()
  */
 PendingOperation *StreamedMediaChannel::acceptCall()
 {
@@ -1112,11 +1121,13 @@ bool StreamedMediaChannel::handlerStreamingRequired() const
 }
 
 /**
- * Return whether the local user has placed this channel on hold.
+ * Return the local hold state for this channel.
+ *
+ * Whether the local user has placed this channel on hold.
  *
  * This method requires StreamedMediaChannel::FeatureHoldState to be enabled.
  *
- * \return The channel local hold state.
+ * \return The local hold state as #LocalHoldState.
  * \sa requestHold(), localHoldStateChanged()
  */
 LocalHoldState StreamedMediaChannel::localHoldState() const
@@ -1135,7 +1146,7 @@ LocalHoldState StreamedMediaChannel::localHoldState() const
  *
  * This method requires StreamedMediaChannel::FeatureLocalHoldState to be enabled.
  *
- * \return The channel local hold state reason.
+ * \return The local hold state reason as #LocalHoldStateReason.
  * \sa requestHold(), localHoldStateChanged()
  */
 LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
@@ -1177,7 +1188,7 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  * #TP_QT4_ERROR_NOT_IMPLEMENTED.
  *
  * \param hold A boolean indicating whether or not the channel should be on hold
- * \return A %PendingOperation, which will emit PendingOperation::finished
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request finishes.
  * \sa localHoldState(), localHoldStateReason(), localHoldStateChanged()
  */

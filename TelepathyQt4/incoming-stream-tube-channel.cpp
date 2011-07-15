@@ -143,7 +143,8 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  *
  * \param allowedAddress An allowed address for connecting to the socket.
  * \param allowedPort An allowed port for connecting to the socket.
- * \return A PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
+ * \return A PendingStreamTubeConnection which will emit PendingStreamTubeConnection::finished
+ *         when the stream tube is ready to be used
  *         (hence in the #TubeStateOpen state).
  * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost(),
  *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
@@ -267,7 +268,8 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
  *
  * This method requires IncomingStreamTubeChannel::FeatureCore to be enabled.
  *
- * \return A PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
+ * \return A PendingStreamTubeConnection which will emit PendingStreamTubeConnection::finished
+ *         when the stream tube is ready to be used
  *         (hence in the #TubeStateOpen state).
  * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost(),
  *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
@@ -292,7 +294,8 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
  *
  * \param requireCredentials Whether the server should require an SCM_CRED or SCM_CREDENTIALS message
  *                           upon connection.
- * \return A PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
+ * \return A PendingStreamTubeConnection which will emit PendingStreamTubeConnection::finished
+ *         when the stream tube is ready to be used
  *         (hence in the #TubeStateOpen state).
  * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost(),
  *     StreamTubeChannel::supportsUnixSocketsWithCredentials(),
@@ -374,14 +377,14 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 }
 
 /**
- * Return the local address of the opened tube.
+ * Return the local address of the opened stream tube.
  *
  * Calling this method when the tube has not been opened will cause it
  * to return an undefined value. The same will happen if the tube has been accepted as a TCP
  * socket. Use ipAddress() if that is the case.
  *
- * \return The local address representing this opened tube as a QString
- *         if the tube has been accepted as an Unix socket, or an undefined value otherwise.
+ * \return Unix socket address if using an Unix socket,
+ *         or an undefined value otherwise.
  * \sa acceptTubeAsUnixSocket(), ipAddress()
  */
 QString IncomingStreamTubeChannel::localAddress() const
@@ -390,14 +393,14 @@ QString IncomingStreamTubeChannel::localAddress() const
 }
 
 /**
- * Return the IP address/port combination of the opened tube.
+ * Return the IP address/port combination of the opened stream tube.
  *
  * Calling this method when the tube has not been opened will cause it
  * to return an undefined value. The same will happen if the tube has been accepted as an Unix
  * socket. Use localAddress() if that is the case.
  *
- * \return The IP address/port combination representing this opened tube
- *         if the tube has been accepted as a TCP socket, or an undefined value otherwise.
+ * \return Pair of IP address as QHostAddress and port if using a TCP socket,
+ *         or an undefined value otherwise.
  * \sa acceptTubeAsTcpSocket(), localAddress()
  */
 QPair<QHostAddress, quint16> IncomingStreamTubeChannel::ipAddress() const

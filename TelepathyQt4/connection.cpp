@@ -1040,7 +1040,7 @@ Connection::~Connection()
  * situations where objects constructed at different times by the account would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the ChannelFactory object.
  */
 ChannelFactoryConstPtr Connection::channelFactory() const
 {
@@ -1055,7 +1055,7 @@ ChannelFactoryConstPtr Connection::channelFactory() const
  * situations where objects constructed at different times by the account would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the ContactFactory object.
  */
 ContactFactoryConstPtr Connection::contactFactory() const
 {
@@ -1065,7 +1065,7 @@ ContactFactoryConstPtr Connection::contactFactory() const
 /**
  * Return the connection manager name of this connection.
  *
- * \return The connection manager name of this connection.
+ * \return The connection manager name.
  */
 QString Connection::cmName() const
 {
@@ -1075,7 +1075,7 @@ QString Connection::cmName() const
 /**
  * Return the protocol name of this connection.
  *
- * \return The protocol name of this connection.
+ * \return The protocol name.
  */
 QString Connection::protocolName() const
 {
@@ -1089,7 +1089,7 @@ QString Connection::protocolName() const
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
- * \return The status of this connection, as defined in ConnectionStatus.
+ * \return The status as #ConnectionStatus.
  * \sa statusChanged(), statusReason(), errorDetails()
  */
 ConnectionStatus Connection::status() const
@@ -1108,8 +1108,8 @@ ConnectionStatus Connection::status() const
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
+ * \return The status reason as #ConnectionStatusReason.
  * \sa invalidated(), invalidationReason()
- * \return The reason, as defined in ConnectionStatusReason.
  */
 ConnectionStatusReason Connection::statusReason() const
 {
@@ -1195,7 +1195,7 @@ Connection::ErrorDetails &Connection::ErrorDetails::operator=(
  *
  * Return whether or not the details are valid (have actually been received from the service).
  *
- * \return Validity of the details.
+ * \return \c true if valid, \c false otherwise.
  */
 
 /**
@@ -1209,7 +1209,7 @@ Connection::ErrorDetails &Connection::ErrorDetails::operator=(
  * The debug message is purely informational, offered for display for bug reporting purposes, and
  * should not be attempted to be parsed.
  *
- * \return Whether there is a debug message or not.
+ * \return \c true if debug message is present, \c false otherwise.
  * \sa debugMessage()
  */
 
@@ -1233,7 +1233,7 @@ Connection::ErrorDetails &Connection::ErrorDetails::operator=(
  *
  * This is useful for accessing domain-specific additional details.
  *
- * \return A map containing all details given in the low-level ConnectionError signal.
+ * \return The details of the connection error as QVariantMap.
  */
 QVariantMap Connection::ErrorDetails::allDetails() const
 {
@@ -1252,7 +1252,7 @@ QVariantMap Connection::ErrorDetails::allDetails() const
  * if the client doesn't understand what a particular value returned by invalidationReason() means,
  * as it may be domain-specific with some services.
  *
- * \return The error details.
+ * \return The error details as a Connection::ErrorDetails object.
  * \sa status(), statusReason(), invalidationReason()
  */
 const Connection::ErrorDetails &Connection::errorDetails() const
@@ -1274,7 +1274,7 @@ const Connection::ErrorDetails &Connection::errorDetails() const
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
- * \return The handle representing the user on this connection.
+ * \return The user handle.
  * \sa selfHandleChanged(), selfContact()
  */
 uint Connection::selfHandle() const
@@ -1291,8 +1291,7 @@ uint Connection::selfHandle() const
  *
  * This method requires Connection::FeatureSimplePresence to be enabled.
  *
- * \return A dictionary from string identifiers to structs for each valid
- *         status.
+ * \return The allowed statuses as a map from string identifiers to SimpleStatusSpec objects.
  */
 SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 {
@@ -1314,7 +1313,7 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 }
 
 /**
- * Returns the maximum length for a presence status message.
+ * Return the maximum length for a presence status message.
  *
  * The value may have changed arbitrarily during the time the
  * Connection spends in status ConnectionStatusConnecting,
@@ -1322,7 +1321,7 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
  *
  * This method requires Connection::FeatureSimplePresence to be enabled.
  *
- * \return The maximum length for a presence status message, or 0 if there is no limit.
+ * \return The maximum length, or 0 if there is no limit.
  */
 uint ConnectionLowlevel::maxPresenceStatusMessageLength() const
 {
@@ -1395,7 +1394,7 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
  *
  * This method requires Connection::FeatureSelfContact to be enabled.
  *
- * \return The object representing the user on this connection.
+ * \return A pointer to the Contact object, or a null ContactPtr if unknown.
  * \sa selfContactChanged(), selfHandle()
  */
 ContactPtr Connection::selfContact() const
@@ -1418,7 +1417,7 @@ ContactPtr Connection::selfContact() const
  *
  * This method requires Connection::FeatureAccountBalance to be enabled.
  *
- * \return The user's balance.
+ * \return The account balance as #CurrencyAmount.
  * \sa accountBalanceChanged()
  */
 CurrencyAmount Connection::accountBalance() const
@@ -1843,9 +1842,11 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
  *                If timeout is -1, a default implementation-defined value that
  *                is suitable for inter-process communications (generally,
  *                25 seconds) will be used.
- * \return Pointer to a newly constructed PendingChannel object, tracking
- *         the progress of the request.
- * \sa PendingChannel
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         when the channel has been created, or an error occurred.
+ * \sa PendingChannel, ensureChannel(),
+ *     Account::createChannel(), Account::createAndHandleChannel(),
+ *     Account::ensureChannel(), Account::ensureAndHandleChannel()
  */
 PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request,
         int timeout)
@@ -1913,9 +1914,11 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
  *                If timeout is -1, a default implementation-defined value that
  *                is suitable for inter-process communications (generally,
  *                25 seconds) will be used.
- * \return Pointer to a newly constructed PendingChannel object, tracking
- *         the progress of the request.
- * \sa PendingChannel
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         when the channel is ensured to exist, or an error occurred.
+ * \sa PendingChannel, createChannel(),
+ *     Account::createChannel(), Account::createAndHandleChannel(),
+ *     Account::ensureChannel(), Account::ensureAndHandleChannel()
  */
 PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request,
         int timeout)
@@ -1976,13 +1979,12 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request,
  * this means that the PendingHandles object should not be used after the
  * Connection is destroyed.
  *
- * \sa PendingHandles
- *
  * \param handleType Type for the handles to request, as specified in
  *                   #HandleType.
  * \param names Names of the entities to request handles for.
- * \return Pointer to a newly constructed PendingHandles object, tracking
- *         the progress of the request.
+ * \return A PendingHandles which will emit PendingHandles::finished
+ *         when the handles have been requested, or an error occurred.
+ * \sa PendingHandles
  */
 PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const QStringList &names)
 {
@@ -2033,8 +2035,8 @@ PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const 
  *
  * \param handleType Type of the handles given, as specified in #HandleType.
  * \param handles Handles to request a reference to.
- * \return Pointer to a newly constructed PendingHandles object, tracking
- *         the progress of the request.
+ * \return A PendingHandles which will emit PendingHandles::finished
+ *         when the handles have been referenced, or an error occurred.
  */
 PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, const UIntList &handles)
 {
@@ -2084,10 +2086,10 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
  * finish with an error if a fatal error occurs during that process.
  *
  * \param requestedFeatures The features which should be enabled
- * \return A PendingReady object which will emit finished
- *         when the Connection has reached ConnectionStatusConnected, and initial setup
+ * \return A PendingReady which will emit PendingReady::finished
+ *         when the Connection has reached #ConnectionStatusConnected, and initial setup
  *         for basic functionality, plus the given features, has succeeded or
- *         failed
+ *         failed.
  */
 PendingReady *ConnectionLowlevel::requestConnect(const Features &requestedFeatures)
 {
@@ -2112,8 +2114,8 @@ PendingReady *ConnectionLowlevel::requestConnect(const Features &requestedFeatur
  * Account::setRequestedPresence() with Presence::offline() as an argument should generally be used
  * instead.
  *
- * \return A %PendingOperation, which will emit finished when the
- *         request finishes.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the request has been made.
  */
 PendingOperation *ConnectionLowlevel::requestDisconnect()
 {
@@ -2160,8 +2162,8 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  * \param handles A list of handles of type HandleTypeContact
  * \param interfaces D-Bus interfaces for which the client requires information
  * \param reference Whether the handles should additionally be referenced.
- * \return Pointer to a newly constructed PendingContactAttributes, tracking the
- *         progress of the request.
+ * \return A PendingContactAttributes which will emit PendingContactAttributes::fininshed
+ *         when the contact attributes have been retrieved, or an error occurred.
  */
 PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &handles,
         const QStringList &interfaces, bool reference)
@@ -2294,7 +2296,7 @@ bool ConnectionLowlevel::hasImmortalHandles() const
  * The contact manager is responsible for all contact handling in this
  * connection, including adding, removing, authorizing, etc.
  *
- * \return Pointer to this connection ContactManager object.
+ * \return A pointer to the ContactManager object.
  */
 ContactManagerPtr Connection::contactManager() const
 {
