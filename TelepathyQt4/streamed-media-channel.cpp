@@ -49,9 +49,9 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamedMediaStreams::Private
 /**
  * \class PendingStreamedMediaStreams
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
+ * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/PendingStreamedMediaStreams>
  *
- * \brief Class containing the result of an asynchronous media stream creation
+ * \brief Class containing the result of an asynchronous streamed media stream creation
  * request.
  *
  * Instances of this class cannot be constructed directly; the only way to get
@@ -228,20 +228,6 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaStream::Private
     uint state;
 };
 
-/**
- * \class StreamedMediaStream
- * \ingroup clientchannel
- * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
- *
- * \brief The StreamedMediaStream class represents a Telepathy streamed media
- * stream.
- *
- * Instances of this class cannot be constructed directly; the only way to get
- * one is via StreamedMediaChannel.
- *
- * See \ref async_model
- */
-
 StreamedMediaStream::Private::Private(StreamedMediaStream *parent,
         const StreamedMediaChannelPtr &channel,
         const MediaStreamInfo &streamInfo)
@@ -331,6 +317,18 @@ StreamedMediaStream::SendingState StreamedMediaStream::Private::remoteSendingSta
     }
     return SendingStateNone;
 }
+
+/**
+ * \class StreamedMediaStream
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaStream>
+ *
+ * \brief The StreamedMediaStream class represents a Telepathy streamed media
+ * stream.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is via StreamedMediaChannel.
+ */
 
 /**
  * Feature representing the core that needs to become ready to make the
@@ -524,7 +522,7 @@ PendingOperation *StreamedMediaStream::requestDirection(
  * interface, the resulting PendingOperation will fail with error code
  * #TP_QT4_ERROR_NOT_IMPLEMENTED.
 
- * \param event A numeric event code from the DTMFEvent enum.
+ * \param event A numeric event code from the #DTMFEvent enum.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request finishes.
  * \sa stopDTMFTone()
@@ -854,13 +852,22 @@ void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChanne
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
  *
- * \brief The StreamedMediaChannel class represents a Telepathy channel
- * of type StreamedMedia.
+ * \brief The StreamedMediaChannel class represents a Telepathy channel of type StreamedMedia.
+ *
+ * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
- * Placeholder for "core functionality" of a StreamedMediaChannel which is currently considered to
- * be just Channel::FeatureCore.
+ * Feature representing the core that needs to become ready to make the
+ * StreamedMediaChannel object usable.
+ *
+ * This is currently the same as Channel::FeatureCore, but may change to include more.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ * \sa awaitingLocalAnswer(), awaitingRemoteAnswer(), acceptCall(), hangupCall(), handlerStreamingRequired()
  */
 const Feature StreamedMediaChannel::FeatureCore = Feature(QLatin1String(Channel::staticMetaObject.className()), 0, true);
 
@@ -888,8 +895,8 @@ const Feature StreamedMediaChannel::FeatureLocalHoldState = Feature(QLatin1Strin
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \return A StreamedMediaChannelPtr object pointing to the newly created
  *         StreamedMediaChannel object.
  */
@@ -901,15 +908,14 @@ StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connec
 }
 
 /**
- * Construct a new StreamedMediaChannel associated with the given object on the same
- * service as the given connection.
+ * Construct a new StreamedMediaChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- * depend on StreamedMediaChannel::FeatureCore.
+ *                    depend on StreamedMediaChannel::FeatureCore.
  */
 StreamedMediaChannel::StreamedMediaChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -1174,19 +1180,19 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  * Request that the channel be put on hold (be instructed not to send any media
  * streams to you) or be taken off hold.
  *
- * If the connection manager can immediately tell that the requested state
+ * If the CM can immediately tell that the requested state
  * change could not possibly succeed, the resulting PendingOperation will fail
  * with error code #TP_QT4_ERROR_NOT_AVAILABLE.
  * If the requested state is the same as the current state, the resulting
  * PendingOperation will finish successfully.
  *
  * Otherwise, the channel's local hold state will change to
- * Tp::LocalHoldStatePendingHold or Tp::LocalHoldStatePendingUnhold (as
+ * #LocalHoldStatePendingHold or #LocalHoldStatePendingUnhold (as
  * appropriate), then the resulting PendingOperation will finish successfully.
  *
  * The eventual success or failure of the request is indicated by a subsequent
  * localHoldStateChanged() signal, changing the local hold state to
- * Tp::LocalHoldStateHeld or Tp::LocalHoldStateUnheld.
+ * #LocalHoldStateHeld or #LocalHoldStateUnheld.
  *
  * If the channel has multiple streams, and the connection manager succeeds in
  * changing the hold state of one stream but fails to change the hold state of
