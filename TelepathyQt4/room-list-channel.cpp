@@ -49,13 +49,26 @@ RoomListChannel::Private::~Private()
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/room-list-channel.h <TelepathyQt4/RoomListChannel>
  *
- * High-level proxy object for accessing remote %Channel objects of the RoomList
- * channel type.
+ * \brief The RoomListChannel class represents a Telepathy Channel of type RoomList.
  *
- * This subclass of Channel will eventually provide a high-level API for the
+ * Note that this subclass of Channel will eventually provide a high-level API for the
  * RoomList interface. Until then, it's just a Channel.
+ *
+ * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
+/**
+ * Create a new RoomListChannel object.
+ *
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \return A RoomListChannelPtr object pointing to the newly created
+ *         RoomListChannel object.
+ */
 RoomListChannelPtr RoomListChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
@@ -64,17 +77,14 @@ RoomListChannelPtr RoomListChannel::create(const ConnectionPtr &connection,
 }
 
 /**
- * Creates a RoomListChannel associated with the given object on the same service
- * as the given connection.
+ * Construct a new RoomListChannel object.
  *
- * \param connection  Connection owning this RoomListChannel, and specifying the
- *                    service.
- * \param objectPath  Path to the object on the service.
- * \param immutableProperties  The immutable properties of the channel, as
- *                             signalled by NewChannels or returned by
- *                             CreateChannel or EnsureChannel
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- * depend on Channel::FeatureCore.
+ *                    should depend on Channel::FeatureCore.
  */
 RoomListChannel::RoomListChannel(const ConnectionPtr &connection,
         const QString &objectPath,
