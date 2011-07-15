@@ -388,7 +388,7 @@ ContactSearchChannel::~ContactSearchChannel()
 /**
  * Return the current search state of this channel.
  *
- * Change notification is via searchStateChanged().
+ * Change notification is via the searchStateChanged() signal.
  *
  * \return The current search state as #ChannelContactSearchState.
  * \sa searchStateChanged()
@@ -561,10 +561,10 @@ void ContactSearchChannel::stopSearch()
 
 /**
  * \fn void ContactSearchChannel::searchStateChanged(Tp::ChannelContactSearchState state,
- *             const QString &errorName,
- *             const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
+ *          const QString &errorName,
+ *          const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
  *
- * This signal is emitted when the value of searchState() of this channel changes.
+ * Emitted when the value of searchState() changes.
  *
  * \param state The new state.
  * \param errorName The name of the error if any.
@@ -574,11 +574,11 @@ void ContactSearchChannel::stopSearch()
 
 /**
  * \fn void ContactSearchChannel::searchResultReceived(
- *             const Tp::ContactSearchChannel::SearchResult &result)
+ *          const Tp::ContactSearchChannel::SearchResult &result)
  *
- * This signal is emitted when a result for a search is received. It can be emitted multiple times
- * until the searchState() goes to ChannelContactSearchStateCompleted or
- * ChannelContactSearchStateFailed.
+ * Emitted when a result for a search is received. It can be emitted multiple times
+ * until the searchState() goes to #ChannelContactSearchStateCompleted or
+ * #ChannelContactSearchStateFailed.
  *
  * \param result The search result.
  * \sa searchState()

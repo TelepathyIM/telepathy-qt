@@ -370,6 +370,8 @@ AccountFilterConstPtr AccountSet::filter() const
 /**
  * Return a list of account objects that match filter.
  *
+ * Change notification is via the accountAdded() and accountRemoved() signals.
+ *
  * \return A list of pointers to Account objects.
  * \sa accountAdded(), accountRemoved()
  */
@@ -379,21 +381,23 @@ QList<AccountPtr> AccountSet::accounts() const
 }
 
 /**
- * \fn void AccountSet::accountAdded(const Tp::AccountPtr &account);
+ * \fn void AccountSet::accountAdded(const Tp::AccountPtr &account)
  *
- * This signal is emitted whenever an account that matches filter is added to
+ * Emitted whenever an account that matches filter is added to
  * this set.
  *
  * \param account The account that was added to this set.
+ * \sa accounts()
  */
 
 /**
- * \fn void AccountSet::accountRemoved(const Tp::AccountPtr &account);
+ * \fn void AccountSet::accountRemoved(const Tp::AccountPtr &account)
  *
- * This signal is emitted whenever an account that matches filter is removed
+ * Emitted whenever an account that matches filter is removed
  * from this set.
  *
  * \param account The account that was removed from this set.
+ * \sa accounts()
  */
 
 void AccountSet::onNewAccount(const AccountPtr &account)

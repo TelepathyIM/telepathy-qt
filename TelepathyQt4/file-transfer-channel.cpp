@@ -214,6 +214,7 @@ FileTransferChannel::~FileTransferChannel()
 /**
  * Return the state of the file transfer as described by #FileTransferState.
  *
+ * Change notification is via the stateChanged() signal.
  *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
@@ -233,6 +234,7 @@ FileTransferState FileTransferChannel::state() const
 /**
  * Return the reason for the state change as described by the #FileTransferStateChangeReason.
  *
+ * Change notification is via the stateChanged() signal.
  *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
@@ -444,6 +446,8 @@ qulonglong FileTransferChannel::initialOffset() const
 /**
  * Return the number of bytes that have been transferred.
  *
+ * Change notification is via the transferredBytesChanged() signal.
+ *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
  * \return The number of bytes.
@@ -495,10 +499,10 @@ PendingOperation *FileTransferChannel::cancel()
 }
 
 /**
- * \fn void FileTransferChannel::stateChanged(Tp::FileTransferState state, Tp::FileTransferStateChangeReason reason);
+ * \fn void FileTransferChannel::stateChanged(Tp::FileTransferState state,
+ *          Tp::FileTransferStateChangeReason reason)
  *
- * This signal is emitted when the value state() of this file transfer channel
- * changes.
+ * Emitted when the value of state() changes.
  *
  * \param state The new state of this file transfer channel.
  * \param reason The reason for the change of state.
@@ -506,20 +510,22 @@ PendingOperation *FileTransferChannel::cancel()
  */
 
 /**
- * \fn void FileTransferChannel::initialOffsetDefined(qulonglong initialOffset);
+ * \fn void FileTransferChannel::initialOffsetDefined(qulonglong initialOffset)
  *
- * This signal is emitted when the initial offset for the file transfer is
+ * Emitted when the initial offset for the file transfer is
  * defined.
  *
  * \param initialOffset The new initial offset for the file transfer.
+ * \sa initialOffset()
  */
 
 /**
  * \fn void FileTransferChannel::transferredBytesChanged(qulonglong count);
  *
- * This signal is emitted when the number of bytes transferred changes.
+ * Emitted when the value of transferredBytes() changes.
  *
  * \param count The new number of bytes transferred.
+ * \sa transferredBytes()
  */
 
 /**

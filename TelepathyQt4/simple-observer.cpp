@@ -622,7 +622,7 @@ void SimpleObserver::onChannelInvalidated(const AccountPtr &channelAccount,
 /**
  * \fn void SimpleObserver::newChannels(const QList<Tp::ChannelPtr> &channels)
  *
- * This signal is emitted whenever new channels that match this observer's criteria are created.
+ * Emitted whenever new channels that match this observer's criteria are created.
  *
  * \param channels The new channels.
  */
@@ -631,7 +631,7 @@ void SimpleObserver::onChannelInvalidated(const AccountPtr &channelAccount,
  * \fn void SimpleObserver::channelInvalidated(const Tp::ChannelPtr &channel,
  *          const QString &errorName, const QString &errorMessage)
  *
- * This signal is emitted whenever a channel that is being observed is invalidated.
+ * Emitted whenever a channel that is being observed is invalidated.
  *
  * \param channel The channel that was invalidated.
  * \param errorName A D-Bus error name (a string in a subset

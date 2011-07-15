@@ -179,8 +179,8 @@ QString DBusProxy::invalidationMessage() const
 }
 
 /**
- * \fn void DBusProxy::invalidated (Tp::DBusProxy *proxy,
- *      const QString &errorName, const QString &errorMessage)
+ * \fn void DBusProxy::invalidated(Tp::DBusProxy *proxy,
+ *          const QString &errorName, const QString &errorMessage)
  *
  * Emitted when this object is no longer usable.
  *
@@ -188,10 +188,9 @@ QString DBusProxy::invalidationMessage() const
  * will fail, but it may be possible to retrieve information that has
  * already been retrieved and cached.
  *
- * \param proxy This proxy
- * \param errorName A D-Bus error name (a string in a subset
- *                  of ASCII, prefixed with a reversed domain name)
- * \param errorMessage A debugging message associated with the error
+ * \param proxy This proxy.
+ * \param errorName The name of a D-Bus error describing the reason for the invalidation.
+ * \param errorMessage A debugging message associated with the error.
  */
 
 /**

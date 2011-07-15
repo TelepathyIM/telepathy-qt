@@ -1177,7 +1177,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::aliasChanged(const QString &alias)
  *
- * This signal is emitted when the value of alias() changes.
+ * Emitted when the value of alias() changes.
  *
  * \param alias The new alias of this contact.
  * \sa alias()
@@ -1186,7 +1186,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::avatarTokenChanged(const QString &avatarToken)
  *
- * This signal is emitted when the value of avatarToken() changes.
+ * Emitted when the value of avatarToken() changes.
  *
  * \param avatarToken The new avatar token of this contact.
  * \sa avatarToken()
@@ -1195,7 +1195,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::avatarDataChanged(const QString &avatarToken)
  *
- * This signal is emitted when the value of avatarData() changes.
+ * Emitted when the value of avatarData() changes.
  *
  * \param avatarData The new avatar of this contact.
  * \sa avatarData()
@@ -1204,7 +1204,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::presenceChanged(const Tp::Presence &presence)
  *
- * This signal is emitted when the value of presence() changes.
+ * Emitted when the value of presence() changes.
  *
  * \param presence The new presence of this contact.
  * \sa presence()
@@ -1213,7 +1213,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::capabilitiesChanged(const Tp::ContactCapabilities &caps)
  *
- * This signal is emitted when the value of capabilities() changes.
+ * Emitted when the value of capabilities() changes.
  *
  * \param caps The new capabilities of this contact.
  * \sa capabilities()
@@ -1222,7 +1222,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::locationUpdated(const Tp::LocationInfo &location)
  *
- * This signal is emitted when the value of location() changes.
+ * Emitted when the value of location() changes.
  *
  * \param caps The new location of this contact.
  * \sa location()
@@ -1231,7 +1231,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::infoFieldsChanged(const Tp::Contact::InfoFields &infoFields)
  *
- * This signal is emitted when the value of infoFields() changes.
+ * Emitted when the value of infoFields() changes.
  *
  * \param InfoFields The new info of this contact.
  * \sa infoFields()
@@ -1240,7 +1240,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::subscriptionStateChanged(Tp::Contact::PresenceState state)
  *
- * This signal is emitted when the value of subscriptionState() changes.
+ * Emitted when the value of subscriptionState() changes.
  *
  * \param state The new subscription state of this contact.
  * \sa subscriptionState()
@@ -1256,7 +1256,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state)
  *
- * This signal is emitted when the value of publishState() changes.
+ * Emitted when the value of publishState() changes.
  *
  * \param state The new publish state of this contact.
  * \sa publishState()
@@ -1272,7 +1272,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::blockStatusChanged(bool blocked)
  *
- * This signal is emitted when the value of isBlocked() changes.
+ * Emitted when the value of isBlocked() changes.
  *
  * \param status The new block status of this contact.
  * \sa isBlocked()
@@ -1288,18 +1288,18 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::addedToGroup(const QString &group)
  *
- * This signal is emitted when this contact is added to \a group of the contact list.
+ * Emitted when this contact is added to \a group of the contact list.
  *
- * \param group Group name.
+ * \param group The group name.
  * \sa groups(), removedFromGroup()
  */
 
 /**
  * \fn void Contact::removedFromGroup(const QString &group)
  *
- * This signal is emitted when this contact is removed from \a group of the contact list.
+ * Emitted when this contact is removed from \a group of the contact list.
  *
- * \param group Group name.
+ * \param group The group name.
  * \sa groups(), addedToGroup()
  */
 

@@ -3497,7 +3497,7 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 /**
  * \fn void Channel::groupFlagsChanged(uint flags, uint added, uint removed)
  *
- * This signal is emitted when the value of groupFlags() changes.
+ * Emitted when the value of groupFlags() changes.
  *
  * \param flags The value which would now be returned by groupFlags().
  * \param added Flags added compared to the previous value.
@@ -3507,7 +3507,7 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 /**
  * \fn void Channel::groupCanAddContactsChanged(bool canAddContacts)
  *
- * This signal is emitted when the value of groupCanAddContacts() changes.
+ * Emitted when the value of groupCanAddContacts() changes.
  *
  * \param canAddContacts Whether a contact can be added to this channel.
  * \sa groupCanAddContacts()
@@ -3516,7 +3516,7 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 /**
  * \fn void Channel::groupCanRemoveContactsChanged(bool canRemoveContacts)
  *
- * This signal is emitted when the value of groupCanRemoveContacts() changes.
+ * Emitted when the value of groupCanRemoveContacts() changes.
  *
  * \param canRemoveContacts Whether a contact can be removed from this channel.
  * \sa groupCanRemoveContacts()
@@ -3525,7 +3525,7 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 /**
  * \fn void Channel::groupCanRescindContactsChanged(bool canRescindContacts)
  *
- * This signal is emitted when the value of groupCanRescindContacts() changes.
+ * Emitted when the value of groupCanRescindContacts() changes.
  *
  * \param canRescindContacts Whether contact invitations can be rescinded.
  * \sa groupCanRescindContacts()
@@ -3537,7 +3537,7 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
  *     const Tp::Contacts &groupLocalPendingMembersAdded,
  *     const Tp::Contacts &groupRemotePendingMembersAdded,
  *     const Tp::Contacts &groupMembersRemoved,
- *     const Channel::GroupMemberChangeDetails &details);
+ *     const Channel::GroupMemberChangeDetails &details)
  *
  * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
  * groupRemotePendingContacts() changes.
@@ -3572,7 +3572,7 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
  */
 
 /**
- * \fn void Channel::conferenceChannelMerged(const Tp::ChannelPtr &channel);
+ * \fn void Channel::conferenceChannelMerged(const Tp::ChannelPtr &channel)
  *
  * Emitted when a new channel is added to the value of conferenceChannels().
  *
@@ -3581,7 +3581,7 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 
 /**
  * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel,
-            const Tp::Channel::GroupMemberChangeDetails &details);
+ *          const Tp::Channel::GroupMemberChangeDetails &details)
  *
  * Emitted when a new channel is removed from the value of conferenceChannels().
  *
