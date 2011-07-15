@@ -39,9 +39,11 @@ namespace Tp
  *
  * \brief The PendingContactAttributes class represents the parameters of and
  * the reply to an asynchronous request for raw contact attributes, as used in
- * the Connection::contactAttributes() low-level convenience method wrapping the
+ * the ConnectionLowlevel::contactAttributes() low-level convenience method wrapping the
  * Client::ConnectionInterfaceContactsInterface::GetContactAttributes() D-Bus
  * method.
+ *
+ * See \ref async_model
  */
 
 struct TELEPATHY_QT4_NO_EXPORT PendingContactAttributes::Private
@@ -73,9 +75,9 @@ PendingContactAttributes::~PendingContactAttributes()
 }
 
 /**
- * Return the Connection object through which the request was made.
+ * Return the connection through which the request was made.
  *
- * \return Pointer to the Connection.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr PendingContactAttributes::connection() const
 {
