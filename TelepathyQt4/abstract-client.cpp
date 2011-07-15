@@ -505,7 +505,7 @@ AbstractClientApprover::~AbstractClientApprover()
  * corresponding client bus name.
  *
  * In the .client file, represented in the same way as observer channel
- * filter, the group is #TELEPATHY_INTERFACE_CLIENT_APPROVER followed by
+ * filter, the group is #TP_QT4_IFACE_CLIENT_APPROVER followed by
  * ApproverChannelFilter instead.
  *
  * \return A specification of the channels that this channel approver is
@@ -798,7 +798,7 @@ AbstractClientHandler::~AbstractClientHandler()
  * corresponding client bus name.
  *
  * In the .client file, represented in the same way as observer channel
- * filter, the group is #TELEPATHY_INTERFACE_CLIENT_HANDLER suffixed
+ * filter, the group is #TP_QT4_IFACE_CLIENT_HANDLER suffixed
  * by HandlerChannelFilter instead.
  *
  * \return A specification of the channels that this channel handler can deal
@@ -916,7 +916,7 @@ bool AbstractClientHandler::wantsRequestNotification() const
  * The channel dispatcher will attempt to ensure that handleChannels() is called
  * on the same handler that received addRequest(). If that isn't possible,
  * removeRequest() will be called on the handler that previously received
- * addRequest(), with the special error #TELEPATHY_ERROR_NOT_YOURS, which
+ * addRequest(), with the special error #TP_QT4_ERROR_NOT_YOURS, which
  * indicates that some other handler received the channel instead.
  *
  * Expected handling is for the UI to close the window it previously opened.
@@ -943,7 +943,7 @@ void AbstractClientHandler::addRequest(
  *
  * \param channelRequest The channel request that failed.
  * \param errorName The name of the D-Bus error with which the request failed.
- *                  If this is #TELEPATHY_ERROR_NOT_YOURS, this indicates that
+ *                  If this is #TP_QT4_ERROR_NOT_YOURS, this indicates that
  *                  the request succeeded, but all the resulting channels were
  *                  given to some other handler.
  * \param errorMessage Any message supplied with the D-Bus error.

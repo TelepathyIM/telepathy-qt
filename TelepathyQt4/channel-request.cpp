@@ -524,7 +524,7 @@ QVariantMap ChannelRequest::immutableProperties() const
  * Cancel the channel request.
  *
  * If failed() is emitted in response to this method, the error will be
- * #TELEPATHY_ERROR_CANCELLED.
+ * #TP_QT4_ERROR_CANCELLED.
  *
  * If the channel has already been dispatched to a handler, then it's too late
  * to call this method, and the channel request will no longer exist.
