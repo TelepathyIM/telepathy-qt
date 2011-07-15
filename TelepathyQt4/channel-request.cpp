@@ -267,6 +267,8 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
  * requested it). This means that the channel dispatcher will close the
  * resulting channel, or refrain from requesting it at all, rather than
  * dispatching it to a handler.
+ *
+ * See \ref async_model
  */
 
 /**
