@@ -1713,7 +1713,7 @@ HandleType Channel::targetHandleType() const
  *
  * This method requires Channel::FeatureCore to be ready.
  *
- * \return A integer representing the target handle, which is of the type
+ * \return An integer representing the target handle, which is of the type
  *         targetHandleType() indicates.
  * \sa targetHandleType(), targetId()
  */
