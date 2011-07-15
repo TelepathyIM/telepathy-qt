@@ -152,6 +152,10 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
  *
  * For more specialized file transfer classes, please refer to
  * OutgoingFileTransferChannel and IncomingFileTransferChannel.
+ *
+ * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
@@ -185,14 +189,14 @@ FileTransferChannelPtr FileTransferChannel::create(const ConnectionPtr &connecti
 }
 
 /**
- * Construct a new file transfer channel associated with the given \a objectPath
- * on the same service as the given \a connection.
+ * Construct a new FileTransferChannel object.
  *
- * \param connection Connection owning this channel, and specifying the service.
- * \param objectPath Path to the object on the service.
- * \param immutableProperties The immutable properties of the channel.
- * \param coreFeature The core feature of the channel type. The corresponding introspectable should
- * depend on FileTransferChannel::FeatureCore.
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ *                    depend on FileTransferChannel::FeatureCore.
  */
 FileTransferChannel::FileTransferChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -486,7 +490,6 @@ SupportedSocketMap FileTransferChannel::availableSocketTypes() const
     return mPriv->availableSocketTypes;
 }
 
-
 /**
  * Cancel a file transfer.
  *
@@ -530,7 +533,7 @@ PendingOperation *FileTransferChannel::cancel()
 
 /**
  * Protected virtual method called when the state becomes
- * %FileTransferStateOpen.
+ * #FileTransferStateOpen.
  *
  * Specialized classes should reimplement this method and call setConnected()
  * when the connection is established.
@@ -586,7 +589,7 @@ bool FileTransferChannel::isFinished() const
  *
  * Note that for specialized classes that reimplement connectToHost() and set
  * isConnected() to true, the state will not change to
- * %FileTransferStateCompleted once the state change is received.
+ * #FileTransferStateCompleted once the state change is received.
  *
  * When finished sending/receiving the specialized class MUST call this method
  * and then the state will change to the latest pending state.
