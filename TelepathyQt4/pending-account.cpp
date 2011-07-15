@@ -92,9 +92,9 @@ PendingAccount::~PendingAccount()
 }
 
 /**
- * Return the AccountManagerPtr object through which the request was made.
+ * Return the account manager through which the request was made.
  *
- * \return An AccountManagerPtr object.
+ * \return A pointer to the AccountManager object.
  */
 AccountManagerPtr PendingAccount::manager() const
 {
@@ -102,11 +102,9 @@ AccountManagerPtr PendingAccount::manager() const
 }
 
 /**
- * Return the newly created AccountPtr object.
+ * Return the newly created account.
  *
- * \return An AccountPtr object pointing to the newly create Account object, or
- *         a null AccountPtr if an error occurred.
- * \sa objectPath()
+ * \return A pointer to an Account object, or a null AccountPtr if an error occurred.
  */
 AccountPtr PendingAccount::account() const
 {
