@@ -25,6 +25,20 @@ from sys import maxint
 import re
 from libtpcodegen import get_by_path, get_descendant_text, NS_TP, xml_escape
 
+class Xzibit(Exception):
+    def __init__(self, parent, child):
+        self.parent = parent
+        self.child = child
+
+    def __str__(self):
+        print """
+    Nested <%s>s are forbidden.
+    Parent:
+        %s...
+    Child:
+        %s...
+        """ % (self.parent.nodeName, self.parent.toxml()[:100],
+               self.child.toxml()[:100])
 
 class _Qt4TypeBinding:
     def __init__(self, val, inarg, outarg, array_val, custom_type, array_of,
@@ -145,6 +159,34 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         return ''
 
     lines = []
+
+    doc = docstring_el.ownerDocument
+
+    for n in docstring_el.getElementsByTagNameNS(NS_TP, 'rationale'):
+        nested = n.getElementsByTagNameNS(NS_TP, 'rationale')
+        if nested:
+            raise Xzibit(n, nested[0])
+
+        """
+            <div class='rationale'>
+              <h5>Rationale:</h5>
+              <div/> <- inner_div
+            </div>
+        """
+        outer_div = doc.createElement('div')
+        outer_div.setAttribute('class', 'rationale')
+
+        h5 = doc.createElement('h5')
+        h5.appendChild(doc.createTextNode('Rationale:'))
+        outer_div.appendChild(h5)
+
+        inner_div = doc.createElement('div')
+        outer_div.appendChild(inner_div)
+
+        for rationale_body in n.childNodes:
+            inner_div.appendChild(rationale_body.cloneNode(True))
+
+        n.parentNode.replaceChild(outer_div, n)
 
     if docstring_el.getAttribute('xmlns') == 'http://www.w3.org/1999/xhtml':
         splitted = ''.join([el.toxml() for el in docstring_el.childNodes]).strip(' ').strip('\n').split('\n')
