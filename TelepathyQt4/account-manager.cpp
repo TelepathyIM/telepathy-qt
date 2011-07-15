@@ -1103,7 +1103,7 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
 /**
  * \fn void AccountManager::newAccount(const Tp::AccountPtr &account)
  *
- * This signal is emitted when a new account is created.
+ * Emitted when a new account is created.
  *
  * The new \a account will have the features set in the AccountFactory used by this
  * account manager ready and the same connection, channel and contact factories as used by this

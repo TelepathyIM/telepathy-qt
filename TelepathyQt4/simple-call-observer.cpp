@@ -276,7 +276,7 @@ void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
 /**
  * \fn void SimpleCallObserver::streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel)
  *
- * This signal is emitted whenever a streamed media call that matches this observer's criteria is
+ * Emitted whenever a streamed media call that matches this observer's criteria is
  * started.
  *
  * \param channel The channel representing the streamed media call that started.
@@ -286,7 +286,7 @@ void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
  * \fn void SimpleCallObserver::streamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel,
  *          const QString &errorName, const QString &errorMessage)
  *
- * This signal is emitted whenever a streamed media call that matches this observer's criteria has
+ * Emitted whenever a streamed media call that matches this observer's criteria has
  * ended.
  *
  * \param channel The channel representing the streamed media call that ended.

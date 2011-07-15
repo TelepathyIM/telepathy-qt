@@ -584,28 +584,26 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
 
 /**
  * \fn void ChannelRequest::failed(const QString &errorName,
- *             const QString &errorMessage);
+ *          const QString &errorMessage)
  *
- * This signal is emitted when the channel request has failed. No further
+ * Emitted when the channel request has failed. No further
  * methods must not be called on it.
  *
  * \param errorName The name of a D-Bus error.
  * \param errorMessage The error message.
+ * \sa succeeded()
  */
 
 /**
- * \fn void ChannelRequest::succeeded();
- *
- * This signals is emitted when the channel request has succeeded. No further
- * methods must not be called on it.
+ * \fn void ChannelRequest::succeeded()
  *
  * \deprecated Use ChannelRequest::succeeded(const ChannelPtr &) instead.
  */
 
 /**
- * \fn void ChannelRequest::succeeded(const Tp::ChannelPtr &channel);
+ * \fn void ChannelRequest::succeeded(const Tp::ChannelPtr &channel)
  *
- * This signals is emitted when the channel request has succeeded. No further
+ * Emitted when the channel request has succeeded. No further
  * methods must not be called on it.
  *
  * The \a channel parameter can be used to observe the channel resulting from the request (e.g. for
@@ -617,6 +615,7 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
  * to the settings of the ChannelFactory on the Account the request was made through.
  *
  * \param channel Pointer to a proxy for the resulting channel, if the Channel Dispatcher reported it.
+ * \sa failed()
  */
 
 void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)

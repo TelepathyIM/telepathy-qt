@@ -234,7 +234,7 @@ PendingSendMessage *ContactMessenger::sendMessage(const MessageContentPartList &
  *                  Tp::MessageSendingFlags flags, const QString &sentMessageToken,
  *                  const Tp::TextChannelPtr &channel);
  *
- * This signal is emitted whenever a text message on account() is sent to the contact
+ * Emitted whenever a text message on account() is sent to the contact
  * identified by contactIdentifier().
  *
  * \param message The message sent.
@@ -247,7 +247,7 @@ PendingSendMessage *ContactMessenger::sendMessage(const MessageContentPartList &
  * \fn void ContactMessenger::messageReceived(const Tp::ReceivedMessage &message,
  *                  const Tp::TextChannelPtr &channel);
  *
- * This signal is emitted whenever a text message on account() is received from the contact
+ * Emitted whenever a text message on account() is received from the contact
  * identified by contactIdentifier().
  *
  * \param message The message received.

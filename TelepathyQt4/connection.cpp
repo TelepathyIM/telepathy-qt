@@ -2554,7 +2554,7 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
 /**
  * \fn void Connection::selfHandleChanged(uint newHandle)
  *
- * This signal is emitted when the value of selfHandle() changes.
+ * Emitted when the value of selfHandle() changes.
  *
  * \param newHandle The new connection self handle.
  * \sa selfHandle()
@@ -2563,7 +2563,7 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
 /**
  * \fn void Connection::selfContactChanged()
  *
- * This signal is emitted when the value of selfContact() changes.
+ * Emitted when the value of selfContact() changes.
  *
  * \sa selfContact()
  */
@@ -2571,7 +2571,7 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
 /**
  * \fn void Connection::accountBalanceChanged(const Tp::CurrencyAmount &accountBalance)
  *
- * This signal is emitted when the value of accountBalance() changes.
+ * Emitted when the value of accountBalance() changes.
  *
  * \param accountBalance The new user's balance of this connection.
  * \sa accountBalance()

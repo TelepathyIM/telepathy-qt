@@ -498,7 +498,7 @@ PendingOperation *ChannelDispatchOperation::claim()
  * \fn void ChannelDispatchOperation::channelLost(const ChannelPtr &channel,
  *             const QString &errorName, const QString &errorMessage);
  *
- * A channel has closed before it could be claimed or handled. If this is
+ * Emitted when a channel has closed before it could be claimed or handled. If this is
  * emitted for the last remaining channel in a channel dispatch operation, it
  * will immediately be followed by invalidated() with error
  * #TP_QT4_ERROR_OBJECT_REMOVED.

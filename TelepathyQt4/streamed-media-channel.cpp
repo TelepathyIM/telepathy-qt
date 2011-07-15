@@ -656,20 +656,20 @@ PendingOperation *StreamedMediaStream::requestReceiving(bool receive)
 }
 
 /**
- * \fn void StreamedMediaStream::localSendingStateChanged(Tp::StreamedMediaStream::SendingState localSendingState);
+ * \fn void StreamedMediaStream::localSendingStateChanged(
+ *          Tp::StreamedMediaStream::SendingState localSendingState)
  *
- * This signal is emitted when the local sending state of this media stream
- * changes.
+ * Emitted when the local sending state of this media stream changes.
  *
  * \param localSendingState The new local sending state of this media stream.
  * \sa localSendingState()
  */
 
 /**
- * \fn void MediaStream::remoteSendingStateChanged(Tp::MediaStream::SendingState &remoteSendingState);
+ * \fn void MediaStream::remoteSendingStateChanged(
+ *          Tp::MediaStream::SendingState &remoteSendingState)
  *
- * This signal is emitted when the remote sending state of this media stream
- * changes.
+ * Emitted when the remote sending state of this media stream changes.
  *
  * \param remoteSendingState The new remote sending state of this media stream.
  * \sa remoteSendingState()
@@ -1208,46 +1208,53 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
 }
 
 /**
- * \fn void StreamedMediaChannel::streamAdded(const Tp::StreamedMediaStreamPtr &stream);
+ * \fn void StreamedMediaChannel::streamAdded(const Tp::StreamedMediaStreamPtr &stream)
  *
- * This signal is emitted when a media stream is added to this channel.
+ * Emitted when a media stream is added to this channel.
  *
  * \param stream The media stream that was added.
- * \sa streams(), streamsForType()
+ * \sa streams(), streamsForType(), streamRemoved()
  */
 
 /**
- * \fn void StreamedMediaChannel::streamRemoved(const Tp::StreamedMediaStreamPtr &stream);
+ * \fn void StreamedMediaChannel::streamRemoved(const Tp::StreamedMediaStreamPtr &stream)
  *
- * This signal is emitted when a media stream is removed from this channel.
+ * Emitted when a media stream is removed from this channel.
  *
  * \param stream The media stream that was removed.
- * \sa streams(), streamsForType()
+ * \sa streams(), streamsForType(), streamAdded()
  */
 
 /**
- * \fn void StreamedMediaChannel::streamDirectionChanged(const Tp::StreamedMediaStreamPtr &stream, Tp::MediaStreamDirection direction, Tp::MediaStreamPendingSend pendingSend);
+ * \fn void StreamedMediaChannel::streamDirectionChanged(
+ *          const Tp::StreamedMediaStreamPtr &stream, Tp::MediaStreamDirection direction,
+ *          Tp::MediaStreamPendingSend pendingSend)
  *
- * This signal is emitted when a media stream direction changes.
+ * Emitted when a media stream direction changes.
  *
  * \param stream The media stream which the direction changed.
  * \param direction The new direction of the stream that changed.
- * \param pendingSend the new pending send flags of the stream that changed.
+ * \param pendingSend The new pending send flags of the stream that changed.
+ * \sa StreamedMediaStream::direction()
  */
 
 /**
- * \fn void StreamedMediaChannel::streamStateChanged(const Tp::StreamedMediaStreamPtr &stream, Tp::MediaStreamState state);
+ * \fn void StreamedMediaChannel::streamStateChanged(
+ *          const Tp::StreamedMediaStreamPtr &stream, Tp::MediaStreamState state)
  *
- * This signal is emitted when a media stream state changes.
+ * Emitted when a media stream state changes.
  *
  * \param stream The media stream which the state changed.
  * \param state The new state of the stream that changed.
+ * \sa StreamedMediaStream::state()
  */
 
 /**
- * \fn void StreamedMediaChannel::streamError(const Tp::StreamedMediaStreamPtr &stream, Tp::StreamedMediaStreamError errorCode, const QString &errorMessage);
+ * \fn void StreamedMediaChannel::streamError(
+ *          const Tp::StreamedMediaStreamPtr &stream,
+ *          Tp::StreamedMediaStreamError errorCode, const QString &errorMessage)
  *
- * This signal is emitted when an error occurs on a media stream.
+ * Emitted when an error occurs on a media stream.
  *
  * \param stream The media stream which the error occurred.
  * \param errorCode The error code.
@@ -1257,7 +1264,7 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
 /**
  * \fn void StreamedMediaChannel::localHoldStateChanged(Tp::LocalHoldState state, Tp::LocalHoldStateReason reason);
  *
- * This signal is emitted when the local hold state of this channel changes.
+ * Emitted when the local hold state of this channel changes.
  *
  * \param state The new local hold state of this channel.
  * \param reason The reason why the change occurred.
