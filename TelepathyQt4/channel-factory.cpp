@@ -71,7 +71,7 @@ ChannelFactory::Private::Private()
  */
 
 /**
- * Create a new ChannelFactory object for the given \a bus.
+ * Create a new ChannelFactory object.
  *
  * The returned factory will construct channel subclasses provided by TelepathyQt4 as appropriate
  * for the channel immutable properties, but not make any features ready.
@@ -85,7 +85,7 @@ ChannelFactoryPtr ChannelFactory::create(const QDBusConnection &bus)
 }
 
 /**
- * Class constructor.
+ * Construct a new ChannelFactory object.
  *
  * The constructed factory will construct channel subclasses provided by TelepathyQt4 as appropriate
  * for the channel immutable properties, but not make any features ready.
