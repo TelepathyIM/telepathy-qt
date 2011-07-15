@@ -633,7 +633,7 @@ struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
  *
  * \subsection cr_registering_sec Registering a client
  *
- * To register a client, just call registerClient with a given AbstractClientPtr
+ * To register a client, just call registerClient() with a given AbstractClientPtr
  * pointing to a valid AbstractClient instance.
  *
  * \code
@@ -652,6 +652,8 @@ struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
  * \endcode
  *
  * \sa AbstractClientObserver, AbstractClientApprover, AbstractClientHandler
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
