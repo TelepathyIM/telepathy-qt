@@ -23,13 +23,13 @@
 #include <TelepathyQt4/Message>
 #include <TelepathyQt4/ReceivedMessage>
 
-#include <QDateTime>
-#include <QPointer>
-#include <QSet>
+#include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/TextChannel>
 
-#include "TelepathyQt4/debug-internal.h"
+#include <QDateTime>
+#include <QPointer>
+#include <QSet>
 
 namespace Tp
 {
@@ -133,21 +133,23 @@ void Message::Private::clearSenderHandle()
 /**
  * \class Message
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/message.h <TelepathyQt4/Message>
  *
- * \brief The Message class represents a Telepathy message in a text channel.
- * These objects are implicitly shared, like QString.
+ * \brief The Message class represents a Telepathy message in a TextChannel.
+ *
+ * This class is implicitly shared, like QString.
  */
 
 /**
- * Default constructor, only used internally.
+ * \internal Default constructor.
  */
 Message::Message()
+    : mPriv(new Private(MessagePartList()))
 {
 }
 
 /**
- * Constructor.
+ * Construct a new Message object.
  *
  * \param parts The parts of a message as defined by the \telepathy_spec.
  *              This list must have length at least 1.
@@ -159,11 +161,11 @@ Message::Message(const MessagePartList &parts)
 }
 
 /**
- * Constructor, from the parameters of the old Sent signal.
+ * Construct a new Message object.
  *
- * \param timestamp The time the message was sent
- * \param type The message type
- * \param text The text of the message
+ * \param timestamp The time the message was sent.
+ * \param type The message type.
+ * \param text The message body.
  */
 Message::Message(uint timestamp, uint type, const QString &text)
     : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
@@ -179,10 +181,10 @@ Message::Message(uint timestamp, uint type, const QString &text)
 }
 
 /**
- * Constructor, from the parameters of the old Send method.
+ * Construct a new Message object.
  *
- * \param type The message type
- * \param text The text of the message
+ * \param type The message type.
+ * \param text The message body.
  */
 Message::Message(ChannelTextMessageType type, const QString &text)
     : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
@@ -453,10 +455,10 @@ MessagePartList Message::parts() const
 /**
  * \class ReceivedMessage
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/message.h <TelepathyQt4/ReceivedMessage>
  *
  * \brief The ReceivedMessage class is a subclass of Message, representing a
- * received message.
+ * received message only.
  *
  * It contains additional information that's generally only
  * available on received messages.
@@ -465,7 +467,7 @@ MessagePartList Message::parts() const
 /**
  * \class ReceivedMessage::DeliveryDetails
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/message.h <TelepathyQt4/ReceivedMessage>
  *
  * \brief The ReceivedMessage::DeliveryDetails class represents the details of a delivery report.
  */
@@ -480,24 +482,41 @@ struct TELEPATHY_QT4_NO_EXPORT ReceivedMessage::DeliveryDetails::Private : publi
     MessagePartList parts;
 };
 
+/**
+ * Default constructor.
+ */
 ReceivedMessage::DeliveryDetails::DeliveryDetails()
 {
 }
 
+/**
+ * Copy constructor.
+ */
 ReceivedMessage::DeliveryDetails::DeliveryDetails(const DeliveryDetails &other)
     : mPriv(other.mPriv)
 {
 }
 
+/**
+ * Construct a new ReceivedMessage::DeliveryDetails object.
+ *
+ * \param The message parts.
+ */
 ReceivedMessage::DeliveryDetails::DeliveryDetails(const MessagePartList &parts)
     : mPriv(new Private(parts))
 {
 }
 
+/**
+ * Class destructor.
+ */
 ReceivedMessage::DeliveryDetails::~DeliveryDetails()
 {
 }
 
+/**
+ * Assignment operator.
+ */
 ReceivedMessage::DeliveryDetails &ReceivedMessage::DeliveryDetails::operator=(
         const DeliveryDetails &other)
 {
@@ -687,17 +706,18 @@ Message ReceivedMessage::DeliveryDetails::echoedMessage() const
 }
 
 /**
- * Default constructor, only used internally.
+ * \internal Default constructor.
  */
 ReceivedMessage::ReceivedMessage()
 {
 }
 
 /**
- * Constructor.
+ * Construct a new ReceivedMessage object.
  *
  * \param parts The parts of a message as defined by the \telepathy_spec.
  *              This list must have length at least 1.
+ * \param channel The channel owning this message.
  */
 ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
         const TextChannelPtr &channel)
@@ -732,7 +752,7 @@ ReceivedMessage &ReceivedMessage::operator=(const ReceivedMessage &other)
 }
 
 /**
- * Destructor.
+ * Class destructor.
  */
 ReceivedMessage::~ReceivedMessage()
 {
