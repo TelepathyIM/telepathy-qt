@@ -561,31 +561,6 @@ void ContactSearchChannel::stopSearch()
             ContactSearchChannelPtr(this));
 }
 
-/**
- * \fn void ContactSearchChannel::searchStateChanged(Tp::ChannelContactSearchState state,
- *          const QString &errorName,
- *          const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
- *
- * Emitted when the value of searchState() changes.
- *
- * \param state The new state.
- * \param errorName The name of the error if any.
- * \param details The details for the state change.
- * \sa searchState()
- */
-
-/**
- * \fn void ContactSearchChannel::searchResultReceived(
- *          const Tp::ContactSearchChannel::SearchResult &result)
- *
- * Emitted when a result for a search is received. It can be emitted multiple times
- * until the searchState() goes to #ChannelContactSearchStateCompleted or
- * #ChannelContactSearchStateFailed.
- *
- * \param result The search result.
- * \sa searchState()
- */
-
 void ContactSearchChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -672,5 +647,30 @@ void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
     mPriv->processingSignalsQueue = false;
     mPriv->processSignalsQueue();
 }
+
+/**
+ * \fn void ContactSearchChannel::searchStateChanged(Tp::ChannelContactSearchState state,
+ *          const QString &errorName,
+ *          const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
+ *
+ * Emitted when the value of searchState() changes.
+ *
+ * \param state The new state.
+ * \param errorName The name of the error if any.
+ * \param details The details for the state change.
+ * \sa searchState()
+ */
+
+/**
+ * \fn void ContactSearchChannel::searchResultReceived(
+ *          const Tp::ContactSearchChannel::SearchResult &result)
+ *
+ * Emitted when a result for a search is received. It can be emitted multiple times
+ * until the searchState() goes to #ChannelContactSearchStateCompleted or
+ * #ChannelContactSearchStateFailed.
+ *
+ * \param result The search result.
+ * \sa searchState()
+ */
 
 } // Tp
