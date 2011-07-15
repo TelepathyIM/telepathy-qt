@@ -54,10 +54,12 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
  *
  * Instances of this class cannot be constructed directly; the only way to get
  * one is via ReadyObject::becomeReady() or a DBusProxyFactory subclass.
+ *
+ * See \ref async_model
  */
 
 /**
- * Construct a PendingReady object.
+ * Construct a new PendingReady object.
  *
  * \todo Actually make it do the prepare ops. Currently they aren't taken into account in any way.
  *
@@ -75,7 +77,7 @@ PendingReady::PendingReady(const SharedPtr<RefCounted> &object,
 }
 
 /**
- * Construct a PendingReady object.
+ * Construct a new PendingReady object.
  *
  * \todo Actually make it do the prepare ops. Currently they aren't taken into account in any way.
  *
@@ -108,10 +110,11 @@ PendingReady::~PendingReady()
 }
 
 /**
- * Return the DBusProxy that should become ready.
+ * Return the proxy that should become ready.
  *
- * \return The DBusProxy that should become ready if the PendingReady was
- *         created by a proxy object or a DBusProxyFactory, otherwise a \c NULL DBusProxyPtr.
+ * \return A pointer to the DBusProxy object if the operation was
+ *         created by a proxy object or a DBusProxyFactory,
+ *         otherwise a null DBusProxyPtr.
  */
 DBusProxyPtr PendingReady::proxy() const
 {
@@ -119,10 +122,10 @@ DBusProxyPtr PendingReady::proxy() const
 }
 
 /**
- * Return the Features that were requested to become ready on the
+ * Return the features that were requested to become ready on the
  * object.
  *
- * \return Features The requested features
+ * \return The requested features as a set of Feature objects.
  */
 Features PendingReady::requestedFeatures() const
 {
