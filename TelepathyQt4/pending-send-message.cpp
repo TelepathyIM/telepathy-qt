@@ -74,7 +74,8 @@ PendingSendMessage::~PendingSendMessage()
  * Return the channel used to send the message if this instance was created using
  * TextChannel. If it was created using ContactMessenger, return a null TextChannelPtr.
  *
- * \return A TextChannelPtr object.
+ * \return A pointer to the TextChannel object, or a null TextChannelPtr if created using
+ *         ContactMessenger.
  */
 TextChannelPtr PendingSendMessage::channel() const
 {
@@ -85,7 +86,8 @@ TextChannelPtr PendingSendMessage::channel() const
  * Return the contact messenger used to send the message if this instance was created using
  * ContactMessenger. If it was created using TextChannel, return a null ContactMessengerPtr.
  *
- * \return A ContactMessengerPtr object.
+ * \return A pointer to the ContactMessenger object, or a null ContactMessengerPtr if created using
+ *         TextChannel.
  */
 ContactMessengerPtr PendingSendMessage::messenger() const
 {
