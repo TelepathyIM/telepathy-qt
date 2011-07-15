@@ -584,42 +584,6 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
     return mPriv->baseInterface;
 }
 
-/**
- * \fn void ChannelRequest::failed(const QString &errorName,
- *          const QString &errorMessage)
- *
- * Emitted when the channel request has failed. No further
- * methods must not be called on it.
- *
- * \param errorName The name of a D-Bus error.
- * \param errorMessage The error message.
- * \sa succeeded()
- */
-
-/**
- * \fn void ChannelRequest::succeeded()
- *
- * \deprecated Use ChannelRequest::succeeded(const ChannelPtr &) instead.
- */
-
-/**
- * \fn void ChannelRequest::succeeded(const Tp::ChannelPtr &channel)
- *
- * Emitted when the channel request has succeeded. No further
- * methods must not be called on it.
- *
- * The \a channel parameter can be used to observe the channel resulting from the request (e.g. for
- * it getting closed). The pointer may be NULL if the Channel Dispatcher implementation is too old.
- * Whether a non-NULL channel can be expected can be checked with
- * Account::requestsSucceedWithChannel().
- *
- * If there is a channel, it will be of the subclass determined by and made ready (or not) according
- * to the settings of the ChannelFactory on the Account the request was made through.
- *
- * \param channel Pointer to a proxy for the resulting channel, if the Channel Dispatcher reported it.
- * \sa failed()
- */
-
 void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -706,6 +670,42 @@ void ChannelRequest::onChanBuilt(Tp::PendingOperation *op)
     emit succeeded(); // API/ABI break TODO: don't
     emit succeeded(mPriv->chan);
 }
+
+/**
+ * \fn void ChannelRequest::failed(const QString &errorName,
+ *          const QString &errorMessage)
+ *
+ * Emitted when the channel request has failed. No further
+ * methods must not be called on it.
+ *
+ * \param errorName The name of a D-Bus error.
+ * \param errorMessage The error message.
+ * \sa succeeded()
+ */
+
+/**
+ * \fn void ChannelRequest::succeeded()
+ *
+ * \deprecated Use ChannelRequest::succeeded(const ChannelPtr &) instead.
+ */
+
+/**
+ * \fn void ChannelRequest::succeeded(const Tp::ChannelPtr &channel)
+ *
+ * Emitted when the channel request has succeeded. No further
+ * methods must not be called on it.
+ *
+ * The \a channel parameter can be used to observe the channel resulting from the request (e.g. for
+ * it getting closed). The pointer may be NULL if the Channel Dispatcher implementation is too old.
+ * Whether a non-NULL channel can be expected can be checked with
+ * Account::requestsSucceedWithChannel().
+ *
+ * If there is a channel, it will be of the subclass determined by and made ready (or not) according
+ * to the settings of the ChannelFactory on the Account the request was made through.
+ *
+ * \param channel Pointer to a proxy for the resulting channel, if the Channel Dispatcher reported it.
+ * \sa failed()
+ */
 
 void ChannelRequest::connectNotify(const char *signalName)
 {
