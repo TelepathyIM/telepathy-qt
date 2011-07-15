@@ -82,9 +82,9 @@ PendingContactInfo::~PendingContactInfo()
 }
 
 /**
- * Return the ContactPtr object through which the request was made.
+ * Return the contact through which the request was made.
  *
- * \return A ContactPtr object.
+ * \return A pointer to the Contact object.
  */
 ContactPtr PendingContactInfo::contact() const
 {
@@ -94,7 +94,7 @@ ContactPtr PendingContactInfo::contact() const
 /**
  * Return the information for contact().
  *
- * \return An object representing the contact information.
+ * \return The contact infor as a Contact::InfoFields object.
  */
 Contact::InfoFields PendingContactInfo::infoFields() const
 {
