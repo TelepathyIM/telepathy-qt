@@ -346,8 +346,8 @@ const Feature ContactSearchChannel::FeatureCore = Feature(QLatin1String(ContactS
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \return A ContactSearchChannelPtr object pointing to the newly created
  *         ContactSearchChannel object.
  */
@@ -359,14 +359,14 @@ ContactSearchChannelPtr ContactSearchChannel::create(const ConnectionPtr &connec
 }
 
 /**
- * Construct a new contact search channel associated with the given \a objectPath
- * on the same service as the given \a connection.
+ * Construct a new ContactSearchChannel object.
  *
- * \param connection Connection owning this channel, and specifying the service.
- * \param objectPath Path to the object on the service.
- * \param immutableProperties The immutable properties of the channel.
- * \param coreFeature The core feature of the channel type. The corresponding introspectable should
- * depend on ContactSearchChannel::FeatureCore.
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ *                    depend on ContactSearchChannel::FeatureCore.
  */
 ContactSearchChannel::ContactSearchChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -451,9 +451,9 @@ QString ContactSearchChannel::server() const
 /**
  * Send a request to start a search for contacts on this connection.
  *
- * This may only be called while the searchState() is ChannelContactSearchStateNotStarted;
+ * This may only be called while the searchState() is #ChannelContactSearchStateNotStarted;
  * a valid search request will cause the searchStateChanged() signal to be emitted with the
- * state ChannelContactSearchStateInProgress.
+ * state #ChannelContactSearchStateInProgress.
  *
  * Search results are signalled by searchResultReceived().
  *
@@ -477,9 +477,9 @@ PendingOperation *ContactSearchChannel::search(const QString &searchKey, const Q
 /**
  * Send a request to start a search for contacts on this connection.
  *
- * This may only be called while the searchState() is ChannelContactSearchStateNotStarted;
+ * This may only be called while the searchState() is #ChannelContactSearchStateNotStarted;
  * a valid search request will cause the searchStateChanged() signal to be emitted with the
- * state ChannelContactSearchStateInProgress.
+ * state #ChannelContactSearchStateInProgress.
  *
  * Search results are signalled by searchResultReceived().
  *
