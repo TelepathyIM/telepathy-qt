@@ -65,6 +65,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
  *
  * Instances of this class cannot be constructed directly; the only way to get
  * one is trough Account.
+ *
+ * See \ref async_model
  */
 
 /**
@@ -179,9 +181,9 @@ PendingChannelRequest::~PendingChannelRequest()
 }
 
 /**
- * Return the AccountPtr object through which the request was made.
+ * Return the account through which the request was made.
  *
- * \return An AccountPtr object.
+ * \return A pointer to the Account object.
  */
 AccountPtr PendingChannelRequest::account() const
 {
