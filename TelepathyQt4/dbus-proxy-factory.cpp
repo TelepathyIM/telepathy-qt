@@ -64,7 +64,7 @@ struct TELEPATHY_QT4_NO_EXPORT DBusProxyFactory::Private
  */
 
 /**
- * Class constructor.
+ * Construct a new DBusProxyFactory object.
  *
  * The intention for storing the bus here is that it generally doesn't make sense to construct
  * proxies for multiple buses in the same context. Allowing that would lead to more complex keying
@@ -145,6 +145,7 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const DBusProxyPtr &proxy) const
 
 /**
  * \fn QString DBusProxyFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
+ *
  * "Normalize" a bus name according to the rules for the proxy class to construct.
  *
  * Should be implemented by subclasses to transform the application-specified name \a
