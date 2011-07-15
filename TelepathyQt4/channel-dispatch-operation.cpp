@@ -284,8 +284,7 @@ const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(Chan
  *
  * \param bus QDBusConnection to use.
  * \param objectPath The channel dispatch operation object path.
- * \param immutableProperties The immutable properties of the channel dispatch
- *        operation.
+ * \param immutableProperties The channel dispatch operation immutable properties.
  * \param initialChannels The channels this CDO has initially (further tracking is done internally).
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
@@ -313,8 +312,7 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
  *
  * \param bus QDBusConnection to use
  * \param objectPath The channel dispatch operation object path.
- * \param immutableProperties The immutable properties of the channel dispatch
- *        operation.
+ * \param immutableProperties The channel dispatch operation immutable properties.
  * \param initialChannels The channels this CDO has initially (further tracking is done internally).
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
@@ -503,7 +501,7 @@ PendingOperation *ChannelDispatchOperation::claim()
  * will immediately be followed by invalidated() with error
  * #TP_QT4_ERROR_OBJECT_REMOVED.
  *
- * \param channel The Channel that closed.
+ * \param channel The channel that was closed.
  * \param error The name of a D-Bus error indicating why the channel closed.
  * \param errorMessage The error message.
  */
