@@ -67,6 +67,7 @@ public:
             const QDateTime &userActionTime,
             const HandlerInfo &handlerInfo);
 
+    AccountPtr accountForTube(const StreamTubeChannelPtr &tube) const;
     QList<QPair<AccountPtr, StreamTubeChannelPtr> > tubes() const;
 
 Q_SIGNALS:

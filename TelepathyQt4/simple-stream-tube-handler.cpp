@@ -144,12 +144,17 @@ void SimpleStreamTubeHandler::handleChannels(
     mInvocations.append(invocation);
 }
 
+AccountPtr SimpleStreamTubeHandler::accountForTube(const StreamTubeChannelPtr &tube) const
+{
+    return mTubes.value(tube);
+}
+
 QList<QPair<AccountPtr, StreamTubeChannelPtr> > SimpleStreamTubeHandler::tubes() const
 {
     QList<QPair<AccountPtr, StreamTubeChannelPtr> > tubes;
 
     foreach (StreamTubeChannelPtr tube, mTubes.keys()) {
-        tubes.append(qMakePair(mTubes.value(tube), tube));
+        tubes.append(qMakePair(accountForTube(tube), tube));
     }
 
     return tubes;

@@ -31,6 +31,7 @@ using namespace Tp;
 
 namespace Tp
 {
+class ChannelRequestHints;
 class PendingOperation;
 }
 
@@ -52,6 +53,10 @@ private Q_SLOTS:
     void gotContactCapabilities(QDBusPendingCallWatcher *watcher);
     */
     void onStreamTubeChannelCreated(Tp::PendingOperation *op);
+    void onTubeRequested(const Tp::AccountPtr &, const Tp::OutgoingStreamTubeChannelPtr &,
+            const QDateTime &, const Tp::ChannelRequestHints &);
+    void onTubeClosed(const Tp::AccountPtr &, const Tp::OutgoingStreamTubeChannelPtr &,
+            const QString &, const QString &);
     //void onStreamTubeChannelNewConnection(uint);
     void onTcpServerNewConnection();
     void onDataFromSocket();

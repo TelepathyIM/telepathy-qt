@@ -64,6 +64,8 @@ struct StreamTubeServer::Private
     QHostAddress exportedAddr;
     quint16 exportedPort;
     QVariantMap exportedParams;
+
+    QHash<StreamTubeChannelPtr, QPair<QString, QString> > offerErrors;
 };
 
 StreamTubeServerPtr StreamTubeServer::create(
@@ -167,6 +169,17 @@ StreamTubeServer::StreamTubeServer(
                     Tp::StreamTubeChannelPtr,
                     QDateTime,
                     Tp::ChannelRequestHints)));
+    connect(mPriv->handler.data(),
+            SIGNAL(tubeInvalidated(
+                    Tp::AccountPtr,
+                    Tp::StreamTubeChannelPtr,
+                    QString,
+                    QString)),
+            SLOT(onTubeInvalidated(
+                    Tp::AccountPtr,
+                    Tp::StreamTubeChannelPtr,
+                    QString,
+                    QString)));
 }
 
 /**
@@ -247,21 +260,79 @@ void StreamTubeServer::onInvokedForTube(
 
     OutgoingStreamTubeChannelPtr outgoing = OutgoingStreamTubeChannelPtr::qObjectCast(tube);
 
+    if (outgoing && outgoing->isValid()) {
+        emit tubeRequested(acc, outgoing, time, hints);
+    }
+
     if (!outgoing) {
         warning() << "The ChannelFactory used by StreamTubeServer must construct" <<
             "OutgoingStreamTubeChannel subclasses for Requested=true StreamTubes";
         tube->requestClose();
         return;
+    } else if (!outgoing->isValid()) {
+        warning() << "A tube received by StreamTubeServer is already invalidated, ignoring";
+        return;
     } else if (mPriv->exportedAddr.isNull() || !mPriv->exportedPort) {
         warning() << "No socket exported, closing tube" << tube->objectPath();
+        mPriv->offerErrors.insert(tube,
+                QPair<QString, QString>(
+                    TP_QT4_ERROR_NOT_AVAILABLE, QLatin1String("no socket exported")));
         tube->requestClose();
         return;
     }
 
-    // TODO: emit tubeRequested and begin tracking tube
+    debug().nospace() << "Offering socket " << mPriv->exportedAddr << ":" << mPriv->exportedPort <<
+        " on tube " << tube->objectPath();
 
-    // TODO: connect to Offer return, and close tube emitting an error if the offer didn't succeed
-    outgoing->offerTcpSocket(mPriv->exportedAddr, mPriv->exportedPort, mPriv->exportedParams);
+    connect(outgoing->offerTcpSocket(mPriv->exportedAddr, mPriv->exportedPort, mPriv->exportedParams),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onTubeOffered(Tp::PendingOperation*)));
+
+    // TODO: start monitoring connections if requested
+}
+
+void StreamTubeServer::onTubeOffered(
+        Tp::PendingOperation *op)
+{
+    OutgoingStreamTubeChannelPtr tube = OutgoingStreamTubeChannelPtr::dynamicCast(op->_object());
+    Q_ASSERT(!tube.isNull());
+    AccountPtr acc = mPriv->handler->accountForTube(tube);
+
+    if (!acc) {
+        debug() << "Ignoring Offer() return for already invalidated tube\n";
+        return;
+    } else  if (op->isError()) {
+        warning() << "Offer() failed, closing tube" << tube->objectPath() << '-' <<
+            op->errorName() << ':' << op->errorMessage();
+        mPriv->offerErrors.insert(tube,
+                QPair<QString, QString>(op->errorName(), op->errorMessage()));
+        tube->requestClose();
+        return;
+    }
+
+    debug() << "Tube" << tube->objectPath() << "offered successfully";
+}
+
+void StreamTubeServer::onTubeInvalidated(
+        const Tp::AccountPtr &acc,
+        const StreamTubeChannelPtr &tube,
+        const QString &error,
+        const QString &message)
+{
+    debug() << "Tube" << tube->objectPath() << "invalidated with" << error << ':' << message;
+
+    OutgoingStreamTubeChannelPtr outgoing = OutgoingStreamTubeChannelPtr::qObjectCast(tube);
+    if (!outgoing) {
+        // We haven't signaled tubeRequested either
+        return;
+    }
+
+    if (mPriv->offerErrors.contains(outgoing)) {
+        emit tubeClosed(acc, outgoing, mPriv->offerErrors.value(outgoing).first, mPriv->offerErrors.value(outgoing).second);
+        mPriv->offerErrors.remove(outgoing);
+    } else {
+        emit tubeClosed(acc, outgoing, error, message);
+    }
 }
 
 } // Tp

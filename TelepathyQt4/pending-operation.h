@@ -65,6 +65,7 @@ Q_SIGNALS:
 
 protected:
     PendingOperation(const SharedPtr<RefCounted> &object);
+    friend class StreamTubeServer; // interim until STS is implemented using tube wrapping
     TELEPATHY_QT4_NO_EXPORT SharedPtr<RefCounted> _object() const; // TODO: turn this into _object()
 
 protected Q_SLOTS:

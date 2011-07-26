@@ -161,11 +161,19 @@ Q_SIGNALS:
             const Tp::OutgoingStreamTubeChannelPtr &tube);
 
 private Q_SLOTS:
-    void onInvokedForTube(
+    TELEPATHY_QT4_NO_EXPORT void onInvokedForTube(
             const Tp::AccountPtr &account,
             const Tp::StreamTubeChannelPtr &tube,
             const QDateTime &userActionTime,
             const Tp::ChannelRequestHints &requestHints);
+
+    TELEPATHY_QT4_NO_EXPORT void onTubeOffered(
+            Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onTubeInvalidated(
+            const Tp::AccountPtr &acc,
+            const Tp::StreamTubeChannelPtr &tube,
+            const QString &error,
+            const QString &message);
 
 private:
     StreamTubeServer(
