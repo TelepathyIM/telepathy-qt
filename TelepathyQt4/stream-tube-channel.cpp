@@ -145,8 +145,9 @@ void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &
  *
  * It provides a transport for reliable and ordered data transfer, similar to SOCK_STREAM sockets.
  *
- * For more specialized stream tube classes, please refer to
- * OutgoingStreamTubeChannel and IncomingStreamTubeChannel.
+ * StreamTubeChannel is an intermediate base class; OutgoingStreamTubeChannel and
+ * IncomingStreamTubeChannel are the specialized classes used for locally and remotely initiated
+ * tubes respectively.
  *
  * For more details, please refer to \telepathy_spec.
  *
@@ -546,12 +547,12 @@ UIntList StreamTubeChannel::connections() const
 }
 
 /**
- * Return the type of socket used by this stream tube.
+ * Return the type of the tube's local endpoint socket.
  *
- * Note that this function will return a valid value only after the stream tube has been opened.
+ * Note that this function will return a valid value only after state() has gone #TubeStateOpen.
  *
  * \return The socket type as #SocketAddressType.
- * \sa localAddress(), ipAddress(), TubeChannel::state()
+ * \sa localAddress(), ipAddress()
  */
 SocketAddressType StreamTubeChannel::addressType() const
 {
@@ -561,10 +562,10 @@ SocketAddressType StreamTubeChannel::addressType() const
 /**
  * Return the access control used by this stream tube.
  *
- * Note that this function will only return a valid value after the stream tube has been opened.
+ * Note that this function will only return a valid value after state() has gone #TubeStateOpen.
  *
  * \return The access control as #SocketAccessControl.
- * \sa addressType(), TubeChannel::state()
+ * \sa addressType()
  */
 SocketAccessControl StreamTubeChannel::accessControl() const
 {
@@ -574,13 +575,14 @@ SocketAccessControl StreamTubeChannel::accessControl() const
 /**
  * Return the IP address/port combination used by this stream tube.
  *
- * This method will return a meaningful value only if this stream tube socket is a TCP socket.
+ * This method will return a meaningful value only if the local endpoint socket for the tube is a
+ * TCP socket, i.e. addressType() is #SocketAddressTypeIPv4 or #SocketAddressTypeIPv6.
  *
- * Note that this function will return a valid value only after the stream tube has been opened.
+ * Note that this function will return a valid value only after state() has gone #TubeStateOpen.
  *
  * \return Pair of IP address as QHostAddress and port if using a TCP socket,
  *         or an undefined value otherwise.
- * \sa addressType(), localAddress(), TubeChannel::state()
+ * \sa localAddress()
  */
 QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 {
@@ -595,13 +597,14 @@ QPair<QHostAddress, quint16> StreamTubeChannel::ipAddress() const
 /**
  * Return the local address used by this stream tube.
  *
- * This method will return a meaningful value only if this stream tube socket is a Unix socket.
+ * This method will return a meaningful value only if the local endpoint socket for the tube is an
+ * UNIX socket, i.e. addressType() is #SocketAddressTypeUnix or #SocketAddressTypeAbstractUnix.
  *
- * Note that this function will return a valid value only after the stream tube has been opened.
+ * Note that this function will return a valid value only after state() has gone #TubeStateOpen.
  *
  * \return Unix socket address if using an Unix socket,
  *         or an undefined value otherwise.
- * \sa addressType(), ipAddress(), TubeChannel::state()
+ * \sa ipAddress()
  */
 QString StreamTubeChannel::localAddress() const
 {
