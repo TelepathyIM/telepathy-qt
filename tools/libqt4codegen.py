@@ -188,6 +188,28 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         n.parentNode.replaceChild(div, n)
 
     if docstring_el.getAttribute('xmlns') == 'http://www.w3.org/1999/xhtml':
+        for memref in docstring_el.getElementsByTagNameNS(NS_TP, 'member-ref'):
+            nested = memref.getElementsByTagNameNS(NS_TP, 'member-ref')
+            if nested:
+                raise Xzibit(n, nested[0])
+
+            # TODO: if the tp spec had a way to tell which kind of an object a ref is pointing to,
+            # this hack wouldn't be needed
+            isProp = False
+            if memref.nextSibling.nodeType == x.TEXT_NODE and memref.nextSibling.data.lstrip().startswith('propert'):
+                isProp = True
+
+            text = doc.createTextNode(' \endhtmlonly ')
+
+            target = get_descendant_text(memref).replace('\n', ' ').strip()
+            if isProp:
+                text.data += '\\link requestProperty' + target + '() ' + target + ' \\endlink'
+            else:
+                text.data += target + '()'
+
+            text.data += ' \htmlonly '
+            memref.parentNode.replaceChild(text, memref)
+
         splitted = ''.join([el.toxml() for el in docstring_el.childNodes]).strip(' ').strip('\n').split('\n')
         level = min([not match and maxint or match.end() - 1 for match in [re.match('^ *[^ ]', line) for line in splitted]])
         assert level != maxint
