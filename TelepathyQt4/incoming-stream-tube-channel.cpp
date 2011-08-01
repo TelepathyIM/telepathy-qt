@@ -57,13 +57,20 @@ IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/IncomingStreamTubeChannel>
  *
- * \brief The IncomingStreamTubeChannel class represents a Telepathy channel
- * of type StreamTube for incoming stream tubes.
+ * \brief The IncomingStreamTubeChannel class represents an incoming Telepathy channel
+ * of type StreamTube.
  *
  * In particular, this class is meant to be used as a comfortable way for
- * accepting incoming stream tubes.
- * It provides a set of overloads for accepting a variety of sockets over
- * a stream tube.
+ * accepting incoming stream tubes. Tubes can be accepted as TCP and/or Unix sockets with various
+ * access control methods depending on what the service supports using the various overloads of
+ * acceptTubeAsTcpSocket() and acceptTubeAsUnixSocket().
+ *
+ * Once a tube is successfully accepted and open (the PendingStreamTubeConnection returned from the
+ * accepting methods has finished), the application can connect to the socket the address of which
+ * can be retrieved from PendingStreamTubeConnection::ipAddress() and/or
+ * PendingStreamTubeConnection::localAddress() depending on which accepting method was used.
+ * Connecting to this socket will open a tunneled connection to the service listening at the
+ * offering end of the tube.
  *
  * For more details, please refer to \telepathy_spec.
  *
@@ -133,9 +140,16 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the #TubeStateLocalPending state.
  *
- * This overload lets you specify an allowed address/port combination for connecting to the socket.
- * Otherwise, you can specify QHostAddress::Any or QHostAddress::AnyIPv6 to accept every incoming
- * connection from localhost, or use the other overload.
+ * The connection manager will open a TCP socket for the application to connect to. The address of
+ * the socket will be returned in PendingStreamTubeConnection::ipAddress() once the operation has
+ * finished successfully.
+ *
+ * This overload lets you specify an allowed address/port combination for connecting to the CM
+ * socket. Connections with other source addresses won't be accepted. The accessors
+ * supportsIPv4SocketsWithSpecifiedAddress() and supportsIPv6SocketsWithSpecifiedAddress() can be
+ * used to verify that the connection manager supports this kind of access control; otherwise, this
+ * method will always fail unless QHostAddress::Any or QHostAddress::AnyIPv6 is passed, in which
+ * case the behavior is identical to the always supported acceptTubeAsTcpSocket() overload.
  *
  * Note that when using QHostAddress::Any or QHostAddress::AnyIPv6, \a allowedPort is ignored.
  *
@@ -146,10 +160,6 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * \return A PendingStreamTubeConnection which will emit PendingStreamTubeConnection::finished
  *         when the stream tube is ready to be used
  *         (hence in the #TubeStateOpen state).
- * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost(),
- *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
- *     StreamTubeChannel::supportsIPv6SocketsOnLocalhost(),
- *     StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress()
  */
 PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         const QHostAddress &allowedAddress,
@@ -262,19 +272,19 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the #TubeStateLocalPending state.
  *
- * This overload will open a tube which accepts every incoming connection from localhost.
+ * The connection manager will open a TCP socket for the application to connect to. The address of
+ * the socket will be returned in PendingStreamTubeConnection::ipAddress() once the operation has
+ * finished successfully.
  *
- * Note that this is the equivalent of calling acceptTubeAsTcpSocket(QHostAddress::Any, 0).
+ * Using this overload, the connection manager will accept every incoming connection from localhost.
+ *
+ * This accept method must be supported by all connection managers adhering to the \telepathy_spec.
  *
  * This method requires IncomingStreamTubeChannel::FeatureCore to be ready.
  *
  * \return A PendingStreamTubeConnection which will emit PendingStreamTubeConnection::finished
  *         when the stream tube is ready to be used
  *         (hence in the #TubeStateOpen state).
- * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost(),
- *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
- *     StreamTubeChannel::supportsIPv6SocketsOnLocalhost(),
- *     StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress()
  */
 PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
 {
@@ -287,12 +297,21 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the #TubeStateLocalPending state.
  *
- * You can also specify whether the server should require an SCM_CRED or SCM_CREDENTIALS message
- * upon connection instead of accepting every incoming connection from localhost.
+ * An Unix socket (can be used with QLocalSocket or alike) will be opened by the connection manager
+ * as the local tube endpoint. This is only supported if supportsUnixSocketsOnLocalhost() is \c
+ * true.
+ *
+ * You can also specify whether the CM should require an SCM_CREDS or SCM_CREDENTIALS message
+ * upon connection instead of accepting every incoming connection from localhost. This provides
+ * additional security, but requires sending the byte retrieved from
+ * PendingStreamTubeConnection::credentialByte() in-line in the socket byte stream (in a credentials
+ * message if available on the platform), which might not be compatible with all protocols or
+ * libraries. Also, only connection managers for which supportsUnixSocketsWithCredentials() is \c
+ * true support this type of access control.
  *
  * This method requires IncomingStreamTubeChannel::FeatureCore to be ready.
  *
- * \param requireCredentials Whether the server should require an SCM_CRED or SCM_CREDENTIALS message
+ * \param requireCredentials Whether the CM should require an SCM_CREDS or SCM_CREDENTIALS message
  *                           upon connection.
  * \return A PendingStreamTubeConnection which will emit PendingStreamTubeConnection::finished
  *         when the stream tube is ready to be used
