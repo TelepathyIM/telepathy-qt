@@ -167,26 +167,13 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         if nested:
             raise Xzibit(n, nested[0])
 
-        """
-            <div class='rationale'>
-              <h5>Rationale:</h5>
-              <div/> <- inner_div
-            </div>
-        """
-        outer_div = doc.createElement('div')
-        outer_div.setAttribute('class', 'rationale')
-
-        h5 = doc.createElement('h5')
-        h5.appendChild(doc.createTextNode('Rationale:'))
-        outer_div.appendChild(h5)
-
-        inner_div = doc.createElement('div')
-        outer_div.appendChild(inner_div)
+        div = doc.createElement('div')
+        div.setAttribute('class', 'rationale')
 
         for rationale_body in n.childNodes:
-            inner_div.appendChild(rationale_body.cloneNode(True))
+            div.appendChild(rationale_body.cloneNode(True))
 
-        n.parentNode.replaceChild(outer_div, n)
+        n.parentNode.replaceChild(div, n)
 
     if docstring_el.getAttribute('xmlns') == 'http://www.w3.org/1999/xhtml':
         splitted = ''.join([el.toxml() for el in docstring_el.childNodes]).strip(' ').strip('\n').split('\n')
