@@ -104,8 +104,6 @@ void TubeChannel::Private::extractTubeProperties(const QVariantMap &props)
  * Note that TubeChannel should never be instantiated directly, instead one of its
  * subclasses (e.g. IncomingStreamTubeChannel or OutgoingStreamTubeChannel) should be used.
  *
- * For more details, please refer to \telepathy_spec.
- *
  * See \ref async_model, \ref shared_ptr
  */
 
@@ -171,13 +169,13 @@ TubeChannel::~TubeChannel()
 /**
  * Return the parameters associated with this tube, if any.
  *
- * Note that for outgoing tubes, this function will only return a valid value after the tube has
- * been offered successfully.
+ * The parameters are populated when an outgoing tube is offered, but they are most useful in the
+ * receiving end, where the parameters passed to the offer can be extracted for the tube's entire
+ * lifetime to bootstrap legacy protocols. All parameters are passed unchanged.
  *
  * This method requires TubeChannel::FeatureCore to be ready.
  *
  * \return The parameters as QVariantMap.
- *         For more details, please refer to \telepathy_spec.
  */
 QVariantMap TubeChannel::parameters() const
 {
@@ -264,7 +262,6 @@ void TubeChannel::gotTubeProperties(PendingOperation *op)
  * Emitted when the value of state() changes.
  *
  * \sa state The new state of this tube.
- * \sa state()
  */
 
 /**
