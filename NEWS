@@ -4,10 +4,10 @@ telepathy-qt4 0.7.2 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Lots of additions and corrections to API documentation
 
 Fixes:
- * Tp::IncomingStreamTubeChannel always report an empty socket address to
+ * Tp::IncomingStreamTubeChannel always reports an empty socket address to
    connect to for accepted Tubes
 
 telepathy-qt4 0.7.1 (2011-06-09)
