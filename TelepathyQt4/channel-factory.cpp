@@ -71,7 +71,7 @@ ChannelFactory::Private::Private()
  */
 
 /**
- * Create a new ChannelFactory object for the given \a bus.
+ * Create a new ChannelFactory object.
  *
  * The returned factory will construct channel subclasses provided by TelepathyQt4 as appropriate
  * for the channel immutable properties, but not make any features ready.
@@ -85,7 +85,7 @@ ChannelFactoryPtr ChannelFactory::create(const QDBusConnection &bus)
 }
 
 /**
- * Class constructor.
+ * Construct a new ChannelFactory object.
  *
  * The constructed factory will construct channel subclasses provided by TelepathyQt4 as appropriate
  * for the channel immutable properties, but not make any features ready.
@@ -466,13 +466,13 @@ QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
 }
 
 /**
- * Returns features as configured for the channel class given by the Channel::immutableProperties()
+ * Return features as configured for the channel class given by the Channel::immutableProperties()
  * of \a proxy.
  *
  * \todo Make the features configurable - currently an empty set is always returned.
  *
  * \param proxy The Channel proxy to determine the features for.
- * \return The channel class-specific features.
+ * \return A list of Feature objects.
  */
 Features ChannelFactory::featuresFor(const DBusProxyPtr &proxy) const
 {

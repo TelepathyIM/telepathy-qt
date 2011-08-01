@@ -159,7 +159,7 @@ Contact::InfoFields::~InfoFields()
 }
 
 /**
- * Assigns all information (validity, fields) from other to this.
+ * Assignment operator.
  */
 Contact::InfoFields &Contact::InfoFields::operator=(const Contact::InfoFields &other)
 {
@@ -171,7 +171,7 @@ Contact::InfoFields &Contact::InfoFields::operator=(const Contact::InfoFields &o
  * Return a list containing all fields whose name are \a name.
  *
  * \param name The name used to match the fields.
- * \return A list of fields.
+ * \return A list of ContactInfoField objects.
  */
 ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
 {
@@ -191,7 +191,7 @@ ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
 /**
  * Return a list containing all fields describing the contact information.
  *
- * \return A list of fields.
+ * \return The contact information as a list of ContactInfoField objects.
  */
 ContactInfoFieldList Contact::InfoFields::allFields() const
 {
@@ -226,6 +226,8 @@ ContactInfoFieldList Contact::InfoFields::allFields() const
  *
  * As an addition to accessors, signals are emitted to indicate that properties have
  * changed, for example aliasChanged(), avatarTokenChanged(), etc.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
@@ -332,7 +334,7 @@ Contact::~Contact()
 /**
  * Return the contact nanager owning this contact.
  *
- * \return The contact manager owning this contact.
+ * \return A pointer to the ContactManager object.
  */
 ContactManagerPtr Contact::manager() const
 {
@@ -342,7 +344,7 @@ ContactManagerPtr Contact::manager() const
 /**
  * Return the handle of this contact.
  *
- * \return The contact handle.
+ * \return The handle as a ReferencedHandles object.
  */
 ReferencedHandles Contact::handle() const
 {
@@ -352,7 +354,7 @@ ReferencedHandles Contact::handle() const
 /**
  * Return the identifier of this contact.
  *
- * \return The contact identifier.
+ * \return The identifier.
  */
 QString Contact::id() const
 {
@@ -362,7 +364,7 @@ QString Contact::id() const
 /**
  * Return the features requested on this contact.
  *
- * \return The contact requested features.
+ * \return The requested features as a set of Feature objects.
  */
 Features Contact::requestedFeatures() const
 {
@@ -372,7 +374,7 @@ Features Contact::requestedFeatures() const
 /**
  * Return the features that are actually enabled on this contact.
  *
- * \return The contact requested enabled.
+ * \return The actual features as a set of Feature objects.
  */
 Features Contact::actualFeatures() const
 {
@@ -384,9 +386,9 @@ Features Contact::actualFeatures() const
  *
  * Change notification is via the aliasChanged() signal.
  *
- * This method requires Contact::FeatureAlias to be enabled.
+ * This method requires Contact::FeatureAlias to be ready.
  *
- * \return The contact alias.
+ * \return The alias.
  */
 QString Contact::alias() const
 {
@@ -402,9 +404,9 @@ QString Contact::alias() const
 /**
  * Return whether the avatar token of this contact is known.
  *
- * This method requires Contact::FeatureAvatarToken to be enabled.
+ * This method requires Contact::FeatureAvatarToken to be ready.
  *
- * \return Whether the avatar token of this contact is known.
+ * \return \c true if the avatar token is known, \c false otherwise.
  * \sa avatarToken()
  */
 bool Contact::isAvatarTokenKnown() const
@@ -423,9 +425,9 @@ bool Contact::isAvatarTokenKnown() const
  *
  * Change notification is via the avatarTokenChanged() signal.
  *
- * This method requires Contact::FeatureAvatarToken to be enabled.
+ * This method requires Contact::FeatureAvatarToken to be ready.
  *
- * \return The contact avatar token.
+ * \return The avatar token.
  * \sa isAvatarTokenKnown(), avatarTokenChanged(), avatarData()
  */
 QString Contact::avatarToken() const
@@ -448,9 +450,9 @@ QString Contact::avatarToken() const
  *
  * Change notification is via the avatarDataChanged() signal.
  *
- * This method requires Contact::FeatureAvatarData to be enabled.
+ * This method requires Contact::FeatureAvatarData to be ready.
  *
- * \return The contact avatar.
+ * \return The avatar as an AvatarData object.
  * \sa avatarDataChanged(), avatarToken()
  */
 AvatarData Contact::avatarData() const
@@ -475,7 +477,7 @@ AvatarData Contact::avatarData() const
  * It happens in the case of offline XMPP contacts, because the server does not
  * send the token for them and an explicit request of the avatar data is needed.
  *
- * This method requires Contact::FeatureAvatarData to be enabled.
+ * This method requires Contact::FeatureAvatarData to be ready.
  *
  * \sa avatarData(), avatarDataChanged(), avatarToken(), avatarTokenChanged()
  */
@@ -495,9 +497,9 @@ void Contact::requestAvatarData()
  *
  * Change notification is via the presenceChanged() signal.
  *
- * This method requires Contact::FeatureSimplePresence to be enabled.
+ * This method requires Contact::FeatureSimplePresence to be ready.
  *
- * \return The actual presence of this contact.
+ * \return The presence as a Presence object.
  */
 Presence Contact::presence() const
 {
@@ -524,7 +526,7 @@ Presence Contact::presence() const
  *
  * Change notification is via the capabilitiesChanged() signal.
  *
- * This method requires Contact::FeatureCapabilities to be enabled.
+ * This method requires Contact::FeatureCapabilities to be ready.
  *
  * @return An object representing the contact capabilities.
  */
@@ -544,10 +546,9 @@ ContactCapabilities Contact::capabilities() const
  *
  * Change notification is via the locationUpdated() signal.
  *
- * This method requires Contact::FeatureLocation to be enabled.
+ * This method requires Contact::FeatureLocation to be ready.
  *
- * @return An object representing the contact location which will return \c false for
- *         LocationInfo::isValid() if FeatureLocation is not ready.
+ * \return The contact location as a LocationInfo object.
  */
 LocationInfo Contact::location() const
 {
@@ -568,9 +569,9 @@ LocationInfo Contact::location() const
  * method can be used to know if the information is received from the server
  * or if an explicit request is needed.
  *
- * This method requires Contacat::FeatureInfo to be enabled.
+ * This method requires Contacat::FeatureInfo to be ready.
  *
- * \return true if the information is known; false otherwise.
+ * \return \c true if the information is known; \c false otherwise.
  */
 bool Contact::isContactInfoKnown() const
 {
@@ -591,9 +592,9 @@ bool Contact::isContactInfoKnown() const
  *
  * Change notification is via the infoFieldsChanged() signal.
  *
- * This method requires Contact::FeatureInfo to be enabled.
+ * This method requires Contact::FeatureInfo to be ready.
  *
- * \return An object representing the contact information.
+ * \return The contact info as a Contact::InfoFields object.
  */
 Contact::InfoFields Contact::infoFields() const
 {
@@ -612,7 +613,7 @@ Contact::InfoFields Contact::infoFields() const
  *
  * Once the information is retrieved infoFieldsChanged() will be emitted.
  *
- * This method requires Contact::FeatureInfo to be enabled.
+ * This method requires Contact::FeatureInfo to be ready.
  *
  * \return A PendingOperation, which will emit PendingOperation::finished
  *         when the call has finished.
@@ -624,7 +625,7 @@ PendingOperation *Contact::refreshInfo()
         warning() << "Contact::refreshInfo() used on" << this
             << "for which FeatureInfo hasn't been requested - failing";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("FeatureInfo needs to be enabled in order to "
+                QLatin1String("FeatureInfo needs to be ready in order to "
                     "use this method"),
                 ContactPtr(this));
     }
@@ -663,7 +664,7 @@ PendingContactInfo *Contact::requestInfo()
 /**
  * Return whether the presence subscription state of this contact is known.
  *
- * \return Whether the presence subscription state of this contact is known.
+ * \return \c true if the presence subscription state is known, \c false otherwise.
  * \sa subscriptionState(), isSubscriptionRejected()
  */
 bool Contact::isSubscriptionStateKnown() const
@@ -674,7 +675,7 @@ bool Contact::isSubscriptionStateKnown() const
 /**
  * Return whether a request to see this contact's presence was denied.
  *
- * \return Whether a request to see this contact's presence was denied.
+ * \return \c if the a request to see the presence subscription was denied, \c false otherwise.
  * \sa isSubscriptionStateKnown(), subscriptionState()
  */
 bool Contact::isSubscriptionRejected() const
@@ -686,7 +687,7 @@ bool Contact::isSubscriptionRejected() const
  * Return the presence subscription state of this contact (i.e. whether the local user can retrieve
  * information about this contact's presence).
  *
- * \return The presence subscription state of this contact.
+ * \return The presence subscription state as Contact::PresenceState.
  * \sa isSubscriptionStateKnown(), isSubscriptionRejected()
  */
 Contact::PresenceState Contact::subscriptionState() const
@@ -697,7 +698,7 @@ Contact::PresenceState Contact::subscriptionState() const
 /**
  * Return whether the presence publish state of this contact is known.
  *
- * \return Whether the presence publish state of this contact is known.
+ * \return \c true if the presence publish state is known, \c false otherwise.
  * \sa publishState(), isPublishCancelled()
  */
 bool Contact::isPublishStateKnown() const
@@ -708,7 +709,8 @@ bool Contact::isPublishStateKnown() const
 /**
  * Return whether a request to publish presence information to this contact was cancelled.
  *
- * \return Whether a request to publish presence information to this contact was cancelled.
+ * \return \c true if a request to publish presence information was cancelled,
+ *         \c false otherwise.
  * \sa isPublishStateKnown(), publishState()
  */
 bool Contact::isPublishCancelled() const
@@ -720,7 +722,7 @@ bool Contact::isPublishCancelled() const
  * Return the presence publish state of this contact (i.e. whether this contact can retrieve
  * information about the local user's presence).
  *
- * \return The presence publish state of this contact.
+ * \return The presence publish state as Contact::PresenceState.
  * \sa isSubscriptionStateKnown(), isSubscriptionRejected()
  */
 Contact::PresenceState Contact::publishState() const
@@ -744,6 +746,8 @@ QString Contact::publishStateMessage() const
  * Start a request that this contact allow the local user to subscribe to their presence (i.e. that
  * this contact's subscribe attribute becomes Contact::PresenceStateYes)
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
  * \sa subscriptionState(), removePresenceSubscription()
@@ -756,6 +760,8 @@ PendingOperation *Contact::requestPresenceSubscription(const QString &message)
 
 /**
  * Start a request for the local user to stop receiving presence from this contact.
+ *
+ * This method requires Connection::FeatureRoster to be ready.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
@@ -771,6 +777,8 @@ PendingOperation *Contact::removePresenceSubscription(const QString &message)
  * Start a request to authorize this contact's request to see the local user presence
  * (i.e. that this contact publish attribute becomes Contact::PresenceStateYes).
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
  * \sa publishState(), removePresencePublication()
@@ -783,6 +791,8 @@ PendingOperation *Contact::authorizePresencePublication(const QString &message)
 
 /**
  * Start a request for the local user to stop sending presence to this contact.
+ *
+ * This method requires Connection::FeatureRoster to be ready.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request has been made.
@@ -799,7 +809,7 @@ PendingOperation *Contact::removePresencePublication(const QString &message)
  *
  * Change notification is via the blockStatusChanged() signal.
  *
- * \return Whether this contact is blocked.
+ * \return \c true if blocked, \c false otherwise.
  * \sa block()
  */
 bool Contact::isBlocked() const
@@ -808,15 +818,7 @@ bool Contact::isBlocked() const
 }
 
 /**
- * Block or unblock this contact. Blocked contacts cannot send
- * messages to the user; depending on the protocol, blocking a contact may
- * have other effects.
- *
- * \param value If \c true, add this contact to the list of blocked contacts;
- *              otherwise remove it from the list.
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
- * \sa isBlocked()
+ * \deprecated Use block() instead.
  */
 PendingOperation *Contact::block(bool value)
 {
@@ -829,8 +831,10 @@ PendingOperation *Contact::block(bool value)
  * Block this contact. Blocked contacts cannot send messages to the user;
  * depending on the protocol, blocking a contact may have other effects.
  *
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to take the requested action.
  * \sa blockAndReportAbuse(), unblock()
  */
 PendingOperation *Contact::block()
@@ -846,8 +850,10 @@ PendingOperation *Contact::block()
  * If reporting abusive behaviour is not supported by the protocol,
  * this method has the same effect as block().
  *
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to take the requested action.
  * \sa ContactManager::canReportAbuse(), block(), unblock()
  */
 PendingOperation *Contact::blockAndReportAbuse()
@@ -859,8 +865,10 @@ PendingOperation *Contact::blockAndReportAbuse()
 /**
  * Unblock this contact.
  *
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to take the requested action.
  * \sa block(), blockAndReportAbuse()
  */
 PendingOperation *Contact::unblock()
@@ -875,9 +883,9 @@ PendingOperation *Contact::unblock()
  *
  * Change notification is via the addedToGroup() and removedFromGroup() signals.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
+ * This method requires Connection::FeatureRosterGroups to be ready.
  *
- * \return List of user-defined contact list groups names for a given contact.
+ * \return A list of user-defined contact list groups names.
  * \sa addToGroup(), removedFromGroup()
  */
 QStringList Contact::groups() const
@@ -889,11 +897,12 @@ QStringList Contact::groups() const
  * Attempt to add the contact to the user-defined contact list
  * group named \a group.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
+ * This method requires Connection::FeatureRosterGroups to be ready.
  *
- * \param group Group name.
- * \return A PendingOperation which will return when an attempt has been made
- *         to add the contact to the user-defined contact list group.
+ * \param group The group name.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to to add the contact to the user-defined contact
+ *         list group.
  * \sa groups(), removeFromGroup()
  */
 PendingOperation *Contact::addToGroup(const QString &group)
@@ -906,11 +915,12 @@ PendingOperation *Contact::addToGroup(const QString &group)
  * Attempt to remove the contact from the user-defined contact list
  * group named \a group.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
+ * This method requires Connection::FeatureRosterGroups to be ready.
  *
- * \param group Group name.
- * \return A PendingOperation which will return when an attempt has been made
- *         to remove the contact from the user-defined contact list group.
+ * \param group The group name.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to to remote the contact to the user-defined contact
+ *         list group.
  * \sa groups(), addToGroup()
  */
 PendingOperation *Contact::removeFromGroup(const QString &group)
@@ -1224,7 +1234,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::aliasChanged(const QString &alias)
  *
- * This signal is emitted when the value of alias() changes.
+ * Emitted when the value of alias() changes.
  *
  * \param alias The new alias of this contact.
  * \sa alias()
@@ -1233,7 +1243,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::avatarTokenChanged(const QString &avatarToken)
  *
- * This signal is emitted when the value of avatarToken() changes.
+ * Emitted when the value of avatarToken() changes.
  *
  * \param avatarToken The new avatar token of this contact.
  * \sa avatarToken()
@@ -1242,7 +1252,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::avatarDataChanged(const QString &avatarToken)
  *
- * This signal is emitted when the value of avatarData() changes.
+ * Emitted when the value of avatarData() changes.
  *
  * \param avatarData The new avatar of this contact.
  * \sa avatarData()
@@ -1251,7 +1261,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::presenceChanged(const Tp::Presence &presence)
  *
- * This signal is emitted when the value of presence() changes.
+ * Emitted when the value of presence() changes.
  *
  * \param presence The new presence of this contact.
  * \sa presence()
@@ -1260,7 +1270,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::capabilitiesChanged(const Tp::ContactCapabilities &caps)
  *
- * This signal is emitted when the value of capabilities() changes.
+ * Emitted when the value of capabilities() changes.
  *
  * \param caps The new capabilities of this contact.
  * \sa capabilities()
@@ -1269,7 +1279,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::locationUpdated(const Tp::LocationInfo &location)
  *
- * This signal is emitted when the value of location() changes.
+ * Emitted when the value of location() changes.
  *
  * \param caps The new location of this contact.
  * \sa location()
@@ -1278,7 +1288,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::infoFieldsChanged(const Tp::Contact::InfoFields &infoFields)
  *
- * This signal is emitted when the value of infoFields() changes.
+ * Emitted when the value of infoFields() changes.
  *
  * \param InfoFields The new info of this contact.
  * \sa infoFields()
@@ -1287,7 +1297,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::subscriptionStateChanged(Tp::Contact::PresenceState state)
  *
- * This signal is emitted when the value of subscriptionState() changes.
+ * Emitted when the value of subscriptionState() changes.
  *
  * \param state The new subscription state of this contact.
  * \sa subscriptionState()
@@ -1303,7 +1313,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state, const QString &message)
  *
- * This signal is emitted when the value of publishState() changes.
+ * Emitted when the value of publishState() changes.
  *
  * \param state The new publish state of this contact.
  * \sa publishState()
@@ -1319,7 +1329,7 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::blockStatusChanged(bool blocked)
  *
- * This signal is emitted when the value of isBlocked() changes.
+ * Emitted when the value of isBlocked() changes.
  *
  * \param status The new block status of this contact.
  * \sa isBlocked()
@@ -1335,18 +1345,18 @@ void Contact::setRemovedFromGroup(const QString &group)
 /**
  * \fn void Contact::addedToGroup(const QString &group)
  *
- * This signal is emitted when this contact is added to \a group of the contact list.
+ * Emitted when this contact is added to \a group of the contact list.
  *
- * \param group Group name.
+ * \param group The group name.
  * \sa groups(), removedFromGroup()
  */
 
 /**
  * \fn void Contact::removedFromGroup(const QString &group)
  *
- * This signal is emitted when this contact is removed from \a group of the contact list.
+ * Emitted when this contact is removed from \a group of the contact list.
  *
- * \param group Group name.
+ * \param group The group name.
  * \sa groups(), addedToGroup()
  */
 

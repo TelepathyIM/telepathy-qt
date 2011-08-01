@@ -210,7 +210,7 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  *
  * The easiest way to create AccountSet objects is through AccountManager. One
  * can just use the AccountManager convenience methods such as
- * AccountManager::validAccountsSet() to get a set of account objects
+ * AccountManager::validAccounts() to get a set of account objects
  * representing valid accounts.
  *
  * For example:
@@ -252,7 +252,7 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  *         return;
  *     }
  *
- *     validAccountsSet = am->validAccountsSet();
+ *     validAccountsSet = am->validAccounts();
  *     connect(validAccountsSet.data(),
  *             SIGNAL(accountAdded(const Tp::AccountPtr &)),
  *             SLOT(onValidAccountAdded(const Tp::AccountPtr &)));
@@ -350,7 +350,7 @@ AccountSet::~AccountSet()
 /**
  * Return the account manager object used to filter accounts.
  *
- * \return The AccountManager object used to filter accounts.
+ * \return A pointer to the AccountManager object.
  */
 AccountManagerPtr AccountSet::accountManager() const
 {
@@ -360,7 +360,7 @@ AccountManagerPtr AccountSet::accountManager() const
 /**
  * Return the filter used to filter accounts.
  *
- * \return The filter used to filter accounts.
+ * \return A read-only pointer the AccountFilter object.
  */
 AccountFilterConstPtr AccountSet::filter() const
 {
@@ -370,7 +370,10 @@ AccountFilterConstPtr AccountSet::filter() const
 /**
  * Return a list of account objects that match filter.
  *
- * \return A list of account objects that match filter.
+ * Change notification is via the accountAdded() and accountRemoved() signals.
+ *
+ * \return A list of pointers to Account objects.
+ * \sa accountAdded(), accountRemoved()
  */
 QList<AccountPtr> AccountSet::accounts() const
 {
@@ -378,21 +381,23 @@ QList<AccountPtr> AccountSet::accounts() const
 }
 
 /**
- * \fn void AccountSet::accountAdded(const Tp::AccountPtr &account);
+ * \fn void AccountSet::accountAdded(const Tp::AccountPtr &account)
  *
- * This signal is emitted whenever an account that matches filter is added to
+ * Emitted whenever an account that matches filter is added to
  * this set.
  *
  * \param account The account that was added to this set.
+ * \sa accounts()
  */
 
 /**
- * \fn void AccountSet::accountRemoved(const Tp::AccountPtr &account);
+ * \fn void AccountSet::accountRemoved(const Tp::AccountPtr &account)
  *
- * This signal is emitted whenever an account that matches filter is removed
+ * Emitted whenever an account that matches filter is removed
  * from this set.
  *
  * \param account The account that was removed from this set.
+ * \sa accounts()
  */
 
 void AccountSet::onNewAccount(const AccountPtr &account)

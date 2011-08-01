@@ -78,12 +78,14 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOperation::Private
  * delete this object.
  *
  * The design is loosely based on KDE's KJob.
+ *
+ * See \ref async_model
  */
 
 /**
- * Protected constructor. Only subclasses of this class may be constructed.
+ * Construct a new PendingOperation object.
  *
- * \param object The object on which this pending operation takes place
+ * \param object The object on which this pending operation takes place.
  */
 PendingOperation::PendingOperation(const SharedPtr<RefCounted> &object)
     : QObject(),
@@ -105,6 +107,11 @@ PendingOperation::~PendingOperation()
     delete mPriv;
 }
 
+/**
+ * Return the object on which this pending operation takes place.
+ *
+ * \return A pointer to a RefCounted object.
+ */
 SharedPtr<RefCounted> PendingOperation::object() const
 {
     return mPriv->object;
@@ -119,7 +126,7 @@ void PendingOperation::emitFinished()
 
 /**
  * Record that this pending operation has finished successfully, and
- * emit the #finished() signal next time the event loop runs.
+ * emit the finished() signal next time the event loop runs.
  */
 void PendingOperation::setFinished()
 {
@@ -141,10 +148,10 @@ void PendingOperation::setFinished()
 
 /**
  * Record that this pending operation has finished with an error, and
- * emit the #finished() signal next time the event loop runs.
+ * emit the finished() signal next time the event loop runs.
  *
- * \param name A D-Bus error name, which must be non-empty
- * \param message A debugging message
+ * \param name The D-Bus error name, which must be non-empty.
+ * \param message The debugging message.
  */
 void PendingOperation::setFinishedWithError(const QString &name,
         const QString &message)
@@ -176,9 +183,10 @@ void PendingOperation::setFinishedWithError(const QString &name,
 
 /**
  * Record that this pending operation has finished with an error, and
- * emit the #finished() signal next time the event loop runs.
+ * emit the finished() signal next time the event loop runs.
  *
- * \param error A QtDBus error
+ * \param error The error.
+ * \sa finished()
  */
 void PendingOperation::setFinishedWithError(const QDBusError &error)
 {
@@ -186,15 +194,15 @@ void PendingOperation::setFinishedWithError(const QDBusError &error)
 }
 
 /**
- * Returns whether or not the request completed successfully. If the
+ * Return whether or not the request completed successfully. If the
  * request has not yet finished processing (isFinished() returns
- * <code>false</code>), this cannot yet be known, and <code>false</code>
+ * \c false), this cannot yet be known, and \c false
  * will be returned.
  *
  * Equivalent to <code>(isFinished() && !isError())</code>.
  *
- * \return <code>true</code> iff the request has finished processing AND
- *         has completed successfully.
+ * \return \c true if the request has finished processing and
+ *         has completed successfully, \c false otherwise.
  */
 bool PendingOperation::isValid() const
 {
@@ -202,15 +210,15 @@ bool PendingOperation::isValid() const
 }
 
 /**
- * Returns whether or not the request has finished processing. #finished()
- * is emitted when this changes from <code>false</code> to
- * <code>true</code>.
+ * Return whether or not the request has finished processing.
+ *
+ * The signal finished() is emitted when this changes from \c false
+ * to true.
  *
  * Equivalent to <code>(isValid() || isError())</code>.
  *
+ * \return \c true if the request has finished, \c false otherwise.
  * \sa finished()
- *
- * \return <code>true</code> if the request has finished
  */
 bool PendingOperation::isFinished() const
 {
@@ -218,15 +226,16 @@ bool PendingOperation::isFinished() const
 }
 
 /**
- * Returns whether or not the request resulted in an error. If the
- * request has not yet finished processing (isFinished() returns
- * <code>false</code>), this cannot yet be known, and <code>false</code>
+ * Return whether or not the request resulted in an error.
+ *
+ * If the request has not yet finished processing (isFinished() returns
+ * \c false), this cannot yet be known, and \c false
  * will be returned.
  *
  * Equivalent to <code>(isFinished() && !isValid())</code>.
  *
- * \return <code>true</code> iff the request has finished processing AND
- *         has resulted in an error.
+ * \return \c true if the request has finished processing and
+ *         has resulted in an error, \c false otherwise.
  */
 bool PendingOperation::isError() const
 {
@@ -234,11 +243,11 @@ bool PendingOperation::isError() const
 }
 
 /**
- * If isError() would return true, returns the D-Bus error with which
+ * If isError() returns \c true, returns the D-Bus error with which
  * the operation failed. If the operation succeeded or has not yet
  * finished, returns an empty string.
  *
- * \return a D-Bus error name or an empty string
+ * \return A D-Bus error name, or an empty string.
  */
 QString PendingOperation::errorName() const
 {
@@ -246,11 +255,11 @@ QString PendingOperation::errorName() const
 }
 
 /**
- * If isError() would return true, returns a debugging message associated
+ * If isError() would return \c true, returns a debugging message associated
  * with the error, which may be an empty string. Otherwise, return an
  * empty string.
  *
- * \return a debugging message or an empty string
+ * \return A debugging message, or an empty string.
  */
 QString PendingOperation::errorMessage() const
 {
@@ -260,11 +269,11 @@ QString PendingOperation::errorMessage() const
 /**
  * \fn void PendingOperation::finished(Tp::PendingOperation* operation)
  *
- * Emitted when the pending operation finishes, i.e. when #isFinished()
- * changes from <code>false</code> to <code>true</code>.
+ * Emitted when the pending operation finishes, i.e. when isFinished()
+ * changes from \c false to \c true.
  *
  * \param operation This operation object, from which further information
- *                  may be obtained
+ *                  may be obtained.
  */
 
 /**
@@ -296,12 +305,12 @@ QString PendingOperation::errorMessage() const
  */
 
 /**
- * Constructor.
+ * Construct a new PendingVoid object.
  *
- * \param object The object on which this pending operation takes place
+ * \param object The object on which this pending operation takes place.
  * \param call A pending call as returned by the auto-generated low level
  *             Telepathy API; if the method returns anything, the return
- *             value(s) will be ignored
+ *             value(s) will be ignored.
  */
 PendingVoid::PendingVoid(QDBusPendingCall call, const SharedPtr<RefCounted> &object)
     : PendingOperation(object)

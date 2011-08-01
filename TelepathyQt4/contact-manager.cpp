@@ -110,10 +110,14 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
  * \headerfile TelepathyQt4/contact-manager.h <TelepathyQt4/ContactManager>
  *
  * \brief The ContactManager class is responsible for managing contacts.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
  * Construct a new ContactManager object.
+ *
+ * \param connection The connection owning this ContactManager.
  */
 ContactManager::ContactManager(Connection *connection)
     : Object(),
@@ -132,13 +136,20 @@ ContactManager::~ContactManager()
 /**
  * Return the connection owning this ContactManager.
  *
- * \return The connection owning this ContactManager.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr ContactManager::connection() const
 {
     return ConnectionPtr(mPriv->connection);
 }
 
+/**
+ * Return the features that are expected to work on contacts on this ContactManager connection.
+ *
+ * This method requires Connection::FeatureCore to be ready.
+ *
+ * \return The supported features as a set of Feature objects.
+ */
 Features ContactManager::supportedFeatures() const
 {
     if (mPriv->supportedFeatures.isEmpty() &&
@@ -168,8 +179,12 @@ Features ContactManager::supportedFeatures() const
 /**
  * Return the progress made in retrieving the contact list.
  *
- * Change notification is via stateChanged().
- * \return The contact list state.
+ * Change notification is via the stateChanged() signal.
+ *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return The contact list state as #ContactListState.
+ * \sa stateChanged()
  */
 ContactListState ContactManager::state() const
 {
@@ -192,7 +207,12 @@ ContactListState ContactManager::state() const
  * On protocols where there is no concept of presence or a centrally-stored
  * contact list (like IRC), this method may return an empty list.
  *
- * \return Some contacts
+ * Change notification is via the allKnownContactsChanged() signal.
+ *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return A set of pointers to the Contact objects.
+ * \sa allKnownContactsChanged()
  */
 Contacts ContactManager::allKnownContacts() const
 {
@@ -207,9 +227,12 @@ Contacts ContactManager::allKnownContacts() const
 /**
  * Return a list of user-defined contact list groups' names.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
+ * Change notification is via the groupAdded(), groupRemoved() and groupRenamed() signals.
  *
- * \return List of user-defined contact list groups names.
+ * This method requires Connection::FeatureRosterGroups to be ready.
+ *
+ * \return The list of user-defined contact list groups names.
+ * \sa groupMembersChanged(), groupAdded(), groupRemoved(), groupRenamed()
  */
 QStringList ContactManager::allKnownGroups() const
 {
@@ -223,8 +246,6 @@ QStringList ContactManager::allKnownGroups() const
 /**
  * Attempt to add an user-defined contact list group named \a group.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
- *
  * On some protocols (e.g. XMPP) empty groups are not represented on the server,
  * so disconnecting from the server and reconnecting might cause empty groups to
  * vanish.
@@ -232,16 +253,14 @@ QStringList ContactManager::allKnownGroups() const
  * The returned pending operation will finish successfully if the group already
  * exists.
  *
- * FIXME: currently, the returned pending operation will finish as soon as the
- * CM EnsureChannel has returned. At this point however the NewChannels
- * mechanism hasn't yet populated our contactListGroupChannels member, which
- * means one has to wait for groupAdded before being able to actually do
- * something with the group (which is error-prone!). This is fd.o #29728.
+ * Change notification is via the groupAdded() signal.
  *
- * \param group Group name.
- * \return A pending operation which will return when an attempt has been made
- *         to add an user-defined contact list group.
- * \sa groupAdded(), addContactsToGroup()
+ * This method requires Connection::FeatureRosterGroups to be ready.
+ *
+ * \param group The group name.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to add an user-defined contact list group.
+ * \sa allKnownGroups(), groupAdded(), addContactsToGroup()
  */
 PendingOperation *ContactManager::addGroup(const QString &group)
 {
@@ -261,19 +280,14 @@ PendingOperation *ContactManager::addGroup(const QString &group)
 /**
  * Attempt to remove an user-defined contact list group named \a group.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
+ * Change notification is via the groupRemoved() signal.
  *
- * FIXME: currently, the returned pending operation will finish as soon as the
- * CM close() has returned. At this point however the invalidated()
- * mechanism hasn't yet removed the channel from our contactListGroupChannels
- * member, which means contacts can seemingly still be added to the group etc.
- * until the change is picked up (and groupRemoved is emitted). This is fd.o
- * #29728.
+ * This method requires Connection::FeatureRosterGroups to be ready.
  *
- * \param group Group name.
- * \return A pending operation which will return when an attempt has been made
- *         to remove an user-defined contact list group.
- * \sa groupRemoved(), removeContactsFromGroup()
+ * \param group The group name.
+ * \return A PendingOperation which will emit PendingOperation::finished()
+ *         when an attempt has been made to remove an user-defined contact list group.
+ * \sa allKnownGroups(), groupRemoved(), removeContactsFromGroup()
  */
 PendingOperation *ContactManager::removeGroup(const QString &group)
 {
@@ -294,12 +308,13 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
  * Return the contacts in the given user-defined contact list group
  * named \a group.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
+ * Change notification is via the groupMembersChanged() signal.
  *
- * \param group Group name.
- * \return List of contacts on a user-defined contact list group, or an empty
- *         list if the group does not exist.
- * \sa allKnownGroups(), contactGroups()
+ * This method requires Connection::FeatureRosterGroups to be ready.
+ *
+ * \param group The group name.
+ * \return A set of pointers to the Contact objects, or an empty set if the group does not exist.
+ * \sa allKnownGroups(), groupMembersChanged()
  */
 Contacts ContactManager::groupContacts(const QString &group) const
 {
@@ -314,12 +329,16 @@ Contacts ContactManager::groupContacts(const QString &group) const
  * Attempt to add the given \a contacts to the user-defined contact list
  * group named \a group.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
+ * Change notification is via the groupMembersChanged() signal.
  *
- * \param group Group name.
+ * This method requires Connection::FeatureRosterGroups to be ready.
+ *
+ * \param group The group name.
  * \param contacts Contacts to add.
- * \return A pending operation which will return when an attempt has been made
- *         to add the contacts to the user-defined contact list group.
+ * \return A PendingOperation which will emit PendingOperation::finished()
+ *         when an attempt has been made to add the contacts to the user-defined
+ *         contact list group.
+ * \sa groupMembersChanged(), groupContacts()
  */
 PendingOperation *ContactManager::addContactsToGroup(const QString &group,
         const QList<ContactPtr> &contacts)
@@ -341,12 +360,16 @@ PendingOperation *ContactManager::addContactsToGroup(const QString &group,
  * Attempt to remove the given \a contacts from the user-defined contact list
  * group named \a group.
  *
- * This method requires Connection::FeatureRosterGroups to be enabled.
+ * Change notification is via the groupMembersChanged() signal.
  *
- * \param group Group name.
+ * This method requires Connection::FeatureRosterGroups to be ready.
+ *
+ * \param group The group name.
  * \param contacts Contacts to remove.
- * \return A pending operation which will return when an attempt has been made
- *         to remove the contacts from the user-defined contact list group.
+ * \return A PendingOperation which will PendingOperation::finished
+ *         when an attempt has been made to remove the contacts from the user-defined
+ *         contact list group.
+ * \sa groupMembersChanged(), groupContacts()
  */
 PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
         const QList<ContactPtr> &contacts)
@@ -365,8 +388,7 @@ PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
 }
 
 /**
- * Return whether subscribing to additional contacts' presence is supported
- * on this channel.
+ * Return whether subscribing to additional contacts' presence is supported.
  *
  * In some protocols, the list of contacts whose presence can be seen is
  * fixed, so we can't subscribe to the presence of additional contacts.
@@ -374,8 +396,11 @@ PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
  * Notably, in link-local XMPP, you can see the presence of everyone on the
  * local network, and trying to add more subscriptions would be meaningless.
  *
- * \return Whether Contact::requestPresenceSubscription and
- *         requestPresenceSubscription are likely to succeed
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if Contact::requestPresenceSubscription() and
+ *         requestPresenceSubscription() are likely to succeed, \c false otherwise.
+ * \sa requestPresenceSubscription(), subscriptionRequestHasMessage()
  */
 bool ContactManager::canRequestPresenceSubscription() const
 {
@@ -393,9 +418,11 @@ bool ContactManager::canRequestPresenceSubscription() const
  * If no message will actually be sent, user interfaces should avoid prompting
  * the user for a message, and use an empty string for the message argument.
  *
- * \return Whether the message argument to
- *         Contact::requestPresenceSubscription and
- *         requestPresenceSubscription is actually used
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if the message argument to Contact::requestPresenceSubscription() and
+ *         requestPresenceSubscription() is actually used, \c false otherwise.
+ * \sa canRemovePresenceSubscription(), requestPresenceSubscription()
  */
 bool ContactManager::subscriptionRequestHasMessage() const
 {
@@ -412,8 +439,6 @@ bool ContactManager::subscriptionRequestHasMessage() const
  * This operation is sometimes called "adding contacts to the buddy
  * list" or "requesting authorization".
  *
- * This method requires Connection::FeatureRoster to be ready.
- *
  * On most protocols, the contacts will need to give permission
  * before the user will be able to receive their presence: if so, they will
  * be in presence state Contact::PresenceStateAsk until they authorize
@@ -424,11 +449,14 @@ bool ContactManager::subscriptionRequestHasMessage() const
  * cannot happen. In particular, it does not wait for the contacts to give
  * permission for the presence subscription.
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * \param contacts Contacts whose presence is desired
  * \param message A message from the user which is either transmitted to the
  *                contacts, or ignored, depending on the protocol
- * \return A pending operation which will return when an attempt has been made
- *         to subscribe to the contacts' presence
+ * \return A PendingOperation which will PendingOperation::finished()
+ *         when an attempt has been made to subscribe to the contacts' presence.
+ * \sa canRequestPresenceSubscription(), subscriptionRequestHasMessage()
  */
 PendingOperation *ContactManager::requestPresenceSubscription(
         const QList<ContactPtr> &contacts, const QString &message)
@@ -450,9 +478,13 @@ PendingOperation *ContactManager::requestPresenceSubscription(
  * Return whether the user can stop receiving the presence of a contact
  * whose presence they have subscribed to.
  *
- * \return Whether removePresenceSubscription and
- *         Contact::removePresenceSubscription are likely to succeed
- *         for contacts with subscription state Contact::PresenceStateYes
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if Contact::removePresenceSubscription() and
+ *         removePresenceSubscription() are likely to succeed
+ *         for contacts with subscription state Contact::PresenceStateYes,
+ *         \c false otherwise.
+ * \sa removePresenceSubscription(), subscriptionRemovalHasMessage()
  */
 bool ContactManager::canRemovePresenceSubscription() const
 {
@@ -470,10 +502,13 @@ bool ContactManager::canRemovePresenceSubscription() const
  * If no message will actually be sent, user interfaces should avoid prompting
  * the user for a message, and use an empty string for the message argument.
  *
- * \return Whether the message argument to
- *         Contact::removePresenceSubscription and
- *         removePresenceSubscription is actually used,
- *         for contacts with subscription state Contact::PresenceStateYes
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if the message argument to Contact::removePresenceSubscription() and
+ *         removePresenceSubscription() is actually used,
+ *         for contacts with subscription state Contact::PresenceStateYes,
+ *         \c false otherwise.
+ * \sa canRemovePresencePublication(), removePresenceSubscription()
  */
 bool ContactManager::subscriptionRemovalHasMessage() const
 {
@@ -488,9 +523,13 @@ bool ContactManager::subscriptionRemovalHasMessage() const
  * Return whether the user can cancel a request to subscribe to a contact's
  * presence before that contact has responded.
  *
- * \return Whether removePresenceSubscription and
- *         Contact::removePresenceSubscription are likely to succeed
- *         for contacts with subscription state Contact::PresenceStateAsk
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if Contact::removePresenceSubscription() and
+ *         removePresenceSubscription() are likely to succeed
+ *         for contacts with subscription state Contact::PresenceStateAsk,
+ *         \c false otherwise.
+ * \sa removePresenceSubscription(), subscriptionRescindingHasMessage()
  */
 bool ContactManager::canRescindPresenceSubscriptionRequest() const
 {
@@ -508,10 +547,13 @@ bool ContactManager::canRescindPresenceSubscriptionRequest() const
  * If no message will actually be sent, user interfaces should avoid prompting
  * the user for a message, and use an empty string for the message argument.
  *
- * \return Whether the message argument to
- *         Contact::removePresenceSubscription and
- *         removePresenceSubscription is actually used,
- *         for contacts with subscription state Contact::PresenceStateAsk
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if the message argument to Contact::removePresenceSubscription() and
+ *         removePresenceSubscription() is actually used,
+ *         for contacts with subscription state Contact::PresenceStateAsk,
+ *         \c false otherwise.
+ * \sa canRescindPresenceSubscriptionRequest(), removePresenceSubscription()
  */
 bool ContactManager::subscriptionRescindingHasMessage() const
 {
@@ -531,8 +573,10 @@ bool ContactManager::subscriptionRescindingHasMessage() const
  * \param contacts Contacts whose presence is no longer required
  * \message A message from the user which is either transmitted to the
  *          contacts, or ignored, depending on the protocol
- * \return A pending operation which will return when an attempt has been made
- *         to remove any subscription to the contacts' presence
+ * \return A PendingOperation which will PendingOperation::finished()
+ *         when an attempt has been made to remove any subscription to the contacts' presence.
+ * \sa canRemovePresenceSubscription(), canRescindPresenceSubscriptionRequest(),
+ *     subscriptionRemovalHasMessage(), subscriptionRescindingHasMessage()
  */
 PendingOperation *ContactManager::removePresenceSubscription(
         const QList<ContactPtr> &contacts, const QString &message)
@@ -557,6 +601,14 @@ PendingOperation *ContactManager::removePresenceSubscription(
  * This is always true, unless the protocol has no concept of authorizing
  * publication (in which case contacts' publication status can never be
  * Contact::PresenceStateAsk).
+ *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if Contact::authorizePresencePublication() and
+ *         authorizePresencePublication() are likely to succeed
+ *         for contacts with subscription state Contact::PresenceStateAsk,
+ *         \c false otherwise.
+ * \sa publicationAuthorizationHasMessage(), authorizePresencePublication()
  */
 bool ContactManager::canAuthorizePresencePublication() const
 {
@@ -574,10 +626,13 @@ bool ContactManager::canAuthorizePresencePublication() const
  * If no message will actually be sent, user interfaces should avoid prompting
  * the user for a message, and use an empty string for the message argument.
  *
- * \return Whether the message argument to
- *         Contact::authorizePresencePublication and
- *         authorizePresencePublication is actually used,
- *         for contacts with subscription state Contact::PresenceStateAsk
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if the message argument to Contact::authorizePresencePublication() and
+ *         authorizePresencePublication() is actually used,
+ *         for contacts with subscription state Contact::PresenceStateAsk,
+ *         \c false otherwise.
+ * \sa canAuthorizePresencePublication(), authorizePresencePublication()
  */
 bool ContactManager::publicationAuthorizationHasMessage() const
 {
@@ -598,8 +653,10 @@ bool ContactManager::publicationAuthorizationHasMessage() const
  *                 presence
  * \message A message from the user which is either transmitted to the
  *          contacts, or ignored, depending on the protocol
- * \return A pending operation which will return when an attempt has been made
- *         to authorize publication of the user's presence to the contacts
+ * \return A PendingOperation which will emit PendingOperation::fininshed
+ *         when an attempt has been made to authorize publication of the user's presence
+ *         to the contacts.
+ * \sa canAuthorizePresencePublication(), publicationAuthorizationHasMessage()
  */
 PendingOperation *ContactManager::authorizePresencePublication(
         const QList<ContactPtr> &contacts, const QString &message)
@@ -624,10 +681,13 @@ PendingOperation *ContactManager::authorizePresencePublication(
  * If no message will actually be sent, user interfaces should avoid prompting
  * the user for a message, and use an empty string for the message argument.
  *
- * \return Whether the message argument to
- *         Contact::removePresencePublication and
- *         removePresencePublication is actually used,
- *         for contacts with subscription state Contact::PresenceStateAsk
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if the message argument to Contact::removePresencePublication() and
+ *         removePresencePublication() is actually used,
+ *         for contacts with subscription state Contact::PresenceStateAsk,
+ *         \c false otherwise.
+ * \sa canRemovePresencePublication(), removePresencePublication()
  */
 bool ContactManager::publicationRejectionHasMessage() const
 {
@@ -644,9 +704,13 @@ bool ContactManager::publicationRejectionHasMessage() const
  *
  * (Rejecting requests for presence to be published is always allowed.)
  *
- * \return Whether removePresencePublication and
- *         Contact::removePresencePublication are likely to succeed
- *         for contacts with subscription state Contact::PresenceStateYes
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if Contact::removePresencePublication() and
+ *         removePresencePublication() are likely to succeed
+ *         for contacts with subscription state Contact::PresenceStateYes,
+ *         \c false otherwise.
+ * \sa publicationRemovalHasMessage(), removePresencePublication()
  */
 bool ContactManager::canRemovePresencePublication() const
 {
@@ -664,10 +728,13 @@ bool ContactManager::canRemovePresencePublication() const
  * If no message will actually be sent, user interfaces should avoid prompting
  * the user for a message, and use an empty string for the message argument.
  *
- * \return Whether the message argument to
- *         Contact::removePresencePublication and
- *         removePresencePublication is actually used,
- *         for contacts with subscription state Contact::PresenceStateYes
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if the message argument to Contact::removePresencePublication and
+ *         removePresencePublication() is actually used,
+ *         for contacts with subscription state Contact::PresenceStateYes,
+ *         \c false otherwise.
+ * \sa canRemovePresencePublication(), removePresencePublication()
  */
 bool ContactManager::publicationRemovalHasMessage() const
 {
@@ -683,19 +750,22 @@ bool ContactManager::publicationRemovalHasMessage() const
  * deny this request (this should always succeed, unless a network error
  * occurs).
  *
- * This method requires Connection::FeatureRoster to be ready.
- *
  * If the given contacts already have permission to receive
  * the user's presence, attempt to revoke that permission (this might not
  * be supported by the protocol - canRemovePresencePublication
  * indicates whether it is likely to succeed).
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * \param contacts Contacts who should no longer be allowed to receive the
  *                 user's presence
  * \message A message from the user which is either transmitted to the
  *          contacts, or ignored, depending on the protocol
- * \return A pending operation which will return when an attempt has been made
- *         to remove any publication of the user's presence to the contacts
+ * \return A PendingOperation which will emit PendingOperation::finished()
+ *         when an attempt has been made to remove any publication of the user's presence to the
+ *         contacts.
+ * \sa canRemovePresencePublication(), publicationRejectionHasMessage(),
+ *     publicationRemovalHasMessage()
  */
 PendingOperation *ContactManager::removePresencePublication(
         const QList<ContactPtr> &contacts, const QString &message)
@@ -718,11 +788,14 @@ PendingOperation *ContactManager::removePresencePublication(
  * calling removePresencePublication() and removePresenceSubscription(),
  * but also remove from 'stored' list if it exists.
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * \param contacts Contacts who should be removed
  * \message A message from the user which is either transmitted to the
  *          contacts, or ignored, depending on the protocol
- * \return A pending operation which will return when an attempt has been made
- *         to remove any publication of the user's presence to the contacts
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to remove any publication of the user's presence to
+ *         the contacts.
  */
 PendingOperation *ContactManager::removeContacts(
         const QList<ContactPtr> &contacts, const QString &message)
@@ -743,7 +816,9 @@ PendingOperation *ContactManager::removeContacts(
 /**
  * Return whether this protocol has a list of blocked contacts.
  *
- * \return Whether blockContacts is likely to succeed
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if blockContacts() is likely to succeed, \c false otherwise.
  */
 bool ContactManager::canBlockContacts() const
 {
@@ -757,7 +832,9 @@ bool ContactManager::canBlockContacts() const
 /**
  * Return whether this protocol can report abusive contacts.
  *
- * \return Whether reporting abuse when blocking contacts is supported.
+ * This method requires Connection::FeatureRoster to be ready.
+ *
+ * \return \c true if reporting abuse when blocking contacts is supported, \c false otherwise.
  */
 bool ContactManager::canReportAbuse() const
 {
@@ -769,19 +846,7 @@ bool ContactManager::canReportAbuse() const
 }
 
 /**
- * Set whether the given contacts are blocked. Blocked contacts cannot send
- * messages to the user; depending on the protocol, blocking a contact may
- * have other effects.
- *
- * This method requires Connection::FeatureRoster to be ready.
- *
- * \param contacts Contacts who should be added to, or removed from, the list
- *                 of blocked contacts.
- * \param value If \c true, add the contacts to the list of blocked contacts;
- *              otherwise remove them from the list.
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
- * \sa canBlockContacts()
+ * \deprecated Use blockContacts(const QList<ContactPtr> &contacts) instead.
  */
 PendingOperation *ContactManager::blockContacts(
         const QList<ContactPtr> &contacts, bool value)
@@ -797,9 +862,9 @@ PendingOperation *ContactManager::blockContacts(
  * This method requires Connection::FeatureRoster to be ready.
  *
  * \param contacts Contacts that should be blocked.
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
- * \sa canBlockContacts(), unblockContacts()
+ * \return A PendingOperation which will emit PendingOperation::finished()
+ *         when an attempt has been made to take the requested action.
+ * \sa canBlockContacts(), unblockContacts(), blockContactsAndReportAbuse()
  */
 PendingOperation *ContactManager::blockContacts(const QList<ContactPtr> &contacts)
 {
@@ -816,8 +881,8 @@ PendingOperation *ContactManager::blockContacts(const QList<ContactPtr> &contact
  * This method requires Connection::FeatureRoster to be ready.
  *
  * \param contacts Contacts who should be added to the list of blocked contacts.
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
+ * \return A PendingOperation which will emit PendingOperation::finished()
+ *         when an attempt has been made to take the requested action.
  * \sa canBlockContacts(), canReportAbuse(), blockContacts()
  */
 PendingOperation *ContactManager::blockContactsAndReportAbuse(
@@ -832,9 +897,9 @@ PendingOperation *ContactManager::blockContactsAndReportAbuse(
  * This method requires Connection::FeatureRoster to be ready.
  *
  * \param contacts Contacts that should be unblocked.
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
- * \sa canBlockContacts(), blockContacts()
+ * \return A PendingOperation which will emit PendingOperation::finished()
+ *         when an attempt has been made to take the requested action.
+ * \sa canBlockContacts(), blockContacts(), blockContactsAndReportAbuse()
  */
 PendingOperation *ContactManager::unblockContacts(const QList<ContactPtr> &contacts)
 {
@@ -1284,64 +1349,94 @@ void ContactManager::resetRoster()
 }
 
 /**
- * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts);
+ * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts)
  *
- * This signal is emitted whenever some contacts request for presence publication.
+ * Emitted whenever some contacts request for presence publication.
  *
  * \param contacts A set of contacts which requested presence publication.
  */
 
 /**
  * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
- *          const QString &message);
+ *          const QString &message)
  *
  * \deprecated Turned out this didn't make sense at all. There can be multiple contacts, but this
  *             signal carries just a single message.
  *             Use presencePublicationRequested(const Tp::Contacts &contacts) instead,
- *             and extract the messages from the individual Tp::Contact objects instead.
+ *             and extract the messages from the individual Tp::Contact objects.
  */
 
 /**
  * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
- *          const Tp::Channel::GroupMemberChangeDetails &details);
+ *          const Tp::Channel::GroupMemberChangeDetails &details)
  *
  * \deprecated Turned out this didn't make sense at all. There can be multiple contacts, but this
  *             signal carries just a single details.
  *             Use presencePublicationRequested(const Tp::Contacts &contacts) instead,
- *             and extract the details (message) from the individual Tp::Contact objects instead.
+ *             and extract the details (message) from the individual Tp::Contact objects.
+ */
+
+/**
+ * \fn void ContactManager::groupAdded(const QString &group)
+ *
+ * Emitted when a new contact list group is created.
+ *
+ * \param group The group name.
+ * \sa allKnownGroups()
+ */
+
+/**
+ * \fn void ContactManager::groupRenamed(const QString &oldGroup, const QString &newGroup)
+ *
+ * Emitted when a new contact list group is renamed.
+ *
+ * \param oldGroup The old group name.
+ * \param newGroup The new group name.
+ * \sa allKnownGroups()
+ */
+
+/**
+ * \fn void ContactManager::groupRemoved(const QString &group)
+ *
+ * Emitted when a contact list group is removed.
+ *
+ * \param group The group name.
+ * \sa allKnownGroups()
  */
 
 /**
  * \fn void ContactManager::groupMembersChanged(const QString &group,
  *          const Tp::Contacts &groupMembersAdded,
  *          const Tp::Contacts &groupMembersRemoved,
- *          const Tp::Channel::GroupMemberChangeDetails &details);
+ *          const Tp::Channel::GroupMemberChangeDetails &details)
  *
- * This signal is emitted whenever some contacts got removed or added from
+ * Emitted whenever some contacts got removed or added from
  * a group.
  *
  * \param group The name of the group that changed.
  * \param groupMembersAdded A set of contacts which were added to the group \a group.
  * \param groupMembersRemoved A set of contacts which were removed from the group \a group.
  * \param details The change details.
+ * \sa groupContacts()
  */
 
 /**
  * \fn void ContactManager::allKnownContactsChanged(const Tp::Contacts &contactsAdded,
  *          const Tp::Contacts &contactsRemoved,
- *          const Tp::Channel::GroupMemberChangeDetails &details);
+ *          const Tp::Channel::GroupMemberChangeDetails &details)
  *
- * This signal is emitted whenever some contacts got removed or added from
+ * Emitted whenever some contacts got removed or added from
  * ContactManager's known contact list. It is useful for monitoring which contacts
  * are currently known by ContactManager.
+ *
+ * Note that, in some protocols, this signal could stream newly added contacts
+ * with both presence subscription and publication state set to No. Be sure to watch
+ * over publication and/or subscription state changes if that is the case.
  *
  * \param contactsAdded A set of contacts which were added to the known contact list.
  * \param contactsRemoved A set of contacts which were removed from the known contact list.
  * \param details The change details.
- *
- * \note Please note that, in some protocols, this signal could stream newly added contacts
- *       with both presence subscription and publication state set to No. Be sure to watch
- *       over publication and/or subscription state changes if that is the case.
+ * \sa allKnownContacts()
  */
 
 void ContactManager::connectNotify(const char *signalName)

@@ -292,7 +292,7 @@ AbstractClientObserver::~AbstractClientObserver()
  * The same principle is applied to approvers and handlers.
  *
  * \return A specification of the channels that this channel observer is
- *         interested.
+ *         interested as a list of ChannelClassSpec objects.
  * \sa observeChannels()
  */
 ChannelClassSpecList AbstractClientObserver::observerFilter() const
@@ -505,11 +505,11 @@ AbstractClientApprover::~AbstractClientApprover()
  * corresponding client bus name.
  *
  * In the .client file, represented in the same way as observer channel
- * filter, the group is #TELEPATHY_INTERFACE_CLIENT_APPROVER followed by
+ * filter, the group is #TP_QT4_IFACE_CLIENT_APPROVER followed by
  * ApproverChannelFilter instead.
  *
  * \return A specification of the channels that this channel approver is
- *         interested.
+ *         interested as a list of ChannelClassSpec objects.
  * \sa addDispatchOperation()
  */
 ChannelClassSpecList AbstractClientApprover::approverFilter() const
@@ -798,11 +798,11 @@ AbstractClientHandler::~AbstractClientHandler()
  * corresponding client bus name.
  *
  * In the .client file, represented in the same way as observer channel
- * filter, the group is #TELEPATHY_INTERFACE_CLIENT_HANDLER suffixed
+ * filter, the group is #TP_QT4_IFACE_CLIENT_HANDLER suffixed
  * by HandlerChannelFilter instead.
  *
  * \return A specification of the channels that this channel handler can deal
- *         with.
+ *         with as a list of ChannelClassSpec objects.
  */
 ChannelClassSpecList AbstractClientHandler::handlerFilter() const
 {
@@ -812,7 +812,7 @@ ChannelClassSpecList AbstractClientHandler::handlerFilter() const
 /**
  * Return the set of additional capabilities supported by this handler.
  *
- * \return The set of additional capabilities supported by this handler.
+ * \return The capabilities as an AbstractClientHandler::Capabilities object.
  */
 AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities() const
 {
@@ -825,7 +825,7 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  * Return whether channels destined for this handler are automatically
  * handled, without invoking approvers.
  *
- * \return Whether channels destined for this handler are automatically handled.
+ * \return \c true if automatically handled, \c false otherwise.
  */
 
 /**
@@ -886,7 +886,8 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  *
  * This property is set by the constructor and cannot be changed after that.
  *
- * \return Whether this handler wants to receive channel requests notification.
+ * \return \c true if receiving channel requests notification is desired,
+ *         \c false otherwise.
  */
 bool AbstractClientHandler::wantsRequestNotification() const
 {
@@ -916,7 +917,7 @@ bool AbstractClientHandler::wantsRequestNotification() const
  * The channel dispatcher will attempt to ensure that handleChannels() is called
  * on the same handler that received addRequest(). If that isn't possible,
  * removeRequest() will be called on the handler that previously received
- * addRequest(), with the special error #TELEPATHY_ERROR_NOT_YOURS, which
+ * addRequest(), with the special error #TP_QT4_ERROR_NOT_YOURS, which
  * indicates that some other handler received the channel instead.
  *
  * Expected handling is for the UI to close the window it previously opened.
@@ -943,7 +944,7 @@ void AbstractClientHandler::addRequest(
  *
  * \param channelRequest The channel request that failed.
  * \param errorName The name of the D-Bus error with which the request failed.
- *                  If this is #TELEPATHY_ERROR_NOT_YOURS, this indicates that
+ *                  If this is #TP_QT4_ERROR_NOT_YOURS, this indicates that
  *                  the request succeeded, but all the resulting channels were
  *                  given to some other handler.
  * \param errorMessage Any message supplied with the D-Bus error.

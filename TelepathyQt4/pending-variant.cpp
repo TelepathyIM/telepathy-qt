@@ -44,6 +44,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingVariant::Private
  *
  * \brief The PendingVariant class is a generic subclass of PendingOperation
  * representing a pending D-Bus method call that returns a variant.
+ *
+ * See \ref async_model
  */
 
 PendingVariant::PendingVariant(QDBusPendingCall call, const SharedPtr<RefCounted> &object)

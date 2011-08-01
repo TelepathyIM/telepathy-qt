@@ -498,10 +498,20 @@ void TextChannel::Private::contactFound(ContactPtr contact)
  * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
  *
  * \brief The TextChannel class represents a Telepathy channel of type Text.
+ *
+ * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
- * A placeholder for "core functionality" which is currently just the same as Channel::FeatureCore.
+ * Feature representing the core that needs to become ready to make the
+ * TextChannel object usable.
+ *
+ * This is currently the same as Channel::FeatureCore, but may change to include more.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
  */
 const Feature TextChannel::FeatureCore = Feature(QLatin1String(Channel::staticMetaObject.className()), 0, true);
 
@@ -510,7 +520,7 @@ const Feature TextChannel::FeatureCore = Feature(QLatin1String(Channel::staticMe
  *
  * See message queue methods' documentation for more details.
  *
- * \sa messageQueue(), messageReceived(), pendingMessageRemoved()
+ * \sa messageQueue(), messageReceived(), pendingMessageRemoved(), forget(), acknowledge()
  */
 const Feature TextChannel::FeatureMessageQueue = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 0);
 
@@ -533,8 +543,7 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(QLatin1String(Text
 /**
  * Feature used in order to keep track of chat state changes.
  *
- * The chatStateChanged() signal will be emitted when a remote contact chat
- * state changes.
+ * See chat state methods' documentation for more details.
  *
  * \sa chatState(), chatStateChanged()
  */
@@ -542,21 +551,21 @@ const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel:
 
 /**
  * \fn void TextChannel::messageSent(const Tp::Message &message,
- *     Tp::MessageSendingFlags flags,
- *     const QString &sentMessageToken)
+ *          Tp::MessageSendingFlags flags,
+ *          const QString &sentMessageToken)
  *
- * Emitted when a message is sent, if the FeatureMessageSentSignal Feature
+ * Emitted when a message is sent, if the TextChannel::FeatureMessageSentSignal
  * has been enabled.
  *
  * This signal is emitted regardless of whether the message is sent by this
- * client, or another client using the same Channel via D-Bus.
+ * client, or another client using the same channel via D-Bus.
  *
  * \param message A message. This may differ slightly from what the client
  *                requested to send, for instance if it has been altered due
  *                to limitations of the instant messaging protocol used.
- * \param flags MessageSendingFlags that were in effect when the message was
+ * \param flags #MessageSendingFlags that were in effect when the message was
  *              sent. Clients can use these in conjunction with
- *              deliveryReportingSupport to determine whether delivery
+ *              deliveryReportingSupport() to determine whether delivery
  *              reporting can be expected.
  * \param sentMessageToken Either an empty QString, or an opaque token used
  *                         to match the message to any delivery reports.
@@ -566,10 +575,13 @@ const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel:
  * \fn void TextChannel::messageReceived(const Tp::ReceivedMessage &message)
  *
  * Emitted when a message is added to messageQueue(), if the
- * FeatureMessageQueue Feature has been enabled.
+ * TextChannel::FeatureMessageQueue Feature has been enabled.
  *
  * This occurs slightly later than the message being received over D-Bus;
  * see messageQueue() for details.
+ *
+ * \param message The message received.
+ * \sa messageQueue(), acknowledge(), forget()
  */
 
 /**
@@ -577,8 +589,11 @@ const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel:
  *      const Tp::ReceivedMessage &message)
  *
  * Emitted when a message is removed from messageQueue(), if the
- * FeatureMessageQueue Feature has been enabled. See messageQueue() for the
+ * TextChannel::FeatureMessageQueue Feature has been enabled. See messageQueue() for the
  * circumstances in which this happens.
+ *
+ * \param message The message removed.
+ * \sa messageQueue(), acknowledge(), forget()
  */
 
 /**
@@ -586,17 +601,22 @@ const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel:
  *      ChannelChatState state)
  *
  * Emitted when the state of a member of the channel has changed, if the
- * FeatureChatState feature has been enabled.
- * This includes local state.
+ * TextChannel::FeatureChatState feature has been enabled.
+ *
+ * Local state changes are also emitted here.
+ *
+ * \param contact The contact whose chat state changed.
+ * \param state The new chat state for \a contact.
+ * \sa chatState()
  */
 
 /**
- * Create a new IncomingFileTransfer channel.
+ * Create a new TextChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \return A TextChannelPtr object pointing to the newly created
  *         TextChannel object.
  */
@@ -612,10 +632,10 @@ TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- * depend on TextChannel::FeatureCore.
+ *                    depend on TextChannel::FeatureCore.
  */
 TextChannel::TextChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -635,15 +655,13 @@ TextChannel::~TextChannel()
 }
 
 /**
- * Return whether this channel supports the Telepathy Messages interface.
- * if it does not, requestChatState() will fail and all contacts' chat states
- * will appear to be %Tp::ChannelChatStateInactive.
+ * Return whether this channel supports the Messages interface.
  *
- * The result of calling this method is undefined until basic Channel
- * functionality has been enabled by calling becomeReady and waiting for the
- * pending operation to complete.
+ * If the interface is not supported, some advanced functionality will be unavailable.
  *
- * \return true if the Messages interface is supported
+ * This method requires TextChannel::FeatureCore to be ready.
+ *
+ * \return \c true if the Messages interface is supported, \c false otherwise.
  */
 bool TextChannel::hasMessagesInterface() const
 {
@@ -652,14 +670,15 @@ bool TextChannel::hasMessagesInterface() const
 }
 
 /**
- * Return whether this channel supports the Telepathy ChatState interface.
- * If it does not, some advanced functionality will be unavailable.
+ * Return whether this channel supports the ChatState interface.
  *
- * The result of calling this method is undefined until basic Channel
- * functionality has been enabled by calling becomeReady and waiting for the
- * pending operation to complete.
+ * If the interface is not supported, requestChatState() will fail and all contacts' chat states
+ * will appear to be #ChannelChatStateInactive.
  *
- * \return true if the ChatState interface is supported
+ * This method requires TextChannel::FeatureCore to be ready.
+ *
+ * \return \c true if the ChatState interface is supported, \c false otherwise.
+ * \sa requestChatState(), chatStateChanged()
  */
 bool TextChannel::hasChatStateInterface() const
 {
@@ -669,19 +688,19 @@ bool TextChannel::hasChatStateInterface() const
 
 /**
  * Return whether contacts can be invited into this channel using
- * inviteContacts (which is equivalent to groupAddContacts). Whether this
- * is the case depends on the underlying protocol, the type of channel,
+ * inviteContacts() (which is equivalent to Channel::groupAddContacts()).
+ *
+ * Whether this is the case depends on the underlying protocol, the type of channel,
  * and the user's privileges (in some chatrooms, only a privileged user
  * can invite other contacts).
  *
- * This is an alias for groupCanAddContacts, to indicate its meaning more
+ * This is an alias for Channel::groupCanAddContacts(), to indicate its meaning more
  * clearly for Text channels.
  *
- * The result of calling this method is undefined until basic Group
- * functionality has been enabled by calling becomeReady and waiting for the
- * pending operation to complete.
+ * This method requires Channel::FeatureCore to be ready.
  *
- * \return The same thing as groupCanAddContacts
+ * \return \c true if contacts can be invited, \c false otherwise.
+ * \sa inviteContacts(), Channel::groupCanAddContacts(), Channel::groupAddContacts()
  */
 bool TextChannel::canInviteContacts() const
 {
@@ -691,17 +710,16 @@ bool TextChannel::canInviteContacts() const
 /* <!--x--> in the block below is used to escape the star-slash sequence */
 /**
  * Return a list of supported MIME content types for messages on this channel.
+ *
  * For a simple text channel this will be a list containing one item,
  * "text/plain".
  *
  * This list may contain the special value "*<!--x-->/<!--x-->*", which
  * indicates that any content type is supported.
  *
- * The result of calling this method is undefined until the
- * FeatureMessageCapabilities Feature has been enabled, by calling becomeReady
- * and waiting for the pending operation to complete
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
  *
- * \return A list of MIME content types
+ * \return The list of MIME content types.
  */
 QStringList TextChannel::supportedContentTypes() const
 {
@@ -710,14 +728,14 @@ QStringList TextChannel::supportedContentTypes() const
 
 /**
  * Return a set of flags indicating support for multi-part messages on this
- * channel. This is zero on simple text channels, or greater than zero if
+ * channel.
+ *
+ * This is zero on simple text channels, or greater than zero if
  * there is partial or full support for multi-part messages.
  *
- * The result of calling this method is undefined until the
- * FeatureMessageCapabilities Feature has been enabled, by calling becomeReady
- * and waiting for the pending operation to complete.
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
  *
- * \return A set of MessagePartSupportFlags
+ * \return The flags as #MessagePartSupportFlags.
  */
 MessagePartSupportFlags TextChannel::messagePartSupport() const
 {
@@ -726,14 +744,14 @@ MessagePartSupportFlags TextChannel::messagePartSupport() const
 
 /**
  * Return a set of flags indicating support for delivery reporting on this
- * channel. This is zero if there are no particular guarantees, or greater
+ * channel.
+ *
+ * This is zero if there are no particular guarantees, or greater
  * than zero if delivery reports can be expected under certain circumstances.
  *
- * The result of calling this method is undefined until the
- * FeatureMessageCapabilities Feature has been enabled, by calling becomeReady
- * and waiting for the pending operation to complete.
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
  *
- * \return A set of DeliveryReportingSupportFlags
+ * \return The flags as #DeliveryReportingSupportFlags.
  */
 DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
 {
@@ -741,11 +759,10 @@ DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
 }
 
 /**
- * Return a list of messages received in this channel. This list is empty
- * unless the FeatureMessageQueue Feature has been enabled.
+ * Return a list of messages received in this channel.
  *
  * Messages are added to this list when they are received from the instant
- * messaging service; the messageReceived signal is emitted.
+ * messaging service; the messageReceived() signal is emitted.
  *
  * There is a small delay between the message being received over D-Bus and
  * becoming available to users of this C++ API, since a small amount of
@@ -754,11 +771,13 @@ DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
  *
  * Messages are removed from this list when they are acknowledged with the
  * acknowledge() or forget() methods. On channels where hasMessagesInterface()
- * returns true, they will also be removed when acknowledged by a different
- * client. In either case, the pendingMessageRemoved signal is emitted.
+ * returns \c true, they will also be removed when acknowledged by a different
+ * client. In either case, the pendingMessageRemoved() signal is emitted.
  *
- * \return The unacknowledged messages in this channel, excluding any that
- *         have been forgotten with forget().
+ * This method requires TextChannel::FeatureMessageQueue to be ready.
+ *
+ * \return A list of ReceivedMessage objects.
+ * \sa messageReceived()
  */
 QList<ReceivedMessage> TextChannel::messageQueue() const
 {
@@ -768,12 +787,12 @@ QList<ReceivedMessage> TextChannel::messageQueue() const
 /**
  * Return the current chat state for \a contact.
  *
- * If hasChatStateInterface() returns false, this method will always return
- * ChannelChatStateInactive.
+ * If hasChatStateInterface() returns \c false, this method will always return
+ * #ChannelChatStateInactive.
  *
- * This method requires TextChannel::FeatureChatState to be enabled.
+ * This method requires TextChannel::FeatureChatState to be ready.
  *
- * \return A contact current chat state.
+ * \return The contact chat state as #ChannelChatState.
  */
 ChannelChatState TextChannel::chatState(const ContactPtr &contact) const
 {
@@ -812,18 +831,18 @@ void TextChannel::onAcknowledgePendingMessagesReply(
 /**
  * Acknowledge that received messages have been displayed to the user.
  *
- * This method should only be called by the main handler of a Channel, usually
- * meaning the user interface process that displays the Channel to the user
- * (when a ChannelDispatcher is used, the Handler must acknowledge messages,
- * and other Approvers or Observers must not acknowledge messages).
+ * Note that this method should only be called by the main handler of a channel, usually
+ * meaning the user interface process that displays the channel to the user
+ * (when a channel dispatcher is used, the handler must acknowledge messages,
+ * and other approvers or observers must not acknowledge messages).
  *
- * Processes other than the main handler of a Channel can free memory used
- * in Telepathy-Qt4 by calling forget() instead.
+ * Processes other than the main handler of a channel can free memory used
+ * by the library by calling forget() instead.
  *
- * The messages must have come from this channel, therefore this method does
- * not make sense if FeatureMessageQueue has not been enabled.
+ * This method requires TextChannel::FeatureMessageQueue to be ready.
  *
  * \param messages A list of received messages that have now been displayed.
+ * \sa forget(), messageQueue(), messageReceived(), pendingMessageRemoved()
  */
 void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
 {
@@ -856,17 +875,17 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
 }
 
 /**
- * Remove messages from messageQueue without acknowledging them.
+ * Remove messages from the message queue without acknowledging them.
  *
- * This method frees memory inside the Telepathy-Qt4 TextChannel proxy, but
- * does not free the corresponding memory in the Connection Manager process.
- * It should be used by clients that are not the main handler for a Channel;
- * the main handler for a Channel should use acknowledge instead.
+ * Note that this method frees memory used by the library, but
+ * does not free the corresponding memory in the CM process.
+ * It should be used by clients that are not the main handler for a channel;
+ * the main handler for a channel should use acknowledge() instead.
  *
- * The messages must have come from this channel, therefore this method does
- * not make sense if FeatureMessageQueue has not been enabled.
+ * This method requires TextChannel::FeatureMessageQueue to be ready.
  *
  * \param messages A list of received messages that have now been processed.
+ * \sa acknowledge(), messageQueue(), messageReceived(), pendingMessageRemoved()
  */
 void TextChannel::forget(const QList<ReceivedMessage> &messages)
 {
@@ -879,6 +898,27 @@ void TextChannel::forget(const QList<ReceivedMessage> &messages)
     }
 }
 
+/**
+ * Request that a message be sent on this channel.
+ *
+ * When the message has been submitted for delivery,
+ * this method will return and the messageSent() signal will be emitted.
+ *
+ * If the message cannot be submitted for delivery, the returned pending operation will fail and no
+ * signal is emitted.
+ *
+ * This method requires TextChannel::FeatureCore to be ready.
+ *
+ * \param text The message body.
+ * \param type The message type.
+ * \param flags Flags affecting how the message is sent.
+ *              Note that the channel may ignore some or all flags, depending on
+ *              deliveryReportingSupport(); the flags that were handled by the CM are provided in
+ *              messageSent().
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the message has been submitted for delivery.
+ * \sa messageSent()
+ */
 PendingSendMessage *TextChannel::send(const QString &text,
         ChannelTextMessageType type, MessageSendingFlags flags)
 {
@@ -904,6 +944,26 @@ PendingSendMessage *TextChannel::send(const QString &text,
     return op;
 }
 
+/**
+ * Request that a message be sent on this channel.
+ *
+ * When the message has been submitted for delivery,
+ * this method will return and the messageSent() signal will be emitted.
+ *
+ * If the message cannot be submitted for delivery, the returned pending operation will fail and no
+ * signal is emitted.
+ *
+ * This method requires TextChannel::FeatureCore to be ready.
+ *
+ * \param part The message parts.
+ * \param flags Flags affecting how the message is sent.
+ *              Note that the channel may ignore some or all flags, depending on
+ *              deliveryReportingSupport(); the flags that were handled by the CM are provided in
+ *              messageSent().
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the message has been submitted for delivery.
+ * \sa messageSent()
+ */
 PendingSendMessage *TextChannel::send(const MessagePartList &parts,
         MessageSendingFlags flags)
 {
@@ -936,6 +996,8 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
  *
  * Note that only the primary handler of the channel should set its chat
  * state.
+ *
+ * This method requires TextChannel::FeatureCore to be ready.
  *
  * \param state The new state.
  * \sa chatStateChanged()

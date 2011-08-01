@@ -64,7 +64,7 @@ struct TELEPATHY_QT4_NO_EXPORT DBusProxyFactory::Private
  */
 
 /**
- * Class constructor.
+ * Construct a new DBusProxyFactory object.
  *
  * The intention for storing the bus here is that it generally doesn't make sense to construct
  * proxies for multiple buses in the same context. Allowing that would lead to more complex keying
@@ -86,9 +86,9 @@ DBusProxyFactory::~DBusProxyFactory()
 }
 
 /**
- * Returns the D-Bus connection all of the proxies from this factory communicate with.
+ * Return the D-Bus connection all of the proxies from this factory communicate with.
  *
- * \return The connection.
+ * \return A QDBusConnection object.
  */
 const QDBusConnection &DBusProxyFactory::dbusConnection() const
 {
@@ -96,7 +96,7 @@ const QDBusConnection &DBusProxyFactory::dbusConnection() const
 }
 
 /**
- * Returns a cached proxy with the given \a busName and \a objectPath.
+ * Return a cached proxy with the given \a busName and \a objectPath.
  *
  * If a proxy has not been previously put into the cache by nowHaveProxy for those identifying
  * attributes, or a previously cached proxy has since been invalidated and/or destroyed, a \c Null
@@ -104,7 +104,7 @@ const QDBusConnection &DBusProxyFactory::dbusConnection() const
  *
  * \param busName Bus name of the proxy to return.
  * \param objectPath Object path of the proxy to return.
- * \return The proxy, if any.
+ * \return A pointer to the DBusProxy object, if any.
  */
 DBusProxyPtr DBusProxyFactory::cachedProxy(const QString &busName,
         const QString &objectPath) const
@@ -131,7 +131,8 @@ DBusProxyPtr DBusProxyFactory::cachedProxy(const QString &busName,
  * PendingReady::proxy(), if the proxy is needed in a context where it's not required to be ready.
  *
  * \param proxy The proxy which the factory should now make sure is prepared and made ready.
- * \return Readifying operation, which finishes when the proxy is usable.
+ * \return A PendingReady operation which will emit PendingReady::finished
+ *         when the proxy is usable.
  */
 PendingReady *DBusProxyFactory::nowHaveProxy(const DBusProxyPtr &proxy) const
 {
@@ -144,6 +145,7 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const DBusProxyPtr &proxy) const
 
 /**
  * \fn QString DBusProxyFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
+ *
  * "Normalize" a bus name according to the rules for the proxy class to construct.
  *
  * Should be implemented by subclasses to transform the application-specified name \a
@@ -197,7 +199,8 @@ PendingOperation *DBusProxyFactory::readyPrepare(const DBusProxyPtr &proxy) cons
 
 /**
  * \fn Features DBusProxyFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
- * Specifies features which should be made ready on a given proxy.
+ *
+ * Return the features which should be made ready on a given proxy.
  *
  * This can be used to implement instance-specific features based on arbitrary criteria.
  * FixedFeatureFactory implements this as a fixed set of features independent of the instance,
@@ -210,7 +213,7 @@ PendingOperation *DBusProxyFactory::readyPrepare(const DBusProxyPtr &proxy) cons
  * for the Account objects they're editing.
  *
  * \param proxy The proxy on which the returned features will be made ready.
- * \return Features to make ready on the proxy.
+ * \return A list of Feature objects.
  */
 
 DBusProxyFactory::Cache::Cache()

@@ -83,6 +83,10 @@ IncomingFileTransferChannel::Private::~Private()
  *
  * \brief The IncomingFileTransferChannel class represents a Telepathy channel
  * of type FileTransfer for incoming file transfers.
+ *
+ * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
@@ -94,35 +98,37 @@ IncomingFileTransferChannel::Private::~Private()
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Feature IncomingFileTransferChannel::FeatureCore = Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0);
+const Feature IncomingFileTransferChannel::FeatureCore =
+    Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0); // FT::FeatureCore
 
 /**
- * Create a new InconmingFileTransferChannel object.
+ * Create a new IncomingFileTransferChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
- * \return A StreamedMediaChannelPtr object pointing to the newly created
- *         StreamedMediaChannel object.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \return A IncomingFileTransferChannelPtr object pointing to the newly created
+ *         IncomingFileTransfer object.
  */
 IncomingFileTransferChannelPtr IncomingFileTransferChannel::create(
         const ConnectionPtr &connection, const QString &objectPath,
         const QVariantMap &immutableProperties)
 {
     return IncomingFileTransferChannelPtr(new IncomingFileTransferChannel(
-                connection, objectPath, immutableProperties));
+                connection, objectPath, immutableProperties,
+                IncomingFileTransferChannel::FeatureCore));
 }
 
 /**
- * Construct a new IncomingFileTransfer channel.
+ * Construct a new IncomingFileTransferChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- * depend on IncomingFileTransferChannel::FeatureCore.
+ *                    depend on IncomingFileTransferChannel::FeatureCore.
  */
 IncomingFileTransferChannel::IncomingFileTransferChannel(
         const ConnectionPtr &connection, const QString &objectPath,
@@ -142,10 +148,13 @@ IncomingFileTransferChannel::~IncomingFileTransferChannel()
 }
 
 /**
- * Set the URI where the file will be saved. This property may be set by the
- * channel handler before calling AcceptFile to inform observers where the
- * incoming file will be saved. When the URI property is set, the signal
+ * Set the URI where the file will be saved.
+ *
+ * This property may be set by the channel handler before calling AcceptFile to inform observers
+ * where the incoming file will be saved. When the URI property is set, the signal
  * uriDefined() is emitted.
+ *
+ * This method requires IncomingFileTransferChannel::FeatureCore to be ready.
  *
  * \param uri The URI where the file will be saved.
  * \return A PendingOperation object which will emit PendingOperation::finished
@@ -173,15 +182,16 @@ PendingOperation *IncomingFileTransferChannel::setUri(const QString& uri)
 }
 
 /**
- * Accept a file transfer that's in the %FileTransferStatePending state().
- * The state will change to %FileTransferStateOpen as soon as the transfer
+ * Accept a file transfer that's in the #FileTransferStatePending state().
+ *
+ * The state will change to #FileTransferStateOpen as soon as the transfer
  * starts.
  * The given output device should not be closed/destroyed until the state()
- * changes to %FileTransferStateCompleted or %FileTransferStateCancelled.
+ * changes to #FileTransferStateCompleted or #FileTransferStateCancelled.
  *
  * Only the primary handler of a file transfer channel may call this method.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires IncomingFileTransferChannel::FeatureCore to be ready.
  *
  * \param offset The desired offset in bytes where the file transfer should
  *               start. The offset is taken from the beginning of the file.
@@ -193,13 +203,14 @@ PendingOperation *IncomingFileTransferChannel::setUri(const QString& uri)
  *               will always be 0.).
  * \param output A QIODevice object where the data will be written to. The
  *               device should be ready to use when the state() changes to
- *               %FileTransferStateCompleted.
+ *               #FileTransferStateCompleted.
  *               If the transfer is cancelled, state() becomes
- *               %FileTransferStateCancelled, the data in \a output should be
+ *               #FileTransferStateCancelled, the data in \a output should be
  *               ignored 
  * \return A PendingOperation object which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa stateChanged(), state(), stateReason(), initialOffset()
+ * \sa FileTransferChannel::stateChanged(), FileTransferChannel::state(),
+ *     FileTransferChannel::stateReason(), FileTransferChannel::initialOffset()
  */
 PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
         QIODevice *output)
@@ -243,16 +254,6 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
             SLOT(onAcceptFileFinished(Tp::PendingOperation*)));
     return pv;
 }
-
-/**
- * \fn void IncomingFileTransferChannel::uriDefined(const QString &uri);
- *
- * This signal is emitted when the value of uri() of this file transfer channel
- * changes.
- *
- * \param uri The new URI of this file transfer channel.
- * \sa FileTransferChannel::uri(), setUri()
- */
 
 void IncomingFileTransferChannel::onAcceptFileFinished(PendingOperation *op)
 {
@@ -376,5 +377,14 @@ void IncomingFileTransferChannel::setFinished()
 
     FileTransferChannel::setFinished();
 }
+
+/**
+ * \fn void IncomingFileTransferChannel::uriDefined(const QString &uri)
+ *
+ * Emitted when the value of uri() changes.
+ *
+ * \param uri The new URI of this file transfer channel.
+ * \sa FileTransferChannel::uri(), setUri()
+ */
 
 } // Tp

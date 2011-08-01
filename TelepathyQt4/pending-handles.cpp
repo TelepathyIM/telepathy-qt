@@ -56,11 +56,13 @@ struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
  * \ingroup clientconn
  * \headerfile TelepathyQt4/pending-handles.h <TelepathyQt4/PendingHandles>
  *
- * \brief The PendingHandles class representsthe parameters of and the reply to
+ * \brief The PendingHandles class represents the parameters of and the reply to
  * an asynchronous handle request/hold.
  *
  * Instances of this class cannot be constructed directly; the only way to get
  * one is to use Connection::requestHandles() or Connection::referenceHandles().
+ *
+ * See \ref async_model
  */
 
 PendingHandles::PendingHandles(const ConnectionPtr &connection, HandleType handleType,
@@ -131,9 +133,9 @@ PendingHandles::~PendingHandles()
 }
 
 /**
- * Returns the Connection object through which the operation was made.
+ * Return the connection through which the operation was made.
  *
- * \return Pointer to the Connection.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr PendingHandles::connection() const
 {
@@ -141,9 +143,9 @@ ConnectionPtr PendingHandles::connection() const
 }
 
 /**
- * Returns the handle type specified in the operation.
+ * Return the handle type specified in the operation.
  *
- * \return The handle type, as specified in #HandleType.
+ * \return The target handle type as #HandleType.
  */
 HandleType PendingHandles::handleType() const
 {
@@ -151,12 +153,11 @@ HandleType PendingHandles::handleType() const
 }
 
 /**
- * Returns whether the operation was a handle request (as opposed to a
+ * Return whether the operation was a handle request (as opposed to a
  * reference of existing handles).
  *
+ * \return \c true if the operation was a request (== !isReference()), \c false otherwise.
  * \sa isReference()
- *
- * \return Whether the operation was a request (== !isReference()).
  */
 bool PendingHandles::isRequest() const
 {
@@ -164,12 +165,11 @@ bool PendingHandles::isRequest() const
 }
 
 /**
- * Returns whether the operation was a handle reference (as opposed to a
+ * Return whether the operation was a handle reference (as opposed to a
  * request for new handles).
  *
+ * \return \c true if the operation was a reference (== !isRequest()), \c false otherwise.
  * \sa isRequest()
- *
- * \return Whether the operation was a reference (== !isRequest()).
  */
 bool PendingHandles::isReference() const
 {
@@ -224,7 +224,7 @@ const UIntList &PendingHandles::handlesToReference() const
 }
 
 /**
- * Returns the now-referenced handles resulting from the operation. If the
+ * Return the now-referenced handles resulting from the operation. If the
  * operation has not (yet) finished successfully (isFinished() returns
  * <code>false</code>), the return value is undefined.
  *
@@ -233,7 +233,7 @@ const UIntList &PendingHandles::handlesToReference() const
  * references of existing handles, <code>handles()[i] ==
  * handlesToReference()[i]</code> will be true for any <code>i</code>.
  *
- * \return ReferencedHandles instance containing the handles.
+ * \return ReferencedHandles object containing the handles.
  */
 ReferencedHandles PendingHandles::handles() const
 {

@@ -39,9 +39,11 @@ namespace Tp
  *
  * \brief The PendingContactAttributes class represents the parameters of and
  * the reply to an asynchronous request for raw contact attributes, as used in
- * the Connection::contactAttributes() low-level convenience method wrapping the
+ * the ConnectionLowlevel::contactAttributes() low-level convenience method wrapping the
  * Client::ConnectionInterfaceContactsInterface::GetContactAttributes() D-Bus
  * method.
+ *
+ * See \ref async_model
  */
 
 struct TELEPATHY_QT4_NO_EXPORT PendingContactAttributes::Private
@@ -73,9 +75,9 @@ PendingContactAttributes::~PendingContactAttributes()
 }
 
 /**
- * Returns the Connection object through which the request was made.
+ * Return the connection through which the request was made.
  *
- * \return Pointer to the Connection.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr PendingContactAttributes::connection() const
 {
@@ -83,7 +85,7 @@ ConnectionPtr PendingContactAttributes::connection() const
 }
 
 /**
- * Returns the contacts for which attributes were requested.
+ * Return the contacts for which attributes were requested.
  *
  * \return Reference to a list with the handles of the contacts.
  */
@@ -93,7 +95,7 @@ const UIntList &PendingContactAttributes::contactsRequested() const
 }
 
 /**
- * Returns the interfaces the corresponding attributes of which were requested.
+ * Return the interfaces the corresponding attributes of which were requested.
  *
  * \return Reference to a list of D-Bus interface names.
  */
@@ -103,7 +105,7 @@ const QStringList &PendingContactAttributes::interfacesRequested() const
 }
 
 /**
- * Returns whether it was requested that the contact handles should be referenced in addition to
+ * Return whether it was requested that the contact handles should be referenced in addition to
  * fetching their attributes. This corresponds to the <code>reference</code> argument to
  * Connection::contactAttributes().
  *
@@ -141,7 +143,7 @@ ReferencedHandles PendingContactAttributes::validHandles() const
 }
 
 /**
- * Returns the handles which were found to be invalid while processing the operation. If the
+ * Return the handles which were found to be invalid while processing the operation. If the
  * operation has not (yet) finished successfully (isFinished() returns <code>false</code>), the
  * return value is undefined.
  *
@@ -159,7 +161,7 @@ UIntList PendingContactAttributes::invalidHandles() const
 }
 
 /**
- * Returns a dictionary mapping the valid contact handles in contactsRequested() (when also
+ * Return a dictionary mapping the valid contact handles in contactsRequested() (when also
  * referencing, this means the contents of validHandles()) to contact attributes. If the operation
  * has not (yet) finished successfully (isFinished() returns <code>false</code>), the return value
  * is undefined.

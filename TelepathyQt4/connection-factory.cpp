@@ -42,7 +42,7 @@ namespace Tp
  */
 
 /**
- * Creates a new ConnectionFactory.
+ * Create a new ConnectionFactory object.
  *
  * Optionally, the \a features to make ready on all constructed proxies can be specified. The
  * default is to make no features ready. It should be noted that unlike Connection::becomeReady(),
@@ -51,7 +51,8 @@ namespace Tp
  *
  * \param bus The QDBusConnection for proxies constructed using this factory to use.
  * \param features The features to make ready on constructed Connections.
- * \returns A pointer to the created factory.
+ * \return A ConnectionFactoryPtr object pointing to the newly created
+ *         ConnectionFactory object.
  */
 ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus,
         const Features &features)
@@ -60,7 +61,7 @@ ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus,
 }
 
 /**
- * Class constructor.
+ * Construct a new ConnectionFactory object.
  *
  * As in create(), it should be noted that unlike Connection::becomeReady(), FeatureCore isn't
  * assumed.  If no \a features are specified, no Connection::becomeReady() call is made at all and
@@ -126,7 +127,7 @@ PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &ob
  * \param objectPath The object path of the connection.
  * \param chanFactory The channel factory to use for the Connection.
  * \param contactFactory The channel factory to use for the Connection.
- * \return A pointer to the constructed proxy.
+ * \return A pointer to the constructed Connection object.
  */
 ConnectionPtr ConnectionFactory::construct(const QString &busName, const QString &objectPath,
         const ChannelFactoryConstPtr &chanFactory,

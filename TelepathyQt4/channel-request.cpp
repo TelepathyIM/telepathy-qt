@@ -267,6 +267,8 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
  * requested it). This means that the channel dispatcher will close the
  * resulting channel, or refrain from requesting it at all, rather than
  * dispatching it to a handler.
+ *
+ * See \ref async_model
  */
 
 /**
@@ -285,12 +287,12 @@ const Feature ChannelRequest::FeatureCore = Feature(QLatin1String(ChannelRequest
  * Create a new channel request object using the given \a bus and the given factories.
  *
  * \param objectPath The channel request object path.
- * \param immutableProperties The immutable properties of the channel request.
+ * \param immutableProperties The channel request immutable properties.
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ * \return A ChannelRequestPtr object pointing to the newly created ChannelRequest object.
  */
 ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus, const QString &objectPath,
         const QVariantMap &immutableProperties,
@@ -310,8 +312,8 @@ ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus, const QStri
  *
  * \param account The account that the request was made through.
  * \param objectPath The channel request object path.
- * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ * \param immutableProperties The channel request immutable properties.
+ * \return A ChannelRequestPtr object pointing to the newly created ChannelRequest object.
  */
 ChannelRequestPtr ChannelRequest::create(const AccountPtr &account, const QString &objectPath,
         const QVariantMap &immutableProperties)
@@ -329,7 +331,7 @@ ChannelRequestPtr ChannelRequest::create(const AccountPtr &account, const QStrin
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
  * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ * \return A ChannelRequestPtr object pointing to the newly created ChannelRequest.
  */
 ChannelRequest::ChannelRequest(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties,
@@ -365,7 +367,7 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
  * \param account Account to use.
  * \param objectPath The channel request object path.
  * \param immutableProperties The immutable properties of the channel request.
- * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ * \return A ChannelRequestPtr object pointing to the newly created ChannelRequest.
  */
 ChannelRequest::ChannelRequest(const AccountPtr &account,
         const QString &objectPath, const QVariantMap &immutableProperties)
@@ -390,7 +392,7 @@ ChannelRequest::~ChannelRequest()
 }
 
 /**
- * Return the Account on which this request was made.
+ * Return the account on which this request was made.
  *
  * This method can be used even before the ChannelRequest is ready, in which case the account object
  * corresponding to the immutable properties is returned. In this case, the Account object is not
@@ -401,7 +403,7 @@ ChannelRequest::~ChannelRequest()
  * If the account is not provided in the immutable properties, this will only return a non-\c NULL
  * AccountPtr once ChannelRequest::FeatureCore is ready on this object.
  *
- * \return The account on which this request was made.
+ * \return A pointer to the Account object.
  */
 AccountPtr ChannelRequest::account() const
 {
@@ -420,7 +422,7 @@ AccountPtr ChannelRequest::account() const
  * This method can be used even before the ChannelRequest is ready: in this case, the user action
  * time from the immutable properties, if any, is returned.
  *
- * \return The time at which the user action occurred.
+ * \return The time at which the user action occurred as QDateTime.
  */
 QDateTime ChannelRequest::userActionTime() const
 {
@@ -438,7 +440,7 @@ QDateTime ChannelRequest::userActionTime() const
  * This method can be used even before the ChannelRequest is ready: in this case, the preferred
  * handler from the immutable properties, if any, is returned.
  *
- * \return The preferred handler or an empty string if any handler would be
+ * \return The preferred handler, or an empty string if any handler would be
  *         acceptable.
  */
 QString ChannelRequest::preferredHandler() const
@@ -458,7 +460,8 @@ QString ChannelRequest::preferredHandler() const
  * matching ChannelRequests from ClientHandlerInterface::addRequest() with existing requests in the
  * application (by the target ID or handle, most likely).
  *
- * \return The requested desirable channel properties.
+ * \return The requested desirable channel properties as a list of
+ *         QualifiedPropertyValueMap objects.
  */
 QualifiedPropertyValueMapList ChannelRequest::requests() const
 {
@@ -476,7 +479,7 @@ QualifiedPropertyValueMapList ChannelRequest::requests() const
  * application (by the target ID or handle, most likely).
  *
  * \sa Account::supportsRequestHints()
- * \return The hints in the request, if any.
+ * \return The hints in the request as a ChannelRequestHints object, if any.
  */
 ChannelRequestHints ChannelRequest::hints() const
 {
@@ -488,7 +491,7 @@ ChannelRequestHints ChannelRequest::hints() const
  *
  * This is useful for e.g. getting to domain-specific properties of channel requests.
  *
- * \return The immutable properties.
+ * \return The immutable properties as QVariantMap.
  */
 QVariantMap ChannelRequest::immutableProperties() const
 {
@@ -524,7 +527,7 @@ QVariantMap ChannelRequest::immutableProperties() const
  * Cancel the channel request.
  *
  * If failed() is emitted in response to this method, the error will be
- * #TELEPATHY_ERROR_CANCELLED.
+ * #TP_QT4_ERROR_CANCELLED.
  *
  * If the channel has already been dispatched to a handler, then it's too late
  * to call this method, and the channel request will no longer exist.
@@ -539,13 +542,13 @@ PendingOperation *ChannelRequest::cancel()
 }
 
 /**
- * Returns the Channel which this request succeeded with, if any.
+ * Return the Channel which this request succeeded with, if any.
  *
  * This will only ever be populated if Account::requestsSucceedWithChannel() is \c true, and
  * succeeded() has already been emitted on this ChannelRequest. Note that a PendingChannelRequest
  * being successfully finished already implies succeeded() has been emitted.
  *
- * \return Pointer to the channel proxy, or NULL if there isn't any.
+ * \return A pointer to the Channel object, or a null ChannelPtr if there isn't any.
  */
 ChannelPtr ChannelRequest::channel() const
 {
@@ -573,50 +576,13 @@ PendingOperation *ChannelRequest::proceed()
  * protected since the convenience methods provided by this class should
  * always be used instead of the interface by users of the class.
  *
- * \return A pointer to the existing ChannelRequestInterface for this
- *         ChannelRequest
+ * \return A pointer to the existing Client::ChannelRequestInterface object for this
+ *         ChannelRequest object.
  */
 Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
 {
     return mPriv->baseInterface;
 }
-
-/**
- * \fn void ChannelRequest::failed(const QString &errorName,
- *             const QString &errorMessage);
- *
- * This signal is emitted when the channel request has failed. No further
- * methods must not be called on it.
- *
- * \param errorName The name of a D-Bus error.
- * \param errorMessage The error message.
- */
-
-/**
- * \fn void ChannelRequest::succeeded();
- *
- * This signals is emitted when the channel request has succeeded. No further
- * methods must not be called on it.
- *
- * \deprecated Use ChannelRequest::succeeded(const ChannelPtr &) instead.
- */
-
-/**
- * \fn void ChannelRequest::succeeded(const Tp::ChannelPtr &channel);
- *
- * This signals is emitted when the channel request has succeeded. No further
- * methods must not be called on it.
- *
- * The \a channel parameter can be used to observe the channel resulting from the request (e.g. for
- * it getting closed). The pointer may be NULL if the Channel Dispatcher implementation is too old.
- * Whether a non-NULL channel can be expected can be checked with
- * Account::requestsSucceedWithChannel().
- *
- * If there is a channel, it will be of the subclass determined by and made ready (or not) according
- * to the settings of the ChannelFactory on the Account the request was made through.
- *
- * \param channel Pointer to a proxy for the resulting channel, if the Channel Dispatcher reported it.
- */
 
 void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
@@ -704,6 +670,42 @@ void ChannelRequest::onChanBuilt(Tp::PendingOperation *op)
     emit succeeded(); // API/ABI break TODO: don't
     emit succeeded(mPriv->chan);
 }
+
+/**
+ * \fn void ChannelRequest::failed(const QString &errorName,
+ *          const QString &errorMessage)
+ *
+ * Emitted when the channel request has failed. No further
+ * methods must not be called on it.
+ *
+ * \param errorName The name of a D-Bus error.
+ * \param errorMessage The error message.
+ * \sa succeeded()
+ */
+
+/**
+ * \fn void ChannelRequest::succeeded()
+ *
+ * \deprecated Use ChannelRequest::succeeded(const ChannelPtr &) instead.
+ */
+
+/**
+ * \fn void ChannelRequest::succeeded(const Tp::ChannelPtr &channel)
+ *
+ * Emitted when the channel request has succeeded. No further
+ * methods must not be called on it.
+ *
+ * The \a channel parameter can be used to observe the channel resulting from the request (e.g. for
+ * it getting closed). The pointer may be NULL if the Channel Dispatcher implementation is too old.
+ * Whether a non-NULL channel can be expected can be checked with
+ * Account::requestsSucceedWithChannel().
+ *
+ * If there is a channel, it will be of the subclass determined by and made ready (or not) according
+ * to the settings of the ChannelFactory on the Account the request was made through.
+ *
+ * \param channel Pointer to a proxy for the resulting channel, if the Channel Dispatcher reported it.
+ * \sa failed()
+ */
 
 void ChannelRequest::connectNotify(const char *signalName)
 {
