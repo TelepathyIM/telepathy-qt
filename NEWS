@@ -8,7 +8,8 @@ Enhancements:
 
 Fixes:
  * Tp::IncomingStreamTubeChannel always reports an empty socket address to
-   connect to for accepted Tubes
+   connect to for accepted Tubes - and various other StreamTube fixes thanks to
+   now having unit tests for them
 
 telepathy-qt4 0.7.1 (2011-06-09)
 ================================
