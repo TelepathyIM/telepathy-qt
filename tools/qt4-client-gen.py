@@ -361,7 +361,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         if 'read' in access:
             self.h("""
     /**
-     * Asynchronous getter for the remote object property "%(name)s" of type %(val)s.
+     * Asynchronous getter for the remote object property \\c %(name)s of type \\c %(val)s.
      *
 %(docstring)s\
      *
@@ -382,7 +382,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         if 'write' in access:
             self.h("""
     /**
-     * Asynchronous setter for the remote object property "%(name)s" of type %(type)s.
+     * Asynchronous setter for the remote object property \\c %(name)s of type \\c %(type)s.
      *
 %(docstring)s\
      *
@@ -424,7 +424,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 
         self.h("""
     /**
-     * Begins a call to the D-Bus method "%s" on the remote object.
+     * Begins a call to the D-Bus method \\c %s on the remote object.
 %s\
      *
      * Note that \\a timeout is ignored as of now. It will be used once
@@ -488,7 +488,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 
         self.h("""
     /**
-     * Represents the signal "%s" on the remote object.
+     * Represents the signal \\c %s on the remote object.
 %s\
 """ % (name, format_docstring(signal, '     * ')))
 
