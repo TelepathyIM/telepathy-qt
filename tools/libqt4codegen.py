@@ -160,6 +160,18 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
 
     lines = []
 
+    # escape backslashes, so they won't be interpreted starting doxygen commands and we can later
+    # insert doxygen commands we actually want
+    def escape_slashes(x):
+        if x.nodeType == x.TEXT_NODE:
+            x.data = x.data.replace('\\', '\\\\')
+        elif x.nodeType == x.ELEMENT_NODE:
+            for y in x.childNodes:
+                escape_slashes(y)
+        else:
+            return
+
+    escape_slashes(docstring_el)
     doc = docstring_el.ownerDocument
 
     for n in docstring_el.getElementsByTagNameNS(NS_TP, 'rationale'):
@@ -179,7 +191,7 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         splitted = ''.join([el.toxml() for el in docstring_el.childNodes]).strip(' ').strip('\n').split('\n')
         level = min([not match and maxint or match.end() - 1 for match in [re.match('^ *[^ ]', line) for line in splitted]])
         assert level != maxint
-        lines = ['\htmlonly'] + [line[level:].replace('\\', '\\\\') for line in splitted] + ['\endhtmlonly']
+        lines = ['\\htmlonly'] + [line[level:] for line in splitted] + ['\\endhtmlonly']
     else:
         content = xml_escape(get_descendant_text(docstring_el).replace('\n', ' ').strip())
 
@@ -202,7 +214,7 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
             content = content[step:]
 
         if line:
-            lines.append(line.replace('\\', '\\\\'))
+            lines.append(line)
 
     output = []
 
