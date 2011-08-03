@@ -21,7 +21,7 @@ please make any changes there.
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-from sys import maxint
+from sys import maxint, stderr
 import re
 from libtpcodegen import get_by_path, get_descendant_text, NS_TP, xml_escape
 
@@ -57,6 +57,83 @@ class _Qt4TypeBinding:
             assert array_val
         else:
             assert not array_val
+
+class RefTarget(object):
+    KIND_INTERFACE, KIND_METHOD, KIND_SIGNAL, KIND_PROPERTY = 'node', 'method', 'signal', 'property'
+
+    def __init__(self, el):
+        self.kind = el.localName
+        assert self.kind in (self.KIND_INTERFACE, self.KIND_METHOD, self.KIND_SIGNAL, self.KIND_PROPERTY)
+
+        if self.kind == self.KIND_INTERFACE:
+            self.dbus_text = el.getAttribute('name').lstrip('/').replace('_', '') + 'Interface'
+        else:
+            self.member_text = el.getAttribute('name')
+
+            assert el.parentNode.parentNode.localName == self.KIND_INTERFACE
+            host_class = el.parentNode.parentNode.getAttribute('name').lstrip('/').replace('_', '') + 'Interface'
+
+            if self.kind == self.KIND_PROPERTY:
+                self.member_link = 'requestProperty%s()' % (self.member_text)
+                self.dbus_link = '%s::%s' % (host_class, self.member_link)
+            else:
+                self.member_text = '%s()' % self.member_text
+
+            self.dbus_text = '%s::%s' % (host_class, self.member_text)
+
+class RefRegistry(object):
+    def __init__(self, spec):
+        self.targets = {}
+        for node in spec.getElementsByTagName('node'):
+            iface, = get_by_path(node, 'interface')
+            iface_name = iface.getAttribute('name')
+
+            self.targets[iface_name] = RefTarget(node)
+
+            for method in iface.getElementsByTagName(RefTarget.KIND_METHOD):
+                self.targets[iface_name + '.' + method.getAttribute('name')] = RefTarget(method)
+
+            for signal in iface.getElementsByTagName(RefTarget.KIND_SIGNAL):
+                self.targets[iface_name + '.' + signal.getAttribute('name')] = RefTarget(signal)
+
+            for prop in iface.getElementsByTagName(RefTarget.KIND_PROPERTY):
+                self.targets[iface_name + '.' + prop.getAttribute('name')] = RefTarget(prop)
+
+    def process(self, ref):
+        assert ref.namespaceURI == NS_TP
+
+        local = get_descendant_text(ref).strip()
+        if ref.localName == 'member-ref':
+            node = ref
+            while node.localName != 'interface':
+                node = node.parentNode
+                assert node is not None
+            ns = node.getAttribute('name')
+            path = ns + '.' + local.strip()
+        else:
+            if ref.hasAttribute('namespace'):
+                ns = ref.getAttribute('namespace').replace('ofdT', 'org.freedesktop.Telepathy')
+                path = ns + '.' + local.strip()
+            else:
+                path = local
+
+        target = self.targets.get(path)
+
+        if target is None:
+            if path.find('.DRAFT') == -1 and path.find('.FUTURE') == -1:
+                print >> stderr, 'WARNING: Failed to resolve %s to "%s"' % (ref.localName, path)
+            return path
+
+        if ref.localName == 'member-ref':
+            if target.kind == target.KIND_PROPERTY:
+                return '\\link %s %s \\endlink' % (target.member_link, target.member_text)
+            else:
+                return target.member_text
+        else:
+            if target.kind == target.KIND_PROPERTY:
+                return '\\link %s %s \\endlink' % (target.dbus_link, target.dbus_text)
+            else:
+                return target.dbus_text
 
 def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_ns=None):
     # 'signature' : ('qt-type', 'pass-by-reference', 'array-type')
@@ -133,14 +210,14 @@ def binding_from_decl(name, array_name, array_depth=None, external=False, explic
     outarg = '%s&' % val
     return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None, array_depth)
 
-def extract_arg_or_member_info(els, custom_lists, externals, typesns, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
+def extract_arg_or_member_info(els, custom_lists, externals, typesns, refs, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
     names = []
     docstrings = []
     bindings = []
 
     for el in els:
         names.append(get_qt4_name(el))
-        docstrings.append(format_docstring(el, docstring_indent, docstring_brackets, docstring_maxwidth))
+        docstrings.append(format_docstring(el, refs, docstring_indent, docstring_brackets, docstring_maxwidth))
 
         sig = el.getAttribute('type')
         tptype = el.getAttributeNS(NS_TP, 'type')
@@ -148,7 +225,7 @@ def extract_arg_or_member_info(els, custom_lists, externals, typesns, docstring_
 
     return names, docstrings, bindings
 
-def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
+def format_docstring(el, refs, indent=' * ', brackets=None, maxwidth=80):
     docstring_el = None
 
     for x in el.childNodes:
@@ -188,27 +265,16 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         n.parentNode.replaceChild(div, n)
 
     if docstring_el.getAttribute('xmlns') == 'http://www.w3.org/1999/xhtml':
-        for memref in docstring_el.getElementsByTagNameNS(NS_TP, 'member-ref'):
-            nested = memref.getElementsByTagNameNS(NS_TP, 'member-ref')
+        for ref in docstring_el.getElementsByTagNameNS(NS_TP, 'member-ref') + docstring_el.getElementsByTagNameNS(NS_TP, 'dbus-ref'):
+            nested = ref.getElementsByTagNameNS(NS_TP, 'member-ref') + ref.getElementsByTagNameNS(NS_TP, 'dbus-ref')
             if nested:
                 raise Xzibit(n, nested[0])
 
-            # TODO: if the tp spec had a way to tell which kind of an object a ref is pointing to,
-            # this hack wouldn't be needed
-            isProp = False
-            if memref.nextSibling.nodeType == x.TEXT_NODE and memref.nextSibling.data.lstrip().startswith('propert'):
-                isProp = True
+            text = doc.createTextNode(' \\endhtmlonly ')
+            text.data += refs.process(ref)
+            text.data += ' \\htmlonly '
 
-            text = doc.createTextNode(' \endhtmlonly ')
-
-            target = get_descendant_text(memref).replace('\n', ' ').strip()
-            if isProp:
-                text.data += '\\link requestProperty' + target + '() ' + target + ' \\endlink'
-            else:
-                text.data += target + '()'
-
-            text.data += ' \htmlonly '
-            memref.parentNode.replaceChild(text, memref)
+            ref.parentNode.replaceChild(text, ref)
 
         splitted = ''.join([el.toxml() for el in docstring_el.childNodes]).strip(' ').strip('\n').split('\n')
         level = min([not match and maxint or match.end() - 1 for match in [re.match('^ *[^ ]', line) for line in splitted]])
