@@ -8,6 +8,7 @@
 
 <xi:include href="../spec/Channel_Type_Contact_List.xml"/>
 <xi:include href="../spec/Channel_Type_Contact_Search.xml"/>
+<xi:include href="../spec/Channel_Type_DBus_Tube.xml"/>
 <xi:include href="../spec/Channel_Type_File_Transfer.xml"/>
 <xi:include href="../spec/Channel_Type_Room_List.xml"/>
 <xi:include href="../spec/Channel_Type_Server_Authentication.xml"/>
