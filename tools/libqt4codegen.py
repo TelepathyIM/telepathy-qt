@@ -102,13 +102,15 @@ class RefRegistry(object):
     def process(self, ref):
         assert ref.namespaceURI == NS_TP
 
+        def get_closest_parent(el, needle):
+            node = el
+            while node is not None and node.localName != needle:
+                node = node.parentNode
+            return node
+
         local = get_descendant_text(ref).strip()
         if ref.localName == 'member-ref':
-            node = ref
-            while node.localName != 'interface':
-                node = node.parentNode
-                assert node is not None
-            ns = node.getAttribute('name')
+            ns = get_closest_parent(ref, 'interface').getAttribute('name')
             path = ns + '.' + local.strip()
         else:
             if ref.hasAttribute('namespace'):
@@ -120,8 +122,11 @@ class RefRegistry(object):
         target = self.targets.get(path)
 
         if target is None:
-            if path.find('.DRAFT') == -1 and path.find('.FUTURE') == -1:
-                print >> stderr, 'WARNING: Failed to resolve %s to "%s"' % (ref.localName, path)
+            parent = get_closest_parent(ref, 'interface') or get_closest_parent(ref, 'error')
+            parent_name = parent.getAttribute('name')
+            if (path + parent_name).find('.DRAFT') == -1 and (path + parent_name).find('.FUTURE') == -1:
+                print >> stderr, 'WARNING: Failed to resolve %s to "%s" in "%s"' % (
+                        ref.localName, path, parent_name)
             return path
 
         if ref.localName == 'member-ref':
