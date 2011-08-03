@@ -23,7 +23,7 @@ import codecs
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_headerfile_cmd, get_qt4_name, qt4_identifier_escape
+from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_headerfile_cmd, get_qt4_name, qt4_identifier_escape, RefRegistry
 
 class Generator(object):
     def __init__(self, opts):
@@ -52,6 +52,7 @@ class Generator(object):
         self.spec, = get_by_path(specdom, "spec")
         self.custom_lists = gather_custom_lists(self.spec, self.typesnamespace)
         self.externals = gather_externals(self.spec)
+        self.refs = RefRegistry(self.spec)
 
     def __call__(self):
         # Output info header and includes
@@ -350,6 +351,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         access = prop.getAttribute('access')
         gettername = name
         settername = None
+        docstring = format_docstring(prop, self.refs, '     * ').replace('*/', '&#42;&#47;')
 
         sig = prop.getAttribute('type')
         tptype = prop.getAttributeNS(NS_TP, 'type')
@@ -373,10 +375,8 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         return internalRequestProperty(QLatin1String("%(name)s"));
     }
 """ % {'name' : name,
-       'docstring' : format_docstring(prop, '     * ').replace('*/',
-           '&#42;&#47;'),
+       'docstring' : docstring,
        'val' : binding.val,
-       'name' : name,
        'gettername' : 'requestProperty' + name})
 
         if 'write' in access:
@@ -394,8 +394,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         return internalSetProperty(QLatin1String("%(name)s"), QVariant::fromValue(newValue));
     }
 """ % {'name' : name,
-       'docstring' : format_docstring(prop, '     * ').replace('*/',
-           '&#42;&#47;'),
+       'docstring' : docstring,
        'type' : binding.val,
        'name' : name,
        'settername' : 'setProperty' + name})
@@ -403,7 +402,8 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
     def do_method(self, method):
         name = method.getAttribute('name')
         args = get_by_path(method, 'arg')
-        argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists, self.externals, self.typesnamespace, '     *     ')
+        argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists,
+                self.externals, self.typesnamespace, self.refs, '     *     ')
 
         inargs = []
         outargs = []
@@ -430,7 +430,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
      * Note that \\a timeout is ignored as of now. It will be used once
      * http://bugreports.qt.nokia.com/browse/QTBUG-11775 is fixed.
      *
-""" % (name, format_docstring(method, '     * ')))
+""" % (name, format_docstring(method, self.refs, '     * ')))
 
         for i in inargs:
             if argdocstrings[i]:
@@ -484,13 +484,14 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 
     def do_signal(self, signal):
         name = signal.getAttribute('name')
-        argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'), self.custom_lists, self.externals, self.typesnamespace, '     *     ')
+        argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal,
+            'arg'), self.custom_lists, self.externals, self.typesnamespace, self.refs, '     *     ')
 
         self.h("""
     /**
      * Represents the signal \\c %s on the remote object.
 %s\
-""" % (name, format_docstring(signal, '     * ')))
+""" % (name, format_docstring(signal, self.refs, '     * ')))
 
         for i in xrange(len(argnames)):
             assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
@@ -508,7 +509,8 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
 
     def do_signal_disconnect(self, signal):
         name = signal.getAttribute('name')
-        _, _, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'), self.custom_lists, self.externals, self.typesnamespace, '     *     ')
+        _, _, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'),
+                self.custom_lists, self.externals, self.typesnamespace, self.refs, '     *     ')
 
         self.b("""\
     disconnect(this, SIGNAL(%s(%s)), NULL, NULL);

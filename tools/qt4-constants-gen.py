@@ -23,7 +23,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import format_docstring
+from libqt4codegen import format_docstring, RefRegistry
 
 class Generator(object):
     def __init__(self, opts):
@@ -44,6 +44,7 @@ class Generator(object):
 
         self.spec = get_by_path(dom, "spec")[0]
         self.out = codecs.getwriter('utf-8')(stdout)
+        self.refs = RefRegistry(self.spec)
 
     def h(self, code):
         self.out.write(code)
@@ -172,7 +173,7 @@ namespace %s
 #define %(DEFINE)s "%(fullname)s"
 
 """ % {'fullname' : fullname,
-       'docstring': format_docstring(error),
+       'docstring': format_docstring(error, self.refs),
        'DEFINE' : define})
 
             if self.define_prefix:
@@ -188,7 +189,7 @@ namespace %s
 #define %(DEFINE)s QLatin1String("%(fullname)s")
 
 """ % {'fullname' : fullname,
-       'docstring': format_docstring(error),
+       'docstring': format_docstring(error, self.refs),
        'DEFINE' : define})
 
     def do_flags(self, flags):
@@ -240,7 +241,7 @@ enum %(singular)s
 typedef QFlags<%(singular)s> %(plural)s;
 Q_DECLARE_OPERATORS_FOR_FLAGS(%(plural)s)
 
-""" % {'singular' : singular, 'plural' : plural, 'docstring' : format_docstring(flags)})
+""" % {'singular' : singular, 'plural' : plural, 'docstring' : format_docstring(flags, self.refs)})
 
     def do_enum(self, enum):
         singular = enum.getAttribute('singular') or \
@@ -267,7 +268,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(%(plural)s)
  */
 enum %(singular)s
 {
-""" % {'singular' : singular, 'docstring' : format_docstring(enum)})
+""" % {'singular' : singular, 'docstring' : format_docstring(enum, self.refs)})
 
         for val in vals:
             self.do_val(val, value_prefix, val == vals[-1])
@@ -296,7 +297,7 @@ const int NUM_%(upper-plural)s = (%(last-val)s+1);
 %s\
     %s = %s,
 
-""" % (format_docstring(val, indent='     * ', brackets=('    /**', '     */')), prefix + name, val.getAttribute('value')))
+""" % (format_docstring(val, self.refs, indent='     * ', brackets=('    /**', '     */')), prefix + name, val.getAttribute('value')))
 
 if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
