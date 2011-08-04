@@ -5,6 +5,10 @@ The "..." release.
 
 Enhancements:
  * Lots of additions and corrections to API documentation
+ * Code generator now produces nicer output for member-ref, dbus-ref and
+   rationale elements in docstrings
+ * The stable D-Bus interfaces Account.Interface.Storage, Channel.Type.DBusTube
+   and Channel.Interface.Destroyable have been added to generated bindings
 
 Fixes:
  * Tp::IncomingStreamTubeChannel always reports an empty socket address to
