@@ -169,6 +169,7 @@ set(telepathy_qt4_HEADERS
     ChannelInterfaceCallStateInterface
     ChannelInterfaceChatStateInterface
     ChannelInterfaceConferenceInterface
+    ChannelInterfaceDestroyableInterface
     ChannelInterfaceDTMFInterface
     ChannelInterfaceGroupInterface
     ChannelInterfaceHoldInterface
