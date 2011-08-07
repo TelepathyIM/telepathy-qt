@@ -134,6 +134,7 @@ set(telepathy_qt4_HEADERS
     AccountInterface
     AccountInterfaceAddressingInterface
     AccountInterfaceAvatarInterface
+    AccountInterfaceStorageInterface
     AccountManager
     account-manager.h
     AccountManagerInterface
