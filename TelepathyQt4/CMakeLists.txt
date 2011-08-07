@@ -185,6 +185,7 @@ set(telepathy_qt4_HEADERS
     ChannelRequestInterface
     ChannelTypeContactListInterface
     ChannelTypeContactSearchInterface
+    ChannelTypeDBusTubeInterface
     ChannelTypeFileTransferInterface
     ChannelTypeRoomListInterface
     ChannelTypeServerAuthenticationInterface
