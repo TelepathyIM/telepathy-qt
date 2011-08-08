@@ -70,6 +70,7 @@ TubeInitiator::TubeInitiator(const QString &accountName, const QString &receiver
             SLOT(onTubeClosed(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QString,QString)));
 
     mTubeServer->exportTcpSocket(mServer);
+    Q_ASSERT(mTubeServer->isRegistered());
 
     // TODO: Start monitoring connections and connect to the connection monitoring signals
 

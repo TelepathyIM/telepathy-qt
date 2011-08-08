@@ -87,6 +87,7 @@ public:
 
     ClientRegistrarPtr registrar() const;
     QString clientName() const;
+    bool isRegistered() const;
     bool monitorsConnections() const;
 
     // Recovery getters for the setters below

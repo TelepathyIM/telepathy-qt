@@ -46,6 +46,7 @@ struct StreamTubeServer::Private
         : registrar(registrar),
           handler(SimpleStreamTubeHandler::create(services, true, monitorConnections)),
           clientName(maybeClientName),
+          isRegistered(false),
           exportedPort(0)
     {
         if (clientName.isEmpty()) {
@@ -60,6 +61,7 @@ struct StreamTubeServer::Private
     ClientRegistrarPtr registrar;
     SharedPtr<SimpleStreamTubeHandler> handler;
     QString clientName;
+    bool isRegistered;
 
     QHostAddress exportedAddr;
     quint16 exportedPort;
@@ -135,19 +137,6 @@ StreamTubeServerPtr StreamTubeServer::create(
 {
     StreamTubeServerPtr server(
             new StreamTubeServer(registrar, services, clientName, monitorConnections));
-
-    debug() << "Register StreamTubeServer with name " << server->clientName();
-
-    if (!server->registrar()->registerClient(server->mPriv->handler, server->clientName())) {
-        warning() << "StreamTubeServer" << server->clientName()
-            << "registration failed, returning NULL";
-
-        // Flag that registration failed, so we shouldn't attempt to unregister
-        server->mPriv->clientName.clear();
-
-        return StreamTubeServerPtr();
-    }
-
     return server;
 }
 
@@ -187,7 +176,7 @@ StreamTubeServer::StreamTubeServer(
  */
 StreamTubeServer::~StreamTubeServer()
 {
-    if (!clientName().isNull()) {
+    if (isRegistered()) {
         mPriv->registrar->unregisterClient(mPriv->handler);
     }
 }
@@ -200,6 +189,11 @@ ClientRegistrarPtr StreamTubeServer::registrar() const
 QString StreamTubeServer::clientName() const
 {
     return mPriv->clientName;
+}
+
+bool StreamTubeServer::isRegistered() const
+{
+    return mPriv->isRegistered;
 }
 
 bool StreamTubeServer::monitorsConnections() const
@@ -230,6 +224,17 @@ void StreamTubeServer::exportTcpSocket(
     mPriv->exportedAddr = addr;
     mPriv->exportedPort = port;
     mPriv->exportedParams = params;
+
+    if (!mPriv->isRegistered) {
+        debug() << "Register StreamTubeServer with name " << clientName();
+
+        if (registrar()->registerClient(mPriv->handler, clientName())) {
+            mPriv->isRegistered = true;
+        } else {
+            warning() << "StreamTubeServer" << clientName()
+                << "registration failed";
+        }
+    }
 }
 
 void StreamTubeServer::exportTcpSocket(
