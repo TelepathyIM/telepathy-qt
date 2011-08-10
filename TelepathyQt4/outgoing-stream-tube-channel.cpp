@@ -291,8 +291,9 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * \param port The port the socket is listening for connections to.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
  *                   For more details, please refer to \telepathy_spec.
- * \return A PendingOperation which will finish as soon as the tube is ready to be used
- *         (hence in the #TubeStateOpen state)
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the stream tube is ready to be used
+ *         (hence in the #TubeStateOpen state).
  * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost(),
  *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
  *     StreamTubeChannel::supportsIPv6SocketsOnLocalhost(),
@@ -429,8 +430,9 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \param server A valid QTcpServer, which should be already listening for incoming connections.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
  *                   For more details, please refer to \telepathy_spec.
- * \return A PendingOperation which will finish as soon as the tube is ready to be used
- *         (hence in the #TubeStateOpen state)
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the stream tube is ready to be used
+ *         (hence in the #TubeStateOpen state).
  * \sa StreamTubeChannel::supportsIPv4SocketsOnLocalhost(),
  *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
  *     StreamTubeChannel::supportsIPv6SocketsOnLocalhost(),
@@ -466,8 +468,9 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
  *                   For more details, please refer to \telepathy_spec.
  * \param requireCredentials Whether the server should require a SCM_CRED or SCM_CREDENTIALS message
  *                           upon connection.
- * \return A PendingOperation which will finish as soon as the tube is ready to be used
- *         (hence in the #TubeStateOpen state)
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the stream tube is ready to be used
+ *         (hence in the #TubeStateOpen state).
  * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost(),
  *     StreamTubeChannel::supportsUnixSocketsWithCredentials(),
  *     StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost(),
@@ -577,8 +580,9 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
  *                   For more details, please refer to \telepathy_spec.
  * \param requireCredentials Whether the server should require a SCM_CRED or SCM_CREDENTIALS message
  *                           upon connection.
- * \return A PendingOperation which will finish as soon as the tube is ready to be used
- *         (hence in the #TubeStateOpen state)
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the stream tube is ready to be used
+ *         (hence in the #TubeStateOpen state).
  * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost(),
  *     StreamTubeChannel::supportsUnixSocketsWithCredentials(),
  *     StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost(),
@@ -607,7 +611,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
  *
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
  *
- * \return A map from source addresses to the corresponding connection ids.
+ * \return The map from source addresses as QHostAddress to the corresponding connection ids.
  * \sa contactsForConnections(), connectionsForCredentials(),
  *     TubeChannel::addressType(),
  *     StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress(),
@@ -648,7 +652,7 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
  *
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
  *
- * \return A map from credential bytes to the corresponding connection ids.
+ * \return The map from credential bytes to the corresponding connection ids.
  * \sa contactsForConnections(), connectionsForSourceAddresses(),
  *     TubeChannel::addressType(),
  *     supportsUnixSocketsWithCredentials(),
@@ -690,7 +694,7 @@ QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
  *
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
 
- * \return A map from connection ids to the associated contact.
+ * \return The map from connection ids to pointer to Contact objects.
  * \sa connectionsForSourceAddresses(), connectionsForCredentials(),
  *     StreamTubeChannel::addressType()
  */

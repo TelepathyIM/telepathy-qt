@@ -160,7 +160,7 @@ ContactMessenger::~ContactMessenger()
 /**
  * Return the account this messenger is communicating with.
  *
- * \return The account this messenger is communicating with.
+ * \return A pointer to the Account object.
  */
 AccountPtr ContactMessenger::account() const
 {
@@ -170,7 +170,7 @@ AccountPtr ContactMessenger::account() const
 /**
  * Return the identifier of the contact this messenger is communicating with.
  *
- * \return The identifier of the contact this messenger is communicating with.
+ * \return The identifier of the contact.
  */
 QString ContactMessenger::contactIdentifier() const
 {
@@ -180,7 +180,7 @@ QString ContactMessenger::contactIdentifier() const
 /**
  * Return the list of text chats currently being observed.
  *
- * \return The list of text chats currently being observed.
+ * \return A list of pointers to TextChannel objects.
  */
 QList<TextChannelPtr> ContactMessenger::textChats() const
 {

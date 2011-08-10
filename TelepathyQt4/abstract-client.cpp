@@ -292,7 +292,7 @@ AbstractClientObserver::~AbstractClientObserver()
  * The same principle is applied to approvers and handlers.
  *
  * \return A specification of the channels that this channel observer is
- *         interested.
+ *         interested as a list of ChannelClassSpec objects.
  * \sa observeChannels()
  */
 ChannelClassSpecList AbstractClientObserver::observerFilter() const
@@ -509,7 +509,7 @@ AbstractClientApprover::~AbstractClientApprover()
  * ApproverChannelFilter instead.
  *
  * \return A specification of the channels that this channel approver is
- *         interested.
+ *         interested as a list of ChannelClassSpec objects.
  * \sa addDispatchOperation()
  */
 ChannelClassSpecList AbstractClientApprover::approverFilter() const
@@ -802,7 +802,7 @@ AbstractClientHandler::~AbstractClientHandler()
  * by HandlerChannelFilter instead.
  *
  * \return A specification of the channels that this channel handler can deal
- *         with.
+ *         with as a list of ChannelClassSpec objects.
  */
 ChannelClassSpecList AbstractClientHandler::handlerFilter() const
 {
@@ -812,7 +812,7 @@ ChannelClassSpecList AbstractClientHandler::handlerFilter() const
 /**
  * Return the set of additional capabilities supported by this handler.
  *
- * \return The set of additional capabilities supported by this handler.
+ * \return The capabilities as an AbstractClientHandler::Capabilities object.
  */
 AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities() const
 {
@@ -825,7 +825,7 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  * Return whether channels destined for this handler are automatically
  * handled, without invoking approvers.
  *
- * \return Whether channels destined for this handler are automatically handled.
+ * \return \c true if automatically handled, \c false otherwise.
  */
 
 /**
@@ -886,7 +886,8 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  *
  * This property is set by the constructor and cannot be changed after that.
  *
- * \return Whether this handler wants to receive channel requests notification.
+ * \return \c true if receiving channel requests notification is desired,
+ *         \c false otherwise.
  */
 bool AbstractClientHandler::wantsRequestNotification() const
 {

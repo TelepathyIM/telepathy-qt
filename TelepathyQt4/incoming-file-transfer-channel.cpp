@@ -97,14 +97,14 @@ IncomingFileTransferChannel::Private::~Private()
 const Feature IncomingFileTransferChannel::FeatureCore = Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0);
 
 /**
- * Create a new InconmingFileTransferChannel object.
+ * Create a new IncomingFileTransferChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
- * \return A StreamedMediaChannelPtr object pointing to the newly created
- *         StreamedMediaChannel object.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \return A IncomingFileTransferChannelPtr object pointing to the newly created
+ *         IncomingFileTransfer object.
  */
 IncomingFileTransferChannelPtr IncomingFileTransferChannel::create(
         const ConnectionPtr &connection, const QString &objectPath,

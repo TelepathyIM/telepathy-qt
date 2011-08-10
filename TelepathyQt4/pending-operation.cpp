@@ -186,7 +186,7 @@ void PendingOperation::setFinishedWithError(const QDBusError &error)
 }
 
 /**
- * Returns whether or not the request completed successfully. If the
+ * Return whether or not the request completed successfully. If the
  * request has not yet finished processing (isFinished() returns
  * <code>false</code>), this cannot yet be known, and <code>false</code>
  * will be returned.
@@ -202,7 +202,7 @@ bool PendingOperation::isValid() const
 }
 
 /**
- * Returns whether or not the request has finished processing. #finished()
+ * Return whether or not the request has finished processing. #finished()
  * is emitted when this changes from <code>false</code> to
  * <code>true</code>.
  *
@@ -218,7 +218,7 @@ bool PendingOperation::isFinished() const
 }
 
 /**
- * Returns whether or not the request resulted in an error. If the
+ * Return whether or not the request resulted in an error. If the
  * request has not yet finished processing (isFinished() returns
  * <code>false</code>), this cannot yet be known, and <code>false</code>
  * will be returned.

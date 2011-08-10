@@ -350,7 +350,7 @@ AccountSet::~AccountSet()
 /**
  * Return the account manager object used to filter accounts.
  *
- * \return The AccountManager object used to filter accounts.
+ * \return A pointer to the AccountManager object.
  */
 AccountManagerPtr AccountSet::accountManager() const
 {
@@ -360,7 +360,7 @@ AccountManagerPtr AccountSet::accountManager() const
 /**
  * Return the filter used to filter accounts.
  *
- * \return The filter used to filter accounts.
+ * \return A read-only pointer the AccountFilter object.
  */
 AccountFilterConstPtr AccountSet::filter() const
 {
@@ -370,7 +370,8 @@ AccountFilterConstPtr AccountSet::filter() const
 /**
  * Return a list of account objects that match filter.
  *
- * \return A list of account objects that match filter.
+ * \return A list of pointers to Account objects.
+ * \sa accountAdded(), accountRemoved()
  */
 QList<AccountPtr> AccountSet::accounts() const
 {

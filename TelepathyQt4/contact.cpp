@@ -171,7 +171,7 @@ Contact::InfoFields &Contact::InfoFields::operator=(const Contact::InfoFields &o
  * Return a list containing all fields whose name are \a name.
  *
  * \param name The name used to match the fields.
- * \return A list of fields.
+ * \return A list of ContactInfoField objects.
  */
 ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
 {
@@ -191,7 +191,7 @@ ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
 /**
  * Return a list containing all fields describing the contact information.
  *
- * \return A list of fields.
+ * \return The contact information as a list of ContactInfoField objects.
  */
 ContactInfoFieldList Contact::InfoFields::allFields() const
 {
@@ -332,7 +332,7 @@ Contact::~Contact()
 /**
  * Return the contact nanager owning this contact.
  *
- * \return The contact manager owning this contact.
+ * \return A pointer to the ContactManager object.
  */
 ContactManagerPtr Contact::manager() const
 {
@@ -342,7 +342,7 @@ ContactManagerPtr Contact::manager() const
 /**
  * Return the handle of this contact.
  *
- * \return The contact handle.
+ * \return The handle as a ReferencedHandles object.
  */
 ReferencedHandles Contact::handle() const
 {
@@ -352,7 +352,7 @@ ReferencedHandles Contact::handle() const
 /**
  * Return the identifier of this contact.
  *
- * \return The contact identifier.
+ * \return The identifier.
  */
 QString Contact::id() const
 {
@@ -362,7 +362,7 @@ QString Contact::id() const
 /**
  * Return the features requested on this contact.
  *
- * \return The contact requested features.
+ * \return The requested features as a set of Feature objects.
  */
 Features Contact::requestedFeatures() const
 {
@@ -372,7 +372,7 @@ Features Contact::requestedFeatures() const
 /**
  * Return the features that are actually enabled on this contact.
  *
- * \return The contact requested enabled.
+ * \return The actual features as a set of Feature objects.
  */
 Features Contact::actualFeatures() const
 {
@@ -386,7 +386,7 @@ Features Contact::actualFeatures() const
  *
  * This method requires Contact::FeatureAlias to be enabled.
  *
- * \return The contact alias.
+ * \return The alias.
  */
 QString Contact::alias() const
 {
@@ -404,7 +404,7 @@ QString Contact::alias() const
  *
  * This method requires Contact::FeatureAvatarToken to be enabled.
  *
- * \return Whether the avatar token of this contact is known.
+ * \return \c true if the avatar token is known, \c false otherwise.
  * \sa avatarToken()
  */
 bool Contact::isAvatarTokenKnown() const
@@ -425,7 +425,7 @@ bool Contact::isAvatarTokenKnown() const
  *
  * This method requires Contact::FeatureAvatarToken to be enabled.
  *
- * \return The contact avatar token.
+ * \return The avatar token.
  * \sa isAvatarTokenKnown(), avatarTokenChanged(), avatarData()
  */
 QString Contact::avatarToken() const
@@ -450,7 +450,7 @@ QString Contact::avatarToken() const
  *
  * This method requires Contact::FeatureAvatarData to be enabled.
  *
- * \return The contact avatar.
+ * \return The avatar as an AvatarData object.
  * \sa avatarDataChanged(), avatarToken()
  */
 AvatarData Contact::avatarData() const
@@ -497,7 +497,7 @@ void Contact::requestAvatarData()
  *
  * This method requires Contact::FeatureSimplePresence to be enabled.
  *
- * \return The actual presence of this contact.
+ * \return The presence as a Presence object.
  */
 Presence Contact::presence() const
 {
@@ -546,8 +546,7 @@ ContactCapabilities Contact::capabilities() const
  *
  * This method requires Contact::FeatureLocation to be enabled.
  *
- * @return An object representing the contact location which will return \c false for
- *         LocationInfo::isValid() if FeatureLocation is not ready.
+ * \return The contact location as a LocationInfo object.
  */
 LocationInfo Contact::location() const
 {
@@ -570,7 +569,7 @@ LocationInfo Contact::location() const
  *
  * This method requires Contacat::FeatureInfo to be enabled.
  *
- * \return true if the information is known; false otherwise.
+ * \return \c true if the information is known; \c false otherwise.
  */
 bool Contact::isContactInfoKnown() const
 {
@@ -593,7 +592,7 @@ bool Contact::isContactInfoKnown() const
  *
  * This method requires Contact::FeatureInfo to be enabled.
  *
- * \return An object representing the contact information.
+ * \return The contact info as a Contact::InfoFields object.
  */
 Contact::InfoFields Contact::infoFields() const
 {
@@ -663,7 +662,7 @@ PendingContactInfo *Contact::requestInfo()
 /**
  * Return whether the presence subscription state of this contact is known.
  *
- * \return Whether the presence subscription state of this contact is known.
+ * \return \c true if the presence subscription state is known, \c false otherwise.
  * \sa subscriptionState(), isSubscriptionRejected()
  */
 bool Contact::isSubscriptionStateKnown() const
@@ -674,7 +673,7 @@ bool Contact::isSubscriptionStateKnown() const
 /**
  * Return whether a request to see this contact's presence was denied.
  *
- * \return Whether a request to see this contact's presence was denied.
+ * \return \c if the a request to see the presence subscription was denied, \c false otherwise.
  * \sa isSubscriptionStateKnown(), subscriptionState()
  */
 bool Contact::isSubscriptionRejected() const
@@ -686,7 +685,7 @@ bool Contact::isSubscriptionRejected() const
  * Return the presence subscription state of this contact (i.e. whether the local user can retrieve
  * information about this contact's presence).
  *
- * \return The presence subscription state of this contact.
+ * \return The presence subscription state as Contact::PresenceState.
  * \sa isSubscriptionStateKnown(), isSubscriptionRejected()
  */
 Contact::PresenceState Contact::subscriptionState() const
@@ -697,7 +696,7 @@ Contact::PresenceState Contact::subscriptionState() const
 /**
  * Return whether the presence publish state of this contact is known.
  *
- * \return Whether the presence publish state of this contact is known.
+ * \return \c true if the presence publish state is known, \c false otherwise.
  * \sa publishState(), isPublishCancelled()
  */
 bool Contact::isPublishStateKnown() const
@@ -708,7 +707,8 @@ bool Contact::isPublishStateKnown() const
 /**
  * Return whether a request to publish presence information to this contact was cancelled.
  *
- * \return Whether a request to publish presence information to this contact was cancelled.
+ * \return \c true if a request to publish presence information was cancelled,
+ *         \c false otherwise.
  * \sa isPublishStateKnown(), publishState()
  */
 bool Contact::isPublishCancelled() const
@@ -720,7 +720,7 @@ bool Contact::isPublishCancelled() const
  * Return the presence publish state of this contact (i.e. whether this contact can retrieve
  * information about the local user's presence).
  *
- * \return The presence publish state of this contact.
+ * \return The presence publish state as Contact::PresenceState.
  * \sa isSubscriptionStateKnown(), isSubscriptionRejected()
  */
 Contact::PresenceState Contact::publishState() const
@@ -799,7 +799,7 @@ PendingOperation *Contact::removePresencePublication(const QString &message)
  *
  * Change notification is via the blockStatusChanged() signal.
  *
- * \return Whether this contact is blocked.
+ * \return \c true if blocked, \c false otherwise.
  * \sa block()
  */
 bool Contact::isBlocked() const
@@ -828,7 +828,7 @@ PendingOperation *Contact::block(bool value)
  *
  * This method requires Connection::FeatureRosterGroups to be enabled.
  *
- * \return List of user-defined contact list groups names for a given contact.
+ * \return A list of user-defined contact list groups names.
  * \sa addToGroup(), removedFromGroup()
  */
 QStringList Contact::groups() const
@@ -842,9 +842,10 @@ QStringList Contact::groups() const
  *
  * This method requires Connection::FeatureRosterGroups to be enabled.
  *
- * \param group Group name.
- * \return A PendingOperation which will return when an attempt has been made
- *         to add the contact to the user-defined contact list group.
+ * \param group The group name.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to to add the contact to the user-defined contact
+ *         list group.
  * \sa groups(), removeFromGroup()
  */
 PendingOperation *Contact::addToGroup(const QString &group)
@@ -859,9 +860,10 @@ PendingOperation *Contact::addToGroup(const QString &group)
  *
  * This method requires Connection::FeatureRosterGroups to be enabled.
  *
- * \param group Group name.
- * \return A PendingOperation which will return when an attempt has been made
- *         to remove the contact from the user-defined contact list group.
+ * \param group The group name.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to to remote the contact to the user-defined contact
+ *         list group.
  * \sa groups(), addToGroup()
  */
 PendingOperation *Contact::removeFromGroup(const QString &group)

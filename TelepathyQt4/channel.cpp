@@ -1298,7 +1298,7 @@ Channel::GroupMemberChangeDetails &Channel::GroupMemberChangeDetails::operator=(
  *
  * Return whether the details are valid (have actually been received from the service).
  *
- * \return Validity of the details.
+ * \return \c true if valid, \c false otherwise.
  */
 
 /**
@@ -1306,7 +1306,7 @@ Channel::GroupMemberChangeDetails &Channel::GroupMemberChangeDetails::operator=(
  *
  * If present, actor() will return the contact object representing the person who made the change.
  *
- * \return Whether the actor is known.
+ * \return \c true if the actor is known, \c false otherwise.
  * \sa actor()
  */
 bool Channel::GroupMemberChangeDetails::hasActor() const
@@ -1317,7 +1317,7 @@ bool Channel::GroupMemberChangeDetails::hasActor() const
 /**
  * Return the contact object representing the person who made the change (actor), if known.
  *
- * \return The actor contact, or a null contact object if the actor is unknown.
+ * \return A pointer to the Contact object, or a null ContactPtr if the actor is unknown.
  * \sa hasActor()
  */
 ContactPtr Channel::GroupMemberChangeDetails::actor() const
@@ -1330,7 +1330,7 @@ ContactPtr Channel::GroupMemberChangeDetails::actor() const
  *
  * Return whether the details specify the reason for the change.
  *
- * \return Whether the reason for the change is known.
+ * \return \c true if the reason is known, \c false otherwise.
  * \sa reason()
  */
 
@@ -1339,7 +1339,8 @@ ContactPtr Channel::GroupMemberChangeDetails::actor() const
  *
  * Return the reason for the change, if known.
  *
- * \return The reason for the change, or ChannelGroupChangeReasonNone if the reason is unknown.
+ * \return The change reason as #ChannelGroupChangeReason, or #ChannelGroupChangeReasonNone
+ *         if the reason is unknown.
  * \sa hasReason()
  */
 
@@ -1349,7 +1350,7 @@ ContactPtr Channel::GroupMemberChangeDetails::actor() const
  * Return whether the details specify a human-readable message from the contact represented by
  * actor() pertaining to the change.
  *
- * \return Whether the message is known.
+ * \return \c true if the message is known, \c false otherwise.
  * \sa message()
  */
 
@@ -1359,8 +1360,7 @@ ContactPtr Channel::GroupMemberChangeDetails::actor() const
  * Return a human-readable message from the contact represented by actor() pertaining to the change,
  * if known.
  *
- * \return A message from the contact represented by actor() regarding the change,
- *         or an empty string if the message is unknown.
+ * \return The message, or an empty string if the message is unknown.
  * \sa hasMessage()
  */
 
@@ -1369,7 +1369,7 @@ ContactPtr Channel::GroupMemberChangeDetails::actor() const
  *
  * Return whether the details specify a D-Bus error describing the change.
  *
- * \return Whether a D-Bus error describing the change is known.
+ * \return \c true if the error is known, \c false otherwise.
  * \sa error()
  */
 
@@ -1390,7 +1390,7 @@ ContactPtr Channel::GroupMemberChangeDetails::actor() const
  *
  * Return whether the details specify a debug message.
  *
- * \return Whether a debug message is provided.
+ * \return \c true if debug message is present, \c false otherwise.
  * \sa debugMessage()
  */
 
@@ -1411,7 +1411,7 @@ ContactPtr Channel::GroupMemberChangeDetails::actor() const
  *
  * This is useful for accessing domain-specific additional details.
  *
- * \return A map containing all details of the group members change.
+ * \return The details of the group members change as QVariantMap.
  */
 QVariantMap Channel::GroupMemberChangeDetails::allDetails() const
 {
@@ -1594,7 +1594,7 @@ Channel::~Channel()
 /**
  * Return the connection owning this channel.
  *
- * \return The connection owning this channel.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr Channel::connection() const
 {
@@ -1616,8 +1616,7 @@ ConnectionPtr Channel::connection() const
  * These are the properties that cannot change over the lifetime of the
  * channel; they're announced in the result of the request, for efficiency.
  *
- * \return A map in which the keys are D-Bus property names and the values
- *         are the corresponding values.
+ * \return The immutable properties as QVariantMap.
  */
 QVariantMap Channel::immutableProperties() const
 {
@@ -1673,7 +1672,7 @@ QVariantMap Channel::immutableProperties() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return D-Bus interface name for the type of this channel.
+ * \return The D-Bus interface name for the type of the channel.
  */
 QString Channel::channelType() const
 {
@@ -1696,7 +1695,7 @@ QString Channel::channelType() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return The type of the handle returned by targetHandle().
+ * \return The target handle type as #HandleType.
  * \sa targetHandle(), targetId()
  */
 HandleType Channel::targetHandleType() const
@@ -1714,7 +1713,8 @@ HandleType Channel::targetHandleType() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return The handle, which is of the type targetHandleType() indicates.
+ * \return A integer representing the target handle, which is of the type
+ *         targetHandleType() indicates.
  * \sa targetHandleType(), targetId()
  */
 uint Channel::targetHandle() const
@@ -1739,7 +1739,7 @@ uint Channel::targetHandle() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return The identifier of the remote party with which this channel communicates.
+ * \return The target identifier.
  * \sa targetHandle(), targetContact()
  */
 QString Channel::targetId() const
@@ -1754,12 +1754,10 @@ QString Channel::targetId() const
 /**
  * Return the contact with which this channel communicates for its lifetime, if applicable.
  *
- * If targetHandleType() is not HandleTypeContact, this channel isn't permanently associated with a
- * single contact, and hence this method will return a null contact pointer.
- *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return Pointer to the target contact.
+ * \return A pointer to the Contact object, or a null ContactPtr if targetHandleType() is not
+ *         #HandleTypeContact.
  * \sa targetHandle(), targetId()
  */
 ContactPtr Channel::targetContact() const
@@ -1779,7 +1777,7 @@ ContactPtr Channel::targetContact() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return \c true if this channel was created in response to a local request,
+ * \return \c true if the channel was created in response to a local request,
  *         \c false otherwise.
  */
 bool Channel::isRequested() const
@@ -1796,8 +1794,8 @@ bool Channel::isRequested() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return The contact who initiated this channel,
- *         or a null contact pointer if it can't be retrieved.
+ * \return A pointer to the Contact object representing the contact who initiated the channel,
+ *         or a null ContactPtr if it can't be retrieved.
  */
 ContactPtr Channel::initiatorContact() const
 {
@@ -1815,7 +1813,7 @@ ContactPtr Channel::initiatorContact() const
  * of this request; under normal circumstances, it can be expected to
  * succeed.
  *
- * \return A PendingOperation, which will emit PendingOperation::finished
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa requestLeave()
  */
@@ -1959,7 +1957,7 @@ void Channel::PendingLeave::onCloseFinished(Tp::PendingOperation *op)
  *
  * \param message The message, which can be blank if desired.
  * \param reason A reason for leaving.
- * \return A PendingOperation, which will emit PendingOperation::finished
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
 PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChangeReason reason)
@@ -2025,7 +2023,7 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return Bitfield combination of flags, as defined in #ChannelGroupFlags.
+ * \return The bitfield combination of flags as #ChannelGroupFlags.
  * \sa groupFlagsChanged()
  */
 ChannelGroupFlags Channel::groupFlags() const
@@ -2044,7 +2042,7 @@ ChannelGroupFlags Channel::groupFlags() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return \c true if contacts can be added or invited to this channel,
+ * \return \c true if contacts can be added or invited to the channel,
  *         \c false otherwise.
  * \sa groupFlags(), groupAddContacts()
  */
@@ -2359,7 +2357,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return List of contacts of the group.
+ * \return A set of pointers to the Contact objects.
  * \sa groupLocalPendingContacts(), groupRemotePendingContacts()
  */
 Contacts Channel::groupContacts() const
@@ -2379,8 +2377,7 @@ Contacts Channel::groupContacts() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return List of contacts currently waiting for local approval to join the
- *         group.
+ * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupRemotePendingContacts()
  */
 Contacts Channel::groupLocalPendingContacts() const
@@ -2402,8 +2399,7 @@ Contacts Channel::groupLocalPendingContacts() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return List of contacts currently waiting for remote approval to join the
- *         group.
+ * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupLocalPendingContacts()
  */
 Contacts Channel::groupRemotePendingContacts() const
@@ -2426,7 +2422,7 @@ Contacts Channel::groupRemotePendingContacts() const
  * This method requires Channel::FeatureCore to be enabled.
  *
  * \param contact A Contact object that is on the local pending contacts list.
- * \return The change info in a GroupMemberChangeDetails object.
+ * \return The change info as a GroupMemberChangeDetails object.
  */
 Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
         const ContactPtr &contact) const
@@ -2460,7 +2456,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return The remove info in a GroupMemberChangeDetails object.
+ * \return The remove info as a GroupMemberChangeDetails object.
  */
 Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
 {
@@ -2497,7 +2493,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return If handle owner lookup functionality is available.
+ * \return \c true if handle owner lookup functionality is available, \c false otherwise.
  */
 bool Channel::groupAreHandleOwnersAvailable() const
 {
@@ -2555,7 +2551,7 @@ HandleOwnerMap Channel::groupHandleOwners() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return Whether or not changes to the self contact are tracked.
+ * \return \c true if changes to the self contact are tracked, \c false otherwise.
  */
 bool Channel::groupIsSelfContactTracked() const
 {
@@ -2577,7 +2573,7 @@ bool Channel::groupIsSelfContactTracked() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return A contact object representing the user.
+ * \return A pointer to the Contact object.
  */
 ContactPtr Channel::groupSelfContact() const
 {
@@ -2595,7 +2591,7 @@ ContactPtr Channel::groupSelfContact() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return Whether the local user is in this channel's local-pending set.
+ * \return \c true if local user is in the channel's local-pending set, \c false otherwise.
  */
 bool Channel::groupSelfHandleIsLocalPending() const
 {
@@ -2615,7 +2611,8 @@ bool Channel::groupSelfHandleIsLocalPending() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return A pending operation which will emit finished on success or failure
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
  */
 PendingOperation *Channel::groupAddSelfHandle()
 {
@@ -2660,7 +2657,7 @@ bool Channel::isConference() const
  *
  * This method requires Channel::FeatureConferenceInitialInviteeContacts to be enabled.
  *
- * \return A list of contacts.
+ * \return A set of pointers to the Contact objects.
  */
 Contacts Channel::conferenceInitialInviteeContacts() const
 {
@@ -2678,7 +2675,7 @@ Contacts Channel::conferenceInitialInviteeContacts() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return A List of individual channels that are part of this conference.
+ * \return A list of pointers to Channel objects containing all channels in the conference.
  * \sa conferenceInitialChannels(), conferenceOriginalChannels()
  */
 QList<ChannelPtr> Channel::conferenceChannels() const
@@ -2694,8 +2691,8 @@ QList<ChannelPtr> Channel::conferenceChannels() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return A list of individual channels that were initially part of this
- *         conference.
+ * \return A list of pointers to Channel objects containing all channels that were initially
+ *         part of the conference.
  * \sa conferenceChannels(), conferenceOriginalChannels()
  */
 QList<ChannelPtr> Channel::conferenceInitialChannels() const
@@ -2741,7 +2738,7 @@ QList<ChannelPtr> Channel::conferenceInitialChannels() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return A map of channel specific handles to channels.
+ * \return A map of channel specific handles to pointers to Channel objects.
  * \sa conferenceChannels(), conferenceInitialChannels()
  */
 QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const

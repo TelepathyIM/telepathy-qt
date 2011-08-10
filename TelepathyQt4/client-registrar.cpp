@@ -662,7 +662,7 @@ struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
  * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
  *
  * \param bus QDBusConnection to use.
- * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ * \return A ClientRegistrarPtr object pointing to the newly created ClientRegistrar object.
  */
 ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
 {
@@ -677,7 +677,7 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
- * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ * \return A ClientRegistrarPtr object pointing to the newly created ClientRegistrar object.
  */
 ClientRegistrarPtr ClientRegistrar::create(
             const AccountFactoryConstPtr &accountFactory,
@@ -697,7 +697,7 @@ ClientRegistrarPtr ClientRegistrar::create(
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
- * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ * \return A ClientRegistrarPtr object pointing to the newly created ClientRegistrar object.
  */
 ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
             const AccountFactoryConstPtr &accountFactory,
@@ -717,7 +717,7 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
  * AccountManager and AbstractClient implementations.
  *
  * \param manager The AccountManager the bus and factories of which should be used.
- * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ * \return A ClientRegistrarPtr object pointing to the newly ClientRegistrar object.
  */
 ClientRegistrarPtr ClientRegistrar::create(const AccountManagerPtr &manager)
 {
@@ -760,7 +760,7 @@ ClientRegistrar::~ClientRegistrar()
 /**
  * Return the D-Bus connection being used by this client registrar.
  *
- * \return QDBusConnection being used.
+ * \return A QDBusConnection object.
  */
 QDBusConnection ClientRegistrar::dbusConnection() const
 {
@@ -775,7 +775,7 @@ QDBusConnection ClientRegistrar::dbusConnection() const
  * situations where objects constructed at different times by the registrar would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the AccountFactory object.
  */
 AccountFactoryConstPtr ClientRegistrar::accountFactory() const
 {
@@ -790,7 +790,7 @@ AccountFactoryConstPtr ClientRegistrar::accountFactory() const
  * situations where objects constructed at different times by the registrar would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the ConnectionFactory object.
  */
 ConnectionFactoryConstPtr ClientRegistrar::connectionFactory() const
 {
@@ -805,7 +805,7 @@ ConnectionFactoryConstPtr ClientRegistrar::connectionFactory() const
  * situations where objects constructed at different times by the registrar would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the ChannelFactory object.
  */
 ChannelFactoryConstPtr ClientRegistrar::channelFactory() const
 {
@@ -820,7 +820,7 @@ ChannelFactoryConstPtr ClientRegistrar::channelFactory() const
  * situations where objects constructed at different times by the registrar would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the factory.
+ * \return A read-only pointer to the ContactFactory object.
  */
 ContactFactoryConstPtr ClientRegistrar::contactFactory() const
 {
@@ -828,11 +828,11 @@ ContactFactoryConstPtr ClientRegistrar::contactFactory() const
 }
 
 /**
- * Return a list of clients registered using registerClient() on this client
+ * Return the list of clients registered using registerClient() on this client
  * registrar.
  *
- * \return A list of registered clients.
- * \sa registerClient()
+ * \return A list of pointers to AbstractClient objects.
+ * \sa registerClient(), unregisterClient()
  */
 QList<AbstractClientPtr> ClientRegistrar::registeredClients() const
 {
@@ -861,7 +861,7 @@ QList<AbstractClientPtr> ClientRegistrar::registeredClients() const
  * \param clientName The client name used to register.
  * \param unique Whether each of a client instance is able to manipulate
  *               channels separately.
- * \return \c true if client was successfully registered, \c false otherwise.
+ * \return \c true if \a client was successfully registered, \c false otherwise.
  * \sa registeredClients(), unregisterClient()
  */
 bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
@@ -972,7 +972,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
  * If \a client was not registered previously, \c false will be returned.
  *
  * \param client The client to unregister.
- * \return \c true if client was successfully unregistered, \c false otherwise.
+ * \return \c true if \a client was successfully unregistered, \c false otherwise.
  * \sa registeredClients(), registerClient()
  */
 bool ClientRegistrar::unregisterClient(const AbstractClientPtr &client)

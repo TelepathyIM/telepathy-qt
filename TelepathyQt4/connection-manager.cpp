@@ -742,7 +742,7 @@ QString ConnectionManager::name() const
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the connection factory.
+ * \return A read-only pointer to the ConnectionFactory object.
  */
 ConnectionFactoryConstPtr ConnectionManager::connectionFactory() const
 {
@@ -757,7 +757,7 @@ ConnectionFactoryConstPtr ConnectionManager::connectionFactory() const
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the channel factory.
+ * \return A read-only pointer to the ChannelFactory object.
  */
 ChannelFactoryConstPtr ConnectionManager::channelFactory() const
 {
@@ -772,7 +772,7 @@ ChannelFactoryConstPtr ConnectionManager::channelFactory() const
  * situations where objects constructed at different times by the manager would have unpredictably
  * different construction settings (eg. subclass).
  *
- * \return Read-only pointer to the contact factory.
+ * \return A read-only pointer to the ContactFactory object.
  */
 ContactFactoryConstPtr ConnectionManager::contactFactory() const
 {

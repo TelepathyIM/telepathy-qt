@@ -108,7 +108,7 @@ ConnectionManagerPtr PendingConnection::manager() const
 }
 
 /**
- * Returns the newly created Connection object.
+ * Return the newly created Connection object.
  *
  * \return Connection object.
  */

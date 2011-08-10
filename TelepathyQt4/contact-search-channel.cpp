@@ -390,7 +390,8 @@ ContactSearchChannel::~ContactSearchChannel()
  *
  * Change notification is via searchStateChanged().
  *
- * \return The current search state of this channel.
+ * \return The current search state as #ChannelContactSearchState.
+ * \sa searchStateChanged()
  */
 ChannelContactSearchState ContactSearchChannel::searchState() const
 {
@@ -406,7 +407,8 @@ ChannelContactSearchState ContactSearchChannel::searchState() const
  *
  * This method requires ContactSearchChannel::FeatureCore to be enabled.
  *
- * \return The maximum number of results that should be returned by calling search().
+ * \return The maximum number of results, or 0 if there is no limit.
+ * \sa availableSearchKeys(), search()
  */
 uint ContactSearchChannel::limit() const
 {
@@ -422,7 +424,8 @@ uint ContactSearchChannel::limit() const
  *
  * This method requires ContactSearchChannel::FeatureCore to be enabled.
  *
- * \return The search keys supported by this channel.
+ * \return The supported search keys.
+ * \sa limit(), search()
  */
 QStringList ContactSearchChannel::availableSearchKeys() const
 {
@@ -458,8 +461,9 @@ QString ContactSearchChannel::server() const
  *
  * \param searchKey The search key.
  * \param searchTerm The search term.
- * \return A PendingOperation, which will emit PendingOperation::finished
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the search has started.
+ * \sa searchState(), searchStateChanged(), searchResultReceived()
  */
 PendingOperation *ContactSearchChannel::search(const QString &searchKey, const QString &searchTerm)
 {
@@ -479,8 +483,10 @@ PendingOperation *ContactSearchChannel::search(const QString &searchKey, const Q
  *
  * This method requires ContactSearchChannel::FeatureCore to be enabled.
  *
- * \return A PendingOperation, which will emit PendingOperation::finished
+ * \param terms The search terms.
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the search has started.
+ * \sa searchState(), searchStateChanged(), searchResultReceived()
  */
 PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
 {
@@ -531,8 +537,9 @@ void ContactSearchChannel::continueSearch()
  * searchStateChanged() will be emitted, with the state #ChannelContactSearchStateFailed and
  * the error #TP_QT4_ERROR_CANCELLED.
  *
- * \return A PendingOperation, which will emit PendingOperation::finished
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa searchState(), searchStateChanged()
  */
 void ContactSearchChannel::stopSearch()
 {

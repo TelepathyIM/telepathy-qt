@@ -494,7 +494,7 @@ SimpleObserver::~SimpleObserver()
 /**
  * Return the account used to listen to events.
  *
- * \return The account used to listen to events.
+ * \return A pointer to the Account object.
  */
 AccountPtr SimpleObserver::account() const
 {
@@ -504,7 +504,7 @@ AccountPtr SimpleObserver::account() const
 /**
  * Return a specification of the channels that this observer is interested.
  *
- * \return The specification of the channels that this channel observer is interested.
+ * \return The specification of the channels as a list of ChannelClassSpec objects.
  */
 ChannelClassSpecList SimpleObserver::channelFilter() const
 {
@@ -514,7 +514,7 @@ ChannelClassSpecList SimpleObserver::channelFilter() const
 /**
  * Return the extra channel features to be enabled based on the channels immutable properties.
  *
- * \return The extra channel features to be enabled based on the channels immutable properties.
+ * \return The features as a list of ChannelClassFeatures objects.
  */
 QList<ChannelClassFeatures> SimpleObserver::extraChannelFeatures() const
 {
@@ -524,7 +524,7 @@ QList<ChannelClassFeatures> SimpleObserver::extraChannelFeatures() const
 /**
  * Return the channels being observed.
  *
- * \return A list of channels being observed.
+ * \return A list of pointers to Channel objects.
  */
 QList<ChannelPtr> SimpleObserver::channels() const
 {
@@ -535,7 +535,7 @@ QList<ChannelPtr> SimpleObserver::channels() const
  * Return the identifier of the contact used to filter events, or an empty string if none was
  * provided at construction.
  *
- * \return The identifier of the contact used to filter events.
+ * \return The identifier of the contact.
  */
 QString SimpleObserver::contactIdentifier() const
 {

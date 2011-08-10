@@ -188,7 +188,7 @@ SimpleCallObserver::~SimpleCallObserver()
 /**
  * Return the account used to listen to events.
  *
- * \return The account used to listen to events.
+ * \return A pointer to the Account object.
  */
 AccountPtr SimpleCallObserver::account() const
 {
@@ -199,7 +199,7 @@ AccountPtr SimpleCallObserver::account() const
  * Return the identifier of the contact used to filter events, or an empty string if none was
  * provided at construction.
  *
- * \return The identifier of the contact used to filter events.
+ * \return The identifier of the contact.
  */
 QString SimpleCallObserver::contactIdentifier() const
 {
@@ -209,7 +209,7 @@ QString SimpleCallObserver::contactIdentifier() const
 /**
  * Return the direction of the calls used to filter events.
  *
- * \return The direction of the calls used to filter events.
+ * \return The direction of the calls as SimpleCallObserver::CallDirection.
  */
 SimpleCallObserver::CallDirection SimpleCallObserver::direction() const
 {
@@ -219,7 +219,7 @@ SimpleCallObserver::CallDirection SimpleCallObserver::direction() const
 /**
  * Return the list of streamed media calls currently being observed.
  *
- * \return The list of streamed media calls currently being observed.
+ * \return A list of pointers to StreamedMediaChannel objects.
  */
 QList<StreamedMediaChannelPtr> SimpleCallObserver::streamedMediaCalls() const
 {

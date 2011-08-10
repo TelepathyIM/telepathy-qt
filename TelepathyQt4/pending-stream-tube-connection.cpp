@@ -125,18 +125,10 @@ PendingStreamTubeConnection::~PendingStreamTubeConnection()
 }
 
 /**
- * This method returns the address type of the opened socket.
+ * Return the type of the opened stream tube socket.
  *
- * Calling this method when the operation has not been completed or has failed, will cause it
- * to return an unmeaningful value.
- *
- * \return The type of socket this PendingStreamTubeConnection has created
- *
- * \note This function will return a valid value only after the operation has been
- *       finished successfully.
- *
- * \see localAddress
- * \see tcpAddress
+ * \return The socket type as #SocketAddressType.
+ * \see localAddress(), ipAddress()
  */
 SocketAddressType PendingStreamTubeConnection::addressType() const
 {
@@ -144,21 +136,14 @@ SocketAddressType PendingStreamTubeConnection::addressType() const
 }
 
 /**
- * This method returns the local address of the opened socket.
+ * Return the local address of the opened stream tube socket.
  *
- * Calling this method when the operation has not been completed or has failed, will cause it
- * to return an unmeaningful value. The same will happen if the socket which has been opened has a
- * different type from SocketAddressTypeUnix or SocketAddressTypeAbstractUnix. Use #ipAddress if
- * that is the case.
+ * This method will return a meaningful value only if the incoming stream tube
+ * was accepted as an Unix socket.
  *
- * \return The local address obtained from this PendingStreamTubeConnection as a QString,
- *         if the connection has been estabilished through a SocketAddressTypeUnix or
- *         a SocketAddressTypeAbstractUnix.
- *
- * \note This function will return a valid value only after the operation has been
- *       finished successfully.
- *
- * \see addressType
+ * \return Unix socket address if using an Unix socket,
+ *         or an undefined value otherwise.
+ * \see addressType(), ipAddress()
  */
 QString PendingStreamTubeConnection::localAddress() const
 {
@@ -166,21 +151,14 @@ QString PendingStreamTubeConnection::localAddress() const
 }
 
 /**
- * This method returns the IP address of the opened socket.
+ * Return the IP address/port combination of the opened stream tube socket.
  *
- * Calling this method when the operation has not been completed or has failed, will cause it
- * to return an unmeaningful value. The same will happen if the socket which has been opened has a
- * different type from SocketAddressTypeIpv4 or SocketAddressTypeIPv6. Use #localAddress if
- * that is the case.
+ * This method will return a meaningful value only if the incoming stream tube
+ * was accepted as a TCP socket.
  *
- * \return The IP address and port obtained from this PendingStreamTubeConnection as a QHostAddress,
- *         if the connection has been estabilished through a SocketAddressTypeIpv4 or
- *         a SocketAddressTypeIPv6.
- *
- * \note This function will return a valid value only after the operation has been
- *       finished successfully.
- *
- * \see addressType
+ * \return Pair of IP address as QHostAddress and port if using a TCP socket,
+ *         or an undefined value otherwise.
+ * \see addressType(), localAddress()
  */
 QPair<QHostAddress, quint16> PendingStreamTubeConnection::ipAddress() const
 {

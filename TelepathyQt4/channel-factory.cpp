@@ -466,13 +466,13 @@ QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
 }
 
 /**
- * Returns features as configured for the channel class given by the Channel::immutableProperties()
+ * Return features as configured for the channel class given by the Channel::immutableProperties()
  * of \a proxy.
  *
  * \todo Make the features configurable - currently an empty set is always returned.
  *
  * \param proxy The Channel proxy to determine the features for.
- * \return The channel class-specific features.
+ * \return A list of Feature objects.
  */
 Features ChannelFactory::featuresFor(const DBusProxyPtr &proxy) const
 {
