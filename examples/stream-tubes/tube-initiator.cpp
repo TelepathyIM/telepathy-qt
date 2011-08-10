@@ -27,6 +27,7 @@
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/ContactCapabilities>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/OutgoingStreamTubeChannel>
 #include <TelepathyQt4/PendingChannelRequest>
@@ -44,7 +45,7 @@
 TubeInitiator::TubeInitiator(const QString &accountName, const QString &receiver, QObject *parent)
     : QObject(parent),
       mReceiver(receiver),
-      mTubeOffered(false)
+      mTubeRequested(false)
 {
     mServer = new QTcpServer(this);
     connect(mServer, SIGNAL(newConnection()), this, SLOT(onTcpServerNewConnection()));
@@ -128,7 +129,7 @@ void TubeInitiator::onAccountConnectionChanged(const ConnectionPtr &conn)
 
     qDebug() << "Creating contact object for receiver" << mReceiver;
     connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << mReceiver,
-                Features(Contact::FeatureSimplePresence)),
+                Features(Contact::FeatureCapabilities)),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onContactRetrieved(Tp::PendingOperation *)));
 }
@@ -145,121 +146,45 @@ void TubeInitiator::onContactRetrieved(PendingOperation *op)
     Q_ASSERT(pc->contacts().size() == 1);
     mContact = pc->contacts().first();
 
-    qDebug() << "Checking contact presence...";
-    connect(mContact.data(),
-            SIGNAL(presenceChanged(Tp::Presence)),
-            SLOT(onContactPresenceChanged()));
+    qDebug() << "Checking contact capabilities...";
+        connect(mContact.data(),
+                SIGNAL(capabilitiesChanged(Tp::ContactCapabilities)),
+                SLOT(onContactCapabilitiesChanged()));
 
-    if (mContact->presence().type() != ConnectionPresenceTypeUnset &&
-        mContact->presence().type() != ConnectionPresenceTypeOffline &&
-        mContact->presence().type() != ConnectionPresenceTypeUnknown &&
-        mContact->presence().type() != ConnectionPresenceTypeError) {
-        onContactPresenceChanged();
+    if (mContact->capabilities().streamTubes(QLatin1String("tp-qt4-stube-example"))) {
+        onContactCapabilitiesChanged();
     } else {
-        qDebug() << "The remote contact needs to become online to continue";
+        qDebug() << "The remote contact needs to be online and have the receiver application running to continue";
     }
 }
 
-void TubeInitiator::onContactPresenceChanged()
+void TubeInitiator::onContactCapabilitiesChanged()
 {
-    if (mTubeOffered) {
+    if (mTubeRequested) {
         return;
     }
 
-    qDebug() << mContact->presence().type();
-    qDebug() << mContact->presence().status();
+    if (mContact->capabilities().streamTubes(QLatin1String("tp-qt4-stube-example"))) {
+        qDebug() << "The remote contact is capable of receiving tubes with service tp-qt4-stube-example now";
 
-    if (mContact->presence().type() != ConnectionPresenceTypeUnset &&
-        mContact->presence().type() != ConnectionPresenceTypeOffline &&
-        mContact->presence().type() != ConnectionPresenceTypeUnknown &&
-        mContact->presence().type() != ConnectionPresenceTypeError) {
-        qDebug() << "Contact online!";
-
-        // FIXME this is a workaround as we don't support contact capabilities yet
-        sleep(5);
-        createStreamTubeChannel();
-
-        /*
-        connect(mConn->capabilitiesInterface(),
-                SIGNAL(CapabilitiesChanged(const Tp::CapabilityChangeList &)),
-                SLOT(onCapabilitiesChanged(const Tp::CapabilityChangeList &)));
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(
-                    mConn->capabilitiesInterface()->GetCapabilities(
-                        UIntList() << mContact->handle()[0]),
-                    mConn.data());
-        connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(gotContactCapabilities(QDBusPendingCallWatcher *)));
-        */
+        mTubeRequested = true;
+        connect(mAccount->createStreamTube(
+                    mContact->id(),
+                    QLatin1String("tp-qt4-stube-example")),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onTubeRequestFinished(Tp::PendingOperation*)));
     }
 }
 
-/*
-void TubeInitiator::onCapabilitiesChanged(const CapabilityChangeList &caps)
-{
-    if (mTransferStarted) {
-        return;
-    }
-
-    qDebug() << "Capabilities changed";
-    foreach (const CapabilityChange &cap, caps) {
-        qDebug() << "Checking cap channel type" << cap.channelType;
-        if (cap.handle == mContact->handle()[0] &&
-            cap.channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {
-            qDebug() << "Contact supports file transfer!";
-            createFileTransferChannel();
-            break;
-        }
-    }
-}
-
-void TubeInitiator::gotContactCapabilities(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<ContactCapabilityList> reply = *watcher;
-
-    if (reply.isError()) {
-        qWarning() << "Unable to get contact capabilities, trying "
-            "anyway -" << reply.error().name() << ":" <<
-            reply.error().message();
-        createFileTransferChannel();
-    } else {
-        ContactCapabilityList caps = reply.value();
-        qDebug() << "Got contact capabilities";
-        foreach (const ContactCapability &cap, caps) {
-            // no need to check the handle, as we only requested the caps for
-            // one contact
-            qDebug() << "Checking cap channel type" << cap.channelType;
-            if (cap.channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {
-                qDebug() << "Contact supports file transfer!";
-                createFileTransferChannel();
-                break;
-            }
-        }
-    }
-}
-*/
-
-void TubeInitiator::createStreamTubeChannel()
-{
-    mTubeOffered = true;
-
-    connect(mAccount->createStreamTube(
-                mContact->id(),
-                QLatin1String("tp-qt4-stube-example")),
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onStreamTubeChannelCreated(Tp::PendingOperation*)));
-}
-
-void TubeInitiator::onStreamTubeChannelCreated(PendingOperation *op)
+void TubeInitiator::onTubeRequestFinished(PendingOperation *op)
 {
     if (op->isError()) {
-        qWarning() << "Unable to create stream tube channel -" <<
+        qWarning() << "Unable to request stream tube channel -" <<
             op->errorName() << ": " << op->errorMessage();
         return;
     }
 
-    qDebug() << "Stream tube channel created!";
+    qDebug() << "Stream tube channel request finished successfully!";
 }
 
 void TubeInitiator::onTubeRequested(
