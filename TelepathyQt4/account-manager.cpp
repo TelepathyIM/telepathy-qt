@@ -512,7 +512,7 @@ ContactFactoryConstPtr AccountManager::contactFactory() const
  *
  * Newly accounts added and/or discovered are signaled via newAccount().
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A list of pointers to Account objects.
  */
@@ -528,7 +528,7 @@ QList<AccountPtr> AccountManager::allAccounts() const
 /**
  * Return a set of accounts containing all valid accounts.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -542,7 +542,7 @@ AccountSetPtr AccountManager::validAccounts() const
 /**
  * Return a set of accounts containing all invalid accounts.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -556,7 +556,7 @@ AccountSetPtr AccountManager::invalidAccounts() const
 /**
  * Return a set of accounts containing all enabled accounts.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -570,7 +570,7 @@ AccountSetPtr AccountManager::enabledAccounts() const
 /**
  * Return a set of accounts containing all disabled accounts.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -584,7 +584,7 @@ AccountSetPtr AccountManager::disabledAccounts() const
 /**
  * Return a set of accounts containing all online accounts.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -598,7 +598,7 @@ AccountSetPtr AccountManager::onlineAccounts() const
 /**
  * Return a set of accounts containing all offline accounts.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -616,7 +616,7 @@ AccountSetPtr AccountManager::offlineAccounts() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -640,7 +640,7 @@ AccountSetPtr AccountManager::textChatAccounts() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -664,7 +664,7 @@ AccountSetPtr AccountManager::textChatroomAccounts() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -688,7 +688,7 @@ AccountSetPtr AccountManager::streamedMediaCallAccounts() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -712,7 +712,7 @@ AccountSetPtr AccountManager::streamedMediaAudioCallAccounts() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -736,7 +736,7 @@ AccountSetPtr AccountManager::streamedMediaVideoCallAccounts() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -761,7 +761,7 @@ AccountSetPtr AccountManager::streamedMediaVideoCallWithAudioAccounts() const
  * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
  * ready.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
@@ -782,7 +782,7 @@ AccountSetPtr AccountManager::fileTransferAccounts() const
  * Return a set of accounts containing all accounts for the given \a
  * protocolName.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \param protocolName The name of the protocol used to filter accounts.
  * \return A pointer to an AccountSet object containing the matching accounts.
@@ -809,7 +809,7 @@ AccountSetPtr AccountManager::accountsByProtocol(
  *
  * See AccountSet documentation for more details.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \param filter The desired filter.
  * \return A pointer to an AccountSet object containing the matching accounts.
@@ -865,7 +865,7 @@ AccountSetPtr AccountManager::filterAccounts(const AccountFilterConstPtr &filter
  *
  * See AccountSet documentation for more details.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \param filter The desired filter.
  * \return A pointer to an AccountSet object containing the matching accounts.
@@ -885,7 +885,7 @@ AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
 /**
  * Return the account for the given \a path.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \param path The account object path.
  * \return A pointer to an AccountSet object containing the matching accounts.
@@ -907,7 +907,7 @@ AccountPtr AccountManager::accountForPath(const QString &path) const
  * a given path is invalid the returned AccountPtr object will point to 0.
  * AccountPtr::isNull() will return true.
  *
- * This method requires AccountManager::FeatureCore to be enabled.
+ * This method requires AccountManager::FeatureCore to be ready.
  *
  * \param paths List of accounts object paths.
  * \return A list of pointers to Account objects for the given

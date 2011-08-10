@@ -285,7 +285,7 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * enable the connection tracking feature, as long as
  * StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
  *
- * This method requires OutgoingStreamTubeChannel::FeatureCore to be enabled.
+ * This method requires OutgoingStreamTubeChannel::FeatureCore to be ready.
  *
  * \param address A valid IPv4 or IPv6 address pointing to an existing socket.
  * \param port The port the socket is listening for connections to.
@@ -425,7 +425,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * enable the connection tracking feature, as long as
  * StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
  *
- * This method requires OutgoingStreamTubeChannel::FeatureCore to be enabled.
+ * This method requires OutgoingStreamTubeChannel::FeatureCore to be ready.
  *
  * \param server A valid QTcpServer, which should be already listening for incoming connections.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
@@ -461,7 +461,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
  * It is guaranteed that when the PendingOperation returned by this method will be completed,
  * the tube will be opened and ready to be used.
  *
- * This method requires OutgoingStreamTubeChannel::FeatureCore to be enabled.
+ * This method requires OutgoingStreamTubeChannel::FeatureCore to be ready.
  *
  * \param address A valid path to an existing Unix socket or abstract Unix socket.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
@@ -573,7 +573,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
  * It is guaranteed that when the PendingOperation returned by this method will be completed,
  * the tube will be opened and ready to be used.
  *
- * This method requires OutgoingStreamTubeChannel::FeatureCore to be enabled.
+ * This method requires OutgoingStreamTubeChannel::FeatureCore to be ready.
  *
  * \param server A valid QLocalServer, which should be already listening for incoming connections.
  * \param parameters A dictionary of arbitrary parameters to send with the tube offer.
@@ -609,7 +609,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
  *
  * Note that this function will only return valid data after the tube has been opened.
  *
- * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
+ * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be ready.
  *
  * \return The map from source addresses as QHostAddress to the corresponding connection ids.
  * \sa contactsForConnections(), connectionsForCredentials(),
@@ -650,7 +650,7 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
  *
  * Note that this function will only return valid data after the tube has been opened.
  *
- * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
+ * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be ready.
  *
  * \return The map from credential bytes to the corresponding connection ids.
  * \sa contactsForConnections(), connectionsForSourceAddresses(),
@@ -692,7 +692,7 @@ QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
  *
  * Note that this function will only return valid data after the tube has been opened.
  *
- * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
+ * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be ready.
 
  * \return The map from connection ids to pointer to Contact objects.
  * \sa connectionsForSourceAddresses(), connectionsForCredentials(),

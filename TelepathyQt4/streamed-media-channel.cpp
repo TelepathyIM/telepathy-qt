@@ -931,7 +931,7 @@ StreamedMediaChannel::~StreamedMediaChannel()
 /**
  * Return a list of media streams in this channel.
  *
- * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be ready.
  *
  * \return A list of pointers to StreamedMediaStream objects.
  * \sa streamAdded(), streamRemoved(), streamsForType(), requestStreams()
@@ -944,7 +944,7 @@ StreamedMediaStreams StreamedMediaChannel::streams() const
 /**
  * Return a list of media streams in this channel for the given type \a type.
  *
- * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be ready.
  *
  * \param type The interested type.
  * \return A list of pointers to StreamedMediaStream objects.
@@ -964,6 +964,8 @@ StreamedMediaStreams StreamedMediaChannel::streamsForType(MediaStreamType type) 
 /**
  * Return whether this channel is awaiting local answer.
  *
+ * This method requires StreamedMediaChannel::FeatureCore to be ready.
+ *
  * \return \c true if awaiting local answer, \c false otherwise.
  * \sa awaitingRemoteAnswer(), acceptCall()
  */
@@ -975,6 +977,8 @@ bool StreamedMediaChannel::awaitingLocalAnswer() const
 /**
  * Return whether this channel is awaiting remote answer.
  *
+ * This method requires StreamedMediaChannel::FeatureCore to be ready.
+ *
  * \return \c true if awaiting remote answer, \c false otherwise.
  * \sa awaitingLocalAnswer()
  */
@@ -985,6 +989,8 @@ bool StreamedMediaChannel::awaitingRemoteAnswer() const
 
 /**
  * Accept an incoming call.
+ *
+ * This method requires StreamedMediaChannel::FeatureCore to be ready.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -998,7 +1004,7 @@ PendingOperation *StreamedMediaChannel::acceptCall()
 /**
  * Remove the specified media stream from this channel.
  *
- * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be ready.
  *
  * \param stream Media stream to remove.
  * \return A PendingOperation which will emit PendingOperation::finished
@@ -1026,7 +1032,7 @@ PendingOperation *StreamedMediaChannel::removeStream(const StreamedMediaStreamPt
 /**
  * Remove the specified media streams from this channel.
  *
- * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be ready.
  *
  * \param streams List of media streams to remove.
  * \return A PendingOperation which will emit PendingOperation::finished
@@ -1060,7 +1066,7 @@ PendingOperation *StreamedMediaChannel::removeStreams(const StreamedMediaStreams
  * Request that media streams be established to exchange the given type \a type
  * of media with the given contact \a contact.
  *
- * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be ready.
  *
  * \return A PendingStreamedMediaStreams which will emit PendingStreamedMediaStreams::finished
  *         when the call has finished.
@@ -1079,7 +1085,7 @@ PendingStreamedMediaStreams *StreamedMediaChannel::requestStream(
  * Request that media streams be established to exchange the given types \a
  * types of media with the given contact \a contact.
  *
- * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be ready.
  *
  * \return A PendingStreamedMediaStreams which will emit PendingStreamedMediaStreams::finished
  *         when the call has finished.
@@ -1095,6 +1101,8 @@ PendingStreamedMediaStreams *StreamedMediaChannel::requestStreams(
 
 /**
  * Request that the call is ended.
+ *
+ * This method requires StreamedMediaChannel::FeatureCore to be ready.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -1112,6 +1120,8 @@ PendingOperation *StreamedMediaChannel::hangupCall()
  * calling createFarsightChannel(channel) from TelepathyQt4-Farsight library
  * and using the telepathy-farsight API on the resulting TfChannel.
  *
+ * This method requires StreamedMediaChannel::FeatureCore to be ready.
+ *
  * \return \c true if required, \c false otherwise.
  */
 bool StreamedMediaChannel::handlerStreamingRequired() const
@@ -1125,7 +1135,7 @@ bool StreamedMediaChannel::handlerStreamingRequired() const
  *
  * Whether the local user has placed this channel on hold.
  *
- * This method requires StreamedMediaChannel::FeatureHoldState to be enabled.
+ * This method requires StreamedMediaChannel::FeatureHoldState to be ready.
  *
  * \return The local hold state as #LocalHoldState.
  * \sa requestHold(), localHoldStateChanged()
@@ -1144,7 +1154,7 @@ LocalHoldState StreamedMediaChannel::localHoldState() const
 /**
  * Return the reason why localHoldState() changed to its current value.
  *
- * This method requires StreamedMediaChannel::FeatureLocalHoldState to be enabled.
+ * This method requires StreamedMediaChannel::FeatureLocalHoldState to be ready.
  *
  * \return The local hold state reason as #LocalHoldStateReason.
  * \sa requestHold(), localHoldStateChanged()

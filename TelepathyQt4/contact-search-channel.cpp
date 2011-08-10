@@ -390,6 +390,8 @@ ContactSearchChannel::~ContactSearchChannel()
  *
  * Change notification is via the searchStateChanged() signal.
  *
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
+ *
  * \return The current search state as #ChannelContactSearchState.
  * \sa searchStateChanged()
  */
@@ -405,7 +407,7 @@ ChannelContactSearchState ContactSearchChannel::searchState() const
  * For example, if the terms passed to search() match Antonius, Bridget and Charles and
  * this property is 2, the search service will only return Antonius and Bridget.
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
  * \return The maximum number of results, or 0 if there is no limit.
  * \sa availableSearchKeys(), search()
@@ -422,7 +424,7 @@ uint ContactSearchChannel::limit() const
  * or ["x-n-given", "x-n-family", "nickname", "email"] (for XMPP XEP-0055, without extensibility via
  * Data Forms).
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
  * \return The supported search keys.
  * \sa limit(), search()
@@ -435,7 +437,7 @@ QStringList ContactSearchChannel::availableSearchKeys() const
 /**
  * Return the DNS name of the server being searched by this channel.
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
  * \return For protocols which support searching for contacts on multiple servers with different DNS
  *         names (like XMPP), the DNS name of the server being searched by this channel, e.g.
@@ -455,7 +457,7 @@ QString ContactSearchChannel::server() const
  *
  * Search results are signalled by searchResultReceived().
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
  * This is an overloaded method for search(const ContactSearchMap &searchTerms).
  *
@@ -481,7 +483,7 @@ PendingOperation *ContactSearchChannel::search(const QString &searchKey, const Q
  *
  * Search results are signalled by searchResultReceived().
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
  * \param terms The search terms.
  * \return A PendingOperation which will emit PendingOperation::finished

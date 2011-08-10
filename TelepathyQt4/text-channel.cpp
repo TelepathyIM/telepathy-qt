@@ -639,6 +639,8 @@ TextChannel::~TextChannel()
  *
  * If the interface is not supported, some advanced functionality will be unavailable.
  *
+ * This method requires TextChannel::FeatureCore to be ready.
+ *
  * \return \c true if the Messages interface is supported, \c false otherwise.
  */
 bool TextChannel::hasMessagesInterface() const
@@ -653,6 +655,7 @@ bool TextChannel::hasMessagesInterface() const
  * If the interface is not supported, requestChatState() will fail and all contacts' chat states
  * will appear to be #ChannelChatStateInactive.
  *
+ * This method requires TextChannel::FeatureCore to be ready.
  *
  * \return \c true if the ChatState interface is supported, \c false otherwise.
  * \sa requestChatState(), chatStateChanged()
@@ -674,6 +677,7 @@ bool TextChannel::hasChatStateInterface() const
  * This is an alias for Channel::groupCanAddContacts(), to indicate its meaning more
  * clearly for Text channels.
  *
+ * This method requires Channel::FeatureCore to be ready.
  *
  * \return \c true if contacts can be invited, \c false otherwise.
  * \sa inviteContacts(), Channel::groupCanAddContacts(), Channel::groupAddContacts()
@@ -693,6 +697,7 @@ bool TextChannel::canInviteContacts() const
  * This list may contain the special value "*<!--x-->/<!--x-->*", which
  * indicates that any content type is supported.
  *
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
  *
  * \return The list of MIME content types.
  */
@@ -708,6 +713,7 @@ QStringList TextChannel::supportedContentTypes() const
  * This is zero on simple text channels, or greater than zero if
  * there is partial or full support for multi-part messages.
  *
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
  *
  * \return The flags as #MessagePartSupportFlags.
  */
@@ -723,6 +729,7 @@ MessagePartSupportFlags TextChannel::messagePartSupport() const
  * This is zero if there are no particular guarantees, or greater
  * than zero if delivery reports can be expected under certain circumstances.
  *
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
  *
  * \return The flags as #DeliveryReportingSupportFlags.
  */
@@ -747,6 +754,7 @@ DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
  * returns \c true, they will also be removed when acknowledged by a different
  * client. In either case, the pendingMessageRemoved() signal is emitted.
  *
+ * This method requires TextChannel::FeatureMessageQueue to be ready.
  *
  * \return A list of ReceivedMessage objects.
  * \sa messageReceived()
@@ -762,7 +770,7 @@ QList<ReceivedMessage> TextChannel::messageQueue() const
  * If hasChatStateInterface() returns \c false, this method will always return
  * #ChannelChatStateInactive.
  *
- * This method requires TextChannel::FeatureChatState to be enabled.
+ * This method requires TextChannel::FeatureChatState to be ready.
  *
  * \return The contact chat state as #ChannelChatState.
  */
@@ -811,6 +819,7 @@ void TextChannel::onAcknowledgePendingMessagesReply(
  * Processes other than the main handler of a channel can free memory used
  * by the library by calling forget() instead.
  *
+ * This method requires TextChannel::FeatureMessageQueue to be ready.
  *
  * \param messages A list of received messages that have now been displayed.
  * \sa forget(), messageQueue(), messageReceived(), pendingMessageRemoved()
@@ -853,6 +862,7 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
  * It should be used by clients that are not the main handler for a channel;
  * the main handler for a channel should use acknowledge() instead.
  *
+ * This method requires TextChannel::FeatureMessageQueue to be ready.
  *
  * \param messages A list of received messages that have now been processed.
  * \sa acknowledge(), messageQueue(), messageReceived(), pendingMessageRemoved()
@@ -925,6 +935,8 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
  *
  * Note that only the primary handler of the channel should set its chat
  * state.
+ *
+ * This method requires TextChannel::FeatureCore to be ready.
  *
  * \param state The new state.
  * \sa chatStateChanged()

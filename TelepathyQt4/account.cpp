@@ -988,7 +988,7 @@ ContactFactoryConstPtr Account::contactFactory() const
  *
  * Change notification is via the validityChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return \c true if valid, \c false otherwise.
  * \sa validityChanged(), updateParameters()
@@ -1003,7 +1003,7 @@ bool Account::isValidAccount() const
  *
  * Change notification is via the stateChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return \c true if enabled, \c false otherwise.
  * \sa stateChanged(), setEnabled()
@@ -1064,7 +1064,7 @@ QString Account::protocolName() const
  *
  * Change notification is via the serviceNameChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The service name.
  * \sa serviceNameChanged(), setServiceName(), protocolName()
@@ -1142,7 +1142,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  *
  * Change notification is via the profileChanged() signal.
  *
- * This method requires Account::FeatureProfile to be enabled.
+ * This method requires Account::FeatureProfile to be ready.
  *
  * \return A pointer to the Profile object.
  * \sa profileChanged(), serviceName()
@@ -1176,7 +1176,7 @@ ProfilePtr Account::profile() const
  *
  * Change notification is via the displayNameChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The display name.
  * \sa displayNameChanged(), setDisplayName()
@@ -1223,7 +1223,7 @@ PendingOperation *Account::setDisplayName(const QString &value)
  *
  * Change notification is via the iconNameChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The icon name.
  * \sa iconNameChanged(), setIconName()
@@ -1271,7 +1271,7 @@ PendingOperation *Account::setIconName(const QString &value)
  *
  * Change notification is via the nicknameChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The nickname.
  * \sa nicknameChanged(), setNickname()
@@ -1324,7 +1324,7 @@ AvatarSpec Account::avatarRequirements() const
  *
  * Change notification is via the avatarChanged() signal.
  *
- * This method requires Account::FeatureAvatar to be enabled.
+ * This method requires Account::FeatureAvatar to be ready.
  *
  * \return The avatar as an Avatar object.
  * \sa avatarChanged(), setAvatar()
@@ -1375,7 +1375,7 @@ PendingOperation *Account::setAvatar(const Avatar &avatar)
  *
  * Change notification is via the parametersChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The parameters as QVariantMap.
  * \sa parametersChanged(), updateParameters()
@@ -1410,7 +1410,7 @@ PendingStringList *Account::updateParameters(const QVariantMap &set,
 /**
  * Return the protocol info of this account protocol.
  *
- * This method requires Account::FeatureProtocolInfo to be enabled.
+ * This method requires Account::FeatureProtocolInfo to be ready.
  *
  * \return The protocol info as a ProtocolInfo object.
  */
@@ -1436,7 +1436,7 @@ ProtocolInfo Account::protocolInfo() const
  *
  * Change notification is via the capabilitiesChanged() signal.
  *
- * This method requires Account::FeatureCapabilities to be enabled.
+ * This method requires Account::FeatureCapabilities to be ready.
  *
  * \return The capabilities as a ConnectionCapabilities object.
  * \sa capabilitiesChanged(), protocolInfo(), profile()
@@ -1512,7 +1512,7 @@ ConnectionCapabilities Account::capabilities() const
  *
  * Change notification is via the connectsAutomaticallyPropertyChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return \c true if it should try to connect automatically, \c false
  *         otherwise.
@@ -1551,7 +1551,7 @@ PendingOperation *Account::setConnectsAutomatically(bool value)
  * is detected that this has already happened, the firstOnline() signal is
  * emitted.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return \c true if ever been online, \c false otherwise.
  */
@@ -1574,7 +1574,7 @@ bool Account::hasBeenOnline() const
  *
  * Change notification is via the connectionStatusChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The connection status as #ConnectionStatus.
  * \sa connectionStatusChanged(), connectionStatusReason(), connectionError(),
@@ -1594,7 +1594,7 @@ ConnectionStatus Account::connectionStatus() const
  * Connection::statusReason() on this account connection.
  * See connectionStatus() for more details.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The connection status reason as #ConnectionStatusReason.
  * \sa connectionStatusChanged(), connectionStatus(), connectionError(), connectionErrorDetails()
@@ -1609,7 +1609,7 @@ ConnectionStatusReason Account::connectionStatusReason() const
  * (in particular, #TP_QT4_ERROR_CANCELLED if it was disconnected by user
  * request), or an empty string if the account is connected.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The D-Bus error name for the last disconnection or connection failure.
  * \sa connectionErrorDetails(), connectionStatus(), connectionStatusReason(),
@@ -1627,7 +1627,7 @@ QString Account::connectionError() const
  * Connection::errorDetails() on this account connection.
  * See connectionStatus() for more details.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The connection error details as a Connection::ErrorDetails object.
  * \sa connectionError(), connectionStatus(), connectionStatusReason(), connectionStatusChanged(),
@@ -1646,7 +1646,7 @@ Connection::ErrorDetails Account::connectionErrorDetails() const
  *
  * Change notification is via the connectionChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return A pointer to the Connection object, or a null ConnectionPtr if
  *         there is no connection currently or if an error occurred.
@@ -1662,7 +1662,7 @@ ConnectionPtr Account::connection() const
  *
  * Change notification is via the changingPresence() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return \c true if changing presence, \c false otherwise.
  * \sa changingPresence(), currentPresenceChanged(), setRequestedPresence()
@@ -1704,7 +1704,7 @@ bool Account::isChangingPresence() const
  * particular when connectionChanged() is emitted with a connection for which Connection::status()
  * is Tp::ConnectionStatusConnected.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \param includeAllStatuses Whether the returned list will include all statuses or just the ones
  *                           that can are settable using setRequestedPresence().
@@ -1824,7 +1824,7 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
  * enabled, it will return the connection maximum status message length,
  * otherwise it will return 0.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The maximum length, or 0 if there is no limit.
  */
@@ -1846,7 +1846,7 @@ uint Account::maxPresenceStatusMessageLength() const
  *
  * Change notification is via the automaticPresenceChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The automatic presence as a Presence object.
  * \sa automaticPresenceChanged(), setAutomaticPresence()
@@ -1888,7 +1888,7 @@ PendingOperation *Account::setAutomaticPresence(const Presence &presence)
  *
  * Change notification is via the currentPresenceChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The current presence as a Presence object.
  * \sa currentPresenceChanged(), setRequestedPresence(), requestedPresence(), automaticPresence()
@@ -1903,7 +1903,7 @@ Presence Account::currentPresence() const
  *
  * Change notification is via the requestedPresenceChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The requested presence as a Presence object.
  * \sa requestedPresenceChanged(), setRequestedPresence(), currentPresence(), automaticPresence()
@@ -1940,7 +1940,7 @@ PendingOperation *Account::setRequestedPresence(const Presence &presence)
  *
  * Change notification is via the onlinenessChanged() signal.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return \c true if online, otherwise \c false.
  * \sa onlinenessChanged()
@@ -1977,7 +1977,7 @@ QString Account::uniqueIdentifier() const
  * It is possible that this value will change if the connection manager's
  * normalization algorithm changes.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return The normalized user ID of the local user.
  * \sa normalizedNameChanged()
@@ -2015,7 +2015,7 @@ PendingOperation *Account::remove()
 /**
  * Return whether passing hints on channel requests on this account is known to be supported.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return \c true if supported, \c false otherwise.
  */
@@ -2032,7 +2032,7 @@ bool Account::supportsRequestHints() const
  * In particular, similarly old Channel Dispatchers don't support request hints either, so the
  * return value for this function and Account::supportsRequestHints() will bet he same.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureCore to be ready.
  *
  * \return \c true if supported, \c false otherwise.
  */
