@@ -188,7 +188,7 @@ SimpleTextObserver::~SimpleTextObserver()
 /**
  * Return the account used to listen to events.
  *
- * \return The account used to listen to events.
+ * \return A pointer to the Account object.
  */
 AccountPtr SimpleTextObserver::account() const
 {
@@ -199,7 +199,7 @@ AccountPtr SimpleTextObserver::account() const
  * Return the identifier of the contact used to filter events, or an empty string if none was
  * provided at construction.
  *
- * \return The identifier of the contact used to filter events.
+ * \return The identifier of the contact.
  */
 QString SimpleTextObserver::contactIdentifier() const
 {
@@ -209,7 +209,7 @@ QString SimpleTextObserver::contactIdentifier() const
 /**
  * Return the list of text chats currently being observed.
  *
- * \return The list of text chats currently being observed.
+ * \return A list of pointers to TextChannel objects.
  */
 QList<TextChannelPtr> SimpleTextObserver::textChats() const
 {
@@ -273,7 +273,7 @@ void SimpleTextObserver::onChannelInvalidated(const ChannelPtr &channel)
  *                  Tp::MessageSendingFlags flags, const QString &sentMessageToken,
  *                  const Tp::TextChannelPtr &channel);
  *
- * This signal is emitted whenever a text message on account() is sent.
+ * Emitted whenever a text message on account() is sent.
  * If contactIdentifier() is non-empty, only messages sent to the contact identified by it will
  * be signalled.
  *
@@ -287,7 +287,7 @@ void SimpleTextObserver::onChannelInvalidated(const ChannelPtr &channel)
  * \fn void SimpleTextObserver::messageReceived(const Tp::ReceivedMessage &message,
  *                  const Tp::TextChannelPtr &channel);
  *
- * This signal is emitted whenever a text message on account() is received.
+ * Emitted whenever a text message on account() is received.
  * If contactIdentifier() is non-empty, only messages received by the contact identified by it will
  * be signalled.
  *

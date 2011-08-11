@@ -1,5 +1,7 @@
-#include <QtDBus>
+#ifndef _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_
+#define _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_
 
+#include <QtDBus>
 #include <QtTest>
 
 #include <TelepathyQt4/PendingOperation>
@@ -60,3 +62,23 @@ bool Test::waitForProperty(Tp::PendingVariant *pv, T *value)
         return false;
     }
 }
+
+#define TEST_VERIFY_OP(op) \
+    if (!op->isFinished()) { \
+        qWarning() << "unfinished"; \
+        mLoop->exit(1); \
+        return; \
+    } \
+    if (op->isError()) { \
+        qWarning().nospace() << op->errorName() << ": " << op->errorMessage(); \
+        mLoop->exit(2); \
+        return; \
+    } \
+    if (!op->isValid()) { \
+        qWarning() << "inconsistent results"; \
+        mLoop->exit(3); \
+        return; \
+    } \
+    qDebug() << "finished";
+
+#endif // _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_

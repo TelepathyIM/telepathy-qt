@@ -1,27 +1,16 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
-#include <QtDBus/QtDBus>
-#include <QtTest/QtTest>
+#include <tests/lib/test.h>
 
-#include <QDateTime>
-#include <QString>
-#include <QVariantMap>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
+
+#include <tests/lib/glib/contacts-conn.h>
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ConnectionFactory>
-#include <TelepathyQt4/Debug>
 #include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Types>
 
 #include <telepathy-glib/debug.h>
-
-#include <glib-object.h>
-#include <dbus/dbus-glib.h>
-
-#include <tests/lib/glib/contacts-conn.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 using namespace Tp::Client;
@@ -92,7 +81,8 @@ class TestAccountConnectionFactory : public Test
 public:
     TestAccountConnectionFactory(QObject *parent = 0)
         : Test(parent),
-          mDispatcher(0), mConnService1(0), mConnService2(0), mAccountAdaptor(0),
+          mConn1(0), mConn2(0),
+          mDispatcher(0), mAccountAdaptor(0),
           mReceivedHaveConnection(0), mReceivedConn(0)
     { }
 
@@ -115,11 +105,9 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
+    TestConnHelper *mConn1, *mConn2;
     QObject *mDispatcher;
     QString mAccountBusName, mAccountPath;
-    TpTestsContactsConnection *mConnService1, *mConnService2;
-    QString mConnPath1, mConnPath2;
-    QString mConnName1, mConnName2;
     AccountAdaptor *mAccountAdaptor;
     AccountPtr mAccount;
     bool *mReceivedHaveConnection;
@@ -169,47 +157,19 @@ void TestAccountConnectionFactory::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService1 = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+    mConn1 = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
-            "account", "me1@example.com",
+            "account", "me@example.com",
             "protocol", "simple",
-            NULL));
-    QVERIFY(mConnService1 != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService1),
-                "contacts", &name, &connPath, &error));
-    QVERIFY(error == 0);
+            NULL);
+    QCOMPARE(mConn1->isReady(), false);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName1 = QLatin1String(name);
-    mConnPath1 = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConnService2 = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+    mConn2 = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me2@example.com",
             "protocol", "simple",
-            NULL));
-    QVERIFY(mConnService2 != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService2),
-                "contacts", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName2 = QLatin1String(name);
-    mConnPath2 = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
+            NULL);
+    QCOMPARE(mConn2->isReady(), false);
 
     mAccountBusName = QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER);
     mAccountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/simple/account");
@@ -271,7 +231,7 @@ void TestAccountConnectionFactory::testCreateAndIntrospect()
 
 void TestAccountConnectionFactory::testDefaultFactoryInitialConn()
 {
-    mAccountAdaptor->setConnection(mConnPath1);
+    mAccountAdaptor->setConnection(mConn1->objectPath());
 
     mAccount = Account::create(mAccountBusName, mAccountPath);
 
@@ -280,7 +240,7 @@ void TestAccountConnectionFactory::testDefaultFactoryInitialConn()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mAccount->connection()->objectPath(), mConnPath1);
+    QCOMPARE(mAccount->connection()->objectPath(), mConn1->objectPath());
     QVERIFY(!mAccount->connection().isNull());
 
     QCOMPARE(mAccount->connectionFactory()->features(), Features());
@@ -288,7 +248,7 @@ void TestAccountConnectionFactory::testDefaultFactoryInitialConn()
 
 void TestAccountConnectionFactory::testReadifyingFactoryInitialConn()
 {
-    mAccountAdaptor->setConnection(mConnPath1);
+    mAccountAdaptor->setConnection(mConn1->objectPath());
 
     mAccount = Account::create(mAccountBusName, mAccountPath,
             ConnectionFactory::create(QDBusConnection::sessionBus(),
@@ -300,7 +260,7 @@ void TestAccountConnectionFactory::testReadifyingFactoryInitialConn()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mAccount->connection()->objectPath(), mConnPath1);
+    QCOMPARE(mAccount->connection()->objectPath(), mConn1->objectPath());
 
     ConnectionPtr conn = mAccount->connection();
     QVERIFY(!conn.isNull());
@@ -333,12 +293,12 @@ void TestAccountConnectionFactory::testSwitch()
                 SLOT(expectPropertyChange(QString))));
 
     // Switch from none to conn 1
-    mAccountAdaptor->setConnection(mConnPath1);
+    mAccountAdaptor->setConnection(mConn1->objectPath());
     while (!mReceivedHaveConnection || !mReceivedConn) {
         mLoop->processEvents();
     }
     QCOMPARE(*mReceivedHaveConnection, true);
-    QCOMPARE(*mReceivedConn, mConnPath1);
+    QCOMPARE(*mReceivedConn, mConn1->objectPath());
 
     delete mReceivedHaveConnection;
     mReceivedHaveConnection = 0;
@@ -346,21 +306,21 @@ void TestAccountConnectionFactory::testSwitch()
     delete mReceivedConn;
     mReceivedConn = 0;
 
-    QCOMPARE(mAccount->connection()->objectPath(), mConnPath1);
+    QCOMPARE(mAccount->connection()->objectPath(), mConn1->objectPath());
     QVERIFY(!mAccount->connection().isNull());
 
     ConnectionPtr conn = mAccount->connection();
     QVERIFY(!conn.isNull());
-    QCOMPARE(conn->objectPath(), mConnPath1);
+    QCOMPARE(conn->objectPath(), mConn1->objectPath());
 
     QVERIFY(conn->isReady(Connection::FeatureCore));
 
     // Switch from conn 1 to conn 2
-    mAccountAdaptor->setConnection(mConnPath2);
+    mAccountAdaptor->setConnection(mConn2->objectPath());
     while (!mReceivedConn) {
         mLoop->processEvents();
     }
-    QCOMPARE(*mReceivedConn, mConnPath2);
+    QCOMPARE(*mReceivedConn, mConn2->objectPath());
 
     delete mReceivedConn;
     mReceivedConn = 0;
@@ -369,11 +329,11 @@ void TestAccountConnectionFactory::testSwitch()
     QVERIFY(mReceivedHaveConnection);
     QVERIFY(!mAccount->connection().isNull());
 
-    QCOMPARE(mAccount->connection()->objectPath(), mConnPath2);
+    QCOMPARE(mAccount->connection()->objectPath(), mConn2->objectPath());
 
     conn = mAccount->connection();
     QVERIFY(!conn.isNull());
-    QCOMPARE(conn->objectPath(), mConnPath2);
+    QCOMPARE(conn->objectPath(), mConn2->objectPath());
 
     QVERIFY(conn->isReady(Connection::FeatureCore));
 
@@ -407,17 +367,17 @@ void TestAccountConnectionFactory::testQueuedSwitch()
                 SLOT(expectPropertyChange(QString))));
 
     // Switch a few times but don't give the proxy update machinery time to run
-    mAccountAdaptor->setConnection(mConnPath1);
+    mAccountAdaptor->setConnection(mConn1->objectPath());
     mAccountAdaptor->setConnection(QString());
-    mAccountAdaptor->setConnection(mConnPath2);
+    mAccountAdaptor->setConnection(mConn2->objectPath());
     mAccountAdaptor->setConnection(QString());
     mAccountAdaptor->setConnection(QString());
     mAccountAdaptor->setConnection(QString());
-    mAccountAdaptor->setConnection(mConnPath2);
+    mAccountAdaptor->setConnection(mConn2->objectPath());
     mAccountAdaptor->setConnection(QString());
-    mAccountAdaptor->setConnection(mConnPath2);
-    mAccountAdaptor->setConnection(mConnPath2);
-    mAccountAdaptor->setConnection(mConnPath1);
+    mAccountAdaptor->setConnection(mConn2->objectPath());
+    mAccountAdaptor->setConnection(mConn2->objectPath());
+    mAccountAdaptor->setConnection(mConn1->objectPath());
 
     // We should get a total of 8 changes because some of them aren't actually any different
     while (mReceivedConns.size() < 8) {
@@ -427,17 +387,17 @@ void TestAccountConnectionFactory::testQueuedSwitch()
     QCOMPARE(mReceivedConns.size(), 8);
 
     // Ensure we got them in the correct order
-    QCOMPARE(mReceivedConns, QStringList() << mConnPath1
+    QCOMPARE(mReceivedConns, QStringList() << mConn1->objectPath()
                                            << QString()
-                                           << mConnPath2
+                                           << mConn2->objectPath()
                                            << QString()
-                                           << mConnPath2
+                                           << mConn2->objectPath()
                                            << QString()
-                                           << mConnPath2
-                                           << mConnPath1);
+                                           << mConn2->objectPath()
+                                           << mConn1->objectPath());
 
     // Check that the final state is correct
-    QCOMPARE(mAccount->connection()->objectPath(), mConnPath1);
+    QCOMPARE(mAccount->connection()->objectPath(), mConn1->objectPath());
     QVERIFY(!mAccount->connection().isNull());
 }
 
@@ -472,6 +432,16 @@ void TestAccountConnectionFactory::cleanup()
 
 void TestAccountConnectionFactory::cleanupTestCase()
 {
+    if (mConn1) {
+        QCOMPARE(mConn1->disconnect(), true);
+        delete mConn1;
+    }
+
+    if (mConn2) {
+        QCOMPARE(mConn2->disconnect(), true);
+        delete mConn2;
+    }
+
     cleanupTestCaseImpl();
 }
 

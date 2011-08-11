@@ -33,27 +33,13 @@
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusError>
-#include <QTimer>
-
 #include <QDBusServiceWatcher>
+#include <QTimer>
 
 namespace Tp
 {
 
 // ==== DBusProxy ======================================================
-
-/**
- * \class DBusProxy
- * \ingroup clientproxies
- * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/DBusProxy>
- *
- * \brief Base class representing a remote object available over D-Bus.
- *
- * All TelepathyQt4 client convenience classes that wrap Telepathy interfaces
- * inherit from this class in order to provide basic D-Bus interface
- * information.
- *
- */
 
 // Features in TpProxy but not here:
 // * tracking which interfaces we have (in tpqt4, subclasses do that)
@@ -85,13 +71,30 @@ DBusProxy::Private::Private(const QDBusConnection &dbusConnection,
 }
 
 /**
- * Constructor
+ * \class DBusProxy
+ * \ingroup clientproxies
+ * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/DBusProxy>
+ *
+ * \brief The DBusProxy class is a base class representing a remote object available over D-Bus.
+ *
+ * All Telepathy-Qt4 client convenience classes that wrap Telepathy interfaces
+ * inherit from this class in order to provide basic D-Bus interface
+ * information.
+ */
+
+/**
+ * Construct a new DBusProxy object.
+ *
+ * \param dbusConnection QDBusConnection to use.
+ * \param busName D-Bus bus name of the service that provides the remote object.
+ * \param objectPath The object path.
+ * \param featureCore The object core feature.
  */
 DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
-        const QString &busName, const QString &path, const Feature &featureCore)
+        const QString &busName, const QString &objectPath, const Feature &featureCore)
     : Object(),
       ReadyObject(this, featureCore),
-      mPriv(new Private(dbusConnection, busName, path))
+      mPriv(new Private(dbusConnection, busName, objectPath))
 {
     if (!dbusConnection.isConnected()) {
         invalidate(QLatin1String(TELEPATHY_ERROR_DISCONNECTED),
@@ -100,7 +103,7 @@ DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
 }
 
 /**
- * Destructor
+ * Class destructor.
  */
 DBusProxy::~DBusProxy()
 {
@@ -108,10 +111,10 @@ DBusProxy::~DBusProxy()
 }
 
 /**
- * Returns the D-Bus connection through which the remote object is
+ * Return the D-Bus connection through which the remote object is
  * accessed.
  *
- * \return The connection the object is associated with.
+ * \return A QDBusConnection object.
  */
 QDBusConnection DBusProxy::dbusConnection() const
 {
@@ -119,9 +122,9 @@ QDBusConnection DBusProxy::dbusConnection() const
 }
 
 /**
- * Returns the D-Bus object path of the remote object within the service.
+ * Return the D-Bus object path of the remote object within the service.
  *
- * \return The object path the object is associated with.
+ * \return The D-Bus object path.
  */
 QString DBusProxy::objectPath() const
 {
@@ -129,10 +132,10 @@ QString DBusProxy::objectPath() const
 }
 
 /**
- * Returns the D-Bus bus name (either a unique name or a well-known
+ * Return the D-Bus bus name (either a unique name or a well-known
  * name) of the service that provides the remote object.
  *
- * \return The service name the object is associated with.
+ * \return The D-Bus bus name.
  */
 QString DBusProxy::busName() const
 {
@@ -142,6 +145,8 @@ QString DBusProxy::busName() const
 /**
  * Sets the D-Bus bus name. This is used by subclasses after converting
  * well-known names to unique names.
+ *
+ * \param busName The D-Bus bus name to set.
  */
 void DBusProxy::setBusName(const QString &busName)
 {
@@ -149,10 +154,9 @@ void DBusProxy::setBusName(const QString &busName)
 }
 
 /**
- * If this object is usable (has not emitted #invalidated()), returns
- * <code>true</code>. Otherwise returns <code>false</code>.
+ * Return whether this proxy is still valid (has not emitted invalidated()).
  *
- * \return <code>true</code> if this object is still fully usable
+ * \return \c true if still valid, \c false otherwise.
  */
 bool DBusProxy::isValid() const
 {
@@ -160,11 +164,9 @@ bool DBusProxy::isValid() const
 }
 
 /**
- * If this object is no longer usable (has emitted #invalidated()),
- * returns the error name indicating the reason it became invalid in a
- * machine-readable way. Otherwise, returns a null QString.
+ * Return the error name indicating the reason this proxy became invalid.
  *
- * \return A D-Bus error name, or QString() if this object is still valid
+ * \return A D-Bus error name, or QString() if this object is still valid.
  */
 QString DBusProxy::invalidationReason() const
 {
@@ -172,32 +174,14 @@ QString DBusProxy::invalidationReason() const
 }
 
 /**
- * If this object is no longer usable (has emitted #invalidated()),
- * returns a debugging message indicating the reason it became invalid.
- * Otherwise, returns a null QString.
+ * Return a debugging message indicating the reason this proxy became invalid.
  *
- * \return A debugging message, or QString() if this object is still valid
+ * \return A debugging message, or QString() if this object is still valid.
  */
 QString DBusProxy::invalidationMessage() const
 {
     return mPriv->invalidationMessage;
 }
-
-/**
- * \fn void DBusProxy::invalidated (Tp::DBusProxy *proxy,
- *      const QString &errorName, const QString &errorMessage)
- *
- * Emitted when this object is no longer usable.
- *
- * After this signal is emitted, any D-Bus method calls on the object
- * will fail, but it may be possible to retrieve information that has
- * already been retrieved and cached.
- *
- * \param proxy This proxy
- * \param errorName A D-Bus error name (a string in a subset
- *                  of ASCII, prefixed with a reversed domain name)
- * \param errorMessage A debugging message associated with the error
- */
 
 /**
  * Called by subclasses when the DBusProxy should become invalid.
@@ -246,6 +230,21 @@ void DBusProxy::emitInvalidated()
     emit invalidated(this, mPriv->invalidationReason, mPriv->invalidationMessage);
 }
 
+/**
+ * \fn void DBusProxy::invalidated(Tp::DBusProxy *proxy,
+ *          const QString &errorName, const QString &errorMessage)
+ *
+ * Emitted when this object is no longer usable.
+ *
+ * After this signal is emitted, any D-Bus method calls on the object
+ * will fail, but it may be possible to retrieve information that has
+ * already been retrieved and cached.
+ *
+ * \param proxy This proxy.
+ * \param errorName The name of a D-Bus error describing the reason for the invalidation.
+ * \param errorMessage A debugging message associated with the error.
+ */
+
 // ==== StatefulDBusProxy ==============================================
 
 struct TELEPATHY_QT4_NO_EXPORT StatefulDBusProxy::Private
@@ -259,15 +258,25 @@ struct TELEPATHY_QT4_NO_EXPORT StatefulDBusProxy::Private
 /**
  * \class StatefulDBusProxy
  * \ingroup clientproxies
- * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/DBusProxy>
+ * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/StatefulDBusProxy>
  *
- * Base class representing a remote object whose API is stateful. These
- * objects do not remain useful if the service providing them exits or
- * crashes, so they emit #invalidated() if this happens.
+ * \brief The StatefulDBusProxy class is a base class representing a remote object whose API is
+ * stateful.
  *
- * Examples include the Connection and Channel.
+ * These objects do not remain useful if the service providing them exits or
+ * crashes, so they emit invalidated() if this happens.
+ *
+ * Examples include the Connection and Channel classes.
  */
 
+/**
+ * Construct a new StatefulDBusProxy object.
+ *
+ * \param dbusConnection QDBusConnection to use.
+ * \param busName D-Bus bus name of the service that provides the remote object.
+ * \param objectPath The object path.
+ * \param featureCore The object core feature.
+ */
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, const Feature &featureCore)
     : DBusProxy(dbusConnection, busName, objectPath, featureCore),
@@ -290,6 +299,9 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
     setBusName(uniqueName);
 }
 
+/**
+ * Class destructor.
+ */
 StatefulDBusProxy::~StatefulDBusProxy()
 {
     delete mPriv;
@@ -343,16 +355,22 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
  * \ingroup clientproxies
  * \headerfile TelepathyQt4/dbus-proxy.h <TelepathyQt4/DBusProxy>
  *
- * Base class representing a remote object whose API is basically stateless.
+ * \brief The StatelessDBusProxy class is a base class representing a remote object whose API is
+ * basically stateless.
+ *
  * These objects can remain valid even if the service providing them exits
  * and is restarted.
  *
- * Examples include the AccountManager, Account and
- * ConnectionManager.
+ * Examples include the AccountManager, Account and ConnectionManager.
  */
 
 /**
- * Constructor
+ * Construct a new StatelessDBusProxy object.
+ *
+ * \param dbusConnection QDBusConnection to use.
+ * \param busName D-Bus bus name of the service that provides the remote object.
+ * \param objectPath The object path.
+ * \param featureCore The object core feature.
  */
 StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, const Feature &featureCore)
@@ -366,7 +384,7 @@ StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
 }
 
 /**
- * Destructor
+ * Class destructor.
  */
 StatelessDBusProxy::~StatelessDBusProxy()
 {

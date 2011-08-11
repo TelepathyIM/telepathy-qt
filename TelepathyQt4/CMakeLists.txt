@@ -134,6 +134,7 @@ set(telepathy_qt4_HEADERS
     AccountInterface
     AccountInterfaceAddressingInterface
     AccountInterfaceAvatarInterface
+    AccountInterfaceStorageInterface
     AccountManager
     account-manager.h
     AccountManagerInterface
@@ -168,6 +169,7 @@ set(telepathy_qt4_HEADERS
     ChannelInterfaceCallStateInterface
     ChannelInterfaceChatStateInterface
     ChannelInterfaceConferenceInterface
+    ChannelInterfaceDestroyableInterface
     ChannelInterfaceDTMFInterface
     ChannelInterfaceGroupInterface
     ChannelInterfaceHoldInterface
@@ -184,6 +186,7 @@ set(telepathy_qt4_HEADERS
     ChannelRequestInterface
     ChannelTypeContactListInterface
     ChannelTypeContactSearchInterface
+    ChannelTypeDBusTubeInterface
     ChannelTypeFileTransferInterface
     ChannelTypeRoomListInterface
     ChannelTypeServerAuthenticationInterface
@@ -343,6 +346,7 @@ set(telepathy_qt4_HEADERS
     pending-ready.h
     PendingSendMessage
     pending-send-message.h
+    PendingStreamedMediaStreams
     PendingStreamTubeConnection
     pending-stream-tube-connection.h
     PendingStringList
@@ -398,6 +402,7 @@ set(telepathy_qt4_HEADERS
     stream-tube-channel.h
     StreamedMediaChannel
     streamed-media-channel.h
+    StreamedMediaStream
     TextChannel
     text-channel.h
     TubeChannel
@@ -503,6 +508,8 @@ set(gen_future_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml)
 tpqt4_xincludator(stable-ifaces-includator ${CMAKE_CURRENT_SOURCE_DIR}/stable-interfaces.xml ${gen_stable_spec_xml})
 tpqt4_xincludator(future-ifaces-includator ${CMAKE_CURRENT_SOURCE_DIR}/future-interfaces.xml ${gen_future_spec_xml})
 
+add_custom_target(all-generated-sources)
+
 tpqt4_constants_gen(stable-constants ${gen_stable_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
                     --namespace=Tp
                     --str-constant-prefix=TELEPATHY_
@@ -600,6 +607,10 @@ tpqt4_client_generator(properties clientprops Properties Tp::Client DEPENDS prop
 tpqt4_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
 tpqt4_future_client_generator(channel-dispatcher TpFuture::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-future-xincludator)
 tpqt4_future_client_generator(misc TpFuture::Client DEPENDS misc-future-xincludator)
+
+if (TARGET doxygen-doc)
+    add_dependencies(doxygen-doc all-generated-sources)
+endif (TARGET doxygen-doc)
 
 # Create the library
 if (ENABLE_COMPILER_COVERAGE)

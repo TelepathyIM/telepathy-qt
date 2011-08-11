@@ -8,6 +8,7 @@
 
 <xi:include href="../spec/Channel_Type_Contact_List.xml"/>
 <xi:include href="../spec/Channel_Type_Contact_Search.xml"/>
+<xi:include href="../spec/Channel_Type_DBus_Tube.xml"/>
 <xi:include href="../spec/Channel_Type_File_Transfer.xml"/>
 <xi:include href="../spec/Channel_Type_Room_List.xml"/>
 <xi:include href="../spec/Channel_Type_Server_Authentication.xml"/>
@@ -21,6 +22,7 @@
 <xi:include href="../spec/Channel_Interface_Call_State.xml"/>
 <xi:include href="../spec/Channel_Interface_Chat_State.xml"/>
 <xi:include href="../spec/Channel_Interface_Conference.xml"/>
+<xi:include href="../spec/Channel_Interface_Destroyable.xml"/>
 <xi:include href="../spec/Channel_Interface_DTMF.xml"/>
 <xi:include href="../spec/Channel_Interface_Group.xml"/>
 <xi:include href="../spec/Channel_Interface_Hold.xml"/>

@@ -54,10 +54,12 @@ struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
  *
  * Instances of this class cannot be constructed directly; the only way to get
  * one is via ConnectionManager.
+ *
+ * See \ref async_model
  */
 
 /**
- * Construct a PendingConnection object.
+ * Construct a new PendingConnection object.
  *
  * \param manager ConnectionManager to use.
  * \param protocol Name of the protocol to create the connection for.
@@ -77,7 +79,7 @@ PendingConnection::PendingConnection(const ConnectionManagerPtr &manager,
 }
 
 /**
- * Construct a PendingConnection object which will fail immediately.
+ * Construct a new PendingConnection object that will fail immediately.
  *
  * \param error Name of the error to fail with.
  * \param errorMessage Detail message for the error.
@@ -98,9 +100,9 @@ PendingConnection::~PendingConnection()
 }
 
 /**
- * Return the ConnectionManager object through which the request was made.
+ * Return the connection manager through which the request was made.
  *
- * \return Connection Manager object.
+ * \return A pointer to the ConnectionManager object.
  */
 ConnectionManagerPtr PendingConnection::manager() const
 {
@@ -108,9 +110,9 @@ ConnectionManagerPtr PendingConnection::manager() const
 }
 
 /**
- * Returns the newly created Connection object.
+ * Return the connection resulting from the connection request.
  *
- * \return Connection object.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr PendingConnection::connection() const
 {

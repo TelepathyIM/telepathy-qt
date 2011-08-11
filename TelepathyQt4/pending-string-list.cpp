@@ -42,6 +42,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStringList::Private
  *
  * \brief The PendingStringList class is a generic subclass of PendingOperation
  * representing a pending D-Bus method call that returns a string list.
+ *
+ * See \ref async_model
  */
 
 PendingStringList::PendingStringList(const SharedPtr<RefCounted> &object)

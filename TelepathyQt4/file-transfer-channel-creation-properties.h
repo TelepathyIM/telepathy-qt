@@ -44,6 +44,8 @@ public:
     FileTransferChannelCreationProperties();
     FileTransferChannelCreationProperties(const QString &suggestedFileName,
             const QString &contentType, qulonglong size);
+    FileTransferChannelCreationProperties(const QString &path,
+            const QString &contentType);
     FileTransferChannelCreationProperties(
             const FileTransferChannelCreationProperties &other);
     ~FileTransferChannelCreationProperties();
@@ -60,6 +62,7 @@ public:
             const QString &description);
     FileTransferChannelCreationProperties &setLastModificationTime(
             const QDateTime &lastModificationTime);
+    FileTransferChannelCreationProperties &setUri(const QString &uri);
 
     /* mandatory parameters */
     QString suggestedFileName() const;
@@ -76,6 +79,9 @@ public:
 
     bool hasLastModificationTime() const;
     QDateTime lastModificationTime() const;
+
+    bool hasUri() const;
+    QString uri() const;
 
 private:
     struct Private;

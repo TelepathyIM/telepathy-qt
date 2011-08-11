@@ -21,10 +21,24 @@ please make any changes there.
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-from sys import maxint
+from sys import maxint, stderr
 import re
 from libtpcodegen import get_by_path, get_descendant_text, NS_TP, xml_escape
 
+class Xzibit(Exception):
+    def __init__(self, parent, child):
+        self.parent = parent
+        self.child = child
+
+    def __str__(self):
+        print """
+    Nested <%s>s are forbidden.
+    Parent:
+        %s...
+    Child:
+        %s...
+        """ % (self.parent.nodeName, self.parent.toxml()[:100],
+               self.child.toxml()[:100])
 
 class _Qt4TypeBinding:
     def __init__(self, val, inarg, outarg, array_val, custom_type, array_of,
@@ -43,6 +57,88 @@ class _Qt4TypeBinding:
             assert array_val
         else:
             assert not array_val
+
+class RefTarget(object):
+    KIND_INTERFACE, KIND_METHOD, KIND_SIGNAL, KIND_PROPERTY = 'node', 'method', 'signal', 'property'
+
+    def __init__(self, el):
+        self.kind = el.localName
+        assert self.kind in (self.KIND_INTERFACE, self.KIND_METHOD, self.KIND_SIGNAL, self.KIND_PROPERTY)
+
+        if self.kind == self.KIND_INTERFACE:
+            self.dbus_text = el.getAttribute('name').lstrip('/').replace('_', '') + 'Interface'
+        else:
+            self.member_text = el.getAttribute('name')
+
+            assert el.parentNode.parentNode.localName == self.KIND_INTERFACE
+            host_class = el.parentNode.parentNode.getAttribute('name').lstrip('/').replace('_', '') + 'Interface'
+
+            if self.kind == self.KIND_PROPERTY:
+                self.member_link = 'requestProperty%s()' % (self.member_text)
+                self.dbus_link = '%s::%s' % (host_class, self.member_link)
+            else:
+                self.member_text = '%s()' % self.member_text
+
+            self.dbus_text = '%s::%s' % (host_class, self.member_text)
+
+class RefRegistry(object):
+    def __init__(self, spec):
+        self.targets = {}
+        for node in spec.getElementsByTagName('node'):
+            iface, = get_by_path(node, 'interface')
+            iface_name = iface.getAttribute('name')
+
+            self.targets[iface_name] = RefTarget(node)
+
+            for method in iface.getElementsByTagName(RefTarget.KIND_METHOD):
+                self.targets[iface_name + '.' + method.getAttribute('name')] = RefTarget(method)
+
+            for signal in iface.getElementsByTagName(RefTarget.KIND_SIGNAL):
+                self.targets[iface_name + '.' + signal.getAttribute('name')] = RefTarget(signal)
+
+            for prop in iface.getElementsByTagName(RefTarget.KIND_PROPERTY):
+                self.targets[iface_name + '.' + prop.getAttribute('name')] = RefTarget(prop)
+
+    def process(self, ref):
+        assert ref.namespaceURI == NS_TP
+
+        def get_closest_parent(el, needle):
+            node = el
+            while node is not None and node.localName != needle:
+                node = node.parentNode
+            return node
+
+        local = get_descendant_text(ref).strip()
+        if ref.localName == 'member-ref':
+            ns = get_closest_parent(ref, 'interface').getAttribute('name')
+            path = ns + '.' + local.strip()
+        else:
+            if ref.hasAttribute('namespace'):
+                ns = ref.getAttribute('namespace').replace('ofdT', 'org.freedesktop.Telepathy')
+                path = ns + '.' + local.strip()
+            else:
+                path = local
+
+        target = self.targets.get(path)
+
+        if target is None:
+            parent = get_closest_parent(ref, 'interface') or get_closest_parent(ref, 'error')
+            parent_name = parent.getAttribute('name')
+            if (path + parent_name).find('.DRAFT') == -1 and (path + parent_name).find('.FUTURE') == -1:
+                print >> stderr, 'WARNING: Failed to resolve %s to "%s" in "%s"' % (
+                        ref.localName, path, parent_name)
+            return path
+
+        if ref.localName == 'member-ref':
+            if target.kind == target.KIND_PROPERTY:
+                return '\\link %s %s \\endlink' % (target.member_link, target.member_text)
+            else:
+                return target.member_text
+        else:
+            if target.kind == target.KIND_PROPERTY:
+                return '\\link %s %s \\endlink' % (target.dbus_link, target.dbus_text)
+            else:
+                return target.dbus_text
 
 def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_ns=None):
     # 'signature' : ('qt-type', 'pass-by-reference', 'array-type')
@@ -119,14 +215,14 @@ def binding_from_decl(name, array_name, array_depth=None, external=False, explic
     outarg = '%s&' % val
     return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None, array_depth)
 
-def extract_arg_or_member_info(els, custom_lists, externals, typesns, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
+def extract_arg_or_member_info(els, custom_lists, externals, typesns, refs, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
     names = []
     docstrings = []
     bindings = []
 
     for el in els:
         names.append(get_qt4_name(el))
-        docstrings.append(format_docstring(el, docstring_indent, docstring_brackets, docstring_maxwidth))
+        docstrings.append(format_docstring(el, refs, docstring_indent, docstring_brackets, docstring_maxwidth))
 
         sig = el.getAttribute('type')
         tptype = el.getAttributeNS(NS_TP, 'type')
@@ -134,7 +230,7 @@ def extract_arg_or_member_info(els, custom_lists, externals, typesns, docstring_
 
     return names, docstrings, bindings
 
-def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
+def format_docstring(el, refs, indent=' * ', brackets=None, maxwidth=80):
     docstring_el = None
 
     for x in el.childNodes:
@@ -146,11 +242,49 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
 
     lines = []
 
+    # escape backslashes, so they won't be interpreted starting doxygen commands and we can later
+    # insert doxygen commands we actually want
+    def escape_slashes(x):
+        if x.nodeType == x.TEXT_NODE:
+            x.data = x.data.replace('\\', '\\\\')
+        elif x.nodeType == x.ELEMENT_NODE:
+            for y in x.childNodes:
+                escape_slashes(y)
+        else:
+            return
+
+    escape_slashes(docstring_el)
+    doc = docstring_el.ownerDocument
+
+    for n in docstring_el.getElementsByTagNameNS(NS_TP, 'rationale'):
+        nested = n.getElementsByTagNameNS(NS_TP, 'rationale')
+        if nested:
+            raise Xzibit(n, nested[0])
+
+        div = doc.createElement('div')
+        div.setAttribute('class', 'rationale')
+
+        for rationale_body in n.childNodes:
+            div.appendChild(rationale_body.cloneNode(True))
+
+        n.parentNode.replaceChild(div, n)
+
     if docstring_el.getAttribute('xmlns') == 'http://www.w3.org/1999/xhtml':
+        for ref in docstring_el.getElementsByTagNameNS(NS_TP, 'member-ref') + docstring_el.getElementsByTagNameNS(NS_TP, 'dbus-ref'):
+            nested = ref.getElementsByTagNameNS(NS_TP, 'member-ref') + ref.getElementsByTagNameNS(NS_TP, 'dbus-ref')
+            if nested:
+                raise Xzibit(n, nested[0])
+
+            text = doc.createTextNode(' \\endhtmlonly ')
+            text.data += refs.process(ref)
+            text.data += ' \\htmlonly '
+
+            ref.parentNode.replaceChild(text, ref)
+
         splitted = ''.join([el.toxml() for el in docstring_el.childNodes]).strip(' ').strip('\n').split('\n')
         level = min([not match and maxint or match.end() - 1 for match in [re.match('^ *[^ ]', line) for line in splitted]])
         assert level != maxint
-        lines = [line[level:].replace('\\', '\\\\') for line in splitted]
+        lines = ['\\htmlonly'] + [line[level:] for line in splitted] + ['\\endhtmlonly']
     else:
         content = xml_escape(get_descendant_text(docstring_el).replace('\n', ' ').strip())
 
@@ -173,7 +307,7 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
             content = content[step:]
 
         if line:
-            lines.append(line.replace('\\', '\\\\'))
+            lines.append(line)
 
     output = []
 

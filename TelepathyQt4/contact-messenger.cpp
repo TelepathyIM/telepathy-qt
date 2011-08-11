@@ -160,7 +160,7 @@ ContactMessenger::~ContactMessenger()
 /**
  * Return the account this messenger is communicating with.
  *
- * \return The account this messenger is communicating with.
+ * \return A pointer to the Account object.
  */
 AccountPtr ContactMessenger::account() const
 {
@@ -170,7 +170,7 @@ AccountPtr ContactMessenger::account() const
 /**
  * Return the identifier of the contact this messenger is communicating with.
  *
- * \return The identifier of the contact this messenger is communicating with.
+ * \return The identifier of the contact.
  */
 QString ContactMessenger::contactIdentifier() const
 {
@@ -180,7 +180,7 @@ QString ContactMessenger::contactIdentifier() const
 /**
  * Return the list of text chats currently being observed.
  *
- * \return The list of text chats currently being observed.
+ * \return A list of pointers to TextChannel objects.
  */
 QList<TextChannelPtr> ContactMessenger::textChats() const
 {
@@ -234,7 +234,7 @@ PendingSendMessage *ContactMessenger::sendMessage(const MessageContentPartList &
  *                  Tp::MessageSendingFlags flags, const QString &sentMessageToken,
  *                  const Tp::TextChannelPtr &channel);
  *
- * This signal is emitted whenever a text message on account() is sent to the contact
+ * Emitted whenever a text message on account() is sent to the contact
  * identified by contactIdentifier().
  *
  * \param message The message sent.
@@ -247,7 +247,7 @@ PendingSendMessage *ContactMessenger::sendMessage(const MessageContentPartList &
  * \fn void ContactMessenger::messageReceived(const Tp::ReceivedMessage &message,
  *                  const Tp::TextChannelPtr &channel);
  *
- * This signal is emitted whenever a text message on account() is received from the contact
+ * Emitted whenever a text message on account() is received from the contact
  * identified by contactIdentifier().
  *
  * \param message The message received.

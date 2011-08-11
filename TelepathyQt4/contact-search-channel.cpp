@@ -346,8 +346,8 @@ const Feature ContactSearchChannel::FeatureCore = Feature(QLatin1String(ContactS
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
  * \return A ContactSearchChannelPtr object pointing to the newly created
  *         ContactSearchChannel object.
  */
@@ -359,14 +359,14 @@ ContactSearchChannelPtr ContactSearchChannel::create(const ConnectionPtr &connec
 }
 
 /**
- * Construct a new contact search channel associated with the given \a objectPath
- * on the same service as the given \a connection.
+ * Construct a new ContactSearchChannel object.
  *
- * \param connection Connection owning this channel, and specifying the service.
- * \param objectPath Path to the object on the service.
- * \param immutableProperties The immutable properties of the channel.
- * \param coreFeature The core feature of the channel type. The corresponding introspectable should
- * depend on ContactSearchChannel::FeatureCore.
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ *                    depend on ContactSearchChannel::FeatureCore.
  */
 ContactSearchChannel::ContactSearchChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -388,9 +388,12 @@ ContactSearchChannel::~ContactSearchChannel()
 /**
  * Return the current search state of this channel.
  *
- * Change notification is via searchStateChanged().
+ * Change notification is via the searchStateChanged() signal.
  *
- * \return The current search state of this channel.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
+ *
+ * \return The current search state as #ChannelContactSearchState.
+ * \sa searchStateChanged()
  */
 ChannelContactSearchState ContactSearchChannel::searchState() const
 {
@@ -404,9 +407,10 @@ ChannelContactSearchState ContactSearchChannel::searchState() const
  * For example, if the terms passed to search() match Antonius, Bridget and Charles and
  * this property is 2, the search service will only return Antonius and Bridget.
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
- * \return The maximum number of results that should be returned by calling search().
+ * \return The maximum number of results, or 0 if there is no limit.
+ * \sa availableSearchKeys(), search()
  */
 uint ContactSearchChannel::limit() const
 {
@@ -420,9 +424,10 @@ uint ContactSearchChannel::limit() const
  * or ["x-n-given", "x-n-family", "nickname", "email"] (for XMPP XEP-0055, without extensibility via
  * Data Forms).
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
- * \return The search keys supported by this channel.
+ * \return The supported search keys.
+ * \sa limit(), search()
  */
 QStringList ContactSearchChannel::availableSearchKeys() const
 {
@@ -432,7 +437,7 @@ QStringList ContactSearchChannel::availableSearchKeys() const
 /**
  * Return the DNS name of the server being searched by this channel.
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
  * \return For protocols which support searching for contacts on multiple servers with different DNS
  *         names (like XMPP), the DNS name of the server being searched by this channel, e.g.
@@ -446,20 +451,21 @@ QString ContactSearchChannel::server() const
 /**
  * Send a request to start a search for contacts on this connection.
  *
- * This may only be called while the searchState() is ChannelContactSearchStateNotStarted;
+ * This may only be called while the searchState() is #ChannelContactSearchStateNotStarted;
  * a valid search request will cause the searchStateChanged() signal to be emitted with the
- * state ChannelContactSearchStateInProgress.
+ * state #ChannelContactSearchStateInProgress.
  *
  * Search results are signalled by searchResultReceived().
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
  * This is an overloaded method for search(const ContactSearchMap &searchTerms).
  *
  * \param searchKey The search key.
  * \param searchTerm The search term.
- * \return A PendingOperation, which will emit PendingOperation::finished
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the search has started.
+ * \sa searchState(), searchStateChanged(), searchResultReceived()
  */
 PendingOperation *ContactSearchChannel::search(const QString &searchKey, const QString &searchTerm)
 {
@@ -471,16 +477,18 @@ PendingOperation *ContactSearchChannel::search(const QString &searchKey, const Q
 /**
  * Send a request to start a search for contacts on this connection.
  *
- * This may only be called while the searchState() is ChannelContactSearchStateNotStarted;
+ * This may only be called while the searchState() is #ChannelContactSearchStateNotStarted;
  * a valid search request will cause the searchStateChanged() signal to be emitted with the
- * state ChannelContactSearchStateInProgress.
+ * state #ChannelContactSearchStateInProgress.
  *
  * Search results are signalled by searchResultReceived().
  *
- * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
- * \return A PendingOperation, which will emit PendingOperation::finished
+ * \param terms The search terms.
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the search has started.
+ * \sa searchState(), searchStateChanged(), searchResultReceived()
  */
 PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
 {
@@ -526,13 +534,14 @@ void ContactSearchChannel::continueSearch()
 /**
  * Stop the current search.
  *
- * This may not be called while the searchState() is ChannelContactSearchStateNotStarted.
- * If called while the searchState() is ChannelContactSearchStateInProgress,
- * searchStateChanged() will be emitted, with the state ChannelContactSearchStateFailed and
- * the error #TELEPATHY_ERROR_CANCELLED.
+ * This may not be called while the searchState() is #ChannelContactSearchStateNotStarted.
+ * If called while the searchState() is #ChannelContactSearchStateInProgress,
+ * searchStateChanged() will be emitted, with the state #ChannelContactSearchStateFailed and
+ * the error #TP_QT4_ERROR_CANCELLED.
  *
- * \return A PendingOperation, which will emit PendingOperation::finished
+ * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa searchState(), searchStateChanged()
  */
 void ContactSearchChannel::stopSearch()
 {
@@ -551,31 +560,6 @@ void ContactSearchChannel::stopSearch()
     (void) new PendingVoid(mPriv->contactSearchInterface->Stop(),
             ContactSearchChannelPtr(this));
 }
-
-/**
- * \fn void ContactSearchChannel::searchStateChanged(Tp::ChannelContactSearchState state,
- *             const QString &errorName,
- *             const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
- *
- * This signal is emitted when the value of searchState() of this channel changes.
- *
- * \param state The new state.
- * \param errorName The name of the error if any.
- * \param details The details for the state change.
- * \sa searchState()
- */
-
-/**
- * \fn void ContactSearchChannel::searchResultReceived(
- *             const Tp::ContactSearchChannel::SearchResult &result)
- *
- * This signal is emitted when a result for a search is received. It can be emitted multiple times
- * until the searchState() goes to ChannelContactSearchStateCompleted or
- * ChannelContactSearchStateFailed.
- *
- * \param result The search result.
- * \sa searchState()
- */
 
 void ContactSearchChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 {
@@ -663,5 +647,30 @@ void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
     mPriv->processingSignalsQueue = false;
     mPriv->processSignalsQueue();
 }
+
+/**
+ * \fn void ContactSearchChannel::searchStateChanged(Tp::ChannelContactSearchState state,
+ *          const QString &errorName,
+ *          const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
+ *
+ * Emitted when the value of searchState() changes.
+ *
+ * \param state The new state.
+ * \param errorName The name of the error if any.
+ * \param details The details for the state change.
+ * \sa searchState()
+ */
+
+/**
+ * \fn void ContactSearchChannel::searchResultReceived(
+ *          const Tp::ContactSearchChannel::SearchResult &result)
+ *
+ * Emitted when a result for a search is received. It can be emitted multiple times
+ * until the searchState() goes to #ChannelContactSearchStateCompleted or
+ * #ChannelContactSearchStateFailed.
+ *
+ * \param result The search result.
+ * \sa searchState()
+ */
 
 } // Tp

@@ -46,32 +46,20 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
     QHostAddress hostAddress;
     quint16 port;
     QString socketPath;
+    bool requiresCredentials;
+    uchar credentialByte;
 };
 
 PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection *parent)
-    : parent(parent)
+    : parent(parent),
+      requiresCredentials(false),
+      credentialByte(0)
 {
 
 }
 
 PendingStreamTubeConnection::Private::~Private()
 {
-
-}
-
-PendingStreamTubeConnection::PendingStreamTubeConnection(
-        PendingVariant *acceptOperation,
-        SocketAddressType type,
-        const IncomingStreamTubeChannelPtr &object)
-    : PendingOperation(object),
-      mPriv(new Private(this))
-{
-    mPriv->tube = object;
-    mPriv->type = type;
-
-    // Connect the pending void
-    connect(acceptOperation, SIGNAL(finished(Tp::PendingOperation*)),
-            this, SLOT(onAcceptFinished(Tp::PendingOperation*)));
 }
 
 /**
@@ -80,19 +68,45 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
  * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/PendingStreamTubeConnection>
  *
  * \brief The PendingStreamTubeConnection class represents an asynchronous
- * operation for accepting a stream tube.
+ * operation for accepting an incoming stream tube.
  *
- * When the operation is finished, you can access the resulting device
- * through device().
- * Otherwise, you can access the bare address through either tcpAddress() or
- * localAddress().
+ * See \ref async_model
  */
+
+PendingStreamTubeConnection::PendingStreamTubeConnection(
+        PendingVariant *acceptOperation,
+        SocketAddressType type,
+        bool requiresCredentials,
+        uchar credentialByte,
+        const IncomingStreamTubeChannelPtr &channel)
+    : PendingOperation(channel),
+      mPriv(new Private(this))
+{
+    mPriv->tube = channel;
+    mPriv->type = type;
+    mPriv->requiresCredentials = requiresCredentials;
+    mPriv->credentialByte = credentialByte;
+
+    /* keep track of channel invalidation */
+    connect(channel.data(),
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
+
+    debug() << "Calling StreamTube.Accept";
+    if (acceptOperation->isFinished()) {
+        onAcceptFinished(acceptOperation);
+    } else {
+        connect(acceptOperation,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onAcceptFinished(Tp::PendingOperation*)));
+    }
+}
 
 PendingStreamTubeConnection::PendingStreamTubeConnection(
         const QString& errorName,
         const QString& errorMessage,
-        const IncomingStreamTubeChannelPtr &object)
-    : PendingOperation(object),
+        const IncomingStreamTubeChannelPtr &channel)
+    : PendingOperation(channel),
       mPriv(new PendingStreamTubeConnection::Private(this))
 {
     setFinishedWithError(errorName, errorMessage);
@@ -107,18 +121,10 @@ PendingStreamTubeConnection::~PendingStreamTubeConnection()
 }
 
 /**
- * This method returns the address type of the opened socket.
+ * Return the type of the opened stream tube socket.
  *
- * Calling this method when the operation has not been completed or has failed, will cause it
- * to return an unmeaningful value.
- *
- * \return The type of socket this PendingStreamTubeConnection has created
- *
- * \note This function will return a valid value only after the operation has been
- *       finished successfully.
- *
- * \see localAddress
- * \see tcpAddress
+ * \return The socket type as #SocketAddressType.
+ * \see localAddress(), ipAddress()
  */
 SocketAddressType PendingStreamTubeConnection::addressType() const
 {
@@ -126,21 +132,14 @@ SocketAddressType PendingStreamTubeConnection::addressType() const
 }
 
 /**
- * This method returns the local address of the opened socket.
+ * Return the local address of the opened stream tube socket.
  *
- * Calling this method when the operation has not been completed or has failed, will cause it
- * to return an unmeaningful value. The same will happen if the socket which has been opened has a
- * different type from SocketAddressTypeUnix or SocketAddressTypeAbstractUnix. Use #ipAddress if
- * that is the case.
+ * This method will return a meaningful value only if the incoming stream tube
+ * was accepted as an Unix socket.
  *
- * \return The local address obtained from this PendingStreamTubeConnection as a QString,
- *         if the connection has been estabilished through a SocketAddressTypeUnix or
- *         a SocketAddressTypeAbstractUnix.
- *
- * \note This function will return a valid value only after the operation has been
- *       finished successfully.
- *
- * \see addressType
+ * \return Unix socket address if using an Unix socket,
+ *         or an undefined value otherwise.
+ * \see addressType(), ipAddress()
  */
 QString PendingStreamTubeConnection::localAddress() const
 {
@@ -148,48 +147,87 @@ QString PendingStreamTubeConnection::localAddress() const
 }
 
 /**
- * This method returns the IP address of the opened socket.
+ * Return the IP address/port combination of the opened stream tube socket.
  *
- * Calling this method when the operation has not been completed or has failed, will cause it
- * to return an unmeaningful value. The same will happen if the socket which has been opened has a
- * different type from SocketAddressTypeIpv4 or SocketAddressTypeIPv6. Use #localAddress if
- * that is the case.
+ * This method will return a meaningful value only if the incoming stream tube
+ * was accepted as a TCP socket.
  *
- * \return The IP address and port obtained from this PendingStreamTubeConnection as a QHostAddress,
- *         if the connection has been estabilished through a SocketAddressTypeIpv4 or
- *         a SocketAddressTypeIPv6.
- *
- * \note This function will return a valid value only after the operation has been
- *       finished successfully.
- *
- * \see addressType
+ * \return Pair of IP address as QHostAddress and port if using a TCP socket,
+ *         or an undefined value otherwise.
+ * \see addressType(), localAddress()
  */
 QPair<QHostAddress, quint16> PendingStreamTubeConnection::ipAddress() const
 {
     return mPriv->tube->ipAddress();
 }
 
+/**
+ * Return whether sending a credential byte once connecting to the socket is required.
+ *
+ * Note that if this method returns \c true, one should send a SCM_CREDS or SCM_CREDENTIALS
+ * and the credentialByte() once connected. If SCM_CREDS or SCM_CREDENTIALS cannot be sent,
+ * the credentialByte() should still be sent.
+ *
+ * \return \c true if sending credentials is required, \c false otherwise.
+ * \sa credentialByte()
+ */
+bool PendingStreamTubeConnection::requiresCredentials() const
+{
+    return mPriv->requiresCredentials;
+}
+
+/**
+ * Return the credential byte to send once connecting to the socket if requiresCredentials() is \c
+ * true.
+ *
+ * \return The credential byte.
+ * \sa requiresCredentials()
+ */
+uchar PendingStreamTubeConnection::credentialByte() const
+{
+    return mPriv->credentialByte;
+}
+
+void PendingStreamTubeConnection::onChannelInvalidated(DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage)
+{
+    Q_UNUSED(proxy);
+
+    if (isFinished()) {
+        return;
+    }
+
+    warning().nospace() << "StreamTube.Accept failed because channel was invalidated with " <<
+        errorName << ": " << errorMessage;
+
+    setFinishedWithError(errorName, errorMessage);
+}
+
 void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
 {
+    if (isFinished()) {
+        return;
+    }
+
     if (op->isError()) {
+        warning().nospace() << "StreamTube.Accept failed with " <<
+            op->errorName() << ": " << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Accept tube finished successfully";
+    debug() << "StreamTube.Accept returned successfully";
 
     PendingVariant *pv = qobject_cast<PendingVariant *>(op);
     // Build the address
     if (mPriv->type == SocketAddressTypeIPv4) {
         SocketAddressIPv4 addr = qdbus_cast<SocketAddressIPv4>(pv->result());
-        debug().nospace() << "Got address " << addr.address <<
-                ":" << addr.port;
+        debug().nospace() << "Got address " << addr.address << ":" << addr.port;
         mPriv->hostAddress = QHostAddress(addr.address);
         mPriv->port = addr.port;
     } else if (mPriv->type == SocketAddressTypeIPv6) {
         SocketAddressIPv6 addr = qdbus_cast<SocketAddressIPv6>(pv->result());
-        debug().nospace() << "Got address " << addr.address <<
-                ":" << addr.port;
+        debug().nospace() << "Got address " << addr.address << ":" << addr.port;
         mPriv->hostAddress = QHostAddress(addr.address);
         mPriv->port = addr.port;
     } else {
@@ -199,11 +237,11 @@ void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
     }
 
     // It might have been already opened - check
-    if (mPriv->tube->tubeState() == TubeChannelStateOpen) {
-        onTubeStateChanged(mPriv->tube->tubeState());
+    if (mPriv->tube->state() == TubeChannelStateOpen) {
+        onTubeStateChanged(mPriv->tube->state());
     } else {
         // Wait until the tube gets opened on the other side
-        connect(mPriv->tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
+        connect(mPriv->tube.data(), SIGNAL(stateChanged(Tp::TubeChannelState)),
                 this, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
     }
 }

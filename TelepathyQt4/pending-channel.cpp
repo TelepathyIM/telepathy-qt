@@ -105,13 +105,13 @@ private:
  * an asynchronous channel request.
  *
  * Instances of this class cannot be constructed directly; the only way to get
- * one is trough Connection.
+ * one is trough Connection or Account.
  *
  * See \ref async_model
  */
 
 /**
- * Construct a new PendingChannel object that will fail.
+ * Construct a new PendingChannel object that will fail immediately.
  *
  * \param connection Connection to use.
  * \param errorName The error name.
@@ -224,6 +224,18 @@ PendingChannel::PendingChannel(const AccountPtr &account,
 }
 
 /**
+ * Construct a new PendingChannel object that will fail immediately.
+ *
+ * \param errorName The name of a D-Bus error.
+ * \param errorMessage The error message.
+ */
+PendingChannel::PendingChannel(const QString &errorName, const QString &errorMessage)
+    : PendingOperation(ConnectionPtr()), mPriv(new Private)
+{
+    setFinishedWithError(errorName, errorMessage);
+}
+
+/**
  * Class destructor.
  */
 PendingChannel::~PendingChannel()
@@ -232,12 +244,12 @@ PendingChannel::~PendingChannel()
 }
 
 /**
- * Return the Connection object through which the channel request was made.
+ * Return the connection through which the channel request was made.
  *
  * Note that if this channel request was created through Account, a null ConnectionPtr will be
  * returned.
  *
- * \return Pointer to the Connection.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr PendingChannel::connection() const
 {
@@ -247,13 +259,11 @@ ConnectionPtr PendingChannel::connection() const
 /**
  * Return whether this channel belongs to this process.
  *
- * If false, the caller MUST assume that some other process is
- * handling this channel; if true, the caller SHOULD handle it
+ * If \c false, the caller must assume that some other process is
+ * handling this channel; if \c true, the caller should handle it
  * themselves or delegate it to another client.
  *
- * Note that the value is undefined until the operation finishes.
- *
- * \return Boolean indicating whether this channel belongs to this process.
+ * \return \c true if it belongs, \c false otherwise.
  */
 bool PendingChannel::yours() const
 {
@@ -270,8 +280,7 @@ bool PendingChannel::yours() const
 /**
  * Return the channel type specified in the channel request.
  *
- * \return The D-Bus interface name of the interface specific to the
- *         requested channel type.
+ * \return The D-Bus interface name for the type of the channel.
  */
 const QString &PendingChannel::channelType() const
 {
@@ -288,7 +297,8 @@ const QString &PendingChannel::channelType() const
  * will actually get is a text channel with handle type HandleTypeNone, with
  * the requested contact as a member.)
  *
- * \return The handle type, as specified in #HandleType.
+ * \return The target handle type as #HandleType.
+ * \sa targetHandle()
  */
 uint PendingChannel::targetHandleType() const
 {
@@ -298,9 +308,11 @@ uint PendingChannel::targetHandleType() const
 /**
  * If the channel request has finished, return the target handle of the
  * resulting channel. Otherwise, return the target handle that was requested
- * (which might be different in some situations - see targetHandleType).
+ * (which might be different in some situations - see targetHandleType()).
  *
- * \return The handle.
+ * \return An integer representing the target handle, which is of the type
+ *         targetHandleType() indicates.
+ * \sa targetHandleType()
  */
 uint PendingChannel::targetHandle() const
 {
@@ -324,8 +336,7 @@ uint PendingChannel::targetHandle() const
  * channels based on their immutable properties, without needing to create
  * Channel objects.
  *
- * \return A map in which the keys are D-Bus property names and the values
- *         are the corresponding values.
+ * \return The immutable properties as QVariantMap.
  */
 QVariantMap PendingChannel::immutableProperties() const
 {
@@ -357,13 +368,9 @@ QVariantMap PendingChannel::immutableProperties() const
 }
 
 /**
- * Returns a shared pointer to a Channel high-level proxy object associated
- * with the remote channel resulting from the channel request.
+ * Return the channel resulting from the channel request.
  *
- * If isValid() returns <code>false</code>, the request has not (at least yet) completed
- * successfully, and a null ChannelPtr will be returned.
- *
- * \return Shared pointer to the new Channel object, 0 if an error occurred.
+ * \return A pointer to the Channel object.
  */
 ChannelPtr PendingChannel::channel() const
 {
@@ -381,9 +388,6 @@ ChannelPtr PendingChannel::channel() const
 /**
  * If this channel request has finished and was created through Account,
  * return a HandledChannelNotifier object that will keep track of channel() being re-requested.
- *
- * If isValid() returns <code>false</code>, the request has not (at least yet) completed
- * successfully, and a null HandledChannelNotifier will be returned.
  *
  * \return A HandledChannelNotifier instance, or 0 if an error occurred.
  */

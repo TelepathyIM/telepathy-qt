@@ -1,27 +1,20 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <tests/lib/test.h>
 
-#include <QtDBus/QtDBus>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
 
-#include <QtTest/QtTest>
+#include <tests/lib/glib/echo2/conn.h>
 
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/Channel>
-#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
-
-#include <tests/lib/glib/echo2/conn.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 
@@ -31,15 +24,12 @@ class TestChanBasics : public Test
 
 public:
     TestChanBasics(QObject *parent = 0)
-        : Test(parent), mConnService(0), mHandle(0)
+        : Test(parent), mConn(0), mHandle(0)
     { }
 
 protected Q_SLOTS:
-    void expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason);
-    void expectInvalidated(const QString &reason);
-    void expectPendingHandleFinished(Tp::PendingOperation*);
-    void expectCreateChannelFinished(Tp::PendingOperation *);
-    void expectEnsureChannelFinished(Tp::PendingOperation *);
+    void expectInvalidated();
+    void expectPendingHandleFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
@@ -53,123 +43,23 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    QString mConnName, mConnPath;
-    ExampleEcho2Connection *mConnService;
-    ConnectionPtr mConn;
+    TestConnHelper *mConn;
     ChannelPtr mChan;
     QString mChanObjectPath;
     uint mHandle;
 };
 
-void TestChanBasics::expectConnReady(Tp::ConnectionStatus newStatus,
-        Tp::ConnectionStatusReason newStatusReason)
+void TestChanBasics::expectInvalidated()
 {
-    qDebug() << "connection changed to status" << newStatus;
-    switch (newStatus) {
-    case ConnectionStatusDisconnected:
-        qWarning() << "Disconnected";
-        mLoop->exit(1);
-        break;
-    case ConnectionStatusConnecting:
-        /* do nothing */
-        break;
-    case ConnectionStatusConnected:
-        qDebug() << "Ready";
-        mLoop->exit(0);
-        break;
-    default:
-        qWarning().nospace() << "What sort of status is "
-            << newStatus << "?!";
-        mLoop->exit(2);
-        break;
-    }
-}
-
-void TestChanBasics::expectInvalidated(const QString &reason)
-{
-    qDebug() << sender() << "invalidated:" << reason;
     mLoop->exit(0);
 }
 
 void TestChanBasics::expectPendingHandleFinished(PendingOperation *op)
 {
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
+    TEST_VERIFY_OP(op);
 
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
     PendingHandles *pending = qobject_cast<PendingHandles*>(op);
     mHandle = pending->handles().at(0);
-    mLoop->exit(0);
-}
-
-void TestChanBasics::expectCreateChannelFinished(PendingOperation* op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = pc->channel();
-    mChanObjectPath = mChan->objectPath();
-    mLoop->exit(0);
-}
-
-void TestChanBasics::expectEnsureChannelFinished(PendingOperation* op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = pc->channel();
-    QCOMPARE(pc->yours(), false);
-    QCOMPARE(mChan->objectPath(), mChanObjectPath);
     mLoop->exit(0);
 }
 
@@ -182,54 +72,14 @@ void TestChanBasics::initTestCase()
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = EXAMPLE_ECHO_2_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             EXAMPLE_TYPE_ECHO_2_CONNECTION,
             "account", "me@example.com",
             "protocol", "contacts",
-            NULL));
-    QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "foo", &name, &connPath, &error));
-    QVERIFY(error == 0);
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    mConn->lowlevel()->requestConnect();
-
-    Features features = Features() << Connection::FeatureSelfContact;
-    QVERIFY(connect(mConn->becomeReady(features),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(features), true);
-
-    if (mConn->status() != ConnectionStatusConnected) {
-        QVERIFY(connect(mConn.data(),
-                        SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
-                        SLOT(expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason))));
-        QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn.data(),
-                           SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
-                           this,
-                           SLOT(expectConnReady(Tp::ConnectionStatus, Tp::ConnectionStatusReason))));
-        QCOMPARE(mConn->status(), ConnectionStatusConnected);
-    }
+    QCOMPARE(mConn->enableFeatures(Connection::FeatureSelfContact), true);
 }
 
 void TestChanBasics::init()
@@ -245,7 +95,7 @@ void TestChanBasics::testRequestHandle()
     QStringList ids = QStringList() << QLatin1String("alice");
 
     // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->lowlevel()->requestHandles(Tp::HandleTypeContact, ids);
+    PendingHandles *pending = mConn->client()->lowlevel()->requestHandles(Tp::HandleTypeContact, ids);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingHandleFinished(Tp::PendingOperation*))));
@@ -259,19 +109,9 @@ void TestChanBasics::testRequestHandle()
 
 void TestChanBasics::testCreateChannel()
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   mHandle);
-    QVERIFY(connect(mConn->lowlevel()->createChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    Q_ASSERT(!mChan.isNull());
+    mChan = mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_TEXT, Tp::HandleTypeContact, mHandle);
+    QVERIFY(mChan);
+    mChanObjectPath = mChan->objectPath();
 
     QVERIFY(connect(mChan->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -283,7 +123,7 @@ void TestChanBasics::testCreateChannel()
     QCOMPARE(mChan->groupCanRemoveContacts(), false);
     QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
     QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
-    QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
+    QCOMPARE(mChan->groupSelfContact(), mConn->client()->selfContact());
     QCOMPARE(mChan->targetId(), QString::fromLatin1("alice"));
     QVERIFY(!mChan->targetContact().isNull());
     QCOMPARE(mChan->targetContact()->id(), QString::fromLatin1("alice"));
@@ -303,19 +143,11 @@ void TestChanBasics::testCreateChannel()
 
 void TestChanBasics::testEnsureChannel()
 {
-    QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   mHandle);
-    QVERIFY(connect(mConn->lowlevel()->ensureChannel(request),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    QVERIFY(!mChan.isNull());
+    ChannelPtr chan = mConn->ensureChannel(TP_QT4_IFACE_CHANNEL_TYPE_TEXT,
+            Tp::HandleTypeContact, mHandle);
+    QVERIFY(chan);
+    QCOMPARE(chan->objectPath(), mChanObjectPath);
+    mChan = chan;
 
     QVERIFY(connect(mChan->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -327,7 +159,7 @@ void TestChanBasics::testEnsureChannel()
     QCOMPARE(mChan->groupCanRemoveContacts(), false);
     QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
     QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
-    QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
+    QCOMPARE(mChan->groupSelfContact(), mConn->client()->selfContact());
 
     QStringList ids;
     Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
@@ -353,31 +185,11 @@ void TestChanBasics::cleanup()
 
 void TestChanBasics::cleanupTestCase()
 {
-    if (mConn) {
-        // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->lowlevel()->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            SLOT(expectInvalidated(QString))));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-    }
+    QCOMPARE(mConn->disconnect(), true);
+    delete mConn;
 
     if (mChan) {
-        if (mChan->isValid()) {
-            QVERIFY(connect(mChan.data(),
-                        SIGNAL(invalidated(Tp::DBusProxy *,
-                                const QString &, const QString &)),
-                        SLOT(expectInvalidated(QString))));
-            QCOMPARE(mLoop->exec(), 0);
-        }
-
+        QVERIFY(!mChan->isValid());
         QVERIFY(mChan->invalidationReason() == TP_QT4_ERROR_CANCELLED ||
                 mChan->invalidationReason() == TP_QT4_ERROR_ORPHANED);
     }

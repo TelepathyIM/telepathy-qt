@@ -23,13 +23,13 @@
 #include <TelepathyQt4/Message>
 #include <TelepathyQt4/ReceivedMessage>
 
-#include <QDateTime>
-#include <QPointer>
-#include <QSet>
+#include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/TextChannel>
 
-#include "TelepathyQt4/debug-internal.h"
+#include <QDateTime>
+#include <QPointer>
+#include <QSet>
 
 namespace Tp
 {
@@ -133,21 +133,23 @@ void Message::Private::clearSenderHandle()
 /**
  * \class Message
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/message.h <TelepathyQt4/Message>
  *
- * \brief The Message class represents a Telepathy message in a text channel.
- * These objects are implicitly shared, like QString.
+ * \brief The Message class represents a Telepathy message in a TextChannel.
+ *
+ * This class is implicitly shared, like QString.
  */
 
 /**
- * Default constructor, only used internally.
+ * \internal Default constructor.
  */
 Message::Message()
+    : mPriv(new Private(MessagePartList()))
 {
 }
 
 /**
- * Constructor.
+ * Construct a new Message object.
  *
  * \param parts The parts of a message as defined by the \telepathy_spec.
  *              This list must have length at least 1.
@@ -159,11 +161,11 @@ Message::Message(const MessagePartList &parts)
 }
 
 /**
- * Constructor, from the parameters of the old Sent signal.
+ * Construct a new Message object.
  *
- * \param timestamp The time the message was sent
- * \param type The message type
- * \param text The text of the message
+ * \param timestamp The time the message was sent.
+ * \param type The message type.
+ * \param text The message body.
  */
 Message::Message(uint timestamp, uint type, const QString &text)
     : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
@@ -179,10 +181,10 @@ Message::Message(uint timestamp, uint type, const QString &text)
 }
 
 /**
- * Constructor, from the parameters of the old Send method.
+ * Construct a new Message object.
  *
- * \param type The message type
- * \param text The text of the message
+ * \param type The message type.
+ * \param text The message body.
  */
 Message::Message(ChannelTextMessageType type, const QString &text)
     : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
@@ -234,7 +236,7 @@ Message::~Message()
  * Return the time the message was sent, or QDateTime() if that time is
  * unknown.
  *
- * \return A timestamp
+ * \return The timestamp as QDateTime.
  */
 QDateTime Message::sent() const
 {
@@ -248,10 +250,10 @@ QDateTime Message::sent() const
 }
 
 /**
- * Return the type of message this is, or ChannelTextMessageTypeNormal
+ * Return the type of this message, or #ChannelTextMessageTypeNormal
  * if the type is not recognised.
  *
- * \return The ChannelTextMessageType for this message
+ * \return The type as #ChannelTextMessageType.
  */
 ChannelTextMessageType Message::messageType() const
 {
@@ -266,6 +268,8 @@ ChannelTextMessageType Message::messageType() const
 
 /**
  * Return whether this message was truncated during delivery.
+ *
+ * \return \c true if truncated, \c false otherwise.
  */
 bool Message::isTruncated() const
 {
@@ -281,7 +285,8 @@ bool Message::isTruncated() const
  * Return whether this message contains parts not representable as plain
  * text.
  *
- * \return true if this message cannot completely be represented as plain text
+ * \return \c true if it cannot completely be represented as plain text, \c false
+ *         otherwise.
  */
 bool Message::hasNonTextContent() const
 {
@@ -323,7 +328,7 @@ bool Message::hasNonTextContent() const
  * Return the unique token identifying this message (e.g. the id attribute
  * for XMPP messages), or an empty string if there is no suitable token.
  *
- * \return A non-empty message identifier, or an empty string if none
+ * \return The non-empty message identifier, or an empty string if none.
  */
 QString Message::messageToken() const
 {
@@ -332,15 +337,16 @@ QString Message::messageToken() const
 
 /**
  * Return whether this message is specific to a D-Bus interface. This is
- * false in almost all cases.
+ * \c false in almost all cases.
  *
- * If this function returns true, the message is specific to the interface
- * indicated by dbusInterface. Clients that don't understand that interface
+ * If this function returns \c true, the message is specific to the interface
+ * indicated by dbusInterface(). Clients that don't understand that interface
  * should not display the message. However, if the client would acknowledge
  * an ordinary message, it must also acknowledge this interface-specific
  * message.
  *
- * \return true if dbusInterface would return a non-empty string
+ * \return \c true if dbusInterface() would return a non-empty string, \c false otherwise.
+ * \sa dbusInterface()
  */
 bool Message::isSpecificToDBusInterface() const
 {
@@ -350,12 +356,20 @@ bool Message::isSpecificToDBusInterface() const
 /**
  * Return the D-Bus interface to which this message is specific, or an
  * empty string for normal messages.
+ *
+ * \return The D-Bus interface name, or an empty string.
+ * \sa isSpecificToDBusInterface()
  */
 QString Message::dbusInterface() const
 {
     return stringOrEmptyFromPart(mPriv->parts, 0, "interface");
 }
 
+/**
+ * Return the message body containing all "text/plain" parts.
+ *
+ * \return The body text.
+ */
 QString Message::text() const
 {
     // Alternative-groups for which we've already emitted an alternative
@@ -390,10 +404,11 @@ QString Message::text() const
 
 /**
  * Return the message's header part, as defined by the \telepathy_spec.
+ *
  * This is provided for advanced clients that need to access
  * additional information not available through the normal Message API.
  *
- * \return The same thing as messagepart(0)
+ * \return The header as a MessagePart object. The same thing as part(0).
  */
 MessagePart Message::header() const
 {
@@ -403,7 +418,8 @@ MessagePart Message::header() const
 /**
  * Return the number of parts in this message.
  *
- * \return 1 greater than the largest valid argument to part
+ * \return 1 greater than the largest valid argument to part().
+ * \sa part(), parts()
  */
 int Message::size() const
 {
@@ -411,20 +427,26 @@ int Message::size() const
 }
 
 /**
- * Return the message's header part, as defined by the \telepathy_spec.
+ * Return the message's part for \a index, as defined by the \telepathy_spec.
+ *
  * This is provided for advanced clients that need to access
  * additional information not available through the normal Message API.
  *
  * \param index The part to access, which must be strictly less than size();
  *              part number 0 is the header, parts numbered 1 or greater
  *              are the body of the message.
- * \return Part of the message
+ * \return A MessagePart object.
  */
 MessagePart Message::part(uint index) const
 {
     return mPriv->parts.at(index);
 }
 
+/**
+ * Return the list of message parts forming this message.
+ *
+ * \return The list of MessagePart objects.
+ */
 MessagePartList Message::parts() const
 {
     return mPriv->parts;
@@ -433,10 +455,10 @@ MessagePartList Message::parts() const
 /**
  * \class ReceivedMessage
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/message.h <TelepathyQt4/ReceivedMessage>
  *
  * \brief The ReceivedMessage class is a subclass of Message, representing a
- * received message.
+ * received message only.
  *
  * It contains additional information that's generally only
  * available on received messages.
@@ -445,7 +467,7 @@ MessagePartList Message::parts() const
 /**
  * \class ReceivedMessage::DeliveryDetails
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/message.h <TelepathyQt4/ReceivedMessage>
  *
  * \brief The ReceivedMessage::DeliveryDetails class represents the details of a delivery report.
  */
@@ -460,24 +482,41 @@ struct TELEPATHY_QT4_NO_EXPORT ReceivedMessage::DeliveryDetails::Private : publi
     MessagePartList parts;
 };
 
+/**
+ * Default constructor.
+ */
 ReceivedMessage::DeliveryDetails::DeliveryDetails()
 {
 }
 
+/**
+ * Copy constructor.
+ */
 ReceivedMessage::DeliveryDetails::DeliveryDetails(const DeliveryDetails &other)
     : mPriv(other.mPriv)
 {
 }
 
+/**
+ * Construct a new ReceivedMessage::DeliveryDetails object.
+ *
+ * \param The message parts.
+ */
 ReceivedMessage::DeliveryDetails::DeliveryDetails(const MessagePartList &parts)
     : mPriv(new Private(parts))
 {
 }
 
+/**
+ * Class destructor.
+ */
 ReceivedMessage::DeliveryDetails::~DeliveryDetails()
 {
 }
 
+/**
+ * Assignment operator.
+ */
 ReceivedMessage::DeliveryDetails &ReceivedMessage::DeliveryDetails::operator=(
         const DeliveryDetails &other)
 {
@@ -485,6 +524,11 @@ ReceivedMessage::DeliveryDetails &ReceivedMessage::DeliveryDetails::operator=(
     return *this;
 }
 
+/**
+ * Return the delivery status of a message.
+ *
+ * \return The delivery status as #DeliveryStatus.
+ */
 DeliveryStatus ReceivedMessage::DeliveryDetails::status() const
 {
     if (!isValid()) {
@@ -493,6 +537,13 @@ DeliveryStatus ReceivedMessage::DeliveryDetails::status() const
     return static_cast<DeliveryStatus>(uintOrZeroFromPart(mPriv->parts, 0, "delivery-status"));
 }
 
+/**
+ * Return whether this delivery report contains an identifier for the message to which it
+ * refers.
+ *
+ * \return \c true if an original message token is known, \c false otherwise.
+ * \sa originalToken()
+ */
 bool ReceivedMessage::DeliveryDetails::hasOriginalToken() const
 {
     if (!isValid()) {
@@ -501,6 +552,18 @@ bool ReceivedMessage::DeliveryDetails::hasOriginalToken() const
     return partContains(mPriv->parts, 0, "delivery-token");
 }
 
+/**
+ * Return an identifier for the message to which this delivery report refers, or an empty string if
+ * hasOriginalToken() returns \c false.
+ *
+ * Clients may match this against the token produced by the TextChannel::send() method and
+ * TextChannel::messageSent() signal. A status report with no token could match any sent message,
+ * and a sent message with an empty token could match any status report.
+ * If multiple sent messages match, clients should use some reasonable heuristic.
+ *
+ * \return The message token if hasOriginalToken() returns \c true, an empty string otherwise.
+ * \sa hasOriginalToken().
+ */
 QString ReceivedMessage::DeliveryDetails::originalToken() const
 {
     if (!isValid()) {
@@ -509,6 +572,12 @@ QString ReceivedMessage::DeliveryDetails::originalToken() const
     return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-token");
 }
 
+/**
+ * Return whether the delivery of the message this delivery report refers to, failed.
+ *
+ * \return \c true if the message delivery failed, \c false otherwise.
+ * \sa error()
+ */
 bool ReceivedMessage::DeliveryDetails::isError() const
 {
     if (!isValid()) {
@@ -518,6 +587,12 @@ bool ReceivedMessage::DeliveryDetails::isError() const
     return st == DeliveryStatusTemporarilyFailed || st == DeliveryStatusPermanentlyFailed;
 }
 
+/**
+ * Return the reason for the delivery failure if known.
+ *
+ * \return The reason as #ChannelTextSendError.
+ * \sa isError()
+ */
 ChannelTextSendError ReceivedMessage::DeliveryDetails::error() const
 {
     if (!isValid()) {
@@ -526,6 +601,13 @@ ChannelTextSendError ReceivedMessage::DeliveryDetails::error() const
     return static_cast<ChannelTextSendError>(uintOrZeroFromPart(mPriv->parts, 0, "delivery-error"));
 }
 
+/**
+ * Return whether this delivery report contains a debugging information on why the message it refers
+ * to could not be delivered.
+ *
+ * \return \c true if a debugging information is provided, \c false otherwise.
+ * \sa debugMessage()
+ */
 bool ReceivedMessage::DeliveryDetails::hasDebugMessage() const
 {
     if (!isValid()) {
@@ -534,6 +616,13 @@ bool ReceivedMessage::DeliveryDetails::hasDebugMessage() const
     return partContains(mPriv->parts, 0, "delivery-error-message");
 }
 
+/**
+ * Return the debugging information on why the message this delivery report refers to could not be
+ * delivered.
+ *
+ * \return The debug string.
+ * \sa hasDebugMessage()
+ */
 QString ReceivedMessage::DeliveryDetails::debugMessage() const
 {
     if (!isValid()) {
@@ -542,6 +631,12 @@ QString ReceivedMessage::DeliveryDetails::debugMessage() const
     return stringOrEmptyFromPart(mPriv->parts, 0, "delivery-error-message");
 }
 
+/**
+ * Return the reason for the delivery failure if known, specified as a
+ * (possibly implementation-specific) D-Bus error.
+ *
+ * \return The D-Bus error string representing the error.
+ */
 QString ReceivedMessage::DeliveryDetails::dbusError() const
 {
     if (!isValid()) {
@@ -572,6 +667,12 @@ QString ReceivedMessage::DeliveryDetails::dbusError() const
     return ret;
 }
 
+/**
+ * Return whether the message content for the message this delivery report refers to is known.
+ *
+ * \return \c true if the original message content is known, \c false otherwise.
+ * \sa echoedMessage()
+ */
 bool ReceivedMessage::DeliveryDetails::hasEchoedMessage() const
 {
     if (!isValid()) {
@@ -580,6 +681,22 @@ bool ReceivedMessage::DeliveryDetails::hasEchoedMessage() const
     return partContains(mPriv->parts, 0, "delivery-echo");
 }
 
+/**
+ * Return the Message object for the message this delivery report refers to, omitted if the message
+ * is unknown.
+ *
+ * <div class='rationale'>
+ *   <h5>Rationale:</h5>
+ *   <div>
+ *   Some protocols, like XMPP, echo the failing message back to the sender. This is sometimes the
+ *   only way to match it against the sent message, so we include it here.
+ *   </div>
+ * </div>
+ *
+ * \return The Message object, or an empty Message object if hasEchoedMessage()
+ *         returns \c false.
+ * \sa hasEchoedMessage()
+ */
 Message ReceivedMessage::DeliveryDetails::echoedMessage() const
 {
     if (!isValid()) {
@@ -589,17 +706,18 @@ Message ReceivedMessage::DeliveryDetails::echoedMessage() const
 }
 
 /**
- * Default constructor, only used internally.
+ * \internal Default constructor.
  */
 ReceivedMessage::ReceivedMessage()
 {
 }
 
 /**
- * Constructor.
+ * Construct a new ReceivedMessage object.
  *
  * \param parts The parts of a message as defined by the \telepathy_spec.
  *              This list must have length at least 1.
+ * \param channel The channel owning this message.
  */
 ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
         const TextChannelPtr &channel)
@@ -634,7 +752,7 @@ ReceivedMessage &ReceivedMessage::operator=(const ReceivedMessage &other)
 }
 
 /**
- * Destructor.
+ * Class destructor.
  */
 ReceivedMessage::~ReceivedMessage()
 {
@@ -643,7 +761,7 @@ ReceivedMessage::~ReceivedMessage()
 /**
  * Return the time the message was received.
  *
- * \return A timestamp
+ * \return The timestamp as QDateTime, or QDateTime() if unknown.
  */
 QDateTime ReceivedMessage::received() const
 {
@@ -657,10 +775,10 @@ QDateTime ReceivedMessage::received() const
 }
 
 /**
- * Return the Contact who sent the message, or
- * ContactPtr(0) if unknown.
+ * Return the contact who sent the message.
  *
- * \return The sender or ContactPtr(0)
+ * \return A pointer to the Contact object.
+ * \sa senderNickname()
  */
 ContactPtr ReceivedMessage::sender() const
 {
@@ -671,7 +789,8 @@ ContactPtr ReceivedMessage::sender() const
  * Return the nickname chosen by the sender of the message, which can be different for each
  * message in a conversation.
  *
- * \return The nickname chosen by the sender of the message.
+ * \return The nickname.
+ * \sa sender()
  */
 QString ReceivedMessage::senderNickname() const
 {
@@ -689,7 +808,7 @@ QString ReceivedMessage::senderNickname() const
  * For instance, a user interface could replace the superseded
  * message with this message, or grey out the superseded message.
  *
- * \returns The token of the superseded message or an empty string if none.
+ * \return The message token of the superseded message or an empty string if none.
  */
 QString ReceivedMessage::supersededToken() const
 {
@@ -700,11 +819,11 @@ QString ReceivedMessage::supersededToken() const
  * Return whether the incoming message was part of a replay of message
  * history.
  *
- * If true, loggers can use this to improve their heuristics for elimination
+ * If \c true, loggers can use this to improve their heuristics for elimination
  * of duplicate messages (a simple, correct implementation would be to avoid
  * logging any message that has this flag).
  *
- * \return whether the scrollback flag is set
+ * \return \c true if the scrollback flag is set, \c false otherwise.
  */
 bool ReceivedMessage::isScrollback() const
 {
@@ -713,12 +832,12 @@ bool ReceivedMessage::isScrollback() const
 
 /**
  * Return whether the incoming message was seen in a previous channel during
- * the lifetime of this Connection, but was not acknowledged before that
- * chanenl closed, causing the channel in which it now appears to open.
+ * the lifetime of the connection, but was not acknowledged before that
+ * channel closed, causing the channel in which it now appears to open.
  *
- * If true, loggers should not log this message again.
+ * If \c true, loggers should not log this message again.
  *
- * \return whether the rescued flag is set
+ * \return \c true if the rescued flag is set, \c false otherwise.
  */
 bool ReceivedMessage::isRescued() const
 {
@@ -728,7 +847,8 @@ bool ReceivedMessage::isRescued() const
 /**
  * Return whether the incoming message is a delivery report.
  *
- * \return Whether the message is a delivery report.
+ * \return \c true if a delivery report, \c false otherwise.
+ * \sa deliveryDetails()
  */
 bool ReceivedMessage::isDeliveryReport() const
 {
@@ -740,13 +860,19 @@ bool ReceivedMessage::isDeliveryReport() const
  *
  * This method should only be used if isDeliveryReport() returns \c true.
  *
- * \return The details of a delivery report.
+ * \return The delivery report as a ReceivedMessage::DeliveryDetails object.
+ * \sa isDeliveryReport()
  */
 ReceivedMessage::DeliveryDetails ReceivedMessage::deliveryDetails() const
 {
     return DeliveryDetails(parts());
 }
 
+/**
+ * Return whether this message is from \a channel.
+ *
+ * \return \c true if the message is from \a channel, \c false otherwise.
+ */
 bool ReceivedMessage::isFromChannel(const TextChannelPtr &channel) const
 {
     return TextChannelPtr(mPriv->textChannel) == channel;

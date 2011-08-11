@@ -82,7 +82,6 @@ include(TelepathyDefaults)
 # This file contains all the tpqt4 macros used in the buildsystem
 include(TpQt4Macros)
 
-include(Doxygen)
 include(MacroLogFeature)
 
 # external dependencies
@@ -91,6 +90,9 @@ include(MacroLogFeature)
 # Find qt4 version >= 4.5
 set (QT_MIN_VERSION "4.6.0")
 find_package(Qt4 REQUIRED)
+
+# The doxygen macro requires Qt to have been looked up to enable crosslinking
+include(Doxygen)
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_BINARY_DIR}
@@ -150,6 +152,8 @@ macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
 # Those are needed for the insane include dir dependency hell
 find_package(GLIB2)
 find_package(GObject)
+find_package(GIO)
+find_package(GIOUnix)
 find_package(DBus)
 find_package(DBusGLib)
 find_package(LibXml2)
@@ -189,8 +193,14 @@ find_program(GLIB_GENMARSHAL glib-genmarshal)
 # Enable glib-based tests only if Qt4 has GLib support and Telepathy-glib was found
 if(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
     set(ENABLE_TP_GLIB_TESTS 1)
+    if(GIO_FOUND AND GIOUNIX_FOUND)
+        set(ENABLE_TP_GLIB_GIO_TESTS 1)
+    else(GIO_FOUND AND GIOUNIX_FOUND)
+        set(ENABLE_TP_GLIB_GIO_TESTS 0)
+    endif(GIO_FOUND AND GIOUNIX_FOUND)
 else(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
     set(ENABLE_TP_GLIB_TESTS 0)
+    set(ENABLE_TP_GLIB_GIO_TESTS 0)
 endif(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
 
 # Add the source subdirectories

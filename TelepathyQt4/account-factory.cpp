@@ -43,7 +43,7 @@ namespace Tp
  */
 
 /**
- * Creates a new AccountFactory.
+ * Create a new AccountFactory object.
  *
  * Optionally, the \a features to make ready on all constructed proxies can be specified. The
  * default is to make no features ready. It should be noted that unlike Account::becomeReady(),
@@ -52,7 +52,8 @@ namespace Tp
  *
  * \param bus The QDBusConnection for proxies constructed using this factory to use.
  * \param features The features to make ready on constructed Accounts.
- * \returns A pointer to the created factory.
+ * \return An AccountFactoryPtr object pointing to the newly created
+ *         AccountFactory object.
  */
 AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus, const Features &features)
 {
@@ -60,7 +61,7 @@ AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus, const Featu
 }
 
 /**
- * Class constructor.
+ * Construct a new AccountFactory object.
  *
  * As in create(), it should be noted that unlike Account::becomeReady(), FeatureCore isn't assumed.
  * If no \a features are specified, no Account::becomeReady() call is made at all and the proxy
@@ -97,7 +98,7 @@ AccountFactory::~AccountFactory()
  * Account::becomeReady().
  *
  * \param busName The bus/service name of the D-Bus account object the proxy is constructed for.
- * (Usually #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME).
+ * (Usually #TP_QT4_ACCOUNT_MANAGER_BUS_NAME).
  * \param objectPath The object path of the account.
  * \param connFactory The connection factory to use for the Account.
  * \param chanFactory The channel factory to use for the Account.
@@ -126,12 +127,12 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
  * The default implementation constructs Tp::Account objects.
  *
  * \param busName The bus/service name of the D-Bus account object the proxy is constructed for.
- * (Usually TELEPATHY_ACCOUNT_MANAGER_BUS_NAME).
+ * (Usually #TP_QT4_ACCOUNT_MANAGER_BUS_NAME).
  * \param objectPath The object path of the account.
  * \param connFactory The connection factory to use for the Account.
  * \param chanFactory The channel factory to use for the Account.
  * \param contactFactory The channel factory to use for the Account.
- * \return A pointer to the constructed proxy.
+ * \return A pointer to the constructed Account object.
  */
 AccountPtr AccountFactory::construct(const QString &busName, const QString &objectPath,
         const ConnectionFactoryConstPtr &connFactory,

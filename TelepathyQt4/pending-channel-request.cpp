@@ -65,12 +65,14 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
  *
  * Instances of this class cannot be constructed directly; the only way to get
  * one is trough Account.
+ *
+ * See \ref async_model
  */
 
 /**
  * Construct a new PendingChannelRequest object.
  *
- * \param dbusConnection QDBusConnection to use.
+ * \param account Account to use.
  * \param requestedProperties A dictionary containing the desirable properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
@@ -156,6 +158,21 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
 }
 
 /**
+ * Construct a new PendingChannelRequest object that always fails.
+ *
+ * \param account Account to use.
+ * \param errorName The name of a D-Bus error.
+ * \param errorMessage The error message.
+ */
+PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
+        const QString &errorName, const QString &errorMessage)
+    : PendingOperation(ConnectionPtr()),
+      mPriv(new Private(account->dbusConnection()))
+{
+    setFinishedWithError(errorName, errorMessage);
+}
+
+/**
  * Class destructor.
  */
 PendingChannelRequest::~PendingChannelRequest()
@@ -164,9 +181,9 @@ PendingChannelRequest::~PendingChannelRequest()
 }
 
 /**
- * Return the AccountPtr object through which the request was made.
+ * Return the account through which the request was made.
  *
- * \return An AccountPtr object.
+ * \return A pointer to the Account object.
  */
 AccountPtr PendingChannelRequest::account() const
 {

@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -39,6 +39,8 @@ class TELEPATHY_QT4_EXPORT StreamTubeChannel : public TubeChannel
     Q_DISABLE_COPY(StreamTubeChannel)
 
 public:
+    static const Feature FeatureCore;
+    // FIXME (API/ABI break) Remove FeatureStreamTube in favour of FeatureCore
     static const Feature FeatureStreamTube;
     static const Feature FeatureConnectionMonitoring;
 
@@ -70,23 +72,23 @@ public:
 
 Q_SIGNALS:
     void newConnection(uint connectionId);
-    void connectionClosed(uint connectionId, const QString &error,
-            const QString &message);
+    void connectionClosed(uint connectionId, const QString &errorName,
+            const QString &errorMessage);
 
 protected:
     StreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
-            const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
+            const Feature &coreFeature = StreamTubeChannel::FeatureCore);
 
-    void setBaseTubeType(uint type);
-    void setAddressType(SocketAddressType type);
     void setConnections(UIntList connections);
+    void setAddressType(SocketAddressType type);
+    SocketAccessControl accessControl() const;
+    void setAccessControl(SocketAccessControl accessControl);
     void setIpAddress(const QPair<QHostAddress, quint16> &address);
     void setLocalAddress(const QString &address);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
+    TELEPATHY_QT4_NO_EXPORT void gotStreamTubeProperties(Tp::PendingOperation *op);
 
 private:
     struct Private;

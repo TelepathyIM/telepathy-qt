@@ -252,15 +252,15 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
  *
  * Because all approvers are launched simultaneously, the user might respond
  * to another approver; if this happens, the invalidated signal will be
- * emitted with the error code #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * emitted with the error code #TP_QT4_ERROR_OBJECT_REMOVED.
  *
  * If a channel closes, the signal channelLost() is emitted. If all channels
  * close, there is nothing more to dispatch, so the invalidated signal will be
- * emitted with the error code #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * emitted with the error code #TP_QT4_ERROR_OBJECT_REMOVED.
  *
  * If the channel dispatcher crashes or exits, the invalidated
  * signal will be emitted with the error code
- * #TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
+ * #TP_QT4_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
  * the dispatcher should be restarted, at which point it will create new
  * channel dispatch operations for any undispatched channels, and the approver
  * will be notified again.
@@ -284,15 +284,14 @@ const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(Chan
  *
  * \param bus QDBusConnection to use.
  * \param objectPath The channel dispatch operation object path.
- * \param immutableProperties The immutable properties of the channel dispatch
- *        operation.
+ * \param immutableProperties The channel dispatch operation immutable properties.
  * \param initialChannels The channels this CDO has initially (further tracking is done internally).
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
- * \return A ChannelDispatchOperationPtr pointing to the newly created
- *         ChannelDispatchOperation.
+ * \return A ChannelDispatchOperationPtr object pointing to the newly created
+ *         ChannelDispatchOperation object.
  */
 ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties,
@@ -313,8 +312,7 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
  *
  * \param bus QDBusConnection to use
  * \param objectPath The channel dispatch operation object path.
- * \param immutableProperties The immutable properties of the channel dispatch
- *        operation.
+ * \param immutableProperties The channel dispatch operation immutable properties.
  * \param initialChannels The channels this CDO has initially (further tracking is done internally).
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
@@ -368,9 +366,9 @@ ChannelDispatchOperation::~ChannelDispatchOperation()
  * Return the connection with which the channels for this dispatch
  * operation are associated.
  *
- * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
- * \return Connection with which the channels are associated.
+ * \return A pointer to the Connection object.
  */
 ConnectionPtr ChannelDispatchOperation::connection() const
 {
@@ -381,9 +379,9 @@ ConnectionPtr ChannelDispatchOperation::connection() const
  * Return the account with which the connection and channels for this dispatch
  * operation are associated.
  *
- * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
- * \return Account with which the connection and channels are associated.
+ * \return A pointer to the Account object.
  */
 AccountPtr ChannelDispatchOperation::account() const
 {
@@ -393,9 +391,9 @@ AccountPtr ChannelDispatchOperation::account() const
 /**
  * Return the channels to be dispatched.
  *
- * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
- * \return The channels to be dispatched.
+ * \return A list of pointers to Channel objects.
  */
 QList<ChannelPtr> ChannelDispatchOperation::channels() const
 {
@@ -414,9 +412,9 @@ QList<ChannelPtr> ChannelDispatchOperation::channels() const
  * As a result, approvers should use the first handler by default, unless they
  * have a reason to do otherwise.
  *
- * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ * This method requires ChannelDispatchOperation::FeatureCore to be ready.
  *
- * \return Possible handlers for this dispatch operation channels.
+ * \return List of possible handlers names.
  */
 QStringList ChannelDispatchOperation::possibleHandlers() const
 {
@@ -429,7 +427,7 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
  *
  * If successful, this method will cause the ChannelDispatchOperation object to
  * disappear, emitting invalidated with error
- * #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * #TP_QT4_ERROR_OBJECT_REMOVED.
  *
  * However, this method may fail because the dispatch has already been completed
  * and the object has already gone. If this occurs, it indicates that another
@@ -498,12 +496,12 @@ PendingOperation *ChannelDispatchOperation::claim()
  * \fn void ChannelDispatchOperation::channelLost(const ChannelPtr &channel,
  *             const QString &errorName, const QString &errorMessage);
  *
- * A channel has closed before it could be claimed or handled. If this is
+ * Emitted when a channel has closed before it could be claimed or handled. If this is
  * emitted for the last remaining channel in a channel dispatch operation, it
  * will immediately be followed by invalidated() with error
- * #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * #TP_QT4_ERROR_OBJECT_REMOVED.
  *
- * \param channel The Channel that closed.
+ * \param channel The channel that was closed.
  * \param error The name of a D-Bus error indicating why the channel closed.
  * \param errorMessage The error message.
  */
@@ -514,8 +512,8 @@ PendingOperation *ChannelDispatchOperation::claim()
  * this class should always be used instead of the interface by users of the
  * class.
  *
- * \return A pointer to the existing ChannelDispatchOperationInterface for this
- *         ChannelDispatchOperation
+ * \return A pointer to the existing Client::ChannelDispatchOperationInterface object for this
+ *         ChannelDispatchOperation object.
  */
 Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterface() const
 {

@@ -84,7 +84,6 @@ private:
 struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
 {
     Private(const QVariantMap &parameters, PendingOpenTube *parent);
-    ~Private();
 
     // Public object
     PendingOpenTube *parent;
@@ -96,12 +95,12 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
 struct TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannel::Private
 {
     Private(OutgoingStreamTubeChannel *parent);
-    ~Private();
 
     OutgoingStreamTubeChannel *parent;
 
     QHash<uint, Tp::ContactPtr> contactsForConnections;
     QHash<QPair<QHostAddress, quint16>, uint> connectionsForSourceAddresses;
+    QHash<uchar, uint> connectionsForCredentials;
 
     QHash<QUuid, QPair<uint, QDBusVariant> > pendingNewConnections;
 

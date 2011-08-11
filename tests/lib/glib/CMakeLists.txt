@@ -3,6 +3,8 @@ include_directories(
     ${TELEPATHY_GLIB_INCLUDE_DIR}
     ${GLIB2_INCLUDE_DIR}
     ${GOBJECT_INCLUDE_DIR}
+    ${GIO_INCLUDE_DIR}
+    ${GIOUNIX_INCLUDE_DIR}
     ${DBUS_INCLUDE_DIR})
 
 if(ENABLE_TP_GLIB_TESTS)
@@ -44,11 +46,15 @@ if(ENABLE_TP_GLIB_TESTS)
         textchan-null.h
         util.c
         util.h)
+    if(ENABLE_TP_GLIB_GIO_TESTS)
+        list(APPEND tp_glib_tests_SRCS stream-tube-chan.c stream-tube-chan.h)
+    endif(ENABLE_TP_GLIB_GIO_TESTS)
     add_library(tp-glib-tests SHARED ${tp_glib_tests_SRCS})
     target_link_libraries(tp-glib-tests
         ${TELEPATHY_GLIB_LIBRARIES}
-        ${GOBJECT_LIBRARIES}
         ${GLIB2_LIBRARIES}
+        ${GOBJECT_LIBRARIES}
+        ${GIO_LIBRARIES}
         ${DBUS_GLIB_LIBRARIES}
         example-cm-callable
         example-cm-contactlist

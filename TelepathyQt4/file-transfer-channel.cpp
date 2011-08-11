@@ -56,6 +56,7 @@ struct TELEPATHY_QT4_NO_EXPORT FileTransferChannel::Private
     uint stateReason;
     QString contentType;
     QString fileName;
+    QString uri;
     QString contentHash;
     QString description;
     QDateTime lastModificationTime;
@@ -130,6 +131,7 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
     pendingState = state = qdbus_cast<uint>(props[QLatin1String("State")]);
     contentType = qdbus_cast<QString>(props[QLatin1String("ContentType")]);
     fileName = qdbus_cast<QString>(props[QLatin1String("Filename")]);
+    uri = qdbus_cast<QString>(props[QLatin1String("URI")]);
     contentHash = qdbus_cast<QString>(props[QLatin1String("ContentHash")]);
     description = qdbus_cast<QString>(props[QLatin1String("Description")]);
     lastModificationTime.setTime_t((uint) qdbus_cast<qulonglong>(props[QLatin1String("Date")]));
@@ -150,6 +152,10 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
  *
  * For more specialized file transfer classes, please refer to
  * OutgoingFileTransferChannel and IncomingFileTransferChannel.
+ *
+ * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
@@ -170,10 +176,10 @@ const Feature FileTransferChannel::FeatureCore = Feature(QLatin1String(FileTrans
  *
  * \param connection Connection owning this channel, and specifying the
  *                   service.
- * \param objectPath The object path of this channel.
- * \param immutableProperties The immutable properties of this channel.
- * \return A StreamedMediaChannelPtr object pointing to the newly created
- *         StreamedMediaChannel object.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \return A FileTransferChannelPtr object pointing to the newly created
+ *         FileTransferChannel object.
  */
 FileTransferChannelPtr FileTransferChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
@@ -183,14 +189,14 @@ FileTransferChannelPtr FileTransferChannel::create(const ConnectionPtr &connecti
 }
 
 /**
- * Construct a new file transfer channel associated with the given \a objectPath
- * on the same service as the given \a connection.
+ * Construct a new FileTransferChannel object.
  *
- * \param connection Connection owning this channel, and specifying the service.
- * \param objectPath Path to the object on the service.
- * \param immutableProperties The immutable properties of the channel.
- * \param coreFeature The core feature of the channel type. The corresponding introspectable should
- * depend on FileTransferChannel::FeatureCore.
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The channel object path.
+ * \param immutableProperties The channel immutable properties.
+ * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
+ *                    depend on FileTransferChannel::FeatureCore.
  */
 FileTransferChannel::FileTransferChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -210,12 +216,14 @@ FileTransferChannel::~FileTransferChannel()
 }
 
 /**
- * Return the state of the file transfer as described by the %FileTransferState
- * enum.
+ * Return the state of the file transfer as described by #FileTransferState.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * Change notification is via the stateChanged() signal.
  *
- * \return The state of the file transfer.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
+ *
+ * \return The state as #FileTransferState.
+ * \sa stateReason()
  */
 FileTransferState FileTransferChannel::state() const
 {
@@ -228,12 +236,14 @@ FileTransferState FileTransferChannel::state() const
 }
 
 /**
- * Return the for the state change as described by the
- * %FileTransferStateChangeReason enum.
+ * Return the reason for the state change as described by the #FileTransferStateChangeReason.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * Change notification is via the stateChanged() signal.
  *
- * \return The reason for the state change.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
+ *
+ * \return The state reason as #FileTransferStateChangeReason.
+ * \sa state()
  */
 FileTransferStateChangeReason FileTransferChannel::stateReason() const
 {
@@ -247,16 +257,17 @@ FileTransferStateChangeReason FileTransferChannel::stateReason() const
 
 /**
  * Return the name of the file on the sender's side. This is given as
- * a suggested filename for the receiver. This cannot change once the channel
- * has been created.
+ * a suggested filename for the receiver.
  *
  * This property should be the basename of the file being sent. For example, if
  * the sender sends the file /home/user/monkey.pdf then this property should be
  * set to monkey.pdf.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This property cannot change once the channel has been created.
  *
- * \return Suggested filename for the receiver.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
+ *
+ * \return The suggested filename for the receiver.
  */
 QString FileTransferChannel::fileName() const
 {
@@ -269,10 +280,11 @@ QString FileTransferChannel::fileName() const
 }
 
 /**
- * Return the file's MIME type. This cannot change once the channel has been
- * created.
+ * Return the file's MIME type.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This property cannot change once the channel has been created.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
  * \return The file's MIME type.
  */
@@ -287,8 +299,7 @@ QString FileTransferChannel::contentType() const
 }
 
 /**
- * The size of the file. This cannot change once the channel has been
- * created.
+ * Return the size of the file.
  *
  * Note that the size is not guaranteed to be exactly right for
  * incoming files. This is merely a hint and should not be used to know when the
@@ -296,9 +307,11 @@ QString FileTransferChannel::contentType() const
  *
  * For unknown sizes the return value can be UINT64_MAX.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This property cannot change once the channel has been created.
  *
- * \return The size of the file.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
+ *
+ * \return The file size.
  */
 qulonglong FileTransferChannel::size() const
 {
@@ -311,11 +324,35 @@ qulonglong FileTransferChannel::size() const
 }
 
 /**
+ * Return the URI of the file.
+ *
+ * On outgoing file transfers, this property cannot change after the channel
+ * is requested. For incoming file transfers, this property may be set by the
+ * channel handler before calling AcceptFile to inform observers where the
+ * incoming file will be saved. When the URI property is set, the signal
+ * IncomingFileTransferChannel::uriDefined() is emitted.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be ready.
+ *
+ * \return The file uri.
+ * \sa IncomingFileTransferChannel::uriDefined()
+ */
+QString FileTransferChannel::uri() const
+{
+    if (!isReady(FeatureCore)) {
+        warning() << "FileTransferChannel::FeatureCore must be ready before "
+            "calling uri";
+    }
+
+    return mPriv->uri;
+}
+
+/**
  * Return the type of the contentHash().
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
- * \return The type of the contentHash().
+ * \return The content hash type as #FileHashType.
  * \sa contentHash()
  */
 FileHashType FileTransferChannel::contentHashType() const
@@ -333,12 +370,12 @@ FileHashType FileTransferChannel::contentHashType() const
  * the value of the contentHashType().
  *
  * Its value MUST correspond to the appropriate type of the contentHashType().
- * If the contentHashType() is set to %FileHashTypeNone, then the
+ * If the contentHashType() is set to #FileHashTypeNone, then the
  * returned value is an empty string.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
- * \return Hash of the contents of the file transfer.
+ * \return The hash of the contents.
  * \sa contentHashType()
  */
 QString FileTransferChannel::contentHash() const
@@ -356,12 +393,13 @@ QString FileTransferChannel::contentHash() const
 }
 
 /**
- * Return the description of the file transfer. This cannot change once the
- * channel has been created.
+ * Return the description of the file transfer.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This property cannot change once the channel has been created.
  *
- * \return The description of the file transfer.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
+ *
+ * \return The description.
  */
 QString FileTransferChannel::description() const
 {
@@ -377,9 +415,9 @@ QString FileTransferChannel::description() const
  * Return the last modification time of the file being transferred. This cannot
  * change once the channel has been created.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
- * \return The last modification time of the file being transferred.
+ * \return The file modification time as QDateTime.
  */
 QDateTime FileTransferChannel::lastModificationTime() const
 {
@@ -394,9 +432,10 @@ QDateTime FileTransferChannel::lastModificationTime() const
 /**
  * Return the offset in bytes from which the file will be sent.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
- * \return The offset in bytes from where the file should be sent.
+ * \return The offset in bytes.
+ * \sa initialOffsetDefined()
  */
 qulonglong FileTransferChannel::initialOffset() const
 {
@@ -410,11 +449,12 @@ qulonglong FileTransferChannel::initialOffset() const
 
 /**
  * Return the number of bytes that have been transferred.
- * This will be updated as the file transfer continues.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * Change notification is via the transferredBytesChanged() signal.
  *
- * \return Number of bytes that have been transferred.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
+ *
+ * \return The number of bytes.
  * \sa transferredBytesChanged()
  */
 qulonglong FileTransferChannel::transferredBytes() const
@@ -428,17 +468,17 @@ qulonglong FileTransferChannel::transferredBytes() const
 }
 
 /**
- * Return a mapping from address types (members of SocketAddressType) to arrays
- * of access-control type (members of SocketAccessControl) that the connection
- * manager supports for sockets with that address type. For simplicity, if a CM
- * supports offering a particular type of file transfer, it is assumed to
- * support accepting it. All connection Managers support at least
+ * Return a mapping from address types (members of #SocketAddressType) to arrays
+ * of access-control type (members of #SocketAccessControl) that the CM
+ * supports for sockets with that address type.
+ *
+ * For simplicity, if a CM supports offering a particular type of file transfer,
+ * it is assumed to support accepting it. All CMs support at least
  * SocketAddressTypeIPv4.
  *
- * This method requires FileTransferChannel::FeatureCore to be enabled.
+ * This method requires FileTransferChannel::FeatureCore to be ready.
  *
- * \return A mapping from address types to arrays of access-control type.
- * \sa transferredBytesChanged()
+ * \return The available socket types as a map from address types to arrays of access-control type.
  */
 SupportedSocketMap FileTransferChannel::availableSocketTypes() const
 {
@@ -449,7 +489,6 @@ SupportedSocketMap FileTransferChannel::availableSocketTypes() const
 
     return mPriv->availableSocketTypes;
 }
-
 
 /**
  * Cancel a file transfer.
@@ -464,7 +503,7 @@ PendingOperation *FileTransferChannel::cancel()
 
 /**
  * Protected virtual method called when the state becomes
- * %FileTransferStateOpen.
+ * #FileTransferStateOpen.
  *
  * Specialized classes should reimplement this method and call setConnected()
  * when the connection is established.
@@ -479,7 +518,7 @@ void FileTransferChannel::connectToHost()
 /**
  * Return whether a connection has been established.
  *
- * \return Whether a connection has been established.
+ * \return \c true if the connections has been established, \c false otherwise.
  * \sa setConnected()
  */
 bool FileTransferChannel::isConnected() const
@@ -504,7 +543,7 @@ void FileTransferChannel::setConnected()
 /**
  * Return whether sending/receiving has finished.
  *
- * \return Whether sending/receiving has finished.
+ * \return \c true if sending/receiving has finished, \c false otherwise.
  */
 bool FileTransferChannel::isFinished() const
 {
@@ -520,7 +559,7 @@ bool FileTransferChannel::isFinished() const
  *
  * Note that for specialized classes that reimplement connectToHost() and set
  * isConnected() to true, the state will not change to
- * %FileTransferStateCompleted once the state change is received.
+ * #FileTransferStateCompleted once the state change is received.
  *
  * When finished sending/receiving the specialized class MUST call this method
  * and then the state will change to the latest pending state.
@@ -624,5 +663,41 @@ void FileTransferChannel::onTransferredBytesChanged(qulonglong count)
     mPriv->transferredBytes = count;
     emit transferredBytesChanged(count);
 }
+
+void FileTransferChannel::onUriDefined(const QString &uri)
+{
+    mPriv->uri = uri;
+    // Signal is emitted only by IncomingFileTransferChannels
+}
+
+/**
+ * \fn void FileTransferChannel::stateChanged(Tp::FileTransferState state,
+ *          Tp::FileTransferStateChangeReason reason)
+ *
+ * Emitted when the value of state() changes.
+ *
+ * \param state The new state of this file transfer channel.
+ * \param reason The reason for the change of state.
+ * \sa state()
+ */
+
+/**
+ * \fn void FileTransferChannel::initialOffsetDefined(qulonglong initialOffset)
+ *
+ * Emitted when the initial offset for the file transfer is
+ * defined.
+ *
+ * \param initialOffset The new initial offset for the file transfer.
+ * \sa initialOffset()
+ */
+
+/**
+ * \fn void FileTransferChannel::transferredBytesChanged(qulonglong count);
+ *
+ * Emitted when the value of transferredBytes() changes.
+ *
+ * \param count The new number of bytes transferred.
+ * \sa transferredBytes()
+ */
 
 } // Tp

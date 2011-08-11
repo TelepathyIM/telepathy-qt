@@ -439,3 +439,20 @@ address {
 	font-style: normal;
 	color: #333;
 }
+
+div.rationale:before {
+    content: "Rationale:";
+    display: block;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+
+div.rationale {
+    font-style: italic;
+    border-left: 0.25em solid #808080;
+    padding-left: 0.5em;
+}
+
+div.rationale p {
+    font-size: 0.85em;
+}

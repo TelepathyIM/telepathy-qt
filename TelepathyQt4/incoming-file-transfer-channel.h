@@ -47,7 +47,11 @@ public:
 
     virtual ~IncomingFileTransferChannel();
 
+    PendingOperation *setUri(const QString& uri);
     PendingOperation *acceptFile(qulonglong offset, QIODevice *output);
+
+Q_SIGNALS:
+    void uriDefined(const QString &uri);
 
 protected:
     IncomingFileTransferChannel(const ConnectionPtr &connection,

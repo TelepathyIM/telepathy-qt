@@ -1,11 +1,9 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
-#include <QtDBus/QtDBus>
-#include <QtTest/QtTest>
+#include <tests/lib/test.h>
 
-#include <QDateTime>
-#include <QString>
-#include <QVariantMap>
+#include <tests/lib/glib-helpers/test-conn-helper.h>
+
+#include <tests/lib/glib/contacts-conn.h>
+#include <tests/lib/glib/echo/chan.h>
 
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
@@ -23,20 +21,11 @@
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/Debug>
 #include <TelepathyQt4/MethodInvocationContext>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Types>
 
 #include <telepathy-glib/debug.h>
-
-#include <glib-object.h>
-#include <dbus/dbus-glib.h>
-
-#include <tests/lib/glib/contacts-conn.h>
-#include <tests/lib/glib/echo/chan.h>
-#include <tests/lib/test.h>
 
 using namespace Tp;
 using namespace Tp::Client;
@@ -347,8 +336,8 @@ class TestClient : public Test
 public:
     TestClient(QObject *parent = 0)
         : Test(parent),
-          mConnService(0), mBaseConnService(0), mContactRepo(0),
-          mText1ChanService(0)
+          mConn(0), mContactRepo(0),
+          mText1ChanService(0), mText2ChanService(0), mCDO(0)
     { }
 
     void testObserveChannelsCommon(const AbstractClientPtr &clientObject,
@@ -372,19 +361,15 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    TpTestsContactsConnection *mConnService;
-    TpBaseConnection *mBaseConnService;
-    TpHandleRepoIface *mContactRepo;
-    ExampleEchoChannel *mText1ChanService;
-    ExampleEchoChannel *mText2ChanService;
-
     AccountManagerPtr mAM;
     AccountPtr mAccount;
-    ConnectionPtr mConn;
+    TestConnHelper *mConn;
+    TpHandleRepoIface *mContactRepo;
+
+    ExampleEchoChannel *mText1ChanService;
+    ExampleEchoChannel *mText2ChanService;
     QString mText1ChanPath;
     QString mText2ChanPath;
-    QString mConnName;
-    QString mConnPath;
 
     ClientRegistrarPtr mClientRegistrar;
     QString mChannelDispatcherBusName;
@@ -411,7 +396,7 @@ void TestClient::initTestCase()
     initTestCaseImpl();
 
     g_type_init();
-    g_set_prgname("client-client");
+    g_set_prgname("client");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
@@ -433,65 +418,32 @@ void TestClient::initTestCase()
     QVERIFY(pacc->account());
     mAccount = pacc->account();
 
-    gchar *name;
-    gchar *connPath;
-    GError *error = 0;
-
-    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+    mConn = new TestConnHelper(this,
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
-            NULL));
-    QVERIFY(mConnService != 0);
-    mBaseConnService = TP_BASE_CONNECTION(mConnService);
-    QVERIFY(mBaseConnService != 0);
+            NULL);
+    QCOMPARE(mConn->connect(), true);
 
-    QVERIFY(tp_base_connection_register(mBaseConnService,
-                "example", &name, &connPath, &error));
-    QVERIFY(error == 0);
-
-    QVERIFY(name != 0);
-    QVERIFY(connPath != 0);
-
-    mConnName = QLatin1String(name);
-    mConnPath = QLatin1String(connPath);
-
-    g_free(name);
-    g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath,
-            ChannelFactory::create(QDBusConnection::sessionBus()),
-            ContactFactory::create());
-    QCOMPARE(mConn->isReady(), false);
-
-    QVERIFY(connect(mConn->lowlevel()->requestConnect(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(static_cast<uint>(mConn->status()),
-             static_cast<uint>(ConnectionStatusConnected));
-
-    // create a Channel by magic, rather than doing D-Bus round-trips for it
-
-    mContactRepo = tp_base_connection_get_handles(mBaseConnService,
+    mContactRepo = tp_base_connection_get_handles(TP_BASE_CONNECTION(mConn->service()),
             TP_HANDLE_TYPE_CONTACT);
     guint handle = tp_handle_ensure(mContactRepo, "someone@localhost", 0, 0);
 
-    mText1ChanPath = mConnPath + QLatin1String("/TextChannel1");
+    // create a Channel by magic, rather than doing D-Bus round-trips for it
+    mText1ChanPath = mConn->objectPath() + QLatin1String("/TextChannel1");
     QByteArray chanPath(mText1ChanPath.toAscii());
     mText1ChanService = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPath.data(),
                 "handle", handle,
                 NULL));
 
-    mText2ChanPath = mConnPath + QLatin1String("/TextChannel2");
+    mText2ChanPath = mConn->objectPath() + QLatin1String("/TextChannel2");
     chanPath = mText2ChanPath.toAscii();
     mText2ChanService = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
-                "connection", mConnService,
+                "connection", mConn->service(),
                 "object-path", chanPath.data(),
                 "handle", handle,
                 NULL));
@@ -824,6 +776,11 @@ void TestClient::cleanup()
 
 void TestClient::cleanupTestCase()
 {
+    if (mConn) {
+        QCOMPARE(mConn->disconnect(), true);
+        delete mConn;
+    }
+
     cleanupTestCaseImpl();
 }
 

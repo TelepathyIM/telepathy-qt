@@ -131,6 +131,8 @@ void PendingContacts::Private::setFinished()
  *
  * \brief The PendingContacts class is used by ContactManager when
  * creating/updating Contact objects.
+ *
+ * See \ref async_model
  */
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,

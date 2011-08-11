@@ -53,15 +53,22 @@ public:
     QPair<QHostAddress, quint16> ipAddress() const;
     QString localAddress() const;
 
+    bool requiresCredentials() const;
+    uchar credentialByte() const;
+
 private Q_SLOTS:
+    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(Tp::DBusProxy *proxy,
+            const QString &errorName, const QString &errorMessage);
     TELEPATHY_QT4_NO_EXPORT void onAcceptFinished(Tp::PendingOperation *op);
     TELEPATHY_QT4_NO_EXPORT void onTubeStateChanged(Tp::TubeChannelState state);
 
 private:
-    PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,
-            const IncomingStreamTubeChannelPtr &object);
-    PendingStreamTubeConnection(const QString &errorName, const QString &errorMessage,
-            const IncomingStreamTubeChannelPtr &object);
+    TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection(PendingVariant *acceptOperation,
+            SocketAddressType type, bool requiresCredentials, uchar credentialByte,
+            const IncomingStreamTubeChannelPtr &channel);
+    TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection(
+            const QString &errorName, const QString &errorMessage,
+            const IncomingStreamTubeChannelPtr &channel);
 
     struct Private;
     friend class IncomingStreamTubeChannel;
