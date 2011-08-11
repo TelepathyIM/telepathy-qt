@@ -159,7 +159,7 @@ Contact::InfoFields::~InfoFields()
 }
 
 /**
- * Assigns all information (validity, fields) from other to this.
+ * Assignment operator.
  */
 Contact::InfoFields &Contact::InfoFields::operator=(const Contact::InfoFields &other)
 {
@@ -226,6 +226,8 @@ ContactInfoFieldList Contact::InfoFields::allFields() const
  *
  * As an addition to accessors, signals are emitted to indicate that properties have
  * changed, for example aliasChanged(), avatarTokenChanged(), etc.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 /**
@@ -623,7 +625,7 @@ PendingOperation *Contact::refreshInfo()
         warning() << "Contact::refreshInfo() used on" << this
             << "for which FeatureInfo hasn't been requested - failing";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("FeatureInfo needs to be enabled in order to "
+                QLatin1String("FeatureInfo needs to be ready in order to "
                     "use this method"),
                 ContactPtr(this));
     }
@@ -820,10 +822,9 @@ bool Contact::isBlocked() const
  *
  * This method requires Connection::FeatureRoster to be ready.
  *
- * \param value If \c true, add this contact to the list of blocked contacts;
- *              otherwise remove it from the list.
- * \return A PendingOperation which will return when an attempt has been made
- *         to take the requested action.
+ * \param value Whether the contact should be blocked.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when an attempt has been made to take the requested action.
  * \sa isBlocked()
  */
 PendingOperation *Contact::block(bool value)
@@ -1266,7 +1267,7 @@ void Contact::setRemovedFromGroup(const QString &group)
  */
 
 /**
- * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state)
+ * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state, const QString &message)
  *
  * Emitted when the value of publishState() changes.
  *
@@ -1278,7 +1279,7 @@ void Contact::setRemovedFromGroup(const QString &group)
  * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state,
  *          const Tp::Channel::GroupMemberChangeDetails &details)
  *
- * \deprecated Use publishStateChanged(Tp::Contact::PresenceState state) instead.
+ * \deprecated Use publishStateChanged(Tp::Contact::PresenceState state, const QString &message) instead.
  */
 
 /**
