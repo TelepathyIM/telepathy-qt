@@ -35,11 +35,15 @@ class QHostAddress;
 namespace Tp
 {
 
+class PendingStreamTubeConnection;
+
 // TODO: Turn the comments here into real doxymentation
 class TELEPATHY_QT4_EXPORT StreamTubeClient : public QObject, public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamTubeClient)
+
+    class TubeWrapper;
 
 public:
 
@@ -48,13 +52,13 @@ public:
     class TcpSourceAddressGenerator
     {
     public:
-        // Return qMakePair(QHostAddress::Null, 0) for "don't use Port AC for this tube", e.g.
+        // Return qMakePair(QHostAddress::Any, 0) for "don't use Port AC for this tube", e.g.
         // because you want to make multiple connections through it
         //
         // The tube param can be used to extract the service, initiator contact and other useful
         // information for making the decision
         virtual QPair<QHostAddress /* source interface address */, quint16 /* source port */>
-            nextSourceAddress(AccountPtr account, IncomingStreamTubeChannelPtr tube) const = 0;
+            nextSourceAddress(const AccountPtr &account, const IncomingStreamTubeChannelPtr &tube) const = 0;
 
     protected:
         ~TcpSourceAddressGenerator() {}
@@ -141,7 +145,8 @@ Q_SIGNALS:
             const Tp::AccountPtr &account,
             const Tp::IncomingStreamTubeChannelPtr &tube,
             const QString &listenAddress,
-            bool requiresCredentials); // this is the requireCredentials param unchanged
+            bool requiresCredentials, // this is the requireCredentials param unchanged
+            uchar credentialByte);
 
     // These will be emitted if monitorConnections = true was passed to the create() method
     // Sadly, there is no other possible way to associate multiple connections through a single tube
@@ -158,11 +163,14 @@ Q_SIGNALS:
             const QString &message);
 
 private Q_SLOTS:
-    void onInvokedForTube(
+
+    TELEPATHY_QT4_NO_EXPORT void onInvokedForTube(
             const Tp::AccountPtr &account,
             const Tp::StreamTubeChannelPtr &tube,
             const QDateTime &userActionTime,
             const Tp::ChannelRequestHints &requestHints);
+    TELEPATHY_QT4_NO_EXPORT void onAcceptFinished(TubeWrapper *, Tp::PendingStreamTubeConnection *);
+    TELEPATHY_QT4_EXPORT void onTubeInvalidated(Tp::DBusProxy *, const QString &, const QString &);
 
 private:
     StreamTubeClient(
