@@ -22,8 +22,6 @@
 #ifndef _TelepathyQt4_examples_stream_tubes_tube_receiver_h_HEADER_GUARD_
 #define _TelepathyQt4_examples_stream_tubes_tube_receiver_h_HEADER_GUARD_
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Contact>
 #include <TelepathyQt4/Types>
 
 #include <QLocalSocket>
@@ -44,23 +42,14 @@ public:
    ~TubeReceiver();
 
 private Q_SLOTS:
-    void onAccountReady(Tp::PendingOperation *op);
-    void onAccountConnectionChanged(const Tp::ConnectionPtr &);
-    void onNewChannels(const Tp::ChannelDetailsList &channels);
-    void onStreamTubeChannelReady(Tp::PendingOperation*);
-    void onStreamTubeAccepted(Tp::PendingOperation*);
+    void onTubeAccepted(const Tp::AccountPtr &, const Tp::IncomingStreamTubeChannelPtr &, const QString &);
     void onStateChanged(QLocalSocket::LocalSocketState);
     void onTimerTimeout();
     void onDataFromSocket();
-    void onInvalidated();
 
 private:
-    AccountPtr mAccount;
+    StreamTubeClientPtr mTubeClient;
     QLocalSocket *mDevice;
-
-    ConnectionManagerPtr mCM;
-    ConnectionPtr mConn;
-    IncomingStreamTubeChannelPtr mChan;
 };
 
 #endif
