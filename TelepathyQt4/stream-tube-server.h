@@ -42,6 +42,8 @@ class TELEPATHY_QT4_EXPORT StreamTubeServer : public QObject, public RefCounted
     Q_OBJECT
     Q_DISABLE_COPY(StreamTubeServer)
 
+    class TubeWrapper;
+
 public:
     // The client name can be passed to allow service-activation. If service activation is not
     // desired, the name can be left out, in which case an unique name will be generated.
@@ -168,11 +170,11 @@ private Q_SLOTS:
             const QDateTime &userActionTime,
             const Tp::ChannelRequestHints &requestHints);
 
-    TELEPATHY_QT4_NO_EXPORT void onTubeOffered(
+    TELEPATHY_QT4_NO_EXPORT void onOfferFinished(
+            TubeWrapper *wrapper,
             Tp::PendingOperation *op);
     TELEPATHY_QT4_NO_EXPORT void onTubeInvalidated(
-            const Tp::AccountPtr &acc,
-            const Tp::StreamTubeChannelPtr &tube,
+            Tp::DBusProxy *proxy,
             const QString &error,
             const QString &message);
 

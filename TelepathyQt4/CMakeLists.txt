@@ -109,6 +109,7 @@ set(telepathy_qt4_SRCS
     stream-tube-client.cpp
     stream-tube-client-internal.h
     stream-tube-server.cpp
+    stream-tube-server-internal.h
     streamed-media-channel.cpp
     test-backdoors.cpp
     test-backdoors.h
@@ -511,6 +512,7 @@ set(telepathy_qt4_MOC_SRCS
     stream-tube-client.h
     stream-tube-client-internal.h
     stream-tube-server.h
+    stream-tube-server-internal.h
     streamed-media-channel.h
     text-channel.h
     tube-channel.h)

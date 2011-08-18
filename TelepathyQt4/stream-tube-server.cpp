@@ -21,8 +21,10 @@
  */
 
 #include <TelepathyQt4/StreamTubeServer>
+#include "TelepathyQt4/stream-tube-server-internal.h"
 
 #include "TelepathyQt4/_gen/stream-tube-server.moc.hpp"
+#include "TelepathyQt4/_gen/stream-tube-server-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 #include "TelepathyQt4/simple-stream-tube-handler.h"
@@ -67,8 +69,23 @@ struct StreamTubeServer::Private
     quint16 exportedPort;
     QVariantMap exportedParams;
 
-    QHash<StreamTubeChannelPtr, QPair<QString, QString> > offerErrors;
+    QHash<StreamTubeChannelPtr, TubeWrapper *> tubes;
 };
+
+StreamTubeServer::TubeWrapper::TubeWrapper(const AccountPtr &acc,
+        const OutgoingStreamTubeChannelPtr &tube, const QHostAddress &exportedAddr,
+        quint16 exportedPort, const QVariantMap &exportedParams)
+    : mAcc(acc), mTube(tube)
+{
+    connect(tube->offerTcpSocket(exportedAddr, exportedPort, exportedParams),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onTubeOffered(Tp::PendingOperation*)));
+}
+
+void StreamTubeServer::TubeWrapper::onTubeOffered(Tp::PendingOperation *op)
+{
+    emit offerFinished(this, op);
+}
 
 StreamTubeServerPtr StreamTubeServer::create(
         const QStringList &services,
@@ -158,17 +175,6 @@ StreamTubeServer::StreamTubeServer(
                     Tp::StreamTubeChannelPtr,
                     QDateTime,
                     Tp::ChannelRequestHints)));
-    connect(mPriv->handler.data(),
-            SIGNAL(tubeInvalidated(
-                    Tp::AccountPtr,
-                    Tp::StreamTubeChannelPtr,
-                    QString,
-                    QString)),
-            SLOT(onTubeInvalidated(
-                    Tp::AccountPtr,
-                    Tp::StreamTubeChannelPtr,
-                    QString,
-                    QString)));
 }
 
 /**
@@ -178,6 +184,10 @@ StreamTubeServer::~StreamTubeServer()
 {
     if (isRegistered()) {
         mPriv->registrar->unregisterClient(mPriv->handler);
+    }
+
+    foreach (TubeWrapper *wrapper, mPriv->tubes.values()) {
+        wrapper->deleteLater();
     }
 }
 
@@ -279,65 +289,74 @@ void StreamTubeServer::onInvokedForTube(
         return;
     } else if (mPriv->exportedAddr.isNull() || !mPriv->exportedPort) {
         warning() << "No socket exported, closing tube" << tube->objectPath();
-        mPriv->offerErrors.insert(tube,
-                QPair<QString, QString>(
-                    TP_QT4_ERROR_NOT_AVAILABLE, QLatin1String("no socket exported")));
+        emit tubeClosed(acc, outgoing,
+                TP_QT4_ERROR_NOT_AVAILABLE, QLatin1String("no socket exported"));
         tube->requestClose();
         return;
     }
 
-    debug().nospace() << "Offering socket " << mPriv->exportedAddr << ":" << mPriv->exportedPort <<
-        " on tube " << tube->objectPath();
+    if (!mPriv->tubes.contains(tube)) {
+        debug().nospace() << "Offering socket " << mPriv->exportedAddr << ":" << mPriv->exportedPort
+            << " on tube " << tube->objectPath();
 
-    connect(outgoing->offerTcpSocket(mPriv->exportedAddr, mPriv->exportedPort, mPriv->exportedParams),
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onTubeOffered(Tp::PendingOperation*)));
+        TubeWrapper *wrapper =
+            new TubeWrapper(acc, outgoing, mPriv->exportedAddr, mPriv->exportedPort,
+                    mPriv->exportedParams);
 
-    // TODO: start monitoring connections if requested
+        connect(wrapper,
+                SIGNAL(offerFinished(TubeWrapper*,Tp::PendingOperation*)),
+                SLOT(onOfferFinished(TubeWrapper*,Tp::PendingOperation*)));
+        connect(tube.data(),
+                SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                SLOT(onTubeInvalidated(Tp::DBusProxy*,QString,QString)));
+
+        // TODO: start monitoring connections if requested
+
+        mPriv->tubes.insert(outgoing, wrapper);
+    }
 }
 
-void StreamTubeServer::onTubeOffered(
+void StreamTubeServer::onOfferFinished(
+        TubeWrapper *wrapper,
         Tp::PendingOperation *op)
 {
-    OutgoingStreamTubeChannelPtr tube = OutgoingStreamTubeChannelPtr::dynamicCast(op->_object());
-    Q_ASSERT(!tube.isNull());
-    AccountPtr acc = mPriv->handler->accountForTube(tube);
+    OutgoingStreamTubeChannelPtr tube = wrapper->mTube;
 
-    if (!acc) {
-        debug() << "Ignoring Offer() return for already invalidated tube\n";
-        return;
-    } else  if (op->isError()) {
+    if (op->isError()) {
         warning() << "Offer() failed, closing tube" << tube->objectPath() << '-' <<
             op->errorName() << ':' << op->errorMessage();
-        mPriv->offerErrors.insert(tube,
-                QPair<QString, QString>(op->errorName(), op->errorMessage()));
-        tube->requestClose();
-        return;
-    }
 
-    debug() << "Tube" << tube->objectPath() << "offered successfully";
+        if (wrapper->mTube->isValid())
+            wrapper->mTube->requestClose();
+
+        wrapper->mTube->disconnect(this);
+        emit tubeClosed(wrapper->mAcc, wrapper->mTube, op->errorName(), op->errorMessage());
+        mPriv->tubes.remove(wrapper->mTube);
+        wrapper->deleteLater();
+    } else {
+        debug() << "Tube" << tube->objectPath() << "offered successfully";
+    }
 }
 
 void StreamTubeServer::onTubeInvalidated(
-        const Tp::AccountPtr &acc,
-        const StreamTubeChannelPtr &tube,
+        Tp::DBusProxy *proxy,
         const QString &error,
         const QString &message)
 {
-    debug() << "Tube" << tube->objectPath() << "invalidated with" << error << ':' << message;
+    OutgoingStreamTubeChannelPtr tube(qobject_cast<OutgoingStreamTubeChannel *>(proxy));
+    Q_ASSERT(!tube.isNull());
 
-    OutgoingStreamTubeChannelPtr outgoing = OutgoingStreamTubeChannelPtr::qObjectCast(tube);
-    if (!outgoing) {
-        // We haven't signaled tubeRequested either
+    TubeWrapper *wrapper = mPriv->tubes.value(tube);
+    if (!wrapper) {
+        // Offer finish with error already removed it
         return;
     }
 
-    if (mPriv->offerErrors.contains(outgoing)) {
-        emit tubeClosed(acc, outgoing, mPriv->offerErrors.value(outgoing).first, mPriv->offerErrors.value(outgoing).second);
-        mPriv->offerErrors.remove(outgoing);
-    } else {
-        emit tubeClosed(acc, outgoing, error, message);
-    }
+    debug() << "Tube" << tube->objectPath() << "invalidated with" << error << ':' << message;
+
+    emit tubeClosed(wrapper->mAcc, wrapper->mTube, error, message);
+    mPriv->tubes.remove(tube);
+    delete wrapper;
 }
 
 } // Tp
