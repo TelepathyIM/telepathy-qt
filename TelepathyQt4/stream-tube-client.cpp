@@ -347,6 +347,10 @@ void StreamTubeClient::onAcceptFinished(TubeWrapper *wrapper, PendingStreamTubeC
     if (conn->isError()) {
         warning() << "StreamTubeClient couldn't accept tube" << wrapper->mTube->objectPath() << '-'
             << conn->errorName() << ':' << conn->errorMessage();
+
+        if (wrapper->mTube->isValid())
+            wrapper->mTube->requestClose();
+
         wrapper->mTube->disconnect(this);
         emit tubeClosed(wrapper->mAcc, wrapper->mTube, conn->errorName(), conn->errorMessage());
         mPriv->tubes.remove(wrapper->mTube);
