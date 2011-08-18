@@ -45,6 +45,18 @@ class TELEPATHY_QT4_EXPORT StreamTubeServer : public QObject, public RefCounted
     class TubeWrapper;
 
 public:
+
+    class ParametersGenerator
+    {
+    public:
+        virtual QVariantMap
+            nextParameters(const AccountPtr &account, const OutgoingStreamTubeChannelPtr &tube,
+                    const ChannelRequestHints &hints) const = 0;
+
+    protected:
+        virtual ~ParametersGenerator() {}
+    };
+
     // The client name can be passed to allow service-activation. If service activation is not
     // desired, the name can be left out, in which case an unique name will be generated.
 
@@ -109,6 +121,14 @@ public:
     void exportTcpSocket(
             const QTcpServer *server,
             const QVariantMap &parameters = QVariantMap());
+
+    void exportTcpSocket(
+            const QHostAddress &address,
+            quint16 port,
+            const ParametersGenerator *generator);
+    void exportTcpSocket(
+            const QTcpServer *server,
+            const ParametersGenerator *generator);
 
     // TODO: Add Unix sockets if needed (are there other common services one might want to export
     // listening on Unix sockets and not necessarily on TCP than X11 and perhaps CUPS?)

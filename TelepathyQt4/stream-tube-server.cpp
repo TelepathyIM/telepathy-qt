@@ -29,6 +29,7 @@
 #include "TelepathyQt4/debug-internal.h"
 #include "TelepathyQt4/simple-stream-tube-handler.h"
 
+#include <QScopedPointer>
 #include <QTcpServer>
 
 #include <TelepathyQt4/AccountManager>
@@ -38,6 +39,23 @@
 
 namespace Tp
 {
+
+class TELEPATHY_QT4_NO_EXPORT FixedParametersGenerator : public StreamTubeServer::ParametersGenerator
+{
+    public:
+
+        FixedParametersGenerator(const QVariantMap &params) : mParams(params) {}
+
+        QVariantMap nextParameters(const AccountPtr &, const OutgoingStreamTubeChannelPtr &,
+                const ChannelRequestHints &) const
+        {
+            return mParams;
+        }
+
+    private:
+
+        QVariantMap mParams;
+};
 
 struct StreamTubeServer::Private
 {
@@ -49,7 +67,8 @@ struct StreamTubeServer::Private
           handler(SimpleStreamTubeHandler::create(services, true, monitorConnections)),
           clientName(maybeClientName),
           isRegistered(false),
-          exportedPort(0)
+          exportedPort(0),
+          generator(0)
     {
         if (clientName.isEmpty()) {
             clientName = QString::fromLatin1("TpQt4STubeServer_%1_%2")
@@ -60,6 +79,22 @@ struct StreamTubeServer::Private
         }
     }
 
+    void ensureRegistered()
+    {
+        if (isRegistered) {
+            return;
+        }
+
+        debug() << "Register StreamTubeServer with name " << clientName;
+
+        if (registrar->registerClient(handler, clientName)) {
+            isRegistered = true;
+        } else {
+            warning() << "StreamTubeServer" << clientName
+                << "registration failed";
+        }
+    }
+
     ClientRegistrarPtr registrar;
     SharedPtr<SimpleStreamTubeHandler> handler;
     QString clientName;
@@ -67,17 +102,19 @@ struct StreamTubeServer::Private
 
     QHostAddress exportedAddr;
     quint16 exportedPort;
-    QVariantMap exportedParams;
+    const ParametersGenerator *generator;
+    QScopedPointer<FixedParametersGenerator> fixedGenerator;
 
     QHash<StreamTubeChannelPtr, TubeWrapper *> tubes;
+
 };
 
 StreamTubeServer::TubeWrapper::TubeWrapper(const AccountPtr &acc,
         const OutgoingStreamTubeChannelPtr &tube, const QHostAddress &exportedAddr,
-        quint16 exportedPort, const QVariantMap &exportedParams)
-    : mAcc(acc), mTube(tube)
+        quint16 exportedPort, const QVariantMap &params)
+    : mAcc(acc), mTube(tube), mParams(params)
 {
-    connect(tube->offerTcpSocket(exportedAddr, exportedPort, exportedParams),
+    connect(tube->offerTcpSocket(exportedAddr, exportedPort, params),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onTubeOffered(Tp::PendingOperation*)));
 }
@@ -218,7 +255,19 @@ QPair<QHostAddress, quint16> StreamTubeServer::exportedTcpSocketAddress() const
 
 QVariantMap StreamTubeServer::exportedParameters() const
 {
-    return mPriv->exportedParams;
+    if (!mPriv->generator) {
+        return QVariantMap();
+    }
+
+    const FixedParametersGenerator *generator =
+        dynamic_cast<const FixedParametersGenerator *>(mPriv->generator);
+
+    if (generator) {
+        return generator->nextParameters(AccountPtr(), OutgoingStreamTubeChannelPtr(),
+                ChannelRequestHints());
+    } else {
+        return QVariantMap();
+    }
 }
 
 void StreamTubeServer::exportTcpSocket(
@@ -233,18 +282,14 @@ void StreamTubeServer::exportTcpSocket(
 
     mPriv->exportedAddr = addr;
     mPriv->exportedPort = port;
-    mPriv->exportedParams = params;
 
-    if (!mPriv->isRegistered) {
-        debug() << "Register StreamTubeServer with name " << clientName();
-
-        if (registrar()->registerClient(mPriv->handler, clientName())) {
-            mPriv->isRegistered = true;
-        } else {
-            warning() << "StreamTubeServer" << clientName()
-                << "registration failed";
-        }
+    mPriv->generator = 0;
+    if (!params.isEmpty()) {
+        mPriv->fixedGenerator.reset(new FixedParametersGenerator(params));
+        mPriv->generator = mPriv->fixedGenerator.data();
     }
+
+    mPriv->ensureRegistered();
 }
 
 void StreamTubeServer::exportTcpSocket(
@@ -265,6 +310,40 @@ void StreamTubeServer::exportTcpSocket(
     }
 }
 
+void StreamTubeServer::exportTcpSocket(
+        const QHostAddress &addr,
+        quint16 port,
+        const ParametersGenerator *generator)
+{
+    if (addr.isNull() || port == 0) {
+        warning() << "Attempted to export null TCP socket address or zero port, ignoring";
+        return;
+    }
+
+    mPriv->exportedAddr = addr;
+    mPriv->exportedPort = port;
+    mPriv->generator = generator;
+
+    mPriv->ensureRegistered();
+}
+
+void StreamTubeServer::exportTcpSocket(
+        const QTcpServer *server,
+        const ParametersGenerator *generator)
+{
+    if (!server->isListening()) {
+        warning() << "Attempted to export non-listening QTcpServer, ignoring";
+        return;
+    }
+
+    if (server->serverAddress() == QHostAddress::Any) {
+        return exportTcpSocket(QHostAddress::LocalHost, server->serverPort(), generator);
+    } else if (server->serverAddress() == QHostAddress::AnyIPv6) {
+        return exportTcpSocket(QHostAddress::LocalHostIPv6, server->serverPort(), generator);
+    } else {
+        return exportTcpSocket(server->serverAddress(), server->serverPort(), generator);
+    }
+}
 void StreamTubeServer::onInvokedForTube(
         const AccountPtr &acc,
         const StreamTubeChannelPtr &tube,
@@ -299,9 +378,13 @@ void StreamTubeServer::onInvokedForTube(
         debug().nospace() << "Offering socket " << mPriv->exportedAddr << ":" << mPriv->exportedPort
             << " on tube " << tube->objectPath();
 
+        QVariantMap params;
+        if (mPriv->generator) {
+            params = mPriv->generator->nextParameters(acc, outgoing, hints);
+        }
+
         TubeWrapper *wrapper =
-            new TubeWrapper(acc, outgoing, mPriv->exportedAddr, mPriv->exportedPort,
-                    mPriv->exportedParams);
+            new TubeWrapper(acc, outgoing, mPriv->exportedAddr, mPriv->exportedPort, params);
 
         connect(wrapper,
                 SIGNAL(offerFinished(TubeWrapper*,Tp::PendingOperation*)),
