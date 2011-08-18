@@ -45,9 +45,11 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Private
     Private(const ClientRegistrarPtr &registrar,
             const QStringList &services,
             const QString &maybeClientName,
-            bool monitorConnections)
+            bool monitorConnections,
+            bool bypassApproval)
         : registrar(registrar),
-          handler(SimpleStreamTubeHandler::create(services, false, monitorConnections)),
+          handler(SimpleStreamTubeHandler::create(
+                      services, false, monitorConnections, bypassApproval)),
           clientName(maybeClientName),
           isRegistered(false),
           acceptsAsTcp(false), acceptsAsUnix(false),
@@ -122,6 +124,7 @@ StreamTubeClientPtr StreamTubeClient::create(
         const QStringList &services,
         const QString &clientName,
         bool monitorConnections,
+        bool bypassApproval,
         const AccountFactoryConstPtr &accountFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
@@ -135,7 +138,8 @@ StreamTubeClientPtr StreamTubeClient::create(
             contactFactory,
             services,
             clientName,
-            monitorConnections);
+            monitorConnections,
+            bypassApproval);
 }
 
 StreamTubeClientPtr StreamTubeClient::create(
@@ -146,7 +150,8 @@ StreamTubeClientPtr StreamTubeClient::create(
         const ContactFactoryConstPtr &contactFactory,
         const QStringList &services,
         const QString &clientName,
-        bool monitorConnections)
+        bool monitorConnections,
+        bool bypassApproval)
 {
     return create(
             ClientRegistrar::create(
@@ -157,14 +162,16 @@ StreamTubeClientPtr StreamTubeClient::create(
                 contactFactory),
             services,
             clientName,
-            monitorConnections);
+            monitorConnections,
+            bypassApproval);
 }
 
 StreamTubeClientPtr StreamTubeClient::create(
         const AccountManagerPtr &accountManager,
         const QStringList &services,
         const QString &clientName,
-        bool monitorConnections)
+        bool monitorConnections,
+        bool bypassApproval)
 {
     return create(
             accountManager->dbusConnection(),
@@ -174,17 +181,19 @@ StreamTubeClientPtr StreamTubeClient::create(
             accountManager->contactFactory(),
             services,
             clientName,
-            monitorConnections);
+            monitorConnections,
+            bypassApproval);
 }
 
 StreamTubeClientPtr StreamTubeClient::create(
         const ClientRegistrarPtr &registrar,
         const QStringList &services,
         const QString &clientName,
-        bool monitorConnections)
+        bool monitorConnections,
+        bool bypassApproval)
 {
     StreamTubeClientPtr client(
-            new StreamTubeClient(registrar, services, clientName, monitorConnections));
+            new StreamTubeClient(registrar, services, clientName, monitorConnections, bypassApproval));
     return client;
 }
 
@@ -192,8 +201,9 @@ StreamTubeClient::StreamTubeClient(
         const ClientRegistrarPtr &registrar,
         const QStringList &services,
         const QString &clientName,
-        bool monitorConnections)
-: mPriv(new Private(registrar, services, clientName, monitorConnections))
+        bool monitorConnections,
+        bool bypassApproval)
+: mPriv(new Private(registrar, services, clientName, monitorConnections, bypassApproval))
 {
     connect(mPriv->handler.data(),
             SIGNAL(invokedForTube(

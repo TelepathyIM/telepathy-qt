@@ -46,7 +46,8 @@ public:
     static SharedPtr<SimpleStreamTubeHandler> create(
             const QStringList &services,
             bool requested,
-            bool monitorConnections);
+            bool monitorConnections,
+            bool bypassApproval = false);
     ~SimpleStreamTubeHandler();
 
     bool monitorsConnections() const
@@ -56,7 +57,7 @@ public:
 
     bool bypassApproval() const
     {
-        return false;
+        return mBypassApproval;
     }
 
     void handleChannels(const MethodInvocationContextPtr<> &context,
@@ -90,7 +91,8 @@ private:
     SimpleStreamTubeHandler(
             const QStringList &services,
             bool requested,
-            bool monitorConnections);
+            bool monitorConnections,
+            bool bypassApproval);
 
     bool mMonitorConnections;
 
@@ -108,6 +110,7 @@ private:
     };
     QLinkedList<SharedPtr<InvocationData> > mInvocations;
     QHash<StreamTubeChannelPtr, AccountPtr> mTubes;
+    bool mBypassApproval;
 };
 
 } // Tp

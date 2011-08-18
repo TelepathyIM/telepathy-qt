@@ -73,6 +73,7 @@ public:
             const QStringList &services,
             const QString &clientName = QString(),
             bool monitorConnections = false,
+            bool bypassApproval = false,
             const AccountFactoryConstPtr &accountFactory =
                 AccountFactory::create(QDBusConnection::sessionBus()),
             const ConnectionFactoryConstPtr &connectionFactory =
@@ -90,19 +91,22 @@ public:
             const ContactFactoryConstPtr &contactFactory,
             const QStringList &services,
             const QString &clientName = QString(),
-            bool monitorConnections = false);
+            bool monitorConnections = false,
+            bool bypassApproval = false);
 
     static StreamTubeClientPtr create(
             const AccountManagerPtr &accountManager,
             const QStringList &services,
             const QString &clientName = QString(),
-            bool monitorConnections = false);
+            bool monitorConnections = false,
+            bool bypassApproval = false);
 
     static StreamTubeClientPtr create(
             const ClientRegistrarPtr &registrar,
             const QStringList &services,
             const QString &clientName = QString(),
-            bool monitorConnections = false);
+            bool monitorConnections = false,
+            bool bypassApproval = false);
 
     virtual ~StreamTubeClient();
 
@@ -170,14 +174,15 @@ private Q_SLOTS:
             const QDateTime &userActionTime,
             const Tp::ChannelRequestHints &requestHints);
     TELEPATHY_QT4_NO_EXPORT void onAcceptFinished(TubeWrapper *, Tp::PendingStreamTubeConnection *);
-    TELEPATHY_QT4_EXPORT void onTubeInvalidated(Tp::DBusProxy *, const QString &, const QString &);
+    TELEPATHY_QT4_NO_EXPORT void onTubeInvalidated(Tp::DBusProxy *, const QString &, const QString &);
 
 private:
     StreamTubeClient(
             const ClientRegistrarPtr &registrar,
             const QStringList &services,
             const QString &clientName,
-            bool monitorConnections);
+            bool monitorConnections,
+            bool bypassApproval);
 
     struct Private;
     Private *mPriv;

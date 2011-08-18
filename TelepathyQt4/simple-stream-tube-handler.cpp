@@ -57,21 +57,25 @@ namespace
 SharedPtr<SimpleStreamTubeHandler> SimpleStreamTubeHandler::create(
         const QStringList &services,
         bool requested,
-        bool monitorConnections)
+        bool monitorConnections,
+        bool bypassApproval)
 {
     return SharedPtr<SimpleStreamTubeHandler>(
             new SimpleStreamTubeHandler(
                 services,
                 requested,
-                monitorConnections));
+                monitorConnections,
+                bypassApproval));
 }
 
 SimpleStreamTubeHandler::SimpleStreamTubeHandler(
         const QStringList &services,
         bool requested,
-        bool monitorConnections)
+        bool monitorConnections,
+        bool bypassApproval)
 : AbstractClientHandler(buildFilter(services, requested)),
-    mMonitorConnections(monitorConnections)
+    mMonitorConnections(monitorConnections),
+    mBypassApproval(bypassApproval)
 {
 }
 
