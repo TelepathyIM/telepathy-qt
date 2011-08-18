@@ -388,7 +388,7 @@ void StreamTubeClient::onTubeInvalidated(Tp::DBusProxy *proxy, const QString &er
 
     emit tubeClosed(wrapper->mAcc, wrapper->mTube, error, message);
     mPriv->tubes.remove(tube);
-    wrapper->deleteLater();
+    delete wrapper;
 }
 
 } // Tp
