@@ -262,6 +262,11 @@ const StreamTubeClient::TcpSourceAddressGenerator *StreamTubeClient::generator()
     return mPriv->tcpGenerator;
 }
 
+bool StreamTubeClient::acceptsAsUnix() const
+{
+    return mPriv->acceptsAsUnix;
+}
+
 void StreamTubeClient::setToAcceptAsTcp(const TcpSourceAddressGenerator *generator)
 {
     mPriv->tcpGenerator = generator;
@@ -279,11 +284,6 @@ void StreamTubeClient::setToAcceptAsUnix(bool requireCredentials)
     mPriv->requireCredentials = requireCredentials;
 
     mPriv->ensureRegistered();
-}
-
-bool StreamTubeClient::acceptsAsUnix() const
-{
-    return mPriv->acceptsAsUnix;
 }
 
 void StreamTubeClient::onInvokedForTube(
