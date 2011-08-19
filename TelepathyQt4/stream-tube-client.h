@@ -123,7 +123,7 @@ public:
 
     // This will always be populated
     QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > tubes() const;
-    QMap<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> > connections() const;
+    QHash<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> > connections() const;
 
 Q_SIGNALS:
     // These will always be emitted

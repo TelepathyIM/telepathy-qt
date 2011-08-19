@@ -286,6 +286,37 @@ void StreamTubeClient::setToAcceptAsUnix(bool requireCredentials)
     mPriv->ensureRegistered();
 }
 
+QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > StreamTubeClient::tubes() const
+{
+    QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > tubes;
+
+    foreach (TubeWrapper *wrapper, mPriv->tubes.values()) {
+        tubes.push_back(qMakePair(wrapper->mAcc, wrapper->mTube));
+    }
+
+    return tubes;
+}
+
+QHash<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> >
+    StreamTubeClient::connections() const
+{
+    QHash<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> > conns;
+    if (!monitorsConnections()) {
+        warning() << "StreamTubeClient::connections() used, but connection monitoring is disabled";
+        return conns;
+    }
+
+    QPair<AccountPtr, IncomingStreamTubeChannelPtr> tube;
+    foreach (tube, tubes()) {
+        QSet<uint> tubeConns = QSet<uint>::fromList(tube.second->connections());
+        if (!tubeConns.empty()) {
+            conns.insert(tube, tubeConns);
+        }
+    }
+
+    return conns;
+}
+
 void StreamTubeClient::onInvokedForTube(
         const AccountPtr &acc,
         const StreamTubeChannelPtr &tube,
