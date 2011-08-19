@@ -344,6 +344,49 @@ void StreamTubeServer::exportTcpSocket(
         return exportTcpSocket(server->serverAddress(), server->serverPort(), generator);
     }
 }
+
+QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > StreamTubeServer::tubes() const
+{
+    QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > tubes;
+
+    foreach (TubeWrapper *wrapper, mPriv->tubes.values()) {
+        tubes.push_back(qMakePair(wrapper->mAcc, wrapper->mTube));
+    }
+
+    return tubes;
+}
+
+QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
+      QPair<AccountPtr, ContactPtr> >
+    StreamTubeServer::tcpConnections() const
+{
+    QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
+          QPair<AccountPtr, ContactPtr> > conns;
+    if (!monitorsConnections()) {
+        warning() << "StreamTubeServer::tcpConnections() used, but connection monitoring is disabled";
+        return conns;
+    }
+
+    QPair<AccountPtr, OutgoingStreamTubeChannelPtr> tube;
+    foreach (tube, tubes()) {
+        if (tube.second->addressType() != SocketAddressTypeIPv4 &&
+                tube.second->addressType() != SocketAddressTypeIPv6)
+            continue;
+
+        QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
+            tube.second->connectionsForSourceAddresses();
+        QHash<uint, Tp::ContactPtr> connContacts =
+            tube.second->contactsForConnections();
+        QPair<QHostAddress, quint16> srcAddr;
+        foreach(srcAddr, srcAddrConns.keys()) {
+            conns.insert(srcAddr,
+                    qMakePair(tube.first, connContacts.value(srcAddrConns.value(srcAddr))));
+        }
+    }
+
+    return conns;
+}
+
 void StreamTubeServer::onInvokedForTube(
         const AccountPtr &acc,
         const StreamTubeChannelPtr &tube,

@@ -147,7 +147,7 @@ public:
     //
     // Including the tube channels themselves would complicate this even more, and wouldn't really
     // even help in any use case that I can think of.
-    QMap<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>, QPair<AccountPtr, ContactPtr> > tcpConnections() const;
+    QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>, QPair<AccountPtr, ContactPtr> > tcpConnections() const;
 
 Q_SIGNALS:
 
