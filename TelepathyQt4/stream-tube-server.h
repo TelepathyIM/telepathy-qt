@@ -198,6 +198,15 @@ private Q_SLOTS:
             const QString &error,
             const QString &message);
 
+    TELEPATHY_QT4_NO_EXPORT void onNewConnection(
+            TubeWrapper *wrapper,
+            uint conn);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(
+            TubeWrapper *wrapper,
+            uint conn,
+            const QString &error,
+            const QString &message);
+
 private:
     StreamTubeServer(
             const ClientRegistrarPtr &registrar,

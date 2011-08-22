@@ -117,11 +117,28 @@ StreamTubeServer::TubeWrapper::TubeWrapper(const AccountPtr &acc,
     connect(tube->offerTcpSocket(exportedAddr, exportedPort, params),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onTubeOffered(Tp::PendingOperation*)));
+    connect(tube.data(),
+            SIGNAL(newConnection(uint)),
+            SLOT(onNewConnection(uint)));
+    connect(tube.data(),
+            SIGNAL(connectionClosed(uint,QString,QString)),
+            SLOT(onConnectionClosed(uint,QString,QString)));
 }
 
 void StreamTubeServer::TubeWrapper::onTubeOffered(Tp::PendingOperation *op)
 {
     emit offerFinished(this, op);
+}
+
+void StreamTubeServer::TubeWrapper::onNewConnection(uint conn)
+{
+    emit newConnection(this, conn);
+}
+
+void StreamTubeServer::TubeWrapper::onConnectionClosed(uint conn, const QString &error,
+        const QString &message)
+{
+    emit connectionClosed(this, conn, error, message);
 }
 
 StreamTubeServerPtr StreamTubeServer::create(
@@ -436,7 +453,14 @@ void StreamTubeServer::onInvokedForTube(
                 SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                 SLOT(onTubeInvalidated(Tp::DBusProxy*,QString,QString)));
 
-        // TODO: start monitoring connections if requested
+        if (monitorsConnections()) {
+            connect(wrapper,
+                    SIGNAL(newConnection(TubeWrapper*,uint)),
+                    SLOT(onNewConnection(TubeWrapper*,uint)));
+            connect(wrapper,
+                    SIGNAL(connectionClosed(TubeWrapper*,uint,QString,QString)),
+                    SLOT(onConnectionClosed(TubeWrapper*,uint,QString,QString)));
+        }
 
         mPriv->tubes.insert(outgoing, wrapper);
     }
@@ -483,6 +507,52 @@ void StreamTubeServer::onTubeInvalidated(
     emit tubeClosed(wrapper->mAcc, wrapper->mTube, error, message);
     mPriv->tubes.remove(tube);
     delete wrapper;
+}
+
+void StreamTubeServer::onNewConnection(
+        TubeWrapper *wrapper,
+        uint conn)
+{
+    Q_ASSERT(monitorsConnections());
+
+    if (wrapper->mTube->addressType() == SocketAddressTypeIPv4
+            || wrapper->mTube->addressType() == SocketAddressTypeIPv6) {
+        QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
+            wrapper->mTube->connectionsForSourceAddresses();
+        QHash<uint, Tp::ContactPtr> connContacts =
+            wrapper->mTube->contactsForConnections();
+
+        QPair<QHostAddress, quint16> srcAddr = srcAddrConns.key(conn);
+        emit newTcpConnection(srcAddr.first, srcAddr.second, wrapper->mAcc,
+                connContacts.value(conn), wrapper->mTube);
+    } else {
+        // No UNIX socket should ever have been offered yet
+        Q_ASSERT(false);
+    }
+}
+
+void StreamTubeServer::onConnectionClosed(
+        TubeWrapper *wrapper,
+        uint conn,
+        const QString &error,
+        const QString &message)
+{
+    Q_ASSERT(monitorsConnections());
+
+    if (wrapper->mTube->addressType() == SocketAddressTypeIPv4
+            || wrapper->mTube->addressType() == SocketAddressTypeIPv6) {
+        QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
+            wrapper->mTube->connectionsForSourceAddresses();
+        QHash<uint, Tp::ContactPtr> connContacts =
+            wrapper->mTube->contactsForConnections();
+
+        QPair<QHostAddress, quint16> srcAddr = srcAddrConns.key(conn);
+        emit tcpConnectionClosed(srcAddr.first, srcAddr.second, wrapper->mAcc,
+                connContacts.value(conn), error, message, wrapper->mTube);
+    } else {
+        // No UNIX socket should ever have been offered yet
+        Q_ASSERT(false);
+    }
 }
 
 } // Tp

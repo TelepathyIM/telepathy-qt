@@ -43,10 +43,13 @@ public:
 Q_SIGNALS:
     void offerFinished(TubeWrapper *wrapper, Tp::PendingOperation *op);
     void newConnection(TubeWrapper *wrapper, uint conn);
-    void connectionClosed(TubeWrapper *wrapper, uint conn, const QString &errorMessage, const QString &errorName);
+    void connectionClosed(TubeWrapper *wrapper, uint conn, const QString &error,
+            const QString &message);
 
 private Q_SLOTS:
     void onTubeOffered(Tp::PendingOperation *);
+    void onNewConnection(uint);
+    void onConnectionClosed(uint, const QString &, const QString &);
 };
 
 } // Tp
