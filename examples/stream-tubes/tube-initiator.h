@@ -26,6 +26,10 @@
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/Types>
 
+#include <QHash>
+#include <QHostAddress>
+#include <QPair>
+
 class QTcpServer;
 using namespace Tp;
 
@@ -53,10 +57,12 @@ private Q_SLOTS:
             const QDateTime &, const Tp::ChannelRequestHints &);
     void onTubeClosed(const Tp::AccountPtr &, const Tp::OutgoingStreamTubeChannelPtr &,
             const QString &, const QString &);
-    //void onStreamTubeChannelNewConnection(uint);
+    void onTubeNewConnection(const QHostAddress &, quint16,
+            const Tp::AccountPtr &, const Tp::ContactPtr &);
+    void onTubeConnectionClosed(const QHostAddress &, quint16, const Tp::AccountPtr &,
+            const Tp::ContactPtr &, const QString &, const QString &);
     void onTcpServerNewConnection();
     void onDataFromSocket();
-    void onInvalidated();
 
 private:
     void createStreamTubeChannel();
@@ -70,6 +76,7 @@ private:
     ContactPtr mContact;
 
     bool mTubeRequested;
+    QHash<QPair<QHostAddress, quint16>, QString> mConnAliases;
 };
 
 #endif
