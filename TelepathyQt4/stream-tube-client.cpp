@@ -102,6 +102,12 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
     connect(tube->acceptTubeAsTcpSocket(sourceAddress, sourcePort),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onTubeAccepted(Tp::PendingOperation*)));
+    connect(tube.data(),
+            SIGNAL(newConnection(uint)),
+            SLOT(onNewConnection(uint)));
+    connect(tube.data(),
+            SIGNAL(connectionClosed(uint,QString,QString)),
+            SLOT(onConnectionClosed(uint,QString,QString)));
 }
 
 StreamTubeClient::TubeWrapper::TubeWrapper(
@@ -113,11 +119,28 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
     connect(tube->acceptTubeAsUnixSocket(requireCredentials),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onTubeAccepted(Tp::PendingOperation*)));
+    connect(tube.data(),
+            SIGNAL(newConnection(uint)),
+            SLOT(onNewConnection(uint)));
+    connect(tube.data(),
+            SIGNAL(connectionClosed(uint,QString,QString)),
+            SLOT(onConnectionClosed(uint,QString,QString)));
 }
 
 void StreamTubeClient::TubeWrapper::onTubeAccepted(Tp::PendingOperation *op)
 {
     emit acceptFinished(this, qobject_cast<Tp::PendingStreamTubeConnection *>(op));
+}
+
+void StreamTubeClient::TubeWrapper::onNewConnection(uint conn)
+{
+    emit newConnection(this, conn);
+}
+
+void StreamTubeClient::TubeWrapper::onConnectionClosed(uint conn, const QString &error,
+        const QString &message)
+{
+    emit connectionClosed(this, conn, error, message);
 }
 
 StreamTubeClientPtr StreamTubeClient::create(
@@ -364,6 +387,16 @@ void StreamTubeClient::onInvokedForTube(
     connect(tube.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onTubeInvalidated(Tp::DBusProxy*,QString,QString)));
+
+    if (monitorsConnections()) {
+        connect(wrapper,
+                SIGNAL(newConnection(TubeWrapper*,uint)),
+                SLOT(onNewConnection(TubeWrapper*,uint)));
+        connect(wrapper,
+                SIGNAL(connectionClosed(TubeWrapper*,uint,QString,QString)),
+                SLOT(onConnectionClosed(TubeWrapper*,uint,QString,QString)));
+    }
+
     mPriv->tubes.insert(tube, wrapper);
 
     emit tubeOffered(acc, incoming);
@@ -430,6 +463,24 @@ void StreamTubeClient::onTubeInvalidated(Tp::DBusProxy *proxy, const QString &er
     emit tubeClosed(wrapper->mAcc, wrapper->mTube, error, message);
     mPriv->tubes.remove(tube);
     delete wrapper;
+}
+
+void StreamTubeClient::onNewConnection(
+        TubeWrapper *wrapper,
+        uint conn)
+{
+    Q_ASSERT(monitorsConnections());
+    emit newConnection(wrapper->mAcc, wrapper->mTube, conn);
+}
+
+void StreamTubeClient::onConnectionClosed(
+        TubeWrapper *wrapper,
+        uint conn,
+        const QString &error,
+        const QString &message)
+{
+    Q_ASSERT(monitorsConnections());
+    emit connectionClosed(wrapper->mAcc, wrapper->mTube, conn, error, message);
 }
 
 } // Tp

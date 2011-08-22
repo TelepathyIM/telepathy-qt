@@ -161,7 +161,7 @@ Q_SIGNALS:
             uint connectionId);
     void connectionClosed(
             const Tp::AccountPtr &account,
-            const Tp::OutgoingStreamTubeChannelPtr &tube,
+            const Tp::IncomingStreamTubeChannelPtr &tube,
             uint connectionId,
             const QString &error,
             const QString &message);
@@ -173,8 +173,18 @@ private Q_SLOTS:
             const Tp::StreamTubeChannelPtr &tube,
             const QDateTime &userActionTime,
             const Tp::ChannelRequestHints &requestHints);
+
     TELEPATHY_QT4_NO_EXPORT void onAcceptFinished(TubeWrapper *, Tp::PendingStreamTubeConnection *);
     TELEPATHY_QT4_NO_EXPORT void onTubeInvalidated(Tp::DBusProxy *, const QString &, const QString &);
+
+    TELEPATHY_QT4_NO_EXPORT void onNewConnection(
+            TubeWrapper *wrapper,
+            uint conn);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(
+            TubeWrapper *wrapper,
+            uint conn,
+            const QString &error,
+            const QString &message);
 
 private:
     StreamTubeClient(
