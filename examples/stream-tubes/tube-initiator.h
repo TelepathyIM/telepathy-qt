@@ -53,10 +53,6 @@ private Q_SLOTS:
     void onContactRetrieved(Tp::PendingOperation *op);
     void onContactCapabilitiesChanged();
     void onTubeRequestFinished(Tp::PendingOperation *op);
-    void onTubeRequested(const Tp::AccountPtr &, const Tp::OutgoingStreamTubeChannelPtr &,
-            const QDateTime &, const Tp::ChannelRequestHints &);
-    void onTubeClosed(const Tp::AccountPtr &, const Tp::OutgoingStreamTubeChannelPtr &,
-            const QString &, const QString &);
     void onTubeNewConnection(const QHostAddress &, quint16,
             const Tp::AccountPtr &, const Tp::ContactPtr &);
     void onTubeConnectionClosed(const QHostAddress &, quint16, const Tp::AccountPtr &,

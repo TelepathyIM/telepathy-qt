@@ -69,13 +69,6 @@ TubeInitiator::TubeInitiator(const QString &accountName, const QString &receiver
             accountFactory, connectionFactory, channelFactory, contactFactory);
 
     connect(mTubeServer.data(),
-            SIGNAL(tubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints)),
-            SLOT(onTubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints)));
-    connect(mTubeServer.data(),
-            SIGNAL(tubeClosed(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QString,QString)),
-            SLOT(onTubeClosed(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QString,QString)));
-
-    connect(mTubeServer.data(),
             SIGNAL(newTcpConnection(QHostAddress,quint16,Tp::AccountPtr,Tp::ContactPtr,Tp::OutgoingStreamTubeChannelPtr)),
             SLOT(onTubeNewConnection(QHostAddress,quint16,Tp::AccountPtr,Tp::ContactPtr)));
     connect(mTubeServer.data(),
@@ -195,24 +188,6 @@ void TubeInitiator::onTubeRequestFinished(PendingOperation *op)
     }
 
     qDebug() << "Stream tube channel request finished successfully!";
-}
-
-void TubeInitiator::onTubeRequested(
-        const Tp::AccountPtr &acc,
-        const Tp::OutgoingStreamTubeChannelPtr &tube,
-        const QDateTime &time,
-        const Tp::ChannelRequestHints &hints)
-{
-    qDebug() << "Handler received requested tube channel " << tube->objectPath();
-}
-
-void TubeInitiator::onTubeClosed(
-        const Tp::AccountPtr &acc,
-        const Tp::OutgoingStreamTubeChannelPtr &tube,
-        const QString &error,
-        const QString &message)
-{
-    qDebug() << "Closed tube channel " << tube->objectPath();
 }
 
 void TubeInitiator::onTubeNewConnection(
