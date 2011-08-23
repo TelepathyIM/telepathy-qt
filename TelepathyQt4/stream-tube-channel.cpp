@@ -623,6 +623,29 @@ void StreamTubeChannel::setConnections(UIntList connections)
     mPriv->connections = QSet<uint>::fromList(connections);
 }
 
+void StreamTubeChannel::addConnection(uint connection)
+{
+    if (!mPriv->connections.contains(connection)) {
+        mPriv->connections.insert(connection);
+        emit newConnection(connection);
+    } else {
+        warning() << "Tried to add connection" << connection << "on StreamTube" << objectPath()
+            << "but it already was there";
+    }
+}
+
+void StreamTubeChannel::removeConnection(uint connection, const QString &error,
+        const QString &message)
+{
+    if (mPriv->connections.contains(connection)) {
+        mPriv->connections.remove(connection);
+        emit connectionClosed(connection, error, message);
+    } else {
+        warning() << "Tried to remove connection" << connection << "from StreamTube" << objectPath()
+            << "but it wasn't there";
+    }
+}
+
 void StreamTubeChannel::setAddressType(SocketAddressType type)
 {
     mPriv->addressType = type;
@@ -664,8 +687,7 @@ void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
 void StreamTubeChannel::onConnectionClosed(uint connId, const QString &error,
         const QString &message)
 {
-    mPriv->connections.remove(connId);
-    emit connectionClosed(connId, error, message);
+    removeConnection(connId, error, message);
 }
 
 /**

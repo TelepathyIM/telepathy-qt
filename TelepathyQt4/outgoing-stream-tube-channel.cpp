@@ -723,14 +723,9 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
 
     QPair<uint, QDBusVariant> connectionProperties = mPriv->pendingNewConnections.take(uuid);
 
-    // Add the connection to our list
-    UIntList connections;
-    connections << connectionProperties.first;
-    setConnections(connections);
-
     // Add it to our connections hash
     foreach (const Tp::ContactPtr &contact, contacts) {
-        mPriv->contactsForConnections.insertMulti(connectionProperties.first, contact);
+        mPriv->contactsForConnections.insert(connectionProperties.first, contact);
     }
 
     QPair<QHostAddress, quint16> address;
@@ -763,7 +758,7 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
     }
 
     // Time for us to emit the signal
-    emit newConnection(connectionProperties.first);
+    addConnection(connectionProperties.first);
 }
 
 void OutgoingStreamTubeChannel::onGenericConnectionClosed(uint connectionId,

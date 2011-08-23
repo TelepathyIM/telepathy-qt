@@ -429,12 +429,7 @@ QPair<QHostAddress, quint16> IncomingStreamTubeChannel::ipAddress() const
 
 void IncomingStreamTubeChannel::onNewLocalConnection(uint connectionId)
 {
-    // Add the connection to our list
-    UIntList currentConnections = connections();
-    currentConnections << connectionId;
-    setConnections(currentConnections);
-
-    emit newConnection(connectionId);
+    addConnection(connectionId);
 }
 
 }
