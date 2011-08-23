@@ -193,6 +193,8 @@ void TestStreamTubeChan::onNewLocalConnection(uint connectionId)
     qDebug() << "Got local connection with id:" << connectionId;
     mLocalConnectionId = connectionId;
     mGotLocalConnection = true;
+    QVERIFY(mChan->connections().contains(connectionId));
+
     mLoop->exit(0);
 }
 
@@ -201,6 +203,7 @@ void TestStreamTubeChan::onNewRemoteConnection(uint connectionId)
     qDebug() << "Got remote connection with id:" << connectionId;
     mRemoteConnectionId = connectionId;
     mGotRemoteConnection = true;
+    QVERIFY(mChan->connections().contains(connectionId));
 
     testCheckRemoteConnectionsCommon();
 }
@@ -217,6 +220,7 @@ void TestStreamTubeChan::onConnectionClosed(uint connectionId,
 {
     qDebug() << "Got connetion closed for connection" << connectionId;
     mGotConnectionClosed = true;
+    QVERIFY(!mChan->connections().contains(connectionId));
 
     if (mChan->isRequested()) {
         testCheckRemoteConnectionsCommon();
