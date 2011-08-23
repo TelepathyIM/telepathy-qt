@@ -156,6 +156,7 @@ private Q_SLOTS:
     void testAcceptSuccess();
     void testAcceptFail();
     void testOfferSuccess();
+    void testOutgoingConnectionMonitoring();
 
     void cleanup();
     void cleanupTestCase();
@@ -797,6 +798,76 @@ void TestStreamTubeChan::testOfferSuccess()
         /* as we run several tests here, let's init/cleanup properly */
         cleanup();
     }
+}
+
+void TestStreamTubeChan::testOutgoingConnectionMonitoring()
+{
+    mCurrentContext = 3; // should point to the room, IPv4, AC port one
+    createTubeChannel(true, TP_SOCKET_ADDRESS_TYPE_IPV4, TP_SOCKET_ACCESS_CONTROL_PORT, false);
+    QVERIFY(connect(mChan->becomeReady(OutgoingStreamTubeChannel::FeatureCore |
+                    StreamTubeChannel::FeatureConnectionMonitoring),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mChan.data(),
+                SIGNAL(newConnection(uint)),
+                SLOT(onNewRemoteConnection(uint))));
+    QVERIFY(connect(mChan.data(),
+                SIGNAL(connectionClosed(uint,QString,QString)),
+                SLOT(onConnectionClosed(uint,QString,QString))));
+
+    OutgoingStreamTubeChannelPtr chan = OutgoingStreamTubeChannelPtr::qObjectCast(mChan);
+    QVERIFY(connect(chan->offerTcpSocket(QHostAddress(QHostAddress::LocalHost), 9), // DISCARD
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(onOfferFinished(Tp::PendingOperation *))));
+
+    while (mChan->state() != TubeChannelStateRemotePending) {
+        mLoop->processEvents();
+    }
+
+    /* simulate CM when peer connects */
+    GValue *connParam = tp_g_value_slice_new_take_boxed(
+            TP_STRUCT_TYPE_SOCKET_ADDRESS_IPV4,
+            dbus_g_type_specialized_construct(TP_STRUCT_TYPE_SOCKET_ADDRESS_IPV4));
+
+    mExpectedAddress.setAddress(QLatin1String("127.0.0.1"));
+    mExpectedPort = 12345;
+
+    dbus_g_type_struct_set(connParam,
+            0, mExpectedAddress.toString().toLatin1().constData(),
+            1, static_cast<quint16>(mExpectedPort),
+            G_MAXUINT);
+
+    // Simulate a peer connection from someone we don't have a prebuilt contact for yet, and
+    // immediately drop it
+    TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
+            TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
+    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", NULL, NULL);
+
+    mExpectedHandle = handle;
+    mExpectedId = QLatin1String("youhaventseenmeyet");
+
+    tp_tests_stream_tube_channel_peer_connected_no_stream(mChanService,
+            connParam, handle);
+    tp_tests_stream_tube_channel_last_connection_disconnected(mChanService,
+            TP_ERROR_STR_DISCONNECTED);
+    tp_g_value_slice_free(connParam);
+
+    // Test that we get newConnection first and only then connectionClosed, unlike how the code has
+    // been for a long time, queueing newConnection events and emitting connectionClosed directly
+    while (!mOfferFinished || !mGotRemoteConnection) {
+        QVERIFY(!mGotConnectionClosed || !mOfferFinished);
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QCOMPARE(mChan->connections().size(), 1);
+
+    // The connectionClosed emission should finally exit the main loop
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mGotConnectionClosed);
+
+    QCOMPARE(mChan->connections().size(), 0);
 }
 
 void TestStreamTubeChan::cleanup()
