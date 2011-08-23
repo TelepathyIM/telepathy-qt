@@ -53,7 +53,7 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     SupportedSocketMap socketTypes;
     QString serviceName;
 
-    UIntList connections;
+    QSet<uint> connections;
     QPair<QHostAddress, quint16> ipAddress;
     QString unixAddress;
     SocketAddressType addressType;
@@ -114,7 +114,7 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
 
     parent->connect(streamTubeInterface,
             SIGNAL(ConnectionClosed(uint,QString,QString)),
-            SIGNAL(connectionClosed(uint,QString,QString)));
+            SLOT(onConnectionClosed(uint,QString,QString)));
 
     if (parent->isRequested()) {
         parent->connect(streamTubeInterface,
@@ -543,7 +543,7 @@ UIntList StreamTubeChannel::connections() const
         return UIntList();
     }
 
-    return mPriv->connections;
+    return mPriv->connections.toList();
 }
 
 /**
@@ -618,7 +618,9 @@ QString StreamTubeChannel::localAddress() const
 
 void StreamTubeChannel::setConnections(UIntList connections)
 {
-    mPriv->connections = connections;
+    // This is rather sub-optimal: we'll do a O(n) replace of the old connections list every time a
+    // connection is added, so O(n^2) in total for adding n connections
+    mPriv->connections = QSet<uint>::fromList(connections);
 }
 
 void StreamTubeChannel::setAddressType(SocketAddressType type)
@@ -657,6 +659,13 @@ void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
         mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureCore, false,
                 op->errorName(), op->errorMessage());
     }
+}
+
+void StreamTubeChannel::onConnectionClosed(uint connId, const QString &error,
+        const QString &message)
+{
+    mPriv->connections.remove(connId);
+    emit connectionClosed(connId, error, message);
 }
 
 /**

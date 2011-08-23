@@ -246,7 +246,7 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
       mPriv(new Private(this))
 {
     connect(this, SIGNAL(connectionClosed(uint,QString,QString)),
-            this, SLOT(onConnectionClosed(uint,QString,QString)),
+            this, SLOT(onGenericConnectionClosed(uint,QString,QString)),
             Qt::QueuedConnection);
 
     connect(mPriv->queuedContactFactory,
@@ -766,7 +766,7 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
     emit newConnection(connectionProperties.first);
 }
 
-void OutgoingStreamTubeChannel::onConnectionClosed(uint connectionId,
+void OutgoingStreamTubeChannel::onGenericConnectionClosed(uint connectionId,
         const QString &errorName, const QString &errorMessage)
 {
     // Remove stuff from our hashes

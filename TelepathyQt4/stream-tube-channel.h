@@ -63,6 +63,7 @@ public:
     bool supportsAbstractUnixSocketsOnLocalhost() const;
     bool supportsAbstractUnixSocketsWithCredentials() const;
 
+    // API/ABI break TODO: return QSet<uint> instead
     UIntList connections() const;
 
     SocketAddressType addressType() const;
@@ -89,6 +90,7 @@ protected:
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void gotStreamTubeProperties(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint, const QString &, const QString &);
 
 private:
     struct Private;
