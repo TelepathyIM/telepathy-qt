@@ -43,13 +43,14 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Private
 {
     Private(const ClientRegistrarPtr &registrar,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices,
             const QString &maybeClientName,
             bool monitorConnections,
             bool bypassApproval)
         : registrar(registrar),
           handler(SimpleStreamTubeHandler::create(
-                      services, false, monitorConnections, bypassApproval)),
+                      p2pServices, roomServices, false, monitorConnections, bypassApproval)),
           clientName(maybeClientName),
           isRegistered(false),
           acceptsAsTcp(false), acceptsAsUnix(false),
@@ -144,7 +145,8 @@ void StreamTubeClient::TubeWrapper::onConnectionClosed(uint conn, const QString 
 }
 
 StreamTubeClientPtr StreamTubeClient::create(
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections,
         bool bypassApproval,
@@ -159,7 +161,8 @@ StreamTubeClientPtr StreamTubeClient::create(
             connectionFactory,
             channelFactory,
             contactFactory,
-            services,
+            p2pServices,
+            roomServices,
             clientName,
             monitorConnections,
             bypassApproval);
@@ -171,7 +174,8 @@ StreamTubeClientPtr StreamTubeClient::create(
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory,
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections,
         bool bypassApproval)
@@ -183,7 +187,8 @@ StreamTubeClientPtr StreamTubeClient::create(
                 connectionFactory,
                 channelFactory,
                 contactFactory),
-            services,
+            p2pServices,
+            roomServices,
             clientName,
             monitorConnections,
             bypassApproval);
@@ -191,7 +196,8 @@ StreamTubeClientPtr StreamTubeClient::create(
 
 StreamTubeClientPtr StreamTubeClient::create(
         const AccountManagerPtr &accountManager,
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections,
         bool bypassApproval)
@@ -202,7 +208,8 @@ StreamTubeClientPtr StreamTubeClient::create(
             accountManager->connectionFactory(),
             accountManager->channelFactory(),
             accountManager->contactFactory(),
-            services,
+            p2pServices,
+            roomServices,
             clientName,
             monitorConnections,
             bypassApproval);
@@ -210,23 +217,25 @@ StreamTubeClientPtr StreamTubeClient::create(
 
 StreamTubeClientPtr StreamTubeClient::create(
         const ClientRegistrarPtr &registrar,
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections,
         bool bypassApproval)
 {
-    StreamTubeClientPtr client(
-            new StreamTubeClient(registrar, services, clientName, monitorConnections, bypassApproval));
-    return client;
+    return StreamTubeClientPtr(
+            new StreamTubeClient(registrar, p2pServices, roomServices, clientName,
+                monitorConnections, bypassApproval));
 }
 
 StreamTubeClient::StreamTubeClient(
         const ClientRegistrarPtr &registrar,
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections,
         bool bypassApproval)
-: mPriv(new Private(registrar, services, clientName, monitorConnections, bypassApproval))
+: mPriv(new Private(registrar, p2pServices, roomServices, clientName, monitorConnections, bypassApproval))
 {
     connect(mPriv->handler.data(),
             SIGNAL(invokedForTube(

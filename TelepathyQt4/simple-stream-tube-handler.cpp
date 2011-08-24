@@ -37,17 +37,25 @@ namespace Tp
 
 namespace
 {
-    ChannelClassSpecList buildFilter(const QStringList &services, bool requested)
+    ChannelClassSpecList buildFilter(const QStringList &p2pServices,
+            const QStringList &roomServices, bool requested)
     {
-        Q_ASSERT(!services.isEmpty());
+        Q_ASSERT(!p2pServices.isEmpty() || !roomServices.isEmpty());
 
         ChannelClassSpecList filter;
 
-        foreach (QString service, services)
+        foreach (QString service, p2pServices)
         {
             filter.append(requested ?
                     ChannelClassSpec::outgoingStreamTube(service) :
                     ChannelClassSpec::incomingStreamTube(service));
+        }
+
+        foreach (QString service, roomServices)
+        {
+            filter.append(requested ?
+                    ChannelClassSpec::outgoingRoomStreamTube(service) :
+                    ChannelClassSpec::incomingRoomStreamTube(service));
         }
 
         return filter;
@@ -55,25 +63,28 @@ namespace
 }
 
 SharedPtr<SimpleStreamTubeHandler> SimpleStreamTubeHandler::create(
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         bool requested,
         bool monitorConnections,
         bool bypassApproval)
 {
     return SharedPtr<SimpleStreamTubeHandler>(
             new SimpleStreamTubeHandler(
-                services,
+                p2pServices,
+                roomServices,
                 requested,
                 monitorConnections,
                 bypassApproval));
 }
 
 SimpleStreamTubeHandler::SimpleStreamTubeHandler(
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         bool requested,
         bool monitorConnections,
         bool bypassApproval)
-: AbstractClientHandler(buildFilter(services, requested)),
+: AbstractClientHandler(buildFilter(p2pServices, roomServices, requested)),
     mMonitorConnections(monitorConnections),
     mBypassApproval(bypassApproval)
 {

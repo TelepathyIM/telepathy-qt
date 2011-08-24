@@ -70,7 +70,8 @@ public:
     // Different parameter order, because services is a mandatory param so it can't follow
     // the factory params which have default args
     static StreamTubeClientPtr create(
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices = QStringList(),
             const QString &clientName = QString(),
             bool monitorConnections = false,
             bool bypassApproval = false,
@@ -89,21 +90,24 @@ public:
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices = QStringList(),
             const QString &clientName = QString(),
             bool monitorConnections = false,
             bool bypassApproval = false);
 
     static StreamTubeClientPtr create(
             const AccountManagerPtr &accountManager,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices = QStringList(),
             const QString &clientName = QString(),
             bool monitorConnections = false,
             bool bypassApproval = false);
 
     static StreamTubeClientPtr create(
             const ClientRegistrarPtr &registrar,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices = QStringList(),
             const QString &clientName = QString(),
             bool monitorConnections = false,
             bool bypassApproval = false);
@@ -189,7 +193,8 @@ private Q_SLOTS:
 private:
     StreamTubeClient(
             const ClientRegistrarPtr &registrar,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices,
             const QString &clientName,
             bool monitorConnections,
             bool bypassApproval);

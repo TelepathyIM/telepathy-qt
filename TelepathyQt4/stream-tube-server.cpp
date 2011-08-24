@@ -60,11 +60,12 @@ class TELEPATHY_QT4_NO_EXPORT FixedParametersGenerator : public StreamTubeServer
 struct StreamTubeServer::Private
 {
     Private(const ClientRegistrarPtr &registrar,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices,
             const QString &maybeClientName,
             bool monitorConnections)
         : registrar(registrar),
-          handler(SimpleStreamTubeHandler::create(services, true, monitorConnections)),
+          handler(SimpleStreamTubeHandler::create(p2pServices, roomServices, true, monitorConnections)),
           clientName(maybeClientName),
           isRegistered(false),
           exportedPort(0),
@@ -142,7 +143,8 @@ void StreamTubeServer::TubeWrapper::onConnectionClosed(uint conn, const QString 
 }
 
 StreamTubeServerPtr StreamTubeServer::create(
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections,
         const AccountFactoryConstPtr &accountFactory,
@@ -156,7 +158,8 @@ StreamTubeServerPtr StreamTubeServer::create(
             connectionFactory,
             channelFactory,
             contactFactory,
-            services,
+            p2pServices,
+            roomServices,
             clientName,
             monitorConnections);
 }
@@ -167,7 +170,8 @@ StreamTubeServerPtr StreamTubeServer::create(
         const ConnectionFactoryConstPtr &connectionFactory,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory,
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections)
 {
@@ -178,14 +182,16 @@ StreamTubeServerPtr StreamTubeServer::create(
                 connectionFactory,
                 channelFactory,
                 contactFactory),
-            services,
+            p2pServices,
+            roomServices,
             clientName,
             monitorConnections);
 }
 
 StreamTubeServerPtr StreamTubeServer::create(
         const AccountManagerPtr &accountManager,
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections)
 {
@@ -195,28 +201,31 @@ StreamTubeServerPtr StreamTubeServer::create(
             accountManager->connectionFactory(),
             accountManager->channelFactory(),
             accountManager->contactFactory(),
-            services,
+            p2pServices,
+            roomServices,
             clientName,
             monitorConnections);
 }
 
 StreamTubeServerPtr StreamTubeServer::create(
         const ClientRegistrarPtr &registrar,
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections)
 {
-    StreamTubeServerPtr server(
-            new StreamTubeServer(registrar, services, clientName, monitorConnections));
-    return server;
+    return StreamTubeServerPtr(
+            new StreamTubeServer(registrar, p2pServices, roomServices, clientName,
+                monitorConnections));
 }
 
 StreamTubeServer::StreamTubeServer(
         const ClientRegistrarPtr &registrar,
-        const QStringList &services,
+        const QStringList &p2pServices,
+        const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections)
-: mPriv(new Private(registrar, services, clientName, monitorConnections))
+: mPriv(new Private(registrar, p2pServices, roomServices, clientName, monitorConnections))
 {
     connect(mPriv->handler.data(),
             SIGNAL(invokedForTube(

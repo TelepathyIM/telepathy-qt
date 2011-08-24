@@ -63,7 +63,8 @@ public:
     // Different parameter order, because name and service are mandatory params so they can't follow
     // the factory params which have default args
     static StreamTubeServerPtr create(
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices = QStringList(),
             const QString &clientName = QString(),
             bool monitorConnections = false,
             const AccountFactoryConstPtr &accountFactory =
@@ -81,19 +82,22 @@ public:
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices = QStringList(),
             const QString &clientName = QString(),
             bool monitorConnections = false);
 
     static StreamTubeServerPtr create(
             const AccountManagerPtr &accountManager,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices = QStringList(),
             const QString &clientName = QString(),
             bool monitorConnections = false);
 
     static StreamTubeServerPtr create(
             const ClientRegistrarPtr &registrar,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices = QStringList(),
             const QString &clientName = QString(),
             bool monitorConnections = false);
 
@@ -210,7 +214,8 @@ private Q_SLOTS:
 private:
     StreamTubeServer(
             const ClientRegistrarPtr &registrar,
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices,
             const QString &clientName,
             bool monitorConnections);
 

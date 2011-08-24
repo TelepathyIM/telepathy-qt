@@ -44,7 +44,8 @@ class TELEPATHY_QT4_NO_EXPORT SimpleStreamTubeHandler : public QObject,
 
 public:
     static SharedPtr<SimpleStreamTubeHandler> create(
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices,
             bool requested,
             bool monitorConnections,
             bool bypassApproval = false);
@@ -89,7 +90,8 @@ private Q_SLOTS:
 
 private:
     SimpleStreamTubeHandler(
-            const QStringList &services,
+            const QStringList &p2pServices,
+            const QStringList &roomServices,
             bool requested,
             bool monitorConnections,
             bool bypassApproval);
