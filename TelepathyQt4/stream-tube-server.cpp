@@ -113,7 +113,7 @@ struct StreamTubeServer::Private
 StreamTubeServer::TubeWrapper::TubeWrapper(const AccountPtr &acc,
         const OutgoingStreamTubeChannelPtr &tube, const QHostAddress &exportedAddr,
         quint16 exportedPort, const QVariantMap &params)
-    : mAcc(acc), mTube(tube), mParams(params)
+    : mAcc(acc), mTube(tube)
 {
     connect(tube->offerTcpSocket(exportedAddr, exportedPort, params),
             SIGNAL(finished(Tp::PendingOperation*)),

@@ -38,7 +38,6 @@ public:
 
     AccountPtr mAcc;
     OutgoingStreamTubeChannelPtr mTube;
-    QVariantMap mParams;
 
 Q_SIGNALS:
     void offerFinished(TubeWrapper *wrapper, Tp::PendingOperation *op);
