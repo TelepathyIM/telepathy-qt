@@ -190,6 +190,10 @@ public:
             const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec incomingStreamTube(const QString &service = QString(),
             const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec outgoingRoomStreamTube(const QString &service = QString(),
+            const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec incomingRoomStreamTube(const QString &service = QString(),
+            const QVariantMap &additionalProperties = QVariantMap());
     // TODO: add dbus tubes when they're implemented
     static ChannelClassSpec contactSearch(const QVariantMap &additionalProperties = QVariantMap());
 
