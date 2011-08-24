@@ -245,10 +245,6 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
                         immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
-    connect(this, SIGNAL(connectionClosed(uint,QString,QString)),
-            this, SLOT(onGenericConnectionClosed(uint,QString,QString)),
-            Qt::QueuedConnection);
-
     connect(mPriv->queuedContactFactory,
             SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
             this,
@@ -715,12 +711,45 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
         const QUuid &uuid,
         const QList<Tp::ContactPtr> &contacts)
 {
-    // Retrieve our hash
     if (!mPriv->pendingNewConnections.contains(uuid)) {
-        warning() << "Contacts retrieved but no pending connections were found";
+        if (mPriv->pendingClosedConnections.contains(uuid)) {
+            // closed connection
+            Private::ClosedConnection conn = mPriv->pendingClosedConnections.take(uuid);
+
+            // First, do removeConnection() so connectionClosed is emitted, and anybody connected to it
+            // (like StreamTubeServer) has a chance to recover the source address / contact
+            removeConnection(conn.id, conn.error, conn.message);
+
+            // Remove stuff from our hashes
+            mPriv->contactsForConnections.remove(conn.id);
+
+            QHash<QPair<QHostAddress, quint16>, uint>::iterator srcAddrIter =
+                mPriv->connectionsForSourceAddresses.begin();
+            while (srcAddrIter != mPriv->connectionsForSourceAddresses.end()) {
+                if (srcAddrIter.value() == conn.id) {
+                    srcAddrIter = mPriv->connectionsForSourceAddresses.erase(srcAddrIter);
+                } else {
+                    ++srcAddrIter;
+                }
+            }
+
+            QHash<uchar, uint>::iterator credIter = mPriv->connectionsForCredentials.begin();
+            while (credIter != mPriv->connectionsForCredentials.end()) {
+                if (credIter.value() == conn.id) {
+                    credIter = mPriv->connectionsForCredentials.erase(credIter);
+                } else {
+                    ++credIter;
+                }
+            }
+        } else {
+            warning() << "No pending connections found in OSTC" << objectPath() << "for contacts"
+                << contacts;
+        }
+
         return;
     }
 
+    // new connection
     QPair<uint, QDBusVariant> connectionProperties = mPriv->pendingNewConnections.take(uuid);
 
     // Add it to our connections hash
@@ -761,34 +790,18 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
     addConnection(connectionProperties.first);
 }
 
-void OutgoingStreamTubeChannel::onGenericConnectionClosed(uint connectionId,
+// This replaces the base class onConnectionClosed() slot, but unlike a virtual function, is ABI
+// compatible
+void OutgoingStreamTubeChannel::onConnectionClosed(uint connectionId,
         const QString &errorName, const QString &errorMessage)
 {
-    // Remove stuff from our hashes
-    mPriv->contactsForConnections.remove(connectionId);
+    // Insert a fake request to our queued contact factory to make the close events properly ordered
+    // with new connection events
+    QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(UIntList());
 
-    {
-        QHash<QPair<QHostAddress, quint16>, uint>::iterator i =
-            mPriv->connectionsForSourceAddresses.begin();
-        while (i != mPriv->connectionsForSourceAddresses.end()) {
-            if (i.value() == connectionId) {
-                i = mPriv->connectionsForSourceAddresses.erase(i);
-            } else {
-                ++i;
-            }
-        }
-    }
-
-    {
-        QHash<uchar, uint>::iterator i = mPriv->connectionsForCredentials.begin();
-        while (i != mPriv->connectionsForCredentials.end()) {
-            if (i.value() == connectionId) {
-                i = mPriv->connectionsForCredentials.erase(i);
-            } else {
-                ++i;
-            }
-        }
-    }
+    // Add a pending connection close
+    mPriv->pendingClosedConnections.insert(uuid,
+            Private::ClosedConnection(connectionId, errorName, errorMessage));
 }
 
 }

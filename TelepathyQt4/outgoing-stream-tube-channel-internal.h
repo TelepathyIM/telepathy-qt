@@ -104,6 +104,16 @@ struct TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannel::Private
 
     QHash<QUuid, QPair<uint, QDBusVariant> > pendingNewConnections;
 
+    struct ClosedConnection {
+        uint id;
+        QString error, message;
+
+        ClosedConnection() : id(~0U) {}
+        ClosedConnection(uint id, const QString &error, const QString &message)
+            : id(id), error(error), message(message) {}
+    };
+    QHash<QUuid, ClosedConnection> pendingClosedConnections;
+
     QueuedContactFactory *queuedContactFactory;
 };
 

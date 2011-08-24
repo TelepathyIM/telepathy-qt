@@ -74,7 +74,7 @@ private Q_SLOTS:
             const QDBusVariant &parameter, uint connectionId);
     TELEPATHY_QT4_NO_EXPORT void onContactsRetrieved(const QUuid &uuid,
             const QList<Tp::ContactPtr> &contacts);
-    TELEPATHY_QT4_NO_EXPORT void onGenericConnectionClosed(uint connectionId,
+    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId,
             const QString &errorName, const QString &errorMessage);
 
 private:
