@@ -41,8 +41,8 @@ public:
 
     AccountPtr mAcc;
     IncomingStreamTubeChannelPtr mTube;
-    QHostAddress sourceAddress;
-    quint16 sourcePort;
+    QHostAddress mSourceAddress;
+    quint16 mSourcePort;
 
 Q_SIGNALS:
     void acceptFinished(TubeWrapper *wrapper, Tp::PendingStreamTubeConnection *conn);

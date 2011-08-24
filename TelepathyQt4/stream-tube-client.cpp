@@ -98,7 +98,7 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
         const IncomingStreamTubeChannelPtr &tube,
         const QHostAddress &sourceAddress,
         quint16 sourcePort)
-    : mAcc(acc), mTube(tube), sourceAddress(sourceAddress), sourcePort(sourcePort)
+    : mAcc(acc), mTube(tube), mSourceAddress(sourceAddress), mSourcePort(sourcePort)
 {
     connect(tube->acceptTubeAsTcpSocket(sourceAddress, sourcePort),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -115,7 +115,7 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
         const AccountPtr &acc,
         const IncomingStreamTubeChannelPtr &tube,
         bool requireCredentials)
-    : mAcc(acc), mTube(tube), sourcePort(0)
+    : mAcc(acc), mTube(tube), mSourcePort(0)
 {
     connect(tube->acceptTubeAsUnixSocket(requireCredentials),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -447,7 +447,7 @@ void StreamTubeClient::onAcceptFinished(TubeWrapper *wrapper, PendingStreamTubeC
             || conn->addressType() == SocketAddressTypeIPv6) {
         QPair<QHostAddress, quint16> addr = conn->ipAddress();
         emit tubeAcceptedAsTcp(wrapper->mAcc, wrapper->mTube, addr.first, addr.second,
-                wrapper->sourceAddress, wrapper->sourcePort);
+                wrapper->mSourceAddress, wrapper->mSourcePort);
     } else {
         emit tubeAcceptedAsUnix(wrapper->mAcc, wrapper->mTube, conn->localAddress(),
                 conn->requiresCredentials(), conn->credentialByte());
