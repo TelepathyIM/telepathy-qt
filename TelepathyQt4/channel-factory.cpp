@@ -103,6 +103,8 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
     setSubclassForOutgoingFileTransfers<OutgoingFileTransferChannel>();
     setSubclassForIncomingStreamTubes<IncomingStreamTubeChannel>();
     setSubclassForOutgoingStreamTubes<OutgoingStreamTubeChannel>();
+    setSubclassForIncomingRoomStreamTubes<IncomingStreamTubeChannel>();
+    setSubclassForOutgoingRoomStreamTubes<OutgoingStreamTubeChannel>();
     setSubclassForContactSearches<ContactSearchChannel>();
     setFallbackSubclass<Channel>();
 }
@@ -307,6 +309,52 @@ void ChannelFactory::setConstructorForIncomingStreamTubes(const ConstructorConst
         const QVariantMap &additionalProps)
 {
     setConstructorFor(ChannelClassSpec::incomingStreamTube(QString(), additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForOutgoingRoomStreamTubes(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::outgoingRoomStreamTube(QString(), additionalProps));
+}
+
+void ChannelFactory::addFeaturesForOutgoingRoomStreamTubes(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::outgoingRoomStreamTube(QString(), additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForOutgoingRoomStreamTubes(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::outgoingRoomStreamTube(QString(), additionalProps));
+}
+
+void ChannelFactory::setConstructorForOutgoingRoomStreamTubes(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::outgoingRoomStreamTube(QString(), additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForIncomingRoomStreamTubes(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::incomingRoomStreamTube(QString(), additionalProps));
+}
+
+void ChannelFactory::addFeaturesForIncomingRoomStreamTubes(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::incomingRoomStreamTube(QString(), additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingRoomStreamTubes(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::incomingRoomStreamTube(QString(), additionalProps));
+}
+
+void ChannelFactory::setConstructorForIncomingRoomStreamTubes(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::incomingRoomStreamTube(QString(), additionalProps), ctor);
 }
 
 Features ChannelFactory::featuresForContactSearches(const QVariantMap &additionalProps) const
