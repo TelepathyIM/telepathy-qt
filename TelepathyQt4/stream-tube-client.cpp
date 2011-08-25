@@ -255,7 +255,7 @@ StreamTubeClient::StreamTubeClient(
  */
 StreamTubeClient::~StreamTubeClient()
 {
-    if (!clientName().isNull()) {
+    if (isRegistered()) {
         mPriv->registrar->unregisterClient(mPriv->handler);
     }
 
@@ -272,6 +272,11 @@ ClientRegistrarPtr StreamTubeClient::registrar() const
 QString StreamTubeClient::clientName() const
 {
     return mPriv->clientName;
+}
+
+bool StreamTubeClient::isRegistered() const
+{
+    return mPriv->isRegistered;
 }
 
 bool StreamTubeClient::monitorsConnections() const

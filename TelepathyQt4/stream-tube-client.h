@@ -116,6 +116,7 @@ public:
 
     ClientRegistrarPtr registrar() const;
     QString clientName() const;
+    bool isRegistered() const;
     bool monitorsConnections() const;
 
     bool acceptsAsTcp() const; // if setToAcceptAsTCP has been used last
