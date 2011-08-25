@@ -5,6 +5,7 @@
 #include <tests/lib/glib/simple-conn.h>
 #include <tests/lib/glib/stream-tube-chan.h>
 
+#include <TelepathyQt4/ClientHandlerInterface>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/IncomingStreamTubeChannel>
 #include <TelepathyQt4/OutgoingStreamTubeChannel>
@@ -15,7 +16,12 @@
 
 #include <telepathy-glib/telepathy-glib.h>
 
+#include <cstring>
+
+#include <QTcpServer>
+
 using namespace Tp;
+using namespace Tp::Client;
 
 namespace
 {
@@ -50,17 +56,20 @@ class TestStreamTubeHandlers : public Test
 
 public:
     TestStreamTubeHandlers(QObject *parent = 0)
-        : Test(parent)
+        : Test(parent), mChanService(0)
     { }
 
 private Q_SLOTS:
     void initTestCase();
     void init();
 
+    void testRegistration();
+
     void cleanup();
     void cleanupTestCase();
 
 private:
+    QMap<QString, ClientHandlerInterface *> ourHandlers();
 
     void createTubeChannel(bool requested, TpSocketAddressType addressType,
             TpSocketAccessControl accessControl, bool withContact);
@@ -124,6 +133,42 @@ void TestStreamTubeHandlers::createTubeChannel(bool requested,
         tp_handle_unref(roomRepo, handle);
 }
 
+QMap<QString, ClientHandlerInterface *> TestStreamTubeHandlers::ourHandlers()
+{
+    QStringList registeredNames =
+        QDBusConnection::sessionBus().interface()->registeredServiceNames();
+    QMap<QString, ClientHandlerInterface *> handlers;
+
+    Q_FOREACH (QString name, registeredNames) {
+        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
+            continue;
+        }
+
+        if (QDBusConnection::sessionBus().interface()->serviceOwner(name).value() !=
+                QDBusConnection::sessionBus().baseService()) {
+            continue;
+        }
+
+        QString path = QLatin1Char('/') + name;
+        path.replace(QLatin1Char('.'), QLatin1Char('/'));
+
+        ClientInterface client(name, path);
+        QStringList ifaces;
+        if (!waitForProperty(client.requestPropertyInterfaces(), &ifaces)) {
+            continue;
+        }
+
+        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_HANDLER)) {
+            continue;
+        }
+
+        handlers.insert(name.mid(std::strlen("org.freedesktop.Telepathy.Client.")),
+                new ClientHandlerInterface(name, path, this));
+    }
+
+    return handlers;
+}
+
 void TestStreamTubeHandlers::initTestCase()
 {
     initTestCaseImpl();
@@ -144,6 +189,77 @@ void TestStreamTubeHandlers::initTestCase()
 void TestStreamTubeHandlers::init()
 {
     initImpl();
+}
+
+void TestStreamTubeHandlers::testRegistration()
+{
+    StreamTubeServerPtr httpServer =
+        StreamTubeServer::create(QStringList() << QLatin1String("http"), QStringList());
+    StreamTubeServerPtr whiteboardServer =
+        StreamTubeServer::create(QStringList() << QLatin1String("sketch"),
+                QStringList() << QLatin1String("sketch"), QString(), true);
+    StreamTubeServerPtr activatedServer =
+        StreamTubeServer::create(QStringList() << QLatin1String("ftp"), QStringList(),
+                QLatin1String("vsftpd"));
+
+    StreamTubeClientPtr browser =
+        StreamTubeClient::create(QStringList() << QLatin1String("http"), QStringList(),
+                QLatin1String("Debian.Iceweasel"));
+    StreamTubeClientPtr collaborationTool =
+        StreamTubeClient::create(QStringList() << QLatin1String("sketch") << QLatin1String("ftp"),
+                QStringList() << QLatin1String("sketch"));
+
+    QCOMPARE(activatedServer->clientName(), QLatin1String("vsftpd"));
+    QCOMPARE(browser->clientName(), QLatin1String("Debian.Iceweasel"));
+
+    class CookieGenerator : public StreamTubeServer::ParametersGenerator
+    {
+    public:
+        CookieGenerator() : serial(0) {}
+
+        QVariantMap nextParameters(const AccountPtr &account, const OutgoingStreamTubeChannelPtr &tube,
+                const ChannelRequestHints &hints) const
+        {
+            QVariantMap params;
+            params.insert(QLatin1String("cookie-y"),
+                    QString(QLatin1String("e982mrh2mr2h+%1")).arg(serial++));
+            return params;
+        }
+
+    private:
+        mutable uint serial; // mmm. I wonder if we should make nextParameters() non-const? that'd require giving a non const pointer when exporting too.
+    } httpGenerator;
+
+    QVariantMap whiteboardParams;
+    whiteboardParams.insert(QLatin1String("password"),
+            QString::fromLatin1("s3kr1t"));
+
+    QTcpServer server;
+    server.listen();
+
+    httpServer->exportTcpSocket(QHostAddress::LocalHost, 80, &httpGenerator);
+    whiteboardServer->exportTcpSocket(QHostAddress::LocalHost, 31552, whiteboardParams);
+    activatedServer->exportTcpSocket(&server);
+
+    browser->setToAcceptAsTcp();
+    collaborationTool->setToAcceptAsUnix(true);
+
+    QVERIFY(httpServer->isRegistered());
+    QVERIFY(whiteboardServer->isRegistered());
+    QVERIFY(activatedServer->isRegistered());
+    QVERIFY(browser->isRegistered());
+    QVERIFY(collaborationTool->isRegistered());
+
+    QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();
+
+    QVERIFY(!handlers.isEmpty());
+    QCOMPARE(handlers.size(), 5);
+
+    QVERIFY(handlers.contains(httpServer->clientName()));
+    QVERIFY(handlers.contains(whiteboardServer->clientName()));
+    QVERIFY(handlers.contains(QLatin1String("vsftpd")));
+    QVERIFY(handlers.contains(QLatin1String("Debian.Iceweasel")));
+    QVERIFY(handlers.contains(collaborationTool->clientName()));
 }
 
 void TestStreamTubeHandlers::cleanup()
