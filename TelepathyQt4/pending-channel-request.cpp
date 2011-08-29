@@ -124,7 +124,7 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
         if (hints.isValid()) {
             if (account->supportsRequestHints()) {
                 watcher = new QDBusPendingCallWatcher(
-                    channelDispatcherInterface->CreateChannelWithHints(
+                    channelDispatcherInterface->EnsureChannelWithHints(
                         QDBusObjectPath(account->objectPath()),
                         requestedProperties,
                         userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
