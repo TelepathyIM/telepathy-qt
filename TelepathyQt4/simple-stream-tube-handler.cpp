@@ -151,21 +151,29 @@ void SimpleStreamTubeHandler::handleChannels(
         invocation->hints = requestsSatisfied.first()->hints();
     }
 
-    invocation->readyOp = new PendingComposite(readyOps, SharedPtr<SimpleStreamTubeHandler>(this));
-    connect(invocation->readyOp,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onReadyOpFinished(Tp::PendingOperation*)));
-
     mInvocations.append(invocation);
+
+    if (invocation->tubes.isEmpty()) {
+        warning() << "SSTH::HandleChannels got no suitable channels, admitting we're Confused";
+        invocation->readyOp = 0;
+        invocation->error = TP_QT4_ERROR_CONFUSED;
+        invocation->message = QLatin1String("Got no suitable channels");
+        onReadyOpFinished(0);
+    } else {
+        invocation->readyOp = new PendingComposite(readyOps, SharedPtr<SimpleStreamTubeHandler>(this));
+        connect(invocation->readyOp,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onReadyOpFinished(Tp::PendingOperation*)));
+    }
 }
 
 void SimpleStreamTubeHandler::onReadyOpFinished(Tp::PendingOperation *op)
 {
     Q_ASSERT(!mInvocations.isEmpty());
-    Q_ASSERT(op->isFinished());
+    Q_ASSERT(!op || op->isFinished());
 
     for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
-            i != mInvocations.end(); ++i) {
+            op != 0 && i != mInvocations.end(); ++i) {
         if ((*i)->readyOp != op) {
             continue;
         }
