@@ -509,6 +509,7 @@ void TestStreamTubeHandlers::testRegistration()
     httpServer->exportTcpSocket(QHostAddress::LocalHost, 80, &httpGenerator);
     whiteboardServer->exportTcpSocket(QHostAddress::LocalHost, 31552, whiteboardParams);
     activatedServer->exportTcpSocket(&server);
+    QCOMPARE(activatedServer->exportedParameters(), QVariantMap());
 
     browser->setToAcceptAsTcp();
     collaborationTool->setToAcceptAsUnix(true);
@@ -536,8 +537,18 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     StreamTubeServerPtr server =
         StreamTubeServer::create(QStringList() << QLatin1String("ftp"), QStringList(),
                 QLatin1String("vsftpd"));
-    server->exportTcpSocket(QHostAddress::LocalHost, 22);
+
+    QVariantMap params;
+    params.insert(QLatin1String("username"), QString::fromLatin1("user"));
+    params.insert(QLatin1String("password"), QString::fromLatin1("pass"));
+
+    server->exportTcpSocket(QHostAddress::LocalHost, 22, params);
+
     QVERIFY(server->isRegistered());
+    QCOMPARE(server->exportedTcpSocketAddress(),
+            qMakePair(QHostAddress(QHostAddress::LocalHost), quint16(22)));
+    QCOMPARE(server->exportedParameters(), params);
+    QVERIFY(!server->monitorsConnections());
 
     QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();
 
