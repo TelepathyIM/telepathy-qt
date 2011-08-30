@@ -1,13 +1,11 @@
-telepathy-qt4 0.6.3 (UNRELEASED)
+telepathy-qt4 0.6.3 (2011-08-30)
 ================================
 
-The "..." release.
-
-Enhancements:
- * ...
+The "small but important" release.
 
 Fixes:
- * ...
+ * Ensure that the proper Channel Dispatcher methods are being called when
+   creating/ensuring channels.
 
 telepathy-qt4 0.6.2 (2011-08-11)
 ================================
