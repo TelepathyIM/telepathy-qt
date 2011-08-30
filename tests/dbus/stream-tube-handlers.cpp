@@ -4,6 +4,7 @@
 
 #include <tests/lib/glib/simple-conn.h>
 #include <tests/lib/glib/stream-tube-chan.h>
+#include <tests/lib/glib/echo/chan.h>
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
@@ -255,7 +256,7 @@ class TestStreamTubeHandlers : public Test
 
 public:
     TestStreamTubeHandlers(QObject *parent = 0)
-        : Test(parent), mChanService(0)
+        : Test(parent)
     { }
 
 protected Q_SLOTS:
@@ -268,6 +269,7 @@ private Q_SLOTS:
 
     void testRegistration();
     void testBasicTcpExport();
+    void testSSTHErrorPaths();
 
     void cleanup();
     void cleanupTestCase();
@@ -281,7 +283,7 @@ private:
     AccountManagerPtr mAM;
     AccountPtr mAcc;
     TestConnHelper *mConn;
-    TpTestsStreamTubeChannel *mChanService;
+    QList<TpTestsStreamTubeChannel *> mChanServices;
 
     OutgoingStreamTubeChannelPtr mRequestedTube;
     QDateTime mRequestTime;
@@ -294,7 +296,6 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
         bool supportMonitoring)
 {
     mLoop->processEvents();
-    tp_clear_object(&mChanService);
 
     /* Create service-side tube channel object */
     QString chanPath = QString(QLatin1String("%1/Channel%2%3%4"))
@@ -334,15 +335,16 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
 
     GHashTable *sockets = createSupportedSocketTypesHash(supportMonitoring);
 
-    mChanService = TP_TESTS_STREAM_TUBE_CHANNEL(g_object_new(
-            type,
-            "connection", mConn->service(),
-            "handle", handle,
-            "requested", requested,
-            "object-path", chanPath.toLatin1().constData(),
-            "supported-socket-types", sockets,
-            "initiator-handle", alfHandle,
-            NULL));
+    mChanServices.push_back(
+            TP_TESTS_STREAM_TUBE_CHANNEL(g_object_new(
+                    type,
+                    "connection", mConn->service(),
+                    "handle", handle,
+                    "requested", requested,
+                    "object-path", chanPath.toLatin1().constData(),
+                    "supported-socket-types", sockets,
+                    "initiator-handle", alfHandle,
+                    NULL)));
 
     if (handleType == HandleTypeContact)
         tp_handle_unref(contactRepo, handle);
@@ -558,13 +560,13 @@ void TestStreamTubeHandlers::testBasicTcpExport()
 
     QDateTime userActionTime = QDateTime::currentDateTime().addDays(-1);
     userActionTime = userActionTime.addMSecs(-userActionTime.time().msec());
-    qDebug() << userActionTime;
 
     QVariantMap hints;
     hints.insert(QLatin1String("tp-qt4-test-request-hint-herring-color-rgba"), uint(0xff000000));
 
     QObject *request = new QObject(this);
-    QString requestPath = QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/Request1");
+    QString requestPath =
+        QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/RequestForSimpleTcpExport");
 
     QDBusConnection bus = server->registrar()->dbusConnection();
     new ChannelRequestAdaptor(QDBusObjectPath(mAcc->objectPath()),
@@ -595,6 +597,113 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     QCOMPARE(mRequestHints.allHints(), hints);
 }
 
+void TestStreamTubeHandlers::testSSTHErrorPaths()
+{
+    // Create and look up a handler with an incorrectly set up channel factory
+    ChannelFactoryPtr chanFactory = ChannelFactory::create(QDBusConnection::sessionBus());
+    chanFactory->setSubclassForIncomingStreamTubes<Tp::Channel>();
+    StreamTubeServerPtr server =
+        StreamTubeServer::create(QStringList() << QLatin1String("ftp"), QStringList(),
+                QLatin1String("vsftpd"),
+                false,
+                AccountFactory::create(QDBusConnection::sessionBus()),
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
+                chanFactory);
+    server->exportTcpSocket(QHostAddress::LocalHost, 22);
+    QVERIFY(server->isRegistered());
+
+    QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();
+
+    QVERIFY(!handlers.isEmpty());
+    ClientHandlerInterface *handler = handlers.value(server->clientName());
+    QVERIFY(handler != 0);
+
+    // Pass it a text channel, and with no satisfied requests
+    QString textChanPath = mConn->objectPath() + QLatin1String("/TextChannel");
+    QByteArray chanPath(textChanPath.toAscii());
+    ExampleEchoChannel *textChanService = EXAMPLE_ECHO_CHANNEL(g_object_new(
+                EXAMPLE_TYPE_ECHO_CHANNEL,
+                "connection", mConn->service(),
+                "object-path", chanPath.data(),
+                "handle", TpHandle(1),
+                NULL));
+
+    ChannelDetails details = { QDBusObjectPath(textChanPath),
+        ChannelClassSpec::textChat().allProperties() };
+    handler->HandleChannels(
+            QDBusObjectPath(mAcc->objectPath()),
+            QDBusObjectPath(mConn->objectPath()),
+            ChannelDetailsList() << details,
+            ObjectPathList(),
+            QDateTime::currentDateTime().toTime_t(),
+            QVariantMap());
+    processDBusQueue(mConn->client().data());
+
+    // Now pass it an incoming stream tube chan, which will trigger the error paths for constructing
+    // wrong subclasses for tubes
+    QPair<QString, QVariantMap> tubeChan = createTubeChannel(false, HandleTypeContact, false);
+
+    details.channel = QDBusObjectPath(tubeChan.first);
+    details.properties = tubeChan.second;
+
+    handler->HandleChannels(
+            QDBusObjectPath(mAcc->objectPath()),
+            QDBusObjectPath(mConn->objectPath()),
+            ChannelDetailsList() << details,
+            ObjectPathList(),
+            QDateTime::currentDateTime().toTime_t(),
+            QVariantMap());
+    processDBusQueue(mConn->client().data());
+
+    // Now pass it an outgoing stream tube chan (which we didn't set an incorrect subclass for), but
+    // which doesn't actually exist so introspection fails
+
+    details.channel = QDBusObjectPath(QString::fromLatin1("/does/not/exist"));
+    details.properties = ChannelClassSpec::outgoingStreamTube(QLatin1String("ftp")).allProperties();
+
+    handler->HandleChannels(
+            QDBusObjectPath(mAcc->objectPath()),
+            QDBusObjectPath(mConn->objectPath()),
+            ChannelDetailsList() << details,
+            ObjectPathList(),
+            QDateTime::currentDateTime().toTime_t(),
+            QVariantMap());
+    processDBusQueue(mConn->client().data());
+
+    // Now pass an actual outgoing tube chan and verify it's still signaled correctly after all
+    // these incorrect invocations of the handler
+    QVERIFY(connect(server.data(),
+                SIGNAL(tubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints)),
+                SLOT(onTubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints))));
+
+    tubeChan = createTubeChannel(true, HandleTypeContact, false);
+
+    details.channel = QDBusObjectPath(tubeChan.first);
+    details.properties = tubeChan.second;
+
+    handler->HandleChannels(
+            QDBusObjectPath(mAcc->objectPath()),
+            QDBusObjectPath(mConn->objectPath()),
+            ChannelDetailsList() << details,
+            ObjectPathList(),
+            QDateTime::currentDateTime().toTime_t(),
+            QVariantMap());
+    processDBusQueue(mConn->client().data());
+
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mRequestedTube->objectPath(), tubeChan.first);
+
+    // TODO: if/when the QDBus bug about not being able to wait for local loop replies even with a
+    // main loop is fixed, wait for the HandleChannels invocations to return properly. For now just
+    // run 100 pings to the service, during which the codepaths get run almost certainly.
+    for (int i = 0; i < 100; i++) {
+        processDBusQueue(mConn->client().data());
+    }
+
+    g_object_unref(textChanService);
+}
+
 void TestStreamTubeHandlers::cleanup()
 {
     cleanupImpl();
@@ -608,15 +717,15 @@ void TestStreamTubeHandlers::cleanup()
                 SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                 mLoop,
                 SLOT(quit())));
-        tp_base_channel_close(TP_BASE_CHANNEL(mChanService));
+        mRequestedTube->requestClose();
         QCOMPARE(mLoop->exec(), 0);
     }
 
     mRequestedTube.reset();
 
-    if (mChanService != 0) {
-        g_object_unref(mChanService);
-        mChanService = 0;
+    while (!mChanServices.empty()) {
+        g_object_unref(mChanServices.back());
+        mChanServices.pop_back();
     }
 
     mLoop->processEvents();
