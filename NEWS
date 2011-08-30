@@ -7,7 +7,8 @@ Enhancements:
  * ...
 
 Fixes:
- * ...
+ * Ensure that the proper Channel Dispatcher methods are being called when
+   creating/ensuring channels.
 
 telepathy-qt4 0.7.2 (2011-08-04)
 ================================
