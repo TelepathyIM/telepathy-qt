@@ -262,6 +262,8 @@ public:
 protected Q_SLOTS:
     void onTubeRequested(const Tp::AccountPtr &, const Tp::OutgoingStreamTubeChannelPtr &,
             const QDateTime &, const Tp::ChannelRequestHints &);
+    void onTubeClosed(const Tp::AccountPtr &, const Tp::OutgoingStreamTubeChannelPtr &,
+            const QString &, const QString &);
 
 private Q_SLOTS:
     void initTestCase();
@@ -288,6 +290,9 @@ private:
     OutgoingStreamTubeChannelPtr mRequestedTube;
     QDateTime mRequestTime;
     ChannelRequestHints mRequestHints;
+
+    OutgoingStreamTubeChannelPtr mClosedTube;
+    QString mCloseError, mCloseMessage;
 };
 
 // TODO: turn into creating one (of possibly many) channels
@@ -416,6 +421,29 @@ void TestStreamTubeHandlers::onTubeRequested(
     mRequestedTube = tube;
     mRequestTime = userActionTime;
     mRequestHints = hints;
+
+    mLoop->exit(0);
+}
+
+void TestStreamTubeHandlers::onTubeClosed(
+        const Tp::AccountPtr &acc,
+        const Tp::OutgoingStreamTubeChannelPtr &tube,
+        const QString &error,
+        const QString &message)
+{
+    qDebug() << "tube" << tube->objectPath() << "closed on account" << acc->objectPath();
+    qDebug() << "with error" << error << ':' << message;
+
+    // We don't use a shared factory here so the proxies will be different, but the object path
+    // should be the same
+    if (acc->objectPath() != mAcc->objectPath()) {
+        qWarning() << "account" << acc->objectPath() << "is not the expected" << mAcc->objectPath();
+        mLoop->exit(1);
+    }
+
+    mClosedTube = tube;
+    mCloseError = error;
+    mCloseMessage = message;
 
     mLoop->exit(0);
 }
@@ -592,6 +620,8 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     QVERIFY(bus.registerService(TP_QT4_CHANNEL_DISPATCHER_BUS_NAME));
     QVERIFY(bus.registerObject(requestPath, request));
 
+    // Invoke the handler, verifying that we're notified when that happens with the correct tube
+    // details
     ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
     handler->HandleChannels(
             QDBusObjectPath(mAcc->objectPath()),
@@ -603,9 +633,50 @@ void TestStreamTubeHandlers::testBasicTcpExport()
 
     QCOMPARE(mLoop->exec(), 0);
 
+    QVERIFY(!mRequestedTube.isNull());
     QCOMPARE(mRequestedTube->objectPath(), chan.first);
     QCOMPARE(mRequestTime, userActionTime);
     QCOMPARE(mRequestHints.allHints(), hints);
+
+    // Verify that the state recovery accessors return sensible values at this point
+    QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > serverTubes = server->tubes();
+    QCOMPARE(serverTubes.size(), 1);
+    QCOMPARE(serverTubes.first().first->objectPath(), mAcc->objectPath());
+    QCOMPARE(serverTubes.first().second, mRequestedTube);
+
+    QVERIFY(server->tcpConnections().isEmpty());
+
+    // Let's run until the tube has been offered
+    while (mRequestedTube->isValid() && mRequestedTube->state() != TubeChannelStateRemotePending) {
+        mLoop->processEvents();
+    }
+
+    QVERIFY(mRequestedTube->isValid());
+
+    // Simulate a peer connecting (makes the tube Open up)
+    GValue *connParam = tp_g_value_slice_new_static_string("ignored");
+    tp_tests_stream_tube_channel_peer_connected_no_stream(mChanServices.back(),
+            connParam, tp_base_channel_get_target_handle(TP_BASE_CHANNEL(mChanServices.back())));
+    tp_g_value_slice_free(connParam);
+
+    // The params are set once the tube is open (we've picked up the first peer connection)
+    while (mRequestedTube->isValid() && mRequestedTube->state() != TubeChannelStateOpen) {
+        mLoop->processEvents();
+    }
+
+    // Verify the params
+    QVERIFY(mRequestedTube->isValid());
+    QCOMPARE(mRequestedTube->parameters(), params);
+
+    // Now, close the tube and verify we're signaled about that
+    QVERIFY(connect(server.data(),
+                SIGNAL(tubeClosed(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QString,QString)),
+                SLOT(onTubeClosed(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QString,QString))));
+    mRequestedTube->requestClose();
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mClosedTube, mRequestedTube);
+    QCOMPARE(mCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
 }
 
 void TestStreamTubeHandlers::testSSTHErrorPaths()
@@ -733,6 +804,7 @@ void TestStreamTubeHandlers::cleanup()
     }
 
     mRequestedTube.reset();
+    mClosedTube.reset();
 
     while (!mChanServices.empty()) {
         g_object_unref(mChanServices.back());
