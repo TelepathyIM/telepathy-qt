@@ -913,10 +913,56 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     QCOMPARE(mClosedServerConnectionPort, expectedPort);
     QCOMPARE(mClosedServerConnectionContact, mNewServerConnectionContact);
     QCOMPARE(mServerConnectionCloseError, QString(TP_QT4_ERROR_DISCONNECTED));
+    QVERIFY(server->tcpConnections().isEmpty());
+
+    // Fire up two new connections
+    handle = tp_handle_ensure(contactRepo, "second", NULL, NULL);
+    expectedPort = 2;
+    dbus_g_type_struct_set(connParam, 1, expectedPort, G_MAXUINT);
+    tp_tests_stream_tube_channel_peer_connected_no_stream(mChanServices.back(), connParam, handle);
+
+    handle = tp_handle_ensure(contactRepo, "third", NULL, NULL);
+    expectedPort = 3;
+    dbus_g_type_struct_set(connParam, 1, expectedPort, G_MAXUINT);
+    tp_tests_stream_tube_channel_peer_connected_no_stream(mChanServices.back(), connParam, handle);
+
+    // We should get two newTcpConnection signals now and tcpConnections() should include these
+    // connections
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mNewServerConnectionAddress, expectedAddress);
+    QCOMPARE(mNewServerConnectionPort, quint16(2));
+    QCOMPARE(mNewServerConnectionContact->id(), QLatin1String("second"));
+    QCOMPARE(mNewServerConnectionTube, mRequestedTube);
+    QCOMPARE(server->tcpConnections().size(), 1);
+
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mNewServerConnectionAddress, expectedAddress);
+    QCOMPARE(mNewServerConnectionPort, quint16(3));
+    QCOMPARE(mNewServerConnectionContact->id(), QLatin1String("third"));
+    QCOMPARE(mNewServerConnectionTube, mRequestedTube);
+    QCOMPARE(server->tcpConnections().size(), 2);
+
+    // Close one of them, and check that we receive the signal for it
+    tp_tests_stream_tube_channel_last_connection_disconnected(mChanServices.back(),
+            TP_ERROR_STR_DISCONNECTED);
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mClosedServerConnectionAddress, expectedAddress);
+    QCOMPARE(mClosedServerConnectionPort, quint16(3));
+    QCOMPARE(mClosedServerConnectionContact, mNewServerConnectionContact);
+    QCOMPARE(mServerConnectionCloseError, QString(TP_QT4_ERROR_DISCONNECTED));
+    QCOMPARE(server->tcpConnections().size(), 1);
 
     // Now, close the tube and verify we're signaled about that
+    QVERIFY(mClosedTube.isNull());
     mRequestedTube->requestClose();
-    QCOMPARE(mLoop->exec(), 0);
+
+    // TODO: Fix the stream tube channel to emit connection closes for the currently existing
+    // connections when it's invalidated, because the streams will be closed on real CMs and that's
+    // the last chance to figure out which connections they were, then modify this to verify that
+    // the server emits a connection close for "second" here before emitting the tube close
+
+    QCOMPARE(mLoop->exec(), 0); // tube close exits this main loop
 
     QCOMPARE(mClosedTube, mRequestedTube);
     QCOMPARE(mCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
