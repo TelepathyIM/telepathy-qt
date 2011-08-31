@@ -414,6 +414,7 @@ void TestStreamTubeHandlers::onTubeRequested(
     if (acc->objectPath() != mAcc->objectPath()) {
         qWarning() << "account" << acc->objectPath() << "is not the expected" << mAcc->objectPath();
         mLoop->exit(1);
+        return;
     }
 
     // We always set the user action time in the past, so if that's carried over correctly, it won't
@@ -422,6 +423,7 @@ void TestStreamTubeHandlers::onTubeRequested(
     if (mRequestTime >= QDateTime::currentDateTime()) {
         qWarning() << "user action time later than expected";
         mLoop->exit(2);
+        return;
     }
 
     mRequestedTube = tube;
@@ -445,6 +447,7 @@ void TestStreamTubeHandlers::onTubeClosed(
     if (acc->objectPath() != mAcc->objectPath()) {
         qWarning() << "account" << acc->objectPath() << "is not the expected" << mAcc->objectPath();
         mLoop->exit(1);
+        return;
     }
 
     mClosedTube = tube;
