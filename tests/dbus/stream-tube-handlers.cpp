@@ -189,37 +189,13 @@ void destroySocketControlList(gpointer data)
     g_array_free(reinterpret_cast<GArray *>(data), TRUE);
 }
 
-GHashTable *createSupportedSocketTypesHash(bool supportMonitoring)
+GHashTable *createSupportedSocketTypesHash(bool supportMonitoring, bool unixOnly)
 {
     GHashTable *ret;
     GArray *tab;
     TpSocketAccessControl ac;
 
     ret = g_hash_table_new_full(NULL, NULL, NULL, destroySocketControlList);
-
-    // IPv4
-    tab = g_array_sized_new(FALSE, FALSE, sizeof(TpSocketAccessControl), 1);
-    ac = TP_SOCKET_ACCESS_CONTROL_LOCALHOST;
-    g_array_append_val(tab, ac);
-
-    if (supportMonitoring) {
-        ac = TP_SOCKET_ACCESS_CONTROL_PORT;
-        g_array_append_val(tab, ac);
-    }
-
-    g_hash_table_insert(ret, GUINT_TO_POINTER(TP_SOCKET_ADDRESS_TYPE_IPV4), tab);
-
-    // IPv6
-    tab = g_array_sized_new(FALSE, FALSE, sizeof(TpSocketAccessControl), 1);
-    ac = TP_SOCKET_ACCESS_CONTROL_LOCALHOST;
-    g_array_append_val(tab, ac);
-
-    if (supportMonitoring) {
-        ac = TP_SOCKET_ACCESS_CONTROL_PORT;
-        g_array_append_val(tab, ac);
-    }
-
-    g_hash_table_insert(ret, GUINT_TO_POINTER(TP_SOCKET_ADDRESS_TYPE_IPV6), tab);
 
     // Named UNIX
     tab = g_array_sized_new(FALSE, FALSE, sizeof(TpSocketAccessControl), 1);
@@ -244,6 +220,34 @@ GHashTable *createSupportedSocketTypesHash(bool supportMonitoring)
     }
 
     g_hash_table_insert(ret, GUINT_TO_POINTER(TP_SOCKET_ADDRESS_TYPE_ABSTRACT_UNIX), tab);
+
+    if (unixOnly) {
+        return ret;
+    }
+
+    // IPv4
+    tab = g_array_sized_new(FALSE, FALSE, sizeof(TpSocketAccessControl), 1);
+    ac = TP_SOCKET_ACCESS_CONTROL_LOCALHOST;
+    g_array_append_val(tab, ac);
+
+    if (supportMonitoring) {
+        ac = TP_SOCKET_ACCESS_CONTROL_PORT;
+        g_array_append_val(tab, ac);
+    }
+
+    g_hash_table_insert(ret, GUINT_TO_POINTER(TP_SOCKET_ADDRESS_TYPE_IPV4), tab);
+
+    // IPv6
+    tab = g_array_sized_new(FALSE, FALSE, sizeof(TpSocketAccessControl), 1);
+    ac = TP_SOCKET_ACCESS_CONTROL_LOCALHOST;
+    g_array_append_val(tab, ac);
+
+    if (supportMonitoring) {
+        ac = TP_SOCKET_ACCESS_CONTROL_PORT;
+        g_array_append_val(tab, ac);
+    }
+
+    g_hash_table_insert(ret, GUINT_TO_POINTER(TP_SOCKET_ADDRESS_TYPE_IPV6), tab);
 
     return ret;
 }
@@ -271,6 +275,7 @@ private Q_SLOTS:
 
     void testRegistration();
     void testBasicTcpExport();
+    void testFailedExport();
     void testSSTHErrorPaths();
 
     void cleanup();
@@ -280,7 +285,7 @@ private:
     QMap<QString, ClientHandlerInterface *> ourHandlers();
 
     QPair<QString, QVariantMap> createTubeChannel(bool requested, HandleType type,
-            bool supportMonitoring);
+            bool supportMonitoring, bool unixOnly = false);
 
     AccountManagerPtr mAM;
     AccountPtr mAcc;
@@ -298,7 +303,8 @@ private:
 // TODO: turn into creating one (of possibly many) channels
 QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool requested,
         HandleType handleType,
-        bool supportMonitoring)
+        bool supportMonitoring,
+        bool unixOnly)
 {
     mLoop->processEvents();
 
@@ -338,7 +344,7 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
 
     TpHandle alfHandle = tp_handle_ensure(contactRepo, "alf", NULL, NULL);
 
-    GHashTable *sockets = createSupportedSocketTypesHash(supportMonitoring);
+    GHashTable *sockets = createSupportedSocketTypesHash(supportMonitoring, unixOnly);
 
     mChanServices.push_back(
             TP_TESTS_STREAM_TUBE_CHANNEL(g_object_new(
@@ -677,6 +683,53 @@ void TestStreamTubeHandlers::testBasicTcpExport()
 
     QCOMPARE(mClosedTube, mRequestedTube);
     QCOMPARE(mCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
+}
+
+void TestStreamTubeHandlers::testFailedExport()
+{
+    StreamTubeServerPtr server =
+        StreamTubeServer::create(QStringList() << QLatin1String("ftp"), QStringList(),
+                QLatin1String("vsftpd"));
+    server->exportTcpSocket(QHostAddress::LocalHost, 22);
+    QVERIFY(server->isRegistered());
+
+    QVERIFY(connect(server.data(),
+                SIGNAL(tubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints)),
+                SLOT(onTubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints))));
+    QVERIFY(connect(server.data(),
+                SIGNAL(tubeClosed(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QString,QString)),
+                SLOT(onTubeClosed(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QString,QString))));
+
+    QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();
+
+    QVERIFY(!handlers.isEmpty());
+    ClientHandlerInterface *handler = handlers.value(server->clientName());
+    QVERIFY(handler != 0);
+
+    // To trigger the Offer error codepath, give it a channel which only supports Unix sockets
+    // although we're exporting a TCP one - which is always supported in real CMs
+    QPair<QString, QVariantMap> chan = createTubeChannel(true, HandleTypeContact, false, true);
+    ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
+
+    // We should initially get tubeRequested just fine
+    handler->HandleChannels(
+            QDBusObjectPath(mAcc->objectPath()),
+            QDBusObjectPath(mConn->objectPath()),
+            ChannelDetailsList() << details,
+            ObjectPathList(),
+            QDateTime::currentDateTime().toTime_t(),
+            QVariantMap());
+
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(!mRequestedTube.isNull());
+    QCOMPARE(mRequestedTube->objectPath(), chan.first);
+
+    // THEN we should get a tube close because the offer fails
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mClosedTube, mRequestedTube);
+    QCOMPARE(mCloseError, QString(TP_QT4_ERROR_NOT_IMPLEMENTED)); // == AF unsupported by "CM"
 }
 
 void TestStreamTubeHandlers::testSSTHErrorPaths()
