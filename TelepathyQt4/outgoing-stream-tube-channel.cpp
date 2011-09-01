@@ -720,6 +720,11 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
         const QUuid &uuid,
         const QList<Tp::ContactPtr> &contacts)
 {
+    if (!isValid()) {
+        debug() << "Invalidated OutgoingStreamTubeChannel not emitting queued connection event";
+        return;
+    }
+
     if (!mPriv->pendingNewConnections.contains(uuid)) {
         if (mPriv->pendingClosedConnections.contains(uuid)) {
             // closed connection
