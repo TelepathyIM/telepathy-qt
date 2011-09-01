@@ -955,20 +955,25 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
 
     // Now, close the tube and verify we're signaled about that
     QVERIFY(mClosedTube.isNull());
+    QCOMPARE(server->tubes().size(), 1);
+    mClosedServerConnectionContact.reset();
     mRequestedTube->requestClose();
 
-    // TODO: Fix the stream tube channel to emit connection closes for the currently existing
-    // connections when it's invalidated, because the streams will be closed on real CMs and that's
-    // the last chance to figure out which connections they were, then modify this to verify that
-    // the server emits a connection close for "second" here before emitting the tube close
+    while (mClosedServerConnectionContact.isNull() || mClosedTube.isNull()) {
+        QVERIFY(mClosedTube.isNull()); // we should get the conn close first, only then tube close
+        QCOMPARE(mLoop->exec(), 0);
+    }
 
-    QCOMPARE(mLoop->exec(), 0); // tube close exits this main loop
+    QVERIFY(server->tubes().isEmpty());
+
+    QVERIFY(server->tcpConnections().isEmpty());
+    QCOMPARE(mClosedServerConnectionAddress, expectedAddress);
+    QCOMPARE(mClosedServerConnectionPort, quint16(2));
+    QCOMPARE(mClosedServerConnectionContact->id(), QLatin1String("second"));
+    QCOMPARE(mServerConnectionCloseError, QString(TP_QT4_ERROR_ORPHANED)); // parent tube died
 
     QCOMPARE(mClosedTube, mRequestedTube);
     QCOMPARE(mCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
-
-    // There should be no more connections at this point
-    QVERIFY(server->tcpConnections().isEmpty());
 }
 
 void TestStreamTubeHandlers::testSSTHErrorPaths()
