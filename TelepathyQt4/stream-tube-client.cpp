@@ -360,7 +360,9 @@ void StreamTubeClient::onInvokedForTube(
         const QDateTime &time,
         const ChannelRequestHints &hints)
 {
+    Q_ASSERT(isRegistered());
     Q_ASSERT(!tube->isRequested());
+    Q_ASSERT(tube->isValid()); // SSTH won't emit invalid tubes
 
     if (mPriv->tubes.contains(tube)) {
         debug() << "Ignoring StreamTubeClient reinvocation for tube" << tube->objectPath();
@@ -372,10 +374,6 @@ void StreamTubeClient::onInvokedForTube(
     if (!incoming) {
         warning() << "The ChannelFactory used by StreamTubeClient must construct" <<
             "IncomingStreamTubeChannel subclasses for Requested=false StreamTubes";
-        tube->requestClose();
-        return;
-    } else if (!mPriv->acceptsAsTcp && !mPriv->acceptsAsUnix) {
-        warning() << "STubeClient not set to accept, closing tube" << tube->objectPath();
         tube->requestClose();
         return;
     }
@@ -392,6 +390,7 @@ void StreamTubeClient::onInvokedForTube(
 
         wrapper = new TubeWrapper(acc, incoming, srcAddr.first, srcAddr.second);
     } else {
+        Q_ASSERT(mPriv->acceptsAsUnix); // we should only be registered when we're set to accept as either TCP or Unix
         wrapper = new TubeWrapper(acc, incoming, mPriv->requireCredentials);
     }
 

@@ -424,26 +424,17 @@ void StreamTubeServer::onInvokedForTube(
         const QDateTime &time,
         const ChannelRequestHints &hints)
 {
+    Q_ASSERT(isRegistered());
     Q_ASSERT(tube->isRequested());
+    Q_ASSERT(tube->isValid()); // SSTH won't emit invalid tubes
 
     OutgoingStreamTubeChannelPtr outgoing = OutgoingStreamTubeChannelPtr::qObjectCast(tube);
 
-    if (outgoing && outgoing->isValid()) {
+    if (outgoing) {
         emit tubeRequested(acc, outgoing, time, hints);
-    }
-
-    if (!outgoing) {
+    } else {
         warning() << "The ChannelFactory used by StreamTubeServer must construct" <<
             "OutgoingStreamTubeChannel subclasses for Requested=true StreamTubes";
-        tube->requestClose();
-        return;
-    } else if (!outgoing->isValid()) {
-        warning() << "A tube received by StreamTubeServer is already invalidated, ignoring";
-        return;
-    } else if (mPriv->exportedAddr.isNull() || !mPriv->exportedPort) {
-        warning() << "No socket exported, closing tube" << tube->objectPath();
-        emit tubeClosed(acc, outgoing,
-                TP_QT4_ERROR_NOT_AVAILABLE, QLatin1String("no socket exported"));
         tube->requestClose();
         return;
     }
@@ -456,6 +447,8 @@ void StreamTubeServer::onInvokedForTube(
         if (mPriv->generator) {
             params = mPriv->generator->nextParameters(acc, outgoing, hints);
         }
+
+        Q_ASSERT(!mPriv->exportedAddr.isNull() && mPriv->exportedPort != 0);
 
         TubeWrapper *wrapper =
             new TubeWrapper(acc, outgoing, mPriv->exportedAddr, mPriv->exportedPort, params);
