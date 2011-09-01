@@ -86,6 +86,11 @@ StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
     introspectables[StreamTubeChannel::FeatureConnectionMonitoring] =
             introspectableConnectionMonitoring;
 
+    parent->connect(
+            parent,
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            SLOT(dropConnections()));
+
     readinessHelper->addIntrospectables(introspectables);
 }
 
@@ -688,6 +693,18 @@ void StreamTubeChannel::onConnectionClosed(uint connId, const QString &error,
         const QString &message)
 {
     removeConnection(connId, error, message);
+}
+
+void StreamTubeChannel::dropConnections()
+{
+    if (!mPriv->connections.isEmpty()) {
+        debug() << "StreamTubeChannel invalidated with" << mPriv->connections.size()
+            << "connections remaining, synthesizing close events";
+        foreach (uint connId, mPriv->connections) {
+            removeConnection(connId, TP_QT4_ERROR_ORPHANED,
+                    QLatin1String("parent tube invalidated, streams closing"));
+        }
+    }
 }
 
 /**

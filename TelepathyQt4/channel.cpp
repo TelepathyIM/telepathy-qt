@@ -42,6 +42,7 @@
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingSuccess>
+#include <TelepathyQt4/StreamTubeChannel>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
 
