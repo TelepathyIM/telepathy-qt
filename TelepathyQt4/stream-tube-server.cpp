@@ -400,8 +400,9 @@ QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
         }
 
         if (tube.second->addressType() != SocketAddressTypeIPv4 &&
-                tube.second->addressType() != SocketAddressTypeIPv6)
+                tube.second->addressType() != SocketAddressTypeIPv6) {
             continue;
+        }
 
         QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
             tube.second->connectionsForSourceAddresses();
@@ -489,8 +490,9 @@ void StreamTubeServer::onOfferFinished(
         warning() << "Offer() failed, closing tube" << tube->objectPath() << '-' <<
             op->errorName() << ':' << op->errorMessage();
 
-        if (wrapper->mTube->isValid())
+        if (wrapper->mTube->isValid()) {
             wrapper->mTube->requestClose();
+        }
 
         wrapper->mTube->disconnect(this);
         emit tubeClosed(wrapper->mAcc, wrapper->mTube, op->errorName(), op->errorMessage());
