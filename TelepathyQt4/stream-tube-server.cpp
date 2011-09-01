@@ -395,6 +395,10 @@ QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
 
     QPair<AccountPtr, OutgoingStreamTubeChannelPtr> tube;
     foreach (tube, tubes()) {
+        if (!tube.second->isValid() || tube.second->state() != TubeChannelStateOpen) {
+            continue;
+        }
+
         if (tube.second->addressType() != SocketAddressTypeIPv4 &&
                 tube.second->addressType() != SocketAddressTypeIPv6)
             continue;
