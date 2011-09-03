@@ -59,8 +59,7 @@ public:
 
     bool operator==(const ChannelClassSpec &other) const
     {
-        return this->isSubsetOf(other) && this->allProperties().size() ==
-            other.allProperties().size();
+        return this->allProperties() == other.allProperties();
     }
 
     bool isSubsetOf(const ChannelClassSpec &other) const;
