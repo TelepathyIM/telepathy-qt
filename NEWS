@@ -9,6 +9,12 @@ Enhancements:
 Fixes:
  * Ensure that the proper Channel Dispatcher methods are being called when
    creating/ensuring channels.
+ * Prevent PendingContacts crashes in corner cases where contacts are still
+   being built when a Connection is destroyed. Note that this affects which
+   object is returned by PendingContacts::object() - we've now made it explicit
+   that object() shouldn't be used externally as we make no guarantees on what
+   object it returns, by deprecating it. It will be made protected: in the next
+   API break.
 
 telepathy-qt4 0.7.2 (2011-08-04)
 ================================
