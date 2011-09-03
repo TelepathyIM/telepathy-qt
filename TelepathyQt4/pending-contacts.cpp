@@ -144,7 +144,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const QSet<uint> &otherContacts,
         const QString &errorName,
         const QString &errorMessage)
-    : PendingOperation(manager),
+    : PendingOperation(manager->connection()),
       mPriv(new Private(this, manager, handles, features, missingFeatures, satisfyingContacts))
 {
     if (!errorName.isEmpty()) {
@@ -178,7 +178,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const QStringList &identifiers, const Features &features,
         const QString &errorName, const QString &errorMessage)
-    : PendingOperation(manager),
+    : PendingOperation(manager->connection()),
       mPriv(new Private(this, manager, identifiers, features))
 {
     if (!errorName.isEmpty()) {
@@ -197,7 +197,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         const QList<ContactPtr> &contacts, const Features &features,
         const QString &errorName, const QString &errorMessage)
-    : PendingOperation(manager),
+    : PendingOperation(manager->connection()),
       mPriv(new Private(this, manager, contacts, features))
 {
     if (!errorName.isEmpty()) {

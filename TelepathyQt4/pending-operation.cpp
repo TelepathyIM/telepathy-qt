@@ -111,8 +111,18 @@ PendingOperation::~PendingOperation()
  * Return the object on which this pending operation takes place.
  *
  * \return A pointer to a RefCounted object.
+ * \deprecated Will be made protected in the next API break, because using it outside the
+ *     PendingOperation requires unsafe type conversions, and it's not always clear just which
+ *     object the operation "takes place on", and we don't want to commit to keeping the objects
+ *     fixed.
  */
 SharedPtr<RefCounted> PendingOperation::object() const
+{
+    return _object();
+}
+
+// Temporary, to allow internal access to the object not warn of deprecation
+SharedPtr<RefCounted> PendingOperation::_object() const
 {
     return mPriv->object;
 }

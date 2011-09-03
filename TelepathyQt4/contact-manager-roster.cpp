@@ -2197,7 +2197,7 @@ void ContactManager::Roster::RemoveGroupOp::onContactsRemoved(PendingOperation *
     }
 
     // Let's ignore possible errors and try to remove the group
-    ChannelPtr channel = ChannelPtr(qobject_cast<Channel*>((Channel *) object().data()));
+    ChannelPtr channel = ChannelPtr(qobject_cast<Channel*>((Channel *) _object().data()));
     connect(channel->requestClose(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onChannelClosed(Tp::PendingOperation*)));

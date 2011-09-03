@@ -106,7 +106,7 @@ PendingConnection::~PendingConnection()
  */
 ConnectionManagerPtr PendingConnection::manager() const
 {
-    return ConnectionManagerPtr(qobject_cast<ConnectionManager*>((ConnectionManager*) object().data()));
+    return ConnectionManagerPtr(qobject_cast<ConnectionManager*>((ConnectionManager*) _object().data()));
 }
 
 /**

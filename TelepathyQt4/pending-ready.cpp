@@ -139,7 +139,7 @@ void PendingReady::onNestedFinished(Tp::PendingOperation *nested)
     if (nested->isValid()) {
         setFinished();
     } else {
-        warning() << "Nested PendingReady for" << object() << "failed with"
+        warning() << "Nested PendingReady for" << _object() << "failed with"
             << nested->errorName() << ":" << nested->errorMessage();
         setFinishedWithError(nested->errorName(), nested->errorMessage());
     }

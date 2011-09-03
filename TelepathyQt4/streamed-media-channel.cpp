@@ -108,7 +108,7 @@ PendingStreamedMediaStreams::~PendingStreamedMediaStreams()
 StreamedMediaChannelPtr PendingStreamedMediaStreams::channel() const
 {
     return StreamedMediaChannelPtr(qobject_cast<StreamedMediaChannel*>(
-                (StreamedMediaChannel*) object().data()));
+                (StreamedMediaChannel*) _object().data()));
 }
 
 /**

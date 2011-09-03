@@ -81,7 +81,7 @@ PendingContactAttributes::~PendingContactAttributes()
  */
 ConnectionPtr PendingContactAttributes::connection() const
 {
-    return ConnectionPtr(qobject_cast<Connection*>((Connection*) object().data()));
+    return ConnectionPtr(qobject_cast<Connection*>((Connection*) _object().data()));
 }
 
 /**

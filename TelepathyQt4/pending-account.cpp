@@ -98,7 +98,7 @@ PendingAccount::~PendingAccount()
  */
 AccountManagerPtr PendingAccount::manager() const
 {
-    return AccountManagerPtr(qobject_cast<AccountManager *>((AccountManager*) object().data()));
+    return AccountManagerPtr(qobject_cast<AccountManager *>((AccountManager*) _object().data()));
 }
 
 /**
