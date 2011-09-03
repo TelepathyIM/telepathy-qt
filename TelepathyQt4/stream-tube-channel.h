@@ -90,6 +90,7 @@ protected:
     void setAccessControl(SocketAccessControl accessControl);
     void setIpAddress(const QPair<QHostAddress, quint16> &address);
     void setLocalAddress(const QString &address);
+    bool isDroppingConnections() const;
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void gotStreamTubeProperties(Tp::PendingOperation *op);

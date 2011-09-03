@@ -606,16 +606,19 @@ QHash<QPair<QHostAddress, quint16>, uint> OutgoingStreamTubeChannel::connections
         return QHash<QPair<QHostAddress, quint16>, uint>();
     }
 
-    if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
-        warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
-            "   calling connectionsForSourceAddresses";
-        return QHash<QPair<QHostAddress, quint16>, uint>();
-    }
+    if (isValid() || !isDroppingConnections() ||
+            !requestedFeatures().contains(StreamTubeChannel::FeatureConnectionMonitoring)) {
+        if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
+            warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
+                "   calling connectionsForSourceAddresses";
+            return QHash<QPair<QHostAddress, quint16>, uint>();
+        }
 
-    if (state() != TubeChannelStateOpen) {
-        warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
+        if (state() != TubeChannelStateOpen) {
+            warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
                 "just when the tube is open";
-        return QHash<QPair<QHostAddress, quint16>, uint>();
+            return QHash<QPair<QHostAddress, quint16>, uint>();
+        }
     }
 
     return mPriv->connectionsForSourceAddresses;
@@ -652,16 +655,19 @@ QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
         return QHash<uchar, uint>();
     }
 
-    if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
-        warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
+    if (isValid() || !isDroppingConnections() ||
+            !requestedFeatures().contains(StreamTubeChannel::FeatureConnectionMonitoring)) {
+        if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
+            warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
                 "calling OutgoingStreamTubeChannel::connectionsForCredentials()";
-        return QHash<uchar, uint>();
-    }
+            return QHash<uchar, uint>();
+        }
 
-    if (state() != TubeChannelStateOpen) {
-        warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
+        if (state() != TubeChannelStateOpen) {
+            warning() << "OutgoingStreamTubeChannel::connectionsForCredentials() makes sense "
                 "just when the tube is opened";
-        return QHash<uchar, uint>();
+            return QHash<uchar, uint>();
+        }
     }
 
     return mPriv->connectionsForCredentials;
@@ -680,16 +686,19 @@ QHash<uchar, uint> OutgoingStreamTubeChannel::connectionsForCredentials() const
  */
 QHash<uint, ContactPtr> OutgoingStreamTubeChannel::contactsForConnections() const
 {
-    if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
-        warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
+    if (isValid() || !isDroppingConnections() ||
+            !requestedFeatures().contains(StreamTubeChannel::FeatureConnectionMonitoring)) {
+        if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
+            warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
                 "calling contactsForConnections";
-        return QHash<uint, ContactPtr>();
-    }
+            return QHash<uint, ContactPtr>();
+        }
 
-    if (state() != TubeChannelStateOpen) {
-        warning() << "OutgoingStreamTubeChannel::contactsForConnections() makes sense "
+        if (state() != TubeChannelStateOpen) {
+            warning() << "OutgoingStreamTubeChannel::contactsForConnections() makes sense "
                 "just when the tube is open";
-        return QHash<uint, ContactPtr>();
+            return QHash<uint, ContactPtr>();
+        }
     }
 
     return mPriv->contactsForConnections;

@@ -58,13 +58,15 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     QString unixAddress;
     SocketAddressType addressType;
     SocketAccessControl accessControl;
+    bool droppingConnections;
 };
 
 StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
     : parent(parent),
       readinessHelper(parent->readinessHelper()),
       addressType(SocketAddressTypeUnix),
-      accessControl(SocketAccessControlLocalhost)
+      accessControl(SocketAccessControlLocalhost),
+      droppingConnections(false)
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -671,6 +673,11 @@ void StreamTubeChannel::setLocalAddress(const QString &address)
     mPriv->unixAddress = address;
 }
 
+bool StreamTubeChannel::isDroppingConnections() const
+{
+    return mPriv->droppingConnections;
+}
+
 void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
 {
     if (!op->isError()) {
@@ -700,10 +707,12 @@ void StreamTubeChannel::dropConnections()
     if (!mPriv->connections.isEmpty()) {
         debug() << "StreamTubeChannel invalidated with" << mPriv->connections.size()
             << "connections remaining, synthesizing close events";
+        mPriv->droppingConnections = true;
         foreach (uint connId, mPriv->connections) {
             removeConnection(connId, TP_QT4_ERROR_ORPHANED,
                     QLatin1String("parent tube invalidated, streams closing"));
         }
+        mPriv->droppingConnections = false;
     }
 }
 
