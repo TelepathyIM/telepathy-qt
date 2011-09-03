@@ -29,6 +29,7 @@ public:
 
 private Q_SLOTS:
     void testChannelClassSpecHash();
+    void testServiceLeaks();
 };
 
 TestChannelClassSpec::TestChannelClassSpec(QObject *parent)
@@ -118,6 +119,33 @@ void TestChannelClassSpec::testChannelClassSpecHash()
 
     sl2 << ChannelClassSpec::outgoingFileTransfer();
     QVERIFY(qHash(sl1) != qHash(sl2));
+}
+
+void TestChannelClassSpec::testServiceLeaks()
+{
+    ChannelClassSpec bareTube = ChannelClassSpec::outgoingStreamTube();
+    QVERIFY(!bareTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")));
+
+    ChannelClassSpec ftpTube = ChannelClassSpec::outgoingStreamTube(QLatin1String("ftp"));
+    QVERIFY(ftpTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")));
+    QCOMPARE(ftpTube.allProperties().value(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")).toString(), QString::fromLatin1("ftp"));
+    QVERIFY(!bareTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")));
+
+    ChannelClassSpec httpTube = ChannelClassSpec::outgoingStreamTube(QLatin1String("http"));
+    QVERIFY(httpTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")));
+    QVERIFY(ftpTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")));
+    QCOMPARE(httpTube.allProperties().value(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")).toString(), QString::fromLatin1("http"));
+    QCOMPARE(ftpTube.allProperties().value(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")).toString(), QString::fromLatin1("ftp"));
+    QVERIFY(!bareTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+                QString::fromLatin1(".Service")));
 }
 
 QTEST_MAIN(TestChannelClassSpec)

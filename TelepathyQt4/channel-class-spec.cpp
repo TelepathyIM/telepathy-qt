@@ -444,15 +444,16 @@ ChannelClassSpec ChannelClassSpec::outgoingStreamTube(const QString &service,
                 HandleTypeContact, true);
     }
 
+    QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        spec.setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
-                         service);
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                service);
     }
 
-    if (additionalProperties.isEmpty()) {
+    if (props.isEmpty()) {
         return spec;
     } else {
-        return ChannelClassSpec(spec, additionalProperties);
+        return ChannelClassSpec(spec, props);
     }
 }
 
@@ -466,15 +467,62 @@ ChannelClassSpec ChannelClassSpec::incomingStreamTube(const QString &service,
                 HandleTypeContact, false);
     }
 
+    QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        spec.setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
-                         service);
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                service);
     }
 
-    if (additionalProperties.isEmpty()) {
+    if (props.isEmpty()) {
         return spec;
     } else {
-        return ChannelClassSpec(spec, additionalProperties);
+        return ChannelClassSpec(spec, props);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::outgoingRoomStreamTube(const QString &service,
+                                                          const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+                HandleTypeRoom, true);
+    }
+
+    QVariantMap props = additionalProperties;
+    if (!service.isEmpty()) {
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                service);
+    }
+
+    if (props.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, props);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::incomingRoomStreamTube(const QString &service,
+                                                          const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+                HandleTypeRoom, false);
+    }
+
+    QVariantMap props = additionalProperties;
+    if (!service.isEmpty()) {
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                service);
+    }
+
+    if (props.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, props);
     }
 }
 
