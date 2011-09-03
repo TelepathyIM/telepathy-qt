@@ -4,7 +4,7 @@ telepathy-qt4 0.7.3 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Added HandleTypeRoom StreamTubes to ChannelClassSpec
 
 Fixes:
  * Ensure that the proper Channel Dispatcher methods are being called when
@@ -15,6 +15,9 @@ Fixes:
    that object() shouldn't be used externally as we make no guarantees on what
    object it returns, by deprecating it. It will be made protected: in the next
    API break.
+ * Passing a non-empty service param to
+   ChannelClassSpec::{incoming,outgoing}StreamTube() messing up the shared
+   instance as used by e.g. ChannelFactory
 
 telepathy-qt4 0.7.2 (2011-08-04)
 ================================
