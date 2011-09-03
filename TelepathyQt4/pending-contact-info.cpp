@@ -88,7 +88,7 @@ PendingContactInfo::~PendingContactInfo()
  */
 ContactPtr PendingContactInfo::contact() const
 {
-    return ContactPtr(qobject_cast<Contact*>((Contact*) object().data()));
+    return ContactPtr(qobject_cast<Contact*>((Contact*) _object().data()));
 }
 
 /**

@@ -79,7 +79,7 @@ PendingSendMessage::~PendingSendMessage()
  */
 TextChannelPtr PendingSendMessage::channel() const
 {
-    return TextChannelPtr(qobject_cast<TextChannel*>((TextChannel*) object().data()));
+    return TextChannelPtr(qobject_cast<TextChannel*>((TextChannel*) _object().data()));
 }
 
 /**
@@ -91,7 +91,7 @@ TextChannelPtr PendingSendMessage::channel() const
  */
 ContactMessengerPtr PendingSendMessage::messenger() const
 {
-    return ContactMessengerPtr(qobject_cast<ContactMessenger*>((ContactMessenger*) object().data()));
+    return ContactMessengerPtr(qobject_cast<ContactMessenger*>((ContactMessenger*) _object().data()));
 }
 
 QString PendingSendMessage::sentMessageToken() const
