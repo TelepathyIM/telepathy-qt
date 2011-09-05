@@ -64,6 +64,45 @@ private:
     bool mGotAvatarChanged;
 };
 
+#define TEST_VERIFY_PROPERTY_CHANGE(acc, Type, PropertyName, propertyName, expectedValue) \
+    TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, Type, PropertyName, propertyName, \
+            propertyName ## Changed, acc->set ## PropertyName(expectedValue), expectedValue)
+
+#define TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, Type, PropertyName, propertyName, signalName, po, expectedValue) \
+    { \
+        m ## PropertyName = Type(); \
+        m ## PropertyName ## Changed = false; \
+        qDebug().nospace() << "connecting to " << #propertyName << "Changed()"; \
+        QVERIFY(connect(acc.data(), \
+                    SIGNAL(signalName(Type)), \
+                    SLOT(onAccount ## PropertyName ## Changed(Type)))); \
+        qDebug().nospace() << "setting " << #propertyName; \
+        QVERIFY(connect(po, \
+                    SIGNAL(finished(Tp::PendingOperation*)), \
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*)))); \
+        QCOMPARE(mLoop->exec(), 0); \
+        \
+        if (!m ## PropertyName ## Changed) { \
+            qDebug().nospace() << "waiting for the " << #propertyName << "Changed signal"; \
+            QCOMPARE(mLoop->exec(), 0); \
+        } else { \
+            qDebug().nospace() << "not waiting for " << #propertyName << "Changed because we already got it"; \
+        } \
+        \
+        QCOMPARE(acc->propertyName(), expectedValue); \
+        QCOMPARE(acc->propertyName(), m ## PropertyName); \
+        \
+        processDBusQueue(acc.data()); \
+    }
+
+#define TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(Type, PropertyName) \
+void TestAccountBasics::onAccount ## PropertyName ## Changed(Type value) \
+{ \
+    m ## PropertyName ## Changed = true; \
+    m ## PropertyName = value; \
+    mLoop->exit(0); \
+}
+
 void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
 {
     Q_UNUSED(acc);
