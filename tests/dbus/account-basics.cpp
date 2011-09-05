@@ -488,6 +488,8 @@ void TestAccountBasics::testBasics()
     QCOMPARE(caps.textChats(), true);
 
     // set new service name will change caps, icon and serviceName
+    mIconNameChanged = false;
+    mIconName = QString();
     mCapabilitiesChanged = false;
     mCapabilities = ConnectionCapabilities();
     QVERIFY(connect(acc.data(),
@@ -495,9 +497,12 @@ void TestAccountBasics::testBasics()
                     SLOT(onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &))));
     TEST_VERIFY_PROPERTY_CHANGE(acc, QString, ServiceName, serviceName,
             QLatin1String("test-profile"));
-    while (!mCapabilitiesChanged) {
+    while (!mIconNameChanged && !mCapabilitiesChanged) {
         QCOMPARE(mLoop->exec(), 0);
     }
+
+    QCOMPARE(acc->iconName(), QLatin1String("test-profile-icon"));
+    QCOMPARE(mIconName, acc->iconName());
 
     // using merged protocol info caps and profile caps
     caps = acc->capabilities();
