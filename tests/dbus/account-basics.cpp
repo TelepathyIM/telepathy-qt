@@ -362,9 +362,19 @@ void TestAccountBasics::testBasics()
 
     ProfilePtr profile = acc->profile();
     QCOMPARE(profile.isNull(), false);
+    QCOMPARE(profile->isFake(), true);
     QCOMPARE(profile->isValid(), true);
     QCOMPARE(profile->serviceName(), QString(QLatin1String("%1-%2"))
                 .arg(acc->cmName()).arg(acc->serviceName()));
+    QCOMPARE(profile->type(), QLatin1String("IM"));
+    QCOMPARE(profile->provider(), QString());
+    QCOMPARE(profile->name(), acc->protocolName());
+    QCOMPARE(profile->cmName(), acc->cmName());
+    QCOMPARE(profile->protocolName(), acc->protocolName());
+    QCOMPARE(profile->parameters().isEmpty(), false);
+    QCOMPARE(profile->allowOtherPresences(), true);
+    QCOMPARE(profile->presences().isEmpty(), true);
+    QCOMPARE(profile->unsupportedChannelClassSpecs().isEmpty(), true);
 
     QCOMPARE(acc->serviceName(), acc->protocolName());
     TEST_VERIFY_PROPERTY_CHANGE(acc, QString, ServiceName, serviceName,
@@ -387,22 +397,6 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->avatar().avatarData.isEmpty(), true);
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
-
-    profile = acc->profile();
-    QCOMPARE(profile.isNull(), false);
-    QCOMPARE(profile->isValid(), true);
-    QCOMPARE(profile->serviceName(), QString(QLatin1String("%1-%2"))
-                .arg(acc->cmName()).arg(acc->serviceName()));
-    QCOMPARE(profile->type(), QLatin1String("IM"));
-    QCOMPARE(profile->provider(), QString());
-    QCOMPARE(profile->name(), acc->protocolName());
-    QCOMPARE(profile->cmName(), acc->cmName());
-    QCOMPARE(profile->protocolName(), acc->protocolName());
-    QCOMPARE(profile->parameters().isEmpty(), false);
-    QCOMPARE(profile->allowOtherPresences(), true);
-    QCOMPARE(profile->presences().isEmpty(), true);
-    QCOMPARE(profile->unsupportedChannelClassSpecs().isEmpty(), true);
-
     ProtocolInfo protocolInfo = acc->protocolInfo();
     QCOMPARE(protocolInfo.isValid(), true);
     QCOMPARE(protocolInfo.iconName(), QLatin1String("im-normal"));
