@@ -39,6 +39,7 @@ protected Q_SLOTS:
     void onAccountAvatarChanged(const Tp::Avatar &);
     void onAccountParametersChanged(const QVariantMap &);
     void onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &);
+    void onAccountConnectsAutomaticallyChanged(bool);
 
 private Q_SLOTS:
     void initTestCase();
@@ -71,6 +72,8 @@ private:
     QVariantMap mParameters;
     bool mCapabilitiesChanged;
     ConnectionCapabilities mCapabilities;
+    bool mConnectsAutomaticallyChanged;
+    bool mConnectsAutomatically;
 };
 
 #define TEST_VERIFY_PROPERTY_CHANGE(acc, Type, PropertyName, propertyName, expectedValue) \
@@ -127,6 +130,7 @@ TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, Nickname)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Avatar &, Avatar)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QVariantMap &, Parameters)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const ConnectionCapabilities &, Capabilities)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(bool, ConnectsAutomatically)
 
 QStringList TestAccountBasics::pathsForAccounts(const QList<AccountPtr> &list)
 {
@@ -183,6 +187,8 @@ void TestAccountBasics::init()
     mParameters = QVariantMap();
     mCapabilitiesChanged = false;
     mCapabilities = ConnectionCapabilities();
+    mConnectsAutomaticallyChanged = false;
+    mConnectsAutomatically = false;
 
     initImpl();
 }
@@ -341,6 +347,10 @@ void TestAccountBasics::testBasics()
     expectedParameters[QLatin1String("foo")] = QLatin1String("bar");
     TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, QVariantMap, Parameters, parameters,
             parametersChanged, acc->updateParameters(expectedParameters, QStringList()), expectedParameters);
+
+    TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, bool,
+            ConnectsAutomatically, connectsAutomatically, connectsAutomaticallyPropertyChanged,
+            acc->setConnectsAutomatically(true), true);
 
     qDebug() << "creating another account";
     pacc = mAM->createAccount(QLatin1String("spurious"),
