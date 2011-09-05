@@ -13,9 +13,9 @@
   </parameters>
 
   <presences allow-others="1">
-    <presence id="available" label="Online"  icon="online"/>
-    <presence id="offline"   label="Offline"/>
-    <presence id="away"      label="Gone"/>
+    <presence id="available" label="Online"  icon="online" message="true"/>
+    <presence id="offline"   label="Offline" message="true"/>
+    <presence id="away"      label="Gone"    message="true"/>
     <presence id="hidden"    disabled="1"/>
   </presences>
 
