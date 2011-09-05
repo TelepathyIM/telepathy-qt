@@ -116,6 +116,18 @@ Presence &Presence::operator=(const Presence &other)
     return *this;
 }
 
+bool Presence::operator==(const Presence &other) const
+{
+    if (!isValid() || !other.isValid()) {
+        if (!isValid() && !other.isValid()) {
+            return true;
+        }
+        return false;
+    }
+
+    return mPriv->sp == other.mPriv->sp;
+}
+
 ConnectionPresenceType Presence::type() const
 {
     if (!isValid()) {
