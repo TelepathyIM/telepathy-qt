@@ -159,7 +159,7 @@ class Account(Object):
 
         self._connection = dbus.ObjectPath('/')
         self._connection_status = Connection_Status_Disconnected
-        self._service = u'bob_service'
+        self._service = u''
         self._display_name = display_name
         self._icon = u'bob.png'
         self._enabled = True
