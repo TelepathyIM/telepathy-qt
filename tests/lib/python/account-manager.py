@@ -213,12 +213,12 @@ class Account(Object):
     def Remove(self):
         print "%s: entering Remove()" % self.__dbus_object_path__
         self.Removed()
+        self.remove_from_connection()
         print "%s: Remove() -> success" % self.__dbus_object_path__
 
     @signal(ACCOUNT_IFACE, signature='')
     def Removed(self):
         self._am.AccountRemoved(self.__dbus_object_path__)
-        self.remove_from_connection()
         print "%s: Emitting Removed()" % self.__dbus_object_path__
 
     def _account_props(self):
