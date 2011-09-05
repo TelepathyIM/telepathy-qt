@@ -56,7 +56,7 @@ class AccountManager(Object):
                 signature='o'),
             'InvalidAccounts': dbus.Array(self._invalid_accounts.keys(),
                 signature='o'),
-            'SupportedAccountProperties': dbus.Array([], signature='s'),
+            'SupportedAccountProperties': dbus.Array([ACCOUNT_IFACE + '.Enabled'], signature='s'),
         }, signature='sv')
 
     @method(dbus.PROPERTIES_IFACE,
