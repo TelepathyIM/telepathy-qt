@@ -219,7 +219,81 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(acc->isReady(), true);
 
+    QCOMPARE(acc->connectionFactory(), mAM->connectionFactory());
+    QCOMPARE(acc->channelFactory(), mAM->channelFactory());
+    QCOMPARE(acc->contactFactory(), mAM->contactFactory());
+    QCOMPARE(acc->isValidAccount(), true);
+    QCOMPARE(acc->isEnabled(), true);
+    QCOMPARE(acc->cmName(), QLatin1String("foo"));
+    QCOMPARE(acc->protocolName(), QLatin1String("bar"));
+    // Service name is empty, fallback to protocol name
+    QCOMPARE(acc->serviceName(), QLatin1String("bar"));
+    // FeatureProfile not ready yet
+    QVERIFY(!acc->profile());
     QCOMPARE(acc->displayName(), QString(QLatin1String("foobar (account 0)")));
+    QCOMPARE(acc->iconName(), QLatin1String("bob.png"));
+    QCOMPARE(acc->nickname(), QLatin1String("Bob"));
+    // FeatureProtocolInfo not ready yet
+    QCOMPARE(acc->avatarRequirements().isValid(), false);
+    // FeatureAvatar not ready yet
+    QCOMPARE(acc->avatar().avatarData.isEmpty(), true);
+    QCOMPARE(acc->avatar().MIMEType.isEmpty(), true);
+    QCOMPARE(acc->parameters().size(), 1);
+    QCOMPARE(acc->parameters().contains(QLatin1String("account")), true);
+    QCOMPARE(qdbus_cast<QString>(acc->parameters().value(QLatin1String("account"))),
+            QLatin1String("foobar"));
+    // FeatureProtocolInfo not ready yet
+    QCOMPARE(acc->protocolInfo().isValid(), false);
+    // FeatureCapabilities not ready yet
+    ConnectionCapabilities caps = acc->capabilities();
+    QCOMPARE(caps.isSpecificToContact(), false);
+    QCOMPARE(caps.textChats(), false);
+    QCOMPARE(caps.streamedMediaCalls(), false);
+    QCOMPARE(caps.streamedMediaAudioCalls(), false);
+    QCOMPARE(caps.streamedMediaVideoCalls(), false);
+    QCOMPARE(caps.streamedMediaVideoCallsWithAudio(), false);
+    QCOMPARE(caps.upgradingStreamedMediaCalls(), false);
+    QCOMPARE(caps.fileTransfers(), false);
+    QCOMPARE(caps.textChatrooms(), false);
+    QCOMPARE(caps.conferenceStreamedMediaCalls(), false);
+    QCOMPARE(caps.conferenceStreamedMediaCallsWithInvitees(), false);
+    QCOMPARE(caps.conferenceTextChats(), false);
+    QCOMPARE(caps.conferenceTextChatsWithInvitees(), false);
+    QCOMPARE(caps.conferenceTextChatrooms(), false);
+    QCOMPARE(caps.conferenceTextChatroomsWithInvitees(), false);
+    QCOMPARE(caps.contactSearches(), false);
+    QCOMPARE(caps.contactSearchesWithSpecificServer(), false);
+    QCOMPARE(caps.contactSearchesWithLimit(), false);
+    QCOMPARE(caps.streamTubes(), false);
+    QCOMPARE(caps.allClassSpecs().isEmpty(), true);
+    QCOMPARE(acc->connectsAutomatically(), false);
+    QCOMPARE(acc->hasBeenOnline(), false);
+    QCOMPARE(acc->connectionStatus(), ConnectionStatusDisconnected);
+    QCOMPARE(acc->connectionStatusReason(), ConnectionStatusReasonNoneSpecified);
+    QCOMPARE(acc->connectionError().isEmpty(), true);
+    QCOMPARE(acc->connectionErrorDetails().isValid(), false);
+    QCOMPARE(acc->connectionErrorDetails().allDetails().isEmpty(), true);
+    QVERIFY(!acc->connection());
+    QCOMPARE(acc->isChangingPresence(), false);
+    // Neither FeatureProtocolInfo or FeatureProfile are ready yet and we have no connection
+    for (int i = 0; i < 2; ++i) {
+        PresenceSpecList presences = acc->allowedPresenceStatuses(i);
+        QCOMPARE(presences.size(), 2);
+        QCOMPARE(presences[0].presence(), Presence::available());
+        QCOMPARE(presences[0].maySetOnSelf(), true);
+        QCOMPARE(presences[0].canHaveStatusMessage(), false);
+        QCOMPARE(presences[1].presence(), Presence::offline());
+        QCOMPARE(presences[1].maySetOnSelf(), true);
+        QCOMPARE(presences[1].canHaveStatusMessage(), false);
+    }
+    // No connection
+    QCOMPARE(acc->maxPresenceStatusMessageLength(), static_cast<uint>(0));
+    QCOMPARE(acc->automaticPresence(), Presence::available());
+    QCOMPARE(acc->currentPresence(), Presence::offline());
+    QCOMPARE(acc->requestedPresence(), Presence::offline());
+    QCOMPARE(acc->isOnline(), false);
+    QCOMPARE(acc->uniqueIdentifier(), QLatin1String("foo/bar/Account0"));
+    QCOMPARE(acc->normalizedName(), QLatin1String("bob"));
 
     TEST_VERIFY_PROPERTY_CHANGE(acc, QString, IconName, iconName, QLatin1String("im-foo"));
 
@@ -343,7 +417,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->isReady(Account::FeatureCapabilities), true);
 
     // using protocol info
-    ConnectionCapabilities caps = acc->capabilities();
+    caps = acc->capabilities();
     QCOMPARE(caps.textChats(), true);
 
     // set new service name will change caps, icon and serviceName
