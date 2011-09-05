@@ -165,7 +165,7 @@ class Account(Object):
         self._enabled = True
         self._nickname = u'Bob'
         self._parameters = parameters
-        self._connect_automatically = True
+        self._connect_automatically = False
         self._normalized_name = u'bob'
         self._automatic_presence = dbus.Struct(
                 (Connection_Presence_Type_Available, 'available', ''),
