@@ -49,13 +49,15 @@ public:
 
     virtual ~OutgoingStreamTubeChannel();
 
-    PendingOperation *offerTcpSocket(const QHostAddress &address, quint16 port, const QVariantMap &parameters);
-    PendingOperation *offerTcpSocket(const QTcpServer *server, const QVariantMap &parameters);
+    PendingOperation *offerTcpSocket(const QHostAddress &address, quint16 port,
+            const QVariantMap &parameters = QVariantMap());
+    PendingOperation *offerTcpSocket(const QTcpServer *server,
+            const QVariantMap &parameters = QVariantMap());
 
-    PendingOperation *offerUnixSocket(const QString &socketAddress, const QVariantMap &parameters,
-            bool requireCredentials = false);
-    PendingOperation *offerUnixSocket(const QLocalServer *server, const QVariantMap &parameters,
-            bool requireCredentials = false);
+    PendingOperation *offerUnixSocket(const QString &socketAddress,
+            const QVariantMap &parameters = QVariantMap(), bool requireCredentials = false);
+    PendingOperation *offerUnixSocket(const QLocalServer *server,
+            const QVariantMap &parameters = QVariantMap(), bool requireCredentials = false);
 
     QHash<uint, Tp::ContactPtr> contactsForConnections() const;
 
@@ -72,8 +74,8 @@ private Q_SLOTS:
             const QDBusVariant &parameter, uint connectionId);
     TELEPATHY_QT4_NO_EXPORT void onContactsRetrieved(const QUuid &uuid,
             const QList<Tp::ContactPtr> &contacts);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId, const QString &errorName,
-            const QString &errorMessage);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId,
+            const QString &errorName, const QString &errorMessage);
 
 private:
     struct Private;

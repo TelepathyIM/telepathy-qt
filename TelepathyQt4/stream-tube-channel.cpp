@@ -53,18 +53,20 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     SupportedSocketMap socketTypes;
     QString serviceName;
 
-    UIntList connections;
+    QSet<uint> connections;
     QPair<QHostAddress, quint16> ipAddress;
     QString unixAddress;
     SocketAddressType addressType;
     SocketAccessControl accessControl;
+    bool droppingConnections;
 };
 
 StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
     : parent(parent),
       readinessHelper(parent->readinessHelper()),
       addressType(SocketAddressTypeUnix),
-      accessControl(SocketAccessControlLocalhost)
+      accessControl(SocketAccessControlLocalhost),
+      droppingConnections(false)
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -85,6 +87,11 @@ StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
             this);
     introspectables[StreamTubeChannel::FeatureConnectionMonitoring] =
             introspectableConnectionMonitoring;
+
+    parent->connect(
+            parent,
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            SLOT(dropConnections()));
 
     readinessHelper->addIntrospectables(introspectables);
 }
@@ -114,7 +121,7 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
 
     parent->connect(streamTubeInterface,
             SIGNAL(ConnectionClosed(uint,QString,QString)),
-            SIGNAL(connectionClosed(uint,QString,QString)));
+            SLOT(onConnectionClosed(uint,QString,QString)));
 
     if (parent->isRequested()) {
         parent->connect(streamTubeInterface,
@@ -543,7 +550,7 @@ UIntList StreamTubeChannel::connections() const
         return UIntList();
     }
 
-    return mPriv->connections;
+    return mPriv->connections.toList();
 }
 
 /**
@@ -618,7 +625,32 @@ QString StreamTubeChannel::localAddress() const
 
 void StreamTubeChannel::setConnections(UIntList connections)
 {
-    mPriv->connections = connections;
+    // This is rather sub-optimal: we'll do a O(n) replace of the old connections list every time a
+    // connection is added, so O(n^2) in total for adding n connections
+    mPriv->connections = QSet<uint>::fromList(connections);
+}
+
+void StreamTubeChannel::addConnection(uint connection)
+{
+    if (!mPriv->connections.contains(connection)) {
+        mPriv->connections.insert(connection);
+        emit newConnection(connection);
+    } else {
+        warning() << "Tried to add connection" << connection << "on StreamTube" << objectPath()
+            << "but it already was there";
+    }
+}
+
+void StreamTubeChannel::removeConnection(uint connection, const QString &error,
+        const QString &message)
+{
+    if (mPriv->connections.contains(connection)) {
+        mPriv->connections.remove(connection);
+        emit connectionClosed(connection, error, message);
+    } else {
+        warning() << "Tried to remove connection" << connection << "from StreamTube" << objectPath()
+            << "but it wasn't there";
+    }
 }
 
 void StreamTubeChannel::setAddressType(SocketAddressType type)
@@ -641,6 +673,11 @@ void StreamTubeChannel::setLocalAddress(const QString &address)
     mPriv->unixAddress = address;
 }
 
+bool StreamTubeChannel::isDroppingConnections() const
+{
+    return mPriv->droppingConnections;
+}
+
 void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
 {
     if (!op->isError()) {
@@ -656,6 +693,26 @@ void StreamTubeChannel::gotStreamTubeProperties(PendingOperation *op)
                 "with " << op->errorName() << ": " << op->errorMessage();
         mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureCore, false,
                 op->errorName(), op->errorMessage());
+    }
+}
+
+void StreamTubeChannel::onConnectionClosed(uint connId, const QString &error,
+        const QString &message)
+{
+    removeConnection(connId, error, message);
+}
+
+void StreamTubeChannel::dropConnections()
+{
+    if (!mPriv->connections.isEmpty()) {
+        debug() << "StreamTubeChannel invalidated with" << mPriv->connections.size()
+            << "connections remaining, synthesizing close events";
+        mPriv->droppingConnections = true;
+        foreach (uint connId, mPriv->connections) {
+            removeConnection(connId, TP_QT4_ERROR_ORPHANED,
+                    QLatin1String("parent tube invalidated, streams closing"));
+        }
+        mPriv->droppingConnections = false;
     }
 }
 

@@ -275,7 +275,9 @@
  * The error name "org.freedesktop.Telepathy.Qt4.Error.Orphaned" as a QLatin1String.
  *
  * This error is used when the "parent" proxy of an object gets invalidated. For example, a Channel
- * whose corresponding Connection is invalidated invalidates itself with this error.
+ * whose corresponding Connection is invalidated invalidates itself with this error, as do leftover
+ * StreamTube connections when their parent StreamTubeChannel is invalidated. The invalidation
+ * reason of the parent proxy might provide more information on the cause of the error.
  */
 #define TP_QT4_ERROR_ORPHANED \
     (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Orphaned"))

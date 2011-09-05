@@ -29,6 +29,7 @@
 #include <TelepathyQt4/IncomingStreamTubeChannel>
 #include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/Types>
+#include "TelepathyQt4/types-internal.h"
 
 namespace Tp
 {

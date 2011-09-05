@@ -63,6 +63,7 @@ public:
     bool supportsAbstractUnixSocketsOnLocalhost() const;
     bool supportsAbstractUnixSocketsWithCredentials() const;
 
+    // API/ABI break TODO: return QSet<uint> instead
     UIntList connections() const;
 
     SocketAddressType addressType() const;
@@ -80,15 +81,21 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureCore);
 
-    void setConnections(UIntList connections);
+    TELEPATHY_QT4_DEPRECATED void setConnections(UIntList connections); // -> {add,remove}Connection
+    void addConnection(uint connection);
+    void removeConnection(uint connection, const QString &error, const QString &message);
+
     void setAddressType(SocketAddressType type);
     SocketAccessControl accessControl() const;
     void setAccessControl(SocketAccessControl accessControl);
     void setIpAddress(const QPair<QHostAddress, quint16> &address);
     void setLocalAddress(const QString &address);
+    bool isDroppingConnections() const;
 
 private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void gotStreamTubeProperties(Tp::PendingOperation *op);
+    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint, const QString &, const QString &);
+    TELEPATHY_QT4_NO_EXPORT void dropConnections();
 
 private:
     struct Private;
