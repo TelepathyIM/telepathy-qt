@@ -207,6 +207,9 @@ void TestAccountBasics::testBasics()
     QCOMPARE(accs[0]->objectPath(), accPath);
     QVERIFY(!accs[1]);
 
+    QCOMPARE(mAM->allAccounts()[0]->isReady(
+                Account::FeatureCore | Account::FeatureCapabilities), true);
+
     AccountPtr acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"),
             mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
