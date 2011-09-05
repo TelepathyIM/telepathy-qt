@@ -5,6 +5,8 @@ The "..." release.
 
 Enhancements:
  * Added HandleTypeRoom StreamTubes to ChannelClassSpec
+ * The ChannelClassSpec implementation has been optimized, which yields
+   ChannelFactory setup and consequently application startup speedups
 
 Fixes:
  * Ensure that the proper Channel Dispatcher methods are being called when
