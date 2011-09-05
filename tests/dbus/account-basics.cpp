@@ -40,6 +40,9 @@ protected Q_SLOTS:
     void onAccountParametersChanged(const QVariantMap &);
     void onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &);
     void onAccountConnectsAutomaticallyChanged(bool);
+    void onAccountAutomaticPresenceChanged(const Tp::Presence &);
+    void onAccountRequestedPresenceChanged(const Tp::Presence &);
+    void onAccountCurrentPresenceChanged(const Tp::Presence &);
 
 private Q_SLOTS:
     void initTestCase();
@@ -74,6 +77,12 @@ private:
     ConnectionCapabilities mCapabilities;
     bool mConnectsAutomaticallyChanged;
     bool mConnectsAutomatically;
+    bool mAutomaticPresenceChanged;
+    Presence mAutomaticPresence;
+    bool mRequestedPresenceChanged;
+    Presence mRequestedPresence;
+    bool mCurrentPresenceChanged;
+    Presence mCurrentPresence;
 };
 
 #define TEST_VERIFY_PROPERTY_CHANGE(acc, Type, PropertyName, propertyName, expectedValue) \
@@ -131,6 +140,9 @@ TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Avatar &, Avatar)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QVariantMap &, Parameters)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const ConnectionCapabilities &, Capabilities)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(bool, ConnectsAutomatically)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Presence &, AutomaticPresence)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Presence &, RequestedPresence)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Presence &, CurrentPresence)
 
 QStringList TestAccountBasics::pathsForAccounts(const QList<AccountPtr> &list)
 {
@@ -189,6 +201,12 @@ void TestAccountBasics::init()
     mCapabilities = ConnectionCapabilities();
     mConnectsAutomaticallyChanged = false;
     mConnectsAutomatically = false;
+    mAutomaticPresenceChanged = false;
+    mAutomaticPresence = Presence();
+    mRequestedPresenceChanged = false;
+    mRequestedPresence = Presence();
+    mCurrentPresenceChanged = false;
+    mCurrentPresence = Presence();
 
     initImpl();
 }
@@ -351,6 +369,17 @@ void TestAccountBasics::testBasics()
     TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, bool,
             ConnectsAutomatically, connectsAutomatically, connectsAutomaticallyPropertyChanged,
             acc->setConnectsAutomatically(true), true);
+
+    TEST_VERIFY_PROPERTY_CHANGE(acc, Tp::Presence, AutomaticPresence, automaticPresence,
+            Presence::busy());
+
+    // Changing requested presence will also change hasBeenOnline/isOnline/currentPresence
+    Presence expectedPresence = Presence::busy();
+    TEST_VERIFY_PROPERTY_CHANGE(acc, Tp::Presence, RequestedPresence, requestedPresence,
+            expectedPresence);
+    QCOMPARE(acc->hasBeenOnline(), true);
+    QCOMPARE(acc->isOnline(), true);
+    QCOMPARE(acc->currentPresence(), expectedPresence);
 
     qDebug() << "creating another account";
     pacc = mAM->createAccount(QLatin1String("spurious"),
