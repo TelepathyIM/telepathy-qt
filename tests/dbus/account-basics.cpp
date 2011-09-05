@@ -501,6 +501,32 @@ void TestAccountBasics::testBasics()
         QCOMPARE(mLoop->exec(), 0);
     }
 
+    // Now that both FeatureProtocolInfo and FeatureProfile are ready, let's check the allowed
+    // presences
+    for (int i = 0; i < 2; ++i) {
+        PresenceSpecList presences = acc->allowedPresenceStatuses(i);
+        QCOMPARE(presences.size(), 3);
+
+        Presence expectedPresences[3] = {
+            Presence::available(),
+            Presence::away(),
+            Presence::offline()
+        };
+        for (int j = 0; j < 3; ++j) {
+            QCOMPARE(presences[j].isValid(), true);
+            QCOMPARE(presences[j].maySetOnSelf(), true);
+            QCOMPARE(presences[j].canHaveStatusMessage(), true);
+
+            bool found = false;
+            for (int k = 0; k < 3; ++k) {
+                if (presences[j].presence() == expectedPresences[k]) {
+                    found = true;
+                }
+            }
+            QVERIFY(found);
+        }
+    }
+
     QCOMPARE(acc->iconName(), QLatin1String("test-profile-icon"));
     QCOMPARE(mIconName, acc->iconName());
 
