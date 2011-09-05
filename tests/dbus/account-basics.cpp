@@ -11,6 +11,7 @@
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/Profile>
 
@@ -36,6 +37,7 @@ protected Q_SLOTS:
     void onAccountIconNameChanged(const QString &);
     void onAccountNicknameChanged(const QString &);
     void onAccountAvatarChanged(const Tp::Avatar &);
+    void onAccountParametersChanged(const QVariantMap &);
     void onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &);
 
 private Q_SLOTS:
@@ -65,6 +67,8 @@ private:
     QString mNickname;
     bool mAvatarChanged;
     Avatar mAvatar;
+    bool mParametersChanged;
+    QVariantMap mParameters;
     bool mCapabilitiesChanged;
     ConnectionCapabilities mCapabilities;
 };
@@ -121,6 +125,7 @@ TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, DisplayName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, IconName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, Nickname)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Avatar &, Avatar)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QVariantMap &, Parameters)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const ConnectionCapabilities &, Capabilities)
 
 QStringList TestAccountBasics::pathsForAccounts(const QList<AccountPtr> &list)
@@ -174,6 +179,8 @@ void TestAccountBasics::init()
     mNickname = QString();
     mAvatarChanged = false;
     mAvatar = Avatar();
+    mParametersChanged = false;
+    mParameters = QVariantMap();
     mCapabilitiesChanged = false;
     mCapabilities = ConnectionCapabilities();
 
@@ -330,10 +337,14 @@ void TestAccountBasics::testBasics()
     Avatar expectedAvatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
     TEST_VERIFY_PROPERTY_CHANGE(acc, Tp::Avatar, Avatar, avatar, expectedAvatar);
 
-    qDebug() << "creating another account";
+    QVariantMap expectedParameters = acc->parameters();
+    expectedParameters[QLatin1String("foo")] = QLatin1String("bar");
+    TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, QVariantMap, Parameters, parameters,
+            parametersChanged, acc->updateParameters(expectedParameters, QStringList()), expectedParameters);
 
+    qDebug() << "creating another account";
     pacc = mAM->createAccount(QLatin1String("spurious"),
-            QLatin1String("normal"), QLatin1String("foobar"), parameters);
+            QLatin1String("normal"), QLatin1String("foobar"), QVariantMap());
     QVERIFY(connect(pacc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
