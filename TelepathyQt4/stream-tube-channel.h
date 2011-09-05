@@ -98,8 +98,6 @@ private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void dropConnections();
 
 private:
-    friend class Channel; // for calling dropConnections on close()
-
     struct Private;
     friend struct Private;
     Private *mPriv;
