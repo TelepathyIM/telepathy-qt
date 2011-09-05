@@ -232,12 +232,12 @@ class Account(Object):
             'Nickname': self._nickname,
             'Parameters': self._parameters,
             'AutomaticPresence': self._automatic_presence,
+            'CurrentPresence': self._current_presence,
+            'RequestedPresence': self._requested_presence,
             'ConnectAutomatically': self._connect_automatically,
             'Connection': self._connection,
             'ConnectionStatus': self._connection_status,
             'ConnectionStatusReason': Connection_Status_Reason_None_Specified,
-            'CurrentPresence': self._current_presence,
-            'RequestedPresence': self._requested_presence,
             'NormalizedName': self._normalized_name,
         }, signature='sv')
 
