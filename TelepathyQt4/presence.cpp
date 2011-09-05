@@ -232,6 +232,19 @@ PresenceSpec &PresenceSpec::operator=(const PresenceSpec &other)
     return *this;
 }
 
+bool PresenceSpec::operator==(const PresenceSpec &other) const
+{
+    if (!isValid() || !other.isValid()) {
+        if (!isValid() && !other.isValid()) {
+            return true;
+        }
+        return false;
+    }
+
+    return (mPriv->status == other.mPriv->status) &&
+           (mPriv->spec == other.mPriv->spec);
+}
+
 Presence PresenceSpec::presence(const QString &statusMessage) const
 {
     if (!isValid()) {
