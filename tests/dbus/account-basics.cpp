@@ -218,6 +218,11 @@ void TestAccountBasics::testBasics()
     QStringList paths;
     QString accPath(QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
     QCOMPARE(pathsForAccounts(mAM->allAccounts()), QStringList() << accPath);
+    QList<AccountPtr> accs = mAM->accountsForPaths(
+            QStringList() << accPath << QLatin1String("/invalid/path"));
+    QCOMPARE(accs.size(), 2);
+    QCOMPARE(accs[0]->objectPath(), accPath);
+    QVERIFY(!accs[1]);
 
     AccountPtr acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"),
