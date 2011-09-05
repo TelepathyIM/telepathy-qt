@@ -165,6 +165,7 @@ class Account(Object):
         self._enabled = True
         self._nickname = u'Bob'
         self._parameters = parameters
+        self._has_been_online = False
         self._connect_automatically = False
         self._normalized_name = u'bob'
         self._automatic_presence = dbus.Struct(
@@ -234,6 +235,7 @@ class Account(Object):
             'AutomaticPresence': self._automatic_presence,
             'CurrentPresence': self._current_presence,
             'RequestedPresence': self._requested_presence,
+            'HasBeenOnline': self._has_been_online,
             'ConnectAutomatically': self._connect_automatically,
             'Connection': self._connection,
             'ConnectionStatus': self._connection_status,
