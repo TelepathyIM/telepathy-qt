@@ -193,6 +193,7 @@ void TestAccountBasics::testBasics()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAM->isReady(), true);
+    QCOMPARE(mAM->interfaces(), QStringList());
     QCOMPARE(mAM->supportedAccountProperties(), QStringList() <<
             QLatin1String("org.freedesktop.Telepathy.Account.Enabled"));
 
@@ -213,8 +214,6 @@ void TestAccountBasics::testBasics()
     while (mAccountsCount != 1) {
         QCOMPARE(mLoop->exec(), 0);
     }
-
-    QCOMPARE(mAM->interfaces(), QStringList());
 
     QStringList paths;
     QString accPath(QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
