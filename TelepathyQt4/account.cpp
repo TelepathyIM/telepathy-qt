@@ -1232,10 +1232,13 @@ PendingOperation *Account::setDisplayName(const QString &value)
 QString Account::iconName() const
 {
     if (mPriv->iconName.isEmpty()) {
-        if (isReady(FeatureProfile) && !profile().isNull()) {
-            QString iconName = profile()->iconName();
-            if (!iconName.isEmpty()) {
-                return iconName;
+        if (isReady(FeatureProfile)) {
+            ProfilePtr pr = profile();
+            if (pr && pr->isValid()) {
+                QString iconName = pr->iconName();
+                if (!iconName.isEmpty()) {
+                    return iconName;
+                }
             }
         }
 
@@ -1468,8 +1471,11 @@ ConnectionCapabilities Account::capabilities() const
     if (!pi.isValid()) {
         return ConnectionCapabilities();
     }
-    ProfilePtr pr = profile();
-    if (!pr) {
+    ProfilePtr pr;
+    if (isReady(FeatureProfile)) {
+        pr = profile();
+    }
+    if (!pr || !pr->isValid()) {
         return pi.capabilities();
     }
 
@@ -1737,8 +1743,11 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
             }
         }
 
-        ProfilePtr pr = profile();
-        if (pr) {
+        ProfilePtr pr;
+        if (isReady(FeatureProfile)) {
+            pr = profile();
+        }
+        if (pr && pr->isValid()) {
             // add all Profile presences to the returned map
             foreach (const Profile::Presence &prPresence, pr->presences()) {
                 QString prStatus = prPresence.id();
