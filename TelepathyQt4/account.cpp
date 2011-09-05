@@ -1150,6 +1150,7 @@ PendingOperation *Account::setServiceName(const QString &value)
 ProfilePtr Account::profile() const
 {
     if (!isReady(FeatureProfile)) {
+        warning() << "Account::profile() requires Account::FeatureProfile to be ready";
         return ProfilePtr();
     }
 
