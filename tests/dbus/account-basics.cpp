@@ -50,8 +50,8 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    QStringList pathsForAccountList(const QList<Tp::AccountPtr> &list);
-    QStringList pathsForAccountSet(const Tp::AccountSetPtr &set);
+    QStringList pathsForAccounts(const QList<AccountPtr> &list);
+    QStringList pathsForAccounts(const AccountSetPtr &set);
 
     Tp::AccountManagerPtr mAM;
     TestConnHelper *mConn;
@@ -101,7 +101,7 @@ void TestAccountBasics::onAvatarChanged(const Tp::Avatar &avatar)
     mLoop->exit(0);
 }
 
-QStringList TestAccountBasics::pathsForAccountList(const QList<Tp::AccountPtr> &list)
+QStringList TestAccountBasics::pathsForAccounts(const QList<AccountPtr> &list)
 {
     QStringList ret;
     Q_FOREACH (const AccountPtr &account, list) {
@@ -110,7 +110,7 @@ QStringList TestAccountBasics::pathsForAccountList(const QList<Tp::AccountPtr> &
     return ret;
 }
 
-QStringList TestAccountBasics::pathsForAccountSet(const Tp::AccountSetPtr &set)
+QStringList TestAccountBasics::pathsForAccounts(const AccountSetPtr &set)
 {
     QStringList ret;
     Q_FOREACH (const AccountPtr &account, set->accounts()) {
@@ -176,9 +176,8 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mAM->interfaces(), QStringList());
 
     QStringList paths;
-    QCOMPARE(pathsForAccountList(mAM->allAccounts()),
-            QStringList() <<
-            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
+    QString accPath(QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
+    QCOMPARE(pathsForAccounts(mAM->allAccounts()), QStringList() << accPath);
 
     AccountPtr acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"),
