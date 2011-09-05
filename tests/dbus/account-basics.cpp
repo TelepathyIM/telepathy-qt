@@ -193,6 +193,8 @@ void TestAccountBasics::testBasics()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAM->isReady(), true);
+    QCOMPARE(mAM->supportedAccountProperties(), QStringList() <<
+            QLatin1String("org.freedesktop.Telepathy.Account.Enabled"));
 
     QVERIFY(connect(mAM.data(),
                     SIGNAL(newAccount(const Tp::AccountPtr &)),
