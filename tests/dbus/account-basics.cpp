@@ -26,19 +26,15 @@ public:
     TestAccountBasics(QObject *parent = 0)
         : Test(parent),
           mConn(0),
-          mServiceNameChanged(false),
-          mIconNameChanged(false),
-          mCapabilitiesChanged(false),
-          mAccountsCount(0),
-          mGotAvatarChanged(false)
+          mAccountsCount(0)
     { }
 
 protected Q_SLOTS:
     void onNewAccount(const Tp::AccountPtr &);
     void onAccountServiceNameChanged(const QString &);
     void onAccountIconNameChanged(const QString &);
+    void onAccountAvatarChanged(const Tp::Avatar &);
     void onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &);
-    void onAvatarChanged(const Tp::Avatar &);
 
 private Q_SLOTS:
     void initTestCase();
@@ -55,13 +51,16 @@ private:
 
     Tp::AccountManagerPtr mAM;
     TestConnHelper *mConn;
+    int mAccountsCount;
+
     bool mServiceNameChanged;
     QString mServiceName;
     bool mIconNameChanged;
     QString mIconName;
+    bool mAvatarChanged;
+    Avatar mAvatar;
     bool mCapabilitiesChanged;
-    int mAccountsCount;
-    bool mGotAvatarChanged;
+    ConnectionCapabilities mCapabilities;
 };
 
 #define TEST_VERIFY_PROPERTY_CHANGE(acc, Type, PropertyName, propertyName, expectedValue) \
@@ -111,34 +110,10 @@ void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
     mLoop->exit(0);
 }
 
-void TestAccountBasics::onAccountServiceNameChanged(const QString &serviceName)
-{
-    mServiceNameChanged = true;
-    mServiceName = serviceName;
-    mLoop->exit(0);
-}
-
-void TestAccountBasics::onAccountIconNameChanged(const QString &iconName)
-{
-    mIconNameChanged = true;
-    mIconName = iconName;
-    mLoop->exit(0);
-}
-
-void TestAccountBasics::onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &caps)
-{
-    mCapabilitiesChanged = true;
-    mLoop->exit(0);
-}
-
-void TestAccountBasics::onAvatarChanged(const Tp::Avatar &avatar)
-{
-    qDebug() << "on avatar changed";
-    mGotAvatarChanged = true;
-    QCOMPARE(avatar.avatarData, QByteArray("asdfg"));
-    QCOMPARE(avatar.MIMEType, QString(QLatin1String("image/jpeg")));
-    mLoop->exit(0);
-}
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, ServiceName)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, IconName)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Avatar &, Avatar)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const ConnectionCapabilities &, Capabilities)
 
 QStringList TestAccountBasics::pathsForAccounts(const QList<AccountPtr> &list)
 {
@@ -181,7 +156,14 @@ void TestAccountBasics::initTestCase()
 
 void TestAccountBasics::init()
 {
-    mGotAvatarChanged = false;
+    mServiceNameChanged = false;
+    mServiceName = QString();
+    mIconNameChanged = false;
+    mIconName = QString();
+    mAvatarChanged = false;
+    mAvatar = Avatar();
+    mCapabilitiesChanged = false;
+    mCapabilities = ConnectionCapabilities();
 
     initImpl();
 }
@@ -214,6 +196,7 @@ void TestAccountBasics::testBasics()
     while (mAccountsCount != 1) {
         QCOMPARE(mLoop->exec(), 0);
     }
+    processDBusQueue(mConn->client().data());
 
     QStringList paths;
     QString accPath(QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
@@ -230,55 +213,29 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady()) {
-        mLoop->processEvents();
-    }
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(), true);
 
     QCOMPARE(acc->displayName(), QString(QLatin1String("foobar (account 0)")));
 
+    TEST_VERIFY_PROPERTY_CHANGE(acc, QString, IconName, iconName, QLatin1String("im-foo"));
+
+    // Setting icon to an empty string should fallback to im-$protocol as FeatureProtocolInfo and
+    // FeatureProtocolInfo are not ready yet
+    mIconNameChanged = false;
+    mIconName = QString();
+    TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, QString, IconName, iconName, iconNameChanged,
+            acc->setIconName(QString()), QLatin1String("im-bar"));
+
     qDebug() << "making Account::FeatureAvatar ready";
-
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady(Account::FeatureAvatar)) {
-        mLoop->processEvents();
-    }
-
-    QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
-
-    processDBusQueue(acc.data());
-
-    qDebug() << "connecting to avatarChanged()";
-
-    QVERIFY(connect(acc.data(),
-                    SIGNAL(avatarChanged(const Tp::Avatar &)),
-                    SLOT(onAvatarChanged(const Tp::Avatar &))));
-
-    qDebug() << "setting the avatar";
-
-    Tp::Avatar avatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
-    QVERIFY(connect(acc->setAvatar(avatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
 
-    qDebug() << "making Account::FeatureAvatar ready again (redundantly)";
-
-    QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady(Account::FeatureAvatar)) {
-        mLoop->processEvents();
-    }
-
-    // We might have got it already in the earlier mainloop runs
-    if (!mGotAvatarChanged) {
-        qDebug() << "waiting for the avatarChanged signal";
-        QCOMPARE(mLoop->exec(), 0);
-    } else {
-        qDebug() << "not waiting for avatarChanged because we already got it";
-    }
+    Avatar expectedAvatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
+    TEST_VERIFY_PROPERTY_CHANGE(acc, Tp::Avatar, Avatar, avatar, expectedAvatar);
 
     qDebug() << "creating another account";
 
@@ -292,6 +249,7 @@ void TestAccountBasics::testBasics()
     while (mAccountsCount != 2) {
         QCOMPARE(mLoop->exec(), 0);
     }
+    processDBusQueue(mConn->client().data());
 
     acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"),
@@ -299,47 +257,21 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady()) {
-        mLoop->processEvents();
-    }
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(), true);
 
-    acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"),
-            mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
-
-    QVERIFY(connect(acc->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady()) {
-        mLoop->processEvents();
-    }
-
-    // At this point, there's a set icon
-    QCOMPARE(acc->iconName(), QLatin1String("bob.png")); // ?!??
-
-    // Unset that
+    QCOMPARE(acc->iconName(), QLatin1String("bob.png"));
+    // Setting icon to an empty string should fallback to Profile/ProtocolInfo/im-$protocol
     mIconNameChanged = false;
     mIconName = QString();
-    QVERIFY(connect(acc.data(),
-                    SIGNAL(iconNameChanged(const QString &)),
-                    SLOT(onAccountIconNameChanged(const QString &))));
-    QVERIFY(connect(acc->setIconName(QString()),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!mIconNameChanged) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-
-    // Now that it's unset, an icon name is formed from the protocol name
-    QCOMPARE(acc->iconName(), QLatin1String("im-normal"));
-    QCOMPARE(acc->iconName(), mIconName);
+    TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, QString, IconName, iconName, iconNameChanged,
+            acc->setIconName(QString()), QLatin1String("im-normal"));
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureProtocolInfo),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady(Account::FeatureProtocolInfo)) {
-        mLoop->processEvents();
-    }
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureProtocolInfo), true);
 
     // This time it's fetched from the protocol object (although it probably internally just
     // infers it from the protocol name too)
@@ -348,9 +280,8 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(Account::FeatureProfile),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady(Account::FeatureProfile)) {
-        mLoop->processEvents();
-    }
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureProfile), true);
 
     ProfilePtr profile = acc->profile();
     QCOMPARE(profile.isNull(), false);
@@ -358,47 +289,27 @@ void TestAccountBasics::testBasics()
     QCOMPARE(profile->serviceName(), QString(QLatin1String("%1-%2"))
                 .arg(acc->cmName()).arg(acc->serviceName()));
 
-    QVERIFY(acc->serviceName() == acc->protocolName());
-
-    connect(acc.data(),
-            SIGNAL(serviceNameChanged(const QString &)),
-            SLOT(onAccountServiceNameChanged(const QString &)));
-    connect(acc->setServiceName(acc->protocolName()),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(expectSuccessfulCall(Tp::PendingOperation *)));
-    // wait for setServiceName finish
-    QCOMPARE(mLoop->exec(), 0);
-    // wait for serviceNameChanged
-    QCOMPARE(mLoop->exec(), 0);
-
     QCOMPARE(acc->serviceName(), acc->protocolName());
-    QCOMPARE(mServiceName, acc->serviceName());
-
-    ProtocolInfo protocolInfo = acc->protocolInfo();
-    QCOMPARE(protocolInfo.isValid(), true);
-    QCOMPARE(protocolInfo.hasParameter(QLatin1String("account")), true);
-    QCOMPARE(protocolInfo.hasParameter(QLatin1String("password")), true);
-    QCOMPARE(protocolInfo.hasParameter(QLatin1String("register")), true);
+    TEST_VERIFY_PROPERTY_CHANGE(acc, QString, ServiceName, serviceName,
+            QLatin1String("spurious-service"));
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady(Account::FeatureAvatar)) {
-        mLoop->processEvents();
-    }
-
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
+    QCOMPARE(acc->avatar().avatarData.isEmpty(), true);
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
 
+    // make redundant becomeReady calls
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar | Account::FeatureProtocolInfo),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady(Account::FeatureAvatar | Account::FeatureProtocolInfo)) {
-        mLoop->processEvents();
-    }
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureAvatar | Account::FeatureProtocolInfo), true);
 
+    QCOMPARE(acc->avatar().avatarData.isEmpty(), true);
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
-    protocolInfo = acc->protocolInfo();
-    QCOMPARE(protocolInfo.isValid(), true);
 
     profile = acc->profile();
     QCOMPARE(profile.isNull(), false);
@@ -415,42 +326,36 @@ void TestAccountBasics::testBasics()
     QCOMPARE(profile->presences().isEmpty(), true);
     QCOMPARE(profile->unsupportedChannelClassSpecs().isEmpty(), true);
 
+    ProtocolInfo protocolInfo = acc->protocolInfo();
+    QCOMPARE(protocolInfo.isValid(), true);
+    QCOMPARE(protocolInfo.iconName(), QLatin1String("im-normal"));
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("account")), true);
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("password")), true);
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("register")), true);
+
     QVERIFY(connect(acc->becomeReady(Account::FeatureCapabilities),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!acc->isReady(Account::FeatureCapabilities)) {
-        mLoop->processEvents();
-    }
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureCapabilities), true);
 
-    /* using protocol info */
+    // using protocol info
     ConnectionCapabilities caps = acc->capabilities();
     QCOMPARE(caps.textChats(), true);
 
-    mServiceNameChanged = false;
-    mServiceName = QString();
-    mIconNameChanged = false;
-    mIconName = QString();
+    // set new service name will change caps, icon and serviceName
     mCapabilitiesChanged = false;
-    QVERIFY(connect(acc.data(),
-                    SIGNAL(serviceNameChanged(const QString &)),
-                    SLOT(onAccountServiceNameChanged(const QString &))));
+    mCapabilities = ConnectionCapabilities();
     QVERIFY(connect(acc.data(),
                     SIGNAL(capabilitiesChanged(const Tp::ConnectionCapabilities &)),
                     SLOT(onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &))));
-    QVERIFY(connect(acc->setServiceName(QLatin1String("test-profile")),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    while (!mServiceNameChanged && !mIconNameChanged && !mCapabilitiesChanged) {
+    TEST_VERIFY_PROPERTY_CHANGE(acc, QString, ServiceName, serviceName,
+            QLatin1String("test-profile"));
+    while (!mCapabilitiesChanged) {
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    QCOMPARE(acc->serviceName(), QLatin1String("test-profile"));
-    QCOMPARE(mServiceName, acc->serviceName());
-
-    QCOMPARE(acc->iconName(), QLatin1String("test-profile-icon"));
-    QCOMPARE(mIconName, acc->iconName());
-
-    /* using merged protocol info caps and profile caps */
+    // using merged protocol info caps and profile caps
     caps = acc->capabilities();
     QCOMPARE(caps.textChats(), false);
 
@@ -474,9 +379,8 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->connection()->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    while (!acc->connection()->isReady()) {
-        mLoop->processEvents();
-    }
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(), true);
 
     // once the status change the capabilities will be updated
     mCapabilitiesChanged = false;
@@ -514,9 +418,11 @@ void TestAccountBasics::testBasics()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    /* back to using merged protocol info caps and profile caps */
+    // back to using merged protocol info caps and profile caps
     caps = acc->capabilities();
     QCOMPARE(caps.textChats(), false);
+
+    processDBusQueue(mConn->client().data());
 }
 
 void TestAccountBasics::cleanup()
