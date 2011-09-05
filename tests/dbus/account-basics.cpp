@@ -34,6 +34,7 @@ protected Q_SLOTS:
     void onAccountServiceNameChanged(const QString &);
     void onAccountDisplayNameChanged(const QString &);
     void onAccountIconNameChanged(const QString &);
+    void onAccountNicknameChanged(const QString &);
     void onAccountAvatarChanged(const Tp::Avatar &);
     void onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &);
 
@@ -60,6 +61,8 @@ private:
     QString mDisplayName;
     bool mIconNameChanged;
     QString mIconName;
+    bool mNicknameChanged;
+    QString mNickname;
     bool mAvatarChanged;
     Avatar mAvatar;
     bool mCapabilitiesChanged;
@@ -116,6 +119,7 @@ void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, ServiceName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, DisplayName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, IconName)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, Nickname)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Avatar &, Avatar)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const ConnectionCapabilities &, Capabilities)
 
@@ -166,6 +170,8 @@ void TestAccountBasics::init()
     mDisplayName = QString();
     mIconNameChanged = false;
     mIconName = QString();
+    mNicknameChanged = false;
+    mNickname = QString();
     mAvatarChanged = false;
     mAvatar = Avatar();
     mCapabilitiesChanged = false;
@@ -311,6 +317,8 @@ void TestAccountBasics::testBasics()
     mIconName = QString();
     TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, QString, IconName, iconName, iconNameChanged,
             acc->setIconName(QString()), QLatin1String("im-bar"));
+
+    TEST_VERIFY_PROPERTY_CHANGE(acc, QString, Nickname, nickname, QLatin1String("Bob rocks!"));
 
     qDebug() << "making Account::FeatureAvatar ready";
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
