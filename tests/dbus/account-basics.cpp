@@ -354,6 +354,13 @@ void TestAccountBasics::testBasics()
     // infers it from the protocol name too)
     QCOMPARE(acc->iconName(), QLatin1String("im-normal"));
 
+    ProtocolInfo protocolInfo = acc->protocolInfo();
+    QCOMPARE(protocolInfo.isValid(), true);
+    QCOMPARE(protocolInfo.iconName(), QLatin1String("im-normal"));
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("account")), true);
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("password")), true);
+    QCOMPARE(protocolInfo.hasParameter(QLatin1String("register")), true);
+
     QVERIFY(connect(acc->becomeReady(Account::FeatureProfile),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -397,7 +404,7 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->avatar().avatarData.isEmpty(), true);
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
-    ProtocolInfo protocolInfo = acc->protocolInfo();
+    protocolInfo = acc->protocolInfo();
     QCOMPARE(protocolInfo.isValid(), true);
     QCOMPARE(protocolInfo.iconName(), QLatin1String("im-normal"));
     QCOMPARE(protocolInfo.hasParameter(QLatin1String("account")), true);
