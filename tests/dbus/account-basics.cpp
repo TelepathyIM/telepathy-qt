@@ -598,12 +598,7 @@ void TestAccountBasics::testBasics()
 
     // once the status change the capabilities will be updated
     mCapabilitiesChanged = false;
-    QVERIFY(connect(new PendingVoid(
-                        accPropertiesInterface->Set(
-                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
-                            QLatin1String("ConnectionStatus"),
-                            QDBusVariant(static_cast<uint>(ConnectionStatusConnected))),
-                        acc),
+    QVERIFY(connect(acc->setRequestedPresence(Presence::available()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     while (!mCapabilitiesChanged) {
@@ -630,12 +625,7 @@ void TestAccountBasics::testBasics()
                         acc),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QVERIFY(connect(new PendingVoid(
-                        accPropertiesInterface->Set(
-                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
-                            QLatin1String("ConnectionStatus"),
-                            QDBusVariant(static_cast<uint>(ConnectionStatusDisconnected))),
-                        acc),
+    QVERIFY(connect(acc->setRequestedPresence(Presence::offline()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     while (!mCapabilitiesChanged) {

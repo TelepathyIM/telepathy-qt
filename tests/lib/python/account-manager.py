@@ -23,8 +23,11 @@ ACCOUNT_OBJECT_PATH_BASE = '/' + ACCOUNT_IFACE.replace('.', '/') + '/'
 
 
 Connection_Status_Connected = dbus.UInt32(0)
+Connection_Status_Connecting = dbus.UInt32(1)
 Connection_Status_Disconnected = dbus.UInt32(2)
 Connection_Status_Reason_None_Specified = dbus.UInt32(0)
+Connection_Status_Reason_Requested = dbus.UInt32(1)
+Connection_Status_Reason_Network_Error = dbus.UInt32(2)
 Connection_Presence_Type_Offline = dbus.UInt32(1)
 Connection_Presence_Type_Available = dbus.UInt32(2)
 
@@ -32,6 +35,10 @@ Connection_Presence_Type_Available = dbus.UInt32(2)
 VALID_CONNECTION_MANAGER_NAME = re.compile(r'^[A-Za-z0-9][_A-Za-z0-9]+$')
 VALID_PROTOCOL_NAME = re.compile(r'^[A-Za-z0-9][-A-Za-z0-9]+$')
 
+TELEPATHY_ERROR = "org.freedesktop.Telepathy.Error"
+TELEPATHY_ERROR_DISCONNECTED = TELEPATHY_ERROR + ".Disconnected"
+TELEPATHY_ERROR_CANCELLED = TELEPATHY_ERROR + ".Cancelled"
+TELEPATHY_ERROR_NETWORK_ERROR = TELEPATHY_ERROR + ".NetworkError"
 
 class AccountManager(Object):
     def __init__(self, bus=None):
@@ -159,6 +166,9 @@ class Account(Object):
 
         self._connection = dbus.ObjectPath('/')
         self._connection_status = Connection_Status_Disconnected
+        self._connection_status_reason = Connection_Status_Reason_None_Specified
+        self._connection_error = u''
+        self._connection_error_details = dbus.Dictionary({}, signature='sv')
         self._service = u''
         self._display_name = display_name
         self._icon = u'bob.png'
@@ -239,7 +249,9 @@ class Account(Object):
             'ConnectAutomatically': self._connect_automatically,
             'Connection': self._connection,
             'ConnectionStatus': self._connection_status,
-            'ConnectionStatusReason': Connection_Status_Reason_None_Specified,
+            'ConnectionStatusReason': self._connection_status_reason,
+            'ConnectionError': self._connection_error,
+            'ConnectionErrorDetails': self._connection_error_details,
             'NormalizedName': self._normalized_name,
         }, signature='sv')
 
@@ -279,6 +291,7 @@ class Account(Object):
             in_signature='ssv', byte_arrays=True)
     def Set(self, iface, prop, value):
         if iface == ACCOUNT_IFACE:
+            props = {}
             if prop == 'Service':
                 self._service = unicode(value)
             elif prop == 'DisplayName':
@@ -294,22 +307,68 @@ class Account(Object):
                         (dbus.UInt32(value[0]), unicode(value[1]),
                             unicode(value[2])),
                         signature='uss')
-            elif prop == 'ConnectAutomatically':
-                self._connect_automatically = bool(value)
             elif prop == 'RequestedPresence':
-                # FIXME: pretend to put the account online, if appropriate?
                 self._requested_presence = dbus.Struct(
                         (dbus.UInt32(value[0]), unicode(value[1]),
                             unicode(value[2])),
                         signature='uss')
+                # pretend to put the account online, if the presence != offline
+                if value[0] != Connection_Presence_Type_Offline:
+                    # simulate that we are connecting/changing presence
+                    props["ChangingPresence"] = True
+
+                    if self._connection_status == Connection_Status_Disconnected:
+                        self._connection_status = Connection_Status_Connecting
+                        props["ConnectionStatus"] = self._connection_status
+
+                    props[prop] = self._account_props()[prop]
+                    self.AccountPropertyChanged(props)
+
+                    props["ChangingPresence"] = False
+                    if "(deny)" in self._requested_presence[2]:
+                        self._connection_status = Connection_Status_Disconnected
+                        self._connection_status_reason = Connection_Status_Reason_Network_Error
+                        self._connection_error = TELEPATHY_ERROR_NETWORK_ERROR
+                        self._connection_error_details = dbus.Dictionary(
+                                {'debug-message': u'You asked for it'},
+                                signature='sv')
+                        self._current_presence = dbus.Struct(
+                                (Connection_Presence_Type_Offline, 'offline', ''),
+                                signature='uss')
+                    else:
+                        self._connection_status = Connection_Status_Connected
+                        self._connection_status_reason = Connection_Status_Reason_None_Specified
+                        self._connection_error = u''
+                        self._connection_error_details = dbus.Dictionary({}, signature='sv')
+                        self._current_presence = self._requested_presence
+                        if self._has_been_online == False:
+                            self._has_been_online = True
+                            props["HasBeenOnline"] = self._has_been_online
+                else:
+                    self._connection_status = Connection_Status_Disconnected
+                    self._connection_status_reason = Connection_Status_Reason_Requested
+                    self._connection_error = TELEPATHY_ERROR_CANCELLED
+                    self._connection_error_details = dbus.Dictionary(
+                                {'debug-message': u'You asked for it'},
+                                signature='sv')
+                    self._current_presence = dbus.Struct(
+                            (Connection_Presence_Type_Offline, 'offline', ''),
+                            signature='uss')
+
+                props["ConnectionStatus"] = self._connection_status
+                props["ConnectionStatusReason"] = self._connection_status_reason
+                props["ConnectionError"] = self._connection_error
+                props["ConnectionErrorDetails"] = self._connection_error_details
+                props["CurrentPresence"] = self._current_presence
+            elif prop == 'ConnectAutomatically':
+                self._connect_automatically = bool(value)
             elif prop == 'Connection':
                 self._connection = dbus.ObjectPath(value)
-            elif prop == 'ConnectionStatus':
-                self._connection_status = dbus.UInt32(value)
             else:
                 raise ValueError('Read-only or nonexistent property')
 
-            self.AccountPropertyChanged({prop: self._account_props()[prop]})
+            props[prop] = self._account_props()[prop]
+            self.AccountPropertyChanged(props)
         elif iface == ACCOUNT_IFACE_AVATAR_IFACE:
             if prop == 'Avatar':
                 self._avatar = dbus.Struct(
