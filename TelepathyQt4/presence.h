@@ -81,6 +81,7 @@ public:
     bool isValid() const { return mPriv.constData() != 0; }
 
     PresenceSpec &operator=(const PresenceSpec &other);
+    bool operator==(const PresenceSpec &other) const;
 
     Presence presence(const QString &statusMessage = QString()) const;
     bool maySetOnSelf() const;
