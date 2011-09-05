@@ -32,6 +32,7 @@ public:
 protected Q_SLOTS:
     void onNewAccount(const Tp::AccountPtr &);
     void onAccountServiceNameChanged(const QString &);
+    void onAccountDisplayNameChanged(const QString &);
     void onAccountIconNameChanged(const QString &);
     void onAccountAvatarChanged(const Tp::Avatar &);
     void onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &);
@@ -55,6 +56,8 @@ private:
 
     bool mServiceNameChanged;
     QString mServiceName;
+    bool mDisplayNameChanged;
+    QString mDisplayName;
     bool mIconNameChanged;
     QString mIconName;
     bool mAvatarChanged;
@@ -111,6 +114,7 @@ void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
 }
 
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, ServiceName)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, DisplayName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, IconName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Avatar &, Avatar)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const ConnectionCapabilities &, Capabilities)
@@ -158,6 +162,8 @@ void TestAccountBasics::init()
 {
     mServiceNameChanged = false;
     mServiceName = QString();
+    mDisplayNameChanged = false;
+    mDisplayName = QString();
     mIconNameChanged = false;
     mIconName = QString();
     mAvatarChanged = false;
@@ -294,6 +300,8 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->isOnline(), false);
     QCOMPARE(acc->uniqueIdentifier(), QLatin1String("foo/bar/Account0"));
     QCOMPARE(acc->normalizedName(), QLatin1String("bob"));
+
+    TEST_VERIFY_PROPERTY_CHANGE(acc, QString, DisplayName, displayName, QLatin1String("foo@bar"));
 
     TEST_VERIFY_PROPERTY_CHANGE(acc, QString, IconName, iconName, QLatin1String("im-foo"));
 
