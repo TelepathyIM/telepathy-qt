@@ -324,8 +324,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(profile->serviceName(), QString(QLatin1String("%1-%2"))
                 .arg(acc->cmName()).arg(acc->serviceName()));
 
-    QVERIFY(acc->serviceName() != acc->protocolName());
-    QCOMPARE(acc->serviceName(), QString(QLatin1String("bob_service")));
+    QVERIFY(acc->serviceName() == acc->protocolName());
 
     connect(acc.data(),
             SIGNAL(serviceNameChanged(const QString &)),
