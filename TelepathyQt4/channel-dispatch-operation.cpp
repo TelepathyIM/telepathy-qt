@@ -238,13 +238,6 @@ ChannelDispatchOperation::PendingClaim::PendingClaim(const ChannelDispatchOperat
 
 ChannelDispatchOperation::PendingClaim::~PendingClaim()
 {
-    if (!mHandler) {
-        warning() << "Channels claimed without a handler but not closed, "
-            "closing them";
-        foreach (const ChannelPtr &channel, mDispatchOp->channels()) {
-            channel->requestClose();
-        }
-    }
 }
 
 void ChannelDispatchOperation::PendingClaim::onClaimFinished(
@@ -501,10 +494,6 @@ PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
 
 /**
  * Called by an approver to claim channels for closing them.
- *
- * If this method is called successfully, the process calling this method should
- * close all channels right after the PendingOperation finishes, otherwise the
- * channels will be closed automatically when the PendingOperation is deleted.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
