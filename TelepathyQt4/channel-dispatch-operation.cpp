@@ -227,13 +227,9 @@ ChannelDispatchOperation::PendingClaim::PendingClaim(const ChannelDispatchOperat
       mDispatchOp(op),
       mHandler(handler)
 {
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                op->baseInterface()->Claim(),
-                this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(onClaimFinished(QDBusPendingCallWatcher*)));
+    connect(new PendingVoid(op->baseInterface()->Claim(), op),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onClaimFinished(Tp::PendingOperation*)));
 }
 
 ChannelDispatchOperation::PendingClaim::~PendingClaim()
@@ -241,11 +237,9 @@ ChannelDispatchOperation::PendingClaim::~PendingClaim()
 }
 
 void ChannelDispatchOperation::PendingClaim::onClaimFinished(
-        QDBusPendingCallWatcher *watcher)
+        PendingOperation *op)
 {
-    QDBusPendingReply<> reply = *watcher;
-
-    if (!reply.isError()) {
+    if (!op->isError()) {
         if (mHandler) {
             // register the channels in HandledChannels
             FakeHandlerManager::instance()->registerChannels(
@@ -253,10 +247,8 @@ void ChannelDispatchOperation::PendingClaim::onClaimFinished(
         }
         setFinished();
     } else {
-        setFinishedWithError(watcher->error());
+        setFinishedWithError(op->errorName(), op->errorMessage());
     }
-
-    delete watcher;
 }
 
 /**
