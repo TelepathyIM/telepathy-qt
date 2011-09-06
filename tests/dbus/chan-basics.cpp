@@ -176,6 +176,13 @@ void TestChanBasics::testEnsureChannel()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isValid(), false);
+
+    // calling requestClose again should be no-op
+    QVERIFY(connect(mChan->requestClose(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isValid(), false);
 }
 
 void TestChanBasics::cleanup()
