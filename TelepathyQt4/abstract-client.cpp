@@ -94,14 +94,12 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 {
     Private(const ChannelClassList &channelFilter, bool shouldRecover)
         : channelFilter(channelFilter),
-          shouldRecover(shouldRecover),
-          registered(false)
+          shouldRecover(shouldRecover)
     {
     }
 
     ChannelClassList channelFilter;
     bool shouldRecover;
-    bool registered;
 };
 
 /**
@@ -275,16 +273,6 @@ AbstractClientObserver::~AbstractClientObserver()
 }
 
 /**
- * Return whether this observer is registered.
- *
- * \return \c true if registered, \c false otherwise.
- */
-bool AbstractClientObserver::isObserverRegistered() const
-{
-    return mPriv->registered;
-}
-
-/**
  * Return the property containing a specification of the channels that this
  * channel observer is interested. The observeChannels() method should be called
  * by the channel dispatcher whenever any of the newly created channels match
@@ -379,21 +367,14 @@ bool AbstractClientObserver::shouldRecover() const
  * \param observerInfo Additional information about these channels.
  */
 
-void AbstractClientObserver::setObserverRegistered(bool registered)
-{
-    mPriv->registered = registered;
-}
-
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
 {
     Private(const ChannelClassList &channelFilter)
-        : channelFilter(channelFilter),
-          registered(false)
+        : channelFilter(channelFilter)
     {
     }
 
     ChannelClassList channelFilter;
-    bool registered;
 };
 
 /**
@@ -518,16 +499,6 @@ AbstractClientApprover::~AbstractClientApprover()
 }
 
 /**
- * Return whether this approver is registered.
- *
- * \return \c true if registered, \c false otherwise.
- */
-bool AbstractClientApprover::isApproverRegistered() const
-{
-    return mPriv->registered;
-}
-
-/**
  * Return the property containing a specification of the channels that this
  * channel approver is interested. The addDispatchOperation() method should be
  * called by the channel dispatcher whenever at least one of the channels in
@@ -571,11 +542,6 @@ ChannelClassSpecList AbstractClientApprover::approverFilter() const
  *                indicate whether this method finished processing.
  * \param dispatchOperation The dispatch operation to be processed.
  */
-
-void AbstractClientApprover::setApproverRegistered(bool registered)
-{
-    mPriv->registered = registered;
-}
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
 {
@@ -838,7 +804,7 @@ AbstractClientHandler::~AbstractClientHandler()
  *
  * \return \c true if registered, \c false otherwise.
  */
-bool AbstractClientHandler::isHandlerRegistered() const
+bool AbstractClientHandler::isRegistered() const
 {
     return mPriv->registered;
 }
@@ -1014,7 +980,7 @@ void AbstractClientHandler::removeRequest(
     // this method
 }
 
-void AbstractClientHandler::setHandlerRegistered(bool registered)
+void AbstractClientHandler::setRegistered(bool registered)
 {
     mPriv->registered = registered;
 }

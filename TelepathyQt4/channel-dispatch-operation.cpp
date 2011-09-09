@@ -532,7 +532,7 @@ PendingOperation *ChannelDispatchOperation::claim()
  */
 PendingOperation *ChannelDispatchOperation::claim(const AbstractClientHandlerPtr &handler)
 {
-    if (!handler->isHandlerRegistered()) {
+    if (!handler->isRegistered()) {
         return new PendingFailure(TP_QT4_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Handler must be registered for using claim(handler)"),
                 ChannelDispatchOperationPtr(this));

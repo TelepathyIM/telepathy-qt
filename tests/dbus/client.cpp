@@ -508,13 +508,9 @@ void TestClient::testRegister()
     filters.append(ChannelClassSpec::textChat());
     mClientObject1 = MyClient::create(filters, mClientCapabilities, false, true);
     MyClient *client = dynamic_cast<MyClient*>(mClientObject1.data());
-    QVERIFY(!client->isApproverRegistered());
-    QVERIFY(!client->isHandlerRegistered());
-    QVERIFY(!client->isObserverRegistered());
+    QVERIFY(!client->isRegistered());
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
-    QVERIFY(client->isApproverRegistered());
-    QVERIFY(client->isHandlerRegistered());
-    QVERIFY(client->isObserverRegistered());
+    QVERIFY(client->isRegistered());
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
 
     // no op - client already registered
@@ -522,15 +518,11 @@ void TestClient::testRegister()
 
     // unregister client
     QVERIFY(mClientRegistrar->unregisterClient(mClientObject1));
-    QVERIFY(!client->isApproverRegistered());
-    QVERIFY(!client->isHandlerRegistered());
-    QVERIFY(!client->isObserverRegistered());
+    QVERIFY(!client->isRegistered());
 
     // register again
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
-    QVERIFY(client->isApproverRegistered());
-    QVERIFY(client->isHandlerRegistered());
-    QVERIFY(client->isObserverRegistered());
+    QVERIFY(client->isRegistered());
 
     filters.clear();
     filters.append(ChannelClassSpec::streamedMediaCall());
