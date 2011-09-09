@@ -93,12 +93,15 @@ AbstractClient::~AbstractClient()
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 {
     Private(const ChannelClassList &channelFilter, bool shouldRecover)
-        : channelFilter(channelFilter), shouldRecover(shouldRecover)
+        : channelFilter(channelFilter),
+          shouldRecover(shouldRecover),
+          registered(false)
     {
     }
 
     ChannelClassList channelFilter;
     bool shouldRecover;
+    bool registered;
 };
 
 /**
@@ -272,6 +275,16 @@ AbstractClientObserver::~AbstractClientObserver()
 }
 
 /**
+ * Return whether this observer is registered.
+ *
+ * \return \c true if registered, \c false otherwise.
+ */
+bool AbstractClientObserver::isObserverRegistered() const
+{
+    return mPriv->registered;
+}
+
+/**
  * Return the property containing a specification of the channels that this
  * channel observer is interested. The observeChannels() method should be called
  * by the channel dispatcher whenever any of the newly created channels match
@@ -366,9 +379,21 @@ bool AbstractClientObserver::shouldRecover() const
  * \param observerInfo Additional information about these channels.
  */
 
+void AbstractClientObserver::setObserverRegistered(bool registered)
+{
+    mPriv->registered = registered;
+}
+
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
 {
+    Private(const ChannelClassList &channelFilter)
+        : channelFilter(channelFilter),
+          registered(false)
+    {
+    }
+
     ChannelClassList channelFilter;
+    bool registered;
 };
 
 /**
@@ -480,9 +505,8 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
  */
 AbstractClientApprover::AbstractClientApprover(
         const ChannelClassSpecList &channelFilter)
-    : mPriv(new Private)
+    : mPriv(new Private(channelFilter.bareClasses()))
 {
-    mPriv->channelFilter = channelFilter.bareClasses();
 }
 
 /**
@@ -491,6 +515,16 @@ AbstractClientApprover::AbstractClientApprover(
 AbstractClientApprover::~AbstractClientApprover()
 {
     delete mPriv;
+}
+
+/**
+ * Return whether this approver is registered.
+ *
+ * \return \c true if registered, \c false otherwise.
+ */
+bool AbstractClientApprover::isApproverRegistered() const
+{
+    return mPriv->registered;
 }
 
 /**
@@ -538,11 +572,27 @@ ChannelClassSpecList AbstractClientApprover::approverFilter() const
  * \param dispatchOperation The dispatch operation to be processed.
  */
 
+void AbstractClientApprover::setApproverRegistered(bool registered)
+{
+    mPriv->registered = registered;
+}
+
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
 {
+    Private(const ChannelClassList &channelFilter,
+            const Capabilities &capabilities,
+            bool wantsRequestNotification)
+        : channelFilter(channelFilter),
+          capabilities(capabilities),
+          wantsRequestNotification(wantsRequestNotification),
+          registered(false)
+    {
+    }
+
     ChannelClassList channelFilter;
     Capabilities capabilities;
     bool wantsRequestNotification;
+    bool registered;
 };
 
 /**
@@ -771,11 +821,8 @@ QVariantMap AbstractClientHandler::HandlerInfo::allInfo() const
 AbstractClientHandler::AbstractClientHandler(const ChannelClassSpecList &channelFilter,
         const Capabilities &capabilities,
         bool wantsRequestNotification)
-    : mPriv(new Private)
+    : mPriv(new Private(channelFilter.bareClasses(), capabilities, wantsRequestNotification))
 {
-    mPriv->channelFilter = channelFilter.bareClasses();
-    mPriv->capabilities = capabilities;
-    mPriv->wantsRequestNotification = wantsRequestNotification;
 }
 
 /**
@@ -784,6 +831,16 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassSpecList &channel
 AbstractClientHandler::~AbstractClientHandler()
 {
     delete mPriv;
+}
+
+/**
+ * Return whether this handler is registered.
+ *
+ * \return \c true if registered, \c false otherwise.
+ */
+bool AbstractClientHandler::isHandlerRegistered() const
+{
+    return mPriv->registered;
 }
 
 /**
@@ -955,6 +1012,11 @@ void AbstractClientHandler::removeRequest(
 {
     // do nothing, subclasses that want to listen requests should reimplement
     // this method
+}
+
+void AbstractClientHandler::setHandlerRegistered(bool registered)
+{
+    mPriv->registered = registered;
 }
 
 } // Tp

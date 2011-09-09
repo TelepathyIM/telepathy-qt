@@ -40,6 +40,7 @@
 namespace Tp
 {
 
+class ClientRegistrar;
 class ChannelClassSpecList;
 
 class TELEPATHY_QT4_EXPORT AbstractClient : public RefCounted
@@ -76,6 +77,8 @@ public:
 
     virtual ~AbstractClientObserver();
 
+    bool isObserverRegistered() const;
+
     ChannelClassSpecList observerFilter() const;
 
     bool shouldRecover() const;
@@ -92,6 +95,10 @@ protected:
     AbstractClientObserver(const ChannelClassSpecList &channelFilter, bool shouldRecover = false);
 
 private:
+    friend class ClientRegistrar;
+
+    void setObserverRegistered(bool registered);
+
     struct Private;
     friend struct Private;
     Private *mPriv;
@@ -104,6 +111,8 @@ class TELEPATHY_QT4_EXPORT AbstractClientApprover : public virtual AbstractClien
 public:
     virtual ~AbstractClientApprover();
 
+    bool isApproverRegistered() const;
+
     ChannelClassSpecList approverFilter() const;
 
     virtual void addDispatchOperation(const MethodInvocationContextPtr<> &context,
@@ -113,6 +122,10 @@ protected:
     AbstractClientApprover(const ChannelClassSpecList &channelFilter);
 
 private:
+    friend class ClientRegistrar;
+
+    void setApproverRegistered(bool registered);
+
     struct Private;
     friend struct Private;
     Private *mPriv;
@@ -276,6 +289,8 @@ public:
 
     virtual ~AbstractClientHandler();
 
+    bool isHandlerRegistered() const;
+
     ChannelClassSpecList handlerFilter() const;
 
     Capabilities handlerCapabilities() const;
@@ -301,6 +316,10 @@ protected:
             bool wantsRequestNotification = false);
 
 private:
+    friend class ClientRegistrar;
+
+    void setHandlerRegistered(bool registered);
+
     struct Private;
     friend struct Private;
     Private *mPriv;
