@@ -280,16 +280,30 @@ void TestAccountBasics::testBasics()
     QVERIFY(!acc->connection());
     QVERIFY(!acc->isChangingPresence());
     // Neither FeatureProtocolInfo or FeatureProfile are ready yet and we have no connection
-    for (int i = 0; i < 2; ++i) {
-        PresenceSpecList presences = acc->allowedPresenceStatuses(i);
-        QCOMPARE(presences.size(), 2);
-        QCOMPARE(presences[0].presence(), Presence::available());
-        QVERIFY(presences[0].maySetOnSelf());
-        QVERIFY(!presences[0].canHaveStatusMessage());
-        QCOMPARE(presences[1].presence(), Presence::offline());
-        QVERIFY(presences[1].maySetOnSelf());
-        QVERIFY(!presences[1].canHaveStatusMessage());
+    PresenceSpecList presences = acc->allowedPresenceStatuses(false);
+    QCOMPARE(presences.size(), 2);
+
+    {
+        Presence expectedPresences[2] = {
+            Presence::available(),
+            Presence::offline()
+        };
+        for (int j = 0; j < 2; ++j) {
+            QVERIFY(presences[j].isValid());
+            QVERIFY(presences[j].maySetOnSelf());
+            QVERIFY(!presences[j].canHaveStatusMessage());
+
+            bool found = false;
+            for (int k = 0; k < 2; ++k) {
+                if (presences[j].presence() == expectedPresences[k]) {
+                    found = true;
+                }
+            }
+            QVERIFY(found);
+        }
     }
+    QCOMPARE(presences, acc->allowedPresenceStatuses(true));
+
     // No connection
     QCOMPARE(acc->maxPresenceStatusMessageLength(), static_cast<uint>(0));
     QCOMPARE(acc->automaticPresence(), Presence::available());
@@ -457,10 +471,10 @@ void TestAccountBasics::testBasics()
 
     // Now that both FeatureProtocolInfo and FeatureProfile are ready, let's check the allowed
     // presences
-    for (int i = 0; i < 2; ++i) {
-        PresenceSpecList presences = acc->allowedPresenceStatuses(i);
-        QCOMPARE(presences.size(), 3);
+    presences = acc->allowedPresenceStatuses(false);
+    QCOMPARE(presences.size(), 3);
 
+    {
         Presence expectedPresences[3] = {
             Presence::available(),
             Presence::away(),
@@ -480,6 +494,7 @@ void TestAccountBasics::testBasics()
             QVERIFY(found);
         }
     }
+    QCOMPARE(presences, acc->allowedPresenceStatuses(true));
 
     QCOMPARE(acc->iconName(), QLatin1String("test-profile-icon"));
 
