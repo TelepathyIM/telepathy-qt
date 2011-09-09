@@ -61,28 +61,7 @@ private:
     TestConnHelper *mConn;
     int mAccountsCount;
 
-    bool mServiceNameChanged;
-    QString mServiceName;
-    bool mDisplayNameChanged;
-    QString mDisplayName;
-    bool mIconNameChanged;
-    QString mIconName;
-    bool mNicknameChanged;
-    QString mNickname;
-    bool mAvatarChanged;
-    Avatar mAvatar;
-    bool mParametersChanged;
-    QVariantMap mParameters;
-    bool mCapabilitiesChanged;
-    ConnectionCapabilities mCapabilities;
-    bool mConnectsAutomaticallyChanged;
-    bool mConnectsAutomatically;
-    bool mAutomaticPresenceChanged;
-    Presence mAutomaticPresence;
-    bool mRequestedPresenceChanged;
-    Presence mRequestedPresence;
-    bool mCurrentPresenceChanged;
-    Presence mCurrentPresence;
+    QHash<QString, QVariant> mProps;
 };
 
 #define TEST_VERIFY_PROPERTY_CHANGE(acc, Type, PropertyName, propertyName, expectedValue) \
@@ -91,8 +70,7 @@ private:
 
 #define TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, Type, PropertyName, propertyName, signalName, po, expectedValue) \
     { \
-        m ## PropertyName = Type(); \
-        m ## PropertyName ## Changed = false; \
+        mProps.clear(); \
         qDebug().nospace() << "connecting to " << #propertyName << "Changed()"; \
         QVERIFY(connect(acc.data(), \
                     SIGNAL(signalName(Type)), \
@@ -103,7 +81,7 @@ private:
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*)))); \
         QCOMPARE(mLoop->exec(), 0); \
         \
-        if (!m ## PropertyName ## Changed) { \
+        if (!mProps.contains(QLatin1String(#PropertyName))) { \
             qDebug().nospace() << "waiting for the " << #propertyName << "Changed signal"; \
             QCOMPARE(mLoop->exec(), 0); \
         } else { \
@@ -111,16 +89,20 @@ private:
         } \
         \
         QCOMPARE(acc->propertyName(), expectedValue); \
-        QCOMPARE(acc->propertyName(), m ## PropertyName); \
+        QCOMPARE(acc->propertyName(), \
+                 mProps[QLatin1String(#PropertyName)].value< Type >()); \
         \
+        QVERIFY(disconnect(acc.data(), \
+                    SIGNAL(signalName(Type)), \
+                    this, \
+                    SLOT(onAccount ## PropertyName ## Changed(Type)))); \
         processDBusQueue(acc.data()); \
     }
 
 #define TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(Type, PropertyName) \
 void TestAccountBasics::onAccount ## PropertyName ## Changed(Type value) \
 { \
-    m ## PropertyName ## Changed = true; \
-    m ## PropertyName = value; \
+    mProps[QLatin1String(#PropertyName)] = qVariantFromValue(value); \
     mLoop->exit(0); \
 }
 
@@ -185,28 +167,7 @@ void TestAccountBasics::initTestCase()
 
 void TestAccountBasics::init()
 {
-    mServiceNameChanged = false;
-    mServiceName = QString();
-    mDisplayNameChanged = false;
-    mDisplayName = QString();
-    mIconNameChanged = false;
-    mIconName = QString();
-    mNicknameChanged = false;
-    mNickname = QString();
-    mAvatarChanged = false;
-    mAvatar = Avatar();
-    mParametersChanged = false;
-    mParameters = QVariantMap();
-    mCapabilitiesChanged = false;
-    mCapabilities = ConnectionCapabilities();
-    mConnectsAutomaticallyChanged = false;
-    mConnectsAutomatically = false;
-    mAutomaticPresenceChanged = false;
-    mAutomaticPresence = Presence();
-    mRequestedPresenceChanged = false;
-    mRequestedPresence = Presence();
-    mCurrentPresenceChanged = false;
-    mCurrentPresence = Presence();
+    mProps.clear();
 
     initImpl();
 }
@@ -344,8 +305,6 @@ void TestAccountBasics::testBasics()
 
     // Setting icon to an empty string should fallback to im-$protocol as FeatureProtocolInfo and
     // FeatureProtocolInfo are not ready yet
-    mIconNameChanged = false;
-    mIconName = QString();
     TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, QString, IconName, iconName, iconNameChanged,
             acc->setIconName(QString()), QLatin1String("im-bar"));
 
@@ -405,8 +364,6 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->iconName(), QLatin1String("bob.png"));
     // Setting icon to an empty string should fallback to Profile/ProtocolInfo/im-$protocol
-    mIconNameChanged = false;
-    mIconName = QString();
     TEST_VERIFY_PROPERTY_CHANGE_EXTENDED(acc, QString, IconName, iconName, iconNameChanged,
             acc->setIconName(QString()), QLatin1String("im-normal"));
 
@@ -488,16 +445,13 @@ void TestAccountBasics::testBasics()
     QCOMPARE(caps.textChats(), true);
 
     // set new service name will change caps, icon and serviceName
-    mIconNameChanged = false;
-    mIconName = QString();
-    mCapabilitiesChanged = false;
-    mCapabilities = ConnectionCapabilities();
     QVERIFY(connect(acc.data(),
                     SIGNAL(capabilitiesChanged(const Tp::ConnectionCapabilities &)),
                     SLOT(onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &))));
     TEST_VERIFY_PROPERTY_CHANGE(acc, QString, ServiceName, serviceName,
             QLatin1String("test-profile"));
-    while (!mIconNameChanged && !mCapabilitiesChanged) {
+    while (!mProps.contains(QLatin1String("IconName")) &&
+           !mProps.contains(QLatin1String("Capabilities"))) {
         QCOMPARE(mLoop->exec(), 0);
     }
 
@@ -528,7 +482,6 @@ void TestAccountBasics::testBasics()
     }
 
     QCOMPARE(acc->iconName(), QLatin1String("test-profile-icon"));
-    QCOMPARE(mIconName, acc->iconName());
 
     // using merged protocol info caps and profile caps
     caps = acc->capabilities();
@@ -558,11 +511,11 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->isReady(), true);
 
     // once the status change the capabilities will be updated
-    mCapabilitiesChanged = false;
+    mProps.clear();
     QVERIFY(connect(acc->setRequestedPresence(Presence::available()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    while (!mCapabilitiesChanged) {
+    while (!mProps.contains(QLatin1String("Capabilities"))) {
         QCOMPARE(mLoop->exec(), 0);
     }
 
@@ -577,7 +530,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(caps.upgradingStreamedMediaCalls(), false);
 
     // once the status change the capabilities will be updated
-    mCapabilitiesChanged = false;
+    mProps.clear();
     QVERIFY(connect(new PendingVoid(
                         accPropertiesInterface->Set(
                             QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
@@ -589,7 +542,7 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->setRequestedPresence(Presence::offline()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    while (!mCapabilitiesChanged) {
+    while (!mProps.contains(QLatin1String("Capabilities"))) {
         QCOMPARE(mLoop->exec(), 0);
     }
 
