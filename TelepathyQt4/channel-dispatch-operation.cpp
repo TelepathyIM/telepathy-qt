@@ -523,13 +523,21 @@ PendingOperation *ChannelDispatchOperation::claim()
  * completed. Again, see handleWith() for more details. The approver must not
  * attempt to interact with the channels further in this case.
  *
- * \param handler The handler to handle channels()
+ * \param handler The channel handler, that should remain registered during the
+ *                lifetime of channels(), otherwise dispatching will fail if the
+ *                channel dispatcher restarts.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa claim(), handleWith()
  */
 PendingOperation *ChannelDispatchOperation::claim(const AbstractClientHandlerPtr &handler)
 {
+    if (!handler->isHandlerRegistered()) {
+        return new PendingFailure(TP_QT4_ERROR_INVALID_ARGUMENT,
+                QLatin1String("Handler must be registered for using claim(handler)"),
+                ChannelDispatchOperationPtr(this));
+    }
+
     return new PendingClaim(ChannelDispatchOperationPtr(this),
            handler);
 }
