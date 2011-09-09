@@ -397,6 +397,8 @@ void TestAccountBasics::testBasics()
     QVERIFY(protocolInfo.hasParameter(QLatin1String("account")));
     QVERIFY(protocolInfo.hasParameter(QLatin1String("password")));
     QVERIFY(protocolInfo.hasParameter(QLatin1String("register")));
+    QVERIFY(!protocolInfo.hasParameter(QLatin1String("bogusparam")));
+    QCOMPARE(protocolInfo.parameters().size(), 3);
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureProfile),
                     SIGNAL(finished(Tp::PendingOperation *)),
