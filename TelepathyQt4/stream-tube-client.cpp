@@ -262,6 +262,8 @@ StreamTubeClient::~StreamTubeClient()
     foreach (TubeWrapper *wrapper, mPriv->tubes.values()) {
         wrapper->deleteLater();
     }
+
+    delete mPriv;
 }
 
 ClientRegistrarPtr StreamTubeClient::registrar() const
