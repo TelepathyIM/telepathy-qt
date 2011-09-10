@@ -84,7 +84,8 @@ SimpleStreamTubeHandler::SimpleStreamTubeHandler(
         bool requested,
         bool monitorConnections,
         bool bypassApproval)
-: AbstractClientHandler(buildFilter(p2pServices, roomServices, requested)),
+: AbstractClient(),
+    AbstractClientHandler(buildFilter(p2pServices, roomServices, requested)),
     mMonitorConnections(monitorConnections),
     mBypassApproval(bypassApproval)
 {

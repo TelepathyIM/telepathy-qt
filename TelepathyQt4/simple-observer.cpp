@@ -188,7 +188,8 @@ SimpleObserver::Private::Observer::Observer(const QWeakPointer<ClientRegistrar> 
         const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
         const ChannelClassSpecList &channelFilter,
         const QString &observerName)
-    : QObject(),
+    : AbstractClient(),
+      QObject(),
       AbstractClientObserver(channelFilter, true),
       mCr(cr),
       mFakeAccountFactory(fakeAccountFactory),
