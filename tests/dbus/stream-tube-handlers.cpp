@@ -312,7 +312,6 @@ private:
     QString mServerConnectionCloseError, mServerConnectionCloseMessage;
 };
 
-// TODO: turn into creating one (of possibly many) channels
 QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool requested,
         HandleType handleType,
         bool supportMonitoring,
