@@ -35,6 +35,7 @@
 #include <TelepathyQt4/PendingStreamTubeConnection>
 #include <TelepathyQt4/StreamTubeChannel>
 
+#include <QAbstractSocket>
 #include <QHash>
 
 namespace Tp
@@ -100,7 +101,20 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
         quint16 sourcePort)
     : mAcc(acc), mTube(tube), mSourceAddress(sourceAddress), mSourcePort(sourcePort)
 {
-    connect(tube->acceptTubeAsTcpSocket(sourceAddress, sourcePort),
+    if (sourcePort != 0) {
+        if ((sourceAddress.protocol() == QAbstractSocket::IPv4Protocol &&
+                    !tube->supportsIPv4SocketsWithSpecifiedAddress()) ||
+                (sourceAddress.protocol() == QAbstractSocket::IPv6Protocol &&
+                 !tube->supportsIPv6SocketsWithSpecifiedAddress())) {
+            debug() << "StreamTubeClient falling back to Localhost AC for tube" <<
+                tube->objectPath();
+            mSourceAddress = sourceAddress.protocol() == QAbstractSocket::IPv4Protocol ?
+                QHostAddress::Any : QHostAddress::AnyIPv6;
+            mSourcePort = 0;
+        }
+    }
+
+    connect(tube->acceptTubeAsTcpSocket(mSourceAddress, mSourcePort),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onTubeAccepted(Tp::PendingOperation*)));
     connect(tube.data(),
