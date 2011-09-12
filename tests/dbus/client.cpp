@@ -534,7 +534,19 @@ void TestClient::testRegister()
     QVERIFY(client->isRegistered());
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
 
-    // no op - client already registered
+    AbstractClientPtr clientObjectRedundant = MyClient::create(
+            filters, mClientCapabilities, false, true);
+    client = dynamic_cast<MyClient*>(clientObjectRedundant.data());
+    QVERIFY(!client->isRegistered());
+    // try to register using a name already registered and a different object, it should fail
+    // and not report isRegistered
+    QVERIFY(!mClientRegistrar->registerClient(clientObjectRedundant, QLatin1String("foo")));
+    QVERIFY(!client->isRegistered());
+    QVERIFY(!mClientRegistrar->registeredClients().contains(clientObjectRedundant));
+
+    client = dynamic_cast<MyClient*>(mClientObject1.data());
+
+    // no op - client already registered with same object and name
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
 
     // unregister client
