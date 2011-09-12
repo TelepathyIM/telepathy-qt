@@ -448,11 +448,11 @@ void StreamTubeClient::onAcceptFinished(TubeWrapper *wrapper, PendingStreamTubeC
     if (conn->addressType() == SocketAddressTypeIPv4
             || conn->addressType() == SocketAddressTypeIPv6) {
         QPair<QHostAddress, quint16> addr = conn->ipAddress();
-        emit tubeAcceptedAsTcp(wrapper->mAcc, wrapper->mTube, addr.first, addr.second,
-                wrapper->mSourceAddress, wrapper->mSourcePort);
+        emit tubeAcceptedAsTcp(addr.first, addr.second, wrapper->mSourceAddress,
+                wrapper->mSourcePort, wrapper->mAcc, wrapper->mTube);
     } else {
-        emit tubeAcceptedAsUnix(wrapper->mAcc, wrapper->mTube, conn->localAddress(),
-                conn->requiresCredentials(), conn->credentialByte());
+        emit tubeAcceptedAsUnix(conn->localAddress(), conn->requiresCredentials(),
+                conn->credentialByte(), wrapper->mAcc, wrapper->mTube);
     }
 }
 

@@ -144,18 +144,18 @@ Q_SIGNALS:
     // These will be emitted if a offered tube is accepted successfully, when setToAcceptAsTCP/Unix
     // has been called last
     void tubeAcceptedAsTcp(
-            const Tp::AccountPtr &account,
-            const Tp::IncomingStreamTubeChannelPtr &tube,
             const QHostAddress &listenAddress,
             quint16 listenPort,
             const QHostAddress &sourceAddress, // these are populated with the source address the
-            quint16 sourcePort);               // generator, if any, yieled for this tube
-    void tubeAcceptedAsUnix(
+            quint16 sourcePort,               // generator, if any, yieled for this tube
             const Tp::AccountPtr &account,
-            const Tp::IncomingStreamTubeChannelPtr &tube,
+            const Tp::IncomingStreamTubeChannelPtr &tube);
+    void tubeAcceptedAsUnix(
             const QString &listenAddress,
             bool requiresCredentials, // this is the requireCredentials param unchanged
-            uchar credentialByte);
+            uchar credentialByte,
+            const Tp::AccountPtr &account,
+            const Tp::IncomingStreamTubeChannelPtr &tube);
 
     // These will be emitted if monitorConnections = true was passed to the create() method
     // Sadly, there is no other possible way to associate multiple connections through a single tube

@@ -44,10 +44,9 @@ TubeReceiver::~TubeReceiver()
 {
 }
 
-void TubeReceiver::onTubeAccepted(const Tp::AccountPtr &acc,
-        const Tp::IncomingStreamTubeChannelPtr &tube, const QString &listenAddress)
+void TubeReceiver::onTubeAccepted(const QString &listenAddress)
 {
-    qDebug() << "Stream tube channel" << tube->objectPath() << "accepted and opened!";
+    qDebug() << "Stream tube channel accepted and opened, listening at" << listenAddress;
 
     mDevice = new QLocalSocket(this);
     mDevice->connectToServer(listenAddress);
