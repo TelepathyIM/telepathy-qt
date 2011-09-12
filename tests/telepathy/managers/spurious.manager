@@ -8,6 +8,11 @@ default-register=true
 
 RequestableChannelClasses=text
 
+status-available=2 settable message
+status-offline=1 settable
+status-away=3 settable
+status-xa=4
+
 [text]
 org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
 org.freedesktop.Telepathy.Channel.TargetHandleType u=1
