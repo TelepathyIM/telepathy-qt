@@ -415,11 +415,6 @@ void StreamTubeClient::onInvokedForTube(
     mPriv->tubes.insert(tube, wrapper);
 
     emit tubeOffered(acc, incoming);
-
-    // TODO: accept the tube, connect accept result to tracking wrapper, if successful before tube
-    // is invalidated, emit tubeAcceptedAsTcp/Unix, if failure close tube and emit tubeClosed with
-    // the acceptTubeAs*Socket() PendingOperation error, if invalidated first, just emit tubeClosed
-    // and remove from tracking
 }
 
 void StreamTubeClient::onAcceptFinished(TubeWrapper *wrapper, PendingStreamTubeConnection *conn)
