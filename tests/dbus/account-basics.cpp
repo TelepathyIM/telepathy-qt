@@ -280,29 +280,26 @@ void TestAccountBasics::testBasics()
     QVERIFY(!acc->connection());
     QVERIFY(!acc->isChangingPresence());
     // Neither FeatureProtocolInfo or FeatureProfile are ready yet and we have no connection
-    PresenceSpecList presences = acc->allowedPresenceStatuses(false);
-    QCOMPARE(presences.size(), 2);
-
+    PresenceSpecList expectedPresences;
     {
-        Presence expectedPresences[2] = {
-            Presence::available(),
-            Presence::offline()
-        };
-        for (int j = 0; j < 2; ++j) {
-            QVERIFY(presences[j].isValid());
-            QVERIFY(presences[j].maySetOnSelf());
-            QVERIFY(!presences[j].canHaveStatusMessage());
-
-            bool found = false;
-            for (int k = 0; k < 2; ++k) {
-                if (presences[j].presence() == expectedPresences[k]) {
-                    found = true;
-                }
-            }
-            QVERIFY(found);
-        }
+        SimpleStatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, false };
+        expectedPresences.append(PresenceSpec(QLatin1String("available"), prSpec));
     }
-    QCOMPARE(presences, acc->allowedPresenceStatuses(true));
+    {
+        SimpleStatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
+        expectedPresences.append(PresenceSpec(QLatin1String("offline"), prSpec));
+    }
+    qSort(expectedPresences);
+
+    PresenceSpecList presences = acc->allowedPresenceStatuses(false);
+    qSort(presences);
+    QCOMPARE(presences.size(), 2);
+    QCOMPARE(presences, expectedPresences);
+
+    presences = acc->allowedPresenceStatuses(true);
+    qSort(presences);
+    QCOMPARE(presences.size(), 2);
+    QCOMPARE(presences, expectedPresences);
 
     // No connection
     QCOMPARE(acc->maxPresenceStatusMessageLength(), static_cast<uint>(0));
@@ -473,30 +470,36 @@ void TestAccountBasics::testBasics()
 
     // Now that both FeatureProtocolInfo and FeatureProfile are ready, let's check the allowed
     // presences
+    expectedPresences.clear();
+    {
+        SimpleStatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, true };
+        expectedPresences.append(PresenceSpec(QLatin1String("available"), prSpec));
+    }
+    {
+        SimpleStatusSpec prSpec = { ConnectionPresenceTypeAway, true, true };
+        expectedPresences.append(PresenceSpec(QLatin1String("away"), prSpec));
+    }
+    {
+        SimpleStatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
+        expectedPresences.append(PresenceSpec(QLatin1String("offline"), prSpec));
+    }
+    qSort(expectedPresences);
+
     presences = acc->allowedPresenceStatuses(false);
+    qSort(presences);
     QCOMPARE(presences.size(), 3);
+    QCOMPARE(presences, expectedPresences);
 
     {
-        Presence expectedPresences[3] = {
-            Presence::available(),
-            Presence::away(),
-            Presence::offline()
-        };
-        for (int j = 0; j < 3; ++j) {
-            QVERIFY(presences[j].isValid());
-            QVERIFY(presences[j].maySetOnSelf());
-            QVERIFY(presences[j].canHaveStatusMessage());
-
-            bool found = false;
-            for (int k = 0; k < 3; ++k) {
-                if (presences[j].presence() == expectedPresences[k]) {
-                    found = true;
-                }
-            }
-            QVERIFY(found);
-        }
+        SimpleStatusSpec prSpec = { ConnectionPresenceTypeExtendedAway, false, false };
+        expectedPresences.append(PresenceSpec(QLatin1String("xa"), prSpec));
     }
-    QCOMPARE(presences, acc->allowedPresenceStatuses(true));
+    qSort(expectedPresences);
+
+    presences = acc->allowedPresenceStatuses(true);
+    qSort(presences);
+    QCOMPARE(presences.size(), 4);
+    QCOMPARE(presences, expectedPresences);
 
     QCOMPARE(acc->iconName(), QLatin1String("test-profile-icon"));
 
