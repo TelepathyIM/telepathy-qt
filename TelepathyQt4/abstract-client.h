@@ -277,6 +277,7 @@ public:
 
     virtual ~AbstractClientHandler();
 
+    // FIXME (API/ABI break) Move isRegistered/setRegistered to AbstractClient
     bool isRegistered() const;
 
     ChannelClassSpecList handlerFilter() const;
