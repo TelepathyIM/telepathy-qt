@@ -1714,7 +1714,7 @@ bool Account::isChangingPresence() const
  * This method requires Account::FeatureCore to be ready.
  *
  * \param includeAllStatuses Whether the returned list will include all statuses or just the ones
- *                           that can are settable using setRequestedPresence().
+ *                           that can be settable using setRequestedPresence().
  * \return The allowed statuses as a list of PresenceSpec objects.
  */
 PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
