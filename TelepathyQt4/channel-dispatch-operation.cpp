@@ -227,6 +227,7 @@ ChannelDispatchOperation::PendingClaim::PendingClaim(const ChannelDispatchOperat
       mDispatchOp(op),
       mHandler(handler)
 {
+    debug() << "Invoking CDO.Claim";
     connect(new PendingVoid(op->baseInterface()->Claim(), op),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onClaimFinished(Tp::PendingOperation*)));
@@ -240,6 +241,7 @@ void ChannelDispatchOperation::PendingClaim::onClaimFinished(
         PendingOperation *op)
 {
     if (!op->isError()) {
+        debug() << "CDO.Claim returned successfully, updating HandledChannels";
         if (mHandler) {
             // register the channels in HandledChannels
             FakeHandlerManager::instance()->registerChannels(
@@ -247,6 +249,7 @@ void ChannelDispatchOperation::PendingClaim::onClaimFinished(
         }
         setFinished();
     } else {
+        warning() << "CDO.Claim failed with" << op->errorName() << "-" << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
     }
 }
