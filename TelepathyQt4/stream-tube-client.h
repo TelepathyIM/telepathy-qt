@@ -61,7 +61,7 @@ public:
             nextSourceAddress(const AccountPtr &account, const IncomingStreamTubeChannelPtr &tube) const = 0;
 
     protected:
-        ~TcpSourceAddressGenerator() {}
+        virtual ~TcpSourceAddressGenerator() {}
     };
 
     // The client name can be passed to allow service-activation. If service activation is not
