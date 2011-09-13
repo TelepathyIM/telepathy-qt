@@ -133,6 +133,11 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
         StreamTubeClient *parent)
     : QObject(parent), mAcc(acc), mTube(tube), mSourcePort(0)
 {
+    if (requireCredentials && !tube->supportsUnixSocketsWithCredentials()) {
+        debug() << "StreamTubeClient falling back to Localhost AC for tube" << tube->objectPath();
+        requireCredentials = false;
+    }
+
     connect(tube->acceptTubeAsUnixSocket(requireCredentials),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onTubeAccepted(Tp::PendingOperation*)));
