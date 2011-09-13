@@ -225,7 +225,7 @@ StreamTubeServer::StreamTubeServer(
         const QStringList &roomServices,
         const QString &clientName,
         bool monitorConnections)
-: mPriv(new Private(registrar, p2pServices, roomServices, clientName, monitorConnections))
+    : mPriv(new Private(registrar, p2pServices, roomServices, clientName, monitorConnections))
 {
     connect(mPriv->handler.data(),
             SIGNAL(invokedForTube(

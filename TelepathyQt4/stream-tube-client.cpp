@@ -256,7 +256,7 @@ StreamTubeClient::StreamTubeClient(
         const QString &clientName,
         bool monitorConnections,
         bool bypassApproval)
-: mPriv(new Private(registrar, p2pServices, roomServices, clientName, monitorConnections, bypassApproval))
+    : mPriv(new Private(registrar, p2pServices, roomServices, clientName, monitorConnections, bypassApproval))
 {
     connect(mPriv->handler.data(),
             SIGNAL(invokedForTube(
