@@ -237,6 +237,11 @@ StreamTubeClientPtr StreamTubeClient::create(
         bool monitorConnections,
         bool bypassApproval)
 {
+    if (p2pServices.isEmpty() && roomServices.isEmpty()) {
+        warning() << "Tried to create a StreamTubeClient with no services, returning NULL";
+        return StreamTubeClientPtr();
+    }
+
     return StreamTubeClientPtr(
             new StreamTubeClient(registrar, p2pServices, roomServices, clientName,
                 monitorConnections, bypassApproval));

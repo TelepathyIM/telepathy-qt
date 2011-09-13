@@ -668,6 +668,7 @@ void TestStreamTubeHandlers::testRegistration()
     StreamTubeServerPtr activatedServer =
         StreamTubeServer::create(QStringList() << QLatin1String("ftp"), QStringList(),
                 QLatin1String("vsftpd"));
+    StreamTubeServerPtr preferredHandlerServer = StreamTubeServer::create(QStringList());
 
     StreamTubeClientPtr browser =
         StreamTubeClient::create(QStringList() << QLatin1String("http"), QStringList(),
@@ -675,6 +676,16 @@ void TestStreamTubeHandlers::testRegistration()
     StreamTubeClientPtr collaborationTool =
         StreamTubeClient::create(QStringList() << QLatin1String("sketch") << QLatin1String("ftp"),
                 QStringList() << QLatin1String("sketch"));
+    StreamTubeClientPtr invalidBecauseNoServicesClient =
+        StreamTubeClient::create(QStringList());
+
+    QVERIFY(!httpServer.isNull());
+    QVERIFY(!whiteboardServer.isNull());
+    QVERIFY(!activatedServer.isNull());
+    QVERIFY(!preferredHandlerServer.isNull());
+    QVERIFY(!browser.isNull());
+    QVERIFY(!collaborationTool.isNull());
+    QVERIFY(invalidBecauseNoServicesClient.isNull());
 
     QCOMPARE(activatedServer->clientName(), QLatin1String("vsftpd"));
     QCOMPARE(browser->clientName(), QLatin1String("Debian.Iceweasel"));
@@ -708,6 +719,7 @@ void TestStreamTubeHandlers::testRegistration()
     whiteboardServer->exportTcpSocket(QHostAddress::LocalHost, 31552, whiteboardParams);
     activatedServer->exportTcpSocket(&server);
     QCOMPARE(activatedServer->exportedParameters(), QVariantMap());
+    preferredHandlerServer->exportTcpSocket(QHostAddress::LocalHost, 6681);
 
     browser->setToAcceptAsTcp();
     collaborationTool->setToAcceptAsUnix(true);
@@ -715,19 +727,29 @@ void TestStreamTubeHandlers::testRegistration()
     QVERIFY(httpServer->isRegistered());
     QVERIFY(whiteboardServer->isRegistered());
     QVERIFY(activatedServer->isRegistered());
+    QVERIFY(preferredHandlerServer->isRegistered());
     QVERIFY(browser->isRegistered());
     QVERIFY(collaborationTool->isRegistered());
 
     QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();
 
     QVERIFY(!handlers.isEmpty());
-    QCOMPARE(handlers.size(), 5);
 
     QVERIFY(handlers.contains(httpServer->clientName()));
     QVERIFY(handlers.contains(whiteboardServer->clientName()));
     QVERIFY(handlers.contains(QLatin1String("vsftpd")));
+    QVERIFY(handlers.contains(preferredHandlerServer->clientName()));
     QVERIFY(handlers.contains(QLatin1String("Debian.Iceweasel")));
     QVERIFY(handlers.contains(collaborationTool->clientName()));
+
+    QCOMPARE(handlers.size(), 6);
+
+    // The only-to-be-used-through-preferredHandler server should have an empty filter, but still be
+    // registered and introspectable
+    ChannelClassList filter;
+    QVERIFY(waitForProperty(handlers.value(preferredHandlerServer->clientName())->
+                requestPropertyHandlerChannelFilter(), &filter));
+    QVERIFY(filter.isEmpty());
 }
 
 void TestStreamTubeHandlers::testBasicTcpExport()

@@ -40,8 +40,6 @@ namespace
     ChannelClassSpecList buildFilter(const QStringList &p2pServices,
             const QStringList &roomServices, bool requested)
     {
-        Q_ASSERT(!p2pServices.isEmpty() || !roomServices.isEmpty());
-
         ChannelClassSpecList filter;
 
         foreach (const QString &service, p2pServices)
