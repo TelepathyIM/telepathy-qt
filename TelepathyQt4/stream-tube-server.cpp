@@ -422,7 +422,7 @@ void StreamTubeServer::onInvokedForTube(
         const QDateTime &time,
         const ChannelRequestHints &hints)
 {
-    Q_ASSERT(isRegistered());
+    Q_ASSERT(isRegistered()); // our SSTH shouldn't be receiving any channels unless it's registered
     Q_ASSERT(tube->isRequested());
     Q_ASSERT(tube->isValid()); // SSTH won't emit invalid tubes
 
