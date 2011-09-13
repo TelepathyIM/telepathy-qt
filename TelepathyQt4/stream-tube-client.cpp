@@ -398,7 +398,7 @@ void StreamTubeClient::onInvokedForTube(
     }
 
     TubeWrapper *wrapper = 0;
-    
+
     if (mPriv->acceptsAsTcp) {
         QPair<QHostAddress, quint16> srcAddr =
             qMakePair(QHostAddress(QHostAddress::Any), quint16(0));
