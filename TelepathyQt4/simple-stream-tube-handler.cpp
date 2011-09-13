@@ -119,6 +119,8 @@ void SimpleStreamTubeHandler::handleChannels(
         StreamTubeChannelPtr tube = StreamTubeChannelPtr::qObjectCast(chan);
 
         if (!tube) {
+            // TODO: if Channel ever starts utilizing its immutable props for the immutable
+            // accessors, use Channel::channelType() here
             const QString channelType =
                 chan->immutableProperties()[QLatin1String(
                         TELEPATHY_INTERFACE_CHANNEL ".ChannelType")].toString();
