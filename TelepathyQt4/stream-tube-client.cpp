@@ -308,10 +308,10 @@ bool StreamTubeClient::acceptsAsTcp() const
     return mPriv->acceptsAsTcp;
 }
 
-const StreamTubeClient::TcpSourceAddressGenerator *StreamTubeClient::generator() const
+const StreamTubeClient::TcpSourceAddressGenerator *StreamTubeClient::tcpGenerator() const
 {
     if (!acceptsAsTcp()) {
-        warning() << "StreamTubeClient::generator() used, but not accepting as TCP, returning 0";
+        warning() << "StreamTubeClient::tcpGenerator() used, but not accepting as TCP, returning 0";
         return 0;
     }
 

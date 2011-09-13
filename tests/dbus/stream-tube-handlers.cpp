@@ -1216,7 +1216,7 @@ void TestStreamTubeHandlers::testClientBasicTcp()
     QCOMPARE(client->registrar()->registeredClients().size(), 1);
     QVERIFY(client->acceptsAsTcp());
     QVERIFY(!client->acceptsAsUnix());
-    QCOMPARE(client->generator(), static_cast<StreamTubeClient::TcpSourceAddressGenerator *>(&gen));
+    QCOMPARE(client->tcpGenerator(), static_cast<StreamTubeClient::TcpSourceAddressGenerator *>(&gen));
     QVERIFY(!client->monitorsConnections());
 
     QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();
@@ -1307,7 +1307,7 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
     QVERIFY(client->isRegistered());
     QVERIFY(client->acceptsAsTcp());
     QVERIFY(!client->acceptsAsUnix());
-    QCOMPARE(client->generator(), static_cast<StreamTubeClient::TcpSourceAddressGenerator *>(&gen));
+    QCOMPARE(client->tcpGenerator(), static_cast<StreamTubeClient::TcpSourceAddressGenerator *>(&gen));
     QVERIFY(!client->monitorsConnections());
 
     QMap<QString, ClientHandlerInterface *> handlers = ourHandlers();

@@ -120,7 +120,7 @@ public:
     bool monitorsConnections() const;
 
     bool acceptsAsTcp() const; // if setToAcceptAsTCP has been used last
-    const TcpSourceAddressGenerator *generator() const; // warn and return NULL if !acceptsAsTCP
+    const TcpSourceAddressGenerator *tcpGenerator() const; // warn and return NULL if !acceptsAsTCP
     bool acceptsAsUnix() const; // if setToAcceptAsUnix has been used last
 
     void setToAcceptAsTcp(const TcpSourceAddressGenerator *generator = 0); // 0 -> Localhost AC used
