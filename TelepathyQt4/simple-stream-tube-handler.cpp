@@ -44,14 +44,14 @@ namespace
 
         ChannelClassSpecList filter;
 
-        foreach (QString service, p2pServices)
+        foreach (const QString &service, p2pServices)
         {
             filter.append(requested ?
                     ChannelClassSpec::outgoingStreamTube(service) :
                     ChannelClassSpec::incomingStreamTube(service));
         }
 
-        foreach (QString service, roomServices)
+        foreach (const QString &service, roomServices)
         {
             filter.append(requested ?
                     ChannelClassSpec::outgoingRoomStreamTube(service) :
@@ -96,7 +96,7 @@ SimpleStreamTubeHandler::~SimpleStreamTubeHandler()
     if (!mTubes.empty()) {
         debug() << "~SSTubeHandler(): Closing" << mTubes.size() << "leftover tubes";
 
-        foreach (StreamTubeChannelPtr tube, mTubes.keys()) {
+        foreach (const StreamTubeChannelPtr &tube, mTubes.keys()) {
             tube->requestClose();
         }
     }
@@ -117,7 +117,7 @@ void SimpleStreamTubeHandler::handleChannels(
     SharedPtr<InvocationData> invocation(new InvocationData());
     QList<PendingOperation *> readyOps;
 
-    foreach (ChannelPtr chan, channels) {
+    foreach (const ChannelPtr &chan, channels) {
         StreamTubeChannelPtr tube = StreamTubeChannelPtr::qObjectCast(chan);
 
         if (!tube) {
@@ -204,7 +204,7 @@ void SimpleStreamTubeHandler::onReadyOpFinished(Tp::PendingOperation *op)
         debug() << "Emitting SSTubeHandler::invokedForTube for" << invocation->tubes.size()
             << "tubes";
 
-        foreach (StreamTubeChannelPtr tube, invocation->tubes) {
+        foreach (const StreamTubeChannelPtr &tube, invocation->tubes) {
             if (!tube->isValid()) {
                 debug() << "Skipping already invalidated tube" << tube->objectPath();
                 continue;
