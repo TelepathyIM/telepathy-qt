@@ -112,8 +112,8 @@ struct StreamTubeServer::Private
 
 StreamTubeServer::TubeWrapper::TubeWrapper(const AccountPtr &acc,
         const OutgoingStreamTubeChannelPtr &tube, const QHostAddress &exportedAddr,
-        quint16 exportedPort, const QVariantMap &params)
-    : mAcc(acc), mTube(tube)
+        quint16 exportedPort, const QVariantMap &params, StreamTubeServer *parent)
+    : QObject(parent), mAcc(acc), mTube(tube)
 {
     connect(tube->offerTcpSocket(exportedAddr, exportedPort, params),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -247,10 +247,6 @@ StreamTubeServer::~StreamTubeServer()
 {
     if (isRegistered()) {
         mPriv->registrar->unregisterClient(mPriv->handler);
-    }
-
-    foreach (TubeWrapper *wrapper, mPriv->tubes.values()) {
-        wrapper->deleteLater();
     }
 
     delete mPriv;
@@ -453,7 +449,7 @@ void StreamTubeServer::onInvokedForTube(
         Q_ASSERT(!mPriv->exportedAddr.isNull() && mPriv->exportedPort != 0);
 
         TubeWrapper *wrapper =
-            new TubeWrapper(acc, outgoing, mPriv->exportedAddr, mPriv->exportedPort, params);
+            new TubeWrapper(acc, outgoing, mPriv->exportedAddr, mPriv->exportedPort, params, this);
 
         connect(wrapper,
                 SIGNAL(offerFinished(TubeWrapper*,Tp::PendingOperation*)),

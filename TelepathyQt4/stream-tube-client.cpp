@@ -98,8 +98,9 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
         const AccountPtr &acc,
         const IncomingStreamTubeChannelPtr &tube,
         const QHostAddress &sourceAddress,
-        quint16 sourcePort)
-    : mAcc(acc), mTube(tube), mSourceAddress(sourceAddress), mSourcePort(sourcePort)
+        quint16 sourcePort,
+        StreamTubeClient *parent)
+    : QObject(parent), mAcc(acc), mTube(tube), mSourceAddress(sourceAddress), mSourcePort(sourcePort)
 {
     if (sourcePort != 0) {
         if ((sourceAddress.protocol() == QAbstractSocket::IPv4Protocol &&
@@ -128,8 +129,9 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
 StreamTubeClient::TubeWrapper::TubeWrapper(
         const AccountPtr &acc,
         const IncomingStreamTubeChannelPtr &tube,
-        bool requireCredentials)
-    : mAcc(acc), mTube(tube), mSourcePort(0)
+        bool requireCredentials,
+        StreamTubeClient *parent)
+    : QObject(parent), mAcc(acc), mTube(tube), mSourcePort(0)
 {
     connect(tube->acceptTubeAsUnixSocket(requireCredentials),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -278,10 +280,6 @@ StreamTubeClient::~StreamTubeClient()
         mPriv->registrar->unregisterClient(mPriv->handler);
     }
 
-    foreach (TubeWrapper *wrapper, mPriv->tubes.values()) {
-        wrapper->deleteLater();
-    }
-
     delete mPriv;
 }
 
@@ -409,10 +407,10 @@ void StreamTubeClient::onInvokedForTube(
             srcAddr = mPriv->tcpGenerator->nextSourceAddress(acc, incoming);
         }
 
-        wrapper = new TubeWrapper(acc, incoming, srcAddr.first, srcAddr.second);
+        wrapper = new TubeWrapper(acc, incoming, srcAddr.first, srcAddr.second, this);
     } else {
         Q_ASSERT(mPriv->acceptsAsUnix); // we should only be registered when we're set to accept as either TCP or Unix
-        wrapper = new TubeWrapper(acc, incoming, mPriv->requireCredentials);
+        wrapper = new TubeWrapper(acc, incoming, mPriv->requireCredentials, this);
     }
 
     connect(wrapper,

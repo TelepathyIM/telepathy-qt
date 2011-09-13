@@ -35,8 +35,8 @@ class TELEPATHY_QT4_NO_EXPORT StreamTubeClient::TubeWrapper :
     Q_DISABLE_COPY(TubeWrapper)
 
 public:
-    TubeWrapper(const AccountPtr &acc, const IncomingStreamTubeChannelPtr &tube, const QHostAddress &sourceAddress, quint16 sourcePort);
-    TubeWrapper(const AccountPtr &acc, const IncomingStreamTubeChannelPtr &tube, bool requireCredentials);
+    TubeWrapper(const AccountPtr &acc, const IncomingStreamTubeChannelPtr &tube, const QHostAddress &sourceAddress, quint16 sourcePort, StreamTubeClient *parent);
+    TubeWrapper(const AccountPtr &acc, const IncomingStreamTubeChannelPtr &tube, bool requireCredentials, StreamTubeClient *parent);
     ~TubeWrapper() { }
 
     AccountPtr mAcc;
