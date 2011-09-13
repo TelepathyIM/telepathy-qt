@@ -42,19 +42,19 @@ namespace Tp
 
 class TELEPATHY_QT4_NO_EXPORT FixedParametersGenerator : public StreamTubeServer::ParametersGenerator
 {
-    public:
+public:
 
-        FixedParametersGenerator(const QVariantMap &params) : mParams(params) {}
+    FixedParametersGenerator(const QVariantMap &params) : mParams(params) {}
 
-        QVariantMap nextParameters(const AccountPtr &, const OutgoingStreamTubeChannelPtr &,
-                const ChannelRequestHints &) const
-        {
-            return mParams;
-        }
+    QVariantMap nextParameters(const AccountPtr &, const OutgoingStreamTubeChannelPtr &,
+            const ChannelRequestHints &) const
+    {
+        return mParams;
+    }
 
-    private:
+private:
 
-        QVariantMap mParams;
+    QVariantMap mParams;
 };
 
 struct StreamTubeServer::Private
