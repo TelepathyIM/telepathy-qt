@@ -9,6 +9,7 @@ Enhancements:
    ChannelFactory setup and consequently application startup speedups
  * StreamTubeChannel now ensures connectionClosed() is emitted for all
    connections on a closing tube
+ * Add Presence/PresenceSpec operator== support
 
 Fixes:
  * Ensure that the proper Channel Dispatcher methods are being called when
@@ -25,6 +26,8 @@ Fixes:
  * Connections not being removed from StreamTubeChannel::connections() when they
    are closed, and newConnection() and connectionClosed() events getting
    reordered
+ * fd.o# 40655 - ChannelDispatchOperation::claim() cannot be used by Approvers
+   to handle channels
 
 telepathy-qt4 0.7.2 (2011-08-04)
 ================================
