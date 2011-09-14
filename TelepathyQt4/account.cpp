@@ -1824,7 +1824,7 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
 /**
  * Return the maximum length for a presence status message.
  *
- * If a status message set using setCurrentPresence() is longer than
+ * If a status message set using setRequestedPresence() (or setAutomaticPresence()) is longer than
  * the maximum length allowed, the message will be truncated and
  * currentPresenceChanged() will be emitted (if setting the presence worked)
  * with the truncated message.
