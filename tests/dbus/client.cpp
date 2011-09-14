@@ -357,7 +357,7 @@ public:
 
 protected Q_SLOTS:
     void expectSignalEmission();
-    void onClaimFininshed();
+    void onClaimFinished();
 
 private Q_SLOTS:
     void initTestCase();
@@ -406,7 +406,7 @@ void TestClient::expectSignalEmission()
     mLoop->exit(0);
 }
 
-void TestClient::onClaimFininshed()
+void TestClient::onClaimFinished()
 {
     mClaimFinished = true;
 }
@@ -711,7 +711,7 @@ void TestClient::testAddDispatchOperation()
             SLOT(expectSignalEmission()));
     connect(client,
             SIGNAL(claimFinished()),
-            SLOT(onClaimFininshed()));
+            SLOT(onClaimFinished()));
 
     QVariantMap dispatchOperationProperties;
     dispatchOperationProperties.insert(
