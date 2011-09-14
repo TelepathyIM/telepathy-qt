@@ -76,6 +76,7 @@ public:
     PendingOperation *handleWith(const QString &handler);
 
     PendingOperation *claim();
+    PendingOperation *claim(const AbstractClientHandlerPtr &handler);
 
 Q_SIGNALS:
     void channelLost(const Tp::ChannelPtr &channel, const QString &errorName,
@@ -100,6 +101,9 @@ private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onProxiesPrepared(Tp::PendingOperation *op);
 
 private:
+    class PendingClaim;
+    friend class PendingClaim;
+
     struct Private;
     friend struct Private;
     Private *mPriv;

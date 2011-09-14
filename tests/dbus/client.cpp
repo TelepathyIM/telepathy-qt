@@ -182,6 +182,12 @@ public: // Properties
         return mPossibleHandlers;
     }
 
+public Q_SLOTS:
+    inline void Claim()
+    {
+        // do nothing = no fail
+    }
+
 private:
     QDBusObjectPath mAccount, mConn;
     ChannelDetailsList mChannels;
@@ -246,6 +252,10 @@ public:
     {
         mAddDispatchOperationChannels = dispatchOperation->channels();
         mAddDispatchOperationDispatchOperation = dispatchOperation;
+
+        QVERIFY(connect(dispatchOperation->claim(AbstractClientHandlerPtr(this)),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SIGNAL(claimFinished())));
 
         context->setFinished();
         QTimer::singleShot(0, this, SIGNAL(addDispatchOperationFinished()));
@@ -323,6 +333,7 @@ Q_SIGNALS:
     void observeChannelsFinished();
     void addDispatchOperationFinished();
     void handleChannelsFinished();
+    void claimFinished();
     void requestAdded(const Tp::ChannelRequestPtr &request);
     void requestRemoved(const Tp::ChannelRequestPtr &request,
             const QString &errorName, const QString &errorMessage);
@@ -337,7 +348,8 @@ public:
     TestClient(QObject *parent = 0)
         : Test(parent),
           mConn(0), mContactRepo(0),
-          mText1ChanService(0), mText2ChanService(0), mCDO(0)
+          mText1ChanService(0), mText2ChanService(0), mCDO(0),
+          mClaimFinished(false)
     { }
 
     void testObserveChannelsCommon(const AbstractClientPtr &clientObject,
@@ -345,6 +357,7 @@ public:
 
 protected Q_SLOTS:
     void expectSignalEmission();
+    void onClaimFinished();
 
 private Q_SLOTS:
     void initTestCase();
@@ -384,11 +397,18 @@ private:
     QString mClientObject2BusName;
     QString mClientObject2Path;
     uint mUserActionTime;
+
+    bool mClaimFinished;
 };
 
 void TestClient::expectSignalEmission()
 {
     mLoop->exit(0);
+}
+
+void TestClient::onClaimFinished()
+{
+    mClaimFinished = true;
 }
 
 void TestClient::initTestCase()
@@ -493,6 +513,7 @@ void TestClient::initTestCase()
 void TestClient::init()
 {
     initImpl();
+    mClaimFinished = false;
 }
 
 void TestClient::testRegister()
@@ -507,11 +528,34 @@ void TestClient::testRegister()
     ChannelClassSpecList filters;
     filters.append(ChannelClassSpec::textChat());
     mClientObject1 = MyClient::create(filters, mClientCapabilities, false, true);
+    MyClient *client = dynamic_cast<MyClient*>(mClientObject1.data());
+    QVERIFY(!client->isRegistered());
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
+    QVERIFY(client->isRegistered());
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
 
-    // no op - client already registered
+    AbstractClientPtr clientObjectRedundant = MyClient::create(
+            filters, mClientCapabilities, false, true);
+    client = dynamic_cast<MyClient*>(clientObjectRedundant.data());
+    QVERIFY(!client->isRegistered());
+    // try to register using a name already registered and a different object, it should fail
+    // and not report isRegistered
+    QVERIFY(!mClientRegistrar->registerClient(clientObjectRedundant, QLatin1String("foo")));
+    QVERIFY(!client->isRegistered());
+    QVERIFY(!mClientRegistrar->registeredClients().contains(clientObjectRedundant));
+
+    client = dynamic_cast<MyClient*>(mClientObject1.data());
+
+    // no op - client already registered with same object and name
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
+
+    // unregister client
+    QVERIFY(mClientRegistrar->unregisterClient(mClientObject1));
+    QVERIFY(!client->isRegistered());
+
+    // register again
+    QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
+    QVERIFY(client->isRegistered());
 
     filters.clear();
     filters.append(ChannelClassSpec::streamedMediaCall());
@@ -659,10 +703,15 @@ void TestClient::testAddDispatchOperation()
 
     ClientApproverInterface *approverIface = new ClientApproverInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
+    ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
+            mClientObject1BusName, mClientObject1Path, this);
     MyClient *client = dynamic_cast<MyClient*>(mClientObject1.data());
     connect(client,
             SIGNAL(addDispatchOperationFinished()),
             SLOT(expectSignalEmission()));
+    connect(client,
+            SIGNAL(claimFinished()),
+            SLOT(onClaimFinished()));
 
     QVariantMap dispatchOperationProperties;
     dispatchOperationProperties.insert(
@@ -676,12 +725,33 @@ void TestClient::testAddDispatchOperation()
             QVariant::fromValue(ObjectPathList() << QDBusObjectPath(mClientObject1Path)
                 << QDBusObjectPath(mClientObject2Path)));
 
+    // Handler.HandledChannels should be empty here, CDO::claim(handler) will populate it on
+    // success
+    Tp::ObjectPathList handledChannels;
+    QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
+    QVERIFY(handledChannels.isEmpty());
+
     approverIface->AddDispatchOperation(mCDO->Channels(), QDBusObjectPath(mCDOPath),
             dispatchOperationProperties);
     QCOMPARE(mLoop->exec(), 0);
+    while (!mClaimFinished) {
+        mLoop->processEvents();
+    }
 
     QCOMPARE(client->mAddDispatchOperationChannels.first()->objectPath(), mText1ChanPath);
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), mCDOPath);
+
+    // Claim finished, Handler.HandledChannels should be populated now
+    handledChannels.clear();
+    QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
+    QVERIFY(!handledChannels.isEmpty());
+    qSort(handledChannels);
+    Tp::ObjectPathList expectedHandledChannels;
+    Q_FOREACH (const ChannelDetails &details, mCDO->Channels()) {
+        expectedHandledChannels << details.channel;
+    }
+    qSort(expectedHandledChannels);
+    QCOMPARE(handledChannels, expectedHandledChannels);
 }
 
 void TestClient::testHandleChannels()

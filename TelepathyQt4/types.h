@@ -45,6 +45,9 @@ template <typename T> class GenericCapabilityFilter;
 template <typename T> class GenericPropertyFilter;
 
 class AbstractClient;
+class AbstractClientApprover;
+class AbstractClientHandler;
+class AbstractClientObserver;
 class Account;
 typedef GenericCapabilityFilter<Account> AccountCapabilityFilter;
 class AccountFactory;
@@ -89,6 +92,9 @@ class TubeChannel;
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 typedef SharedPtr<AbstractClient> AbstractClientPtr;
+typedef SharedPtr<AbstractClientApprover> AbstractClientApproverPtr;
+typedef SharedPtr<AbstractClientHandler> AbstractClientHandlerPtr;
+typedef SharedPtr<AbstractClientObserver> AbstractClientObserverPtr;
 typedef SharedPtr<Account> AccountPtr;
 typedef SharedPtr<AccountCapabilityFilter> AccountCapabilityFilterPtr;
 typedef SharedPtr<const AccountCapabilityFilter> AccountCapabilityFilterConstPtr;

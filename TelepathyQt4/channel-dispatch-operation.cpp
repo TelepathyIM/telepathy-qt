@@ -21,13 +21,15 @@
  */
 
 #include <TelepathyQt4/ChannelDispatchOperation>
+#include "TelepathyQt4/channel-dispatch-operation-internal.h"
 
 #include "TelepathyQt4/_gen/cli-channel-dispatch-operation-body.hpp"
 #include "TelepathyQt4/_gen/cli-channel-dispatch-operation.moc.hpp"
 #include "TelepathyQt4/_gen/channel-dispatch-operation.moc.hpp"
+#include "TelepathyQt4/_gen/channel-dispatch-operation-internal.moc.hpp"
 
-#include "TelepathyQt4/channel-factory.h"
 #include "TelepathyQt4/debug-internal.h"
+#include "TelepathyQt4/fake-handler-manager-internal.h"
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountFactory>
@@ -216,6 +218,39 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         parent->connect(new PendingComposite(readyOps, ChannelDispatchOperationPtr(parent)),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onProxiesPrepared(Tp::PendingOperation*)));
+    }
+}
+
+ChannelDispatchOperation::PendingClaim::PendingClaim(const ChannelDispatchOperationPtr &op,
+        const AbstractClientHandlerPtr &handler)
+    : PendingOperation(op),
+      mDispatchOp(op),
+      mHandler(handler)
+{
+    debug() << "Invoking CDO.Claim";
+    connect(new PendingVoid(op->baseInterface()->Claim(), op),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onClaimFinished(Tp::PendingOperation*)));
+}
+
+ChannelDispatchOperation::PendingClaim::~PendingClaim()
+{
+}
+
+void ChannelDispatchOperation::PendingClaim::onClaimFinished(
+        PendingOperation *op)
+{
+    if (!op->isError()) {
+        debug() << "CDO.Claim returned successfully, updating HandledChannels";
+        if (mHandler) {
+            // register the channels in HandledChannels
+            FakeHandlerManager::instance()->registerChannels(
+                    mDispatchOp->channels());
+        }
+        setFinished();
+    } else {
+        warning() << "CDO.Claim failed with" << op->errorName() << "-" << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
     }
 }
 
@@ -453,13 +488,21 @@ PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
 }
 
 /**
+ * Called by an approver to claim channels for closing them.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *ChannelDispatchOperation::claim()
+{
+    return new PendingClaim(ChannelDispatchOperationPtr(this));
+}
+
+/**
  * Called by an approver to claim channels for handling internally. If this
- * method is called successfully, the process calling this method becomes the
+ * method is called successfully, the \a handler becomes the
  * handler for the channel, but does not have the
  * AbstractClientHandler::handleChannels() method called on it.
- *
- * Clients that call claim() on channels but do not immediately close them
- * should implement the AbstractClientHandler interface.
  *
  * Approvers wishing to reject channels must call this method to claim ownership
  * of them, and must not call requestClose() on the channels unless/until this
@@ -483,13 +526,23 @@ PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
  * completed. Again, see handleWith() for more details. The approver must not
  * attempt to interact with the channels further in this case.
  *
+ * \param handler The channel handler, that should remain registered during the
+ *                lifetime of channels(), otherwise dispatching will fail if the
+ *                channel dispatcher restarts.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa claim(), handleWith()
  */
-PendingOperation *ChannelDispatchOperation::claim()
+PendingOperation *ChannelDispatchOperation::claim(const AbstractClientHandlerPtr &handler)
 {
-    return new PendingVoid(mPriv->baseInterface->Claim(),
-            ChannelDispatchOperationPtr(this));
+    if (!handler->isRegistered()) {
+        return new PendingFailure(TP_QT4_ERROR_INVALID_ARGUMENT,
+                QLatin1String("Handler must be registered for using claim(handler)"),
+                ChannelDispatchOperationPtr(this));
+    }
+
+    return new PendingClaim(ChannelDispatchOperationPtr(this),
+           handler);
 }
 
 /**

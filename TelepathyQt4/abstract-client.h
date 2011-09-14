@@ -40,6 +40,7 @@
 namespace Tp
 {
 
+class ClientRegistrar;
 class ChannelClassSpecList;
 
 class TELEPATHY_QT4_EXPORT AbstractClient : public RefCounted
@@ -276,6 +277,9 @@ public:
 
     virtual ~AbstractClientHandler();
 
+    // FIXME (API/ABI break) Move isRegistered/setRegistered to AbstractClient
+    bool isRegistered() const;
+
     ChannelClassSpecList handlerFilter() const;
 
     Capabilities handlerCapabilities() const;
@@ -301,6 +305,10 @@ protected:
             bool wantsRequestNotification = false);
 
 private:
+    friend class ClientRegistrar;
+
+    void setRegistered(bool registered);
+
     struct Private;
     friend struct Private;
     Private *mPriv;

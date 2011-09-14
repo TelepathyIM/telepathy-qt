@@ -957,6 +957,10 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         return false;
     }
 
+    if (handler) {
+        handler->setRegistered(true);
+    }
+
     debug() << "Client registered - busName:" << busName <<
         "objectPath:" << objectPath << "interfaces:" << interfaces;
 
@@ -982,6 +986,12 @@ bool ClientRegistrar::unregisterClient(const AbstractClientPtr &client)
     if (!mPriv->clients.contains(client)) {
         warning() << "Trying to unregister an unregistered client";
         return false;
+    }
+
+    AbstractClientHandler *handler =
+        dynamic_cast<AbstractClientHandler*>(client.data());
+    if (handler) {
+        handler->setRegistered(false);
     }
 
     QString objectPath = mPriv->clients.value(client);

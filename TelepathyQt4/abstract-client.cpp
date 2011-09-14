@@ -93,7 +93,8 @@ AbstractClient::~AbstractClient()
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 {
     Private(const ChannelClassList &channelFilter, bool shouldRecover)
-        : channelFilter(channelFilter), shouldRecover(shouldRecover)
+        : channelFilter(channelFilter),
+          shouldRecover(shouldRecover)
     {
     }
 
@@ -368,6 +369,11 @@ bool AbstractClientObserver::shouldRecover() const
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
 {
+    Private(const ChannelClassList &channelFilter)
+        : channelFilter(channelFilter)
+    {
+    }
+
     ChannelClassList channelFilter;
 };
 
@@ -480,9 +486,8 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
  */
 AbstractClientApprover::AbstractClientApprover(
         const ChannelClassSpecList &channelFilter)
-    : mPriv(new Private)
+    : mPriv(new Private(channelFilter.bareClasses()))
 {
-    mPriv->channelFilter = channelFilter.bareClasses();
 }
 
 /**
@@ -540,9 +545,20 @@ ChannelClassSpecList AbstractClientApprover::approverFilter() const
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
 {
+    Private(const ChannelClassList &channelFilter,
+            const Capabilities &capabilities,
+            bool wantsRequestNotification)
+        : channelFilter(channelFilter),
+          capabilities(capabilities),
+          wantsRequestNotification(wantsRequestNotification),
+          registered(false)
+    {
+    }
+
     ChannelClassList channelFilter;
     Capabilities capabilities;
     bool wantsRequestNotification;
+    bool registered;
 };
 
 /**
@@ -771,11 +787,8 @@ QVariantMap AbstractClientHandler::HandlerInfo::allInfo() const
 AbstractClientHandler::AbstractClientHandler(const ChannelClassSpecList &channelFilter,
         const Capabilities &capabilities,
         bool wantsRequestNotification)
-    : mPriv(new Private)
+    : mPriv(new Private(channelFilter.bareClasses(), capabilities, wantsRequestNotification))
 {
-    mPriv->channelFilter = channelFilter.bareClasses();
-    mPriv->capabilities = capabilities;
-    mPriv->wantsRequestNotification = wantsRequestNotification;
 }
 
 /**
@@ -784,6 +797,16 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassSpecList &channel
 AbstractClientHandler::~AbstractClientHandler()
 {
     delete mPriv;
+}
+
+/**
+ * Return whether this handler is registered.
+ *
+ * \return \c true if registered, \c false otherwise.
+ */
+bool AbstractClientHandler::isRegistered() const
+{
+    return mPriv->registered;
 }
 
 /**
@@ -955,6 +978,11 @@ void AbstractClientHandler::removeRequest(
 {
     // do nothing, subclasses that want to listen requests should reimplement
     // this method
+}
+
+void AbstractClientHandler::setRegistered(bool registered)
+{
+    mPriv->registered = registered;
 }
 
 } // Tp
