@@ -53,6 +53,7 @@ public:
     bool isValid() const { return mPriv.constData() != 0; }
 
     Presence &operator=(const Presence &other);
+    bool operator==(const Presence &other) const;
 
     ConnectionPresenceType type() const;
     QString status() const;
@@ -80,6 +81,7 @@ public:
     bool isValid() const { return mPriv.constData() != 0; }
 
     PresenceSpec &operator=(const PresenceSpec &other);
+    bool operator==(const PresenceSpec &other) const;
 
     Presence presence(const QString &statusMessage = QString()) const;
     bool maySetOnSelf() const;
