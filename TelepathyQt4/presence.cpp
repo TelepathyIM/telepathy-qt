@@ -116,6 +116,18 @@ Presence &Presence::operator=(const Presence &other)
     return *this;
 }
 
+bool Presence::operator==(const Presence &other) const
+{
+    if (!isValid() || !other.isValid()) {
+        if (!isValid() && !other.isValid()) {
+            return true;
+        }
+        return false;
+    }
+
+    return mPriv->sp == other.mPriv->sp;
+}
+
 ConnectionPresenceType Presence::type() const
 {
     if (!isValid()) {
@@ -218,6 +230,19 @@ PresenceSpec &PresenceSpec::operator=(const PresenceSpec &other)
 {
     this->mPriv = other.mPriv;
     return *this;
+}
+
+bool PresenceSpec::operator==(const PresenceSpec &other) const
+{
+    if (!isValid() || !other.isValid()) {
+        if (!isValid() && !other.isValid()) {
+            return true;
+        }
+        return false;
+    }
+
+    return (mPriv->status == other.mPriv->status) &&
+           (mPriv->spec == other.mPriv->spec);
 }
 
 Presence PresenceSpec::presence(const QString &statusMessage) const
