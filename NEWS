@@ -4,7 +4,7 @@ telepathy-qt4 0.6.4 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * Add Presence/PresenceSpec operator== support
 
 Fixes:
  * ...
