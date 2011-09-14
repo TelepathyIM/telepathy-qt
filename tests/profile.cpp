@@ -79,7 +79,7 @@ void TestProfile::testProfile()
     QCOMPARE(param.isMandatory(), true);
 
     QCOMPARE(profile->presences().isEmpty(), false);
-    QCOMPARE(profile->presences().count(), 4);
+    QCOMPARE(profile->presences().count(), 5);
 
     QCOMPARE(profile->hasPresence(QLatin1String("foo")), false);
 

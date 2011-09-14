@@ -1150,6 +1150,7 @@ PendingOperation *Account::setServiceName(const QString &value)
 ProfilePtr Account::profile() const
 {
     if (!isReady(FeatureProfile)) {
+        warning() << "Account::profile() requires Account::FeatureProfile to be ready";
         return ProfilePtr();
     }
 
@@ -1231,10 +1232,13 @@ PendingOperation *Account::setDisplayName(const QString &value)
 QString Account::iconName() const
 {
     if (mPriv->iconName.isEmpty()) {
-        if (isReady(FeatureProfile) && !profile().isNull()) {
-            QString iconName = profile()->iconName();
-            if (!iconName.isEmpty()) {
-                return iconName;
+        if (isReady(FeatureProfile)) {
+            ProfilePtr pr = profile();
+            if (pr && pr->isValid()) {
+                QString iconName = pr->iconName();
+                if (!iconName.isEmpty()) {
+                    return iconName;
+                }
             }
         }
 
@@ -1467,8 +1471,11 @@ ConnectionCapabilities Account::capabilities() const
     if (!pi.isValid()) {
         return ConnectionCapabilities();
     }
-    ProfilePtr pr = profile();
-    if (!pr) {
+    ProfilePtr pr;
+    if (isReady(FeatureProfile)) {
+        pr = profile();
+    }
+    if (!pr || !pr->isValid()) {
         return pi.capabilities();
     }
 
@@ -1707,7 +1714,7 @@ bool Account::isChangingPresence() const
  * This method requires Account::FeatureCore to be ready.
  *
  * \param includeAllStatuses Whether the returned list will include all statuses or just the ones
- *                           that can are settable using setRequestedPresence().
+ *                           that can be settable using setRequestedPresence().
  * \return The allowed statuses as a list of PresenceSpec objects.
  */
 PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
@@ -1736,8 +1743,11 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
             }
         }
 
-        ProfilePtr pr = profile();
-        if (pr) {
+        ProfilePtr pr;
+        if (isReady(FeatureProfile)) {
+            pr = profile();
+        }
+        if (pr && pr->isValid()) {
             // add all Profile presences to the returned map
             foreach (const Profile::Presence &prPresence, pr->presences()) {
                 QString prStatus = prPresence.id();
@@ -1814,7 +1824,7 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
 /**
  * Return the maximum length for a presence status message.
  *
- * If a status message set using setCurrentPresence() is longer than
+ * If a status message set using setRequestedPresence() (or setAutomaticPresence()) is longer than
  * the maximum length allowed, the message will be truncated and
  * currentPresenceChanged() will be emitted (if setting the presence worked)
  * with the truncated message.
