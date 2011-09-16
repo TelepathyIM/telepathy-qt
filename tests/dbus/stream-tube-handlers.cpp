@@ -768,7 +768,7 @@ void TestStreamTubeHandlers::testRegistration()
                 QLatin1String("Debian.Iceweasel"));
     StreamTubeClientPtr collaborationTool =
         StreamTubeClient::create(QStringList() << QLatin1String("sketch") << QLatin1String("ftp"),
-                QStringList() << QLatin1String("sketch"));
+                QStringList() << QLatin1String("sketch"), QString(), false, true);
     StreamTubeClientPtr invalidBecauseNoServicesClient =
         StreamTubeClient::create(QStringList());
 
@@ -843,6 +843,19 @@ void TestStreamTubeHandlers::testRegistration()
     QVERIFY(waitForProperty(handlers.value(preferredHandlerServer->clientName())->
                 requestPropertyHandlerChannelFilter(), &filter));
     QVERIFY(filter.isEmpty());
+
+    // We didn't specify bypassApproval = true, so it should be false. for all we know we could be
+    // sent some fairly NSFW stuff on a HTTP tube :>
+    bool bypass;
+    QVERIFY(waitForProperty(handlers.value(browser->clientName())->requestPropertyBypassApproval(),
+                &bypass));
+    QVERIFY(!bypass);
+
+    // here we did, though, because we want our coworkers to be able to save our ass by launching a
+    // brainstorming UI on top of our again rather NSFW browsing habits while we're having a cup
+    QVERIFY(waitForProperty(handlers.value(collaborationTool->clientName())->
+                requestPropertyBypassApproval(), &bypass));
+    QVERIFY(bypass);
 }
 
 void TestStreamTubeHandlers::testBasicTcpExport()
