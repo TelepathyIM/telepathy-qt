@@ -51,7 +51,7 @@ public:
     public:
         virtual QVariantMap
             nextParameters(const AccountPtr &account, const OutgoingStreamTubeChannelPtr &tube,
-                    const ChannelRequestHints &hints) const = 0;
+                    const ChannelRequestHints &hints) = 0;
 
     protected:
         virtual ~ParametersGenerator() {}
@@ -129,10 +129,10 @@ public:
     void exportTcpSocket(
             const QHostAddress &address,
             quint16 port,
-            const ParametersGenerator *generator);
+            ParametersGenerator *generator);
     void exportTcpSocket(
             const QTcpServer *server,
-            const ParametersGenerator *generator);
+            ParametersGenerator *generator);
 
     // TODO: Add Unix sockets if needed (are there other common services one might want to export
     // listening on Unix sockets and not necessarily on TCP than X11 and perhaps CUPS?)

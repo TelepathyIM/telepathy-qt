@@ -47,7 +47,7 @@ public:
     FixedParametersGenerator(const QVariantMap &params) : mParams(params) {}
 
     QVariantMap nextParameters(const AccountPtr &, const OutgoingStreamTubeChannelPtr &,
-            const ChannelRequestHints &) const
+            const ChannelRequestHints &)
     {
         return mParams;
     }
@@ -103,7 +103,7 @@ struct StreamTubeServer::Private
 
     QHostAddress exportedAddr;
     quint16 exportedPort;
-    const ParametersGenerator *generator;
+    ParametersGenerator *generator;
     QScopedPointer<FixedParametersGenerator> fixedGenerator;
 
     QHash<StreamTubeChannelPtr, TubeWrapper *> tubes;
@@ -283,8 +283,8 @@ QVariantMap StreamTubeServer::exportedParameters() const
         return QVariantMap();
     }
 
-    const FixedParametersGenerator *generator =
-        dynamic_cast<const FixedParametersGenerator *>(mPriv->generator);
+    FixedParametersGenerator *generator =
+        dynamic_cast<FixedParametersGenerator *>(mPriv->generator);
 
     if (generator) {
         return generator->nextParameters(AccountPtr(), OutgoingStreamTubeChannelPtr(),
@@ -337,7 +337,7 @@ void StreamTubeServer::exportTcpSocket(
 void StreamTubeServer::exportTcpSocket(
         const QHostAddress &addr,
         quint16 port,
-        const ParametersGenerator *generator)
+        ParametersGenerator *generator)
 {
     if (addr.isNull() || port == 0) {
         warning() << "Attempted to export null TCP socket address or zero port, ignoring";
@@ -353,7 +353,7 @@ void StreamTubeServer::exportTcpSocket(
 
 void StreamTubeServer::exportTcpSocket(
         const QTcpServer *server,
-        const ParametersGenerator *generator)
+        ParametersGenerator *generator)
 {
     if (!server->isListening()) {
         warning() << "Attempted to export non-listening QTcpServer, ignoring";

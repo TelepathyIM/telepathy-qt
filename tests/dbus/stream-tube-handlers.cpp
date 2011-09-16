@@ -789,7 +789,7 @@ void TestStreamTubeHandlers::testRegistration()
         CookieGenerator() : serial(0) {}
 
         QVariantMap nextParameters(const AccountPtr &account, const OutgoingStreamTubeChannelPtr &tube,
-                const ChannelRequestHints &hints) const
+                const ChannelRequestHints &hints)
         {
             QVariantMap params;
             params.insert(QLatin1String("cookie-y"),
@@ -798,7 +798,7 @@ void TestStreamTubeHandlers::testRegistration()
         }
 
     private:
-        mutable uint serial; // mmm. I wonder if we should make nextParameters() non-const? that'd require giving a non const pointer when exporting too.
+        uint serial;
     } httpGenerator;
 
     QVariantMap whiteboardParams;
