@@ -58,7 +58,7 @@ public:
         // The tube param can be used to extract the service, initiator contact and other useful
         // information for making the decision
         virtual QPair<QHostAddress /* source interface address */, quint16 /* source port */>
-            nextSourceAddress(const AccountPtr &account, const IncomingStreamTubeChannelPtr &tube) const = 0;
+            nextSourceAddress(const AccountPtr &account, const IncomingStreamTubeChannelPtr &tube) = 0;
 
     protected:
         virtual ~TcpSourceAddressGenerator() {}
@@ -120,10 +120,10 @@ public:
     bool monitorsConnections() const;
 
     bool acceptsAsTcp() const; // if setToAcceptAsTCP has been used last
-    const TcpSourceAddressGenerator *tcpGenerator() const; // warn and return NULL if !acceptsAsTCP
+    TcpSourceAddressGenerator *tcpGenerator() const; // warn and return NULL if !acceptsAsTCP
     bool acceptsAsUnix() const; // if setToAcceptAsUnix has been used last
 
-    void setToAcceptAsTcp(const TcpSourceAddressGenerator *generator = 0); // 0 -> Localhost AC used
+    void setToAcceptAsTcp(TcpSourceAddressGenerator *generator = 0); // 0 -> Localhost AC used
     void setToAcceptAsUnix(bool requireCredentials = false); // whether CM should req SCM_CREDENTIALS
 
     // This will always be populated

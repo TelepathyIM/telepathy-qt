@@ -1297,11 +1297,11 @@ void TestStreamTubeHandlers::testClientBasicTcp()
             FakeGenerator() : port(0) {}
 
             QPair<QHostAddress, quint16> nextSourceAddress(const AccountPtr &account,
-                    const IncomingStreamTubeChannelPtr &tube) const {
+                    const IncomingStreamTubeChannelPtr &tube) {
                 return qMakePair(QHostAddress(QHostAddress::LocalHost), ++port);
             }
 
-            mutable quint16 port;
+            quint16 port;
     } gen;
 
     client->setToAcceptAsTcp(&gen);
@@ -1391,7 +1391,7 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
     {
         public:
             QPair<QHostAddress, quint16> nextSourceAddress(const AccountPtr &account,
-                    const IncomingStreamTubeChannelPtr &tube) const {
+                    const IncomingStreamTubeChannelPtr &tube) {
                 return qMakePair(QHostAddress(QHostAddress::LocalHost), quint16(1111));
             }
     } gen;

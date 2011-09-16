@@ -88,7 +88,7 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Private
     bool isRegistered;
 
     bool acceptsAsTcp, acceptsAsUnix;
-    const TcpSourceAddressGenerator *tcpGenerator;
+    TcpSourceAddressGenerator *tcpGenerator;
     bool requireCredentials;
 
     QHash<StreamTubeChannelPtr, TubeWrapper *> tubes;
@@ -313,7 +313,7 @@ bool StreamTubeClient::acceptsAsTcp() const
     return mPriv->acceptsAsTcp;
 }
 
-const StreamTubeClient::TcpSourceAddressGenerator *StreamTubeClient::tcpGenerator() const
+StreamTubeClient::TcpSourceAddressGenerator *StreamTubeClient::tcpGenerator() const
 {
     if (!acceptsAsTcp()) {
         warning() << "StreamTubeClient::tcpGenerator() used, but not accepting as TCP, returning 0";
@@ -328,7 +328,7 @@ bool StreamTubeClient::acceptsAsUnix() const
     return mPriv->acceptsAsUnix;
 }
 
-void StreamTubeClient::setToAcceptAsTcp(const TcpSourceAddressGenerator *generator)
+void StreamTubeClient::setToAcceptAsTcp(TcpSourceAddressGenerator *generator)
 {
     mPriv->tcpGenerator = generator;
     mPriv->acceptsAsTcp = true;
