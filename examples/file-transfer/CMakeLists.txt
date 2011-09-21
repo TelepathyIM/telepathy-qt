@@ -17,9 +17,15 @@ target_link_libraries(ft-receiver
     ${QT_QTCORE_LIBRARY}
     telepathy-qt4)
 
-set(ft-sender_SRCS)
+set(ft-sender_SRCS
+    ft-sender.cpp
+    ft-sender-handler.cpp
+    ft-send-op.cpp)
 
-set(ft-sender_MOC_SRCS)
+set(ft-sender_MOC_SRCS
+    ft-sender.h
+    ft-sender-handler.h
+    ft-send-op.h)
 
 tpqt4_generate_mocs(${ft-sender_MOC_SRCS})
 
