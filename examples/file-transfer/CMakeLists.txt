@@ -1,10 +1,6 @@
-set(ft-receiver_SRCS
-    receiver.cpp
-    receiver-channel.cpp)
+set(ft-receiver_SRCS)
 
-set(ft-receiver_MOC_SRCS
-    receiver.h
-    receiver-channel.h)
+set(ft-receiver_MOC_SRCS)
 
 tpqt4_generate_mocs(${ft-receiver_MOC_SRCS})
 
@@ -15,11 +11,9 @@ target_link_libraries(ft-receiver
     ${QT_QTCORE_LIBRARY}
     telepathy-qt4)
 
-set(ft-sender_SRCS
-    sender.cpp)
+set(ft-sender_SRCS)
 
-set(ft-sender_MOC_SRCS
-    sender.h)
+set(ft-sender_MOC_SRCS)
 
 tpqt4_generate_mocs(${ft-sender_MOC_SRCS})
 
