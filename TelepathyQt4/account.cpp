@@ -3868,7 +3868,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         // don't emit firstOnline unless we're already ready, that would be
         // misleading - we'd emit it just before any already-used account
         // became ready
-        if (parent->isReady()) {
+        if (parent->isReady(Account::FeatureCore)) {
             emit parent->firstOnline();
         }
         parent->notify("hasBeenOnline");
