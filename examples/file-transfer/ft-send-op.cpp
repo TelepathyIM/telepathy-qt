@@ -49,11 +49,11 @@ FTSendOp::FTSendOp(const OutgoingFileTransferChannelPtr &chan,
             SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
     connect(chan.data(),
             SIGNAL(stateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)),
-            SLOT(onFileTransferChannelStateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)));
+            SLOT(onStateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)));
     connect(chan.data(),
             SIGNAL(transferredBytesChanged(qulonglong)),
-            SLOT(onFileTransferChannelTransferredBytesChanged(qulonglong)));
-    onFileTransferChannelStateChanged(mChan->state(), mChan->stateReason());
+            SLOT(onTransferredBytesChanged(qulonglong)));
+    onStateChanged(mChan->state(), mChan->stateReason());
 }
 
 FTSendOp::~FTSendOp()
@@ -71,7 +71,7 @@ void FTSendOp::onChannelInvalidated(DBusProxy *proxy,
     setFinishedWithError(errorName, errorMessage);
 }
 
-void FTSendOp::onFileTransferChannelStateChanged(FileTransferState state,
+void FTSendOp::onStateChanged(FileTransferState state,
         FileTransferStateChangeReason stateReason)
 {
     qDebug() << "File transfer channel state changed to" << state <<
@@ -105,7 +105,7 @@ void FTSendOp::onFileTransferChannelStateChanged(FileTransferState state,
     }
 }
 
-void FTSendOp::onFileTransferChannelTransferredBytesChanged(qulonglong count)
+void FTSendOp::onTransferredBytesChanged(qulonglong count)
 {
     qDebug().nospace() << "Transferred bytes " << count << " - " <<
         ((int) (((double) count / mChan->size()) * 100)) << "% done";
