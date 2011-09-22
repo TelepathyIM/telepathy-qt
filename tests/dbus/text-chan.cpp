@@ -186,6 +186,8 @@ void TestTextChan::commonTest(bool withMessages)
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 1);
 
+    QVERIFY(!mChan->canInviteContacts());
+
     Features features = Features() << TextChannel::FeatureMessageQueue;
     QVERIFY(!mChan->isReady(features));
     // Implementation detail: in legacy text channels, capabilities arrive
