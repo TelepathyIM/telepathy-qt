@@ -7,8 +7,10 @@
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/PendingReady>
@@ -139,6 +141,23 @@ void TestChanBasics::testCreateChannel()
         << QLatin1String("alice");
     toCheck.sort();
     QCOMPARE(ids, toCheck);
+
+    ChannelPtr chan = Channel::create(mConn->client(), mChan->objectPath(),
+            mChan->immutableProperties());
+    QVERIFY(chan);
+    QVERIFY(chan->isValid());
+
+    // create an invalid connection to use as the channel connection
+    ConnectionPtr conn = Connection::create(QLatin1String(""), QLatin1String("/"),
+                  ChannelFactory::create(QDBusConnection::sessionBus()),
+                  ContactFactory::create());
+    QVERIFY(conn);
+    QVERIFY(!conn->isValid());
+
+    chan = Channel::create(conn, mChan->objectPath(),
+            mChan->immutableProperties());
+    QVERIFY(chan);
+    QVERIFY(!chan->isValid());
 }
 
 void TestChanBasics::testEnsureChannel()
