@@ -22,7 +22,7 @@
 #include "ft-receiver-handler.h"
 #include "_gen/ft-receiver-handler.moc.hpp"
 
-#include "ft-receive-op.h"
+#include "pending-file-receive.h"
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelClassSpec>
@@ -77,7 +77,7 @@ void FTReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &conte
 
     context->setFinished();
 
-    FTReceiveOp *rop = new FTReceiveOp(iftChan,
+    PendingFileReceive *rop = new PendingFileReceive(iftChan,
             SharedPtr<RefCounted>::dynamicCast(AbstractClientPtr(this)));
     connect(rop,
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -86,7 +86,7 @@ void FTReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &conte
 
 void FTReceiverHandler::onReceiveFinished(PendingOperation *op)
 {
-    FTReceiveOp *rop = qobject_cast<FTReceiveOp*>(op);
+    PendingFileReceive *rop = qobject_cast<PendingFileReceive*>(op);
     qDebug() << "Closing channel";
     rop->channel()->requestClose();
 }

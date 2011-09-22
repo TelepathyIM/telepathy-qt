@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_file_transfer_ft_receive_op_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_file_transfer_ft_receive_op_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_file_transfer_pending_file_receive_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_file_transfer_pending_file_receive_h_HEADER_GUARD_
 
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/IncomingFileTransferChannel>
@@ -28,14 +28,14 @@
 
 using namespace Tp;
 
-class FTReceiveOp : public PendingOperation
+class PendingFileReceive : public PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(FTReceiveOp)
+    Q_DISABLE_COPY(PendingFileReceive)
 
 public:
-    FTReceiveOp(const IncomingFileTransferChannelPtr &chan, const SharedPtr<RefCounted> &object);
-    ~FTReceiveOp();
+    PendingFileReceive(const IncomingFileTransferChannelPtr &chan, const SharedPtr<RefCounted> &object);
+    ~PendingFileReceive();
 
     IncomingFileTransferChannelPtr channel() const { return mChan; }
 
