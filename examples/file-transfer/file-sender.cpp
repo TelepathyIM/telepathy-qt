@@ -147,10 +147,10 @@ void FileSender::onAccountConnectionChanged(const ConnectionPtr &conn)
     Q_ASSERT(conn->status() == ConnectionStatusConnected);
 
     qDebug() << "Account online, got a connected connection!";
-    mConn = conn;
+    mConnection = conn;
 
     qDebug() << "Creating contact object for receiver" << mReceiver;
-    connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << mReceiver,
+    connect(mConnection->contactManager()->contactsForIdentifiers(QStringList() << mReceiver,
                 Contact::FeatureCapabilities),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onContactRetrieved(Tp::PendingOperation *)));

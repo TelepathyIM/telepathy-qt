@@ -33,7 +33,7 @@
 PendingFileTransfer::PendingFileTransfer(const FileTransferChannelPtr &chan,
         const SharedPtr<RefCounted> &object)
     : PendingOperation(object),
-      mChan(chan)
+      mChannel(chan)
 {
     connect(chan.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
@@ -94,5 +94,5 @@ void PendingFileTransfer::onTransferStateChanged(FileTransferState state,
 void PendingFileTransfer::onTransferredBytesChanged(qulonglong count)
 {
     qDebug().nospace() << "Transferred bytes " << count << " - " <<
-        ((int) (((double) count / mChan->size()) * 100)) << "% done";
+        ((int) (((double) count / mChannel->size()) * 100)) << "% done";
 }
