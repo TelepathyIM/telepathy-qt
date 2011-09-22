@@ -25,6 +25,8 @@
 #include "ft-send-op.h"
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpec>
+#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/MethodInvocationContext>
@@ -33,9 +35,9 @@
 #include <QDateTime>
 #include <QDebug>
 
-FTSenderHandler::FTSenderHandler(const ChannelClassSpecList &channelFilter)
+FTSenderHandler::FTSenderHandler()
     : QObject(),
-      AbstractClientHandler(channelFilter, AbstractClientHandler::Capabilities(), false)
+      AbstractClientHandler(ChannelClassSpecList(), AbstractClientHandler::Capabilities(), false)
 {
 }
 

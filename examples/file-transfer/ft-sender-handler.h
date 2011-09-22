@@ -34,9 +34,9 @@ class FTSenderHandler : public QObject, public AbstractClientHandler
     Q_DISABLE_COPY(FTSenderHandler)
 
 public:
-    static SharedPtr<FTSenderHandler> create(const ChannelClassSpecList &channelFilter)
+    static SharedPtr<FTSenderHandler> create()
     {
-        return SharedPtr<FTSenderHandler>(new FTSenderHandler(channelFilter));
+        return SharedPtr<FTSenderHandler>(new FTSenderHandler());
     }
 
     ~FTSenderHandler();
@@ -55,7 +55,7 @@ private Q_SLOTS:
     void onSendFinished(Tp::PendingOperation *op);
 
 private:
-    FTSenderHandler(const ChannelClassSpecList &channelFilter);
+    FTSenderHandler();
 
     QSet<PendingOperation*> mSendOps;
 };
