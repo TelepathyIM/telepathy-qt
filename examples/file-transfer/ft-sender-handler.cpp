@@ -68,30 +68,13 @@ void FTSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context
         return;
     }
 
-    context->setFinished();
-
-    if (chan->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER) {
-        qWarning() << "Channel received to handle is not of type FileTransfer, service confused. "
-            "Ignoring channel";
-        chan->requestClose();
-        return;
-    }
-
-    if (!chan->isRequested()) {
-        qWarning() << "Channel received to handle is not an outgoing file transfer channel, "
-            "service confused. Ignoring channel";
-        chan->requestClose();
-        return;
-    }
+    Q_ASSERT(chan->channelType() == TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    Q_ASSERT(chan->isRequested());
 
     OutgoingFileTransferChannelPtr oftChan = OutgoingFileTransferChannelPtr::qObjectCast(chan);
-    if (!oftChan) {
-        qWarning() << "Channel received to handle is not a subclass of OutgoingFileTransferChannel. "
-            "ChannelFactory set on this handler's account must construct OutgoingFileTransferChannel "
-            "subclasses for outgoing channels of type FileTransfer. Ignoring channel";
-        chan->requestClose();
-        return;
-    }
+    Q_ASSERT(oftChan);
+
+    context->setFinished();
 
     if (oftChan->uri().isEmpty()) {
         qWarning() << "Received an outgoing file transfer channel with uri undefined, "
