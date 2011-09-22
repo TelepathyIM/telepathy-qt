@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_file_transfer_ft_receiver_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_file_transfer_ft_receiver_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_file_transfer_file_receiver_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_file_transfer_file_receiver_h_HEADER_GUARD_
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
@@ -29,14 +29,14 @@
 
 using namespace Tp;
 
-class FTReceiver : public QObject
+class FileReceiver : public QObject
 {
     Q_OBJECT
-    Q_DISABLE_COPY(FTReceiver)
+    Q_DISABLE_COPY(FileReceiver)
 
 public:
-    FTReceiver(QObject *parent);
-    ~FTReceiver();
+    FileReceiver(QObject *parent);
+    ~FileReceiver();
 
 private:
     ClientRegistrarPtr mCR;
