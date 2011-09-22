@@ -159,8 +159,18 @@ void TestChanGroup::testCreateChannel()
     Q_FOREACH (ContactPtr contact, mChan->groupContacts())
         mInitialMembers.push_back(contact->handle()[0]);
 
+    QCOMPARE(mChan->groupFlags(), ChannelGroupFlagCanAdd |
+            ChannelGroupFlagCanRemove | ChannelGroupFlagProperties);
+
     QCOMPARE(mChan->groupCanAddContacts(), true);
+    QCOMPARE(mChan->groupCanAddContactsWithMessage(), false);
+    QCOMPARE(mChan->groupCanAcceptContactsWithMessage(), false);
+    QCOMPARE(mChan->groupCanRescindContacts(), false);
+    QCOMPARE(mChan->groupCanRescindContactsWithMessage(), false);
     QCOMPARE(mChan->groupCanRemoveContacts(), true);
+    QCOMPARE(mChan->groupCanRemoveContactsWithMessage(), false);
+    QCOMPARE(mChan->groupCanRejectContactsWithMessage(), false);
+    QCOMPARE(mChan->groupCanDepartWithMessage(), false);
 
     debugContacts();
 
