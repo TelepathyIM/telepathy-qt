@@ -38,7 +38,7 @@ class TubeReceiver : public QObject
     Q_OBJECT
 
 public:
-   TubeReceiver(const QString &accountName, QObject *parent);
+   TubeReceiver(QObject *parent);
    ~TubeReceiver();
 
 private Q_SLOTS:

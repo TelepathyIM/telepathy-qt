@@ -29,7 +29,7 @@
 #include <QIODevice>
 #include <QStringList>
 
-TubeReceiver::TubeReceiver(const QString &accountName, QObject *parent)
+TubeReceiver::TubeReceiver(QObject *parent)
     : QObject(parent)
 {
     mTubeClient = StreamTubeClient::create(QStringList() << QLatin1String("tp-qt4-stube-example"));
@@ -90,15 +90,10 @@ int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    if (argc != 2) {
-        qDebug() << "usage:" << argv[0] << "<account name, as in mc-tool list>";
-        return 1;
-    }
-
     Tp::registerTypes();
     Tp::enableDebug(true);
 
-    new TubeReceiver(QLatin1String(argv[1]), &app);
+    new TubeReceiver(&app);
 
     return app.exec();
 }
