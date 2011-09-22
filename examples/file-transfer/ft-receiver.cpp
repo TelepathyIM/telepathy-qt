@@ -22,8 +22,6 @@
 #include "ft-receiver.h"
 
 #include <TelepathyQt4/AccountFactory>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
@@ -52,9 +50,7 @@ FTReceiver::FTReceiver(QObject *parent)
             channelFactory, contactFactory);
 
     qDebug() << "Registering incoming file transfer handler";
-    ChannelClassSpecList channelFilter;
-    channelFilter.append(ChannelClassSpec::incomingFileTransfer());
-    mHandler = FTReceiverHandler::create(channelFilter);
+    mHandler = FTReceiverHandler::create();
     QString handlerName(QLatin1String("TpQt4ExampleFTReceiverHandler"));
     if (!mCR->registerClient(AbstractClientPtr::dynamicCast(mHandler), handlerName)) {
         qWarning() << "Unable to register incoming file transfer handler, aborting";
