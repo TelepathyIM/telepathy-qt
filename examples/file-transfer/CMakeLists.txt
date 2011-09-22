@@ -18,12 +18,12 @@ target_link_libraries(ft-receiver
     telepathy-qt4)
 
 set(ft-sender_SRCS
-    ft-sender.cpp
+    file-sender.cpp
     ft-sender-handler.cpp
     pending-file-send.cpp)
 
 set(ft-sender_MOC_SRCS
-    ft-sender.h
+    file-sender.h
     ft-sender-handler.h
     pending-file-send.h)
 

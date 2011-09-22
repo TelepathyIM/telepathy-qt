@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "ft-sender.h"
+#include "file-sender.h"
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountFactory>
@@ -43,7 +43,7 @@
 
 #include <QDebug>
 
-FTSender::FTSender(const QString &accountName, const QString &receiver,
+FileSender::FileSender(const QString &accountName, const QString &receiver,
         const QString &filePath, QObject *parent)
     : QObject(parent),
       mAccountName(accountName),
@@ -73,11 +73,11 @@ FTSender::FTSender(const QString &accountName, const QString &receiver,
             SLOT(onAMReady(Tp::PendingOperation*)));
 }
 
-FTSender::~FTSender()
+FileSender::~FileSender()
 {
 }
 
-void FTSender::onAMReady(PendingOperation *op)
+void FileSender::onAMReady(PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "AccountManager cannot become ready -" <<
@@ -102,7 +102,7 @@ void FTSender::onAMReady(PendingOperation *op)
             SLOT(onAccountReady(Tp::PendingOperation*)));
 }
 
-void FTSender::onAccountReady(PendingOperation *op)
+void FileSender::onAccountReady(PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Account cannot become ready -" <<
@@ -135,7 +135,7 @@ void FTSender::onAccountReady(PendingOperation *op)
     onAccountConnectionChanged(mAccount->connection());
 }
 
-void FTSender::onAccountConnectionChanged(const ConnectionPtr &conn)
+void FileSender::onAccountConnectionChanged(const ConnectionPtr &conn)
 {
     if (!conn) {
         qDebug() << "The account given has no connection. "
@@ -156,7 +156,7 @@ void FTSender::onAccountConnectionChanged(const ConnectionPtr &conn)
             SLOT(onContactRetrieved(Tp::PendingOperation *)));
 }
 
-void FTSender::onContactRetrieved(PendingOperation *op)
+void FileSender::onContactRetrieved(PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Unable to create contact object for receiver" <<
@@ -189,7 +189,7 @@ void FTSender::onContactRetrieved(PendingOperation *op)
     }
 }
 
-void FTSender::onContactCapabilitiesChanged()
+void FileSender::onContactCapabilitiesChanged()
 {
     if (mFTRequested) {
         return;
@@ -209,7 +209,7 @@ void FTSender::onContactCapabilitiesChanged()
     }
 }
 
-void FTSender::onFTRequestFinished(PendingOperation *op)
+void FileSender::onFTRequestFinished(PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Unable to request stream tube channel -" <<
@@ -241,9 +241,9 @@ int main(int argc, char **argv)
     Tp::enableDebug(false);
     Tp::enableWarnings(true);
 
-    new FTSender(QLatin1String(argv[1]), QLatin1String(argv[2]), filePath, &app);
+    new FileSender(QLatin1String(argv[1]), QLatin1String(argv[2]), filePath, &app);
 
     return app.exec();
 }
 
-#include "_gen/ft-sender.moc.hpp"
+#include "_gen/file-sender.moc.hpp"
