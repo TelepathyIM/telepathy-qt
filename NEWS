@@ -30,6 +30,8 @@ Fixes:
  * fd.o# 40655 - ChannelDispatchOperation::claim() cannot be used by Approvers
    to handle channels
  * Codegen is now able to utilize types with D-Bus signature aay, aas and aav
+ * Account/Connection/Channel now properly check if FeatureCore is ready on
+   accessors.
 
 telepathy-qt4 0.7.2 (2011-08-04)
 ================================
