@@ -32,28 +32,12 @@
 
 PendingFileSend::PendingFileSend(const OutgoingFileTransferChannelPtr &chan,
         const SharedPtr<RefCounted> &object)
-    : PendingOperation(object),
-      mChan(chan),
+    : PendingFileTransfer(FileTransferChannelPtr::qObjectCast(chan), object),
       mSendingFile(false)
 {
-    mFile.setFileName(QUrl(chan->uri()).toLocalFile());
-    if (!mFile.open(QIODevice::ReadOnly)) {
-        qDebug() << "Unable to open" << chan->uri() << "for reading, aborting transfer";
-        setFinishedWithError(TP_QT4_ERROR_INVALID_ARGUMENT,
-                QLatin1String("Unable to open file for reading"));
-        return;
-    }
-
-    connect(chan.data(),
-            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-            SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
-    connect(chan.data(),
-            SIGNAL(stateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)),
-            SLOT(onStateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)));
-    connect(chan.data(),
-            SIGNAL(transferredBytesChanged(qulonglong)),
-            SLOT(onTransferredBytesChanged(qulonglong)));
-    onStateChanged(mChan->state(), mChan->stateReason());
+    // call onTransferStateChanged here as now we are constructed, otherwise calling it in the base
+    // class would only invoke the base class slot
+    onTransferStateChanged(chan->state(), chan->stateReason());
 }
 
 PendingFileSend::~PendingFileSend()
@@ -61,52 +45,29 @@ PendingFileSend::~PendingFileSend()
     mFile.close();
 }
 
-void PendingFileSend::onChannelInvalidated(DBusProxy *proxy,
-        const QString &errorName, const QString &errorMessage)
-{
-    Q_UNUSED(proxy);
-
-    qWarning() << "Error sending file, channel invalidated -" <<
-        errorName << "-" << errorMessage;
-    setFinishedWithError(errorName, errorMessage);
-}
-
-void PendingFileSend::onStateChanged(FileTransferState state,
+void PendingFileSend::onTransferStateChanged(FileTransferState state,
         FileTransferStateChangeReason stateReason)
 {
-    qDebug() << "File transfer channel state changed to" << state <<
-        "with reason" << stateReason;
-    switch (state) {
-        case FileTransferStatePending:
-            qDebug() << "Awaiting receiver to accept file transfer";
-            break;
+    PendingFileTransfer::onTransferStateChanged(state, stateReason);
 
-        case FileTransferStateAccepted:
-            Q_ASSERT(!mSendingFile);
-            mSendingFile = true;
-            qDebug() << "Sending" << mChan->uri() << "to" << mChan->targetId();
-            mChan->provideFile(&mFile);
+    if (state == FileTransferStateAccepted) {
+        Q_ASSERT(!mSendingFile);
+        mSendingFile = true;
 
-        case FileTransferStateOpen:
-            break;
+        OutgoingFileTransferChannelPtr chan =
+            OutgoingFileTransferChannelPtr::qObjectCast(channel());
+        Q_ASSERT(chan);
 
-        case FileTransferStateCompleted:
-            qDebug() << "Transfer completed!";
-            setFinished();
-            break;
-
-        case FileTransferStateCancelled:
-            qDebug() << "Transfer cancelled";
-            setFinished();
+        QString uri = chan->uri();
+        mFile.setFileName(QUrl(uri).toLocalFile());
+        if (!mFile.open(QIODevice::ReadOnly)) {
+            qWarning() << "Unable to open" << uri << "for reading, aborting transfer";
+            setFinishedWithError(TP_QT4_ERROR_INVALID_ARGUMENT,
+                    QLatin1String("Unable to open file for reading"));
             return;
+        }
 
-        default:
-            Q_ASSERT(false);
+        qDebug() << "Sending" << uri << "to" << chan->targetId();
+        chan->provideFile(&mFile);
     }
-}
-
-void PendingFileSend::onTransferredBytesChanged(qulonglong count)
-{
-    qDebug().nospace() << "Transferred bytes " << count << " - " <<
-        ((int) (((double) count / mChan->size()) * 100)) << "% done";
 }
