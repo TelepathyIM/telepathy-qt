@@ -21,13 +21,11 @@ target_link_libraries(ft-receiver
 
 set(ft-sender_SRCS
     file-sender.cpp
-    file-sender-handler.cpp
     pending-file-send.cpp
     pending-file-transfer.cpp)
 
 set(ft-sender_MOC_SRCS
     file-sender.h
-    file-sender-handler.h
     pending-file-send.h
     pending-file-transfer.h)
 

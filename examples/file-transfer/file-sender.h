@@ -25,8 +25,6 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
-#include "file-sender-handler.h"
-
 using namespace Tp;
 
 namespace Tp
@@ -51,6 +49,7 @@ private Q_SLOTS:
     void onContactRetrieved(Tp::PendingOperation *op);
     void onContactCapabilitiesChanged();
     void onTransferRequestFinished(Tp::PendingOperation *op);
+    void onSendFinished(Tp::PendingOperation *op);
 
 private:
     QString mAccountName;
@@ -62,10 +61,6 @@ private:
     AccountPtr mAccount;
     ConnectionPtr mConnection;
     ContactPtr mContact;
-
-    ClientRegistrarPtr mCR;
-    SharedPtr<FileSenderHandler> mHandler;
-    QString mHandlerBusName;
 };
 
 #endif
