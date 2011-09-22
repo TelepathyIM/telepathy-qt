@@ -61,12 +61,14 @@ void FTSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context
     Q_ASSERT(channels.size() == 1);
     ChannelPtr chan = channels.first();
 
-    context->setFinished();
-
     if (!chan->isValid()) {
         qWarning() << "Channel received to handle is invalid, ignoring channel";
-        chan->requestClose();
+        context->setFinishedWithError(TP_QT4_ERROR_INVALID_ARGUMENT,
+                QLatin1String("Channel received to handle is invalid"));
+        return;
     }
+
+    context->setFinished();
 
     if (chan->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER) {
         qWarning() << "Channel received to handle is not of type FileTransfer, service confused. "
