@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "ft-receiver.h"
+#include "file-receiver.h"
 
 #include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/ChannelFactory>
@@ -32,7 +32,7 @@
 
 #include <QDebug>
 
-FTReceiver::FTReceiver(QObject *parent)
+FileReceiver::FileReceiver(QObject *parent)
     : QObject(parent)
 {
     QDBusConnection bus(QDBusConnection::sessionBus());
@@ -61,7 +61,7 @@ FTReceiver::FTReceiver(QObject *parent)
     qDebug() << "Awaiting file transfers";
 }
 
-FTReceiver::~FTReceiver()
+FileReceiver::~FileReceiver()
 {
 }
 
@@ -73,9 +73,9 @@ int main(int argc, char **argv)
     Tp::enableDebug(false);
     Tp::enableWarnings(true);
 
-    new FTReceiver(&app);
+    new FileReceiver(&app);
 
     return app.exec();
 }
 
-#include "_gen/ft-receiver.moc.hpp"
+#include "_gen/file-receiver.moc.hpp"

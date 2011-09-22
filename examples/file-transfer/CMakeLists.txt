@@ -1,10 +1,10 @@
 set(ft-receiver_SRCS
-    ft-receiver.cpp
+    file-receiver.cpp
     ft-receiver-handler.cpp
     pending-file-receive.cpp)
 
 set(ft-receiver_MOC_SRCS
-    ft-receiver.h
+    file-receiver.h
     ft-receiver-handler.h
     pending-file-receive.h)
 
