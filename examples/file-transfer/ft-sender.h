@@ -46,6 +46,7 @@ public:
 
 private Q_SLOTS:
     void onAMReady(Tp::PendingOperation *op);
+    void onAccountReady(Tp::PendingOperation *op);
     void onAccountConnectionChanged(const Tp::ConnectionPtr &conn);
     void onContactRetrieved(Tp::PendingOperation *op);
     void onContactCapabilitiesChanged();

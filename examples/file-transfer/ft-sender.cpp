@@ -55,7 +55,9 @@ FTSender::FTSender(const QString &accountName, const QString &receiver,
 
     QDBusConnection bus(QDBusConnection::sessionBus());
 
-    AccountFactoryPtr accountFactory = AccountFactory::create(bus, Account::FeatureCore);
+    // Let's not prepare any account feature as we only care about one account, thus no need to
+    // prepare features for all accounts
+    AccountFactoryPtr accountFactory = AccountFactory::create(bus);
     // We only care about CONNECTED connections, so let's specify that in a Connection Factory
     ConnectionFactoryPtr connectionFactory = ConnectionFactory::create(bus,
             Connection::FeatureCore | Connection::FeatureConnected);
@@ -94,7 +96,24 @@ void FTSender::onAMReady(PendingOperation *op)
         qWarning() << "The account given does not exist";
         QCoreApplication::exit(1);
     }
-    Q_ASSERT(mAccount->isReady());
+    Q_ASSERT(!mAccount->isReady());
+    connect(mAccount->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onAccountReady(Tp::PendingOperation*)));
+}
+
+void FTSender::onAccountReady(PendingOperation *op)
+{
+    if (op->isError()) {
+        qWarning() << "Account cannot become ready -" <<
+            op->errorName() << '-' << op->errorMessage();
+        QCoreApplication::exit(1);
+        return;
+    }
+
+    PendingReady *pr = qobject_cast<PendingReady*>(op);
+    Q_ASSERT(pr != NULL);
+    qDebug() << "Account ready";
 
     mCR = ClientRegistrar::create(mAM);
 
