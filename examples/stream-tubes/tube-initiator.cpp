@@ -126,6 +126,8 @@ void TubeInitiator::onAccountConnectionChanged(const ConnectionPtr &conn)
         return;
     }
 
+    // Connection::FeatureConnected being in the Connection Factory means that we shouldn't get
+    // pre-Connected Connections
     Q_ASSERT(conn->isValid());
     Q_ASSERT(conn->status() == ConnectionStatusConnected);
 
