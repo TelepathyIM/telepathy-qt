@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_file_transfer_ft_sender_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_file_transfer_ft_sender_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_file_transfer_file_sender_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_file_transfer_file_sender_h_HEADER_GUARD_
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
@@ -34,15 +34,15 @@ namespace Tp
 class PendingOperation;
 }
 
-class FTSender : public QObject
+class FileSender : public QObject
 {
     Q_OBJECT
-    Q_DISABLE_COPY(FTSender)
+    Q_DISABLE_COPY(FileSender)
 
 public:
-    FTSender(const QString &accountName, const QString &receiverID,
+    FileSender(const QString &accountName, const QString &receiverID,
             const QString &filePath, QObject *parent);
-    ~FTSender();
+    ~FileSender();
 
 private Q_SLOTS:
     void onAMReady(Tp::PendingOperation *op);
