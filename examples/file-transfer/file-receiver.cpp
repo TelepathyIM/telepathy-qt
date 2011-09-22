@@ -37,17 +37,15 @@ FileReceiver::FileReceiver(QObject *parent)
 {
     QDBusConnection bus(QDBusConnection::sessionBus());
 
-    AccountFactoryPtr accountFactory = AccountFactory::create(bus, Account::FeatureCore);
+    AccountFactoryPtr accountFactory = AccountFactory::create(bus);
     // We only care about CONNECTED connections, so let's specify that in a Connection Factory
-    ConnectionFactoryPtr connectionFactory = ConnectionFactory::create(bus,
-            Connection::FeatureCore | Connection::FeatureConnected);
+    ConnectionFactoryPtr connectionFactory = ConnectionFactory::create(bus);
     ChannelFactoryPtr channelFactory = ChannelFactory::create(bus);
     channelFactory->addCommonFeatures(Channel::FeatureCore);
     channelFactory->addFeaturesForIncomingFileTransfers(IncomingFileTransferChannel::FeatureCore);
-    ContactFactoryPtr contactFactory = ContactFactory::create();
 
-    mCR = ClientRegistrar::create(bus, accountFactory, connectionFactory,
-            channelFactory, contactFactory);
+    mCR = ClientRegistrar::create(accountFactory, connectionFactory,
+            channelFactory);
 
     qDebug() << "Registering incoming file transfer handler";
     mHandler = FileReceiverHandler::create();
