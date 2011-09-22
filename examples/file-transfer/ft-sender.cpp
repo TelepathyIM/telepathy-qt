@@ -120,7 +120,7 @@ void FTSender::onAccountReady(PendingOperation *op)
     qDebug() << "Registering outgoing file transfer handler";
     ChannelClassSpecList channelFilter;
     channelFilter.append(ChannelClassSpec::outgoingFileTransfer());
-    mHandler = FTSenderHandler::create(channelFilter, mAccount);
+    mHandler = FTSenderHandler::create(channelFilter);
     QString handlerName(QLatin1String("TpQt4ExampleFTSenderHandler"));
     if (!mCR->registerClient(AbstractClientPtr::dynamicCast(mHandler), handlerName)) {
         qWarning() << "Unable to register outgoing file transfer handler, aborting";

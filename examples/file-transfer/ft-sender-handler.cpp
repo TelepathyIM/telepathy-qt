@@ -33,11 +33,9 @@
 #include <QDateTime>
 #include <QDebug>
 
-FTSenderHandler::FTSenderHandler(const ChannelClassSpecList &channelFilter,
-        const AccountPtr &account)
+FTSenderHandler::FTSenderHandler(const ChannelClassSpecList &channelFilter)
     : QObject(),
-      AbstractClientHandler(channelFilter, AbstractClientHandler::Capabilities(), false),
-      mAccount(account)
+      AbstractClientHandler(channelFilter, AbstractClientHandler::Capabilities(), false)
 {
 }
 
@@ -58,11 +56,6 @@ void FTSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context
         const QDateTime &userActionTime,
         const HandlerInfo &handlerInfo)
 {
-    if (account != mAccount) {
-        context->setFinished();
-        return;
-    }
-
     Q_ASSERT(channels.size() == 1);
     ChannelPtr chan = channels.first();
 

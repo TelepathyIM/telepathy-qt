@@ -22,7 +22,6 @@
 #ifndef _TelepathyQt4_examples_file_transfer_ft_sender_handler_h_HEADER_GUARD_
 #define _TelepathyQt4_examples_file_transfer_ft_sender_handler_h_HEADER_GUARD_
 
-#include <TelepathyQt4/Account>
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/Types>
@@ -35,10 +34,9 @@ class FTSenderHandler : public QObject, public AbstractClientHandler
     Q_DISABLE_COPY(FTSenderHandler)
 
 public:
-    static SharedPtr<FTSenderHandler> create(const ChannelClassSpecList &channelFilter,
-            const AccountPtr &account)
+    static SharedPtr<FTSenderHandler> create(const ChannelClassSpecList &channelFilter)
     {
-        return SharedPtr<FTSenderHandler>(new FTSenderHandler(channelFilter, account));
+        return SharedPtr<FTSenderHandler>(new FTSenderHandler(channelFilter));
     }
 
     ~FTSenderHandler();
@@ -57,9 +55,8 @@ private Q_SLOTS:
     void onSendFinished(Tp::PendingOperation *op);
 
 private:
-    FTSenderHandler(const ChannelClassSpecList &channelFilter, const AccountPtr &account);
+    FTSenderHandler(const ChannelClassSpecList &channelFilter);
 
-    AccountPtr mAccount;
     QSet<PendingOperation*> mSendOps;
 };
 
