@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "ft-sender-handler.h"
-#include "_gen/ft-sender-handler.moc.hpp"
+#include "file-sender-handler.h"
+#include "_gen/file-sender-handler.moc.hpp"
 
 #include "pending-file-send.h"
 
@@ -35,22 +35,22 @@
 #include <QDateTime>
 #include <QDebug>
 
-FTSenderHandler::FTSenderHandler()
+FileSenderHandler::FileSenderHandler()
     : QObject(),
       AbstractClientHandler(ChannelClassSpecList(), AbstractClientHandler::Capabilities(), false)
 {
 }
 
-FTSenderHandler::~FTSenderHandler()
+FileSenderHandler::~FileSenderHandler()
 {
 }
 
-bool FTSenderHandler::bypassApproval() const
+bool FileSenderHandler::bypassApproval() const
 {
     return true;
 }
 
-void FTSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context,
+void FileSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context,
         const AccountPtr &account,
         const ConnectionPtr &connection,
         const QList<ChannelPtr> &channels,
@@ -92,7 +92,7 @@ void FTSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context
             SLOT(onSendFinished(Tp::PendingOperation*)));
 }
 
-void FTSenderHandler::onSendFinished(PendingOperation *op)
+void FileSenderHandler::onSendFinished(PendingOperation *op)
 {
     PendingFileSend *sop = qobject_cast<PendingFileSend*>(op);
     qDebug() << "Closing channel";

@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_file_transfer_ft_sender_handler_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_file_transfer_ft_sender_handler_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_file_transfer_file_sender_handler_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_file_transfer_file_sender_handler_h_HEADER_GUARD_
 
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/PendingOperation>
@@ -28,18 +28,18 @@
 
 using namespace Tp;
 
-class FTSenderHandler : public QObject, public AbstractClientHandler
+class FileSenderHandler : public QObject, public AbstractClientHandler
 {
     Q_OBJECT
-    Q_DISABLE_COPY(FTSenderHandler)
+    Q_DISABLE_COPY(FileSenderHandler)
 
 public:
-    static SharedPtr<FTSenderHandler> create()
+    static SharedPtr<FileSenderHandler> create()
     {
-        return SharedPtr<FTSenderHandler>(new FTSenderHandler());
+        return SharedPtr<FileSenderHandler>(new FileSenderHandler());
     }
 
-    ~FTSenderHandler();
+    ~FileSenderHandler();
 
     bool bypassApproval() const;
 
@@ -55,7 +55,7 @@ private Q_SLOTS:
     void onSendFinished(Tp::PendingOperation *op);
 
 private:
-    FTSenderHandler();
+    FileSenderHandler();
 
     QSet<PendingOperation*> mSendOps;
 };
