@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "ft-receiver-handler.h"
-#include "_gen/ft-receiver-handler.moc.hpp"
+#include "file-receiver-handler.h"
+#include "_gen/file-receiver-handler.moc.hpp"
 
 #include "pending-file-receive.h"
 
@@ -35,23 +35,23 @@
 #include <QDateTime>
 #include <QDebug>
 
-FTReceiverHandler::FTReceiverHandler()
+FileReceiverHandler::FileReceiverHandler()
     : QObject(),
       AbstractClientHandler(ChannelClassSpecList() << ChannelClassSpec::incomingFileTransfer(),
               AbstractClientHandler::Capabilities(), false)
 {
 }
 
-FTReceiverHandler::~FTReceiverHandler()
+FileReceiverHandler::~FileReceiverHandler()
 {
 }
 
-bool FTReceiverHandler::bypassApproval() const
+bool FileReceiverHandler::bypassApproval() const
 {
     return false;
 }
 
-void FTReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &context,
+void FileReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &context,
         const AccountPtr &account,
         const ConnectionPtr &connection,
         const QList<ChannelPtr> &channels,
@@ -84,7 +84,7 @@ void FTReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &conte
             SLOT(onReceiveFinished(Tp::PendingOperation*)));
 }
 
-void FTReceiverHandler::onReceiveFinished(PendingOperation *op)
+void FileReceiverHandler::onReceiveFinished(PendingOperation *op)
 {
     PendingFileReceive *rop = qobject_cast<PendingFileReceive*>(op);
     qDebug() << "Closing channel";

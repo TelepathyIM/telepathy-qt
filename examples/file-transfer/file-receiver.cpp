@@ -50,8 +50,8 @@ FileReceiver::FileReceiver(QObject *parent)
             channelFactory, contactFactory);
 
     qDebug() << "Registering incoming file transfer handler";
-    mHandler = FTReceiverHandler::create();
-    QString handlerName(QLatin1String("TpQt4ExampleFTReceiverHandler"));
+    mHandler = FileReceiverHandler::create();
+    QString handlerName(QLatin1String("TpQt4ExampleFileReceiverHandler"));
     if (!mCR->registerClient(AbstractClientPtr::dynamicCast(mHandler), handlerName)) {
         qWarning() << "Unable to register incoming file transfer handler, aborting";
         QCoreApplication::exit(1);
