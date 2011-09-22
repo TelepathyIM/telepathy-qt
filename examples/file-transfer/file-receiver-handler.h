@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_file_transfer_ft_receiver_handler_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_file_transfer_ft_receiver_handler_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_file_transfer_file_receiver_handler_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_file_transfer_file_receiver_handler_h_HEADER_GUARD_
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AbstractClientHandler>
@@ -29,18 +29,18 @@
 
 using namespace Tp;
 
-class FTReceiverHandler : public QObject, public AbstractClientHandler
+class FileReceiverHandler : public QObject, public AbstractClientHandler
 {
     Q_OBJECT
-    Q_DISABLE_COPY(FTReceiverHandler)
+    Q_DISABLE_COPY(FileReceiverHandler)
 
 public:
-    static SharedPtr<FTReceiverHandler> create()
+    static SharedPtr<FileReceiverHandler> create()
     {
-        return SharedPtr<FTReceiverHandler>(new FTReceiverHandler());
+        return SharedPtr<FileReceiverHandler>(new FileReceiverHandler());
     }
 
-    ~FTReceiverHandler();
+    ~FileReceiverHandler();
 
     bool bypassApproval() const;
 
@@ -56,7 +56,7 @@ private Q_SLOTS:
     void onReceiveFinished(Tp::PendingOperation *op);
 
 private:
-    FTReceiverHandler();
+    FileReceiverHandler();
 
     QSet<PendingOperation*> mReceiveOps;
 };
