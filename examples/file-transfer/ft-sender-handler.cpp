@@ -22,7 +22,7 @@
 #include "ft-sender-handler.h"
 #include "_gen/ft-sender-handler.moc.hpp"
 
-#include "ft-send-op.h"
+#include "pending-file-send.h"
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelClassSpec>
@@ -85,7 +85,7 @@ void FTSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context
 
     context->setFinished();
 
-    FTSendOp *sop = new FTSendOp(oftChan,
+    PendingFileSend *sop = new PendingFileSend(oftChan,
             SharedPtr<RefCounted>::dynamicCast(AbstractClientPtr(this)));
     connect(sop,
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -94,7 +94,7 @@ void FTSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context
 
 void FTSenderHandler::onSendFinished(PendingOperation *op)
 {
-    FTSendOp *sop = qobject_cast<FTSendOp*>(op);
+    PendingFileSend *sop = qobject_cast<PendingFileSend*>(op);
     qDebug() << "Closing channel";
     sop->channel()->requestClose();
 }
