@@ -48,7 +48,7 @@ FTReceiverHandler::~FTReceiverHandler()
 
 bool FTReceiverHandler::bypassApproval() const
 {
-    return true;
+    return false;
 }
 
 void FTReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &context,
