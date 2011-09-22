@@ -194,6 +194,10 @@ void TestConferenceChan::testConference()
 
     QCOMPARE(mChan->supportsConferenceMerging(), true);
     QCOMPARE(mChan->supportsConferenceSplitting(), false);
+    QVERIFY(connect(mChan->conferenceSplitChannel(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
 
     ChannelPtr otherChannel = Channel::create(mConn->client(), mTextChan3Path, QVariantMap());
 
