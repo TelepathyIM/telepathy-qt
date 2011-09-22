@@ -121,6 +121,7 @@ void TestChanBasics::testCreateChannel()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
     QCOMPARE(mChan->isRequested(), true);
+    QCOMPARE(mChan->channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
     QCOMPARE(mChan->groupCanAddContacts(), false);
     QCOMPARE(mChan->groupCanRemoveContacts(), false);
     QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
@@ -146,6 +147,12 @@ void TestChanBasics::testCreateChannel()
             mChan->immutableProperties());
     QVERIFY(chan);
     QVERIFY(chan->isValid());
+    QVERIFY(connect(chan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(chan->isReady(), true);
+    QCOMPARE(chan->channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
 
     // create an invalid connection to use as the channel connection
     ConnectionPtr conn = Connection::create(QLatin1String(""), QLatin1String("/"),
@@ -158,6 +165,11 @@ void TestChanBasics::testCreateChannel()
             mChan->immutableProperties());
     QVERIFY(chan);
     QVERIFY(!chan->isValid());
+    QVERIFY(connect(chan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+    QCOMPARE(chan->channelType(), QString());
 }
 
 void TestChanBasics::testEnsureChannel()
