@@ -34,9 +34,8 @@ TubeReceiver::TubeReceiver(QObject *parent)
 {
     mTubeClient = StreamTubeClient::create(QStringList() << QLatin1String("tp-qt4-stube-example"));
     connect(mTubeClient.data(),
-            SIGNAL(tubeAcceptedAsUnix(Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr,QString,
-                    bool,uchar)),
-            SLOT(onTubeAccepted(Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr,QString)));
+            SIGNAL(tubeAcceptedAsUnix(QString,bool,uchar,Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),
+            SLOT(onTubeAccepted(QString)));
     mTubeClient->setToAcceptAsUnix(false); // no SCM_CREDENTIALS required
 }
 
