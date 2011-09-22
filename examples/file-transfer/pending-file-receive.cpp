@@ -28,28 +28,15 @@
 
 #include <QDebug>
 #include <QFile>
-#include <QUrl>
 
 PendingFileReceive::PendingFileReceive(const IncomingFileTransferChannelPtr &chan,
         const SharedPtr<RefCounted> &object)
-    : PendingOperation(object),
-      mChan(chan),
+    : PendingFileTransfer(FileTransferChannelPtr::qObjectCast(chan), object),
       mReceivingFile(false)
 {
-    QString fileName(QLatin1String("TpQt4ExampleFTReceiver_") + mChan->fileName());
-    fileName.replace(QLatin1String("/"), QLatin1String("_"));
-    mFile.setFileName(fileName);
-
-    connect(chan.data(),
-            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-            SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
-    connect(chan.data(),
-            SIGNAL(stateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)),
-            SLOT(onStateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)));
-    connect(chan.data(),
-            SIGNAL(transferredBytesChanged(qulonglong)),
-            SLOT(onTransferredBytesChanged(qulonglong)));
-    onStateChanged(mChan->state(), mChan->stateReason());
+    // call onTransferStateChanged here as now we are constructed, otherwise calling it in the base
+    // class would only invoke the base class slot
+    onTransferStateChanged(chan->state(), chan->stateReason());
 }
 
 PendingFileReceive::~PendingFileReceive()
@@ -57,52 +44,25 @@ PendingFileReceive::~PendingFileReceive()
     mFile.close();
 }
 
-void PendingFileReceive::onChannelInvalidated(DBusProxy *proxy,
-        const QString &errorName, const QString &errorMessage)
-{
-    Q_UNUSED(proxy);
-
-    qWarning() << "Error receiving file, channel invalidated -" <<
-        errorName << "-" << errorMessage;
-    setFinishedWithError(errorName, errorMessage);
-}
-
-void PendingFileReceive::onStateChanged(FileTransferState state,
+void PendingFileReceive::onTransferStateChanged(FileTransferState state,
         FileTransferStateChangeReason stateReason)
 {
-    qDebug() << "File transfer channel state changed to" << state <<
-        "with reason" << stateReason;
-    switch (state) {
-        case FileTransferStatePending:
-            Q_ASSERT(!mReceivingFile);
-            mReceivingFile = true;
-            qDebug() << "Accepting file transfer, saving file as" << mFile.fileName();
-            mChan->acceptFile(0, &mFile);
-            break;
+    PendingFileTransfer::onTransferStateChanged(state, stateReason);
 
-        case FileTransferStateAccepted:
-            qDebug() << "Receiving" << mChan->fileName() << "from" << mChan->targetId();
+    if (state == FileTransferStatePending) {
+        Q_ASSERT(!mReceivingFile);
+        mReceivingFile = true;
 
-        case FileTransferStateOpen:
-            break;
+        IncomingFileTransferChannelPtr chan =
+            IncomingFileTransferChannelPtr::qObjectCast(channel());
+        Q_ASSERT(chan);
 
-        case FileTransferStateCompleted:
-            qDebug() << "Transfer completed!";
-            setFinished();
-            break;
+        QString fileName(QLatin1String("TpQt4ExampleFTReceiver_") + chan->fileName());
+        fileName.replace(QLatin1String("/"), QLatin1String("_"));
+        mFile.setFileName(fileName);
 
-        case FileTransferStateCancelled:
-            qDebug() << "Transfer cancelled";
-            setFinished();
-            return;
-
-        default:
-            Q_ASSERT(false);
+        qDebug() << "Receiving" << chan->fileName() << "from" <<
+            chan->targetId() << ", saving as" << fileName;
+        chan->acceptFile(0, &mFile);
     }
-}
-
-void PendingFileReceive::onTransferredBytesChanged(qulonglong count)
-{
-    qDebug().nospace() << "Transferred bytes " << count << " - " <<
-        ((int) (((double) count / mChan->size()) * 100)) << "% done";
 }

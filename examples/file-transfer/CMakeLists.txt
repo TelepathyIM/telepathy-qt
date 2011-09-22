@@ -1,12 +1,14 @@
 set(ft-receiver_SRCS
     file-receiver.cpp
     file-receiver-handler.cpp
-    pending-file-receive.cpp)
+    pending-file-receive.cpp
+    pending-file-transfer.cpp)
 
 set(ft-receiver_MOC_SRCS
     file-receiver.h
     file-receiver-handler.h
-    pending-file-receive.h)
+    pending-file-receive.h
+    pending-file-transfer.h)
 
 tpqt4_generate_mocs(${ft-receiver_MOC_SRCS})
 
