@@ -49,7 +49,7 @@ FileSender::FileSender(const QString &accountName, const QString &receiver,
       mAccountName(accountName),
       mReceiver(receiver),
       mFilePath(filePath),
-      mFTRequested(false)
+      mTransferRequested(false)
 {
     qDebug() << "Retrieving account from AccountManager";
 
@@ -191,7 +191,7 @@ void FileSender::onContactRetrieved(PendingOperation *op)
 
 void FileSender::onContactCapabilitiesChanged()
 {
-    if (mFTRequested) {
+    if (mTransferRequested) {
         return;
     }
 
@@ -199,17 +199,17 @@ void FileSender::onContactCapabilitiesChanged()
         qDebug() << "The remote contact is capable of receiving file transfers. "
             "Requesting file transfer channel";
 
-        mFTRequested = true;
+        mTransferRequested = true;
         FileTransferChannelCreationProperties ftProps(mFilePath,
                 QLatin1String("application/octet-stream"));
         connect(mAccount->createFileTransfer(mContact, ftProps,
                     QDateTime::currentDateTime(), mHandlerBusName),
                 SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onFTRequestFinished(Tp::PendingOperation*)));
+                SLOT(onTransferRequestFinished(Tp::PendingOperation*)));
     }
 }
 
-void FileSender::onFTRequestFinished(PendingOperation *op)
+void FileSender::onTransferRequestFinished(PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Unable to request stream tube channel -" <<

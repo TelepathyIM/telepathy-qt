@@ -50,13 +50,13 @@ private Q_SLOTS:
     void onAccountConnectionChanged(const Tp::ConnectionPtr &conn);
     void onContactRetrieved(Tp::PendingOperation *op);
     void onContactCapabilitiesChanged();
-    void onFTRequestFinished(Tp::PendingOperation *op);
+    void onTransferRequestFinished(Tp::PendingOperation *op);
 
 private:
     QString mAccountName;
     QString mReceiver;
     QString mFilePath;
-    bool mFTRequested;
+    bool mTransferRequested;
 
     AccountManagerPtr mAM;
     AccountPtr mAccount;
