@@ -74,14 +74,16 @@ void FTSenderHandler::handleChannels(const MethodInvocationContextPtr<> &context
     OutgoingFileTransferChannelPtr oftChan = OutgoingFileTransferChannelPtr::qObjectCast(chan);
     Q_ASSERT(oftChan);
 
-    context->setFinished();
-
     if (oftChan->uri().isEmpty()) {
         qWarning() << "Received an outgoing file transfer channel with uri undefined, "
             "aborting file transfer";
         chan->requestClose();
+        context->setFinishedWithError(TP_QT4_ERROR_INVALID_ARGUMENT,
+                QLatin1String("Outgoing file transfer channel received does not have the URI set"));
         return;
     }
+
+    context->setFinished();
 
     FTSendOp *sop = new FTSendOp(oftChan,
             SharedPtr<RefCounted>::dynamicCast(AbstractClientPtr(this)));
