@@ -42,9 +42,9 @@ public:
 private Q_SLOTS:
     void onChannelInvalidated(Tp::DBusProxy *proxy,
             const QString &errorName, const QString &errorMessage);
-    void onFileTransferChannelStateChanged(Tp::FileTransferState state,
+    void onStateChanged(Tp::FileTransferState state,
             Tp::FileTransferStateChangeReason stateReason);
-    void onFileTransferChannelTransferredBytesChanged(qulonglong count);
+    void onTransferredBytesChanged(qulonglong count);
 
 private:
     OutgoingFileTransferChannelPtr mChan;
