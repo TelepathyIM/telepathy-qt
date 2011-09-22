@@ -26,9 +26,11 @@
 #include <TelepathyQt4/OutgoingFileTransferChannel>
 #include <TelepathyQt4/Types>
 
+#include "pending-file-transfer.h"
+
 using namespace Tp;
 
-class PendingFileSend : public PendingOperation
+class PendingFileSend : public PendingFileTransfer
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingFileSend)
@@ -37,17 +39,11 @@ public:
     PendingFileSend(const OutgoingFileTransferChannelPtr &chan, const SharedPtr<RefCounted> &object);
     ~PendingFileSend();
 
-    OutgoingFileTransferChannelPtr channel() const { return mChan; }
-
 private Q_SLOTS:
-    void onChannelInvalidated(Tp::DBusProxy *proxy,
-            const QString &errorName, const QString &errorMessage);
-    void onStateChanged(Tp::FileTransferState state,
+    void onTransferStateChanged(Tp::FileTransferState state,
             Tp::FileTransferStateChangeReason stateReason);
-    void onTransferredBytesChanged(qulonglong count);
 
 private:
-    OutgoingFileTransferChannelPtr mChan;
     bool mSendingFile;
     QFile mFile;
 };
