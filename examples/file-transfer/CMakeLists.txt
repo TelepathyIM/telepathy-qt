@@ -20,12 +20,12 @@ target_link_libraries(ft-receiver
 set(ft-sender_SRCS
     ft-sender.cpp
     ft-sender-handler.cpp
-    ft-send-op.cpp)
+    pending-file-send.cpp)
 
 set(ft-sender_MOC_SRCS
     ft-sender.h
     ft-sender-handler.h
-    ft-send-op.h)
+    pending-file-send.h)
 
 tpqt4_generate_mocs(${ft-sender_MOC_SRCS})
 
