@@ -29,30 +29,16 @@
 
 using namespace Tp;
 
-namespace Tp
-{
-class PendingOperation;
-}
-
 class FTReceiver : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(FTReceiver)
 
 public:
-    FTReceiver(const QString &accountName, QObject *parent);
+    FTReceiver(QObject *parent);
     ~FTReceiver();
 
-private Q_SLOTS:
-    void onAMReady(Tp::PendingOperation *op);
-    void onAccountConnectionChanged(const Tp::ConnectionPtr &conn);
-
 private:
-    QString mAccountName;
-
-    AccountManagerPtr mAM;
-    AccountPtr mAccount;
-
     ClientRegistrarPtr mCR;
     SharedPtr<FTReceiverHandler> mHandler;
 };
