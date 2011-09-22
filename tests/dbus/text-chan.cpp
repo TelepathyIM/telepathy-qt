@@ -181,6 +181,11 @@ void TestTextChan::commonTest(bool withMessages)
     QCOMPARE(mChan->chatState(mContact), ChannelChatStateInactive);
     QCOMPARE(mChan->chatState(ContactPtr()), ChannelChatStateInactive);
 
+    QVERIFY(connect(mChan->requestChatState(ChannelChatStateActive),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 1);
+
     Features features = Features() << TextChannel::FeatureMessageQueue;
     QVERIFY(!mChan->isReady(features));
     // Implementation detail: in legacy text channels, capabilities arrive
