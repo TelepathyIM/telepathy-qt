@@ -35,9 +35,9 @@ class FTReceiverHandler : public QObject, public AbstractClientHandler
     Q_DISABLE_COPY(FTReceiverHandler)
 
 public:
-    static SharedPtr<FTReceiverHandler> create(const ChannelClassSpecList &channelFilter)
+    static SharedPtr<FTReceiverHandler> create()
     {
-        return SharedPtr<FTReceiverHandler>(new FTReceiverHandler(channelFilter));
+        return SharedPtr<FTReceiverHandler>(new FTReceiverHandler());
     }
 
     ~FTReceiverHandler();
@@ -56,7 +56,7 @@ private Q_SLOTS:
     void onReceiveFinished(Tp::PendingOperation *op);
 
 private:
-    FTReceiverHandler(const ChannelClassSpecList &channelFilter);
+    FTReceiverHandler();
 
     QSet<PendingOperation*> mReceiveOps;
 };

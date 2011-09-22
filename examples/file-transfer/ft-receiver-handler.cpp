@@ -25,6 +25,8 @@
 #include "ft-receive-op.h"
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelClassSpec>
+#include <TelepathyQt4/ChannelClassSpecList>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/MethodInvocationContext>
@@ -33,9 +35,10 @@
 #include <QDateTime>
 #include <QDebug>
 
-FTReceiverHandler::FTReceiverHandler(const ChannelClassSpecList &channelFilter)
+FTReceiverHandler::FTReceiverHandler()
     : QObject(),
-      AbstractClientHandler(channelFilter, AbstractClientHandler::Capabilities(), false)
+      AbstractClientHandler(ChannelClassSpecList() << ChannelClassSpec::incomingFileTransfer(),
+              AbstractClientHandler::Capabilities(), false)
 {
 }
 
