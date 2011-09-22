@@ -109,6 +109,7 @@ set(telepathy_qt4_SRCS
     test-backdoors.cpp
     test-backdoors.h
     text-channel.cpp
+    tls-certificate.cpp
     tube-channel.cpp
     types.cpp
     types-internal.h
@@ -143,6 +144,7 @@ set(telepathy_qt4_HEADERS
     account-set.h
     AndFilter
     and-filter.h
+    AuthenticationTLSCertificateInterface
     AvatarData
     AvatarSpec
     avatar.h
@@ -402,6 +404,7 @@ set(telepathy_qt4_HEADERS
     StreamedMediaStream
     TextChannel
     text-channel.h
+    tls-certificate.h
     TubeChannel
     tube-channel.h
     Types
@@ -424,6 +427,7 @@ set(telepathy_qt4_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-session-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-stream-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-properties.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-tls-certificate.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 
@@ -552,7 +556,8 @@ set(SPECS
     dbus
     media-session-handler
     media-stream-handler
-    properties)
+    properties
+    tls-certificate)
 foreach(spec ${SPECS})
     tpqt4_xincludator(${spec}-spec-xincludator ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
                       DEPENDS stable-typesgen)
@@ -601,6 +606,7 @@ tpqt4_client_generator(dbus clientdbus DBus Tp::Client::DBus DEPENDS dbus-spec-x
 tpqt4_client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface DEPENDS media-session-handler-spec-xincludator)
 tpqt4_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface DEPENDS media-stream-handler-spec-xincludator)
 tpqt4_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)
+tpqt4_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPENDS tls-certificate-spec-xincludator)
 
 tpqt4_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
 tpqt4_future_client_generator(channel-dispatcher TpFuture::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-future-xincludator)

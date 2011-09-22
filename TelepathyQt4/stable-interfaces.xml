@@ -18,6 +18,7 @@
 <xi:include href="account-manager.xml"/>
 <xi:include href="account.xml"/>
 <xi:include href="client.xml"/>
+<xi:include href="tls-certificate.xml"/>
 
 <xi:include href="../spec/generic-types.xml"/>
 <xi:include href="../spec/errors.xml"/>
