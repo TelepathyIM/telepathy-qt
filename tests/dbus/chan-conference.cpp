@@ -173,6 +173,15 @@ void TestConferenceChan::testConference()
     }
     QCOMPARE(expectedObjectPaths, objectPaths);
 
+    QCOMPARE(!mChan->isReady(Channel::FeatureConferenceInitialInviteeContacts), true);
+    QCOMPARE(mChan->conferenceInitialInviteeContacts(), Contacts());
+
+    QVERIFY(connect(mChan->becomeReady(Channel::FeatureConferenceInitialInviteeContacts),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(Channel::FeatureConferenceInitialInviteeContacts), true);
+
     QCOMPARE(mChan->conferenceInitialInviteeContacts(), Contacts());
 
     QCOMPARE(mChan->isConference(), true);
