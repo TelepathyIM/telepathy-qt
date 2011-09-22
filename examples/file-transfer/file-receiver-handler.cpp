@@ -59,6 +59,8 @@ void FileReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &con
         const QDateTime &userActionTime,
         const HandlerInfo &handlerInfo)
 {
+    // We should always receive one channel to handle,
+    // otherwise either MC or tp-qt4 itself is bogus, so let's assert in case they are
     Q_ASSERT(channels.size() == 1);
     ChannelPtr chan = channels.first();
 
@@ -69,6 +71,8 @@ void FileReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &con
         return;
     }
 
+    // We should always receive incoming channels of type FileTransfer, as set by our filter,
+    // otherwise either MC or tp-qt4 itself is bogus, so let's assert in case they are
     Q_ASSERT(chan->channelType() == TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
     Q_ASSERT(!chan->isRequested());
 
