@@ -69,30 +69,13 @@ void FTReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &conte
         return;
     }
 
-    context->setFinished();
-
-    if (chan->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER) {
-        qWarning() << "Channel received to handle is not of type FileTransfer, service confused. "
-            "Ignoring channel";
-        chan->requestClose();
-        return;
-    }
-
-    if (chan->isRequested()) {
-        qWarning() << "Channel received to handle is not an incoming file transfer channel, "
-            "service confused. Ignoring channel";
-        chan->requestClose();
-        return;
-    }
+    Q_ASSERT(chan->channelType() == TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    Q_ASSERT(!chan->isRequested());
 
     IncomingFileTransferChannelPtr iftChan = IncomingFileTransferChannelPtr::qObjectCast(chan);
-    if (!iftChan) {
-        qWarning() << "Channel received to handle is not a subclass of IncomingFileTransferChannel. "
-            "ChannelFactory set on this handler's account must construct IncomingFileTransferChannel "
-            "subclasses for incoming channels of type FileTransfer. Ignoring channel";
-        chan->requestClose();
-        return;
-    }
+    Q_ASSERT(iftChan);
+
+    context->setFinished();
 
     FTReceiveOp *rop = new FTReceiveOp(iftChan,
             SharedPtr<RefCounted>::dynamicCast(AbstractClientPtr(this)));
