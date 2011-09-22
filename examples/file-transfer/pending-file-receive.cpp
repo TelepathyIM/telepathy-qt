@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "ft-receive-op.h"
-#include "_gen/ft-receive-op.moc.hpp"
+#include "pending-file-receive.h"
+#include "_gen/pending-file-receive.moc.hpp"
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/Channel>
@@ -30,7 +30,7 @@
 #include <QFile>
 #include <QUrl>
 
-FTReceiveOp::FTReceiveOp(const IncomingFileTransferChannelPtr &chan,
+PendingFileReceive::PendingFileReceive(const IncomingFileTransferChannelPtr &chan,
         const SharedPtr<RefCounted> &object)
     : PendingOperation(object),
       mChan(chan),
@@ -52,12 +52,12 @@ FTReceiveOp::FTReceiveOp(const IncomingFileTransferChannelPtr &chan,
     onStateChanged(mChan->state(), mChan->stateReason());
 }
 
-FTReceiveOp::~FTReceiveOp()
+PendingFileReceive::~PendingFileReceive()
 {
     mFile.close();
 }
 
-void FTReceiveOp::onChannelInvalidated(DBusProxy *proxy,
+void PendingFileReceive::onChannelInvalidated(DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
     Q_UNUSED(proxy);
@@ -67,7 +67,7 @@ void FTReceiveOp::onChannelInvalidated(DBusProxy *proxy,
     setFinishedWithError(errorName, errorMessage);
 }
 
-void FTReceiveOp::onStateChanged(FileTransferState state,
+void PendingFileReceive::onStateChanged(FileTransferState state,
         FileTransferStateChangeReason stateReason)
 {
     qDebug() << "File transfer channel state changed to" << state <<
@@ -101,7 +101,7 @@ void FTReceiveOp::onStateChanged(FileTransferState state,
     }
 }
 
-void FTReceiveOp::onTransferredBytesChanged(qulonglong count)
+void PendingFileReceive::onTransferredBytesChanged(qulonglong count)
 {
     qDebug().nospace() << "Transferred bytes " << count << " - " <<
         ((int) (((double) count / mChan->size()) * 100)) << "% done";
