@@ -25,7 +25,7 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
-#include "ft-sender-handler.h"
+#include "file-sender-handler.h"
 
 using namespace Tp;
 
@@ -64,7 +64,7 @@ private:
     ContactPtr mContact;
 
     ClientRegistrarPtr mCR;
-    SharedPtr<FTSenderHandler> mHandler;
+    SharedPtr<FileSenderHandler> mHandler;
     QString mHandlerBusName;
 };
 
