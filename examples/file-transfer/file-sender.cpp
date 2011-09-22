@@ -21,6 +21,8 @@
 
 #include "file-sender.h"
 
+#include "pending-file-send.h"
+
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/AccountManager>
@@ -36,6 +38,7 @@
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/OutgoingFileTransferChannel>
+#include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingChannelRequest>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingOperation>
@@ -115,19 +118,6 @@ void FileSender::onAccountReady(PendingOperation *op)
     Q_ASSERT(pr != NULL);
     qDebug() << "Account ready";
 
-    mCR = ClientRegistrar::create(mAM);
-
-    qDebug() << "Registering outgoing file transfer handler";
-    mHandler = FileSenderHandler::create();
-    QString handlerName(QLatin1String("TpQt4ExampleFileSenderHandler"));
-    if (!mCR->registerClient(AbstractClientPtr::dynamicCast(mHandler), handlerName)) {
-        qWarning() << "Unable to register outgoing file transfer handler, aborting";
-        QCoreApplication::exit(1);
-        return;
-    }
-
-    mHandlerBusName = QLatin1String("org.freedesktop.Telepathy.Client.") + handlerName;
-
     qDebug() << "Checking if account is online...";
     connect(mAccount.data(),
             SIGNAL(connectionChanged(Tp::ConnectionPtr)),
@@ -202,8 +192,7 @@ void FileSender::onContactCapabilitiesChanged()
         mTransferRequested = true;
         FileTransferChannelCreationProperties ftProps(mFilePath,
                 QLatin1String("application/octet-stream"));
-        connect(mAccount->createFileTransfer(mContact, ftProps,
-                    QDateTime::currentDateTime(), mHandlerBusName),
+        connect(mAccount->createAndHandleFileTransfer(mContact, ftProps),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onTransferRequestFinished(Tp::PendingOperation*)));
     }
@@ -219,6 +208,41 @@ void FileSender::onTransferRequestFinished(PendingOperation *op)
     }
 
     qDebug() << "File transfer channel request finished successfully!";
+
+    PendingChannel *pc = qobject_cast<PendingChannel*>(op);
+    Q_ASSERT(pc);
+
+    ChannelPtr chan = pc->channel();
+    if (!chan->isValid()) {
+        qWarning() << "Channel received to handle is invalid, aborting file transfer";
+        QCoreApplication::exit(1);
+        return;
+    }
+
+    // We should always receive outgoing channels of type FileTransfer, as requested,
+    // otherwise either MC or tp-qt4 itself is bogus, so let's assert in case they are
+    Q_ASSERT(chan->channelType() == TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    Q_ASSERT(chan->isRequested());
+
+    OutgoingFileTransferChannelPtr oftChan = OutgoingFileTransferChannelPtr::qObjectCast(chan);
+    Q_ASSERT(oftChan);
+
+    // We just passed the URI when requesting the channel, so it has to be set
+    Q_ASSERT(!oftChan->uri().isEmpty());
+
+    PendingFileSend *sop = new PendingFileSend(oftChan, SharedPtr<RefCounted>());
+    connect(sop,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onSendFinished(Tp::PendingOperation*)));
+}
+
+void FileSender::onSendFinished(PendingOperation *op)
+{
+    PendingFileSend *sop = qobject_cast<PendingFileSend*>(op);
+    qDebug() << "Closing channel";
+    sop->channel()->requestClose();
+
+    QCoreApplication::exit(0);
 }
 
 int main(int argc, char **argv)
