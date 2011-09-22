@@ -156,9 +156,9 @@ def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_n
             'v' : ('QDBusVariant', True, None),
             'o' : ('QDBusObjectPath', True, 'ObjectPathList'),
             'g' : ('QDBusSignature', True, 'SignatureList'),
-            'as' : ('QStringList', True, None),
-            'ay' : ('QByteArray', True, None),
-            'av' : ('QVariantList', True, None),
+            'as' : ('QStringList', True, "StringListList"),
+            'ay' : ('QByteArray', True, "ByteArrayList"),
+            'av' : ('QVariantList', True, "VariantListList"),
             'a{sv}' : ('QVariantMap', True, None)
             }
 
@@ -170,12 +170,12 @@ def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_n
         typename, pass_by_ref, array_name = natives[sig]
         val = typename
         inarg = (pass_by_ref and ('const %s&' % val)) or val
-    elif sig[0] == 'a' and natives.has_key(sig[1]) and natives[sig[1]][2]:
-        val = natives[sig[1]][2]
+    elif sig[0] == 'a' and natives.has_key(sig[1:]) and natives[sig[1:]][2]:
+        val = natives[sig[1:]][2]
         if explicit_own_ns:
             val = explicit_own_ns + '::' + val
         inarg = 'const %s&' % val
-        array_of = natives[sig[1]][0]
+        array_of = natives[sig[1:]][0]
     elif tptype:
         tptype = tptype.replace('_', '')
         custom_type = True
