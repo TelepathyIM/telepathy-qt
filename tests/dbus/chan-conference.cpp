@@ -152,6 +152,14 @@ void TestConferenceChan::init()
 void TestConferenceChan::testConference()
 {
     mChan = Channel::create(mConn->client(), mConferenceChanPath, QVariantMap());
+    QCOMPARE(mChan->isConference(), false);
+    QVERIFY(mChan->conferenceInitialInviteeContacts().isEmpty());
+    QVERIFY(mChan->conferenceChannels().isEmpty());
+    QVERIFY(mChan->conferenceInitialChannels().isEmpty());
+    QVERIFY(mChan->conferenceOriginalChannels().isEmpty());
+    QCOMPARE(mChan->supportsConferenceMerging(), false);
+    QCOMPARE(mChan->supportsConferenceSplitting(), false);
+
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -184,8 +192,8 @@ void TestConferenceChan::testConference()
 
     QCOMPARE(mChan->conferenceInitialInviteeContacts(), Contacts());
 
-    QCOMPARE(mChan->isConference(), true);
     QCOMPARE(mChan->supportsConferenceMerging(), true);
+    QCOMPARE(mChan->supportsConferenceSplitting(), false);
 
     ChannelPtr otherChannel = Channel::create(mConn->client(), mTextChan3Path, QVariantMap());
 
