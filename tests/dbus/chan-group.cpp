@@ -172,6 +172,8 @@ void TestChanGroup::testCreateChannel()
     QCOMPARE(mChan->groupCanRejectContactsWithMessage(), false);
     QCOMPARE(mChan->groupCanDepartWithMessage(), false);
 
+    QCOMPARE(mChan->groupIsSelfContactTracked(), true);
+
     debugContacts();
 
     QCOMPARE(mChan->groupContacts().count(), 4);
