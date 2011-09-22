@@ -60,6 +60,7 @@ private:
 
     TestConnHelper *mConn;
     TpHandleRepoIface *mContactRepo;
+    ContactPtr mContact;
     TextChannelPtr mChan;
     ExampleEchoChannel *mTextChanService;
     QString mTextChanPath;
@@ -121,6 +122,9 @@ void TestTextChan::initTestCase()
             TP_HANDLE_TYPE_CONTACT);
     guint handle = tp_handle_ensure(mContactRepo, "someone@localhost", 0, 0);
 
+    mContact = mConn->contacts(UIntList() << handle).first();
+    QVERIFY(mContact);
+
     // create a Channel by magic, rather than doing D-Bus round-trips for it
     mTextChanPath = mConn->objectPath() + QLatin1String("/TextChannel");
     QByteArray chanPath(mTextChanPath.toAscii());
@@ -162,6 +166,20 @@ void TestTextChan::commonTest(bool withMessages)
 
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
+
+    QVERIFY(!mChan->isReady(TextChannel::FeatureChatState));
+    QVERIFY(!mChan->hasChatStateInterface());
+    QCOMPARE(mChan->chatState(mContact), ChannelChatStateInactive);
+    QCOMPARE(mChan->chatState(ContactPtr()), ChannelChatStateInactive);
+
+    QVERIFY(connect(asChannel->becomeReady(TextChannel::FeatureChatState),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(TextChannel::FeatureChatState));
+    QVERIFY(!mChan->hasChatStateInterface());
+    QCOMPARE(mChan->chatState(mContact), ChannelChatStateInactive);
+    QCOMPARE(mChan->chatState(ContactPtr()), ChannelChatStateInactive);
 
     Features features = Features() << TextChannel::FeatureMessageQueue;
     QVERIFY(!mChan->isReady(features));
