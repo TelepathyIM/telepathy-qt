@@ -586,7 +586,7 @@ void Channel::Private::continueIntrospection()
 {
     if (introspectQueue.isEmpty()) {
         // this should always be true, but let's make sure
-        if (!parent->isReady()) {
+        if (!parent->isReady(Channel::FeatureCore)) {
             if (groupMembersChangedQueue.isEmpty() && !buildingContacts &&
                 !introspectingConference) {
                 debug() << "Both the IS and the MCD queue empty for the first time. Ready.";
@@ -738,7 +738,7 @@ void Channel::Private::nowHaveInterfaces()
 void Channel::Private::nowHaveInitialMembers()
 {
     // Must be called with no contacts anywhere in the first place
-    Q_ASSERT(!parent->isReady());
+    Q_ASSERT(!parent->isReady(Channel::FeatureCore));
     Q_ASSERT(!buildingContacts);
 
     Q_ASSERT(pendingGroupMembers.isEmpty());
@@ -863,7 +863,7 @@ void Channel::Private::buildContacts()
     if (toBuild.isEmpty()) {
         if (!groupSelfHandle && groupSelfContact) {
             groupSelfContact.reset();
-            if (parent->isReady()) {
+            if (parent->isReady(Channel::FeatureCore)) {
                 emit parent->groupSelfContactChanged();
             }
         }
@@ -891,7 +891,7 @@ void Channel::Private::processMembersChanged()
             return;
         }
 
-        if (!parent->isReady()) {
+        if (!parent->isReady(Channel::FeatureCore)) {
             if (introspectQueue.isEmpty()) {
                 debug() << "Both the MCD and the introspect queue empty for the first time. Ready!";
 
@@ -1088,7 +1088,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
             groupSelfContactRemoveInfo = details;
         }
 
-        if (parent->isReady()) {
+        if (parent->isReady(Channel::FeatureCore)) {
             // Channel is ready, we can signal membership changes to the outside world without
             // confusing anyone's fragile logic.
             emit parent->groupMembersChanged(
@@ -1102,7 +1102,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
     delete currentGroupMembersChangedInfo;
     currentGroupMembersChangedInfo = 0;
 
-    if (selfContactUpdated && parent->isReady()) {
+    if (selfContactUpdated && parent->isReady(Channel::FeatureCore)) {
         emit parent->groupSelfContactChanged();
     }
 
@@ -1138,7 +1138,7 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
 
 void Channel::Private::setReady()
 {
-    Q_ASSERT(!parent->isReady());
+    Q_ASSERT(!parent->isReady(Channel::FeatureCore));
 
     debug() << "Channel fully ready";
     debug() << " Channel type" << channelType;
@@ -1605,7 +1605,7 @@ ConnectionPtr Channel::connection() const
 /**
  * Return the immutable properties of the channel.
  *
- * If the channel is ready (isReady() returns true), the following keys are
+ * If the channel is ready (isReady(Channel::FeatureCore) returns true), the following keys are
  * guaranteed to be present:
  * org.freedesktop.Telepathy.Channel.ChannelType,
  * org.freedesktop.Telepathy.Channel.TargetHandleType,
@@ -1621,7 +1621,7 @@ ConnectionPtr Channel::connection() const
  */
 QVariantMap Channel::immutableProperties() const
 {
-    if (isReady()) {
+    if (isReady(Channel::FeatureCore)) {
         QString key;
 
         key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType");
@@ -1679,7 +1679,7 @@ QString Channel::channelType() const
 {
     // Similarly, we don't want warnings triggered when using the type interface
     // proxies internally.
-    if (!isReady() && mPriv->channelType.isEmpty()) {
+    if (!isReady(Channel::FeatureCore) && mPriv->channelType.isEmpty()) {
         warning() << "Channel::channelType() before the channel type has "
             "been received";
     }
@@ -1701,7 +1701,7 @@ QString Channel::channelType() const
  */
 HandleType Channel::targetHandleType() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::targetHandleType() used channel not ready";
     }
 
@@ -1720,7 +1720,7 @@ HandleType Channel::targetHandleType() const
  */
 uint Channel::targetHandle() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::targetHandle() used channel not ready";
     }
 
@@ -1745,7 +1745,7 @@ uint Channel::targetHandle() const
  */
 QString Channel::targetId() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::targetId() used, but the channel is not ready";
     }
 
@@ -1763,7 +1763,7 @@ QString Channel::targetId() const
  */
 ContactPtr Channel::targetContact() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::targetContact() used, but the channel is not ready";
     } else if (targetHandleType() != HandleTypeContact) {
         warning() << "Channel::targetContact() used with targetHandleType() != Contact";
@@ -1783,7 +1783,7 @@ ContactPtr Channel::targetContact() const
  */
 bool Channel::isRequested() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::isRequested() used channel not ready";
     }
 
@@ -1800,7 +1800,7 @@ bool Channel::isRequested() const
  */
 ContactPtr Channel::initiatorContact() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::initiatorContact() used channel not ready";
     }
 
@@ -2029,7 +2029,7 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
  */
 ChannelGroupFlags Channel::groupFlags() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupFlags() used channel not ready";
     }
 
@@ -2049,7 +2049,7 @@ ChannelGroupFlags Channel::groupFlags() const
  */
 bool Channel::groupCanAddContacts() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanAddContacts() used channel not ready";
     }
 
@@ -2067,7 +2067,7 @@ bool Channel::groupCanAddContacts() const
  */
 bool Channel::groupCanAddContactsWithMessage() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanAddContactsWithMessage() used when channel not ready";
     }
 
@@ -2085,7 +2085,7 @@ bool Channel::groupCanAddContactsWithMessage() const
  */
 bool Channel::groupCanAcceptContactsWithMessage() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanAcceptContactsWithMessage() used when channel not ready";
     }
 
@@ -2117,7 +2117,7 @@ bool Channel::groupCanAcceptContactsWithMessage() const
 PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
         const QString &message)
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupAddContacts() used channel not ready";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),
@@ -2166,7 +2166,7 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
  */
 bool Channel::groupCanRescindContacts() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanRescindContacts() used channel not ready";
     }
 
@@ -2185,7 +2185,7 @@ bool Channel::groupCanRescindContacts() const
  */
 bool Channel::groupCanRescindContactsWithMessage() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanRescindContactsWithMessage() used when channel not ready";
     }
 
@@ -2207,7 +2207,7 @@ bool Channel::groupCanRescindContactsWithMessage() const
  */
 bool Channel::groupCanRemoveContacts() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanRemoveContacts() used channel not ready";
     }
 
@@ -2225,7 +2225,7 @@ bool Channel::groupCanRemoveContacts() const
  */
 bool Channel::groupCanRemoveContactsWithMessage() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanRemoveContactsWithMessage() used when channel not ready";
     }
 
@@ -2244,7 +2244,7 @@ bool Channel::groupCanRemoveContactsWithMessage() const
  */
 bool Channel::groupCanRejectContactsWithMessage() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanRejectContactsWithMessage() used when channel not ready";
     }
 
@@ -2260,7 +2260,7 @@ bool Channel::groupCanRejectContactsWithMessage() const
  */
 bool Channel::groupCanDepartWithMessage() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupCanDepartWithMessage() used when channel not ready";
     }
 
@@ -2311,7 +2311,7 @@ bool Channel::groupCanDepartWithMessage() const
 PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts,
         const QString &message, ChannelGroupChangeReason reason)
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupRemoveContacts() used channel not ready";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),
@@ -2363,7 +2363,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
  */
 Contacts Channel::groupContacts() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupMembers() used channel not ready";
     }
 
@@ -2383,7 +2383,7 @@ Contacts Channel::groupContacts() const
  */
 Contacts Channel::groupLocalPendingContacts() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupLocalPendingContacts() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupLocalPendingContacts() used with no group interface";
@@ -2405,7 +2405,7 @@ Contacts Channel::groupLocalPendingContacts() const
  */
 Contacts Channel::groupRemotePendingContacts() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupRemotePendingContacts() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupRemotePendingContacts() used with no "
@@ -2428,7 +2428,7 @@ Contacts Channel::groupRemotePendingContacts() const
 Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
         const ContactPtr &contact) const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupLocalPendingContactChangeInfo() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupLocalPendingContactChangeInfo() used with no group interface";
@@ -2498,7 +2498,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
  */
 bool Channel::groupAreHandleOwnersAvailable() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with "
@@ -2526,7 +2526,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
  */
 HandleOwnerMap Channel::groupHandleOwners() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupHandleOwners() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with no "
@@ -2556,7 +2556,7 @@ HandleOwnerMap Channel::groupHandleOwners() const
  */
 bool Channel::groupIsSelfContactTracked() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupIsSelfHandleTracked() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupIsSelfHandleTracked() used with "
@@ -2578,7 +2578,7 @@ bool Channel::groupIsSelfContactTracked() const
  */
 ContactPtr Channel::groupSelfContact() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupSelfContact() used channel not ready";
     }
 
@@ -2596,7 +2596,7 @@ ContactPtr Channel::groupSelfContact() const
  */
 bool Channel::groupSelfHandleIsLocalPending() const
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupSelfHandleIsLocalPending() used when "
             "channel not ready";
         return false;
@@ -2617,7 +2617,7 @@ bool Channel::groupSelfHandleIsLocalPending() const
  */
 PendingOperation *Channel::groupAddSelfHandle()
 {
-    if (!isReady()) {
+    if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupAddSelfHandle() used when channel not "
             "ready";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
@@ -3109,7 +3109,7 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
     groupFlags &= ~removed;
     // just emit groupFlagsChanged and related signals if the flags really
     // changed and we are ready
-    if (mPriv->setGroupFlags(groupFlags) && isReady()) {
+    if (mPriv->setGroupFlags(groupFlags) && isReady(Channel::FeatureCore)) {
         debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags <<
             "value" << added << "added" << removed << "removed";
         emit groupFlagsChanged((ChannelGroupFlags) mPriv->groupFlags,
@@ -3290,7 +3290,7 @@ void Channel::onHandleOwnersChanged(const HandleOwnerMap &added,
 
     // just emit groupHandleOwnersChanged if it really changed and
     // we are ready
-    if ((emitAdded.size() || emitRemoved.size()) && isReady()) {
+    if ((emitAdded.size() || emitRemoved.size()) && isReady(Channel::FeatureCore)) {
         debug() << "Emitting groupHandleOwnersChanged with" << emitAdded.size() <<
             "added" << emitRemoved.size() << "removed";
         emit groupHandleOwnersChanged(mPriv->groupHandleOwners,

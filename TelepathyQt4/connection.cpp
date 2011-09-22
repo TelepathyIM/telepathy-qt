@@ -1443,7 +1443,7 @@ CurrencyAmount Connection::accountBalance() const
  */
 ConnectionCapabilities Connection::capabilities() const
 {
-    if (!isReady()) {
+    if (!isReady(Connection::FeatureCore)) {
         warning() << "Connection::capabilities() used before connection "
             "FeatureCore is ready";
     }
@@ -2149,8 +2149,8 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  * #TP_QT4_ERROR_NOT_IMPLEMENTED.
  *
  * Similarly, if the connection isn't both connected and ready
- * (<code>status() == ConnectionStatusConnected && isReady()</code>), the returned
- * PendingContactAttributes instance will fail instantly with the
+ * (<code>status() == ConnectionStatusConnected && isReady(Connection::FeatureCore)</code>),
+ * the returned PendingContactAttributes instance will fail instantly with the
  * error #TP_QT4_ERROR_NOT_AVAILABLE.
  *
  * This method requires Connection::FeatureCore to be ready.
@@ -2181,7 +2181,7 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &
     PendingContactAttributes *pending =
         new PendingContactAttributes(conn,
                 handles, interfaces, reference);
-    if (!conn->isReady()) {
+    if (!conn->isReady(Connection::FeatureCore)) {
         warning() << "ConnectionLowlevel::contactAttributes() used when not ready";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("The connection isn't ready"));

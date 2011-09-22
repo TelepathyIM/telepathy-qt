@@ -355,7 +355,7 @@ QVariantMap PendingChannel::immutableProperties() const
     // be the Connection's self handle
     if (!props.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle"))) {
         if (qdbus_cast<bool>(props.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")))) {
-            if (connection() && connection()->isReady()) {
+            if (connection() && connection()->isReady(Connection::FeatureCore)) {
                 debug() << "CM didn't provide InitiatorHandle in channel immutable props, but we "
                     "know it's the conn's self handle (and have it)";
                 props[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle")] =
