@@ -38,7 +38,7 @@ public:
             const SharedPtr<RefCounted> &object);
     virtual ~PendingFileTransfer();
 
-    FileTransferChannelPtr channel() const { return mChan; }
+    FileTransferChannelPtr channel() const { return mChannel; }
 
 protected Q_SLOTS:
     virtual void onTransferStateChanged(Tp::FileTransferState state,
@@ -50,7 +50,7 @@ private Q_SLOTS:
     void onTransferredBytesChanged(qulonglong count);
 
 private:
-    FileTransferChannelPtr mChan;
+    FileTransferChannelPtr mChannel;
 };
 
 #endif

@@ -60,7 +60,7 @@ private:
 
     AccountManagerPtr mAM;
     AccountPtr mAccount;
-    ConnectionPtr mConn;
+    ConnectionPtr mConnection;
     ContactPtr mContact;
 
     ClientRegistrarPtr mCR;
