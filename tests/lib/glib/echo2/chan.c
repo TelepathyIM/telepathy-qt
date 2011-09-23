@@ -122,6 +122,8 @@ send_message (GObject *object,
       tp_message_set_string (delivery_report, 0, "delivery-error-message",
           "You asked for it");
 
+      tp_message_set_string (delivery_report, 0, "delivery-token", "1111");
+
       tp_cm_message_take_message (delivery_report, 0, "delivery-echo", message);
 
       tp_message_mixin_take_received (object, delivery_report);
