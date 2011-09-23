@@ -303,8 +303,10 @@ void TestChanGroup::testLeave()
     // channel is not ready yet, it should fail
     QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 1);
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_AVAILABLE);
+    QVERIFY(!mLastErrorMessage.isEmpty());
 
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -315,14 +317,18 @@ void TestChanGroup::testLeave()
     // passing no contact should also fail
     QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>()),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 1);
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_INVALID_ARGUMENT);
+    QVERIFY(!mLastErrorMessage.isEmpty());
 
     // passing an invalid contact too
     QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << ContactPtr()),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 1);
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_INVALID_ARGUMENT);
+    QVERIFY(!mLastErrorMessage.isEmpty());
 
     // now it should work
     QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
