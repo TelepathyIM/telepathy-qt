@@ -68,8 +68,8 @@ struct _ExampleEcho2ChannelPrivate
 
 static const char * example_echo_2_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_MESSAGES,
+    TP_IFACE_CHANNEL_INTERFACE_DESTROYABLE,
     NULL };
-/* FIXME: when supported, add TP_IFACE_CHANNEL_INTERFACE_DESTROYABLE */
 
 static void
 example_echo_2_channel_init (ExampleEcho2Channel *self)
