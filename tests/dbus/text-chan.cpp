@@ -367,7 +367,13 @@ void TestTextChan::commonTest(bool withMessages)
             static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
     QVERIFY(!r.hasNonTextContent());
-    QCOMPARE(r.messageToken(), QLatin1String(""));
+    if (withMessages) {
+        QCOMPARE(r.messageToken(), QLatin1String("0000"));
+        QCOMPARE(r.supersededToken(), QLatin1String("1234"));
+    } else {
+        QCOMPARE(r.messageToken(), QLatin1String(""));
+        QCOMPARE(r.supersededToken(), QString());
+    }
     QVERIFY(!r.isSpecificToDBusInterface());
     QCOMPARE(r.dbusInterface(), QLatin1String(""));
     QCOMPARE(r.size(), 2);
@@ -377,7 +383,11 @@ void TestTextChan::commonTest(bool withMessages)
             QLatin1String("text/plain"));
     QCOMPARE(r.sender()->id(), QLatin1String("someone@localhost"));
     QCOMPARE(r.senderNickname(), QLatin1String("someone@localhost"));
-    QVERIFY(!r.isScrollback());
+    if (withMessages) {
+        QVERIFY(r.isScrollback());
+    } else {
+        QVERIFY(!r.isScrollback());
+    }
     QVERIFY(!r.isRescued());
     QVERIFY(!r.isDeliveryReport());
 
@@ -394,7 +404,13 @@ void TestTextChan::commonTest(bool withMessages)
             static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
     QVERIFY(!r.hasNonTextContent());
-    QCOMPARE(r.messageToken(), QLatin1String(""));
+    if (withMessages) {
+        QCOMPARE(r.messageToken(), QLatin1String("0000"));
+        QCOMPARE(r.supersededToken(), QLatin1String("1234"));
+    } else {
+        QCOMPARE(r.messageToken(), QLatin1String(""));
+        QCOMPARE(r.supersededToken(), QString());
+    }
     QVERIFY(!r.isSpecificToDBusInterface());
     QCOMPARE(r.dbusInterface(), QLatin1String(""));
     QCOMPARE(r.size(), 2);
