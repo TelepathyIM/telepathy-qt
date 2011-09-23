@@ -17,7 +17,10 @@
 #include <telepathy-glib/channel-iface.h>
 #include <telepathy-glib/svc-channel.h>
 
+#include <string.h>
+
 static void channel_iface_init (gpointer iface, gpointer data);
+static void chat_state_iface_init (gpointer iface, gpointer data);
 static void destroyable_iface_init (gpointer iface, gpointer data);
 
 G_DEFINE_TYPE_WITH_CODE (ExampleEcho2Channel,
@@ -30,6 +33,8 @@ G_DEFINE_TYPE_WITH_CODE (ExampleEcho2Channel,
       tp_message_mixin_text_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_MESSAGES,
       tp_message_mixin_messages_iface_init);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_CHAT_STATE,
+      chat_state_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_DESTROYABLE,
       destroyable_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL);
@@ -68,8 +73,9 @@ struct _ExampleEcho2ChannelPrivate
 
 static const char * example_echo_2_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_MESSAGES,
+    TP_IFACE_CHANNEL_INTERFACE_CHAT_STATE,
+    TP_IFACE_CHANNEL_INTERFACE_DESTROYABLE,
     NULL };
-/* FIXME: when supported, add TP_IFACE_CHANNEL_INTERFACE_DESTROYABLE */
 
 static void
 example_echo_2_channel_init (ExampleEcho2Channel *self)
@@ -87,6 +93,7 @@ send_message (GObject *object,
   ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
   time_t timestamp = time (NULL);
   guint len = tp_message_count_parts (message);
+  const gchar *content = NULL;
   TpMessage *received = NULL;
   guint i;
 
@@ -94,6 +101,34 @@ send_message (GObject *object,
     {
       /* this message is interface-specific - let's not echo it */
       goto finally;
+    }
+
+  content = tp_asv_get_string (tp_message_peek (message, 1), "content");
+  if (content && strstr (content, "(fail)") != NULL)
+    {
+      TpMessage *delivery_report = tp_message_new (self->priv->conn, 1, len);
+
+      tp_message_set_uint32 (delivery_report, 0, "message-type",
+          TP_CHANNEL_TEXT_MESSAGE_TYPE_DELIVERY_REPORT);
+      tp_message_set_handle (delivery_report, 0, "message-sender",
+          TP_HANDLE_TYPE_CONTACT, self->priv->handle);
+      tp_message_set_int64 (delivery_report, 0, "message-received",
+          timestamp);
+
+      tp_message_set_uint32 (delivery_report, 0, "delivery-status",
+          TP_DELIVERY_STATUS_PERMANENTLY_FAILED);
+      tp_message_set_uint32 (delivery_report, 0, "delivery-error",
+          TP_CHANNEL_TEXT_SEND_ERROR_PERMISSION_DENIED);
+      tp_message_set_string (delivery_report, 0, "delivery-error-message",
+          "You asked for it");
+
+      tp_message_set_string (delivery_report, 0, "delivery-token", "1111");
+
+      tp_cm_message_take_message (delivery_report, 0, "delivery-echo", message);
+
+      tp_message_mixin_take_received (object, delivery_report);
+
+      return;
     }
 
   received = tp_message_new (self->priv->conn, 1, len);
@@ -105,6 +140,12 @@ send_message (GObject *object,
 
       tp_message_set_handle (received, 0, "message-sender",
           TP_HANDLE_TYPE_CONTACT, self->priv->handle);
+
+      tp_message_set_string (received, 0, "message-token", "0000");
+      tp_message_set_string (received, 0, "supersedes", "1234");
+
+      if (!tp_message_mixin_has_pending_messages (object, NULL))
+        tp_message_set_boolean (received, 0, "scrollback", TRUE);
 
       message_type = tp_asv_get_uint32 (tp_message_peek (message, 0),
           "message-type", &valid);
@@ -217,7 +258,7 @@ constructor (GType type,
       (sizeof (types) / sizeof (types[0])), types,
       TP_MESSAGE_PART_SUPPORT_FLAG_ONE_ATTACHMENT |
       TP_MESSAGE_PART_SUPPORT_FLAG_MULTIPLE_ATTACHMENTS,
-      0, /* aka no TpDeliveryReportingSupportFlags */
+      TP_DELIVERY_REPORTING_SUPPORT_FLAG_RECEIVE_FAILURES,
       content_types);
 
   return object;
@@ -557,6 +598,41 @@ channel_iface_init (gpointer iface,
   IMPLEMENT (get_channel_type);
   IMPLEMENT (get_handle);
   IMPLEMENT (get_interfaces);
+#undef IMPLEMENT
+}
+
+static void
+chat_state_set_chat_state(TpSvcChannelInterfaceChatState *iface,
+        guint state,
+        DBusGMethodInvocation *context)
+{
+  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (iface);
+  GError *error = NULL;
+
+  if (state >= NUM_TP_CHANNEL_CHAT_STATES)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+           "invalid state: %u", state);
+      dbus_g_method_return_error (context, error);
+      g_error_free (error);
+      return;
+    }
+
+  tp_svc_channel_interface_chat_state_emit_chat_state_changed (
+        iface, self->priv->conn->self_handle, state);
+
+  tp_svc_channel_interface_chat_state_return_from_set_chat_state (context);
+}
+
+static void
+chat_state_iface_init (gpointer iface,
+                        gpointer data)
+{
+  TpSvcChannelInterfaceChatStateClass *klass = iface;
+
+#define IMPLEMENT(x) \
+  tp_svc_channel_interface_chat_state_implement_##x (klass, chat_state_##x)
+  IMPLEMENT (set_chat_state);
 #undef IMPLEMENT
 }
 

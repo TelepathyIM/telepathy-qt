@@ -120,6 +120,7 @@ get_property (GObject *object,
               GParamSpec *pspec)
 {
   TpTestsTextChannelNull *self = TP_TESTS_TEXT_CHANNEL_NULL (object);
+  TpTestsTextChannelNullClass *klass = TP_TESTS_TEXT_CHANNEL_NULL_GET_CLASS (self);
 
   switch (property_id)
     {
@@ -160,7 +161,7 @@ get_property (GObject *object,
         }
       break;
     case PROP_INTERFACES:
-      g_value_set_boxed (value, tp_tests_text_channel_null_interfaces);
+      g_value_set_boxed (value, klass->interfaces);
       break;
     case PROP_CONNECTION:
       g_value_set_object (value, self->priv->conn);
@@ -253,6 +254,8 @@ tp_tests_text_channel_null_class_init (TpTestsTextChannelNullClass *klass)
   GParamSpec *param_spec;
 
   g_type_class_add_private (klass, sizeof (TpTestsTextChannelNullPrivate));
+
+  klass->interfaces = tp_tests_text_channel_null_interfaces;
 
   object_class->constructor = constructor;
   object_class->set_property = set_property;
@@ -368,6 +371,11 @@ tp_tests_props_text_channel_class_init (TpTestsPropsTextChannelClass *klass)
       G_STRUCT_OFFSET (TpTestsPropsTextChannelClass, dbus_properties_class));
 }
 
+static const char *tp_tests_props_group_text_channel_interfaces[] = {
+    TP_IFACE_CHANNEL_INTERFACE_GROUP,
+    NULL
+};
+
 static void
 tp_tests_props_group_text_channel_init (TpTestsPropsGroupTextChannel *self)
 {
@@ -426,6 +434,7 @@ static void
 tp_tests_props_group_text_channel_class_init (TpTestsPropsGroupTextChannelClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *) klass;
+  TpTestsTextChannelNullClass *null_class = (TpTestsTextChannelNullClass *) klass;
   static TpDBusPropertiesMixinPropImpl group_props[] = {
       { "GroupFlags", NULL, NULL },
       { "HandleOwners", NULL, NULL },
@@ -435,6 +444,8 @@ tp_tests_props_group_text_channel_class_init (TpTestsPropsGroupTextChannelClass 
       { "SelfHandle", NULL, NULL },
       { NULL }
   };
+
+  null_class->interfaces = tp_tests_props_group_text_channel_interfaces;
 
   object_class->constructed = group_constructed;
   object_class->finalize = group_finalize;
@@ -487,11 +498,12 @@ channel_get_interfaces (TpSvcChannel *iface,
                         DBusGMethodInvocation *context)
 {
   TpTestsTextChannelNull *self = TP_TESTS_TEXT_CHANNEL_NULL (iface);
+  TpTestsTextChannelNullClass *klass = TP_TESTS_TEXT_CHANNEL_NULL_GET_CLASS (self);
 
   self->get_interfaces_called++;
 
   tp_svc_channel_return_from_get_interfaces (context,
-      tp_tests_text_channel_null_interfaces);
+      klass->interfaces);
 }
 
 static void
