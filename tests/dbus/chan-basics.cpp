@@ -170,8 +170,10 @@ void TestChanBasics::testCreateChannel()
     QVERIFY(!chan->isValid());
     QVERIFY(connect(chan->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 1);
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, chan->invalidationReason());
+    QCOMPARE(mLastErrorMessage, chan->invalidationMessage());
     QCOMPARE(chan->channelType(), QString());
 }
 
