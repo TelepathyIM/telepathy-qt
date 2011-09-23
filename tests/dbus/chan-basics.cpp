@@ -257,8 +257,10 @@ void TestChanBasics::testFallback()
     // we have no Group support, groupAddContacts should fail
     QVERIFY(connect(textChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 1);
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QVERIFY(!mLastErrorMessage.isEmpty());
 }
 
 void TestChanBasics::cleanup()
