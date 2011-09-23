@@ -35,7 +35,9 @@ public:
     TestTextChan(QObject *parent = 0)
         : Test(parent),
           mConn(0), mContactRepo(0),
-          mTextChanService(0), mMessagesChanService(0)
+          mTextChanService(0), mMessagesChanService(0),
+          mGotChatStateChanged(false),
+          mChatStateChangedState((ChannelChatState) -1)
     { }
 
 protected Q_SLOTS:
@@ -43,6 +45,8 @@ protected Q_SLOTS:
     void onMessageRemoved(const Tp::ReceivedMessage &);
     void onMessageSent(const Tp::Message &,
             Tp::MessageSendingFlags, const QString &);
+    void onChatStateChanged(const Tp::ContactPtr &contact,
+            Tp::ChannelChatState state);
 
 private Q_SLOTS:
     void initTestCase();
@@ -69,6 +73,9 @@ private:
     QList<SentMessageDetails> sent;
     QList<ReceivedMessage> received;
     QList<ReceivedMessage> removed;
+    bool mGotChatStateChanged;
+    ContactPtr mChatStateChangedContact;
+    ChannelChatState mChatStateChangedState;
 };
 
 void TestTextChan::onMessageReceived(const ReceivedMessage &message)
@@ -89,6 +96,14 @@ void TestTextChan::onMessageSent(const Tp::Message &message,
 {
     qDebug() << "message sent";
     sent << SentMessageDetails(message, flags, token);
+}
+
+void TestTextChan::onChatStateChanged(const Tp::ContactPtr &contact,
+        Tp::ChannelChatState state)
+{
+    mGotChatStateChanged = true;
+    mChatStateChangedContact = contact;
+    mChatStateChangedState = state;
 }
 
 void TestTextChan::sendText(const char *text)
@@ -152,6 +167,8 @@ void TestTextChan::init()
     initImpl();
 
     mChan.reset();
+    mGotChatStateChanged = false;
+    mChatStateChangedState = (ChannelChatState) -1;
 }
 
 void TestTextChan::commonTest(bool withMessages)
@@ -192,12 +209,23 @@ void TestTextChan::commonTest(bool withMessages)
 
     QCOMPARE(mChan->chatState(mContact), ChannelChatStateInactive);
     QCOMPARE(mChan->chatState(ContactPtr()), ChannelChatStateInactive);
+    QCOMPARE(mChan->chatState(mChan->groupSelfContact()), ChannelChatStateInactive);
+
+    QVERIFY(connect(mChan.data(),
+                SIGNAL(chatStateChanged(Tp::ContactPtr,Tp::ChannelChatState)),
+                SLOT(onChatStateChanged(Tp::ContactPtr,Tp::ChannelChatState))));
 
     QVERIFY(connect(mChan->requestChatState(ChannelChatStateActive),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     if (withMessages) {
         QCOMPARE(mLoop->exec(), 0);
+        while (!mGotChatStateChanged) {
+            mLoop->processEvents();
+        }
+        QCOMPARE(mChatStateChangedContact, mChan->groupSelfContact());
+        QCOMPARE(mChatStateChangedState, mChan->chatState(mChan->groupSelfContact()));
+        QCOMPARE(mChatStateChangedState, ChannelChatStateActive);
     } else {
         QCOMPARE(mLoop->exec(), 1);
     }
