@@ -230,17 +230,17 @@ void FileSender::onTransferRequestFinished(PendingOperation *op)
     // We just passed the URI when requesting the channel, so it has to be set
     Q_ASSERT(!transferChannel->uri().isEmpty());
 
-    PendingFileSend *sop = new PendingFileSend(transferChannel, SharedPtr<RefCounted>());
-    connect(sop,
+    PendingFileSend *sendOperation = new PendingFileSend(transferChannel, SharedPtr<RefCounted>());
+    connect(sendOperation,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onSendFinished(Tp::PendingOperation*)));
 }
 
 void FileSender::onSendFinished(PendingOperation *op)
 {
-    PendingFileSend *sop = qobject_cast<PendingFileSend*>(op);
+    PendingFileSend *sendOperation = qobject_cast<PendingFileSend*>(op);
     qDebug() << "Closing channel";
-    sop->channel()->requestClose();
+    sendOperation->channel()->requestClose();
 
     QCoreApplication::exit(0);
 }

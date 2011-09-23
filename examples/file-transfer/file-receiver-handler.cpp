@@ -81,16 +81,16 @@ void FileReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &con
 
     context->setFinished();
 
-    PendingFileReceive *rop = new PendingFileReceive(transferChannel,
+    PendingFileReceive *receiveOperation = new PendingFileReceive(transferChannel,
             SharedPtr<RefCounted>::dynamicCast(AbstractClientPtr(this)));
-    connect(rop,
+    connect(receiveOperation,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReceiveFinished(Tp::PendingOperation*)));
 }
 
 void FileReceiverHandler::onReceiveFinished(PendingOperation *op)
 {
-    PendingFileReceive *rop = qobject_cast<PendingFileReceive*>(op);
+    PendingFileReceive *receiveOperation = qobject_cast<PendingFileReceive*>(op);
     qDebug() << "Closing channel";
-    rop->channel()->requestClose();
+    receiveOperation->channel()->requestClose();
 }
