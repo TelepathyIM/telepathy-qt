@@ -12,6 +12,7 @@ Enhancements:
  * Add Presence/PresenceSpec operator== support
  * Add Authentication.TLSCertificate to the set of generated interfaces
  * Improve file transfer examples to properly use the ChannelDispatcher.
+ * Improve Channel, TextChannel and Message/ReceivedMessage test coverage.
 
 Fixes:
  * Ensure that the proper Channel Dispatcher methods are being called when
