@@ -181,7 +181,9 @@ void TestConferenceChan::testConference()
     }
     QCOMPARE(expectedObjectPaths, objectPaths);
 
-    QCOMPARE(!mChan->isReady(Channel::FeatureConferenceInitialInviteeContacts), true);
+    /*
+    // TODO - Properly check for initial invitee contacts if/when a test CM supports it
+    QVERIFY(!mChan->isReady(Channel::FeatureConferenceInitialInviteeContacts));
     QCOMPARE(mChan->conferenceInitialInviteeContacts(), Contacts());
 
     QVERIFY(connect(mChan->becomeReady(Channel::FeatureConferenceInitialInviteeContacts),
@@ -191,6 +193,7 @@ void TestConferenceChan::testConference()
     QCOMPARE(mChan->isReady(Channel::FeatureConferenceInitialInviteeContacts), true);
 
     QCOMPARE(mChan->conferenceInitialInviteeContacts(), Contacts());
+    */
 
     QCOMPARE(mChan->supportsConferenceMerging(), true);
     QCOMPARE(mChan->supportsConferenceSplitting(), false);
