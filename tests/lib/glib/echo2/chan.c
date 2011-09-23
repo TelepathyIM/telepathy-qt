@@ -141,6 +141,12 @@ send_message (GObject *object,
       tp_message_set_handle (received, 0, "message-sender",
           TP_HANDLE_TYPE_CONTACT, self->priv->handle);
 
+      tp_message_set_string (received, 0, "message-token", "0000");
+      tp_message_set_string (received, 0, "supersedes", "1234");
+
+      if (!tp_message_mixin_has_pending_messages (object, NULL))
+        tp_message_set_boolean (received, 0, "scrollback", TRUE);
+
       message_type = tp_asv_get_uint32 (tp_message_peek (message, 0),
           "message-type", &valid);
 
