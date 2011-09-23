@@ -215,10 +215,10 @@ void TestTextChan::commonTest(bool withMessages)
                 SIGNAL(chatStateChanged(Tp::ContactPtr,Tp::ChannelChatState)),
                 SLOT(onChatStateChanged(Tp::ContactPtr,Tp::ChannelChatState))));
 
-    QVERIFY(connect(mChan->requestChatState(ChannelChatStateActive),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     if (withMessages) {
+        QVERIFY(connect(mChan->requestChatState(ChannelChatStateActive),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
         QCOMPARE(mLoop->exec(), 0);
         while (!mGotChatStateChanged) {
             mLoop->processEvents();
@@ -227,7 +227,12 @@ void TestTextChan::commonTest(bool withMessages)
         QCOMPARE(mChatStateChangedState, mChan->chatState(mChan->groupSelfContact()));
         QCOMPARE(mChatStateChangedState, ChannelChatStateActive);
     } else {
-        QCOMPARE(mLoop->exec(), 1);
+        QVERIFY(connect(mChan->requestChatState(ChannelChatStateActive),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectFailure(Tp::PendingOperation *))));
+        QCOMPARE(mLoop->exec(), 0);
+        QCOMPARE(mLastError, TP_QT4_ERROR_NOT_IMPLEMENTED);
+        QVERIFY(!mLastErrorMessage.isEmpty());
     }
 
     QVERIFY(!mChan->canInviteContacts());
