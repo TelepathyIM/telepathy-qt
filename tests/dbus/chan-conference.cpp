@@ -196,8 +196,10 @@ void TestConferenceChan::testConference()
     QCOMPARE(mChan->supportsConferenceSplitting(), false);
     QVERIFY(connect(mChan->conferenceSplitChannel(),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 1);
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QVERIFY(!mLastErrorMessage.isEmpty());
 
     ChannelPtr otherChannel = Channel::create(mConn->client(), mTextChan3Path, QVariantMap());
 
