@@ -466,6 +466,7 @@ void TestChanGroup::testGroupFlagsChange()
 
     QVERIFY(textChan->interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP));
     QVERIFY(!(textChan->groupFlags() & ChannelGroupFlagCanAdd));
+    QVERIFY(!textChan->canInviteContacts());
 
     QVERIFY(connect(textChan.data(),
                 SIGNAL(groupFlagsChanged(Tp::ChannelGroupFlags,Tp::ChannelGroupFlags,Tp::ChannelGroupFlags)),
@@ -478,6 +479,7 @@ void TestChanGroup::testGroupFlagsChange()
     }
     QCOMPARE(textChan->groupFlags(), mGroupFlags);
     QVERIFY(textChan->groupFlags() & ChannelGroupFlagCanAdd);
+    QVERIFY(textChan->canInviteContacts());
     QCOMPARE(mGroupFlagsAdded, ChannelGroupFlagCanAdd);
     QCOMPARE(mGroupFlagsRemoved, (ChannelGroupFlags) 0);
 }
