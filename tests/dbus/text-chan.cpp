@@ -325,7 +325,7 @@ void TestTextChan::commonTest(bool withMessages)
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()),
                 static_cast<uint>(Tp::MessagePartSupportFlagOneAttachment |
                     Tp::MessagePartSupportFlagMultipleAttachments));
-        QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
+        QCOMPARE(mChan->deliveryReportingSupport(), DeliveryReportingSupportFlagReceiveFailures);
     } else {
         QCOMPARE(mChan->supportedContentTypes(), QStringList() << QLatin1String("text/plain"));
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);
@@ -374,6 +374,7 @@ void TestTextChan::commonTest(bool withMessages)
     QCOMPARE(r.senderNickname(), QLatin1String("someone@localhost"));
     QVERIFY(!r.isScrollback());
     QVERIFY(!r.isRescued());
+    QVERIFY(!r.isDeliveryReport());
 
     // one "echo" implementation echoes the message literally, the other edits
     // it slightly
@@ -428,6 +429,53 @@ void TestTextChan::commonTest(bool withMessages)
     // Text case it will fail to ack two messages, fall back to one call
     // per message, and fail one while succeeding with the other.
     mChan->acknowledge(mChan->messageQueue());
+
+    if (withMessages) {
+        sendText("Three (fail)");
+
+        // Flush the D-Bus queue to make sure we've got the Sent signal the service will send, even if
+        // we are scheduled to execute between the time it calls return_from_send and emit_sent
+        processDBusQueue(mChan.data());
+
+        // Assert that both our sent messages were echoed by the remote contact
+        while (received.size() != 3) {
+            QCOMPARE(mLoop->exec(), 0);
+        }
+        QCOMPARE(received.size(), 3);
+        QCOMPARE(mChan->messageQueue().size(), 1);
+        QVERIFY(mChan->messageQueue().at(0) == received.at(2));
+
+        r = received.at(2);
+        QVERIFY(r == received.at(2));
+        QCOMPARE(r.messageType(), Tp::ChannelTextMessageTypeDeliveryReport);
+        QVERIFY(!r.isTruncated());
+        QVERIFY(r.hasNonTextContent());
+        QCOMPARE(r.messageToken(), QLatin1String(""));
+        QVERIFY(!r.isSpecificToDBusInterface());
+        QCOMPARE(r.dbusInterface(), QLatin1String(""));
+        QCOMPARE(r.size(), 1);
+        QCOMPARE(r.header().value(QLatin1String("message-type")).variant().toUInt(),
+                static_cast<uint>(Tp::ChannelTextMessageTypeDeliveryReport));
+        QCOMPARE(r.sender()->id(), QLatin1String("someone@localhost"));
+        QCOMPARE(r.senderNickname(), QLatin1String("someone@localhost"));
+        QVERIFY(!r.isScrollback());
+        QVERIFY(!r.isRescued());
+        QCOMPARE(r.supersededToken(), QString());
+        QVERIFY(r.isDeliveryReport());
+        QVERIFY(r.deliveryDetails().isValid());
+        QVERIFY(!r.deliveryDetails().hasOriginalToken());
+        QVERIFY(r.deliveryDetails().originalToken().isEmpty());
+        QCOMPARE(r.deliveryDetails().status(), Tp::DeliveryStatusPermanentlyFailed);
+        QVERIFY(r.deliveryDetails().isError());
+        QCOMPARE(r.deliveryDetails().error(), Tp::ChannelTextSendErrorPermissionDenied);
+        QVERIFY(r.deliveryDetails().hasDebugMessage());
+        QCOMPARE(r.deliveryDetails().debugMessage(), QLatin1String("You asked for it"));
+        QCOMPARE(r.deliveryDetails().dbusError(), TP_QT4_ERROR_PERMISSION_DENIED);
+        QVERIFY(r.deliveryDetails().hasEchoedMessage());
+        QCOMPARE(r.deliveryDetails().echoedMessage().text(), QLatin1String("Three (fail)"));
+
+        mChan->acknowledge(QList<ReceivedMessage>() << received.at(2));
+    }
 
     // wait for everything to settle down
     while (tp_text_mixin_has_pending_messages(
