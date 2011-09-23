@@ -18,6 +18,7 @@
 #include <telepathy-glib/svc-channel.h>
 
 static void channel_iface_init (gpointer iface, gpointer data);
+static void chat_state_iface_init (gpointer iface, gpointer data);
 static void destroyable_iface_init (gpointer iface, gpointer data);
 
 G_DEFINE_TYPE_WITH_CODE (ExampleEcho2Channel,
@@ -30,6 +31,8 @@ G_DEFINE_TYPE_WITH_CODE (ExampleEcho2Channel,
       tp_message_mixin_text_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_MESSAGES,
       tp_message_mixin_messages_iface_init);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_CHAT_STATE,
+      chat_state_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_DESTROYABLE,
       destroyable_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL);
@@ -68,6 +71,7 @@ struct _ExampleEcho2ChannelPrivate
 
 static const char * example_echo_2_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_MESSAGES,
+    TP_IFACE_CHANNEL_INTERFACE_CHAT_STATE,
     TP_IFACE_CHANNEL_INTERFACE_DESTROYABLE,
     NULL };
 
@@ -557,6 +561,41 @@ channel_iface_init (gpointer iface,
   IMPLEMENT (get_channel_type);
   IMPLEMENT (get_handle);
   IMPLEMENT (get_interfaces);
+#undef IMPLEMENT
+}
+
+static void
+chat_state_set_chat_state(TpSvcChannelInterfaceChatState *iface,
+        guint state,
+        DBusGMethodInvocation *context)
+{
+  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (iface);
+  GError *error = NULL;
+
+  if (state >= NUM_TP_CHANNEL_CHAT_STATES)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+           "invalid state: %u", state);
+      dbus_g_method_return_error (context, error);
+      g_error_free (error);
+      return;
+    }
+
+  tp_svc_channel_interface_chat_state_emit_chat_state_changed (
+        iface, self->priv->conn->self_handle, state);
+
+  tp_svc_channel_interface_chat_state_return_from_set_chat_state (context);
+}
+
+static void
+chat_state_iface_init (gpointer iface,
+                        gpointer data)
+{
+  TpSvcChannelInterfaceChatStateClass *klass = iface;
+
+#define IMPLEMENT(x) \
+  tp_svc_channel_interface_chat_state_implement_##x (klass, chat_state_##x)
+  IMPLEMENT (set_chat_state);
 #undef IMPLEMENT
 }
 
