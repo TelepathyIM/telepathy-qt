@@ -26,6 +26,10 @@ public:
     QEventLoop *mLoop;
     void processDBusQueue(Tp::DBusProxy *proxy);
 
+    // The last error received in expectFailure()
+    QString mLastError;
+    QString mLastErrorMessage;
+
 protected:
     template<typename T> bool waitForProperty(Tp::PendingVariant *pv, T *value);
 

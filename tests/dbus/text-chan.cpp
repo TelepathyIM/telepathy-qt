@@ -35,7 +35,9 @@ public:
     TestTextChan(QObject *parent = 0)
         : Test(parent),
           mConn(0), mContactRepo(0),
-          mTextChanService(0), mMessagesChanService(0)
+          mTextChanService(0), mMessagesChanService(0),
+          mGotChatStateChanged(false),
+          mChatStateChangedState((ChannelChatState) -1)
     { }
 
 protected Q_SLOTS:
@@ -43,6 +45,8 @@ protected Q_SLOTS:
     void onMessageRemoved(const Tp::ReceivedMessage &);
     void onMessageSent(const Tp::Message &,
             Tp::MessageSendingFlags, const QString &);
+    void onChatStateChanged(const Tp::ContactPtr &contact,
+            Tp::ChannelChatState state);
 
 private Q_SLOTS:
     void initTestCase();
@@ -60,6 +64,7 @@ private:
 
     TestConnHelper *mConn;
     TpHandleRepoIface *mContactRepo;
+    ContactPtr mContact;
     TextChannelPtr mChan;
     ExampleEchoChannel *mTextChanService;
     QString mTextChanPath;
@@ -68,6 +73,9 @@ private:
     QList<SentMessageDetails> sent;
     QList<ReceivedMessage> received;
     QList<ReceivedMessage> removed;
+    bool mGotChatStateChanged;
+    ContactPtr mChatStateChangedContact;
+    ChannelChatState mChatStateChangedState;
 };
 
 void TestTextChan::onMessageReceived(const ReceivedMessage &message)
@@ -88,6 +96,14 @@ void TestTextChan::onMessageSent(const Tp::Message &message,
 {
     qDebug() << "message sent";
     sent << SentMessageDetails(message, flags, token);
+}
+
+void TestTextChan::onChatStateChanged(const Tp::ContactPtr &contact,
+        Tp::ChannelChatState state)
+{
+    mGotChatStateChanged = true;
+    mChatStateChangedContact = contact;
+    mChatStateChangedState = state;
 }
 
 void TestTextChan::sendText(const char *text)
@@ -121,6 +137,9 @@ void TestTextChan::initTestCase()
             TP_HANDLE_TYPE_CONTACT);
     guint handle = tp_handle_ensure(mContactRepo, "someone@localhost", 0, 0);
 
+    mContact = mConn->contacts(UIntList() << handle).first();
+    QVERIFY(mContact);
+
     // create a Channel by magic, rather than doing D-Bus round-trips for it
     mTextChanPath = mConn->objectPath() + QLatin1String("/TextChannel");
     QByteArray chanPath(mTextChanPath.toAscii());
@@ -148,6 +167,8 @@ void TestTextChan::init()
     initImpl();
 
     mChan.reset();
+    mGotChatStateChanged = false;
+    mChatStateChangedState = (ChannelChatState) -1;
 }
 
 void TestTextChan::commonTest(bool withMessages)
@@ -162,6 +183,59 @@ void TestTextChan::commonTest(bool withMessages)
 
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
+
+    // hasChatStateInterface requires FeatureCore only
+    if (withMessages) {
+        QVERIFY(mChan->hasChatStateInterface());
+    } else {
+        QVERIFY(!mChan->hasChatStateInterface());
+    }
+
+    QVERIFY(!mChan->isReady(TextChannel::FeatureChatState));
+    QCOMPARE(mChan->chatState(mContact), ChannelChatStateInactive);
+    QCOMPARE(mChan->chatState(ContactPtr()), ChannelChatStateInactive);
+
+    QVERIFY(connect(asChannel->becomeReady(TextChannel::FeatureChatState),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(TextChannel::FeatureChatState));
+
+    if (withMessages) {
+        QVERIFY(mChan->hasChatStateInterface());
+    } else {
+        QVERIFY(!mChan->hasChatStateInterface());
+    }
+
+    QCOMPARE(mChan->chatState(mContact), ChannelChatStateInactive);
+    QCOMPARE(mChan->chatState(ContactPtr()), ChannelChatStateInactive);
+    QCOMPARE(mChan->chatState(mChan->groupSelfContact()), ChannelChatStateInactive);
+
+    QVERIFY(connect(mChan.data(),
+                SIGNAL(chatStateChanged(Tp::ContactPtr,Tp::ChannelChatState)),
+                SLOT(onChatStateChanged(Tp::ContactPtr,Tp::ChannelChatState))));
+
+    if (withMessages) {
+        QVERIFY(connect(mChan->requestChatState(ChannelChatStateActive),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+        QCOMPARE(mLoop->exec(), 0);
+        while (!mGotChatStateChanged) {
+            mLoop->processEvents();
+        }
+        QCOMPARE(mChatStateChangedContact, mChan->groupSelfContact());
+        QCOMPARE(mChatStateChangedState, mChan->chatState(mChan->groupSelfContact()));
+        QCOMPARE(mChatStateChangedState, ChannelChatStateActive);
+    } else {
+        QVERIFY(connect(mChan->requestChatState(ChannelChatStateActive),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectFailure(Tp::PendingOperation *))));
+        QCOMPARE(mLoop->exec(), 0);
+        QCOMPARE(mLastError, TP_QT4_ERROR_NOT_IMPLEMENTED);
+        QVERIFY(!mLastErrorMessage.isEmpty());
+    }
+
+    QVERIFY(!mChan->canInviteContacts());
 
     Features features = Features() << TextChannel::FeatureMessageQueue;
     QVERIFY(!mChan->isReady(features));
@@ -256,7 +330,7 @@ void TestTextChan::commonTest(bool withMessages)
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()),
                 static_cast<uint>(Tp::MessagePartSupportFlagOneAttachment |
                     Tp::MessagePartSupportFlagMultipleAttachments));
-        QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
+        QCOMPARE(mChan->deliveryReportingSupport(), DeliveryReportingSupportFlagReceiveFailures);
     } else {
         QCOMPARE(mChan->supportedContentTypes(), QStringList() << QLatin1String("text/plain"));
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);
@@ -285,13 +359,21 @@ void TestTextChan::commonTest(bool withMessages)
     QCOMPARE(mChan->messageQueue().size(), 2);
     QVERIFY(mChan->messageQueue().at(0) == received.at(0));
     QVERIFY(mChan->messageQueue().at(1) == received.at(1));
+    QVERIFY(received.at(0) != received.at(1));
 
     ReceivedMessage r(received.at(0));
+    QVERIFY(r == received.at(0));
     QCOMPARE(static_cast<uint>(r.messageType()),
             static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
     QVERIFY(!r.hasNonTextContent());
-    QCOMPARE(r.messageToken(), QLatin1String(""));
+    if (withMessages) {
+        QCOMPARE(r.messageToken(), QLatin1String("0000"));
+        QCOMPARE(r.supersededToken(), QLatin1String("1234"));
+    } else {
+        QCOMPARE(r.messageToken(), QLatin1String(""));
+        QCOMPARE(r.supersededToken(), QString());
+    }
     QVERIFY(!r.isSpecificToDBusInterface());
     QCOMPARE(r.dbusInterface(), QLatin1String(""));
     QCOMPARE(r.size(), 2);
@@ -300,8 +382,14 @@ void TestTextChan::commonTest(bool withMessages)
     QCOMPARE(r.part(1).value(QLatin1String("content-type")).variant().toString(),
             QLatin1String("text/plain"));
     QCOMPARE(r.sender()->id(), QLatin1String("someone@localhost"));
-    QVERIFY(!r.isScrollback());
+    QCOMPARE(r.senderNickname(), QLatin1String("someone@localhost"));
+    if (withMessages) {
+        QVERIFY(r.isScrollback());
+    } else {
+        QVERIFY(!r.isScrollback());
+    }
     QVERIFY(!r.isRescued());
+    QVERIFY(!r.isDeliveryReport());
 
     // one "echo" implementation echoes the message literally, the other edits
     // it slightly
@@ -316,7 +404,13 @@ void TestTextChan::commonTest(bool withMessages)
             static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
     QVERIFY(!r.hasNonTextContent());
-    QCOMPARE(r.messageToken(), QLatin1String(""));
+    if (withMessages) {
+        QCOMPARE(r.messageToken(), QLatin1String("0000"));
+        QCOMPARE(r.supersededToken(), QLatin1String("1234"));
+    } else {
+        QCOMPARE(r.messageToken(), QLatin1String(""));
+        QCOMPARE(r.supersededToken(), QString());
+    }
     QVERIFY(!r.isSpecificToDBusInterface());
     QCOMPARE(r.dbusInterface(), QLatin1String(""));
     QCOMPARE(r.size(), 2);
@@ -356,6 +450,53 @@ void TestTextChan::commonTest(bool withMessages)
     // Text case it will fail to ack two messages, fall back to one call
     // per message, and fail one while succeeding with the other.
     mChan->acknowledge(mChan->messageQueue());
+
+    if (withMessages) {
+        sendText("Three (fail)");
+
+        // Flush the D-Bus queue to make sure we've got the Sent signal the service will send, even if
+        // we are scheduled to execute between the time it calls return_from_send and emit_sent
+        processDBusQueue(mChan.data());
+
+        // Assert that both our sent messages were echoed by the remote contact
+        while (received.size() != 3) {
+            QCOMPARE(mLoop->exec(), 0);
+        }
+        QCOMPARE(received.size(), 3);
+        QCOMPARE(mChan->messageQueue().size(), 1);
+        QVERIFY(mChan->messageQueue().at(0) == received.at(2));
+
+        r = received.at(2);
+        QVERIFY(r == received.at(2));
+        QCOMPARE(r.messageType(), Tp::ChannelTextMessageTypeDeliveryReport);
+        QVERIFY(!r.isTruncated());
+        QVERIFY(r.hasNonTextContent());
+        QCOMPARE(r.messageToken(), QLatin1String(""));
+        QVERIFY(!r.isSpecificToDBusInterface());
+        QCOMPARE(r.dbusInterface(), QLatin1String(""));
+        QCOMPARE(r.size(), 1);
+        QCOMPARE(r.header().value(QLatin1String("message-type")).variant().toUInt(),
+                static_cast<uint>(Tp::ChannelTextMessageTypeDeliveryReport));
+        QCOMPARE(r.sender()->id(), QLatin1String("someone@localhost"));
+        QCOMPARE(r.senderNickname(), QLatin1String("someone@localhost"));
+        QVERIFY(!r.isScrollback());
+        QVERIFY(!r.isRescued());
+        QCOMPARE(r.supersededToken(), QString());
+        QVERIFY(r.isDeliveryReport());
+        QVERIFY(r.deliveryDetails().isValid());
+        QVERIFY(r.deliveryDetails().hasOriginalToken());
+        QCOMPARE(r.deliveryDetails().originalToken(), QLatin1String("1111"));
+        QCOMPARE(r.deliveryDetails().status(), Tp::DeliveryStatusPermanentlyFailed);
+        QVERIFY(r.deliveryDetails().isError());
+        QCOMPARE(r.deliveryDetails().error(), Tp::ChannelTextSendErrorPermissionDenied);
+        QVERIFY(r.deliveryDetails().hasDebugMessage());
+        QCOMPARE(r.deliveryDetails().debugMessage(), QLatin1String("You asked for it"));
+        QCOMPARE(r.deliveryDetails().dbusError(), TP_QT4_ERROR_PERMISSION_DENIED);
+        QVERIFY(r.deliveryDetails().hasEchoedMessage());
+        QCOMPARE(r.deliveryDetails().echoedMessage().text(), QLatin1String("Three (fail)"));
+
+        mChan->acknowledge(QList<ReceivedMessage>() << received.at(2));
+    }
 
     // wait for everything to settle down
     while (tp_text_mixin_has_pending_messages(

@@ -3,16 +3,20 @@
 #include <tests/lib/glib-helpers/test-conn-helper.h>
 
 #include <tests/lib/glib/echo2/conn.h>
+#include <tests/lib/glib/textchan-null.h>
 
 #define TP_QT4_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReferencedHandles>
+#include <TelepathyQt4/TextChannel>
 
 #include <telepathy-glib/debug.h>
 
@@ -38,6 +42,7 @@ private Q_SLOTS:
     void testRequestHandle();
     void testCreateChannel();
     void testEnsureChannel();
+    void testFallback();
 
     void cleanup();
     void cleanupTestCase();
@@ -119,6 +124,7 @@ void TestChanBasics::testCreateChannel()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
     QCOMPARE(mChan->isRequested(), true);
+    QCOMPARE(mChan->channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
     QCOMPARE(mChan->groupCanAddContacts(), false);
     QCOMPARE(mChan->groupCanRemoveContacts(), false);
     QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
@@ -139,6 +145,36 @@ void TestChanBasics::testCreateChannel()
         << QLatin1String("alice");
     toCheck.sort();
     QCOMPARE(ids, toCheck);
+
+    ChannelPtr chan = Channel::create(mConn->client(), mChan->objectPath(),
+            mChan->immutableProperties());
+    QVERIFY(chan);
+    QVERIFY(chan->isValid());
+    QVERIFY(connect(chan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(chan->isReady(), true);
+    QCOMPARE(chan->channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
+
+    // create an invalid connection to use as the channel connection
+    ConnectionPtr conn = Connection::create(QLatin1String(""), QLatin1String("/"),
+                  ChannelFactory::create(QDBusConnection::sessionBus()),
+                  ContactFactory::create());
+    QVERIFY(conn);
+    QVERIFY(!conn->isValid());
+
+    chan = Channel::create(conn, mChan->objectPath(),
+            mChan->immutableProperties());
+    QVERIFY(chan);
+    QVERIFY(!chan->isValid());
+    QVERIFY(connect(chan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, chan->invalidationReason());
+    QCOMPARE(mLastErrorMessage, chan->invalidationMessage());
+    QCOMPARE(chan->channelType(), QString());
 }
 
 void TestChanBasics::testEnsureChannel()
@@ -176,6 +212,55 @@ void TestChanBasics::testEnsureChannel()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isValid(), false);
+
+    // calling requestClose again should be no-op
+    QVERIFY(connect(mChan->requestClose(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isValid(), false);
+}
+
+void TestChanBasics::testFallback()
+{
+    TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
+            TP_BASE_CONNECTION(mConn->service()),
+            TP_HANDLE_TYPE_CONTACT);
+    guint handle = tp_handle_ensure(contactRepo, "someone@localhost", 0, 0);
+
+    QString textChanPath = mConn->objectPath() + QLatin1String("/Channel");
+    QByteArray chanPath(textChanPath.toAscii());
+
+    TpTestsTextChannelNull *textChanService = TP_TESTS_TEXT_CHANNEL_NULL (g_object_new (
+                TP_TESTS_TYPE_TEXT_CHANNEL_NULL,
+                "connection", mConn->service(),
+                "object-path", chanPath.data(),
+                "handle", handle,
+                NULL));
+
+    TextChannelPtr textChan = TextChannel::create(mConn->client(), textChanPath, QVariantMap());
+    QVERIFY(connect(textChan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(textChan->isReady(), true);
+
+    QCOMPARE(textChanService->get_channel_type_called, static_cast<uint>(1));
+    QCOMPARE(textChanService->get_interfaces_called, static_cast<uint>(1));
+    QCOMPARE(textChanService->get_handle_called, static_cast<uint>(1));
+
+    QCOMPARE(textChan->channelType(), TP_QT4_IFACE_CHANNEL_TYPE_TEXT);
+    QVERIFY(textChan->interfaces().isEmpty());
+    QCOMPARE(textChan->targetHandleType(), Tp::HandleTypeContact);
+    QCOMPARE(textChan->targetHandle(), handle);
+
+    // we have no Group support, groupAddContacts should fail
+    QVERIFY(connect(textChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QVERIFY(!mLastErrorMessage.isEmpty());
 }
 
 void TestChanBasics::cleanup()

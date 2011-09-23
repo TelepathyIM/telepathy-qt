@@ -4,6 +4,7 @@
 
 #include <tests/lib/glib/contactlist/conn.h>
 #include <tests/lib/glib/textchan-group.h>
+#include <tests/lib/glib/textchan-null.h>
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Connection>
@@ -11,6 +12,7 @@
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/TextChannel>
 
 #include <telepathy-glib/debug.h>
 
@@ -22,7 +24,11 @@ class TestChanGroup : public Test
 
 public:
     TestChanGroup(QObject *parent = 0)
-        : Test(parent), mConn(0), mChanService(0)
+        : Test(parent), mConn(0), mChanService(0),
+          mGotGroupFlagsChanged(false),
+          mGroupFlags((ChannelGroupFlags) 0),
+          mGroupFlagsAdded((ChannelGroupFlags) 0),
+          mGroupFlagsRemoved((ChannelGroupFlags) 0)
     { }
 
 protected Q_SLOTS:
@@ -32,6 +38,8 @@ protected Q_SLOTS:
             const Tp::Contacts &groupRemotePendingMembersAdded,
             const Tp::Contacts &groupMembersRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
+    void onGroupFlagsChanged(Tp::ChannelGroupFlags flags,
+            Tp::ChannelGroupFlags added, Tp::ChannelGroupFlags removed);
 
 private Q_SLOTS:
     void initTestCase();
@@ -42,6 +50,7 @@ private Q_SLOTS:
     void testPropertylessGroup();
     void testLeave();
     void testLeaveWithFallback();
+    void testGroupFlagsChange();
 
     void cleanup();
     void cleanupTestCase();
@@ -62,6 +71,10 @@ private:
     Contacts mChangedRemoved;
     Channel::GroupMemberChangeDetails mDetails;
     UIntList mInitialMembers;
+    bool mGotGroupFlagsChanged;
+    ChannelGroupFlags mGroupFlags;
+    ChannelGroupFlags mGroupFlagsAdded;
+    ChannelGroupFlags mGroupFlagsRemoved;
 };
 
 void TestChanGroup::onGroupMembersChanged(
@@ -79,6 +92,16 @@ void TestChanGroup::onGroupMembersChanged(
     mDetails = details;
     debugContacts();
     mLoop->exit(0);
+}
+
+void TestChanGroup::onGroupFlagsChanged(Tp::ChannelGroupFlags flags,
+        Tp::ChannelGroupFlags added, Tp::ChannelGroupFlags removed)
+{
+    qDebug() << "group flags changed";
+    mGotGroupFlagsChanged = true;
+    mGroupFlags = flags;
+    mGroupFlagsAdded = added;
+    mGroupFlagsRemoved = removed;
 }
 
 void TestChanGroup::debugContacts()
@@ -134,6 +157,10 @@ void TestChanGroup::init()
     mChangedRP.clear();
     mChangedRemoved.clear();
     mDetails = Channel::GroupMemberChangeDetails();
+    mGotGroupFlagsChanged = false;
+    mGroupFlags = (ChannelGroupFlags) 0;
+    mGroupFlagsAdded = (ChannelGroupFlags) 0;
+    mGroupFlagsRemoved = (ChannelGroupFlags) 0;
 }
 
 void TestChanGroup::testCreateChannel()
@@ -159,8 +186,20 @@ void TestChanGroup::testCreateChannel()
     Q_FOREACH (ContactPtr contact, mChan->groupContacts())
         mInitialMembers.push_back(contact->handle()[0]);
 
+    QCOMPARE(mChan->groupFlags(), ChannelGroupFlagCanAdd |
+            ChannelGroupFlagCanRemove | ChannelGroupFlagProperties);
+
     QCOMPARE(mChan->groupCanAddContacts(), true);
+    QCOMPARE(mChan->groupCanAddContactsWithMessage(), false);
+    QCOMPARE(mChan->groupCanAcceptContactsWithMessage(), false);
+    QCOMPARE(mChan->groupCanRescindContacts(), false);
+    QCOMPARE(mChan->groupCanRescindContactsWithMessage(), false);
     QCOMPARE(mChan->groupCanRemoveContacts(), true);
+    QCOMPARE(mChan->groupCanRemoveContactsWithMessage(), false);
+    QCOMPARE(mChan->groupCanRejectContactsWithMessage(), false);
+    QCOMPARE(mChan->groupCanDepartWithMessage(), false);
+
+    QCOMPARE(mChan->groupIsSelfContactTracked(), true);
 
     debugContacts();
 
@@ -288,12 +327,37 @@ void TestChanGroup::testLeave()
     QVERIFY(mChan);
     mChanObjectPath = mChan->objectPath();
 
+    // channel is not ready yet, it should fail
+    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_AVAILABLE);
+    QVERIFY(!mLastErrorMessage.isEmpty());
+
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
+    // passing no contact should also fail
+    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_INVALID_ARGUMENT);
+    QVERIFY(!mLastErrorMessage.isEmpty());
+
+    // passing an invalid contact too
+    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << ContactPtr()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_INVALID_ARGUMENT);
+    QVERIFY(!mLastErrorMessage.isEmpty());
+
+    // now it should work
     QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -374,6 +438,50 @@ void TestChanGroup::testLeaveWithFallback()
     // The Close fallback was triggered, so we weren't removed gracefully and the details were
     // lost
     QVERIFY(!mChan->groupSelfContactRemoveInfo().hasMessage());
+}
+
+void TestChanGroup::testGroupFlagsChange()
+{
+    TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
+            TP_BASE_CONNECTION(mConn->service()),
+            TP_HANDLE_TYPE_CONTACT);
+    guint handle = tp_handle_ensure(contactRepo, "someone@localhost", 0, 0);
+
+    QString textChanPath = mConn->objectPath() + QLatin1String("/Channel");
+    QByteArray chanPath(textChanPath.toAscii());
+
+    TpTestsPropsGroupTextChannel *textChanService = TP_TESTS_PROPS_GROUP_TEXT_CHANNEL(g_object_new(
+                TP_TESTS_TYPE_PROPS_GROUP_TEXT_CHANNEL,
+                "connection", mConn->service(),
+                "object-path", chanPath.data(),
+                "handle", handle,
+                NULL));
+
+    TextChannelPtr textChan = TextChannel::create(mConn->client(), textChanPath, QVariantMap());
+    QVERIFY(connect(textChan->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(textChan->isReady(), true);
+
+    QVERIFY(textChan->interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP));
+    QVERIFY(!(textChan->groupFlags() & ChannelGroupFlagCanAdd));
+    QVERIFY(!textChan->canInviteContacts());
+
+    QVERIFY(connect(textChan.data(),
+                SIGNAL(groupFlagsChanged(Tp::ChannelGroupFlags,Tp::ChannelGroupFlags,Tp::ChannelGroupFlags)),
+                SLOT(onGroupFlagsChanged(Tp::ChannelGroupFlags,Tp::ChannelGroupFlags,Tp::ChannelGroupFlags))));
+    tp_group_mixin_change_flags(G_OBJECT(textChanService),
+            TP_CHANNEL_GROUP_FLAG_CAN_ADD, (TpChannelGroupFlags) 0);
+    processDBusQueue(mConn->client().data());
+    while (!mGotGroupFlagsChanged) {
+        mLoop->processEvents();
+    }
+    QCOMPARE(textChan->groupFlags(), mGroupFlags);
+    QVERIFY(textChan->groupFlags() & ChannelGroupFlagCanAdd);
+    QVERIFY(textChan->canInviteContacts());
+    QCOMPARE(mGroupFlagsAdded, ChannelGroupFlagCanAdd);
+    QCOMPARE(mGroupFlagsRemoved, (ChannelGroupFlags) 0);
 }
 
 void TestChanGroup::cleanup()

@@ -152,6 +152,14 @@ void TestConferenceChan::init()
 void TestConferenceChan::testConference()
 {
     mChan = Channel::create(mConn->client(), mConferenceChanPath, QVariantMap());
+    QCOMPARE(mChan->isConference(), false);
+    QVERIFY(mChan->conferenceInitialInviteeContacts().isEmpty());
+    QVERIFY(mChan->conferenceChannels().isEmpty());
+    QVERIFY(mChan->conferenceInitialChannels().isEmpty());
+    QVERIFY(mChan->conferenceOriginalChannels().isEmpty());
+    QCOMPARE(mChan->supportsConferenceMerging(), false);
+    QCOMPARE(mChan->supportsConferenceSplitting(), false);
+
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -173,10 +181,28 @@ void TestConferenceChan::testConference()
     }
     QCOMPARE(expectedObjectPaths, objectPaths);
 
+    /*
+    // TODO - Properly check for initial invitee contacts if/when a test CM supports it
+    QVERIFY(!mChan->isReady(Channel::FeatureConferenceInitialInviteeContacts));
     QCOMPARE(mChan->conferenceInitialInviteeContacts(), Contacts());
 
-    QCOMPARE(mChan->isConference(), true);
+    QVERIFY(connect(mChan->becomeReady(Channel::FeatureConferenceInitialInviteeContacts),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(Channel::FeatureConferenceInitialInviteeContacts), true);
+
+    QCOMPARE(mChan->conferenceInitialInviteeContacts(), Contacts());
+    */
+
     QCOMPARE(mChan->supportsConferenceMerging(), true);
+    QCOMPARE(mChan->supportsConferenceSplitting(), false);
+    QVERIFY(connect(mChan->conferenceSplitChannel(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QVERIFY(!mLastErrorMessage.isEmpty());
 
     ChannelPtr otherChannel = Channel::create(mConn->client(), mTextChan3Path, QVariantMap());
 
