@@ -468,8 +468,8 @@ void TestTextChan::commonTest(bool withMessages)
         QCOMPARE(r.supersededToken(), QString());
         QVERIFY(r.isDeliveryReport());
         QVERIFY(r.deliveryDetails().isValid());
-        QVERIFY(!r.deliveryDetails().hasOriginalToken());
-        QVERIFY(r.deliveryDetails().originalToken().isEmpty());
+        QVERIFY(r.deliveryDetails().hasOriginalToken());
+        QCOMPARE(r.deliveryDetails().originalToken(), QLatin1String("1111"));
         QCOMPARE(r.deliveryDetails().status(), Tp::DeliveryStatusPermanentlyFailed);
         QVERIFY(r.deliveryDetails().isError());
         QCOMPARE(r.deliveryDetails().error(), Tp::ChannelTextSendErrorPermissionDenied);
