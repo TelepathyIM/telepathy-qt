@@ -38,7 +38,6 @@ FileReceiver::FileReceiver(QObject *parent)
     QDBusConnection bus(QDBusConnection::sessionBus());
 
     AccountFactoryPtr accountFactory = AccountFactory::create(bus);
-    // We only care about CONNECTED connections, so let's specify that in a Connection Factory
     ConnectionFactoryPtr connectionFactory = ConnectionFactory::create(bus);
     ChannelFactoryPtr channelFactory = ChannelFactory::create(bus);
     channelFactory->addCommonFeatures(Channel::FeatureCore);
