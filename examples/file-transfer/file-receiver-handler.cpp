@@ -76,12 +76,12 @@ void FileReceiverHandler::handleChannels(const MethodInvocationContextPtr<> &con
     Q_ASSERT(chan->channelType() == TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
     Q_ASSERT(!chan->isRequested());
 
-    IncomingFileTransferChannelPtr iftChan = IncomingFileTransferChannelPtr::qObjectCast(chan);
-    Q_ASSERT(iftChan);
+    IncomingFileTransferChannelPtr transferChannel = IncomingFileTransferChannelPtr::qObjectCast(chan);
+    Q_ASSERT(transferChannel);
 
     context->setFinished();
 
-    PendingFileReceive *rop = new PendingFileReceive(iftChan,
+    PendingFileReceive *rop = new PendingFileReceive(transferChannel,
             SharedPtr<RefCounted>::dynamicCast(AbstractClientPtr(this)));
     connect(rop,
             SIGNAL(finished(Tp::PendingOperation*)),

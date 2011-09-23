@@ -224,13 +224,13 @@ void FileSender::onTransferRequestFinished(PendingOperation *op)
     Q_ASSERT(chan->channelType() == TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
     Q_ASSERT(chan->isRequested());
 
-    OutgoingFileTransferChannelPtr oftChan = OutgoingFileTransferChannelPtr::qObjectCast(chan);
-    Q_ASSERT(oftChan);
+    OutgoingFileTransferChannelPtr transferChannel = OutgoingFileTransferChannelPtr::qObjectCast(chan);
+    Q_ASSERT(transferChannel);
 
     // We just passed the URI when requesting the channel, so it has to be set
-    Q_ASSERT(!oftChan->uri().isEmpty());
+    Q_ASSERT(!transferChannel->uri().isEmpty());
 
-    PendingFileSend *sop = new PendingFileSend(oftChan, SharedPtr<RefCounted>());
+    PendingFileSend *sop = new PendingFileSend(transferChannel, SharedPtr<RefCounted>());
     connect(sop,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onSendFinished(Tp::PendingOperation*)));
