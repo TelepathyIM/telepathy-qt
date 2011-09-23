@@ -5,6 +5,7 @@ The "..." release.
 
 Enhancements:
  * Add Presence/PresenceSpec operator== support
+ * Improve file transfer examples to properly use the ChannelDispatcher.
 
 Fixes:
  * ...
