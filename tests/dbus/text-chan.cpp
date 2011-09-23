@@ -167,8 +167,14 @@ void TestTextChan::commonTest(bool withMessages)
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
 
+    // hasChatStateInterface requires FeatureCore only
+    if (withMessages) {
+        QVERIFY(mChan->hasChatStateInterface());
+    } else {
+        QVERIFY(!mChan->hasChatStateInterface());
+    }
+
     QVERIFY(!mChan->isReady(TextChannel::FeatureChatState));
-    QVERIFY(!mChan->hasChatStateInterface());
     QCOMPARE(mChan->chatState(mContact), ChannelChatStateInactive);
     QCOMPARE(mChan->chatState(ContactPtr()), ChannelChatStateInactive);
 
@@ -177,14 +183,24 @@ void TestTextChan::commonTest(bool withMessages)
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan->isReady(TextChannel::FeatureChatState));
-    QVERIFY(!mChan->hasChatStateInterface());
+
+    if (withMessages) {
+        QVERIFY(mChan->hasChatStateInterface());
+    } else {
+        QVERIFY(!mChan->hasChatStateInterface());
+    }
+
     QCOMPARE(mChan->chatState(mContact), ChannelChatStateInactive);
     QCOMPARE(mChan->chatState(ContactPtr()), ChannelChatStateInactive);
 
     QVERIFY(connect(mChan->requestChatState(ChannelChatStateActive),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 1);
+    if (withMessages) {
+        QCOMPARE(mLoop->exec(), 0);
+    } else {
+        QCOMPARE(mLoop->exec(), 1);
+    }
 
     QVERIFY(!mChan->canInviteContacts());
 
