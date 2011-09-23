@@ -1,10 +1,14 @@
 set(ft-receiver_SRCS
-    receiver.cpp
-    receiver-channel.cpp)
+    file-receiver.cpp
+    file-receiver-handler.cpp
+    pending-file-receive.cpp
+    pending-file-transfer.cpp)
 
 set(ft-receiver_MOC_SRCS
-    receiver.h
-    receiver-channel.h)
+    file-receiver.h
+    file-receiver-handler.h
+    pending-file-receive.h
+    pending-file-transfer.h)
 
 tpqt4_generate_mocs(${ft-receiver_MOC_SRCS})
 
@@ -16,10 +20,14 @@ target_link_libraries(ft-receiver
     telepathy-qt4)
 
 set(ft-sender_SRCS
-    sender.cpp)
+    file-sender.cpp
+    pending-file-send.cpp
+    pending-file-transfer.cpp)
 
 set(ft-sender_MOC_SRCS
-    sender.h)
+    file-sender.h
+    pending-file-send.h
+    pending-file-transfer.h)
 
 tpqt4_generate_mocs(${ft-sender_MOC_SRCS})
 
