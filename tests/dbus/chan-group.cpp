@@ -300,12 +300,31 @@ void TestChanGroup::testLeave()
     QVERIFY(mChan);
     mChanObjectPath = mChan->objectPath();
 
+    // channel is not ready yet, it should fail
+    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
+    // passing no contact should also fail
+    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+
+    // passing an invalid contact too
+    QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << ContactPtr()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+
+    // now it should work
     QVERIFY(connect(mChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));

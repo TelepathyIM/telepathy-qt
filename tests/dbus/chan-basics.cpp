@@ -251,6 +251,12 @@ void TestChanBasics::testFallback()
     QVERIFY(textChan->interfaces().isEmpty());
     QCOMPARE(textChan->targetHandleType(), Tp::HandleTypeContact);
     QCOMPARE(textChan->targetHandle(), handle);
+
+    // we have no Group support, groupAddContacts should fail
+    QVERIFY(connect(textChan->groupAddContacts(QList<ContactPtr>() << mConn->client()->selfContact()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
 }
 
 void TestChanBasics::cleanup()
