@@ -17,6 +17,8 @@
 #include <telepathy-glib/channel-iface.h>
 #include <telepathy-glib/svc-channel.h>
 
+#include <string.h>
+
 static void channel_iface_init (gpointer iface, gpointer data);
 static void chat_state_iface_init (gpointer iface, gpointer data);
 static void destroyable_iface_init (gpointer iface, gpointer data);
@@ -91,6 +93,7 @@ send_message (GObject *object,
   ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
   time_t timestamp = time (NULL);
   guint len = tp_message_count_parts (message);
+  const gchar *content = NULL;
   TpMessage *received = NULL;
   guint i;
 
@@ -98,6 +101,32 @@ send_message (GObject *object,
     {
       /* this message is interface-specific - let's not echo it */
       goto finally;
+    }
+
+  content = tp_asv_get_string (tp_message_peek (message, 1), "content");
+  if (content && strstr (content, "(fail)") != NULL)
+    {
+      TpMessage *delivery_report = tp_message_new (self->priv->conn, 1, len);
+
+      tp_message_set_uint32 (delivery_report, 0, "message-type",
+          TP_CHANNEL_TEXT_MESSAGE_TYPE_DELIVERY_REPORT);
+      tp_message_set_handle (delivery_report, 0, "message-sender",
+          TP_HANDLE_TYPE_CONTACT, self->priv->handle);
+      tp_message_set_int64 (delivery_report, 0, "message-received",
+          timestamp);
+
+      tp_message_set_uint32 (delivery_report, 0, "delivery-status",
+          TP_DELIVERY_STATUS_PERMANENTLY_FAILED);
+      tp_message_set_uint32 (delivery_report, 0, "delivery-error",
+          TP_CHANNEL_TEXT_SEND_ERROR_PERMISSION_DENIED);
+      tp_message_set_string (delivery_report, 0, "delivery-error-message",
+          "You asked for it");
+
+      tp_cm_message_take_message (delivery_report, 0, "delivery-echo", message);
+
+      tp_message_mixin_take_received (object, delivery_report);
+
+      return;
     }
 
   received = tp_message_new (self->priv->conn, 1, len);
@@ -221,7 +250,7 @@ constructor (GType type,
       (sizeof (types) / sizeof (types[0])), types,
       TP_MESSAGE_PART_SUPPORT_FLAG_ONE_ATTACHMENT |
       TP_MESSAGE_PART_SUPPORT_FLAG_MULTIPLE_ATTACHMENTS,
-      0, /* aka no TpDeliveryReportingSupportFlags */
+      TP_DELIVERY_REPORTING_SUPPORT_FLAG_RECEIVE_FAILURES,
       content_types);
 
   return object;
