@@ -39,13 +39,8 @@ PendingFileTransfer::PendingFileTransfer(const FileTransferChannelPtr &chan,
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
     connect(chan.data(),
-            SIGNAL(stateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)),
-            SLOT(onTransferStateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)));
-    connect(chan.data(),
             SIGNAL(transferredBytesChanged(qulonglong)),
             SLOT(onTransferredBytesChanged(qulonglong)));
-    // do not call onTransferStateChanged here as the inherited classes are not yet constructed,
-    // so calling it here would only invoke this base class slot, even if overloaded
 }
 
 PendingFileTransfer::~PendingFileTransfer()
