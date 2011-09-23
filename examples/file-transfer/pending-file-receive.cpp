@@ -34,8 +34,11 @@ PendingFileReceive::PendingFileReceive(const IncomingFileTransferChannelPtr &cha
     : PendingFileTransfer(FileTransferChannelPtr::qObjectCast(chan), object),
       mReceivingFile(false)
 {
-    // call onTransferStateChanged here as now we are constructed, otherwise calling it in the base
+    // connect/call onTransferStateChanged here as now we are constructed, otherwise doing it in the base
     // class would only invoke the base class slot
+    connect(chan.data(),
+            SIGNAL(stateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)),
+            SLOT(onTransferStateChanged(Tp::FileTransferState,Tp::FileTransferStateChangeReason)));
     onTransferStateChanged(chan->state(), chan->stateReason());
 }
 

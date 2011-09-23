@@ -36,12 +36,12 @@ class PendingFileTransfer : public PendingOperation
 public:
     PendingFileTransfer(const FileTransferChannelPtr &chan,
             const SharedPtr<RefCounted> &object);
-    virtual ~PendingFileTransfer();
+    ~PendingFileTransfer();
 
     FileTransferChannelPtr channel() const { return mChannel; }
 
 protected Q_SLOTS:
-    virtual void onTransferStateChanged(Tp::FileTransferState state,
+    void onTransferStateChanged(Tp::FileTransferState state,
             Tp::FileTransferStateChangeReason stateReason);
 
 private Q_SLOTS:
