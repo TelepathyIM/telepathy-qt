@@ -77,12 +77,17 @@ void Test::expectFailure(PendingOperation *op)
 {
     if (!op->isError()) {
         qWarning() << "expectFailure(): should have been an error, but wasn't";
+        mLastError = QString();
+        mLastErrorMessage = QString();
         mLoop->exit(1);
         return;
     }
 
+    mLastError = op->errorName();
+    mLastErrorMessage = op->errorMessage();
+
     mLoop->exit(0);
-}  
+}
 
 void Test::expectSuccessfulProperty(PendingOperation *op)
 {
