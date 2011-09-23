@@ -354,8 +354,10 @@ void TestTextChan::commonTest(bool withMessages)
     QCOMPARE(mChan->messageQueue().size(), 2);
     QVERIFY(mChan->messageQueue().at(0) == received.at(0));
     QVERIFY(mChan->messageQueue().at(1) == received.at(1));
+    QVERIFY(received.at(0) != received.at(1));
 
     ReceivedMessage r(received.at(0));
+    QVERIFY(r == received.at(0));
     QCOMPARE(static_cast<uint>(r.messageType()),
             static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
@@ -369,6 +371,7 @@ void TestTextChan::commonTest(bool withMessages)
     QCOMPARE(r.part(1).value(QLatin1String("content-type")).variant().toString(),
             QLatin1String("text/plain"));
     QCOMPARE(r.sender()->id(), QLatin1String("someone@localhost"));
+    QCOMPARE(r.senderNickname(), QLatin1String("someone@localhost"));
     QVERIFY(!r.isScrollback());
     QVERIFY(!r.isRescued());
 
