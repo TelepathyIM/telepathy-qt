@@ -44,6 +44,8 @@ GType tp_tests_text_channel_null_get_type (void);
 struct _TpTestsTextChannelNullClass {
     GObjectClass parent_class;
 
+    const gchar **interfaces;
+
     TpTextMixinClass text_class;
 };
 
