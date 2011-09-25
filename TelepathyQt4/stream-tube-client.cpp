@@ -369,6 +369,13 @@ QHash<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> >
 
     QPair<AccountPtr, IncomingStreamTubeChannelPtr> tube;
     foreach (tube, tubes()) {
+        if (!tube.second->isValid()) {
+            // The tube has been invalidated, so skip it to avoid warnings
+            // We're going to get rid of the wrapper in the next mainloop iteration when we get the
+            // invalidation signal
+            continue;
+        }
+
         QSet<uint> tubeConns = QSet<uint>::fromList(tube.second->connections());
         if (!tubeConns.empty()) {
             conns.insert(tube, tubeConns);

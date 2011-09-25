@@ -393,6 +393,9 @@ QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
 
     QPair<AccountPtr, OutgoingStreamTubeChannelPtr> tube;
     foreach (tube, tubes()) {
+        // Ignore invalid and non-Open tubes to prevent a few useless warnings in corner cases where
+        // a tube is still being opened, or has been invalidated but we haven't processed that event
+        // yet.
         if (!tube.second->isValid() || tube.second->state() != TubeChannelStateOpen) {
             continue;
         }
