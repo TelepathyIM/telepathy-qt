@@ -154,9 +154,9 @@ void TubeInitiator::onContactRetrieved(PendingOperation *op)
     mContact = pc->contacts().first();
 
     qDebug() << "Checking contact capabilities...";
-        connect(mContact.data(),
-                SIGNAL(capabilitiesChanged(Tp::ContactCapabilities)),
-                SLOT(onContactCapabilitiesChanged()));
+    connect(mContact.data(),
+            SIGNAL(capabilitiesChanged(Tp::ContactCapabilities)),
+            SLOT(onContactCapabilitiesChanged()));
 
     if (mContact->capabilities().streamTubes(QLatin1String("tp-qt4-stube-example"))) {
         onContactCapabilitiesChanged();
