@@ -192,7 +192,7 @@ private Q_SLOTS:
             const QString &message);
 
 private:
-    StreamTubeClient(
+    TELEPATHY_QT4_NO_EXPORT StreamTubeClient(
             const ClientRegistrarPtr &registrar,
             const QStringList &p2pServices,
             const QStringList &roomServices,
