@@ -42,8 +42,8 @@ public:
    ~TubeReceiver();
 
 private Q_SLOTS:
-    void onTubeAccepted(const QString &);
-    void onStateChanged(QLocalSocket::LocalSocketState);
+    void onTubeAccepted(const QString &listenAddress);
+    void onStateChanged(QLocalSocket::LocalSocketState newState);
     void onTimerTimeout();
     void onDataFromSocket();
 
