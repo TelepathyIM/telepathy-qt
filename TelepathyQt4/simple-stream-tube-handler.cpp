@@ -42,14 +42,16 @@ namespace
     {
         ChannelClassSpecList filter;
 
-        foreach (const QString &service, p2pServices)
+        // Convert to QSet to weed out duplicates
+        foreach (const QString &service, p2pServices.toSet())
         {
             filter.append(requested ?
                     ChannelClassSpec::outgoingStreamTube(service) :
                     ChannelClassSpec::incomingStreamTube(service));
         }
 
-        foreach (const QString &service, roomServices)
+        // Convert to QSet to weed out duplicates
+        foreach (const QString &service, roomServices.toSet())
         {
             filter.append(requested ?
                     ChannelClassSpec::outgoingRoomStreamTube(service) :
