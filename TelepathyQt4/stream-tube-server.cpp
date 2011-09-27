@@ -76,8 +76,8 @@ StreamTubeServer::RemoteContact::RemoteContact(
 }
 
 StreamTubeServer::RemoteContact::RemoteContact(
-        const RemoteContact &a)
-    : QPair<AccountPtr, ContactPtr>(a.account(), a.contact()), mPriv(a.mPriv)
+        const RemoteContact &other)
+    : QPair<AccountPtr, ContactPtr>(other.account(), other.contact()), mPriv(other.mPriv)
 {
 }
 
@@ -87,15 +87,15 @@ StreamTubeServer::RemoteContact::~RemoteContact()
 }
 
 StreamTubeServer::RemoteContact &StreamTubeServer::RemoteContact::operator=(
-        const RemoteContact &a)
+        const RemoteContact &other)
 {
-    if (&a == this) {
+    if (&other == this) {
         return *this;
     }
 
-    first = a.account();
-    second = a.contact();
-    mPriv = a.mPriv;
+    first = other.account();
+    second = other.contact();
+    mPriv = other.mPriv;
 
     return *this;
 }
@@ -118,8 +118,9 @@ StreamTubeServer::Tube::Tube(
 }
 
 StreamTubeServer::Tube::Tube(
-        const Tube &a)
-    : QPair<AccountPtr, OutgoingStreamTubeChannelPtr>(a.account(), a.channel()), mPriv(a.mPriv)
+        const Tube &other)
+    : QPair<AccountPtr, OutgoingStreamTubeChannelPtr>(other.account(), other.channel()),
+    mPriv(other.mPriv)
 {
 }
 
@@ -129,15 +130,15 @@ StreamTubeServer::Tube::~Tube()
 }
 
 StreamTubeServer::Tube &StreamTubeServer::Tube::operator=(
-        const Tube &a)
+        const Tube &other)
 {
-    if (&a == this) {
+    if (&other == this) {
         return *this;
     }
 
-    first = a.account();
-    second = a.channel();
-    mPriv = a.mPriv;
+    first = other.account();
+    second = other.channel();
+    mPriv = other.mPriv;
 
     return *this;
 }

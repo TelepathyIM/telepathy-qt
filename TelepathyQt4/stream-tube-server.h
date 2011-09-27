@@ -65,12 +65,12 @@ public:
     public:
         RemoteContact();
         RemoteContact(const AccountPtr &account, const ContactPtr &contact);
-        RemoteContact(const RemoteContact &a);
+        RemoteContact(const RemoteContact &other);
         ~RemoteContact();
 
         bool isValid() const { return mPriv.constData() != 0; }
 
-        RemoteContact &operator=(const RemoteContact &a);
+        RemoteContact &operator=(const RemoteContact &other);
 
         const AccountPtr &account() const
         {
@@ -93,12 +93,12 @@ public:
     public:
         Tube();
         Tube(const AccountPtr &account, const OutgoingStreamTubeChannelPtr &channel);
-        Tube(const Tube &a);
+        Tube(const Tube &other);
         ~Tube();
 
         bool isValid() const { return mPriv.constData() != 0; }
 
-        Tube &operator=(const Tube &a);
+        Tube &operator=(const Tube &other);
 
         const AccountPtr &account() const
         {

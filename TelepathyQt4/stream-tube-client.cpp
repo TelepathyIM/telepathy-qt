@@ -59,8 +59,9 @@ StreamTubeClient::Tube::Tube(
 }
 
 StreamTubeClient::Tube::Tube(
-        const Tube &a)
-    : QPair<AccountPtr, IncomingStreamTubeChannelPtr>(a.account(), a.channel()), mPriv(a.mPriv)
+        const Tube &other)
+    : QPair<AccountPtr, IncomingStreamTubeChannelPtr>(other.account(), other.channel()),
+    mPriv(other.mPriv)
 {
 }
 
@@ -70,15 +71,15 @@ StreamTubeClient::Tube::~Tube()
 }
 
 StreamTubeClient::Tube &StreamTubeClient::Tube::operator=(
-        const Tube &a)
+        const Tube &other)
 {
-    if (&a == this) {
+    if (&other == this) {
         return *this;
     }
 
-    first = a.account();
-    second = a.channel();
-    mPriv = a.mPriv;
+    first = other.account();
+    second = other.channel();
+    mPriv = other.mPriv;
 
     return *this;
 }

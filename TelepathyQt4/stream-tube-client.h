@@ -69,12 +69,12 @@ public:
     public:
         Tube();
         Tube(const AccountPtr &account, const IncomingStreamTubeChannelPtr &channel);
-        Tube(const Tube &a);
+        Tube(const Tube &other);
         ~Tube();
 
         bool isValid() const { return mPriv.constData() != 0; }
 
-        Tube &operator=(const Tube &a);
+        Tube &operator=(const Tube &other);
 
         const AccountPtr &account() const
         {
