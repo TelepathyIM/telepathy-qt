@@ -64,6 +64,34 @@ public:
         virtual ~TcpSourceAddressGenerator() {}
     };
 
+    class Tube : public QPair<AccountPtr, IncomingStreamTubeChannelPtr>
+    {
+    public:
+        Tube();
+        Tube(const AccountPtr &account, const IncomingStreamTubeChannelPtr &channel);
+        Tube(const Tube &a);
+        ~Tube();
+
+        bool isValid() const { return mPriv.constData() != 0; }
+
+        Tube &operator=(const Tube &a);
+
+        const AccountPtr &account() const
+        {
+            return first;
+        }
+
+        const IncomingStreamTubeChannelPtr &channel() const
+        {
+            return second;
+        }
+
+    private:
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
+    };
+
     // The client name can be passed to allow service-activation. If service activation is not
     // desired, the name can be left out, in which case an unique name will be generated.
 
@@ -127,8 +155,8 @@ public:
     void setToAcceptAsUnix(bool requireCredentials = false); // whether CM should req SCM_CREDENTIALS
 
     // This will always be populated
-    QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > tubes() const;
-    QHash<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> > connections() const;
+    QList<Tube> tubes() const;
+    QHash<Tube, QSet<uint> > connections() const;
 
 Q_SIGNALS:
     // These will always be emitted

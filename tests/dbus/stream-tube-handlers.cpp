@@ -1366,10 +1366,10 @@ void TestStreamTubeHandlers::testClientBasicTcp()
     QCOMPARE(mOfferedTube->objectPath(), chan.first);
 
     // Verify that the state recovery accessors return sensible values at this point
-    QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > clientTubes = client->tubes();
+    QList<StreamTubeClient::Tube> clientTubes = client->tubes();
     QCOMPARE(clientTubes.size(), 1);
-    QCOMPARE(clientTubes.first().first->objectPath(), mAcc->objectPath());
-    QCOMPARE(clientTubes.first().second, mOfferedTube);
+    QCOMPARE(clientTubes.first().account()->objectPath(), mAcc->objectPath());
+    QCOMPARE(clientTubes.first().channel(), mOfferedTube);
 
     QVERIFY(client->connections().isEmpty());
 
@@ -1457,10 +1457,10 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
     QCOMPARE(mOfferedTube->objectPath(), chan.first);
 
     // Verify that the state recovery accessors return sensible values at this point
-    QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > clientTubes = client->tubes();
+    QList<StreamTubeClient::Tube> clientTubes = client->tubes();
     QCOMPARE(clientTubes.size(), 1);
-    QCOMPARE(clientTubes.first().first->objectPath(), mAcc->objectPath());
-    QCOMPARE(clientTubes.first().second, mOfferedTube);
+    QCOMPARE(clientTubes.first().account()->objectPath(), mAcc->objectPath());
+    QCOMPARE(clientTubes.first().channel(), mOfferedTube);
 
     QVERIFY(client->connections().isEmpty());
 
@@ -1598,10 +1598,10 @@ void TestStreamTubeHandlers::testClientBasicUnix()
     QCOMPARE(mOfferedTube->objectPath(), chan.first);
 
     // Verify that the state recovery accessors return sensible values at this point
-    QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > clientTubes = client->tubes();
+    QList<StreamTubeClient::Tube> clientTubes = client->tubes();
     QCOMPARE(clientTubes.size(), 1);
-    QCOMPARE(clientTubes.first().first->objectPath(), mAcc->objectPath());
-    QCOMPARE(clientTubes.first().second, mOfferedTube);
+    QCOMPARE(clientTubes.first().account()->objectPath(), mAcc->objectPath());
+    QCOMPARE(clientTubes.first().channel(), mOfferedTube);
 
     QVERIFY(client->connections().isEmpty());
 
@@ -1679,10 +1679,10 @@ void TestStreamTubeHandlers::testClientUnixCredsIgnore()
     QCOMPARE(mOfferedTube->objectPath(), chan.first);
 
     // Verify that the state recovery accessors return sensible values at this point
-    QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > clientTubes = client->tubes();
+    QList<StreamTubeClient::Tube> clientTubes = client->tubes();
     QCOMPARE(clientTubes.size(), 1);
-    QCOMPARE(clientTubes.first().first->objectPath(), mAcc->objectPath());
-    QCOMPARE(clientTubes.first().second, mOfferedTube);
+    QCOMPARE(clientTubes.first().account()->objectPath(), mAcc->objectPath());
+    QCOMPARE(clientTubes.first().channel(), mOfferedTube);
 
     QVERIFY(client->connections().isEmpty());
 
@@ -1789,8 +1789,7 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mNewClientConnectionTube, mOfferedTube);
-    QHash<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> > conns =
-        client->connections();
+    QHash<StreamTubeClient::Tube, QSet<uint> > conns = client->connections();
     QCOMPARE(conns.size(), 1);
     QCOMPARE(conns.values().first().size(), 1);
     QVERIFY(conns.values().first().contains(mNewClientConnectionId));

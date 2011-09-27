@@ -41,6 +41,48 @@
 namespace Tp
 {
 
+struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Tube::Private : public QSharedData
+{
+    // empty placeholder for now
+};
+
+StreamTubeClient::Tube::Tube()
+{
+    // invalid instance
+}
+
+StreamTubeClient::Tube::Tube(
+        const AccountPtr &account,
+        const IncomingStreamTubeChannelPtr &channel)
+    : QPair<AccountPtr, IncomingStreamTubeChannelPtr>(account, channel), mPriv(new Private)
+{
+}
+
+StreamTubeClient::Tube::Tube(
+        const Tube &a)
+    : QPair<AccountPtr, IncomingStreamTubeChannelPtr>(a.account(), a.channel()), mPriv(a.mPriv)
+{
+}
+
+StreamTubeClient::Tube::~Tube()
+{
+    // mPriv deleted automatically
+}
+
+StreamTubeClient::Tube &StreamTubeClient::Tube::operator=(
+        const Tube &a)
+{
+    if (&a == this) {
+        return *this;
+    }
+
+    first = a.account();
+    second = a.channel();
+    mPriv = a.mPriv;
+
+    return *this;
+}
+
 struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Private
 {
     Private(const ClientRegistrarPtr &registrar,
@@ -347,36 +389,34 @@ void StreamTubeClient::setToAcceptAsUnix(bool requireCredentials)
     mPriv->ensureRegistered();
 }
 
-QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > StreamTubeClient::tubes() const
+QList<StreamTubeClient::Tube> StreamTubeClient::tubes() const
 {
-    QList<QPair<AccountPtr, IncomingStreamTubeChannelPtr> > tubes;
+    QList<Tube> tubes;
 
     foreach (TubeWrapper *wrapper, mPriv->tubes.values()) {
-        tubes.push_back(qMakePair(wrapper->mAcc, wrapper->mTube));
+        tubes.push_back(Tube(wrapper->mAcc, wrapper->mTube));
     }
 
     return tubes;
 }
 
-QHash<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> >
-    StreamTubeClient::connections() const
+QHash<StreamTubeClient::Tube, QSet<uint> > StreamTubeClient::connections() const
 {
-    QHash<QPair<AccountPtr, IncomingStreamTubeChannelPtr>, QSet<uint> > conns;
+    QHash<Tube, QSet<uint> > conns;
     if (!monitorsConnections()) {
         warning() << "StreamTubeClient::connections() used, but connection monitoring is disabled";
         return conns;
     }
 
-    QPair<AccountPtr, IncomingStreamTubeChannelPtr> tube;
-    foreach (tube, tubes()) {
-        if (!tube.second->isValid()) {
+    foreach (const Tube &tube, tubes()) {
+        if (!tube.channel()->isValid()) {
             // The tube has been invalidated, so skip it to avoid warnings
             // We're going to get rid of the wrapper in the next mainloop iteration when we get the
             // invalidation signal
             continue;
         }
 
-        QSet<uint> tubeConns = QSet<uint>::fromList(tube.second->connections());
+        QSet<uint> tubeConns = QSet<uint>::fromList(tube.channel()->connections());
         if (!tubeConns.empty()) {
             conns.insert(tube, tubeConns);
         }
