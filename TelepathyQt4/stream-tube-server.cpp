@@ -100,6 +100,48 @@ StreamTubeServer::RemoteContact &StreamTubeServer::RemoteContact::operator=(
     return *this;
 }
 
+struct TELEPATHY_QT4_NO_EXPORT StreamTubeServer::Tube::Private : public QSharedData
+{
+    // empty placeholder for now
+};
+
+StreamTubeServer::Tube::Tube()
+{
+    // invalid instance
+}
+
+StreamTubeServer::Tube::Tube(
+        const AccountPtr &account,
+        const OutgoingStreamTubeChannelPtr &channel)
+    : QPair<AccountPtr, OutgoingStreamTubeChannelPtr>(account, channel), mPriv(new Private)
+{
+}
+
+StreamTubeServer::Tube::Tube(
+        const Tube &a)
+    : QPair<AccountPtr, OutgoingStreamTubeChannelPtr>(a.account(), a.channel()), mPriv(a.mPriv)
+{
+}
+
+StreamTubeServer::Tube::~Tube()
+{
+    // mPriv deleted automatically
+}
+
+StreamTubeServer::Tube &StreamTubeServer::Tube::operator=(
+        const Tube &a)
+{
+    if (&a == this) {
+        return *this;
+    }
+
+    first = a.account();
+    second = a.channel();
+    mPriv = a.mPriv;
+
+    return *this;
+}
+
 struct StreamTubeServer::Private
 {
     Private(const ClientRegistrarPtr &registrar,
@@ -412,12 +454,12 @@ void StreamTubeServer::exportTcpSocket(
     }
 }
 
-QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > StreamTubeServer::tubes() const
+QList<StreamTubeServer::Tube> StreamTubeServer::tubes() const
 {
-    QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > tubes;
+    QList<Tube> tubes;
 
     foreach (TubeWrapper *wrapper, mPriv->tubes.values()) {
-        tubes.push_back(qMakePair(wrapper->mAcc, wrapper->mTube));
+        tubes.push_back(Tube(wrapper->mAcc, wrapper->mTube));
     }
 
     return tubes;
@@ -433,28 +475,27 @@ QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
         return conns;
     }
 
-    QPair<AccountPtr, OutgoingStreamTubeChannelPtr> tube;
-    foreach (tube, tubes()) {
+    foreach (const Tube &tube, tubes()) {
         // Ignore invalid and non-Open tubes to prevent a few useless warnings in corner cases where
         // a tube is still being opened, or has been invalidated but we haven't processed that event
         // yet.
-        if (!tube.second->isValid() || tube.second->state() != TubeChannelStateOpen) {
+        if (!tube.channel()->isValid() || tube.channel()->state() != TubeChannelStateOpen) {
             continue;
         }
 
-        if (tube.second->addressType() != SocketAddressTypeIPv4 &&
-                tube.second->addressType() != SocketAddressTypeIPv6) {
+        if (tube.channel()->addressType() != SocketAddressTypeIPv4 &&
+                tube.channel()->addressType() != SocketAddressTypeIPv6) {
             continue;
         }
 
         QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
-            tube.second->connectionsForSourceAddresses();
+            tube.channel()->connectionsForSourceAddresses();
         QHash<uint, Tp::ContactPtr> connContacts =
-            tube.second->contactsForConnections();
+            tube.channel()->contactsForConnections();
         QPair<QHostAddress, quint16> srcAddr;
         foreach(srcAddr, srcAddrConns.keys()) {
             conns.insert(srcAddr,
-                    RemoteContact(tube.first, connContacts.value(srcAddrConns.value(srcAddr))));
+                    RemoteContact(tube.account(), connContacts.value(srcAddrConns.value(srcAddr))));
         }
     }
 

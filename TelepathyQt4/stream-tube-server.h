@@ -88,6 +88,34 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
+    class Tube : public QPair<AccountPtr, OutgoingStreamTubeChannelPtr>
+    {
+    public:
+        Tube();
+        Tube(const AccountPtr &account, const OutgoingStreamTubeChannelPtr &channel);
+        Tube(const Tube &a);
+        ~Tube();
+
+        bool isValid() const { return mPriv.constData() != 0; }
+
+        Tube &operator=(const Tube &a);
+
+        const AccountPtr &account() const
+        {
+            return first;
+        }
+
+        const OutgoingStreamTubeChannelPtr &channel() const
+        {
+            return second;
+        }
+
+    private:
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
+    };
+
     // The client name can be passed to allow service-activation. If service activation is not
     // desired, the name can be left out, in which case an unique name will be generated.
 
@@ -169,7 +197,7 @@ public:
     // listening on Unix sockets and not necessarily on TCP than X11 and perhaps CUPS?)
 
     // This will always be populated
-    QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > tubes() const;
+    QList<Tube> tubes() const;
 
     // This will be populated if monitorConnections = true and a TCP socket has been exported
     //

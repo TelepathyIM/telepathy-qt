@@ -937,10 +937,10 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     QCOMPARE(mRequestHints.allHints(), hints);
 
     // Verify that the state recovery accessors return sensible values at this point
-    QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > serverTubes = server->tubes();
+    QList<StreamTubeServer::Tube> serverTubes = server->tubes();
     QCOMPARE(serverTubes.size(), 1);
-    QCOMPARE(serverTubes.first().first->objectPath(), mAcc->objectPath());
-    QCOMPARE(serverTubes.first().second, mRequestedTube);
+    QCOMPARE(serverTubes.first().account()->objectPath(), mAcc->objectPath());
+    QCOMPARE(serverTubes.first().channel(), mRequestedTube);
 
     QVERIFY(server->tcpConnections().isEmpty());
 
