@@ -23,6 +23,9 @@
 #ifndef _TelepathyQt4_stream_tube_server_h_HEADER_GUARD_
 #define _TelepathyQt4_stream_tube_server_h_HEADER_GUARD_
 
+#include <QPair>
+#include <QSharedDataPointer>
+
 #include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ConnectionFactory>
@@ -55,6 +58,34 @@ public:
 
     protected:
         virtual ~ParametersGenerator() {}
+    };
+
+    class RemoteContact : public QPair<AccountPtr, ContactPtr>
+    {
+    public:
+        RemoteContact();
+        RemoteContact(const AccountPtr &account, const ContactPtr &contact);
+        RemoteContact(const RemoteContact &a);
+        ~RemoteContact();
+
+        bool isValid() const { return mPriv.constData() != 0; }
+
+        RemoteContact &operator=(const RemoteContact &a);
+
+        const AccountPtr &account() const
+        {
+            return first;
+        }
+
+        const ContactPtr &contact() const
+        {
+            return second;
+        }
+
+    private:
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
     };
 
     // The client name can be passed to allow service-activation. If service activation is not
@@ -151,7 +182,9 @@ public:
     //
     // Including the tube channels themselves would complicate this even more, and wouldn't really
     // even help in any use case that I can think of.
-    QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>, QPair<AccountPtr, ContactPtr> > tcpConnections() const;
+
+    QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>, RemoteContact>
+        tcpConnections() const;
 
 Q_SIGNALS:
 

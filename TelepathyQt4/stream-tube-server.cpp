@@ -30,6 +30,7 @@
 #include "TelepathyQt4/simple-stream-tube-handler.h"
 
 #include <QScopedPointer>
+#include <QSharedData>
 #include <QTcpServer>
 
 #include <TelepathyQt4/AccountManager>
@@ -56,6 +57,48 @@ private:
 
     QVariantMap mParams;
 };
+
+struct TELEPATHY_QT4_NO_EXPORT StreamTubeServer::RemoteContact::Private : public QSharedData
+{
+    // empty placeholder for now
+};
+
+StreamTubeServer::RemoteContact::RemoteContact()
+{
+    // invalid instance
+}
+
+StreamTubeServer::RemoteContact::RemoteContact(
+        const AccountPtr &account,
+        const ContactPtr &contact)
+    : QPair<AccountPtr, ContactPtr>(account, contact), mPriv(new Private)
+{
+}
+
+StreamTubeServer::RemoteContact::RemoteContact(
+        const RemoteContact &a)
+    : QPair<AccountPtr, ContactPtr>(a.account(), a.contact()), mPriv(a.mPriv)
+{
+}
+
+StreamTubeServer::RemoteContact::~RemoteContact()
+{
+    // mPriv deleted automatically
+}
+
+StreamTubeServer::RemoteContact &StreamTubeServer::RemoteContact::operator=(
+        const RemoteContact &a)
+{
+    if (&a == this) {
+        return *this;
+    }
+
+    first = a.account();
+    second = a.contact();
+    mPriv = a.mPriv;
+
+    return *this;
+}
 
 struct StreamTubeServer::Private
 {
@@ -381,11 +424,10 @@ QList<QPair<AccountPtr, OutgoingStreamTubeChannelPtr> > StreamTubeServer::tubes(
 }
 
 QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
-      QPair<AccountPtr, ContactPtr> >
+    StreamTubeServer::RemoteContact>
     StreamTubeServer::tcpConnections() const
 {
-    QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
-          QPair<AccountPtr, ContactPtr> > conns;
+    QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>, RemoteContact> conns;
     if (!monitorsConnections()) {
         warning() << "StreamTubeServer::tcpConnections() used, but connection monitoring is disabled";
         return conns;
@@ -412,7 +454,7 @@ QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
         QPair<QHostAddress, quint16> srcAddr;
         foreach(srcAddr, srcAddrConns.keys()) {
             conns.insert(srcAddr,
-                    qMakePair(tube.first, connContacts.value(srcAddrConns.value(srcAddr))));
+                    RemoteContact(tube.first, connContacts.value(srcAddrConns.value(srcAddr))));
         }
     }
 

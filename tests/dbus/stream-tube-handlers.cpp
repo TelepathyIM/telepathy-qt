@@ -1112,12 +1112,12 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     QCOMPARE(mNewServerConnectionContact->id(), QLatin1String("first"));
     QCOMPARE(mNewServerConnectionTube, mRequestedTube);
 
-    QHash<QPair<QHostAddress, quint16>, QPair<AccountPtr, ContactPtr> > conns =
+    QHash<QPair<QHostAddress, quint16>, StreamTubeServer::RemoteContact > conns =
         server->tcpConnections();
     QCOMPARE(conns.size(), 1);
     QVERIFY(conns.contains(qMakePair(expectedAddress, expectedPort)));
-    QCOMPARE(conns.value(qMakePair(expectedAddress, expectedPort)).first->objectPath(), mAcc->objectPath());
-    QCOMPARE(conns.value(qMakePair(expectedAddress, expectedPort)).second, mNewServerConnectionContact);
+    QCOMPARE(conns.value(qMakePair(expectedAddress, expectedPort)).account()->objectPath(), mAcc->objectPath());
+    QCOMPARE(conns.value(qMakePair(expectedAddress, expectedPort)).contact(), mNewServerConnectionContact);
 
     // Now, close the first connection
     tp_tests_stream_tube_channel_last_connection_disconnected(mChanServices.back(),
