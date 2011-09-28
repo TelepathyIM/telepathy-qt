@@ -67,18 +67,23 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     // avatar
     UIntList requestAvatarsQueue;
     bool requestAvatarsIdle;
+
+    // contact info
+    PendingRefreshContactInfo *pendingRefreshContactInfo;
 };
 
 ContactManager::Private::Private(ContactManager *parent, Connection *connection)
     : parent(parent),
       connection(connection),
       roster(new ContactManager::Roster(parent)),
-      requestAvatarsIdle(false)
+      requestAvatarsIdle(false),
+      pendingRefreshContactInfo(0)
 {
 }
 
 ContactManager::Private::~Private()
 {
+    delete pendingRefreshContactInfo;
     delete roster;
 }
 
@@ -1255,6 +1260,14 @@ void ContactManager::onContactInfoChanged(uint handle, const Tp::ContactInfoFiel
     }
 }
 
+void ContactManager::doRefreshInfo()
+{
+    PendingRefreshContactInfo *pendingRefreshContactInfo = mPriv->pendingRefreshContactInfo;
+    Q_ASSERT(pendingRefreshContactInfo);
+    mPriv->pendingRefreshContactInfo = 0;
+    pendingRefreshContactInfo->refreshInfo();
+}
+
 ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
         const Features &features, const QVariantMap &attributes)
 {
@@ -1397,6 +1410,18 @@ PendingOperation *ContactManager::introspectRosterGroups()
 void ContactManager::resetRoster()
 {
     mPriv->roster->reset();
+}
+
+PendingOperation *ContactManager::refreshContactInfo(Contact *contact)
+{
+    if (!mPriv->pendingRefreshContactInfo) {
+        mPriv->pendingRefreshContactInfo = new PendingRefreshContactInfo(connection());
+        QTimer::singleShot(0, this, SLOT(doRefreshInfo()));
+    }
+
+    mPriv->pendingRefreshContactInfo->addContact(contact);
+
+    return mPriv->pendingRefreshContactInfo;
 }
 
 /**
