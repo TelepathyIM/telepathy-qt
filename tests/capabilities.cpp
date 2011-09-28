@@ -20,6 +20,7 @@ public:
 
 private Q_SLOTS:
     void testConnCapabilities();
+    void testContactCapabilities();
 };
 
 TestCapabilities::TestCapabilities(QObject *parent)
@@ -128,6 +129,73 @@ void TestCapabilities::testConnCapabilities()
     QVERIFY(connCaps.contactSearchWithSpecificServer());
     QVERIFY(connCaps.contactSearchWithLimit());
     QCOMPARE(connCaps.allClassSpecs(), rccSpecs);
+}
+
+void TestCapabilities::testContactCapabilities()
+{
+    ContactCapabilities contactCaps;
+    // capabilities base
+    QVERIFY(!contactCaps.isSpecificToContact());
+    QVERIFY(!contactCaps.textChats());
+    QVERIFY(!contactCaps.streamedMediaCalls());
+    QVERIFY(!contactCaps.streamedMediaAudioCalls());
+    QVERIFY(!contactCaps.streamedMediaVideoCalls());
+    QVERIFY(!contactCaps.streamedMediaVideoCallsWithAudio());
+    QVERIFY(!contactCaps.upgradingStreamedMediaCalls());
+    QVERIFY(!contactCaps.fileTransfers());
+    // contact caps specific
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("foobar")));
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("service-foo")));
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("service-bar")));
+    QVERIFY(contactCaps.streamTubeServices().isEmpty());
+
+    RequestableChannelClassSpecList rccSpecs;
+    rccSpecs.append(RequestableChannelClassSpec::textChat());
+    rccSpecs.append(RequestableChannelClassSpec::streamedMediaCall());
+    rccSpecs.append(RequestableChannelClassSpec::streamedMediaAudioCall());
+    rccSpecs.append(RequestableChannelClassSpec::streamedMediaVideoCall());
+    rccSpecs.append(RequestableChannelClassSpec::streamedMediaVideoCallWithAudio());
+    rccSpecs.append(RequestableChannelClassSpec::fileTransfer());
+
+    contactCaps = TestBackdoors::createContactCapabilities(rccSpecs, true);
+    // capabilities base
+    QVERIFY(contactCaps.isSpecificToContact());
+    QVERIFY(contactCaps.textChats());
+    QVERIFY(contactCaps.streamedMediaCalls());
+    QVERIFY(contactCaps.streamedMediaAudioCalls());
+    QVERIFY(contactCaps.streamedMediaVideoCalls());
+    QVERIFY(contactCaps.streamedMediaVideoCallsWithAudio());
+    QVERIFY(contactCaps.fileTransfers());
+    // contact caps specific
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("foobar")));
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("service-foo")));
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("service-bar")));
+    QVERIFY(contactCaps.streamTubeServices().isEmpty());
+    QCOMPARE(contactCaps.allClassSpecs(), rccSpecs);
+
+    rccSpecs.append(RequestableChannelClassSpec::streamTube(QLatin1String("service-foo")));
+    rccSpecs.append(RequestableChannelClassSpec::streamTube(QLatin1String("service-bar")));
+
+    contactCaps = TestBackdoors::createContactCapabilities(rccSpecs, true);
+    // capabilities base
+    QVERIFY(contactCaps.isSpecificToContact());
+    QVERIFY(contactCaps.textChats());
+    QVERIFY(contactCaps.streamedMediaCalls());
+    QVERIFY(contactCaps.streamedMediaAudioCalls());
+    QVERIFY(contactCaps.streamedMediaVideoCalls());
+    QVERIFY(contactCaps.streamedMediaVideoCallsWithAudio());
+    QVERIFY(contactCaps.fileTransfers());
+    // contact caps specific
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("foobar")));
+    QVERIFY(contactCaps.streamTubes(QLatin1String("service-foo")));
+    QVERIFY(contactCaps.streamTubes(QLatin1String("service-bar")));
+    QStringList stubeServices = contactCaps.streamTubeServices();
+    stubeServices.sort();
+    QStringList expectedSTubeServices;
+    expectedSTubeServices << QLatin1String("service-foo") << QLatin1String("service-bar");
+    expectedSTubeServices.sort();
+    QCOMPARE(stubeServices, expectedSTubeServices);
+    QCOMPARE(contactCaps.allClassSpecs(), rccSpecs);
 }
 
 QTEST_MAIN(TestCapabilities)
