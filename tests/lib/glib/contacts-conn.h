@@ -40,6 +40,8 @@ struct _TpTestsContactsConnection {
     TpPresenceMixin presence_mixin;
     TpContactsMixin contacts_mixin;
 
+    guint refresh_contact_info_called;
+
     TpTestsContactsConnectionPrivate *priv;
 };
 
