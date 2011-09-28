@@ -621,28 +621,17 @@ Contact::InfoFields Contact::infoFields() const
  */
 PendingOperation *Contact::refreshInfo()
 {
-   if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
+    ConnectionPtr conn = manager()->connection();
+    if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
         warning() << "Contact::refreshInfo() used on" << this
             << "for which FeatureInfo hasn't been requested - failing";
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("FeatureInfo needs to be ready in order to "
                     "use this method"),
-                ContactPtr(this));
+                conn);
     }
 
-    ConnectionPtr connection = manager()->connection();
-    if (!connection->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Connection does not support ContactInfo interface"),
-                ContactPtr(this));
-    }
-
-    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
-        connection->interface<Client::ConnectionInterfaceContactInfoInterface>();
-    return new PendingVoid(
-            contactInfoInterface->RefreshContactInfo(
-                UIntList() << mPriv->handle[0]),
-            ContactPtr(this));
+    return manager()->refreshContactInfo(this);
 }
 
 /**
