@@ -1154,6 +1154,8 @@ my_refresh_contact_info (TpSvcConnectionInterfaceContactInfo *obj,
       return;
     }
 
+  self->refresh_contact_info_called++;
+
   for (i = 0; i < contacts->len; i++)
     {
       TpHandle handle = g_array_index (contacts, guint, i);
