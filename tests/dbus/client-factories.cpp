@@ -374,6 +374,7 @@ private Q_SLOTS:
     void testAddDispatchOperation();
     void testRequests();
     void testHandleChannels();
+    void testChannelFactoryAccessors();
 
     void cleanup();
     void cleanupTestCase();
@@ -948,6 +949,46 @@ void TestClientFactories::testHandleChannels()
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(waitForProperty(handler2Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.isEmpty());
+}
+
+void TestClientFactories::testChannelFactoryAccessors()
+{
+    QDBusConnection bus = QDBusConnection::sessionBus();
+
+    ChannelFactoryPtr chanFact = ChannelFactory::create(bus);
+
+    QCOMPARE(chanFact->featuresForTextChats(), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::textChat()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedTextChat()), Features());
+
+    QCOMPARE(chanFact->featuresForTextChatrooms(), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::textChatroom()), Features());
+
+    QCOMPARE(chanFact->featuresForStreamedMediaCalls(), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaAudioCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCallWithAudio()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaAudioCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaVideoCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaVideoCallWithAudio()), Features());
+
+    QCOMPARE(chanFact->featuresForRoomLists(), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::roomList()), Features());
+
+    QCOMPARE(chanFact->featuresForOutgoingFileTransfers(), Features());
+    QCOMPARE(chanFact->featuresForIncomingFileTransfers(), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::outgoingFileTransfer()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::incomingFileTransfer()), Features());
+
+    QCOMPARE(chanFact->featuresForOutgoingStreamTubes(), Features());
+    QCOMPARE(chanFact->featuresForIncomingStreamTubes(), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::outgoingStreamTube()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::incomingStreamTube()), Features());
+
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::contactSearch()), Features());
+    QCOMPARE(chanFact->featuresForContactSearches(), Features());
 }
 
 void TestClientFactories::cleanup()
