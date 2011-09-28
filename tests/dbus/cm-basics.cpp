@@ -144,6 +144,16 @@ void TestCmBasics::testBasics()
 
     QVERIFY(param == QLatin1String("account"));
 
+    ProtocolParameter otherParam = info.parameters().value(1);
+    QVERIFY(!otherParam.isValid());
+    QCOMPARE(otherParam.name(), QString());
+    QCOMPARE(otherParam.dbusSignature(), QDBusSignature());
+    QCOMPARE(otherParam.type(), QVariant::Invalid);
+    QCOMPARE(otherParam.defaultValue(), QVariant());
+    QCOMPARE(otherParam.isRequired(), false);
+    QCOMPARE(otherParam.isSecret(), false);
+    QCOMPARE(otherParam.isRequiredForRegistration(), false);
+
     QCOMPARE(info.canRegister(), false);
 
     QCOMPARE(info.capabilities().isSpecificToContact(), false);
