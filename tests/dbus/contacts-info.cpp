@@ -178,7 +178,7 @@ void TestContactsInfo::testInfo()
 
     QCOMPARE(mContactsInfoFieldsUpdated, contacts.size());
 
-    QCOMPARE(serviceConn->refresh_contact_info_called, static_cast<uint>(contacts.size()));
+    QCOMPARE(serviceConn->refresh_contact_info_called, static_cast<uint>(1));
 
     for (int i = 0; i < contacts.size(); i++) {
         ContactPtr contact = contacts[i];
