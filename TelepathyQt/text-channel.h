@@ -59,6 +59,7 @@ public:
     bool canInviteContacts() const;
 
     // requires FeatureMessageCapabilities
+    bool supportsMessageType(ChannelTextMessageType messageType) const;
     QStringList supportedContentTypes() const;
     MessagePartSupportFlags messagePartSupport() const;
     DeliveryReportingSupportFlags deliveryReportingSupport() const;
