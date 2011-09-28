@@ -93,6 +93,21 @@ void TestContactsInfo::testInfo()
                         SLOT(onContactInfoFieldsChanged(const Tp::Contact::InfoFields &))));
     }
 
+    GPtrArray *info_default = (GPtrArray *) dbus_g_type_specialized_construct (
+              TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
+    {
+        const gchar * const field_values[2] = {
+            "FooBar", NULL
+        };
+        g_ptr_array_add (info_default, tp_value_array_build (3,
+                    G_TYPE_STRING, "n",
+                    G_TYPE_STRV, NULL,
+                    G_TYPE_STRV, field_values,
+                    G_TYPE_INVALID));
+    }
+    tp_tests_contacts_connection_set_default_contact_info(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
+            info_default);
+
     GPtrArray *info_1 = (GPtrArray *) dbus_g_type_specialized_construct (
               TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
     {
@@ -151,6 +166,7 @@ void TestContactsInfo::testInfo()
     QCOMPARE(contactBar->infoFields().allFields()[0].fieldName, QLatin1String("n"));
     QCOMPARE(contactBar->infoFields().allFields()[0].fieldValue[0], QLatin1String("Bar"));
 
+    mContactsInfoFieldsUpdated = 0;
     Q_FOREACH (const ContactPtr &contact, contacts) {
         PendingOperation *op = contact->refreshInfo();
         QVERIFY(connect(op,
@@ -159,8 +175,11 @@ void TestContactsInfo::testInfo()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    /* nothing changed */
-    QCOMPARE(mContactsInfoFieldsUpdated, 0);
+    while (mContactsInfoFieldsUpdated != contacts.size())  {
+        mLoop->processEvents();
+    }
+
+    QCOMPARE(mContactsInfoFieldsUpdated, contacts.size());
 
     for (int i = 0; i < contacts.size(); i++) {
         ContactPtr contact = contacts[i];
@@ -181,8 +200,9 @@ void TestContactsInfo::testInfo()
     QCOMPARE(pci->infoFields().isValid(), true);
     QCOMPARE(pci->infoFields().allFields().size(), 1);
     QCOMPARE(pci->infoFields().allFields()[0].fieldName, QLatin1String("n"));
-    QCOMPARE(pci->infoFields().allFields()[0].fieldValue[0], QLatin1String("Foo"));
+    QCOMPARE(pci->infoFields().allFields()[0].fieldValue[0], QLatin1String("FooBar"));
 
+    g_boxed_free(TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_default);
     g_boxed_free(TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_1);
     g_boxed_free(TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_2);
 }
