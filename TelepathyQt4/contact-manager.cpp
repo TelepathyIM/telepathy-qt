@@ -104,6 +104,57 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
     return true;
 }
 
+ContactManager::PendingRefreshContactInfo::PendingRefreshContactInfo(const ConnectionPtr &conn)
+    : PendingOperation(conn),
+      mConn(conn)
+{
+}
+
+ContactManager::PendingRefreshContactInfo::~PendingRefreshContactInfo()
+{
+}
+
+void ContactManager::PendingRefreshContactInfo::addContact(Contact *contact)
+{
+    mToRequest.insert(contact->handle()[0]);
+}
+
+void ContactManager::PendingRefreshContactInfo::refreshInfo()
+{
+    Q_ASSERT(!mToRequest.isEmpty());
+
+    if (!mConn->isValid()) {
+        setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection is invalid"));
+        return;
+    }
+
+    if (!mConn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
+        setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("Connection does not support ContactInfo interface"));
+        return;
+    }
+
+    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
+        mConn->interface<Client::ConnectionInterfaceContactInfoInterface>();
+    Q_ASSERT(contactInfoInterface);
+    PendingVoid *nested = new PendingVoid(
+            contactInfoInterface->RefreshContactInfo(mToRequest.toList()),
+            mConn);
+    connect(nested,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onRefreshInfoFinished(Tp::PendingOperation*)));
+}
+
+void ContactManager::PendingRefreshContactInfo::onRefreshInfoFinished(PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    } else {
+        setFinished();
+    }
+}
+
 /**
  * \class ContactManager
  * \ingroup clientconn
