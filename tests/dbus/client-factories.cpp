@@ -28,10 +28,18 @@
 #include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/ConnectionLowlevel>
 #include <TelepathyQt4/ContactFactory>
+#include <TelepathyQt4/ContactSearchChannel>
 #include <TelepathyQt4/Debug>
+#include <TelepathyQt4/FileTransferChannel>
+#include <TelepathyQt4/IncomingFileTransferChannel>
+#include <TelepathyQt4/IncomingStreamTubeChannel>
 #include <TelepathyQt4/MethodInvocationContext>
+#include <TelepathyQt4/OutgoingFileTransferChannel>
+#include <TelepathyQt4/OutgoingStreamTubeChannel>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/StreamedMediaChannel>
+#include <TelepathyQt4/StreamTubeChannel>
 #include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Types>
 
@@ -1025,6 +1033,90 @@ void TestClientFactories::testChannelFactoryAccessors()
 
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::contactSearch()), commonFeatures);
     QCOMPARE(chanFact->featuresForContactSearches(), commonFeatures);
+
+    Features textChatFeatures;
+    textChatFeatures.insert(TextChannel::FeatureCore);
+    textChatFeatures.insert(TextChannel::FeatureMessageQueue);
+    chanFact->addFeaturesForTextChats(textChatFeatures);
+    textChatFeatures |= commonFeatures;
+
+    Features textChatroomFeatures;
+    textChatroomFeatures.insert(TextChannel::FeatureCore);
+    textChatroomFeatures.insert(TextChannel::FeatureMessageCapabilities);
+    chanFact->addFeaturesForTextChatrooms(textChatroomFeatures);
+    textChatroomFeatures |= commonFeatures;
+
+    Features streamedMediaFeatures;
+    streamedMediaFeatures.insert(StreamedMediaChannel::FeatureStreams);
+    chanFact->addFeaturesForStreamedMediaCalls(streamedMediaFeatures);
+    streamedMediaFeatures |= commonFeatures;
+
+    // RoomListChannel has no feature, let's use FeatureConferenceInitialInviteeContacts just for
+    // testing purposes
+    Features roomListFeatures;
+    roomListFeatures.insert(Channel::FeatureConferenceInitialInviteeContacts);
+    chanFact->addFeaturesForRoomLists(roomListFeatures);
+    roomListFeatures |= commonFeatures;
+
+    Features outFtFeatures;
+    outFtFeatures.insert(FileTransferChannel::FeatureCore);
+    outFtFeatures.insert(OutgoingFileTransferChannel::FeatureCore);
+    chanFact->addFeaturesForOutgoingFileTransfers(outFtFeatures);
+    outFtFeatures |= commonFeatures;
+    Features inFtFeatures;
+    inFtFeatures.insert(FileTransferChannel::FeatureCore);
+    inFtFeatures.insert(IncomingFileTransferChannel::FeatureCore);
+    chanFact->addFeaturesForIncomingFileTransfers(inFtFeatures);
+    inFtFeatures |= commonFeatures;
+
+    Features outStubeFeatures;
+    outStubeFeatures.insert(StreamTubeChannel::FeatureCore);
+    outStubeFeatures.insert(OutgoingStreamTubeChannel::FeatureCore);
+    chanFact->addFeaturesForOutgoingStreamTubes(outStubeFeatures);
+    outStubeFeatures |= commonFeatures;
+    Features inStubeFeatures = commonFeatures;
+    outStubeFeatures.insert(StreamTubeChannel::FeatureCore);
+    outStubeFeatures.insert(IncomingStreamTubeChannel::FeatureCore);
+    chanFact->addFeaturesForIncomingStreamTubes(inStubeFeatures);
+    inStubeFeatures |= commonFeatures;
+
+    Features contactSearchFeatures;
+    contactSearchFeatures.insert(ContactSearchChannel::FeatureCore);
+    chanFact->addFeaturesForContactSearches(contactSearchFeatures);
+    contactSearchFeatures |= commonFeatures;
+
+    QCOMPARE(chanFact->featuresForTextChats(), textChatFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::textChat()), textChatFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedTextChat()), textChatFeatures);
+
+    QCOMPARE(chanFact->featuresForTextChatrooms(), textChatroomFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::textChatroom()), textChatroomFeatures);
+
+    QCOMPARE(chanFact->featuresForStreamedMediaCalls(), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaAudioCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCallWithAudio()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaAudioCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaVideoCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaVideoCallWithAudio()), streamedMediaFeatures);
+
+    QCOMPARE(chanFact->featuresForRoomLists(), roomListFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::roomList()), roomListFeatures);
+
+    QCOMPARE(chanFact->featuresForOutgoingFileTransfers(), outFtFeatures);
+    QCOMPARE(chanFact->featuresForIncomingFileTransfers(), inFtFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::outgoingFileTransfer()), outFtFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::incomingFileTransfer()), inFtFeatures);
+
+    QCOMPARE(chanFact->featuresForOutgoingStreamTubes(), outStubeFeatures);
+    QCOMPARE(chanFact->featuresForIncomingStreamTubes(), inStubeFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::outgoingStreamTube()), outStubeFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::incomingStreamTube()), inStubeFeatures);
+
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::contactSearch()), contactSearchFeatures);
+    QCOMPARE(chanFact->featuresForContactSearches(), contactSearchFeatures);
 }
 
 void TestClientFactories::cleanup()
