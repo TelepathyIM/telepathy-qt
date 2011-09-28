@@ -28,6 +28,8 @@
 #endif
 
 #include <TelepathyQt4/Global>
+#include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/ContactCapabilities>
 
 #include <QString>
 
@@ -43,6 +45,11 @@ class DBusProxy;
 struct TELEPATHY_QT4_EXPORT TestBackdoors
 {
     static void invalidateProxy(DBusProxy *proxy, const QString &reason, const QString &message);
+
+    static ConnectionCapabilities createConnectionCapabilities(
+            const RequestableChannelClassSpecList &rccSpecs);
+    static ContactCapabilities createContactCapabilities(
+            const RequestableChannelClassSpecList &rccSpecs, bool specificToContact);
 };
 
 } // Tp

@@ -35,4 +35,16 @@ void TestBackdoors::invalidateProxy(DBusProxy *proxy, const QString &reason, con
     proxy->invalidate(reason, message);
 }
 
+ConnectionCapabilities TestBackdoors::createConnectionCapabilities(
+        const RequestableChannelClassSpecList &rccSpecs)
+{
+    return ConnectionCapabilities(rccSpecs);
+}
+
+ContactCapabilities TestBackdoors::createContactCapabilities(
+            const RequestableChannelClassSpecList &rccSpecs, bool specificToContact)
+{
+    return ContactCapabilities(rccSpecs, specificToContact);
+}
+
 } // Tp
