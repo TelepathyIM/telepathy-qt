@@ -16,6 +16,7 @@ public:
 
 private Q_SLOTS:
     void testPresence();
+    void testPresenceSpec();
 };
 
 TestPresence::TestPresence(QObject *parent)
@@ -75,6 +76,54 @@ void TestPresence::testPresence()
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeOffline, QLatin1String("offline"), QString());
     pr = Presence::offline(QLatin1String("I am offline"));
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeOffline, QLatin1String("offline"), QLatin1String("I am offline"));
+}
+
+#define TEST_PRESENCE_SPEC_FULL(specStatus, specType, specMaySetOnSelf, specCanHaveMessage) \
+{ \
+    SimpleStatusSpec bareSpec; \
+    bareSpec.type = specType; \
+    bareSpec.maySetOnSelf = specMaySetOnSelf; \
+    bareSpec.canHaveMessage = specCanHaveMessage; \
+\
+    PresenceSpec spec(specStatus, bareSpec); \
+    TEST_PRESENCE_SPEC(spec, true, specStatus, specType, specMaySetOnSelf, specCanHaveMessage); \
+}
+
+#define TEST_PRESENCE_SPEC(spec, specValid, specStatus, specType, specMaySetOnSelf, specCanHaveMessage) \
+{ \
+    QVERIFY(spec.isValid() == specValid); \
+    if (specValid) { \
+        QCOMPARE(spec.presence(), Presence(specType, specStatus, QString())); \
+        TEST_PRESENCE(spec.presence(), true, specType, specStatus, QString()); \
+        QCOMPARE(spec.presence(QLatin1String("test message")), Presence(specType, specStatus, QLatin1String("test message"))); \
+        TEST_PRESENCE(spec.presence(QLatin1String("test message")), true, specType, specStatus, QLatin1String("test message")); \
+    } else { \
+        QVERIFY(!spec.presence().isValid()); \
+    } \
+    QCOMPARE(spec.maySetOnSelf(), specMaySetOnSelf); \
+    QCOMPARE(spec.canHaveStatusMessage(), specCanHaveMessage); \
+\
+    if (specValid) { \
+        SimpleStatusSpec bareSpec; \
+        bareSpec.type = specType; \
+        bareSpec.maySetOnSelf = specMaySetOnSelf; \
+        bareSpec.canHaveMessage = specCanHaveMessage; \
+        QCOMPARE(spec.bareSpec(), bareSpec); \
+    } else { \
+        QCOMPARE(spec.bareSpec(), SimpleStatusSpec()); \
+    } \
+}
+
+void TestPresence::testPresenceSpec()
+{
+    PresenceSpec spec;
+    TEST_PRESENCE_SPEC(spec, false, QString(), ConnectionPresenceTypeUnknown, false, false);
+
+    TEST_PRESENCE_SPEC_FULL(QLatin1String("available"), ConnectionPresenceTypeAvailable, true, true);
+    TEST_PRESENCE_SPEC_FULL(QLatin1String("brb"), ConnectionPresenceTypeAway, true, true);
+    TEST_PRESENCE_SPEC_FULL(QLatin1String("away"), ConnectionPresenceTypeAway, true, true);
+    TEST_PRESENCE_SPEC_FULL(QLatin1String("xa"), ConnectionPresenceTypeExtendedAway, false, false);
+    TEST_PRESENCE_SPEC_FULL(QLatin1String("offline"), ConnectionPresenceTypeOffline, true, false);
 }
 
 QTEST_MAIN(TestPresence)
