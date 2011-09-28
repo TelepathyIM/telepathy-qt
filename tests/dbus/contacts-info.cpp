@@ -44,7 +44,6 @@ void TestContactsInfo::onContactInfoFieldsChanged(const Tp::Contact::InfoFields 
 {
     Q_UNUSED(info);
     mContactsInfoFieldsUpdated++;
-    mLoop->exit(0);
 }
 
 void TestContactsInfo::initTestCase()
@@ -148,7 +147,7 @@ void TestContactsInfo::testInfo()
             handles[1], info_2);
 
     while (mContactsInfoFieldsUpdated != 2)  {
-        QCOMPARE(mLoop->exec(), 0);
+        mLoop->processEvents();
     }
 
     QCOMPARE(mContactsInfoFieldsUpdated, 2);
@@ -166,20 +165,20 @@ void TestContactsInfo::testInfo()
     QCOMPARE(contactBar->infoFields().allFields()[0].fieldName, QLatin1String("n"));
     QCOMPARE(contactBar->infoFields().allFields()[0].fieldValue[0], QLatin1String("Bar"));
 
+    TpTestsContactsConnection *serviceConn = TP_TESTS_CONTACTS_CONNECTION(mConn->service());
+    QCOMPARE(serviceConn->refresh_contact_info_called, static_cast<uint>(0));
+
     mContactsInfoFieldsUpdated = 0;
     Q_FOREACH (const ContactPtr &contact, contacts) {
-        PendingOperation *op = contact->refreshInfo();
-        QVERIFY(connect(op,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
+        QVERIFY(contact->refreshInfo());
     }
-
     while (mContactsInfoFieldsUpdated != contacts.size())  {
         mLoop->processEvents();
     }
 
     QCOMPARE(mContactsInfoFieldsUpdated, contacts.size());
+
+    QCOMPARE(serviceConn->refresh_contact_info_called, static_cast<uint>(contacts.size()));
 
     for (int i = 0; i < contacts.size(); i++) {
         ContactPtr contact = contacts[i];
