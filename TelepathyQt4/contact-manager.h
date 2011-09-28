@@ -159,9 +159,11 @@ private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
 
 private:
+    class PendingRefreshContactInfo;
     class Roster;
     friend class Connection;
     friend class PendingContacts;
+    friend class PendingRefreshContactInfo;
     friend class Roster;
 
     TELEPATHY_QT4_NO_EXPORT ContactManager(Connection *parent);
