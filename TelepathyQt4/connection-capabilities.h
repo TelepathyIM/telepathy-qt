@@ -33,6 +33,8 @@
 namespace Tp
 {
 
+class TestBackdoors;
+
 class TELEPATHY_QT4_EXPORT ConnectionCapabilities : public CapabilitiesBase
 {
 public:
@@ -62,6 +64,7 @@ protected:
     friend class Account;
     friend class Connection;
     friend class ProtocolInfo;
+    friend class TestBackdoors;
 
     ConnectionCapabilities(const RequestableChannelClassList &rccs);
     ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs);
