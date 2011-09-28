@@ -164,10 +164,10 @@ void TestContactsInfo::testInfo()
 
     for (int i = 0; i < contacts.size(); i++) {
         ContactPtr contact = contacts[i];
-        disconnect(contact.data(),
-                SIGNAL(infoChanged(const Tp::ContactInfoFieldList &)),
-                this,
-                SLOT(onContactInfoChanged(const Tp::ContactInfoFieldList &)));
+        QVERIFY(disconnect(contact.data(),
+                    SIGNAL(infoFieldsChanged(const Tp::Contact::InfoFields &)),
+                    this,
+                    SLOT(onContactInfoFieldsChanged(const Tp::Contact::InfoFields &))));
     }
 
     PendingContactInfo *pci = contactFoo->requestInfo();
