@@ -20,11 +20,14 @@ class TestContactsInfo : public Test
 
 public:
     TestContactsInfo(QObject *parent = 0)
-        : Test(parent), mConn(0), mContactsInfoFieldsUpdated(0)
+        : Test(parent), mConn(0),
+          mContactsInfoFieldsUpdated(0),
+          mRefreshInfoFinished(0)
     { }
 
 protected Q_SLOTS:
     void onContactInfoFieldsChanged(const Tp::Contact::InfoFields &);
+    void onRefreshInfoFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
@@ -38,12 +41,24 @@ private Q_SLOTS:
 private:
     TestConnHelper *mConn;
     int mContactsInfoFieldsUpdated;
+    int mRefreshInfoFinished;
 };
 
 void TestContactsInfo::onContactInfoFieldsChanged(const Tp::Contact::InfoFields &info)
 {
     Q_UNUSED(info);
     mContactsInfoFieldsUpdated++;
+}
+
+void TestContactsInfo::onRefreshInfoFinished(PendingOperation *op)
+{
+    if (op->isError()) {
+        mLoop->exit(1);
+        return;
+    }
+
+    mRefreshInfoFinished++;
+    mLoop->exit(0);
 }
 
 void TestContactsInfo::initTestCase()
@@ -67,6 +82,7 @@ void TestContactsInfo::init()
 {
     initImpl();
     mContactsInfoFieldsUpdated = 0;
+    mRefreshInfoFinished = 0;
 }
 
 void TestContactsInfo::testInfo()
@@ -169,10 +185,18 @@ void TestContactsInfo::testInfo()
     QCOMPARE(serviceConn->refresh_contact_info_called, static_cast<uint>(0));
 
     mContactsInfoFieldsUpdated = 0;
+    mRefreshInfoFinished = 0;
     Q_FOREACH (const ContactPtr &contact, contacts) {
-        QVERIFY(contact->refreshInfo());
+        QVERIFY(connect(contact->refreshInfo(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onRefreshInfoFinished(Tp::PendingOperation*))));
     }
-    while (mContactsInfoFieldsUpdated != contacts.size())  {
+    while (mRefreshInfoFinished != contacts.size()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mRefreshInfoFinished, contacts.size());
+
+    while (mContactsInfoFieldsUpdated != contacts.size()) {
         mLoop->processEvents();
     }
 
