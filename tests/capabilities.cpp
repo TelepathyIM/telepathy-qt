@@ -369,6 +369,28 @@ void TestCapabilities::testContactCapabilities()
     expectedSTubeServices.sort();
     QCOMPARE(stubeServices, expectedSTubeServices);
     QCOMPARE(contactCaps.allClassSpecs(), rccSpecs);
+
+    rccSpecs.clear();
+    rccSpecs.append(RequestableChannelClassSpec::streamTube(QLatin1String("service-foo")));
+
+    contactCaps = TestBackdoors::createContactCapabilities(rccSpecs, true);
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("foobar")));
+    QVERIFY(contactCaps.streamTubes(QLatin1String("service-foo")));
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("service-bar")));
+    QCOMPARE(contactCaps.streamTubeServices(), QStringList() << QLatin1String("service-foo"));
+
+    rccSpecs.append(RequestableChannelClassSpec::streamTube(QLatin1String("service-bar")));
+
+    contactCaps = TestBackdoors::createContactCapabilities(rccSpecs, true);
+    QVERIFY(!contactCaps.streamTubes(QLatin1String("foobar")));
+    QVERIFY(contactCaps.streamTubes(QLatin1String("service-foo")));
+    QVERIFY(contactCaps.streamTubes(QLatin1String("service-bar")));
+    stubeServices = contactCaps.streamTubeServices();
+    stubeServices.sort();
+    expectedSTubeServices.clear();
+    expectedSTubeServices << QLatin1String("service-foo") << QLatin1String("service-bar");
+    expectedSTubeServices.sort();
+    QCOMPARE(stubeServices, expectedSTubeServices);
 }
 
 QTEST_MAIN(TestCapabilities)
