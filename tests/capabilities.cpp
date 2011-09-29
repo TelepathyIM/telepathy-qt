@@ -129,6 +129,80 @@ void TestCapabilities::testConnCapabilities()
     QVERIFY(connCaps.contactSearchWithSpecificServer());
     QVERIFY(connCaps.contactSearchWithLimit());
     QCOMPARE(connCaps.allClassSpecs(), rccSpecs);
+
+    // start over
+    rccSpecs.clear();
+    rccSpecs.append(RequestableChannelClassSpec::streamedMediaCall());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.streamedMediaCalls());
+    QVERIFY(!connCaps.streamedMediaAudioCalls());
+    QVERIFY(!connCaps.streamedMediaVideoCalls());
+    QVERIFY(!connCaps.streamedMediaVideoCallsWithAudio());
+    // conn caps specific
+    QVERIFY(!connCaps.conferenceStreamedMediaCalls());
+    QVERIFY(!connCaps.conferenceStreamedMediaCallsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::streamedMediaAudioCall());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.streamedMediaCalls());
+    QVERIFY(connCaps.streamedMediaAudioCalls());
+    QVERIFY(!connCaps.streamedMediaVideoCalls());
+    QVERIFY(!connCaps.streamedMediaVideoCallsWithAudio());
+    // conn caps specific
+    QVERIFY(!connCaps.conferenceStreamedMediaCalls());
+    QVERIFY(!connCaps.conferenceStreamedMediaCallsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::streamedMediaVideoCall());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.streamedMediaCalls());
+    QVERIFY(connCaps.streamedMediaAudioCalls());
+    QVERIFY(connCaps.streamedMediaVideoCalls());
+    QVERIFY(!connCaps.streamedMediaVideoCallsWithAudio());
+    // conn caps specific
+    QVERIFY(!connCaps.conferenceStreamedMediaCalls());
+    QVERIFY(!connCaps.conferenceStreamedMediaCallsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::streamedMediaVideoCallWithAudio());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.streamedMediaCalls());
+    QVERIFY(connCaps.streamedMediaAudioCalls());
+    QVERIFY(connCaps.streamedMediaVideoCalls());
+    QVERIFY(connCaps.streamedMediaVideoCallsWithAudio());
+    // conn caps specific
+    QVERIFY(!connCaps.conferenceStreamedMediaCalls());
+    QVERIFY(!connCaps.conferenceStreamedMediaCallsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::conferenceStreamedMediaCall());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.streamedMediaCalls());
+    QVERIFY(connCaps.streamedMediaAudioCalls());
+    QVERIFY(connCaps.streamedMediaVideoCalls());
+    QVERIFY(connCaps.streamedMediaVideoCallsWithAudio());
+    // conn caps specific
+    QVERIFY(connCaps.conferenceStreamedMediaCalls());
+    QVERIFY(!connCaps.conferenceStreamedMediaCallsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::conferenceStreamedMediaCallWithInvitees());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.streamedMediaCalls());
+    QVERIFY(connCaps.streamedMediaAudioCalls());
+    QVERIFY(connCaps.streamedMediaVideoCalls());
+    QVERIFY(connCaps.streamedMediaVideoCallsWithAudio());
+    // conn caps specific
+    QVERIFY(connCaps.conferenceStreamedMediaCalls());
+    QVERIFY(connCaps.conferenceStreamedMediaCallsWithInvitees());
 }
 
 void TestCapabilities::testContactCapabilities()
