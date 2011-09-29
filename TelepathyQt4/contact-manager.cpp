@@ -140,6 +140,7 @@ void ContactManager::PendingRefreshContactInfo::refreshInfo()
         return;
     }
 
+    debug() << "Calling ContactInfo.RefreshContactInfo for handles" << mToRequest.toList();
     Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
         mConn->interface<Client::ConnectionInterfaceContactInfoInterface>();
     Q_ASSERT(contactInfoInterface);
@@ -154,8 +155,11 @@ void ContactManager::PendingRefreshContactInfo::refreshInfo()
 void ContactManager::PendingRefreshContactInfo::onRefreshInfoFinished(PendingOperation *op)
 {
     if (op->isError()) {
+        warning() << "ContactInfo.RefreshContactInfo for handles" << mToRequest.toList() <<
+            "failed with" << op->errorName() << "-" << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
     } else {
+        debug() << "Got reply to ContactInfo.RefreshContactInfo for handles" << mToRequest.toList();
         setFinished();
     }
 }
