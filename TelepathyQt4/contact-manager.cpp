@@ -69,7 +69,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     bool requestAvatarsIdle;
 
     // contact info
-    PendingRefreshContactInfo *pendingRefreshContactInfo;
+    PendingRefreshContactInfo *refreshInfoOp;
 };
 
 ContactManager::Private::Private(ContactManager *parent, Connection *connection)
@@ -77,13 +77,13 @@ ContactManager::Private::Private(ContactManager *parent, Connection *connection)
       connection(connection),
       roster(new ContactManager::Roster(parent)),
       requestAvatarsIdle(false),
-      pendingRefreshContactInfo(0)
+      refreshInfoOp(0)
 {
 }
 
 ContactManager::Private::~Private()
 {
-    delete pendingRefreshContactInfo;
+    delete refreshInfoOp;
     delete roster;
 }
 
@@ -1266,10 +1266,10 @@ void ContactManager::onContactInfoChanged(uint handle, const Tp::ContactInfoFiel
 
 void ContactManager::doRefreshInfo()
 {
-    PendingRefreshContactInfo *pendingRefreshContactInfo = mPriv->pendingRefreshContactInfo;
-    Q_ASSERT(pendingRefreshContactInfo);
-    mPriv->pendingRefreshContactInfo = 0;
-    pendingRefreshContactInfo->refreshInfo();
+    PendingRefreshContactInfo *op = mPriv->refreshInfoOp;
+    Q_ASSERT(op);
+    mPriv->refreshInfoOp = 0;
+    op->refreshInfo();
 }
 
 ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
@@ -1418,14 +1418,14 @@ void ContactManager::resetRoster()
 
 PendingOperation *ContactManager::refreshContactInfo(Contact *contact)
 {
-    if (!mPriv->pendingRefreshContactInfo) {
-        mPriv->pendingRefreshContactInfo = new PendingRefreshContactInfo(connection());
+    if (!mPriv->refreshInfoOp) {
+        mPriv->refreshInfoOp = new PendingRefreshContactInfo(connection());
         QTimer::singleShot(0, this, SLOT(doRefreshInfo()));
     }
 
-    mPriv->pendingRefreshContactInfo->addContact(contact);
+    mPriv->refreshInfoOp->addContact(contact);
 
-    return mPriv->pendingRefreshContactInfo;
+    return mPriv->refreshInfoOp;
 }
 
 /**
