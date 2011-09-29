@@ -203,6 +203,105 @@ void TestCapabilities::testConnCapabilities()
     // conn caps specific
     QVERIFY(connCaps.conferenceStreamedMediaCalls());
     QVERIFY(connCaps.conferenceStreamedMediaCallsWithInvitees());
+
+    // capabilities base
+    QVERIFY(!connCaps.textChats());
+    QVERIFY(!connCaps.fileTransfers());
+    // conn caps specific
+    QVERIFY(!connCaps.textChatrooms());
+    QVERIFY(!connCaps.conferenceTextChats());
+    QVERIFY(!connCaps.conferenceTextChatsWithInvitees());
+    QVERIFY(!connCaps.conferenceTextChatrooms());
+    QVERIFY(!connCaps.conferenceTextChatroomsWithInvitees());
+    QVERIFY(!connCaps.contactSearches());
+    QVERIFY(!connCaps.contactSearchesWithSpecificServer());
+    QVERIFY(!connCaps.contactSearchesWithLimit());
+    QVERIFY(!connCaps.contactSearch());
+    QVERIFY(!connCaps.contactSearchWithSpecificServer());
+    QVERIFY(!connCaps.contactSearchWithLimit());
+    QVERIFY(!connCaps.streamTubes());
+
+    rccSpecs.append(RequestableChannelClassSpec::textChat());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.textChats());
+    // conn caps specific
+    QVERIFY(!connCaps.textChatrooms());
+    QVERIFY(!connCaps.conferenceTextChats());
+    QVERIFY(!connCaps.conferenceTextChatsWithInvitees());
+    QVERIFY(!connCaps.conferenceTextChatrooms());
+    QVERIFY(!connCaps.conferenceTextChatroomsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::textChatroom());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.textChats());
+    // conn caps specific
+    QVERIFY(connCaps.textChatrooms());
+    QVERIFY(!connCaps.conferenceTextChats());
+    QVERIFY(!connCaps.conferenceTextChatsWithInvitees());
+    QVERIFY(!connCaps.conferenceTextChatrooms());
+    QVERIFY(!connCaps.conferenceTextChatroomsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::conferenceTextChat());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.textChats());
+    // conn caps specific
+    QVERIFY(connCaps.textChatrooms());
+    QVERIFY(connCaps.conferenceTextChats());
+    QVERIFY(!connCaps.conferenceTextChatsWithInvitees());
+    QVERIFY(!connCaps.conferenceTextChatrooms());
+    QVERIFY(!connCaps.conferenceTextChatroomsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::conferenceTextChatWithInvitees());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.textChats());
+    // conn caps specific
+    QVERIFY(connCaps.textChatrooms());
+    QVERIFY(connCaps.conferenceTextChats());
+    QVERIFY(connCaps.conferenceTextChatsWithInvitees());
+    QVERIFY(!connCaps.conferenceTextChatrooms());
+    QVERIFY(!connCaps.conferenceTextChatroomsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::conferenceTextChatroom());
+
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.textChats());
+    // conn caps specific
+    QVERIFY(connCaps.textChatrooms());
+    QVERIFY(connCaps.conferenceTextChats());
+    QVERIFY(connCaps.conferenceTextChatsWithInvitees());
+    QVERIFY(connCaps.conferenceTextChatrooms());
+    QVERIFY(!connCaps.conferenceTextChatroomsWithInvitees());
+
+    rccSpecs.append(RequestableChannelClassSpec::conferenceTextChatroomWithInvitees());
+    connCaps = TestBackdoors::createConnectionCapabilities(rccSpecs);
+    // capabilities base
+    QVERIFY(connCaps.textChats());
+    // conn caps specific
+    QVERIFY(connCaps.textChatrooms());
+    QVERIFY(connCaps.conferenceTextChats());
+    QVERIFY(connCaps.conferenceTextChatsWithInvitees());
+    QVERIFY(connCaps.conferenceTextChatrooms());
+    QVERIFY(connCaps.conferenceTextChatroomsWithInvitees());
+
+    // capabilities base
+    QVERIFY(!connCaps.fileTransfers());
+    // conn caps specific
+    QVERIFY(!connCaps.contactSearches());
+    QVERIFY(!connCaps.contactSearchesWithSpecificServer());
+    QVERIFY(!connCaps.contactSearchesWithLimit());
+    QVERIFY(!connCaps.contactSearch());
+    QVERIFY(!connCaps.contactSearchWithSpecificServer());
+    QVERIFY(!connCaps.contactSearchWithLimit());
+    QVERIFY(!connCaps.streamTubes());
 }
 
 void TestCapabilities::testContactCapabilities()
