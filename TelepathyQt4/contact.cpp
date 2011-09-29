@@ -628,7 +628,7 @@ PendingOperation *Contact::refreshInfo()
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("FeatureInfo needs to be ready in order to "
                     "use this method"),
-                conn);
+                ContactPtr(this));
     }
 
     return manager()->refreshContactInfo(this);
