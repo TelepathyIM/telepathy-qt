@@ -123,7 +123,8 @@ public:
 
     ContactPtr lookupContactByHandle(uint handle);
 
-    void requestContactAvatar(Contact *contact);
+    TELEPATHY_QT4_DEPRECATED void requestContactAvatar(Contact *contact);
+    void requestContactsAvatar(const QList<ContactPtr> &contacts);
 
 Q_SIGNALS:
     void stateChanged(Tp::ContactListState state);

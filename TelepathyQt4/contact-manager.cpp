@@ -1106,39 +1106,65 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
     return contact;
 }
 
+/**
+ * Start a request to retrieve the avatar for the given \a contacts.
+ *
+ * Force the request of the avatar data. This method returns directly, emitting
+ * Contact::avatarTokenChanged() and Contact::avatarDataChanged() signals once the token
+ * and data are fetched from the server.
+ *
+ * This is only useful if the avatar token is unknown; see Contact::isAvatarTokenKnown().
+ * It happens in the case of offline XMPP contacts, because the server does not
+ * send the token for them and an explicit request of the avatar data is needed.
+ *
+ * This method requires Contact::FeatureAvatarData to be ready.
+ *
+ * \sa Contact::avatarData(), Contact::avatarDataChanged(),
+ *     Contact::avatarToken(), Contact::avatarTokenChanged()
+ */
+void ContactManager::requestContactsAvatar(const QList<ContactPtr> &contacts)
+{
+    foreach (const ContactPtr &contact, contacts) {
+        QString avatarFileName;
+        QString mimeTypeFileName;
+
+        bool success = (contact->isAvatarTokenKnown() &&
+            mPriv->buildAvatarFileName(contact->avatarToken(), false,
+                avatarFileName, mimeTypeFileName));
+
+        /* Check if the avatar is already in the cache */
+        if (success && QFile::exists(avatarFileName)) {
+            QFile mimeTypeFile(mimeTypeFileName);
+            mimeTypeFile.open(QIODevice::ReadOnly);
+            QString mimeType = QString(QLatin1String(mimeTypeFile.readAll()));
+            mimeTypeFile.close();
+
+            debug() << "Avatar found in cache for handle" << contact->handle()[0];
+            debug() << "Filename:" << avatarFileName;
+            debug() << "MimeType:" << mimeType;
+
+            contact->receiveAvatarData(AvatarData(avatarFileName, mimeType));
+
+            return;
+        }
+
+        /* Not found in cache, queue this contact. We do this to group contacts
+         * for the AvatarRequest call */
+        debug() << "Need to request avatar for handle" << contact->handle()[0];
+        if (!mPriv->requestAvatarsIdle) {
+            QTimer::singleShot(0, this, SLOT(doRequestAvatars()));
+            mPriv->requestAvatarsIdle = true;
+        }
+        mPriv->requestAvatarsQueue.append(contact->handle()[0]);
+    }
+}
+
+/**
+ * \deprecated Use ContactManager::requestContactsAvatar() or Contact::requestAvatarData() instead.
+ */
 void ContactManager::requestContactAvatar(Contact *contact)
 {
-    QString avatarFileName;
-    QString mimeTypeFileName;
-
-    bool success = (contact->isAvatarTokenKnown() &&
-        mPriv->buildAvatarFileName(contact->avatarToken(), false,
-            avatarFileName, mimeTypeFileName));
-
-    /* Check if the avatar is already in the cache */
-    if (success && QFile::exists(avatarFileName)) {
-        QFile mimeTypeFile(mimeTypeFileName);
-        mimeTypeFile.open(QIODevice::ReadOnly);
-        QString mimeType = QString(QLatin1String(mimeTypeFile.readAll()));
-        mimeTypeFile.close();
-
-        debug() << "Avatar found in cache for handle" << contact->handle()[0];
-        debug() << "Filename:" << avatarFileName;
-        debug() << "MimeType:" << mimeType;
-
-        contact->receiveAvatarData(AvatarData(avatarFileName, mimeType));
-
-        return;
-    }
-
-    /* Not found in cache, queue this contact. We do this to group contacts
-     * for the AvatarRequest call */
-    debug() << "Need to request avatar for handle" << contact->handle()[0];
-    if (!mPriv->requestAvatarsIdle) {
-        QTimer::singleShot(0, this, SLOT(doRequestAvatars()));
-        mPriv->requestAvatarsIdle = true;
-    }
-    mPriv->requestAvatarsQueue.append(contact->handle()[0]);
+    requestContactsAvatar(QList<ContactPtr>() << ContactPtr(contact));
 }
 
 void ContactManager::onAliasesChanged(const AliasPairList &aliases)

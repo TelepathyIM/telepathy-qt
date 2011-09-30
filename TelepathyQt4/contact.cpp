@@ -107,7 +107,8 @@ void Contact::Private::updateAvatarData()
         return;
     }
 
-    parent->manager()->requestContactAvatar(parent);
+    ContactPtr self = parent->manager()->lookupContactByHandle(handle[0]);
+    parent->manager()->requestContactsAvatar(QList<ContactPtr>() << self);
 }
 
 struct TELEPATHY_QT4_NO_EXPORT Contact::InfoFields::Private : public QSharedData
@@ -489,7 +490,8 @@ void Contact::requestAvatarData()
         return;
     }
 
-    manager()->requestContactAvatar(this);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->requestContactsAvatar(QList<ContactPtr>() << self);
 }
 
 /**
