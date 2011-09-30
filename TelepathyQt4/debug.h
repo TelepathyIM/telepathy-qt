@@ -35,6 +35,12 @@ namespace Tp
 TELEPATHY_QT4_EXPORT void enableDebug(bool enable);
 TELEPATHY_QT4_EXPORT void enableWarnings(bool enable);
 
+typedef void (*DebugCallback)(const QString &libraryName,
+                              const QString &libraryVersion,
+                              QtMsgType type,
+                              const QString &msg);
+TELEPATHY_QT4_EXPORT void setDebugCallback(DebugCallback cb);
+
 } // Tp
 
 #endif

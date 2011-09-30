@@ -74,6 +74,7 @@ namespace
 {
 bool debugEnabled = false;
 bool warningsEnabled = true;
+void (*debugCallback)(const QString &, const QString &, QtMsgType, const QString &) = NULL;
 }
 
 void enableDebug(bool enable)
@@ -86,10 +87,15 @@ void enableWarnings(bool enable)
     warningsEnabled = enable;
 }
 
+void setDebugCallback(DebugCallback cb)
+{
+    debugCallback = cb;
+}
+
 Debug enabledDebug()
 {
     if (debugEnabled) {
-        return Debug(qDebug() << "tp-qt4 " PACKAGE_VERSION " DEBUG:");
+        return Debug(QtDebugMsg);
     } else {
         return Debug();
     }
@@ -98,9 +104,27 @@ Debug enabledDebug()
 Debug enabledWarning()
 {
     if (warningsEnabled) {
-        return Debug(qWarning() << "tp-qt4 " PACKAGE_VERSION " WARN:");
+        return Debug(QtWarningMsg);
     } else {
         return Debug();
+    }
+}
+
+void Debug::invokeDebugCallback()
+{
+    if (debugCallback) {
+        debugCallback(QLatin1String("tp-qt4"), QLatin1String(PACKAGE_VERSION), type, msg);
+    } else {
+        switch (type) {
+        case QtDebugMsg:
+            qDebug() << "tp-qt4 " PACKAGE_VERSION " DEBUG:" << qPrintable(msg);
+            break;
+        case QtWarningMsg:
+            qWarning() << "tp-qt4 " PACKAGE_VERSION " WARN:" << qPrintable(msg);
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -114,6 +138,10 @@ void enableWarnings(bool enable)
 {
 }
 
+void setDebugCallback(DebugCallback cb)
+{
+}
+
 Debug enabledDebug()
 {
     return Debug();
@@ -122,6 +150,10 @@ Debug enabledDebug()
 Debug enabledWarning()
 {
     return Debug();
+}
+
+void Debug::invokeDebugCallback()
+{
 }
 
 #endif /* !defined(ENABLE_DEBUG) */

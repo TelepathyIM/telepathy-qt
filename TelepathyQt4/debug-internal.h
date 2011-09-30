@@ -32,18 +32,24 @@ class TELEPATHY_QT4_EXPORT Debug
 {
 public:
     inline Debug() : debug(0) { }
-    inline Debug(const QDebug &debug) : debug(new QDebug(debug)) { }
-
-    inline Debug(const Debug &a) : debug(a.debug ? new QDebug(*(a.debug)) : 0) { }
+    inline Debug(QtMsgType type) : type(type), debug(new QDebug(&msg)) { }
+    inline Debug(const Debug &a) : type(a.type), debug(a.debug ? new QDebug(&msg) : 0)
+    {
+        if (debug) {
+            (*debug) << qPrintable(a.msg);
+        }
+    }
 
     inline Debug &operator=(const Debug &a)
     {
         if (this != &a) {
+            type = a.type;
             delete debug;
             debug = 0;
 
             if (a.debug) {
-                debug = new QDebug(*(a.debug));
+                debug = new QDebug(&msg);
+                (*debug) << qPrintable(a.msg);
             }
         }
 
@@ -52,6 +58,9 @@ public:
 
     inline ~Debug()
     {
+        if (!msg.isEmpty()) {
+            invokeDebugCallback();
+        }
         delete debug;
     }
 
@@ -94,7 +103,11 @@ public:
 
 private:
 
+    QString msg;
+    QtMsgType type;
     QDebug *debug;
+
+    void invokeDebugCallback();
 };
 
 // The telepathy-farsight Qt 4 binding links to these - they're not API outside
