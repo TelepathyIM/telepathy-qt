@@ -68,6 +68,32 @@ namespace Tp
  * \param enable Whether warnings should be enabled or not.
  */
 
+/**
+ * \typedef DebugCallback
+ * \ingroup debug
+ *
+ * \code
+ * typedef QDebug (*DebugCallback)(const QString &libraryName,
+ *                                 const QString &libraryVersion,
+ *                                 QtMsgType type,
+ *                                 const QString &msg)
+ * \endcode
+ */
+
+/**
+ * \fn void setDebugCallback(DebugCallback cb)
+ * \ingroup debug
+ *
+ * Set the callback method that will handle the debug output.
+ *
+ * If \p cb is NULL this method will set the defaultDebugCallback instead.
+ * The default callback function will print the output using default Qt debug
+ * system.
+ *
+ * \param cb A function pointer to the callback method or NULL.
+ * \sa DebugCallback
+ */
+
 #ifdef ENABLE_DEBUG
 
 namespace
