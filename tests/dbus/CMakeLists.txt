@@ -57,6 +57,7 @@ if(ENABLE_TP_GLIB_TESTS)
 endif(ENABLE_TP_GLIB_TESTS)
 
 tpqt4_add_dbus_unit_test(ProfileManager profile-manager)
+tpqt4_add_dbus_unit_test(Types types)
 
 # Make check target. In case of check, output on failure and put it into a log
 # This target has to stay here for catching all of the tests
