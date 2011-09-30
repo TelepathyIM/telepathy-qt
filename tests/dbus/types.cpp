@@ -33,15 +33,15 @@ public: // Properties
         SUSocketAddress su;
         su.address = QLatin1String("1.1.1.1");
         su.port = 1111;
-        SocketAddressIPv4 saIpv4;
-        saIpv4.address = QLatin1String("2.2.2.2");
-        saIpv4.port = 2222;
-        SocketAddressIPv6 saIpv6;
-        saIpv6.address = QLatin1String("3.3.3.3");
-        saIpv6.port = 3333;
+        SocketAddressIPv4 saIPv4;
+        saIPv4.address = QLatin1String("2.2.2.2");
+        saIPv4.port = 2222;
+        SocketAddressIPv6 saIPv6;
+        saIPv6.address = QLatin1String("3.3.3.3");
+        saIPv6.port = 3333;
         ret.insert(QLatin1String("SU"), qVariantFromValue(su));
-        ret.insert(QLatin1String("SAIPv4"), qVariantFromValue(saIpv4));
-        ret.insert(QLatin1String("SAIPv6"), qVariantFromValue(saIpv6));
+        ret.insert(QLatin1String("saIPv4"), qVariantFromValue(saIPv4));
+        ret.insert(QLatin1String("saIPv6"), qVariantFromValue(saIPv6));
 
         return ret;
     }
@@ -99,8 +99,8 @@ void TestTypes::init()
 void TestTypes::testParameters()
 {
     SUSocketAddress su;
-    SocketAddressIPv4 saIpv4;
-    SocketAddressIPv6 saIpv6;
+    SocketAddressIPv4 saIPv4;
+    SocketAddressIPv6 saIPv6;
 
     // SUSocketAddress should properly convert to SUSocketAddress itself and
     // SocketAddressIPv4/IPv6
@@ -108,23 +108,23 @@ void TestTypes::testParameters()
     QCOMPARE(su.address, QLatin1String("1.1.1.1"));
     QCOMPARE(su.port, static_cast<uint>(1111));
 
-    saIpv4 = qdbus_cast<SocketAddressIPv4>(mParameters.value(QLatin1String("SU")));
-    QCOMPARE(saIpv4.address, QLatin1String("1.1.1.1"));
-    QCOMPARE(saIpv4.port, static_cast<ushort>(1111));
+    saIPv4 = qdbus_cast<SocketAddressIPv4>(mParameters.value(QLatin1String("SU")));
+    QCOMPARE(saIPv4.address, QLatin1String("1.1.1.1"));
+    QCOMPARE(saIPv4.port, static_cast<ushort>(1111));
 
-    saIpv6 = qdbus_cast<SocketAddressIPv6>(mParameters.value(QLatin1String("SU")));
-    QCOMPARE(saIpv6.address, QLatin1String("1.1.1.1"));
-    QCOMPARE(saIpv6.port, static_cast<ushort>(1111));
+    saIPv6 = qdbus_cast<SocketAddressIPv6>(mParameters.value(QLatin1String("SU")));
+    QCOMPARE(saIPv6.address, QLatin1String("1.1.1.1"));
+    QCOMPARE(saIPv6.port, static_cast<ushort>(1111));
 
     // SocketAddressIPv4->SocketAddressIPv4
-    saIpv4 = qdbus_cast<SocketAddressIPv4>(mParameters.value(QLatin1String("SAIPv4")));
-    QCOMPARE(saIpv4.address, QLatin1String("2.2.2.2"));
-    QCOMPARE(saIpv4.port, static_cast<ushort>(2222));
+    saIPv4 = qdbus_cast<SocketAddressIPv4>(mParameters.value(QLatin1String("saIPv4")));
+    QCOMPARE(saIPv4.address, QLatin1String("2.2.2.2"));
+    QCOMPARE(saIPv4.port, static_cast<ushort>(2222));
 
     // SocketAddressIPv6->SocketAddressIPv6
-    saIpv6 = qdbus_cast<SocketAddressIPv6>(mParameters.value(QLatin1String("SAIPv6")));
-    QCOMPARE(saIpv6.address, QLatin1String("3.3.3.3"));
-    QCOMPARE(saIpv6.port, static_cast<ushort>(3333));
+    saIPv6 = qdbus_cast<SocketAddressIPv6>(mParameters.value(QLatin1String("saIPv6")));
+    QCOMPARE(saIPv6.address, QLatin1String("3.3.3.3"));
+    QCOMPARE(saIPv6.port, static_cast<ushort>(3333));
 }
 
 void TestTypes::cleanup()
