@@ -128,6 +128,18 @@ bool Presence::operator==(const Presence &other) const
     return mPriv->sp == other.mPriv->sp;
 }
 
+bool Presence::operator!=(const Presence &other) const
+{
+    if (!isValid() || !other.isValid()) {
+        if (!isValid() && !other.isValid()) {
+            return false;
+        }
+        return true;
+    }
+
+    return mPriv->sp != other.mPriv->sp;
+}
+
 ConnectionPresenceType Presence::type() const
 {
     if (!isValid()) {
@@ -243,6 +255,19 @@ bool PresenceSpec::operator==(const PresenceSpec &other) const
 
     return (mPriv->status == other.mPriv->status) &&
            (mPriv->spec == other.mPriv->spec);
+}
+
+bool PresenceSpec::operator!=(const PresenceSpec &other) const
+{
+    if (!isValid() || !other.isValid()) {
+        if (!isValid() && !other.isValid()) {
+            return false;
+        }
+        return true;
+    }
+
+    return (mPriv->status != other.mPriv->status) &&
+           (mPriv->spec != other.mPriv->spec);
 }
 
 bool PresenceSpec::operator<(const PresenceSpec &other) const

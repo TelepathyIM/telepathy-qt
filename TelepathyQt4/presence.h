@@ -54,6 +54,7 @@ public:
 
     Presence &operator=(const Presence &other);
     bool operator==(const Presence &other) const;
+    bool operator!=(const Presence &other) const;
 
     ConnectionPresenceType type() const;
     QString status() const;
@@ -82,6 +83,7 @@ public:
 
     PresenceSpec &operator=(const PresenceSpec &other);
     bool operator==(const PresenceSpec &other) const;
+    bool operator!=(const PresenceSpec &other) const;
     bool operator<(const PresenceSpec &other) const;
 
     Presence presence(const QString &statusMessage = QString()) const;
