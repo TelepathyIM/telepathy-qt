@@ -633,7 +633,8 @@ PendingOperation *Contact::refreshInfo()
                 ContactPtr(this));
     }
 
-    return manager()->refreshContactInfo(this);
+    ContactPtr self = manager()->lookupContactByHandle(mPriv->handle[0]);
+    return manager()->refreshContactsInfo(QList<ContactPtr>() << self);
 }
 
 /**

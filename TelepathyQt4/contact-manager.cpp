@@ -1167,6 +1167,31 @@ void ContactManager::requestContactAvatar(Contact *contact)
     requestContactsAvatar(QList<ContactPtr>() << ContactPtr(contact));
 }
 
+/**
+ * Refresh information for the given contact.
+ *
+ * Once the information is retrieved infoFieldsChanged() will be emitted.
+ *
+ * This method requires Contact::FeatureInfo to be ready.
+ *
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa infoFieldsChanged()
+ */
+PendingOperation *ContactManager::refreshContactsInfo(const QList<ContactPtr> &contacts)
+{
+    if (!mPriv->refreshInfoOp) {
+        mPriv->refreshInfoOp = new PendingRefreshContactInfo(connection());
+        QTimer::singleShot(0, this, SLOT(doRefreshInfo()));
+    }
+
+    foreach (const ContactPtr &contact, contacts) {
+        mPriv->refreshInfoOp->addContact(contact.data());
+    }
+
+    return mPriv->refreshInfoOp;
+}
+
 void ContactManager::onAliasesChanged(const AliasPairList &aliases)
 {
     debug() << "Got AliasesChanged for" << aliases.size() << "contacts";
@@ -1440,18 +1465,6 @@ PendingOperation *ContactManager::introspectRosterGroups()
 void ContactManager::resetRoster()
 {
     mPriv->roster->reset();
-}
-
-PendingOperation *ContactManager::refreshContactInfo(Contact *contact)
-{
-    if (!mPriv->refreshInfoOp) {
-        mPriv->refreshInfoOp = new PendingRefreshContactInfo(connection());
-        QTimer::singleShot(0, this, SLOT(doRefreshInfo()));
-    }
-
-    mPriv->refreshInfoOp->addContact(contact);
-
-    return mPriv->refreshInfoOp;
 }
 
 /**

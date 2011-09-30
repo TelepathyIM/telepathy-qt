@@ -126,6 +126,8 @@ public:
     TELEPATHY_QT4_DEPRECATED void requestContactAvatar(Contact *contact);
     void requestContactsAvatar(const QList<ContactPtr> &contacts);
 
+    PendingOperation *refreshContactsInfo(const QList<ContactPtr> &contact);
+
 Q_SIGNALS:
     void stateChanged(Tp::ContactListState state);
 
@@ -168,7 +170,6 @@ private:
     class PendingRefreshContactInfo;
     class Roster;
     friend class Connection;
-    friend class Contact;
     friend class PendingContacts;
     friend class PendingRefreshContactInfo;
     friend class Roster;
