@@ -30,6 +30,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_gen)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_COVERAGE_FLAGS}")
 
+tpqt4_add_generic_unit_test(Capabilities capabilities)
 tpqt4_add_generic_unit_test(ChannelClassSpec channel-class-spec)
 tpqt4_add_generic_unit_test(Features features)
 tpqt4_add_generic_unit_test(KeyFile key-file)
