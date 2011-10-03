@@ -1,16 +1,12 @@
-telepathy-qt4 0.6.4 (UNRELEASED)
+telepathy-qt4 0.6.4 (2011-10-03)
 ================================
 
-The "..." release.
+The "A Very British Cover-up" release.
 
 Enhancements:
  * Add Presence/PresenceSpec operator== support
  * Improve file transfer examples to properly use the ChannelDispatcher
- * Improve Channel, TextChannel and Message/ReceivedMessage test coverage
  * Contact::refreshInfo() requests are now batched together on D-Bus
-
-Fixes:
- * ...
 
 telepathy-qt4 0.6.3 (2011-08-30)
 ================================
