@@ -5,8 +5,9 @@ The "..." release.
 
 Enhancements:
  * Add Presence/PresenceSpec operator== support
- * Improve file transfer examples to properly use the ChannelDispatcher.
- * Improve Channel, TextChannel and Message/ReceivedMessage test coverage.
+ * Improve file transfer examples to properly use the ChannelDispatcher
+ * Improve Channel, TextChannel and Message/ReceivedMessage test coverage
+ * Contact::refreshInfo() requests are now batched together on D-Bus
 
 Fixes:
  * ...
