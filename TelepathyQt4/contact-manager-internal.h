@@ -327,6 +327,26 @@ private Q_SLOTS:
     void onChannelClosed(Tp::PendingOperation *);
 };
 
+class TELEPATHY_QT4_NO_EXPORT ContactManager::PendingRefreshContactInfo : public PendingOperation
+{
+    Q_OBJECT
+
+public:
+    PendingRefreshContactInfo(const ConnectionPtr &conn);
+    ~PendingRefreshContactInfo();
+
+    void addContact(Contact *contact);
+
+    void refreshInfo();
+
+private Q_SLOTS:
+    void onRefreshInfoFinished(Tp::PendingOperation *op);
+
+private:
+    ConnectionPtr mConn;
+    QSet<uint> mToRequest;
+};
+
 } // Tp
 
 #endif

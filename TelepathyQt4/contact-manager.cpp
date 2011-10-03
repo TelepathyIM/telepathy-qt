@@ -67,18 +67,23 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     // avatar
     UIntList requestAvatarsQueue;
     bool requestAvatarsIdle;
+
+    // contact info
+    PendingRefreshContactInfo *refreshInfoOp;
 };
 
 ContactManager::Private::Private(ContactManager *parent, Connection *connection)
     : parent(parent),
       connection(connection),
       roster(new ContactManager::Roster(parent)),
-      requestAvatarsIdle(false)
+      requestAvatarsIdle(false),
+      refreshInfoOp(0)
 {
 }
 
 ContactManager::Private::~Private()
 {
+    delete refreshInfoOp;
     delete roster;
 }
 
@@ -102,6 +107,61 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
     mimeTypeFileName = QString(QLatin1String("%1.mime")).arg(avatarFileName);
 
     return true;
+}
+
+ContactManager::PendingRefreshContactInfo::PendingRefreshContactInfo(const ConnectionPtr &conn)
+    : PendingOperation(conn),
+      mConn(conn)
+{
+}
+
+ContactManager::PendingRefreshContactInfo::~PendingRefreshContactInfo()
+{
+}
+
+void ContactManager::PendingRefreshContactInfo::addContact(Contact *contact)
+{
+    mToRequest.insert(contact->handle()[0]);
+}
+
+void ContactManager::PendingRefreshContactInfo::refreshInfo()
+{
+    Q_ASSERT(!mToRequest.isEmpty());
+
+    if (!mConn->isValid()) {
+        setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection is invalid"));
+        return;
+    }
+
+    if (!mConn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
+        setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("Connection does not support ContactInfo interface"));
+        return;
+    }
+
+    debug() << "Calling ContactInfo.RefreshContactInfo for" << mToRequest.size() << "handles";
+    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
+        mConn->interface<Client::ConnectionInterfaceContactInfoInterface>();
+    Q_ASSERT(contactInfoInterface);
+    PendingVoid *nested = new PendingVoid(
+            contactInfoInterface->RefreshContactInfo(mToRequest.toList()),
+            mConn);
+    connect(nested,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onRefreshInfoFinished(Tp::PendingOperation*)));
+}
+
+void ContactManager::PendingRefreshContactInfo::onRefreshInfoFinished(PendingOperation *op)
+{
+    if (op->isError()) {
+        warning() << "ContactInfo.RefreshContactInfo failed with" <<
+            op->errorName() << "-" << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    } else {
+        debug() << "Got reply to ContactInfo.RefreshContactInfo";
+        setFinished();
+    }
 }
 
 /**
@@ -1156,6 +1216,14 @@ void ContactManager::onContactInfoChanged(uint handle, const Tp::ContactInfoFiel
     }
 }
 
+void ContactManager::doRefreshInfo()
+{
+    PendingRefreshContactInfo *op = mPriv->refreshInfoOp;
+    Q_ASSERT(op);
+    mPriv->refreshInfoOp = 0;
+    op->refreshInfo();
+}
+
 ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
         const Features &features, const QVariantMap &attributes)
 {
@@ -1298,6 +1366,18 @@ PendingOperation *ContactManager::introspectRosterGroups()
 void ContactManager::resetRoster()
 {
     mPriv->roster->reset();
+}
+
+PendingOperation *ContactManager::refreshContactInfo(Contact *contact)
+{
+    if (!mPriv->refreshInfoOp) {
+        mPriv->refreshInfoOp = new PendingRefreshContactInfo(connection());
+        QTimer::singleShot(0, this, SLOT(doRefreshInfo()));
+    }
+
+    mPriv->refreshInfoOp->addContact(contact);
+
+    return mPriv->refreshInfoOp;
 }
 
 /**

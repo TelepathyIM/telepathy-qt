@@ -159,6 +159,8 @@ tp_tests_contacts_connection_init (TpTestsContactsConnection *self)
       g_direct_equal, NULL, (GDestroyNotify) free_rcc_list);
   self->priv->contact_info = g_hash_table_new_full (g_direct_hash,
       g_direct_equal, NULL, (GDestroyNotify) g_ptr_array_unref);
+  self->priv->default_contact_info = (GPtrArray *) dbus_g_type_specialized_construct (
+      TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
 }
 
 static void
@@ -1154,14 +1156,17 @@ my_refresh_contact_info (TpSvcConnectionInterfaceContactInfo *obj,
       return;
     }
 
+  self->refresh_contact_info_called++;
+
   for (i = 0; i < contacts->len; i++)
     {
       TpHandle handle = g_array_index (contacts, guint, i);
-      GPtrArray *arr = lookup_contact_info (self, handle);
 
+      // actually update the info (if not using the default info) so there is an actual change
+      g_hash_table_insert (self->priv->contact_info, GUINT_TO_POINTER (handle),
+          g_ptr_array_ref (self->priv->default_contact_info));
       tp_svc_connection_interface_contact_info_emit_contact_info_changed (self,
-          handle, arr);
-      g_ptr_array_unref (arr);
+          handle, self->priv->default_contact_info);
     }
 
   tp_svc_connection_interface_contact_info_return_from_refresh_contact_info (

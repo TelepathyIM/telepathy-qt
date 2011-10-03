@@ -20,11 +20,14 @@ class TestContactsInfo : public Test
 
 public:
     TestContactsInfo(QObject *parent = 0)
-        : Test(parent), mConn(0), mContactsInfoFieldsUpdated(0)
+        : Test(parent), mConn(0),
+          mContactsInfoFieldsUpdated(0),
+          mRefreshInfoFinished(0)
     { }
 
 protected Q_SLOTS:
     void onContactInfoFieldsChanged(const Tp::Contact::InfoFields &);
+    void onRefreshInfoFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
@@ -38,12 +41,23 @@ private Q_SLOTS:
 private:
     TestConnHelper *mConn;
     int mContactsInfoFieldsUpdated;
+    int mRefreshInfoFinished;
 };
 
 void TestContactsInfo::onContactInfoFieldsChanged(const Tp::Contact::InfoFields &info)
 {
     Q_UNUSED(info);
     mContactsInfoFieldsUpdated++;
+}
+
+void TestContactsInfo::onRefreshInfoFinished(PendingOperation *op)
+{
+    if (op->isError()) {
+        mLoop->exit(1);
+        return;
+    }
+
+    mRefreshInfoFinished++;
     mLoop->exit(0);
 }
 
@@ -68,6 +82,7 @@ void TestContactsInfo::init()
 {
     initImpl();
     mContactsInfoFieldsUpdated = 0;
+    mRefreshInfoFinished = 0;
 }
 
 void TestContactsInfo::testInfo()
@@ -92,6 +107,21 @@ void TestContactsInfo::testInfo()
                         SIGNAL(infoFieldsChanged(const Tp::Contact::InfoFields &)),
                         SLOT(onContactInfoFieldsChanged(const Tp::Contact::InfoFields &))));
     }
+
+    GPtrArray *info_default = (GPtrArray *) dbus_g_type_specialized_construct (
+              TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
+    {
+        const gchar * const field_values[2] = {
+            "FooBar", NULL
+        };
+        g_ptr_array_add (info_default, tp_value_array_build (3,
+                    G_TYPE_STRING, "n",
+                    G_TYPE_STRV, NULL,
+                    G_TYPE_STRV, field_values,
+                    G_TYPE_INVALID));
+    }
+    tp_tests_contacts_connection_set_default_contact_info(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
+            info_default);
 
     GPtrArray *info_1 = (GPtrArray *) dbus_g_type_specialized_construct (
               TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
@@ -133,7 +163,7 @@ void TestContactsInfo::testInfo()
             handles[1], info_2);
 
     while (mContactsInfoFieldsUpdated != 2)  {
-        QCOMPARE(mLoop->exec(), 0);
+        mLoop->processEvents();
     }
 
     QCOMPARE(mContactsInfoFieldsUpdated, 2);
@@ -151,23 +181,35 @@ void TestContactsInfo::testInfo()
     QCOMPARE(contactBar->infoFields().allFields()[0].fieldName, QLatin1String("n"));
     QCOMPARE(contactBar->infoFields().allFields()[0].fieldValue[0], QLatin1String("Bar"));
 
+    TpTestsContactsConnection *serviceConn = TP_TESTS_CONTACTS_CONNECTION(mConn->service());
+    QCOMPARE(serviceConn->refresh_contact_info_called, static_cast<uint>(0));
+
+    mContactsInfoFieldsUpdated = 0;
+    mRefreshInfoFinished = 0;
     Q_FOREACH (const ContactPtr &contact, contacts) {
-        PendingOperation *op = contact->refreshInfo();
-        QVERIFY(connect(op,
+        QVERIFY(connect(contact->refreshInfo(),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+                    SLOT(onRefreshInfoFinished(Tp::PendingOperation*))));
+    }
+    while (mRefreshInfoFinished != contacts.size()) {
         QCOMPARE(mLoop->exec(), 0);
     }
+    QCOMPARE(mRefreshInfoFinished, contacts.size());
 
-    /* nothing changed */
-    QCOMPARE(mContactsInfoFieldsUpdated, 0);
+    while (mContactsInfoFieldsUpdated != contacts.size()) {
+        mLoop->processEvents();
+    }
+
+    QCOMPARE(mContactsInfoFieldsUpdated, contacts.size());
+
+    QCOMPARE(serviceConn->refresh_contact_info_called, static_cast<uint>(1));
 
     for (int i = 0; i < contacts.size(); i++) {
         ContactPtr contact = contacts[i];
-        disconnect(contact.data(),
-                SIGNAL(infoChanged(const Tp::ContactInfoFieldList &)),
-                this,
-                SLOT(onContactInfoChanged(const Tp::ContactInfoFieldList &)));
+        QVERIFY(disconnect(contact.data(),
+                    SIGNAL(infoFieldsChanged(const Tp::Contact::InfoFields &)),
+                    this,
+                    SLOT(onContactInfoFieldsChanged(const Tp::Contact::InfoFields &))));
     }
 
     PendingContactInfo *pci = contactFoo->requestInfo();
@@ -181,12 +223,11 @@ void TestContactsInfo::testInfo()
     QCOMPARE(pci->infoFields().isValid(), true);
     QCOMPARE(pci->infoFields().allFields().size(), 1);
     QCOMPARE(pci->infoFields().allFields()[0].fieldName, QLatin1String("n"));
-    QCOMPARE(pci->infoFields().allFields()[0].fieldValue[0], QLatin1String("Foo"));
+    QCOMPARE(pci->infoFields().allFields()[0].fieldValue[0], QLatin1String("FooBar"));
 
-    g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_1);
-    g_ptr_array_unref (info_1);
-    g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_2);
-    g_ptr_array_unref (info_2);
+    g_boxed_free(TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_default);
+    g_boxed_free(TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_1);
+    g_boxed_free(TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_2);
 }
 
 void TestContactsInfo::cleanup()

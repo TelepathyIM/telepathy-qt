@@ -157,11 +157,15 @@ private Q_SLOTS:
     TELEPATHY_QT4_NO_EXPORT void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
     TELEPATHY_QT4_NO_EXPORT void onLocationUpdated(uint, const QVariantMap &);
     TELEPATHY_QT4_NO_EXPORT void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
+    TELEPATHY_QT4_NO_EXPORT void doRefreshInfo();
 
 private:
+    class PendingRefreshContactInfo;
     class Roster;
     friend class Connection;
+    friend class Contact;
     friend class PendingContacts;
+    friend class PendingRefreshContactInfo;
     friend class Roster;
 
     TELEPATHY_QT4_NO_EXPORT ContactManager(Connection *parent);
@@ -178,6 +182,8 @@ private:
     TELEPATHY_QT4_NO_EXPORT PendingOperation *introspectRoster();
     TELEPATHY_QT4_NO_EXPORT PendingOperation *introspectRosterGroups();
     TELEPATHY_QT4_NO_EXPORT void resetRoster();
+
+    TELEPATHY_QT4_NO_EXPORT PendingOperation *refreshContactInfo(Contact *contact);
 
     struct Private;
     friend struct Private;
