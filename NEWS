@@ -10,9 +10,9 @@ Enhancements:
  * StreamTubeChannel now ensures connectionClosed() is emitted for all
    connections on a closing tube
  * Add Presence/PresenceSpec operator== support
+ * Add Presence/PresenceSpec operator!= support (Rohan Garg)
  * Add Authentication.TLSCertificate to the set of generated interfaces
- * Improve file transfer examples to properly use the ChannelDispatcher.
- * Improve Channel, TextChannel and Message/ReceivedMessage test coverage.
+ * Improve file transfer examples to properly use the ChannelDispatcher
 
 Fixes:
  * Ensure that the proper Channel Dispatcher methods are being called when
@@ -22,7 +22,7 @@ Fixes:
    object is returned by PendingContacts::object() - we've now made it explicit
    that object() shouldn't be used externally as we make no guarantees on what
    object it returns, by deprecating it. It will be made protected: in the next
-   API break.
+   API break
  * Passing a non-empty service param to
    ChannelClassSpec::{incoming,outgoing}StreamTube() messing up the shared
    instance as used by e.g. ChannelFactory
@@ -33,7 +33,7 @@ Fixes:
    to handle channels
  * Codegen is now able to utilize types with D-Bus signature aay, aas and aav
  * Account/Connection/Channel now properly check if FeatureCore is ready on
-   accessors.
+   accessors
 
 telepathy-qt4 0.7.2 (2011-08-04)
 ================================
