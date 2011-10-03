@@ -33,6 +33,8 @@
 namespace Tp
 {
 
+class TestBackdoors;
+
 class TELEPATHY_QT4_EXPORT ContactCapabilities : public CapabilitiesBase
 {
 public:
@@ -48,6 +50,7 @@ public:
 
 protected:
     friend class Contact;
+    friend class TestBackdoors;
 
     ContactCapabilities(bool specificToContact);
     ContactCapabilities(const RequestableChannelClassList &rccs,
