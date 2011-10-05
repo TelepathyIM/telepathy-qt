@@ -34,6 +34,8 @@ Fixes:
  * Codegen is now able to utilize types with D-Bus signature aay, aas and aav
  * Account/Connection/Channel now properly check if FeatureCore is ready on
    accessors
+ * Readded erroneously removed protected API to StreamTubeChannel, which
+   restores full ABI backwards compatibility.
 
 telepathy-qt4 0.7.2 (2011-08-04)
 ================================
