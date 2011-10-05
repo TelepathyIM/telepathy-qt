@@ -80,6 +80,7 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureCore);
 
+    void setBaseTubeType(uint type);
     void setConnections(UIntList connections);
     void setAddressType(SocketAddressType type);
     SocketAccessControl accessControl() const;

@@ -616,6 +616,15 @@ QString StreamTubeChannel::localAddress() const
     return mPriv->unixAddress;
 }
 
+/**
+ * This method never did anything useful when called from outside, and now does nothing at all. It
+ * will be removed in the next API/ABI break.
+ */
+void StreamTubeChannel::setBaseTubeType(uint type)
+{
+    Q_UNUSED(type);
+}
+
 void StreamTubeChannel::setConnections(UIntList connections)
 {
     mPriv->connections = connections;
