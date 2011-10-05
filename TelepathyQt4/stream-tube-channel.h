@@ -81,10 +81,10 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureCore);
 
+    TELEPATHY_QT4_DEPRECATED void setBaseTubeType(uint type);
     TELEPATHY_QT4_DEPRECATED void setConnections(UIntList connections); // -> {add,remove}Connection
     void addConnection(uint connection);
     void removeConnection(uint connection, const QString &error, const QString &message);
-
     void setAddressType(SocketAddressType type);
     SocketAccessControl accessControl() const;
     void setAccessControl(SocketAccessControl accessControl);
