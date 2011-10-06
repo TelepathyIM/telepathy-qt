@@ -100,7 +100,7 @@ namespace
 {
 bool debugEnabled = false;
 bool warningsEnabled = true;
-void (*debugCallback)(const QString &, const QString &, QtMsgType, const QString &) = NULL;
+DebugCallback debugCallback = NULL;
 }
 
 void enableDebug(bool enable)
