@@ -68,12 +68,39 @@ namespace Tp
  * \param enable Whether warnings should be enabled or not.
  */
 
+/**
+ * \typedef DebugCallback
+ * \ingroup debug
+ *
+ * \code
+ * typedef QDebug (*DebugCallback)(const QString &libraryName,
+ *                                 const QString &libraryVersion,
+ *                                 QtMsgType type,
+ *                                 const QString &msg)
+ * \endcode
+ */
+
+/**
+ * \fn void setDebugCallback(DebugCallback cb)
+ * \ingroup debug
+ *
+ * Set the callback method that will handle the debug output.
+ *
+ * If \p cb is NULL this method will set the defaultDebugCallback instead.
+ * The default callback function will print the output using default Qt debug
+ * system.
+ *
+ * \param cb A function pointer to the callback method or NULL.
+ * \sa DebugCallback
+ */
+
 #ifdef ENABLE_DEBUG
 
 namespace
 {
 bool debugEnabled = false;
 bool warningsEnabled = true;
+DebugCallback debugCallback = NULL;
 }
 
 void enableDebug(bool enable)
@@ -86,10 +113,15 @@ void enableWarnings(bool enable)
     warningsEnabled = enable;
 }
 
+void setDebugCallback(DebugCallback cb)
+{
+    debugCallback = cb;
+}
+
 Debug enabledDebug()
 {
     if (debugEnabled) {
-        return Debug(qDebug() << "tp-qt4 " PACKAGE_VERSION " DEBUG:");
+        return Debug(QtDebugMsg);
     } else {
         return Debug();
     }
@@ -98,9 +130,27 @@ Debug enabledDebug()
 Debug enabledWarning()
 {
     if (warningsEnabled) {
-        return Debug(qWarning() << "tp-qt4 " PACKAGE_VERSION " WARN:");
+        return Debug(QtWarningMsg);
     } else {
         return Debug();
+    }
+}
+
+void Debug::invokeDebugCallback()
+{
+    if (debugCallback) {
+        debugCallback(QLatin1String("tp-qt4"), QLatin1String(PACKAGE_VERSION), type, msg);
+    } else {
+        switch (type) {
+        case QtDebugMsg:
+            qDebug() << "tp-qt4 " PACKAGE_VERSION " DEBUG:" << qPrintable(msg);
+            break;
+        case QtWarningMsg:
+            qWarning() << "tp-qt4 " PACKAGE_VERSION " WARN:" << qPrintable(msg);
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -114,6 +164,10 @@ void enableWarnings(bool enable)
 {
 }
 
+void setDebugCallback(DebugCallback cb)
+{
+}
+
 Debug enabledDebug()
 {
     return Debug();
@@ -122,6 +176,10 @@ Debug enabledDebug()
 Debug enabledWarning()
 {
     return Debug();
+}
+
+void Debug::invokeDebugCallback()
+{
 }
 
 #endif /* !defined(ENABLE_DEBUG) */
