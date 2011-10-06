@@ -5,6 +5,8 @@ The "..." release.
 
 Enhancements:
  * Added HandleTypeRoom StreamTubes to ChannelClassSpec
+ * It is now possible to capture and redirect the library debug output via
+   setting a DebugCallback using the Tp::setDebugCallback function
  * The ChannelClassSpec implementation has been optimized, which yields
    ChannelFactory setup and consequently application startup speedups
  * StreamTubeChannel now ensures connectionClosed() is emitted for all
