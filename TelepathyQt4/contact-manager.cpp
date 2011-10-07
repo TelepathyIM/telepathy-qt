@@ -1160,7 +1160,10 @@ void ContactManager::requestContactAvatars(const QList<ContactPtr> &contacts)
 }
 
 /**
- * \deprecated Use ContactManager::requestContactsAvatar() or Contact::requestAvatarData() instead.
+ * \deprecated
+ *
+ * This was never intended to be public API.
+ * Use ContactManager::requestContactAvatars() or Contact::requestAvatarData() instead.
  */
 void ContactManager::requestContactAvatar(Contact *contact)
 {
