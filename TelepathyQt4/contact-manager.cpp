@@ -1181,7 +1181,7 @@ void ContactManager::requestContactAvatar(Contact *contact)
  *         when the call has finished.
  * \sa infoFieldsChanged()
  */
-PendingOperation *ContactManager::refreshContactsInfo(const QList<ContactPtr> &contacts)
+PendingOperation *ContactManager::refreshContactInfo(const QList<ContactPtr> &contacts)
 {
     if (!mPriv->refreshInfoOp) {
         mPriv->refreshInfoOp = new PendingRefreshContactInfo(connection());
