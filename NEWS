@@ -1,7 +1,7 @@
-telepathy-qt4 0.7.3 (UNRELEASED)
+telepathy-qt4 0.7.3 (2011-10-07)
 ================================
 
-The "..." release.
+The "a must" release.
 
 Enhancements:
  * Added HandleTypeRoom StreamTubes to ChannelClassSpec
