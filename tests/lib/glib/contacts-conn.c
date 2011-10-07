@@ -657,13 +657,17 @@ tp_tests_contacts_connection_change_avatar_data (
     TpHandle handle,
     GArray *data,
     const gchar *mime_type,
-    const gchar *token)
+    const gchar *token,
+    gboolean emit_avatar_updated)
 {
   g_hash_table_insert (self->priv->avatars,
       GUINT_TO_POINTER (handle), avatar_data_new (data, mime_type, token));
 
-  tp_svc_connection_interface_avatars_emit_avatar_updated (self,
-      handle, token);
+  if (emit_avatar_updated)
+    {
+      tp_svc_connection_interface_avatars_emit_avatar_updated (self,
+          handle, token);
+    }
 }
 
 void
