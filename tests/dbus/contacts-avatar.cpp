@@ -55,7 +55,8 @@ class TestContactsAvatar : public Test
 
 public:
     TestContactsAvatar(QObject *parent = 0)
-        : Test(parent), mConn(0)
+        : Test(parent), mConn(0),
+          mAvatarRetrievedCalled(false), mAvatarDataChangedCalled(0)
     { }
 
 protected Q_SLOTS:
@@ -68,6 +69,7 @@ private Q_SLOTS:
     void init();
 
     void testAvatar();
+    void testRequestAvatars();
 
     void cleanup();
     void cleanupTestCase();
@@ -76,6 +78,7 @@ private:
     TestConnHelper *mConn;
     QList<ContactPtr> mContacts;
     bool mAvatarRetrievedCalled;
+    int mAvatarDataChangedCalled;
 };
 
 void TestContactsAvatar::onAvatarRetrieved(uint handle, const QString &token,
@@ -92,6 +95,7 @@ void TestContactsAvatar::onAvatarRetrieved(uint handle, const QString &token,
 void TestContactsAvatar::onAvatarDataChanged(const AvatarData &avatar)
 {
     Q_UNUSED(avatar);
+    mAvatarDataChangedCalled++;
     mLoop->exit(0);
 }
 
@@ -166,6 +170,9 @@ void TestContactsAvatar::initTestCase()
 void TestContactsAvatar::init()
 {
     initImpl();
+
+    mAvatarRetrievedCalled = false;
+    mAvatarDataChangedCalled = 0;
 }
 
 void TestContactsAvatar::testAvatar()
@@ -206,6 +213,92 @@ void TestContactsAvatar::testAvatar()
     QVERIFY(!mAvatarRetrievedCalled);
 
     QVERIFY(SmartDir(tmpDir).removeDirectory());
+}
+
+void TestContactsAvatar::testRequestAvatars()
+{
+    TpHandleRepoIface *serviceRepo = tp_base_connection_get_handles(
+            TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
+    const gchar avatarData[] = "fake-avatar-data";
+    const gchar avatarToken[] = "fake-avatar-token";
+    const gchar avatarMimeType[] = "fake-avatar-mime-type";
+    TpHandle handle;
+    GArray *array;
+
+    array = g_array_new(FALSE, FALSE, sizeof(gchar));
+    g_array_append_vals(array, avatarData, strlen(avatarData));
+
+    // First let's create the contacts
+    Tp::UIntList handles;
+    for (int i = 0; i < 100; ++i) {
+        QString contactId = QLatin1String("contact") + QString::number(i);
+        handle = tp_handle_ensure(serviceRepo, contactId.toLatin1().constData(), NULL, NULL);
+        handles << handle;
+    }
+    Features features = Features() << Contact::FeatureAvatarToken << Contact::FeatureAvatarData;
+    QList<ContactPtr> contacts = mConn->contacts(handles, features);
+    QCOMPARE(contacts.size(), handles.size());
+
+    // now let's update the avatar for half of them so we can later check that requestContactAvatars
+    // actually worked for all contacts.
+    mAvatarDataChangedCalled = 0;
+    for (int i = 0; i < contacts.size(); ++i) {
+        ContactPtr contact = contacts[i];
+        QVERIFY(contact->avatarData().fileName.isEmpty());
+
+        QString contactAvatarToken = QLatin1String(avatarToken) + QString::number(i);
+
+        QVERIFY(connect(contact.data(),
+                        SIGNAL(avatarDataChanged(const Tp::AvatarData &)),
+                        SLOT(onAvatarDataChanged(const Tp::AvatarData &))));
+
+        tp_tests_contacts_connection_change_avatar_data(
+                TP_TESTS_CONTACTS_CONNECTION(mConn->service()), contact->handle()[0],
+                array, avatarMimeType, contactAvatarToken.toLatin1().constData(),
+                (i % 2));
+    }
+
+    processDBusQueue(mConn->client().data());
+
+    while (mAvatarDataChangedCalled < contacts.size() / 2) {
+        mLoop->processEvents();
+    }
+
+    // check the only half got the updates
+    QCOMPARE(mAvatarDataChangedCalled, contacts.size() / 2);
+
+    for (int i = 0; i < contacts.size(); ++i) {
+        ContactPtr contact = contacts[i];
+        if (i % 2) {
+            QVERIFY(!contact->avatarData().fileName.isEmpty());
+            QCOMPARE(contact->avatarData().mimeType, QLatin1String(avatarMimeType));
+            QString contactAvatarToken = QLatin1String(avatarToken) + QString::number(i);
+            QCOMPARE(contact->avatarToken(), contactAvatarToken);
+        } else {
+            QVERIFY(contact->avatarData().fileName.isEmpty());
+        }
+    }
+
+    // let's call ContactManager::requestContactAvatars now, it should update all contacts
+    mAvatarDataChangedCalled = 0;
+    mConn->client()->contactManager()->requestContactAvatars(contacts);
+    processDBusQueue(mConn->client().data());
+
+    // the other half will now receive the avatar
+    while (mAvatarDataChangedCalled < contacts.size() / 2) {
+        mLoop->processEvents();
+    }
+
+    // check the only half got the updates
+    QCOMPARE(mAvatarDataChangedCalled, contacts.size() / 2);
+
+    for (int i = 0; i < contacts.size(); ++i) {
+        ContactPtr contact = contacts[i];
+        QVERIFY(!contact->avatarData().fileName.isEmpty());
+        QCOMPARE(contact->avatarData().mimeType, QLatin1String(avatarMimeType));
+        QString contactAvatarToken = QLatin1String(avatarToken) + QString::number(i);
+        QCOMPARE(contact->avatarToken(), contactAvatarToken);
+    }
 }
 
 void TestContactsAvatar::cleanup()
