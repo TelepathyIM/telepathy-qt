@@ -124,7 +124,7 @@ public:
     ContactPtr lookupContactByHandle(uint handle);
 
     TELEPATHY_QT4_DEPRECATED void requestContactAvatar(Contact *contact);
-    void requestContactsAvatar(const QList<ContactPtr> &contacts);
+    void requestContactAvatars(const QList<ContactPtr> &contacts);
 
     PendingOperation *refreshContactsInfo(const QList<ContactPtr> &contact);
 

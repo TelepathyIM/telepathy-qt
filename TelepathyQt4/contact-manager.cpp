@@ -1122,7 +1122,7 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
  * \sa Contact::avatarData(), Contact::avatarDataChanged(),
  *     Contact::avatarToken(), Contact::avatarTokenChanged()
  */
-void ContactManager::requestContactsAvatar(const QList<ContactPtr> &contacts)
+void ContactManager::requestContactAvatars(const QList<ContactPtr> &contacts)
 {
     foreach (const ContactPtr &contact, contacts) {
         QString avatarFileName;
@@ -1164,7 +1164,7 @@ void ContactManager::requestContactsAvatar(const QList<ContactPtr> &contacts)
  */
 void ContactManager::requestContactAvatar(Contact *contact)
 {
-    requestContactsAvatar(QList<ContactPtr>() << ContactPtr(contact));
+    requestContactAvatars(QList<ContactPtr>() << ContactPtr(contact));
 }
 
 /**
