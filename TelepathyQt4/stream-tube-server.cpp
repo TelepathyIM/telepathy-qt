@@ -41,6 +41,48 @@
 namespace Tp
 {
 
+/**
+ * \class StreamTubeServer::ParametersGenerator
+ * \ingroup serverclient
+ * \headerfile TelepathyQt4/stream-tube-server.h <TelepathyQt4/StreamTubeServer>
+ *
+ * \brief The StreamTubeServer::ParametersGenerator abstract interface allows sending a different
+ * set of parameters with each tube offer.
+ *
+ * Tube parameters are arbitrary data sent with the tube offer, which can be retrieved in the
+ * receiving end with IncomingStreamTubeChannel::parameters(). They can be used to transfer
+ * e.g. session identification information, authentication credentials or alike, for bootstrapping
+ * the protocol used for communicating over the tube.
+ *
+ * For usecases where the parameters don't need to change between each tube, just passing a fixed
+ * set of parameters to a suitable StreamTubeServer::exportTcpSocket() overload is usually more
+ * convenient than implementing a ParametersGenerator. Note that StreamTubeServer::exportTcpSocket()
+ * can be called multiple times to change the parameters for future tubes when e.g. configuration
+ * settings have been changed, so a ParametersGenerator only needs to be implemented if each and
+ * every tube must have a different set of parameters.
+ */
+
+/**
+ * \fn QVariantMap StreamTubeServer::ParametersGenerator::nextParameters(const AccountPtr &, const
+ * OutgoingStreamTubeChannelPtr &, const ChannelRequestHints &)
+ *
+ * Return the parameters to send when offering the given \a tube.
+ *
+ * \param account The account from which the tube originates.
+ * \param tube The tube channel which is going to be offered by the StreamTubeServer.
+ * \param hints The hints associated with the request that led to the creation of this tube, if any.
+ *
+ * \return Parameters to send with the offer, or an empty QVariantMap if none are needed for this
+ * tube.
+ */
+
+/**
+ * \fn StreamTubeServer::ParametersGenerator::~ParametersGenerator
+ *
+ * Class destructor. Protected, because StreamTubeServer never deletes a ParametersGenerator passed
+ * to it.
+ */
+
 class TELEPATHY_QT4_NO_EXPORT FixedParametersGenerator : public StreamTubeServer::ParametersGenerator
 {
 public:
