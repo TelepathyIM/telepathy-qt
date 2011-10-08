@@ -41,6 +41,57 @@
 namespace Tp
 {
 
+/**
+ * \class StreamTubeClient::TcpSourceAddressGenerator
+ * \ingroup serverclient
+ * \headerfile TelepathyQt4/stream-tube-client.h <TelepathyQt4/StreamTubeClient>
+ *
+ * \brief The StreamTubeClient::ParametersGenerator abstract interface allows using socket source
+ * address/port based access control for connecting to tubes accepted as TCP sockets.
+ *
+ * By default, every application on the local computer is allowed to connect to the socket created
+ * by the protocol backend as the local endpoint of the tube. This is not always desirable, as that
+ * includes even other users.
+ *
+ * Note that since every TCP connection must have an unique source address, only one simultaneous
+ * connection can be made through each tube for which this type of access control has been used.
+ */
+
+/**
+ * \fn QPair<QHostAddress, quint16> StreamTubeClient::TcpSourceAddressGenerator::nextSourceAddress(const AccountPtr &, const
+ * IncomingStreamTubeChannelPtr &)
+ *
+ * Return the source address from which connections will be allowed to the given \a tube once it has
+ * been accepted.
+ *
+ * Returning the pair (QHostAddress::Any, 0) makes the protocol backend allow connections from any
+ * address on the local computer. This can be used on an tube-by-tube basis if for some tubes its
+ * known that multiple connections need to be made, so a single source address doesn't suffice.
+ *
+ * The general pattern for implementing this method is:
+ * <ol>
+ * <li>Determine whether \c tube needs to allow multiple connections, and if so, skip source address
+ * access control completely</li>
+ * <li>Otherwise, create a socket and bind it to a free address</li>
+ * <li>Return this socket's address</li>
+ * <li>Keep the socket bound so that no other process can (accidentally or maliciously) take the
+ * address until it's used to connect to the tube when StreamTubeClient::tubeAcceptedAsTcp() is
+ * emitted for the tube</li>
+ * </ol>
+ *
+ * \param account The account from which the tube originates.
+ * \param tube The tube channel which is going to be accepted by the StreamTubeClient.
+ *
+ * \return A pair containing the host address and port allowed to connect.
+ */
+
+/**
+ * \fn StreamTubeClient::TcpSourceAddressGenerator::~TcpSourceAddressGenerator
+ *
+ * Class destructor. Protected, because StreamTubeClient never deletes a TcpSourceAddressGenerator passed
+ * to it.
+ */
+
 struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Tube::Private : public QSharedData
 {
     // empty placeholder for now
