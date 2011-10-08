@@ -46,11 +46,28 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Tube::Private : public QSharedD
     // empty placeholder for now
 };
 
+/**
+ * \class StreamTubeClient::Tube
+ * \ingroup serverclient
+ * \headerfile TelepathyQt4/stream-tube-client.h <TelepathyQt4/StreamTubeClient>
+ *
+ * \brief The StreamTubeClient::Tube class represents a tube being handled by the client.
+ */
+
+/**
+ * Constructs a new invalid Tube instance.
+ */
 StreamTubeClient::Tube::Tube()
 {
     // invalid instance
 }
 
+/**
+ * Constructs a Tube instance for the given tube \a channel from the given \a account.
+ *
+ * \param account A pointer to the account the online connection of which the tube originates from.
+ * \param channel A pointer to the tube channel object.
+ */
 StreamTubeClient::Tube::Tube(
         const AccountPtr &account,
         const IncomingStreamTubeChannelPtr &channel)
@@ -58,6 +75,9 @@ StreamTubeClient::Tube::Tube(
 {
 }
 
+/**
+ * Copy constructor.
+ */
 StreamTubeClient::Tube::Tube(
         const Tube &other)
     : QPair<AccountPtr, IncomingStreamTubeChannelPtr>(other.account(), other.channel()),
@@ -65,11 +85,17 @@ StreamTubeClient::Tube::Tube(
 {
 }
 
+/**
+ * Class destructor.
+ */
 StreamTubeClient::Tube::~Tube()
 {
     // mPriv deleted automatically
 }
 
+/**
+ * Assignment operator.
+ */
 StreamTubeClient::Tube &StreamTubeClient::Tube::operator=(
         const Tube &other)
 {
@@ -83,6 +109,31 @@ StreamTubeClient::Tube &StreamTubeClient::Tube::operator=(
 
     return *this;
 }
+
+/**
+ * \fn bool StreamTubeClient::Tube::isValid() const
+ *
+ * Return whether or not the tube is valid or is just the null object created using the default
+ * constructor.
+ *
+ * \return \c true if valid, \c false otherwise.
+ */
+
+/**
+ * \fn AccountPtr StreamTubeClient::Tube::account() const
+ *
+ * Return the account from which the tube originates.
+ *
+ * \return A pointer to the account object.
+ */
+
+/**
+ * \fn IncomingStreamTubeChannelPtr StreamTubeClient::Tube::channel() const
+ *
+ * Return the actual tube channel.
+ *
+ * \return A pointer to the channel.
+ */
 
 struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Private
 {

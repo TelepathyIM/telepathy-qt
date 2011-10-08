@@ -63,11 +63,29 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeServer::RemoteContact::Private : public
     // empty placeholder for now
 };
 
+/**
+ * \class StreamTubeServer::RemoteContact
+ * \ingroup serverclient
+ * \headerfile TelepathyQt4/stream-tube-server.h <TelepathyQt4/StreamTubeServer>
+ *
+ * \brief The StreamTubeServer::RemoteContact class represents a contact from which a socket
+ * connection to our exported socket originates.
+ */
+
+/**
+ * Constructs a new invalid RemoteContact instance.
+ */
 StreamTubeServer::RemoteContact::RemoteContact()
 {
     // invalid instance
 }
 
+/**
+ * Constructs a new RemoteContact for the given \a contact object from the given \a account.
+ *
+ * \param account A pointer to the account which this contact can be reached through.
+ * \param contact A pointer to the contact object.
+ */
 StreamTubeServer::RemoteContact::RemoteContact(
         const AccountPtr &account,
         const ContactPtr &contact)
@@ -75,17 +93,26 @@ StreamTubeServer::RemoteContact::RemoteContact(
 {
 }
 
+/**
+ * Copy constructor.
+ */
 StreamTubeServer::RemoteContact::RemoteContact(
         const RemoteContact &other)
     : QPair<AccountPtr, ContactPtr>(other.account(), other.contact()), mPriv(other.mPriv)
 {
 }
 
+/**
+ * Class destructor.
+ */
 StreamTubeServer::RemoteContact::~RemoteContact()
 {
     // mPriv deleted automatically
 }
 
+/**
+ * Assignment operator.
+ */
 StreamTubeServer::RemoteContact &StreamTubeServer::RemoteContact::operator=(
         const RemoteContact &other)
 {
@@ -100,16 +127,58 @@ StreamTubeServer::RemoteContact &StreamTubeServer::RemoteContact::operator=(
     return *this;
 }
 
+/**
+ * \fn bool StreamTubeServer::RemoteContact::isValid() const
+ *
+ * Return whether or not the contact is valid or is just the null object created using the default
+ * constructor.
+ *
+ * \return \c true if valid, \c false otherwise.
+ */
+
+/**
+ * \fn AccountPtr StreamTubeServer::RemoteContact::account() const
+ *
+ * Return the account through which the contact can be reached.
+ *
+ * \return A pointer to the account object.
+ */
+
+/**
+ * \fn ContactPtr StreamTubeServer::RemoteContact::contact() const
+ *
+ * Return the actual contact object.
+ *
+ * \return A pointer to the object.
+ */
+
 struct TELEPATHY_QT4_NO_EXPORT StreamTubeServer::Tube::Private : public QSharedData
 {
     // empty placeholder for now
 };
 
+/**
+ * \class StreamTubeServer::Tube
+ * \ingroup serverclient
+ * \headerfile TelepathyQt4/stream-tube-server.h <TelepathyQt4/StreamTubeServer>
+ *
+ * \brief The StreamTubeServer::Tube class represents a tube being handled by the server.
+ */
+
+/**
+ * Constructs a new invalid Tube instance.
+ */
 StreamTubeServer::Tube::Tube()
 {
     // invalid instance
 }
 
+/**
+ * Constructs a Tube instance for the given tube \a channel from the given \a account.
+ *
+ * \param account A pointer to the account the online connection of which the tube originates from.
+ * \param channel A pointer to the tube channel object.
+ */
 StreamTubeServer::Tube::Tube(
         const AccountPtr &account,
         const OutgoingStreamTubeChannelPtr &channel)
@@ -117,6 +186,9 @@ StreamTubeServer::Tube::Tube(
 {
 }
 
+/**
+ * Copy constructor.
+ */
 StreamTubeServer::Tube::Tube(
         const Tube &other)
     : QPair<AccountPtr, OutgoingStreamTubeChannelPtr>(other.account(), other.channel()),
@@ -124,11 +196,17 @@ StreamTubeServer::Tube::Tube(
 {
 }
 
+/**
+ * Class destructor.
+ */
 StreamTubeServer::Tube::~Tube()
 {
     // mPriv deleted automatically
 }
 
+/**
+ * Assignment operator.
+ */
 StreamTubeServer::Tube &StreamTubeServer::Tube::operator=(
         const Tube &other)
 {
@@ -142,6 +220,31 @@ StreamTubeServer::Tube &StreamTubeServer::Tube::operator=(
 
     return *this;
 }
+
+/**
+ * \fn bool StreamTubeServer::Tube::isValid() const
+ *
+ * Return whether or not the tube is valid or is just the null object created using the default
+ * constructor.
+ *
+ * \return \c true if valid, \c false otherwise.
+ */
+
+/**
+ * \fn AccountPtr StreamTubeServer::Tube::account() const
+ *
+ * Return the account from which the tube originates.
+ *
+ * \return A pointer to the account object.
+ */
+
+/**
+ * \fn OutgoingStreamTubeChannelPtr StreamTubeServer::Tube::channel() const
+ *
+ * Return the actual tube channel.
+ *
+ * \return A pointer to the channel.
+ */
 
 struct StreamTubeServer::Private
 {
