@@ -710,21 +710,21 @@ QVariantMap StreamTubeServer::exportedParameters() const
  * \param parameters The bootstrapping parameters in a string-value map.
  */
 void StreamTubeServer::exportTcpSocket(
-        const QHostAddress &addr,
+        const QHostAddress &address,
         quint16 port,
-        const QVariantMap &params)
+        const QVariantMap &parameters)
 {
-    if (addr.isNull() || port == 0) {
+    if (address.isNull() || port == 0) {
         warning() << "Attempted to export null TCP socket address or zero port, ignoring";
         return;
     }
 
-    mPriv->exportedAddr = addr;
+    mPriv->exportedAddr = address;
     mPriv->exportedPort = port;
 
     mPriv->generator = 0;
-    if (!params.isEmpty()) {
-        mPriv->fixedGenerator.reset(new FixedParametersGenerator(params));
+    if (!parameters.isEmpty()) {
+        mPriv->fixedGenerator.reset(new FixedParametersGenerator(parameters));
         mPriv->generator = mPriv->fixedGenerator.data();
     }
 
@@ -749,7 +749,7 @@ void StreamTubeServer::exportTcpSocket(
  */
 void StreamTubeServer::exportTcpSocket(
         const QTcpServer *server,
-        const QVariantMap &params)
+        const QVariantMap &parameters)
 {
     if (!server->isListening()) {
         warning() << "Attempted to export non-listening QTcpServer, ignoring";
@@ -757,11 +757,11 @@ void StreamTubeServer::exportTcpSocket(
     }
 
     if (server->serverAddress() == QHostAddress::Any) {
-        return exportTcpSocket(QHostAddress::LocalHost, server->serverPort(), params);
+        return exportTcpSocket(QHostAddress::LocalHost, server->serverPort(), parameters);
     } else if (server->serverAddress() == QHostAddress::AnyIPv6) {
-        return exportTcpSocket(QHostAddress::LocalHostIPv6, server->serverPort(), params);
+        return exportTcpSocket(QHostAddress::LocalHostIPv6, server->serverPort(), parameters);
     } else {
-        return exportTcpSocket(server->serverAddress(), server->serverPort(), params);
+        return exportTcpSocket(server->serverAddress(), server->serverPort(), parameters);
     }
 }
 
@@ -775,16 +775,16 @@ void StreamTubeServer::exportTcpSocket(
  * \param generator A pointer to the bootstrapping parameters generator.
  */
 void StreamTubeServer::exportTcpSocket(
-        const QHostAddress &addr,
+        const QHostAddress &address,
         quint16 port,
         ParametersGenerator *generator)
 {
-    if (addr.isNull() || port == 0) {
+    if (address.isNull() || port == 0) {
         warning() << "Attempted to export null TCP socket address or zero port, ignoring";
         return;
     }
 
-    mPriv->exportedAddr = addr;
+    mPriv->exportedAddr = address;
     mPriv->exportedPort = port;
     mPriv->generator = generator;
 
