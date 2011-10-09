@@ -39,7 +39,6 @@ class QTcpServer;
 namespace Tp
 {
 
-// TODO: Turn the comments here into real doxymentation
 class TELEPATHY_QT4_EXPORT StreamTubeServer : public QObject, public RefCounted
 {
     Q_OBJECT
@@ -116,11 +115,6 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
-    // The client name can be passed to allow service-activation. If service activation is not
-    // desired, the name can be left out, in which case an unique name will be generated.
-
-    // Different parameter order, because name and service are mandatory params so they can't follow
-    // the factory params which have default args
     static StreamTubeServerPtr create(
             const QStringList &p2pServices,
             const QStringList &roomServices = QStringList(),
@@ -167,16 +161,9 @@ public:
     bool isRegistered() const;
     bool monitorsConnections() const;
 
-    // Recovery getters for the setters below
     QPair<QHostAddress, quint16> exportedTcpSocketAddress() const;
     QVariantMap exportedParameters() const;
 
-    // These change the exported (Offer'ed) service to the given one for all future handled tubes
-    // The first call to one of these actually registers the Handler
-    //
-    // The exported socket can be changed an arbitrary amount of times, as many networked applications
-    // have a runtime setting for their listen port. This will of course only affect the handling of
-    // future tubes.
     void exportTcpSocket(
             const QHostAddress &address,
             quint16 port,
@@ -193,30 +180,12 @@ public:
             const QTcpServer *server,
             ParametersGenerator *generator);
 
-    // TODO: Add Unix sockets if needed (are there other common services one might want to export
-    // listening on Unix sockets and not necessarily on TCP than X11 and perhaps CUPS?)
-
-    // This will always be populated
     QList<Tube> tubes() const;
 
-    // This will be populated if monitorConnections = true and a TCP socket has been exported
-    //
-    // If the CM doesn't support Port AC (TCP), an invalid source address will be used as a key,
-    // with multiple connections as values using insertMulti
-    //
-    // Given how complex the map becomes to relay all the necessary information, should we perhaps
-    // leave this out? Then we wouldn't have full state-recoverability, though, and clients would
-    // likely implement similar monster maps themselves.
-    //
-    // Including the tube channels themselves would complicate this even more, and wouldn't really
-    // even help in any use case that I can think of.
-
-    QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>, RemoteContact>
-        tcpConnections() const;
+    QHash<QPair<QHostAddress, quint16>, RemoteContact> tcpConnections() const;
 
 Q_SIGNALS:
 
-    // These will always be emitted
     void tubeRequested(
             const Tp::AccountPtr &account,
             const Tp::OutgoingStreamTubeChannelPtr &tube,
@@ -228,11 +197,6 @@ Q_SIGNALS:
             const QString &error,
             const QString &message);
 
-    // These will be emitted if monitorConnections = true was passed to the create() method
-    // and a TCP socket is exported
-    //
-    // If the CM doesn't support Port access control, sourceAddress and sourcePort won't be
-    // informative. At least Gabble supports it, though.
     void newTcpConnection(
             const QHostAddress &sourceAddress,
             quint16 sourcePort,
