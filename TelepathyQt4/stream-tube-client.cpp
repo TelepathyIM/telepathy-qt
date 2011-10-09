@@ -68,9 +68,12 @@ namespace Tp
  * address on the local computer. This can be used on an tube-by-tube basis if for some tubes its
  * known that multiple connections need to be made, so a single source address doesn't suffice.
  *
+ * The \a account and \a tube parameters can be inspected to make the decision; typically by looking
+ * at the tube's service type, parameters and/or initiator contact.
+ *
  * The general pattern for implementing this method is:
  * <ol>
- * <li>Determine whether \c tube needs to allow multiple connections, and if so, skip source address
+ * <li>Determine whether \a tube needs to allow multiple connections, and if so, skip source address
  * access control completely</li>
  * <li>Otherwise, create a socket and bind it to a free address</li>
  * <li>Return this socket's address</li>

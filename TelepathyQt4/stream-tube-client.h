@@ -47,17 +47,10 @@ class TELEPATHY_QT4_EXPORT StreamTubeClient : public QObject, public RefCounted
 
 public:
 
-    // A callback interface to allow using Port access control for incoming tubes,
-    // because there we need to know the address bound to the app socket connecting to the CM
     class TcpSourceAddressGenerator
     {
     public:
-        // Return qMakePair(QHostAddress::Any, 0) for "don't use Port AC for this tube", e.g.
-        // because you want to make multiple connections through it
-        //
-        // The tube param can be used to extract the service, initiator contact and other useful
-        // information for making the decision
-        virtual QPair<QHostAddress /* source interface address */, quint16 /* source port */>
+        virtual QPair<QHostAddress, quint16>
             nextSourceAddress(const AccountPtr &account, const IncomingStreamTubeChannelPtr &tube) = 0;
 
     protected:
