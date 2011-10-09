@@ -636,12 +636,22 @@ QHash<QPair<QHostAddress /* sourceAddress */, quint16 /* sourcePort */>,
 
         QHash<QPair<QHostAddress,quint16>, uint> srcAddrConns =
             tube.channel()->connectionsForSourceAddresses();
-        QHash<uint, Tp::ContactPtr> connContacts =
+        QHash<uint, ContactPtr> connContacts =
             tube.channel()->contactsForConnections();
+        
         QPair<QHostAddress, quint16> srcAddr;
-        foreach(srcAddr, srcAddrConns.keys()) {
-            conns.insert(srcAddr,
-                    RemoteContact(tube.account(), connContacts.value(srcAddrConns.value(srcAddr))));
+        foreach (srcAddr, srcAddrConns.keys()) {
+            ContactPtr contact = connContacts.take(srcAddrConns.value(srcAddr));
+            conns.insert(srcAddr, RemoteContact(tube.account(), contact));
+        }
+
+        // The remaining values in our copy of connContacts are those which didn't have a
+        // corresponding source address, probably because the service doesn't properly implement
+        // Port AC
+        foreach (const ContactPtr &contact, connContacts.values()) {
+            // Insert them with an invalid source address as the key
+            conns.insertMulti(qMakePair(QHostAddress(QHostAddress::Null), quint16(0)),
+                    RemoteContact(tube.account(), contact));
         }
     }
 
