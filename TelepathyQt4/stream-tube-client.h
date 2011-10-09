@@ -37,7 +37,6 @@ namespace Tp
 
 class PendingStreamTubeConnection;
 
-// TODO: Turn the comments here into real doxymentation
 class TELEPATHY_QT4_EXPORT StreamTubeClient : public QObject, public RefCounted
 {
     Q_OBJECT
@@ -85,11 +84,6 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
-    // The client name can be passed to allow service-activation. If service activation is not
-    // desired, the name can be left out, in which case an unique name will be generated.
-
-    // Different parameter order, because services is a mandatory param so it can't follow
-    // the factory params which have default args
     static StreamTubeClientPtr create(
             const QStringList &p2pServices,
             const QStringList &roomServices = QStringList(),
@@ -140,19 +134,17 @@ public:
     bool isRegistered() const;
     bool monitorsConnections() const;
 
-    bool acceptsAsTcp() const; // if setToAcceptAsTCP has been used last
-    TcpSourceAddressGenerator *tcpGenerator() const; // warn and return NULL if !acceptsAsTCP
-    bool acceptsAsUnix() const; // if setToAcceptAsUnix has been used last
+    bool acceptsAsTcp() const;
+    TcpSourceAddressGenerator *tcpGenerator() const;
+    bool acceptsAsUnix() const;
 
-    void setToAcceptAsTcp(TcpSourceAddressGenerator *generator = 0); // 0 -> Localhost AC used
-    void setToAcceptAsUnix(bool requireCredentials = false); // whether CM should req SCM_CREDENTIALS
+    void setToAcceptAsTcp(TcpSourceAddressGenerator *generator = 0);
+    void setToAcceptAsUnix(bool requireCredentials = false);
 
-    // This will always be populated
     QList<Tube> tubes() const;
     QHash<Tube, QSet<uint> > connections() const;
 
 Q_SIGNALS:
-    // These will always be emitted
     void tubeOffered(
             const Tp::AccountPtr &account,
             const Tp::IncomingStreamTubeChannelPtr &tube);
@@ -162,25 +154,20 @@ Q_SIGNALS:
             const QString &error,
             const QString &message);
 
-    // These will be emitted if a offered tube is accepted successfully, when setToAcceptAsTCP/Unix
-    // has been called last
     void tubeAcceptedAsTcp(
             const QHostAddress &listenAddress,
             quint16 listenPort,
-            const QHostAddress &sourceAddress, // these are populated with the source address the
-            quint16 sourcePort,               // generator, if any, yieled for this tube
+            const QHostAddress &sourceAddress,
+            quint16 sourcePort,
             const Tp::AccountPtr &account,
             const Tp::IncomingStreamTubeChannelPtr &tube);
     void tubeAcceptedAsUnix(
             const QString &listenAddress,
-            bool requiresCredentials, // this is the requireCredentials param unchanged
+            bool requiresCredentials,
             uchar credentialByte,
             const Tp::AccountPtr &account,
             const Tp::IncomingStreamTubeChannelPtr &tube);
 
-    // These will be emitted if monitorConnections = true was passed to the create() method
-    // Sadly, there is no other possible way to associate multiple connections through a single tube
-    // with the actual sockets than connecting one socket at a time and waiting for newConnection()
     void newConnection(
             const Tp::AccountPtr &account,
             const Tp::IncomingStreamTubeChannelPtr &tube,

@@ -313,6 +313,85 @@ void StreamTubeClient::TubeWrapper::onConnectionClosed(uint conn, const QString 
     emit connectionClosed(this, conn, error, message);
 }
 
+/**
+ * \class StreamTubeClient
+ * \ingroup serverclient
+ * \headerfile TelepathyQt4/stream-tube-client.h <TelepathyQt4/StreamTubeClient>
+ *
+ * \brief The StreamTubeClient class is a Handler implementation for incoming %Stream %Tube channels,
+ * allowing an application to easily get notified about services they can connect to offered to them
+ * over Telepathy Tubes without worrying about the channel dispatching details.
+ *
+ * Telepathy Tubes is a technology for connecting arbitrary applications together through the IM
+ * network (and sometimes with direct peer-to-peer connections), such that issues like firewall/NAT
+ * traversal are automatically handled. Stream Tubes in particular offer properties similar to
+ * SOCK_STREAM sockets. The StreamTubeClient class negotiates tubes offered to us so that an
+ * application can connect such bytestream sockets of theirs to them. The StreamTubeServer class is
+ * the counterpart, offering services from a bytestream socket server to tubes requested to be
+ * initiated.
+ *
+ * Both peer-to-peer (\c TargetHandleType == \ref HandleTypeContact) and group (\c TargetHandleType
+ * == \ref HandleTypeRoom) channels are supported, and it's possible to specify the tube services to
+ * handle for each separately. There must be at least one service in total declared, as it never
+ * makes sense to handle stream tubes without considering the protocol of the service offered
+ * through them.
+ *
+ * %Connection monitoring allows fine-grained error reporting for connections made through tubes,
+ * and observing connections being made and broken even if the application code running
+ * StreamTubeClient can't easily get this information from the code actually connecting through it.
+ * Such a setting might occur e.g. when a wrapper application is developed to connect some existing
+ * "black box" networked application through TCP tubes by launching it with the appropriate command
+ * line arguments or alike for accepted tubes.
+ *
+ * Enabling connection monitoring adds a small overhead and latency to handling each incoming tube
+ * and signaling each new incoming connection over them, though, so use it only when needed.
+ *
+ * A service activated Handler can be implemented using StreamTubeClient by passing a predefined \a
+ * clientName manually to the chosen create() method, and installing Telepathy \c .client and D-Bus
+ * \c .service files declaring the implemented tube services as channel classes and a path to the
+ * executable. If this is not needed, the \a clientName can be omitted, in which case a random
+ * unique client name is generated and used instead. However, then the tube client application must
+ * already be running for remote contacts to be able to offer services to us over tubes.
+ *
+ * Whether the Handler application implemented using StreamTubeClient is service activatable or not,
+ * incoming channels will typically first be given to an Approver, if there is one for tube services
+ * corresponding to the tube in question. Only if the Approver decides that the tube communication
+ * should be allowed (usually by asking the user), or if there is no matching Approver at all, is
+ * the channel given to the actual Handler tube client. This can be overridden by setting \a
+ * bypassApproval to \c true, which skips approval for the given services completely and directs
+ * them straight to the Handler.
+ *
+ * StreamTubeClient shares Account, Connection and Channel proxies and Contact objects with the
+ * rest of the application as long as a reference to the AccountManager, ClientRegistrar, or the
+ * factories used elsewhere is passed to the create() method. A stand-alone tube client Handler can
+ * get away without passing these however, or just passing select factories to make the desired
+ * features prepared and subclasses employed for these objects for their own convenience.
+ *
+ * Whichever method is used, the ChannelFactory (perhaps indirectly) given must construct
+ * IncomingStreamTubeChannel instances or subclasses thereof for all channel classes corresponding
+ * to the tube services the client should be able to connect to. This is the default; overriding it
+ * without obeying these constraints using ChannelFactory::setSubclassForIncomingStreamTubes() or
+ * the related methods for room tubes prevents StreamTubeClient from operating correctly.
+ *
+ * \todo Coin up a small Python script or alike to easily generate the .client and .service files.
+ * (fd.o #41614)
+ */
+
+/**
+ * Create a new StreamTubeClient, which will register itself on the session bus using an internal
+ * ClientRegistrar and use the given factories.
+ *
+ * \param p2pServices Names of the tube services to accept on peer-to-peer tube channels.
+ * \param roomServices Names of the tube services to accept on room/group tube channels.
+ * \param clientName The client name (without the \c org.freedesktop.Telepathy.Client. prefix).
+ * \param monitorConnections Whether to enable connection monitoring or not.
+ * \param bypassApproval \c true to skip approval, \c false to invoke an Approver for incoming
+ * channels if there is one.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ */
 StreamTubeClientPtr StreamTubeClient::create(
         const QStringList &p2pServices,
         const QStringList &roomServices,
@@ -337,6 +416,24 @@ StreamTubeClientPtr StreamTubeClient::create(
             bypassApproval);
 }
 
+/**
+ * Create a new StreamTubeClient, which will register itself on the given \a bus using an internal
+ * ClientRegistrar and use the given factories.
+ *
+ * The factories must all be created for the given \a bus.
+ *
+ * \param bus Connection to the bus to register on.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \param p2pServices Names of the tube services to handle on peer-to-peer tube channels.
+ * \param roomServices Names of the tube services to handle on room/group tube channels.
+ * \param clientName The client name (without the \c org.freedesktop.Telepathy.Client. prefix).
+ * \param monitorConnections Whether to enable connection monitoring or not.
+ * \param bypassApproval \c true to skip approval, \c false to invoke an Approver for incoming
+ * channels if there is one.
+ */
 StreamTubeClientPtr StreamTubeClient::create(
         const QDBusConnection &bus,
         const AccountFactoryConstPtr &accountFactory,
@@ -363,6 +460,18 @@ StreamTubeClientPtr StreamTubeClient::create(
             bypassApproval);
 }
 
+/**
+ * Create a new StreamTubeClient, which will register itself on the bus of and share objects with
+ * the given \a accountManager, creating an internal ClientRegistrar.
+ *
+ * \param accountManager A pointer to the account manager to link up with.
+ * \param p2pServices Names of the tube services to handle on peer-to-peer tube channels.
+ * \param roomServices Names of the tube services to handle on room/group tube channels.
+ * \param clientName The client name (without the \c org.freedesktop.Telepathy.Client. prefix).
+ * \param monitorConnections Whether to enable connection monitoring or not.
+ * \param bypassApproval \c true to skip approval, \c false to invoke an Approver for incoming
+ * channels if there is one.
+ */
 StreamTubeClientPtr StreamTubeClient::create(
         const AccountManagerPtr &accountManager,
         const QStringList &p2pServices,
@@ -384,6 +493,18 @@ StreamTubeClientPtr StreamTubeClient::create(
             bypassApproval);
 }
 
+/**
+ * Create a new StreamTubeClient, which will register itself on the bus of and using the given
+ * client \a registrar, and share objects with it.
+ *
+ * \param registrar The client registrar to use.
+ * \param p2pServices Names of the tube services to handle on peer-to-peer tube channels.
+ * \param roomServices Names of the tube services to handle on room/group tube channels.
+ * \param clientName The client name (without the \c org.freedesktop.Telepathy.Client. prefix).
+ * \param monitorConnections Whether to enable connection monitoring or not.
+ * \param bypassApproval \c true to skip approval, \c false to invoke an Approver for incoming
+ * channels if there is one.
+ */
 StreamTubeClientPtr StreamTubeClient::create(
         const ClientRegistrarPtr &registrar,
         const QStringList &p2pServices,
@@ -436,31 +557,79 @@ StreamTubeClient::~StreamTubeClient()
     delete mPriv;
 }
 
+/**
+ * Return the client registrar used by the client to register itself as a Telepathy channel Handler
+ * %Client.
+ *
+ * This is the registrar originally passed to
+ * create(const ClientRegistrarPtr &, const QStringList &, const QStringList &, const QString &, bool, bool)
+ * if that was used, and an internally constructed one otherwise. In any case, it can be used to
+ * e.g. register further clients, just like any other ClientRegistrar.
+ *
+ * \return A pointer to the registrar.
+ */
 ClientRegistrarPtr StreamTubeClient::registrar() const
 {
     return mPriv->registrar;
 }
 
+/**
+ * Return the Telepathy %Client name of the client.
+ *
+ * \return The name, without the \c org.freedesktop.Telepathy. prefix of the full D-Bus service name.
+ */
 QString StreamTubeClient::clientName() const
 {
     return mPriv->clientName;
 }
 
+/**
+ * Return whether the client has been successfully registered or not.
+ *
+ * Registration is attempted, at the latest, when the client is first set to accept incoming tubes,
+ * either as TCP sockets (setToAcceptAsTcp()) or Unix ones (setToAcceptAsUnix()).  It can fail e.g.
+ * because the connection to the bus has failed, or a predefined \a clientName has been passed to
+ * create(), and a %Client with the same name is already registered. Typically, failure registering
+ * would be a fatal error for a stand-alone tube handler, but only a warning event for an
+ * application serving other purposes. In any case, a high-quality user of the API will check the
+ * return value of this accessor after choosing the desired address family.
+ *
+ * \return \c true if the client has been successfully registered, \c false if not.
+ */
 bool StreamTubeClient::isRegistered() const
 {
     return mPriv->isRegistered;
 }
 
+/**
+ * Return whether connection monitoring is enabled on this client.
+ *
+ * For technical reasons, connection monitoring can't be enabled when the client is already running,
+ * so there is no corresponding setter method.
+ *
+ * \return \c true if monitoring is enabled, \c false if not.
+ */
 bool StreamTubeClient::monitorsConnections() const
 {
     return mPriv->handler->monitorsConnections();
 }
 
+/**
+ * Return whether the client is currently set to accept incoming tubes as TCP sockets.
+ *
+ * \return \c true if the client will accept tubes as TCP sockets, \c false if it will accept them
+ * as Unix ones or hasn't been set to accept at all yet.
+ */
 bool StreamTubeClient::acceptsAsTcp() const
 {
     return mPriv->acceptsAsTcp;
 }
 
+/**
+ * Return the TCP source address generator, if any, set by setToAcceptAsTcp() previously.
+ *
+ * \return A pointer to the generator instance.
+ */
 StreamTubeClient::TcpSourceAddressGenerator *StreamTubeClient::tcpGenerator() const
 {
     if (!acceptsAsTcp()) {
@@ -471,11 +640,40 @@ StreamTubeClient::TcpSourceAddressGenerator *StreamTubeClient::tcpGenerator() co
     return mPriv->tcpGenerator;
 }
 
+/**
+ * Return whether the client is currently set to accept incoming tubes as Unix sockets.
+ *
+ * \return \c true if the client will accept tubes as Unix sockets, \c false if it will accept them
+ * as TCP ones or hasn't been set to accept at all yet.
+ */
 bool StreamTubeClient::acceptsAsUnix() const
 {
     return mPriv->acceptsAsUnix;
 }
 
+/**
+ * Set the client to accept tubes received to handle in the future in a fashion which will yield a
+ * TCP socket as the local endpoint to connect to.
+ *
+ * A source address generator can optionally be set. If non-null, it will be invoked for each new
+ * tube received to handle and an attempt is made to restrict connections to the tube's local socket
+ * endpoint to those from that source address.
+ *
+ * However, if the protocol backend doesn't actually support source address based access control,
+ * tubeAcceptedAsTcp() will be emitted with QHostAddress::Any as the allowed source address to
+ * signal that it doesn't matter where we connect from, but more importantly, that anybody else on
+ * the same host could have, and can, connect to the tube. The tube can be closed at this point if
+ * this would be unacceptable security-wise. To totally prevent the tube from being accepted in the
+ * first place, one can close it already when tubeOffered() is emitted for it - support for the
+ * needed security mechanism can be queried using its supportsIPv4SocketsWithSpecifiedAddress()
+ * accessor.
+ *
+ * \param generator A pointer to the source address generator to use, or 0 to allow all
+ * connections from the local host.
+ *
+ * \todo Make it possible to set the tube client to auto-close tubes if the desired access control
+ * level is not achieved, as an alternative to the current best-effort behavior.
+ */
 void StreamTubeClient::setToAcceptAsTcp(TcpSourceAddressGenerator *generator)
 {
     mPriv->tcpGenerator = generator;
@@ -485,6 +683,34 @@ void StreamTubeClient::setToAcceptAsTcp(TcpSourceAddressGenerator *generator)
     mPriv->ensureRegistered();
 }
 
+/**
+ * Set the client to accept tubes received to handle in the future in a fashion which will yield a
+ * Unix socket as the local endpoint to connect to.
+ *
+ * If that doesn't cause problems for the payload protocol, it's possible to increase security by
+ * restricting the processes allowed to connect to the local endpoint socket to those from the same
+ * user ID as the protocol backend is running as by setting \a requireCredentials to \c true. This
+ * requires transmitting a single byte, signaled as the \a credentialByte parameter to the
+ * tubeAcceptedAsUnix() signal, in a \c SCM_CREDS or SCM_CREDENTIALS message, whichever is supported
+ * by the platform, as the first thing after having connected to the socket. Even if the platform
+ * doesn't implement either concept, the byte must still be sent.
+ *
+ * However, not all protocol backends support the credential passing based access control on all the
+ * platforms they can run on. If a tube is offered through such a backend, tubeAcceptedAsUnix() will
+ * be emitted with \a requiresCredentials set to \c false, to signal that a credential byte should
+ * NOT be sent for that tube, and that any local process can or could have connected to the tube
+ * already. The tube can be closed at this point if this would be unacceptable security-wise. To
+ * totally prevent the tube from being accepted in the first place, one can close it already when
+ * tubeOffered() is emitted for it - support for the needed security mechanism can be queried using
+ * its supportsIPv4SocketsWithSpecifiedAddress()
+ * accessor.
+ *
+ * \param requireCredentials \c true to try and restrict connecting by UID, \c false to allow all
+ * connections.
+ *
+ * \todo Make it possible to set the tube client to auto-close tubes if the desired access control
+ * level is not achieved, as an alternative to the current best-effort behavior.
+ */
 void StreamTubeClient::setToAcceptAsUnix(bool requireCredentials)
 {
     mPriv->tcpGenerator = 0;
@@ -495,6 +721,12 @@ void StreamTubeClient::setToAcceptAsUnix(bool requireCredentials)
     mPriv->ensureRegistered();
 }
 
+/**
+ * Return the tubes currently handled by the client.
+ *
+ * \return A list of Tube structures containing pointers to the account and tube channel for each
+ * tube.
+ */
 QList<StreamTubeClient::Tube> StreamTubeClient::tubes() const
 {
     QList<Tube> tubes;
@@ -506,6 +738,23 @@ QList<StreamTubeClient::Tube> StreamTubeClient::tubes() const
     return tubes;
 }
 
+/**
+ * Return the ongoing connections established through tubes signaled by this client.
+ *
+ * The returned mapping has for each Tube a structure containing pointers to the account and tube
+ * channel objects as keys, with the integer identifiers for the current connections on them as the
+ * values. The IDs are unique amongst the connections active on a single tube at any given time, but
+ * not globally.
+ *
+ * This is effectively a state recovery accessor corresponding to the change notification signals
+ * newConnection() and connectionClosed().
+ *
+ * The mapping is only populated if connection monitoring was requested when creating the client (so
+ * monitorsConnections() returns \c true).
+ *
+ * \return The connections in a mapping with Tube structures containing pointers to the account and
+ * channel objects for each tube as keys, and the sets of numerical IDs as values.
+ */
 QHash<StreamTubeClient::Tube, QSet<uint> > StreamTubeClient::connections() const
 {
     QHash<Tube, QSet<uint> > conns;
@@ -668,5 +917,120 @@ void StreamTubeClient::onConnectionClosed(
     Q_ASSERT(monitorsConnections());
     emit connectionClosed(wrapper->mAcc, wrapper->mTube, conn, error, message);
 }
+
+/**
+ * \fn void StreamTubeClient::tubeOffered(const AccountPtr &account, const
+ * IncomingStreamTubeChannelPtr &tube)
+ *
+ * Emitted when one of the services we're interested in connecting to has been offered by us as a
+ * tube, which we've began handling.
+ *
+ * This is emitted before invoking the TcpSourceAddressGenerator, if any, for the tube.
+ *
+ * \param account A pointer to the account through which the tube was offered.
+ * \param tube A pointer to the actual tube channel.
+ */
+
+/**
+ * \fn void StreamTubeClient::tubeAcceptedAsTcp(const QHostAddress &listenAddress, quint16
+ * listenPort, const QHostAddress &sourceAddress, quint16 sourcePort, const AccountPtr &account,
+ * const IncomingStreamTubeChannelPtr &tube)
+ *
+ * Emitted when a tube offered to us (previously announced with tubeOffered()) has been successfully
+ * accepted and a TCP socket established as the local endpoint, as specified by setToAcceptAsTcp().
+ *
+ * The allowed source address and port are signaled here if there was a TcpSourceAddressGenerator set
+ * at the time of accepting this tube, it yielded a non-zero address, and the protocol backend
+ * supports source address based access control. This enables the application to use the correct one
+ * of the sockets it currently has bound to the generated addresses.
+ *
+ * \param listenAddress The listen address of the local endpoint socket.
+ * \param listenPort The listen port of the local endpoint socket.
+ * \param sourceAddress The host address allowed to connect to the tube, or QHostAddress::Any if
+ * source address based access control is not in use.
+ * \param sourcePort The port from which connections are allowed to the tube, or 0 if source address
+ * based access control is not in use.
+ * \param account A pointer to the account object through which the tube was offered.
+ * \param tube A pointer to the actual tube channel object.
+ */
+
+// Explicitly specifying Tp:: for this signal's argument types works around a doxygen bug causing it
+// to confuse the doc here being for StreamTubeServer::tubeClosed :/
+/**
+ * \fn void StreamTubeClient::tubeClosed(const Tp::AccountPtr &account, const
+ * Tp::IncomingStreamTubeChannelPtr &tube, const QString &error, const QString &message)
+ *
+ * Emitted when a tube we've been handling (previously announced with tubeOffered()) has
+ * encountered an error or has otherwise been closed from further communication.
+ *
+ * \param account A pointer to the account through which the tube was offered.
+ * \param tube A pointer to the actual tube channel.
+ * \param error The D-Bus error name corresponding to the reason for the closure.
+ * \param message A freeform debug message associated with the error.
+ */
+
+/**
+ * \fn void StreamTubeClient::tubeAcceptedAsUnix(const QHostAddress &listenAddress, quint16
+ * listenPort, const QHostAddress &sourceAddress, quint16 sourcePort, const AccountPtr &account,
+ * const IncomingStreamTubeChannelPtr &tube)
+ *
+ * Emitted when a tube offered to us (previously announced with tubeOffered()) has been successfully
+ * accepted and a Unix socket established as the local endpoint, as specified by setToAcceptAsUnix().
+ *
+ * The credential byte which should be sent after connecting to the tube (in a SCM_CREDENTIALS or
+ * SCM_CREDS message if supported by the platform) will be signaled here if the client was set to
+ * attempt requiring credentials at the time of accepting this tube, and the protocol backend
+ * supports credential passing based access control. Otherwise, \a requiresCredentials will be false
+ * and no byte or associated out-of-band credentials metadata should be sent.
+ *
+ * \param listenAddress The listen address of the local endpoint socket.
+ * \param requiresCredentials \c true if \a credentialByte should be sent after connecting to the
+ * socket, \c false if not.
+ * \param credentialByte The byte to send if \a requiresCredentials is \c true.
+ * \param account A pointer to the account object through which the tube was offered.
+ * \param tube A pointer to the actual tube channel object.
+ */
+
+/**
+ * \fn void StreamTubeClient::newConnection(const AccountPtr &account, const
+ * IncomingStreamTubeChannelPtr &tube, uint connectionId)
+ *
+ * Emitted when a new connection has been made to the local endpoint socket for \a tube.
+ *
+ * This can be used to later associate connection errors reported by connectionClosed() with the
+ * corresponding application sockets. However, establishing the association generally requires
+ * connecting only one socket at a time, waiting for newConnection() to be emitted, and only then
+ * proceeding, as there is no identification for the connections unlike the incoming connections in
+ * StreamTubeServer.
+ *
+ * Note that the connection IDs are only unique within a given tube, so identification of the tube
+ * channel must also be recorded together with the ID to establish global uniqueness. Even then, the
+ * a connection ID can be reused after the previous connection identified by it having been
+ * signaled as closed with connectionClosed().
+ *
+ * This is only emitted if connection monitoring was enabled when creating the StreamTubeClient.
+ *
+ * \param account A pointer to the account through which the tube was offered.
+ * \param tube A pointer to the tube channel through which the connection has been made.
+ * \param connectionId The integer ID of the new connection.
+ */
+
+/**
+ * \fn void StreamTubeClient::connectionClosed(const AccountPtr &account, const
+ * IncomingStreamTubeChannelPtr &tube, uint connectionId, const QString &error, const
+ * QString &message)
+ *
+ * Emitted when a connection (previously announced with newConnection()) through one of our
+ * handled tubes has been closed due to an error or by a graceful disconnect (in which case the
+ * error is ::TP_QT4_ERROR_CANCELLED).
+ *
+ * This is only emitted if connection monitoring was enabled when creating the StreamTubeClient.
+ *
+ * \param account A pointer to the account through which the tube was offered.
+ * \param tube A pointer to the tube channel through which the connection had been made.
+ * \param connectionId The integer ID of the connection closed.
+ * \param error The D-Bus error name corresponding to the reason for the closure.
+ * \param message A freeform debug message associated with the error.
+ */
 
 } // Tp
