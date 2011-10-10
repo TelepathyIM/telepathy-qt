@@ -33,6 +33,8 @@ namespace Tp
  * \headerfile TelepathyQt4/object.h <TelepathyQt4/Object>
  *
  * \brief The Object class provides an object with property notification.
+ *
+ * \todo Use for more classes beyond Account. Most importantly Contact.
  */
 
 /**
