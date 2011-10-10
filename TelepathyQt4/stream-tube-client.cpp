@@ -576,7 +576,7 @@ ClientRegistrarPtr StreamTubeClient::registrar() const
 /**
  * Return the Telepathy %Client name of the client.
  *
- * \return The name, without the \c org.freedesktop.Telepathy. prefix of the full D-Bus service name.
+ * \return The name, without the \c org.freedesktop.Telepathy.Client. prefix of the full D-Bus service name.
  */
 QString StreamTubeClient::clientName() const
 {
