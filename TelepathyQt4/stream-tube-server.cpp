@@ -216,9 +216,9 @@ StreamTubeServer::Tube::Tube()
 }
 
 /**
- * Constructs a Tube instance for the given tube \a channel from the given \a account.
+ * Constructs a Tube instance for the given tube \a channel originating from the given \a account.
  *
- * \param account A pointer to the account the online connection of which the tube originates from.
+ * \param account A pointer to the account object.
  * \param channel A pointer to the tube channel object.
  */
 StreamTubeServer::Tube::Tube(
