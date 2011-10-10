@@ -291,6 +291,10 @@ QStringList KeyFile::Private::valueAsStringList(const QString &key) const
  *
  * It follows the rules regarding string escaping as defined in
  * http://standards.freedesktop.org/desktop-entry-spec/latest/index.html
+ *
+ * \todo Consider making this private, because the ConnectionManager and Account classes provide a
+ * nice view to the data parsed by this class anyway (and there's even a higher-level ManagerFile
+ * class in between) (fd.o #41655).
  */
 
 /**
