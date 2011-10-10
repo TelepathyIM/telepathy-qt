@@ -483,8 +483,6 @@ void ChannelFactory::setConstructorFor(const ChannelClassSpec &channelClass,
  *
  * The proxy can be accessed immediately after this function returns using PendingReady::proxy().
  *
- * \todo Make it configurable which subclass is constructed.
- *
  * \param connection Proxy for the owning connection of the channel.
  * \param channelPath The object path of the channel.
  * \param immutableProperties The immutable properties of the channel.
@@ -516,8 +514,6 @@ QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
 /**
  * Return features as configured for the channel class given by the Channel::immutableProperties()
  * of \a proxy.
- *
- * \todo Make the features configurable - currently an empty set is always returned.
  *
  * \param proxy The Channel proxy to determine the features for.
  * \return A list of Feature objects.
