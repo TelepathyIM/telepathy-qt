@@ -46,8 +46,8 @@ namespace Tp
  * \ingroup serverclient
  * \headerfile TelepathyQt4/stream-tube-client.h <TelepathyQt4/StreamTubeClient>
  *
- * \brief The StreamTubeClient::ParametersGenerator abstract interface allows using socket source
- * address/port based access control for connecting to tubes accepted as TCP sockets.
+ * \brief The StreamTubeClient::TcpSourceAddressGenerator abstract interface allows using socket
+ * source address/port based access control for connecting to tubes accepted as TCP sockets.
  *
  * By default, every application on the local computer is allowed to connect to the socket created
  * by the protocol backend as the local endpoint of the tube. This is not always desirable, as that
