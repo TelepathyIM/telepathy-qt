@@ -54,6 +54,8 @@ Object::~Object()
  * Notify that a property named \a propertyName changed.
  *
  * This method will emit propertyChanged() for \a propertyName.
+ *
+ * \todo Use for more classes beyond Account. Most importantly Contact.
  */
 void Object::notify(const char *propertyName)
 {

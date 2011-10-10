@@ -371,6 +371,9 @@ QVariant ManagerFile::Private::valueForKey(const QString &param,
  *
  * \brief The ManagerFile class provides an easy way to read Telepathy manager
  * files according to the \telepathy_spec.
+ *
+ * \todo Consider making this private, because the ConnectionManager and Account classes provide a
+ * nice view to the data parsed by this class anyway (fd.o #41655).
  */
 
 /**
