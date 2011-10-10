@@ -672,6 +672,10 @@ bool StreamTubeClient::acceptsAsUnix() const
  * needed security mechanism can be queried using its supportsIPv4SocketsWithSpecifiedAddress()
  * accessor.
  *
+ * The handler is registered on the bus at the latest when this method or setToAcceptAsUnix() is
+ * called for the first time, so one should check the return value of isRegistered() at that point
+ * to verify that was successful.
+ *
  * \param generator A pointer to the source address generator to use, or 0 to allow all
  * connections from the local host.
  *
@@ -708,6 +712,10 @@ void StreamTubeClient::setToAcceptAsTcp(TcpSourceAddressGenerator *generator)
  * tubeOffered() is emitted for it - support for the needed security mechanism can be queried using
  * its supportsIPv4SocketsWithSpecifiedAddress()
  * accessor.
+ *
+ * The handler is registered on the bus at the latest when this method or setToAcceptAsTcp() is
+ * called for the first time, so one should check the return value of isRegistered() at that point
+ * to verify that was successful.
  *
  * \param requireCredentials \c true to try and restrict connecting by UID, \c false to allow all
  * connections.

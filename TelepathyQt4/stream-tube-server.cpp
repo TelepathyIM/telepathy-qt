@@ -709,6 +709,10 @@ QVariantMap StreamTubeServer::exportedParameters() const
  * for an in-depth description of the parameter transfer mechanism, and a more flexible way to vary
  * the parameters between each handled tube.
  *
+ * The handler is registered on the bus at the latest when this method or another exportTcpSocket()
+ * overload is called for the first time, so one should check the return value of isRegistered() at
+ * that point to verify that was successful.
+ *
  * \param address The listen address of the socket.
  * \param port The port of the socket.
  * \param parameters The bootstrapping parameters in a string-value map.
@@ -773,6 +777,10 @@ void StreamTubeServer::exportTcpSocket(
  * Set the server to offer the socket listening at the given \a address - \a port combination as the
  * local endpoint of tubes handled in the future, sending the parameters from the given \a generator
  * along with the offers.
+ *
+ * The handler is registered on the bus at the latest when this method or another exportTcpSocket()
+ * overload is called for the first time, so one should check the return value of isRegistered() at
+ * that point to verify that was successful.
  *
  * \param address The listen address of the socket.
  * \param port The port of the socket.
