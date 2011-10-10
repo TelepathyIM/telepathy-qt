@@ -605,7 +605,11 @@ bool StreamTubeClient::isRegistered() const
  * Return whether connection monitoring is enabled on this client.
  *
  * For technical reasons, connection monitoring can't be enabled when the client is already running,
- * so there is no corresponding setter method.
+ * so there is no corresponding setter method. It has to be enabled by passing \c true as the \a
+ * monitorConnections parameter to the create() method.
+ *
+ * If connection monitoring isn't enabled, newConnection() and connectionClosed() won't be
+ * emitted and connections() won't be populated.
  *
  * \return \c true if monitoring is enabled, \c false if not.
  */
