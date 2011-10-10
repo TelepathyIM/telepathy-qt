@@ -1555,6 +1555,9 @@ const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(QLatin1
  * \param objectPath The channel object path.
  * \param immutableProperties The channel immutable properties.
  * \return A ChannelPtr object pointing to the newly created Channel object.
+ *
+ * \todo \a immutableProperties should be used to populate the corresponding accessors (such as
+ * channelType()) already on construction, not only when making FeatureCore ready (fd.o #41654)
  */
 ChannelPtr Channel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
