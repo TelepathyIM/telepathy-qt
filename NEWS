@@ -1,10 +1,12 @@
 telepathy-qt4 0.7.4 (UNRELEASED)
 ================================
 
-The "..." release.
+The "Make your own vacuum tubes" release.
 
 Enhancements:
- * ...
+ * fd.o #35084: The StreamTubeClient and StreamTubeServer classes have been
+   added to allow implementing Telepathy Stream Tube connectivity for
+   applications without having to worry about the channel dispatching details.
 
 Fixes:
  * Our TODO process being completely out of date. Trying to use doxygen \todo
