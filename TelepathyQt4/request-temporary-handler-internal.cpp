@@ -37,7 +37,8 @@ SharedPtr<RequestTemporaryHandler> RequestTemporaryHandler::create(const Account
 }
 
 RequestTemporaryHandler::RequestTemporaryHandler(const AccountPtr &account)
-    : QObject(),
+    : AbstractClient(),
+      QObject(),
       AbstractClientHandler(ChannelClassSpecList(), AbstractClientHandler::Capabilities(), false),
       mAccount(account),
       mQueueChannelReceived(true),

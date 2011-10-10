@@ -1,8 +1,8 @@
-/**
+/*
  * This file is part of TelepathyQt4
  *
- * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
- * @license LGPL 2.1
+ * Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009,2011 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,30 +19,37 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/Debug>
+#ifndef _TelepathyQt4_examples_stream_tubes_tube_receiver_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_stream_tubes_tube_receiver_h_HEADER_GUARD_
+
 #include <TelepathyQt4/Types>
 
-#include <QDebug>
-#include <QtGui>
+#include <QLocalSocket>
 
-#include "roster-window.h"
+using namespace Tp;
 
-int main(int argc, char **argv)
+namespace Tp
 {
-    QApplication app(argc, argv);
-
-    if (argc < 2) {
-        qDebug() << "usage:" << argv[0] << "<account name, as in mc-tool list>";
-        return 1;
-    }
-
-    Tp::registerTypes();
-    Tp::enableDebug(true);
-    Tp::enableWarnings(true);
-
-    QString accountPath = QLatin1String(argv[1]);
-    RosterWindow w(accountPath);
-    w.show();
-
-    return app.exec();
+class PendingOperation;
 }
+
+class TubeReceiver : public QObject
+{
+    Q_OBJECT
+
+public:
+   TubeReceiver(QObject *parent);
+   ~TubeReceiver();
+
+private Q_SLOTS:
+    void onTubeAccepted(const QString &listenAddress);
+    void onStateChanged(QLocalSocket::LocalSocketState newState);
+    void onTimerTimeout();
+    void onDataFromSocket();
+
+private:
+    StreamTubeClientPtr mTubeClient;
+    QLocalSocket *mDevice;
+};
+
+#endif

@@ -36,7 +36,7 @@
 
 using namespace Tp;
 
-RosterWindow::RosterWindow(const QString &accountPath, QWidget *parent)
+RosterWindow::RosterWindow(const QString &accountName, QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle(QLatin1String("Roster"));
@@ -51,8 +51,9 @@ RosterWindow::RosterWindow(const QString &accountPath, QWidget *parent)
     ContactFactoryPtr contactFactory = ContactFactory::create(
             Contact::FeatureAlias | Contact::FeatureSimplePresence);
 
-    mAccount = Account::create(TP_QT4_ACCOUNT_MANAGER_BUS_NAME, accountPath,
-        connectionFactory, channelFactory, contactFactory);
+    mAccount = Account::create(TP_QT4_ACCOUNT_MANAGER_BUS_NAME,
+            TP_QT4_ACCOUNT_OBJECT_PATH_BASE + QLatin1Char('/') + accountName,
+            connectionFactory, channelFactory, contactFactory);
     connect(mAccount->becomeReady(Account::FeatureCore),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onAccountReady(Tp::PendingOperation *)));
@@ -73,7 +74,9 @@ void RosterWindow::setupGui()
 void RosterWindow::onAccountReady(Tp::PendingOperation *op)
 {
     if (op->isError()) {
-        qWarning() << "Account cannot become ready";
+        qWarning() << "Account cannot become ready - " <<
+            op->errorName() << '-' << op->errorMessage();
+        QCoreApplication::exit(1);
         return;
     }
 
@@ -81,6 +84,11 @@ void RosterWindow::onAccountReady(Tp::PendingOperation *op)
     connect(mAccount.data(),
             SIGNAL(connectionChanged(Tp::ConnectionPtr)),
             SLOT(onAccountConnectionChanged(Tp::ConnectionPtr)));
+
+    if (mAccount->connection().isNull()) {
+        qDebug() << "The account given has no Connection. Please set it online to continue.";
+    }
+
     onAccountConnectionChanged(mAccount->connection());
 }
 
