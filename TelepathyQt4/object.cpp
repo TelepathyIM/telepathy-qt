@@ -33,8 +33,6 @@ namespace Tp
  * \headerfile TelepathyQt4/object.h <TelepathyQt4/Object>
  *
  * \brief The Object class provides an object with property notification.
- *
- * \todo Use for more classes beyond Account. Most importantly Contact.
  */
 
 /**
@@ -56,6 +54,8 @@ Object::~Object()
  * Notify that a property named \a propertyName changed.
  *
  * This method will emit propertyChanged() for \a propertyName.
+ *
+ * \todo Use for more classes beyond Account. Most importantly Contact.
  */
 void Object::notify(const char *propertyName)
 {
