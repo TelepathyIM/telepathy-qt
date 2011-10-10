@@ -65,7 +65,7 @@ namespace Tp
  * been accepted.
  *
  * Returning the pair (QHostAddress::Any, 0) makes the protocol backend allow connections from any
- * address on the local computer. This can be used on an tube-by-tube basis if for some tubes its
+ * address on the local computer. This can be used on a tube-by-tube basis if for some tubes its
  * known that multiple connections need to be made, so a single source address doesn't suffice.
  *
  * The \a account and \a tube parameters can be inspected to make the decision; typically by looking
