@@ -1124,6 +1124,10 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
  */
 void ContactManager::requestContactAvatars(const QList<ContactPtr> &contacts)
 {
+    if (contacts.isEmpty()) {
+        return;
+    }
+
     if (!mPriv->requestAvatarsIdle) {
         mPriv->requestAvatarsIdle = true;
         QTimer::singleShot(0, this, SLOT(doRequestAvatars()));
