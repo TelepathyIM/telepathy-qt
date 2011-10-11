@@ -6,7 +6,8 @@ The "Make your own vacuum tubes" release.
 Enhancements:
  * fd.o #35084: The StreamTubeClient and StreamTubeServer classes have been
    added to allow implementing Telepathy Stream Tube connectivity for
-   applications without having to worry about the channel dispatching details.
+   applications without having to worry about the channel dispatching details
+ * Contact::refreshInfo() requests are now batched together on D-Bus
 
 Fixes:
  * Our TODO process being completely out of date. Trying to use doxygen \todo
