@@ -40,6 +40,8 @@ struct _TpTestsContactsConnection {
     TpPresenceMixin presence_mixin;
     TpContactsMixin contacts_mixin;
 
+    guint refresh_contact_info_called;
+
     TpTestsContactsConnectionPrivate *priv;
 };
 
@@ -93,7 +95,8 @@ void tp_tests_contacts_connection_change_avatar_data (
     TpHandle handle,
     GArray *data,
     const gchar *mime_type,
-    const gchar *token);
+    const gchar *token,
+    gboolean emit_avatar_updated);
 
 void tp_tests_contacts_connection_change_locations (
     TpTestsContactsConnection *self,

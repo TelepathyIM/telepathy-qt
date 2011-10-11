@@ -65,20 +65,25 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     Features supportedFeatures;
 
     // avatar
-    UIntList requestAvatarsQueue;
+    QSet<ContactPtr> requestAvatarsQueue;
     bool requestAvatarsIdle;
+
+    // contact info
+    PendingRefreshContactInfo *refreshInfoOp;
 };
 
 ContactManager::Private::Private(ContactManager *parent, Connection *connection)
     : parent(parent),
       connection(connection),
       roster(new ContactManager::Roster(parent)),
-      requestAvatarsIdle(false)
+      requestAvatarsIdle(false),
+      refreshInfoOp(0)
 {
 }
 
 ContactManager::Private::~Private()
 {
+    delete refreshInfoOp;
     delete roster;
 }
 
@@ -102,6 +107,61 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
     mimeTypeFileName = QString(QLatin1String("%1.mime")).arg(avatarFileName);
 
     return true;
+}
+
+ContactManager::PendingRefreshContactInfo::PendingRefreshContactInfo(const ConnectionPtr &conn)
+    : PendingOperation(conn),
+      mConn(conn)
+{
+}
+
+ContactManager::PendingRefreshContactInfo::~PendingRefreshContactInfo()
+{
+}
+
+void ContactManager::PendingRefreshContactInfo::addContact(Contact *contact)
+{
+    mToRequest.insert(contact->handle()[0]);
+}
+
+void ContactManager::PendingRefreshContactInfo::refreshInfo()
+{
+    Q_ASSERT(!mToRequest.isEmpty());
+
+    if (!mConn->isValid()) {
+        setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection is invalid"));
+        return;
+    }
+
+    if (!mConn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
+        setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("Connection does not support ContactInfo interface"));
+        return;
+    }
+
+    debug() << "Calling ContactInfo.RefreshContactInfo for" << mToRequest.size() << "handles";
+    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
+        mConn->interface<Client::ConnectionInterfaceContactInfoInterface>();
+    Q_ASSERT(contactInfoInterface);
+    PendingVoid *nested = new PendingVoid(
+            contactInfoInterface->RefreshContactInfo(mToRequest.toList()),
+            mConn);
+    connect(nested,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onRefreshInfoFinished(Tp::PendingOperation*)));
+}
+
+void ContactManager::PendingRefreshContactInfo::onRefreshInfoFinished(PendingOperation *op)
+{
+    if (op->isError()) {
+        warning() << "ContactInfo.RefreshContactInfo failed with" <<
+            op->errorName() << "-" << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    } else {
+        debug() << "Got reply to ContactInfo.RefreshContactInfo";
+        setFinished();
+    }
 }
 
 /**
@@ -1046,39 +1106,70 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
     return contact;
 }
 
-void ContactManager::requestContactAvatar(Contact *contact)
+/**
+ * Start a request to retrieve the avatar for the given \a contacts.
+ *
+ * Force the request of the avatar data. This method returns directly, emitting
+ * Contact::avatarTokenChanged() and Contact::avatarDataChanged() signals once the token
+ * and data are fetched from the server.
+ *
+ * This is only useful if the avatar token is unknown; see Contact::isAvatarTokenKnown().
+ * It happens in the case of offline XMPP contacts, because the server does not
+ * send the token for them and an explicit request of the avatar data is needed.
+ *
+ * This method requires Contact::FeatureAvatarData to be ready.
+ *
+ * \sa Contact::avatarData(), Contact::avatarDataChanged(),
+ *     Contact::avatarToken(), Contact::avatarTokenChanged()
+ */
+void ContactManager::requestContactAvatars(const QList<ContactPtr> &contacts)
 {
-    QString avatarFileName;
-    QString mimeTypeFileName;
-
-    bool success = (contact->isAvatarTokenKnown() &&
-        mPriv->buildAvatarFileName(contact->avatarToken(), false,
-            avatarFileName, mimeTypeFileName));
-
-    /* Check if the avatar is already in the cache */
-    if (success && QFile::exists(avatarFileName)) {
-        QFile mimeTypeFile(mimeTypeFileName);
-        mimeTypeFile.open(QIODevice::ReadOnly);
-        QString mimeType = QString(QLatin1String(mimeTypeFile.readAll()));
-        mimeTypeFile.close();
-
-        debug() << "Avatar found in cache for handle" << contact->handle()[0];
-        debug() << "Filename:" << avatarFileName;
-        debug() << "MimeType:" << mimeType;
-
-        contact->receiveAvatarData(AvatarData(avatarFileName, mimeType));
-
+    if (contacts.isEmpty()) {
         return;
     }
 
-    /* Not found in cache, queue this contact. We do this to group contacts
-     * for the AvatarRequest call */
-    debug() << "Need to request avatar for handle" << contact->handle()[0];
     if (!mPriv->requestAvatarsIdle) {
-        QTimer::singleShot(0, this, SLOT(doRequestAvatars()));
         mPriv->requestAvatarsIdle = true;
+        QTimer::singleShot(0, this, SLOT(doRequestAvatars()));
     }
-    mPriv->requestAvatarsQueue.append(contact->handle()[0]);
+
+    mPriv->requestAvatarsQueue.unite(contacts.toSet());
+}
+
+/**
+ * \deprecated
+ *
+ * This was never intended to be public API.
+ * Use Contact::requestAvatarData() or ContactManager::requestContactAvatars() instead.
+ */
+void ContactManager::requestContactAvatar(Contact *contact)
+{
+    requestContactAvatars(QList<ContactPtr>() << ContactPtr(contact));
+}
+
+/**
+ * Refresh information for the given contact.
+ *
+ * Once the information is retrieved infoFieldsChanged() will be emitted.
+ *
+ * This method requires Contact::FeatureInfo to be ready.
+ *
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa infoFieldsChanged()
+ */
+PendingOperation *ContactManager::refreshContactInfo(const QList<ContactPtr> &contacts)
+{
+    if (!mPriv->refreshInfoOp) {
+        mPriv->refreshInfoOp = new PendingRefreshContactInfo(connection());
+        QTimer::singleShot(0, this, SLOT(doRefreshInfo()));
+    }
+
+    foreach (const ContactPtr &contact, contacts) {
+        mPriv->refreshInfoOp->addContact(contact.data());
+    }
+
+    return mPriv->refreshInfoOp;
 }
 
 void ContactManager::onAliasesChanged(const AliasPairList &aliases)
@@ -1096,18 +1187,60 @@ void ContactManager::onAliasesChanged(const AliasPairList &aliases)
 
 void ContactManager::doRequestAvatars()
 {
-    debug() << "Request" << mPriv->requestAvatarsQueue.size() << "avatar(s)";
+    Q_ASSERT(mPriv->requestAvatarsIdle);
+    QSet<ContactPtr> contacts = mPriv->requestAvatarsQueue;
+    Q_ASSERT(contacts.size() > 0);
+
+    mPriv->requestAvatarsQueue.clear();
+    mPriv->requestAvatarsIdle = false;
+
+    int found = 0;
+    UIntList notFound;
+    foreach (const ContactPtr &contact, contacts) {
+        if (!contact) {
+            continue;
+        }
+
+        QString avatarFileName;
+        QString mimeTypeFileName;
+        bool success = (contact->isAvatarTokenKnown() &&
+            mPriv->buildAvatarFileName(contact->avatarToken(), false,
+                avatarFileName, mimeTypeFileName));
+
+        /* Check if the avatar is already in the cache */
+        if (success && QFile::exists(avatarFileName)) {
+            QFile mimeTypeFile(mimeTypeFileName);
+            mimeTypeFile.open(QIODevice::ReadOnly);
+            QString mimeType = QString(QLatin1String(mimeTypeFile.readAll()));
+            mimeTypeFile.close();
+
+            found++;
+
+            contact->receiveAvatarData(AvatarData(avatarFileName, mimeType));
+
+            continue;
+        }
+
+        notFound << contact->handle()[0];
+    }
+
+    if (found > 0) {
+        debug() << "Avatar(s) found in cache for" << found << "contact(s)";
+    }
+
+    if (found == contacts.size()) {
+        return;
+    }
+
+    debug() << "Requesting avatar(s) for" << contacts.size() - found << "contact(s)";
 
     Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
         connection()->interface<Client::ConnectionInterfaceAvatarsInterface>();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-        avatarsInterface->RequestAvatars(mPriv->requestAvatarsQueue),
+        avatarsInterface->RequestAvatars(notFound),
         this);
     connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)), watcher,
         SLOT(deleteLater()));
-
-    mPriv->requestAvatarsQueue = UIntList();
-    mPriv->requestAvatarsIdle = false;
 }
 
 void ContactManager::onAvatarUpdated(uint handle, const QString &token)
@@ -1202,6 +1335,14 @@ void ContactManager::onContactInfoChanged(uint handle, const Tp::ContactInfoFiel
     if (contact) {
         contact->receiveInfo(info);
     }
+}
+
+void ContactManager::doRefreshInfo()
+{
+    PendingRefreshContactInfo *op = mPriv->refreshInfoOp;
+    Q_ASSERT(op);
+    mPriv->refreshInfoOp = 0;
+    op->refreshInfo();
 }
 
 ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
