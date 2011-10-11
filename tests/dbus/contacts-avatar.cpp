@@ -299,6 +299,19 @@ void TestContactsAvatar::testRequestAvatars()
         QString contactAvatarToken = QLatin1String(avatarToken) + QString::number(i);
         QCOMPARE(contact->avatarToken(), contactAvatarToken);
     }
+
+    mAvatarDataChangedCalled = 0;
+
+    // empty D-DBus queue
+    processDBusQueue(mConn->client().data());
+
+    // it should silently work, no crash
+    mConn->client()->contactManager()->requestContactAvatars(QList<ContactPtr>());
+
+    // let the mainloop run
+    processDBusQueue(mConn->client().data());
+
+    QCOMPARE(mAvatarDataChangedCalled, 0);
 }
 
 void TestContactsAvatar::cleanup()
