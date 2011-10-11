@@ -56,7 +56,7 @@ class TestContactsAvatar : public Test
 public:
     TestContactsAvatar(QObject *parent = 0)
         : Test(parent), mConn(0),
-          mAvatarRetrievedCalled(false), mAvatarDataChangedCalled(0)
+          mGotAvatarRetrieved(false), mAvatarDatasChanged(0)
     { }
 
 protected Q_SLOTS:
@@ -77,8 +77,8 @@ private Q_SLOTS:
 private:
     TestConnHelper *mConn;
     QList<ContactPtr> mContacts;
-    bool mAvatarRetrievedCalled;
-    int mAvatarDataChangedCalled;
+    bool mGotAvatarRetrieved;
+    int mAvatarDatasChanged;
 };
 
 void TestContactsAvatar::onAvatarRetrieved(uint handle, const QString &token,
@@ -89,13 +89,13 @@ void TestContactsAvatar::onAvatarRetrieved(uint handle, const QString &token,
     Q_UNUSED(data);
     Q_UNUSED(mimeType);
 
-    mAvatarRetrievedCalled = true;
+    mGotAvatarRetrieved = true;
 }
 
 void TestContactsAvatar::onAvatarDataChanged(const AvatarData &avatar)
 {
     Q_UNUSED(avatar);
-    mAvatarDataChangedCalled++;
+    mAvatarDatasChanged++;
     mLoop->exit(0);
 }
 
@@ -171,8 +171,8 @@ void TestContactsAvatar::init()
 {
     initImpl();
 
-    mAvatarRetrievedCalled = false;
-    mAvatarDataChangedCalled = 0;
+    mGotAvatarRetrieved = false;
+    mAvatarDatasChanged = 0;
 }
 
 void TestContactsAvatar::testAvatar()
@@ -202,15 +202,15 @@ void TestContactsAvatar::testAvatar()
 
     /* First time we create a contact, avatar should not be in cache, so
      * AvatarRetrieved should be called */
-    mAvatarRetrievedCalled = false;
+    mGotAvatarRetrieved = false;
     createContactWithFakeAvatar("foo");
-    QVERIFY(mAvatarRetrievedCalled);
+    QVERIFY(mGotAvatarRetrieved);
 
     /* Second time we create a contact, avatar should be in cache now, so
      * AvatarRetrieved should NOT be called */
-    mAvatarRetrievedCalled = false;
+    mGotAvatarRetrieved = false;
     createContactWithFakeAvatar("bar");
-    QVERIFY(!mAvatarRetrievedCalled);
+    QVERIFY(!mGotAvatarRetrieved);
 
     QVERIFY(SmartDir(tmpDir).removeDirectory());
 }
@@ -241,7 +241,7 @@ void TestContactsAvatar::testRequestAvatars()
 
     // now let's update the avatar for half of them so we can later check that requestContactAvatars
     // actually worked for all contacts.
-    mAvatarDataChangedCalled = 0;
+    mAvatarDatasChanged = 0;
     for (int i = 0; i < contacts.size(); ++i) {
         ContactPtr contact = contacts[i];
         QVERIFY(contact->avatarData().fileName.isEmpty());
@@ -260,12 +260,12 @@ void TestContactsAvatar::testRequestAvatars()
 
     processDBusQueue(mConn->client().data());
 
-    while (mAvatarDataChangedCalled < contacts.size() / 2) {
+    while (mAvatarDatasChanged < contacts.size() / 2) {
         mLoop->processEvents();
     }
 
     // check the only half got the updates
-    QCOMPARE(mAvatarDataChangedCalled, contacts.size() / 2);
+    QCOMPARE(mAvatarDatasChanged, contacts.size() / 2);
 
     for (int i = 0; i < contacts.size(); ++i) {
         ContactPtr contact = contacts[i];
@@ -280,17 +280,17 @@ void TestContactsAvatar::testRequestAvatars()
     }
 
     // let's call ContactManager::requestContactAvatars now, it should update all contacts
-    mAvatarDataChangedCalled = 0;
+    mAvatarDatasChanged = 0;
     mConn->client()->contactManager()->requestContactAvatars(contacts);
     processDBusQueue(mConn->client().data());
 
     // the other half will now receive the avatar
-    while (mAvatarDataChangedCalled < contacts.size() / 2) {
+    while (mAvatarDatasChanged < contacts.size() / 2) {
         mLoop->processEvents();
     }
 
     // check the only half got the updates
-    QCOMPARE(mAvatarDataChangedCalled, contacts.size() / 2);
+    QCOMPARE(mAvatarDatasChanged, contacts.size() / 2);
 
     for (int i = 0; i < contacts.size(); ++i) {
         ContactPtr contact = contacts[i];
@@ -300,7 +300,7 @@ void TestContactsAvatar::testRequestAvatars()
         QCOMPARE(contact->avatarToken(), contactAvatarToken);
     }
 
-    mAvatarDataChangedCalled = 0;
+    mAvatarDatasChanged = 0;
 
     // empty D-DBus queue
     processDBusQueue(mConn->client().data());
@@ -311,7 +311,7 @@ void TestContactsAvatar::testRequestAvatars()
     // let the mainloop run
     processDBusQueue(mConn->client().data());
 
-    QCOMPARE(mAvatarDataChangedCalled, 0);
+    QCOMPARE(mAvatarDatasChanged, 0);
 }
 
 void TestContactsAvatar::cleanup()
