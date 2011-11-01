@@ -41,10 +41,13 @@ public:
 
     // Public object
     IncomingDBusTubeChannel *parent;
+    static bool initRandom;
 };
 
+bool IncomingDBusTubeChannel::Private::initRandom = true;
+
 IncomingDBusTubeChannel::Private::Private(IncomingDBusTubeChannel *parent)
-        : parent(parent)
+    : parent(parent)
 {
 }
 
@@ -223,12 +226,28 @@ PendingDBusTube *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
                 IncomingDBusTubeChannelPtr(this));
     }
 
+    QDBusVariant accessControlParam;
+    uchar credentialByte = 0;
+    if (accessControl == SocketAccessControlLocalhost) {
+        accessControlParam.setVariant(qVariantFromValue(static_cast<uint>(0)));
+    } else if (accessControl == SocketAccessControlCredentials) {
+        if (mPriv->initRandom) {
+            qsrand(QTime::currentTime().msec());
+            mPriv->initRandom = false;
+        }
+        credentialByte = static_cast<uchar>(qrand());
+        accessControlParam.setVariant(qVariantFromValue(credentialByte));
+    } else {
+        Q_ASSERT(false);
+    }
+
     PendingString *ps = new PendingString(
         interface<Client::ChannelTypeDBusTubeInterface>()->Accept(
             accessControl),
         IncomingDBusTubeChannelPtr(this));
 
-    PendingDBusTube *op = new PendingDBusTube(ps, IncomingDBusTubeChannelPtr(this));
+    PendingDBusTube *op = new PendingDBusTube(ps, requireCredentials,
+        credentialByte, IncomingDBusTubeChannelPtr(this));
     return op;
 }
 

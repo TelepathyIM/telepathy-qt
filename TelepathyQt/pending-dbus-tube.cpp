@@ -41,10 +41,15 @@ struct TP_QT_NO_EXPORT PendingDBusTube::Private
     PendingDBusTube *parent;
 
     DBusTubeChannelPtr tube;
+
+    bool requiresCredentials;
+    uchar credentialByte;
 };
 
 PendingDBusTube::Private::Private(PendingDBusTube *parent)
-    : parent(parent)
+    : parent(parent),
+      requiresCredentials(false),
+      credentialByte(0)
 {
 }
 
@@ -64,11 +69,16 @@ PendingDBusTube::Private::~Private()
 
 PendingDBusTube::PendingDBusTube(
         PendingString *string,
+        bool requiresCredentials,
+        uchar credentialByte,
         const DBusTubeChannelPtr &object)
     : PendingOperation(object)
     , mPriv(new Private(this))
 {
     mPriv->tube = object;
+
+    mPriv->requiresCredentials = requiresCredentials;
+    mPriv->credentialByte = credentialByte;
 
     connect(mPriv->tube.data(), SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             this, SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
@@ -112,6 +122,33 @@ PendingDBusTube::~PendingDBusTube()
 QString PendingDBusTube::address() const
 {
     return mPriv->tube->address();
+}
+
+/**
+ * Return whether sending a credential byte once connecting to the socket is required.
+ *
+ * Note that if this method returns \c true, one should send a SCM_CREDS or SCM_CREDENTIALS
+ * and the credentialByte() once connected. If SCM_CREDS or SCM_CREDENTIALS cannot be sent,
+ * the credentialByte() should still be sent.
+ *
+ * \return \c true if sending credentials is required, \c false otherwise.
+ * \sa credentialByte()
+ */
+bool PendingDBusTube::requiresCredentials() const
+{
+    return mPriv->requiresCredentials;
+}
+
+/**
+ * Return the credential byte to send once connecting to the socket if requiresCredentials() is \c
+ * true.
+ *
+ * \return The credential byte.
+ * \sa requiresCredentials()
+ */
+uchar PendingDBusTube::credentialByte() const
+{
+    return mPriv->credentialByte;
 }
 
 void PendingDBusTube::onConnectionFinished(PendingOperation *op)

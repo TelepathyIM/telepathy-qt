@@ -199,7 +199,8 @@ PendingDBusTube *OutgoingDBusTubeChannel::offerTube(const QVariantMap &parameter
             accessControl),
         OutgoingDBusTubeChannelPtr(this));
 
-    PendingDBusTube *op = new PendingDBusTube(ps, OutgoingDBusTubeChannelPtr(this));
+    PendingDBusTube *op = new PendingDBusTube(ps, requireCredentials,
+                                              0, OutgoingDBusTubeChannelPtr(this));
     return op;
 }
 
