@@ -235,6 +235,10 @@ public:
             const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec incomingDBusTube(const QString &serviceName = QString(),
             const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec outgoingRoomDBusTube(const QString &serviceName = QString(),
+            const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec incomingRoomDBusTube(const QString &serviceName = QString(),
+            const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec contactSearch(const QVariantMap &additionalProperties = QVariantMap());
 
 private:
