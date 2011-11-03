@@ -108,7 +108,7 @@ IncomingDBusTubeChannel::Private::~Private()
  *
  * Before being ready to accept the tube, we must be sure the required features on our object
  * are ready. In this case, we need to enable TubeChannel::FeatureTube and
- * DBusTubeChannel::FeatureDBusTube.
+ * DBusTubeChannel::FeatureCore.
  *
  * DBusTubeChannel features can be enabled by constructing a ChannelFactory and enabling the desired features,
  * and passing it to ChannelRequest or ClientRegistrar when creating them as appropriate. However,
@@ -189,7 +189,7 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  * which can be used to communicate with the other end. You can then
  * retrieve the address either from \c PendingDBusTubeConnection or from %address().
  *
- * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
+ * This method requires DBusTubeChannel::FeatureCore to be enabled.
  *
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
@@ -203,8 +203,8 @@ PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool requireCrede
                                         SocketAccessControlCredentials :
                                         SocketAccessControlLocalhost;
 
-    if (!isReady(DBusTubeChannel::FeatureDBusTube)) {
-        warning() << "DBusTubeChannel::FeatureDBusTube must be ready before "
+    if (!isReady(DBusTubeChannel::FeatureCore)) {
+        warning() << "DBusTubeChannel::FeatureCore must be ready before "
             "calling offerTube";
         return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"), IncomingDBusTubeChannelPtr(this));

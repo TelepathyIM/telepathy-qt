@@ -38,7 +38,7 @@ class TP_QT_EXPORT DBusTubeChannel : public TubeChannel
     Q_DISABLE_COPY(DBusTubeChannel)
 
 public:
-    static const Feature FeatureDBusTube;
+    static const Feature FeatureCore;
     static const Feature FeatureBusNameMonitoring;
 
     static DBusTubeChannelPtr create(const ConnectionPtr &connection,

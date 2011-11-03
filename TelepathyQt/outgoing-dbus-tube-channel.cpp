@@ -84,7 +84,7 @@ OutgoingDBusTubeChannel::Private::~Private()
  *
  * Before being ready to offer the tube, we must be sure the required features on our object
  * are ready. In this case, we need to enable TubeChannel::FeatureTube
- * and DBusTubeChannel::FeatureDBusTube.
+ * and DBusTubeChannel::FeatureCore.
  *
  * DBusTubeChannel features can be enabled by constructing a ChannelFactory and enabling the desired features,
  * and passing it to ChannelRequest or ClientRegistrar when creating them as appropriate. However,
@@ -170,8 +170,8 @@ PendingDBusTubeConnection *OutgoingDBusTubeChannel::offerTube(const QVariantMap 
                                         SocketAccessControlCredentials :
                                         SocketAccessControlLocalhost;
 
-    if (!isReady(DBusTubeChannel::FeatureDBusTube)) {
-        warning() << "DBusTubeChannel::FeatureDBusTube must be ready before "
+    if (!isReady(DBusTubeChannel::FeatureCore)) {
+        warning() << "DBusTubeChannel::FeatureCore must be ready before "
             "calling offerTube";
         return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"), OutgoingDBusTubeChannelPtr(this));

@@ -76,11 +76,11 @@ DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
         QStringList(),                                                          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectDBusTube,
         this);
-    introspectables[DBusTubeChannel::FeatureDBusTube] = introspectableDBusTube;
+    introspectables[DBusTubeChannel::FeatureCore] = introspectableDBusTube;
 
     ReadinessHelper::Introspectable introspectableBusNamesMonitoring(
         QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        Features() << DBusTubeChannel::FeatureDBusTube,                         // dependsOnFeatures (core)
+        Features() << DBusTubeChannel::FeatureCore,                         // dependsOnFeatures (core)
         QStringList(),                                                          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectBusNamesMonitoring,
         this);
@@ -143,7 +143,7 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
     if (parent->immutableProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName")) &&
         parent->immutableProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".SupportedAccessControls"))) {
         self->extractProperties(parent->immutableProperties());
-        self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
+        self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureCore, true);
     } else {
         Client::ChannelTypeDBusTubeInterface *dbusTubeInterface =
                 parent->interface<Client::ChannelTypeDBusTubeInterface>();
@@ -184,7 +184,7 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
  * DBusTubeChannel methods.
  * See specific methods documentation for more details.
  */
-const Feature DBusTubeChannel::FeatureDBusTube = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 0);
+const Feature DBusTubeChannel::FeatureCore = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 0);
 /**
  * Feature used in order to monitor connections to this tube.
  * Please note that this feature makes sense only in Group tubes.
@@ -241,15 +241,15 @@ DBusTubeChannel::~DBusTubeChannel()
 /**
  * Returns the service name which will be used over the tube.
  *
- * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
+ * This method requires DBusTubeChannel::FeatureCore to be enabled.
  *
  * \return the service name that will be used over the tube
  */
 QString DBusTubeChannel::serviceName() const
 {
-    if (!isReady(FeatureDBusTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "DBusTubeChannel::service() used with "
-            "FeatureDBusTube not ready";
+            "FeatureCore not ready";
         return QString();
     }
 
@@ -269,7 +269,7 @@ QString DBusTubeChannel::serviceName() const
  * The listening process will disconnect the connection unless it can determine
  * by OS-specific means that the connecting process has the same user ID as the listening process.
  *
- * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
+ * This method requires DBusTubeChannel::FeatureCore to be enabled.
  *
  * \note It is strongly advised to call this method before attempting to call
  *       #IncomingDBusTubeChannel::acceptTube or
@@ -285,9 +285,9 @@ QString DBusTubeChannel::serviceName() const
  */
 bool DBusTubeChannel::supportsCredentials() const
 {
-    if (!isReady(FeatureDBusTube)) {
+    if (!isReady(FeatureCore)) {
         warning() << "DBusTubeChannel::supportsCredentials() used with "
-            "FeatureDBusTube not ready";
+            "FeatureCore not ready";
         return false;
     }
 
@@ -351,11 +351,11 @@ void DBusTubeChannel::onRequestAllPropertiesFinished(PendingOperation *op)
         }
 
         mPriv->extractProperties(qualifiedMap);
-        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, true);
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureCore, true);
     } else {
         warning().nospace() << "RequestAllProperties failed "
             "with " << op->errorName() << ": " << op->errorMessage();
-        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureDBusTube, false);
+        mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureCore, false);
     }
 }
 
