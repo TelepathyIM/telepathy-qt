@@ -26,7 +26,7 @@
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
-#include <TelepathyQt/PendingDBusTube>
+#include <TelepathyQt/PendingDBusTubeConnection>
 #include <TelepathyQt/PendingString>
 #include <TelepathyQt/Types>
 
@@ -151,7 +151,7 @@ OutgoingDBusTubeChannel::~OutgoingDBusTubeChannel()
  *
  * This method sets up a private DBus connection to the channel target(s), and offers it through the tube.
  *
- * The %PendingDBusTube returned by this method will be completed as soon as the tube is
+ * The %PendingDBusTubeConnection returned by this method will be completed as soon as the tube is
  * opened and ready to be used.
  *
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
@@ -160,10 +160,10 @@ OutgoingDBusTubeChannel::~OutgoingDBusTubeChannel()
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *
- * \returns A %PendingDBusTube which will finish as soon as the tube is ready to be used
+ * \returns A %PendingDBusTubeConnection which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingDBusTube *OutgoingDBusTubeChannel::offerTube(const QVariantMap &parameters,
+PendingDBusTubeConnection *OutgoingDBusTubeChannel::offerTube(const QVariantMap &parameters,
         bool requireCredentials)
 {
     SocketAccessControl accessControl = requireCredentials ?
@@ -173,14 +173,14 @@ PendingDBusTube *OutgoingDBusTubeChannel::offerTube(const QVariantMap &parameter
     if (!isReady(DBusTubeChannel::FeatureDBusTube)) {
         warning() << "DBusTubeChannel::FeatureDBusTube must be ready before "
             "calling offerTube";
-        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
+        return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"), OutgoingDBusTubeChannelPtr(this));
     }
 
     // The tube must be not offered
     if (state() != TubeChannelStateNotOffered) {
         warning() << "You can not expose more than a bus for each DBus Tube";
-        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
+        return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel busy"), OutgoingDBusTubeChannelPtr(this));
     }
 
@@ -188,7 +188,7 @@ PendingDBusTube *OutgoingDBusTubeChannel::offerTube(const QVariantMap &parameter
     if (requireCredentials && !supportsCredentials()) {
         warning() << "You requested an access control "
             "not supported by this channel";
-        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
+        return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("The requested access control is not supported"),
                 OutgoingDBusTubeChannelPtr(this));
     }
@@ -199,7 +199,7 @@ PendingDBusTube *OutgoingDBusTubeChannel::offerTube(const QVariantMap &parameter
             accessControl),
         OutgoingDBusTubeChannelPtr(this));
 
-    PendingDBusTube *op = new PendingDBusTube(ps, requireCredentials,
+    PendingDBusTubeConnection *op = new PendingDBusTubeConnection(ps, requireCredentials,
                                               0, OutgoingDBusTubeChannelPtr(this));
     return op;
 }

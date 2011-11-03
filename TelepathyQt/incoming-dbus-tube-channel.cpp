@@ -26,7 +26,7 @@
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
-#include <TelepathyQt/PendingDBusTube>
+#include <TelepathyQt/PendingDBusTubeConnection>
 #include <TelepathyQt/PendingString>
 #include <TelepathyQt/Types>
 
@@ -119,12 +119,12 @@ IncomingDBusTubeChannel::Private::~Private()
  * Once your object is ready, you can use #acceptTube to accept the tube and create a brand
  * new private DBus connection.
  *
- * The returned PendingDBusTube serves both for monitoring the state of the tube and for
+ * The returned PendingDBusTubeConnection serves both for monitoring the state of the tube and for
  * obtaining, upon success, the address of the new connection.
  * When the operation finishes, you can do:
  *
  * \code
- * void MyTubeReceiver::onDBusTubeAccepted(PendingDBusTube *op)
+ * void MyTubeReceiver::onDBusTubeAccepted(PendingDBusTubeConnection *op)
  * {
  *     if (op->isError()) {
  *        return;
@@ -187,17 +187,17 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  *
  * Once called, this method will try opening the tube, and will create a new private DBus connection
  * which can be used to communicate with the other end. You can then
- * retrieve the address either from \c PendingDBusTube or from %address().
+ * retrieve the address either from \c PendingDBusTubeConnection or from %address().
  *
  * This method requires DBusTubeChannel::FeatureDBusTube to be enabled.
  *
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *
- * \return A %PendingDBusTube which will finish as soon as the tube is ready to be used
+ * \return A %PendingDBusTubeConnection which will finish as soon as the tube is ready to be used
  *         (hence in the Open state)
  */
-PendingDBusTube *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
+PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
 {
     SocketAccessControl accessControl = requireCredentials ?
                                         SocketAccessControlCredentials :
@@ -206,14 +206,14 @@ PendingDBusTube *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
     if (!isReady(DBusTubeChannel::FeatureDBusTube)) {
         warning() << "DBusTubeChannel::FeatureDBusTube must be ready before "
             "calling offerTube";
-        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
+        return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"), IncomingDBusTubeChannelPtr(this));
     }
 
     // The tube must be in local pending state
     if (state() != TubeChannelStateLocalPending) {
         warning() << "You can accept tubes only when they are in LocalPending state";
-        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
+        return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel busy"), IncomingDBusTubeChannelPtr(this));
     }
 
@@ -221,7 +221,7 @@ PendingDBusTube *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
     if (requireCredentials && !supportsCredentials()) {
         warning() << "You requested an access control "
             "not supported by this channel";
-        return new PendingDBusTube(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
+        return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("The requested access control is not supported"),
                 IncomingDBusTubeChannelPtr(this));
     }
@@ -246,7 +246,7 @@ PendingDBusTube *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
             accessControl),
         IncomingDBusTubeChannelPtr(this));
 
-    PendingDBusTube *op = new PendingDBusTube(ps, requireCredentials,
+    PendingDBusTubeConnection *op = new PendingDBusTubeConnection(ps, requireCredentials,
         credentialByte, IncomingDBusTubeChannelPtr(this));
     return op;
 }

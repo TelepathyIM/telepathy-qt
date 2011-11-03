@@ -29,7 +29,7 @@
 
 namespace Tp {
 
-class PendingDBusTube;
+class PendingDBusTubeConnection;
 
 class TP_QT_EXPORT IncomingDBusTubeChannel : public DBusTubeChannel
 {
@@ -42,7 +42,7 @@ public:
 
     virtual ~IncomingDBusTubeChannel();
 
-    PendingDBusTube *acceptTube(bool requireCredentials = false);
+    PendingDBusTubeConnection *acceptTube(bool requireCredentials = false);
 
 protected:
     IncomingDBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
