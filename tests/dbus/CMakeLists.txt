@@ -74,6 +74,7 @@ if(ENABLE_TP_GLIB_TESTS)
         tpqt_add_dbus_unit_test(StreamTubeHandlers stream-tube-handlers tp-glib-tests tp-qt-tests-glib-helpers)
         if(ENABLE_TP_GLIB_GIO_TESTS)
             tpqt_add_dbus_unit_test(StreamTubeChannel stream-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
+            tpqt_add_dbus_unit_test(DBusTubeChannel dbus-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
         endif(ENABLE_TP_GLIB_GIO_TESTS)
     endif (ENABLE_TESTS_WITH_RACES_IN_QT_4_6)
 
