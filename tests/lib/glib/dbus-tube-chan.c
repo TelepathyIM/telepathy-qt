@@ -38,6 +38,8 @@ struct _TpTestsDBusTubeChannelPrivate {
     GArray *supported_access_controls;
 
     GHashTable *parameters;
+
+    gboolean close_on_accept;
 };
 
 static void
@@ -295,7 +297,21 @@ tp_tests_dbus_tube_channel_class_init (TpTestsDBusTubeChannelClass *klass)
       sizeof (TpTestsDBusTubeChannelPrivate));
 }
 
-#if 0
+static gboolean
+check_access_control (TpTestsDBusTubeChannel *self,
+    TpSocketAccessControl access_control)
+{
+  guint i;
+
+  for (i = 0; i < self->priv->supported_access_controls->len; i++)
+    {
+      if (g_array_index (self->priv->supported_access_controls, TpSocketAccessControl, i) == access_control)
+        return TRUE;
+    }
+
+  return FALSE;
+}
+
 static void
 change_state (TpTestsDBusTubeChannel *self,
   TpTubeChannelState state)
@@ -304,19 +320,111 @@ change_state (TpTestsDBusTubeChannel *self,
 
   tp_svc_channel_interface_tube_emit_tube_channel_state_changed (self, state);
 }
-#endif
+
+static void
+dbus_tube_offer (TpSvcChannelTypeDBusTube *iface,
+    GHashTable *parameters,
+    guint access_control,
+    DBusGMethodInvocation *context)
+{
+  TpTestsDBusTubeChannel *self = (TpTestsDBusTubeChannel *) iface;
+  GError *error = NULL;
+
+  if (self->priv->state != TP_TUBE_CHANNEL_STATE_NOT_OFFERED)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "Tube is not in the not offered state");
+      goto fail;
+    }
+
+  if (!check_access_control (self, access_control))
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "Address type not supported with this access control");
+      goto fail;
+    }
+
+//   self->priv->address_type = address_type;
+//   self->priv->address = tp_g_value_slice_dup (address);
+//   self->priv->access_control = access_control;
+
+  g_object_set (self, "parameters", parameters, NULL);
+
+  change_state (self, TP_TUBE_CHANNEL_STATE_REMOTE_PENDING);
+
+  tp_svc_channel_type_stream_tube_return_from_offer (context);
+  return;
+
+fail:
+  dbus_g_method_return_error (context, error);
+  g_error_free (error);
+}
+
+static void
+dbus_tube_accept (TpSvcChannelTypeDBusTube *iface,
+    guint access_control,
+    DBusGMethodInvocation *context)
+{
+  TpTestsDBusTubeChannel *self = (TpTestsDBusTubeChannel *) iface;
+  GError *error = NULL;
+  gchar *address = NULL;
+
+  if (self->priv->state != TP_TUBE_CHANNEL_STATE_LOCAL_PENDING)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "Tube is not in the local pending state");
+      goto fail;
+    }
+
+  if (!check_access_control (self, access_control))
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "Address type not supported with this access control");
+      goto fail;
+    }
+
+  if (self->priv->close_on_accept)
+    {
+      tp_base_channel_close (TP_BASE_CHANNEL (self));
+      return;
+    }
+
+//   address = create_local_socket (self, address_type, access_control, &error);
+//
+//   self->priv->access_control = access_control;
+//   self->priv->access_control_param = tp_g_value_slice_dup (
+//       access_control_param);
+
+  change_state (self, TP_TUBE_CHANNEL_STATE_OPEN);
+
+  tp_svc_channel_type_dbus_tube_return_from_accept (context, address);
+
+  g_free (address);
+  return;
+
+fail:
+  dbus_g_method_return_error (context, error);
+  g_error_free (error);
+}
 
 static void
 dbus_tube_iface_init (gpointer iface,
     gpointer data)
 {
-#if 0
-  /* TODO: implement methods */
   TpSvcChannelTypeDBusTubeClass *klass = iface;
 
 #define IMPLEMENT(x) tp_svc_channel_type_dbus_tube_implement_##x (klass, dbus_tube_##x)
+  IMPLEMENT(offer);
+  IMPLEMENT(accept);
 #undef IMPLEMENT
-#endif
+}
+
+void
+tp_tests_dbus_tube_channel_set_close_on_accept (
+    TpTestsDBusTubeChannel *self,
+    gboolean close_on_accept)
+{
+    self->priv->close_on_accept = close_on_accept;
 }
 
 /* Contact DBus Tube */

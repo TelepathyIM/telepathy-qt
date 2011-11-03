@@ -61,6 +61,10 @@ typedef struct _TpTestsContactDBusTubeChannelClass TpTestsContactDBusTubeChannel
 
 GType tp_tests_contact_dbus_tube_channel_get_type (void);
 
+void tp_tests_dbus_tube_channel_set_close_on_accept (
+    TpTestsDBusTubeChannel *self,
+    gboolean close_on_accept);
+
 #define TP_TESTS_TYPE_CONTACT_DBUS_TUBE_CHANNEL \
   (tp_tests_contact_dbus_tube_channel_get_type ())
 #define TP_TESTS_CONTACT_DBUS_TUBE_CHANNEL(obj) \
