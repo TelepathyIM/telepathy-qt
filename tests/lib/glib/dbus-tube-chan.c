@@ -34,6 +34,10 @@ struct _TpTestsDBusTubeChannelPrivate {
 
     /* TpHandle -> gchar * */
     GHashTable *dbus_names;
+
+    GArray *supported_access_controls;
+
+    GHashTable *parameters;
 };
 
 static void
@@ -55,29 +59,41 @@ tp_tests_dbus_tube_channel_get_property (GObject *object,
         break;
 
       case PROP_SUPPORTED_ACCESS_CONTROLS:
-        {
-          GArray *array;
-          TpSocketAccessControl a;
-
-          array = g_array_sized_new (FALSE, FALSE, sizeof (guint), 1);
-
-          a = TP_SOCKET_ACCESS_CONTROL_LOCALHOST;
-          g_array_append_val (array, a);
-
-          g_value_set_boxed (value, array);
-
-          g_array_unref (array);
-        }
+        g_value_set_boxed (value, self->priv->supported_access_controls);
         break;
 
       case PROP_PARAMETERS:
-        g_value_take_boxed (value, tp_asv_new (
-              "badger", G_TYPE_UINT, 42,
-              NULL));
+        g_value_set_boxed (value, self->priv->parameters);
         break;
 
       case PROP_STATE:
         g_value_set_uint (value, self->priv->state);
+        break;
+
+      default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+        break;
+    }
+}
+
+static void
+tp_tests_dbus_tube_channel_set_property (GObject *object,
+    guint property_id,
+    const GValue *value,
+    GParamSpec *pspec)
+{
+  TpTestsDBusTubeChannel *self = (TpTestsDBusTubeChannel *) object;
+
+  switch (property_id)
+    {
+      case PROP_SUPPORTED_ACCESS_CONTROLS:
+        self->priv->supported_access_controls = g_value_dup_boxed (value);
+        break;
+
+      case PROP_PARAMETERS:
+        if (self->priv->parameters != NULL)
+          g_hash_table_destroy (self->priv->parameters);
+        self->priv->parameters = g_value_dup_boxed (value);
         break;
 
       default:
@@ -125,9 +141,29 @@ constructor (GType type,
   TpTestsDBusTubeChannel *self = TP_TESTS_DBUS_TUBE_CHANNEL (object);
 
   if (tp_base_channel_is_requested (TP_BASE_CHANNEL (self)))
-    self->priv->state = TP_TUBE_CHANNEL_STATE_NOT_OFFERED;
+    {
+      self->priv->state = TP_TUBE_CHANNEL_STATE_NOT_OFFERED;
+      self->priv->parameters = tp_asv_new (NULL, NULL);
+    }
   else
-    self->priv->state = TP_TUBE_CHANNEL_STATE_LOCAL_PENDING;
+    {
+      self->priv->state = TP_TUBE_CHANNEL_STATE_LOCAL_PENDING;
+      self->priv->parameters = tp_asv_new ("badger", G_TYPE_UINT, 42,
+            NULL);
+    }
+
+  if (self->priv->supported_access_controls == NULL)
+    {
+      GArray *acontrols;
+      TpSocketAccessControl a;
+
+      acontrols = g_array_sized_new (FALSE, FALSE, sizeof (guint), 1);
+
+      a = TP_SOCKET_ACCESS_CONTROL_LOCALHOST;
+      acontrols = g_array_append_val (acontrols, a);
+
+      self->priv->supported_access_controls = acontrols;
+    }
 
   tp_base_channel_register (TP_BASE_CHANNEL (self));
 
@@ -196,6 +232,7 @@ tp_tests_dbus_tube_channel_class_init (TpTestsDBusTubeChannelClass *klass)
 
   object_class->constructor = constructor;
   object_class->get_property = tp_tests_dbus_tube_channel_get_property;
+  object_class->set_property = tp_tests_dbus_tube_channel_set_property;
   object_class->dispose = dispose;
 
   base_class->channel_type = TP_IFACE_CHANNEL_TYPE_DBUS_TUBE;
@@ -224,7 +261,7 @@ tp_tests_dbus_tube_channel_class_init (TpTestsDBusTubeChannelClass *klass)
       "Supported access-controls",
       "GArray containing supported access controls.",
       DBUS_TYPE_G_UINT_ARRAY,
-      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class,
       PROP_SUPPORTED_ACCESS_CONTROLS, param_spec);
 
