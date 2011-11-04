@@ -312,7 +312,7 @@ tp_tests_dbus_tube_channel_class_init (TpTestsDBusTubeChannelClass *klass)
       "parameters", "Parameters",
       "parameters of the tube",
       TP_HASH_TYPE_STRING_VARIANT_MAP,
-      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_PARAMETERS,
       param_spec);
 
@@ -606,15 +606,14 @@ dbus_tube_offer (TpSvcChannelTypeDBusTube *iface,
 
   self->priv->access_control = access_control;
 
-//   self->priv->address_type = address_type;
-//   self->priv->address = tp_g_value_slice_dup (address);
-//   self->priv->access_control = access_control;
+  if (!create_dbus_server (self, &error))
+    goto fail;
 
   g_object_set (self, "parameters", parameters, NULL);
 
   change_state (self, TP_TUBE_CHANNEL_STATE_REMOTE_PENDING);
 
-  tp_svc_channel_type_stream_tube_return_from_offer (context);
+  tp_svc_channel_type_dbus_tube_return_from_offer (context, self->priv->dbus_srv_addr);
   return;
 
 fail:
@@ -673,6 +672,54 @@ dbus_tube_iface_init (gpointer iface,
   IMPLEMENT(offer);
   IMPLEMENT(accept);
 #undef IMPLEMENT
+}
+
+/* Called to emulate a peer connecting to an offered tube */
+void
+tp_tests_dbus_tube_channel_peer_connected_no_stream (TpTestsDBusTubeChannel *self,
+    gchar *bus_name,
+    TpHandle handle)
+{
+  GHashTable *added;
+  GArray *removed;
+
+  if (self->priv->state == TP_TUBE_CHANNEL_STATE_REMOTE_PENDING)
+    change_state (self, TP_TUBE_CHANNEL_STATE_OPEN);
+
+  g_assert (self->priv->state == TP_TUBE_CHANNEL_STATE_OPEN);
+
+  added = g_hash_table_new (g_direct_hash, g_direct_equal);
+  removed = g_array_new (FALSE, FALSE, sizeof (TpHandle));
+
+  g_hash_table_insert (added, GUINT_TO_POINTER (handle), bus_name);
+
+  tp_svc_channel_type_dbus_tube_emit_dbus_names_changed (self, added,
+      removed);
+
+  g_hash_table_destroy (added);
+  g_array_free (removed, TRUE);
+}
+
+/* Called to emulate a peer connecting to an offered tube */
+void
+tp_tests_dbus_tube_channel_peer_disconnected (TpTestsDBusTubeChannel *self,
+    TpHandle handle)
+{
+  GHashTable *added;
+  GArray *removed;
+
+  g_assert (self->priv->state == TP_TUBE_CHANNEL_STATE_OPEN);
+
+  added = g_hash_table_new (g_direct_hash, g_direct_equal);
+  removed = g_array_new (FALSE, FALSE, sizeof (TpHandle));
+
+  g_array_append_val (removed, handle);
+
+  tp_svc_channel_type_dbus_tube_emit_dbus_names_changed (self, added,
+      removed);
+
+  g_hash_table_destroy (added);
+  g_array_free (removed, TRUE);
 }
 
 void

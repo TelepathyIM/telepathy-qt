@@ -65,6 +65,15 @@ void tp_tests_dbus_tube_channel_set_close_on_accept (
     TpTestsDBusTubeChannel *self,
     gboolean close_on_accept);
 
+void tp_tests_dbus_tube_channel_peer_connected_no_stream (
+    TpTestsDBusTubeChannel *self,
+    gchar *bus_name,
+    TpHandle handle);
+
+void tp_tests_dbus_tube_channel_peer_disconnected (
+    TpTestsDBusTubeChannel *self,
+    TpHandle handle);
+
 #define TP_TESTS_TYPE_CONTACT_DBUS_TUBE_CHANNEL \
   (tp_tests_contact_dbus_tube_channel_get_type ())
 #define TP_TESTS_CONTACT_DBUS_TUBE_CHANNEL(obj) \

@@ -135,13 +135,17 @@ void TestDBusTubeChan::onBusNamesChanged(const QHash<ContactPtr, QString> &added
     for (QHash<ContactPtr, QString>::const_iterator i = added.constBegin();
          i != added.constEnd(); ++i) {
         mCurrentBusNames.insert(i.key(), i.value());
+        mGotRemoteConnection = true;
     }
     Q_FOREACH (const ContactPtr &contact, removed) {
         QVERIFY(mCurrentBusNames.contains(contact));
         mCurrentBusNames.remove(contact);
+        mGotConnectionClosed = true;
     }
 
     QCOMPARE(mChan->busNames().size(), mCurrentBusNames.size());
+
+    mLoop->quit();
 }
 
 void TestDBusTubeChan::onNewSocketConnection()
@@ -390,9 +394,7 @@ void TestDBusTubeChan::testAcceptSuccess()
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
             qDebug() << "Connecting to bus" << mChan->address();
 
-            QDBusConnection conn(QLatin1String("tmp"));
-
-            conn = QDBusConnection::connectToPeer(mChan->address(), mChan->serviceName());
+            QDBusConnection conn = QDBusConnection::connectToPeer(mChan->address(), mChan->serviceName());
 
             QCOMPARE(conn.isConnected(), true);
             qDebug() << "Connected to host";
@@ -477,6 +479,7 @@ void TestDBusTubeChan::testOfferSuccess()
         OutgoingDBusTubeChannelPtr chan = OutgoingDBusTubeChannelPtr::qObjectCast(mChan);
         QVariantMap offerParameters;
         offerParameters.insert(QLatin1String("mushroom"), 44);
+        qDebug() << "About to offer tube";
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
             QVERIFY(connect(chan->offerTube(offerParameters, requiresCredentials),
                         SIGNAL(finished(Tp::PendingOperation *)),
@@ -485,7 +488,10 @@ void TestDBusTubeChan::testOfferSuccess()
             QVERIFY(false);
         }
 
+        qDebug() << "Tube offered";
+
         while (mChan->state() != TubeChannelStateRemotePending) {
+            qDebug() << mLoop;
             mLoop->processEvents();
         }
 
@@ -493,54 +499,35 @@ void TestDBusTubeChan::testOfferSuccess()
 
         // A client now connects to the tube
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
-//             qDebug() << "Connecting to host" << localServer->fullServerName();
-//             localSocket = new QLocalSocket(this);
-//             localSocket->connectToServer(localServer->fullServerName());
+            QDBusConnection conn = QDBusConnection::connectToPeer(mChan->address(), mChan->serviceName());
+
+            QCOMPARE(conn.isConnected(), true);
         } else {
             QVERIFY(false);
         }
 
-        QCOMPARE(mGotSocketConnection, false);
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mGotSocketConnection, true);
-
-        /* simulate CM when peer connects */
-        GValue *connParam = 0;
-        mCredentialByte = 0;
-        switch (contexts[i].accessControl) {
-            case TP_SOCKET_ACCESS_CONTROL_LOCALHOST:
-                connParam = tp_g_value_slice_new_static_string("");
-                break;
-
-            case TP_SOCKET_ACCESS_CONTROL_CREDENTIALS:
-                {
-//                     mCredentialByte = g_random_int_range(0, G_MAXUINT8);
-// 
-//                     localSocket->write(reinterpret_cast<const char*>(&mCredentialByte), 1);
-//                     connParam = tp_g_value_slice_new_byte(mCredentialByte);
-                }
-                break;
-
-            default:
-                Q_ASSERT(false);
-        }
+        qDebug() << "Connected";
 
         TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
         TpHandle bobHandle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
-//         tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
-//                 connParam, bobHandle);
-
-        tp_g_value_slice_free(connParam);
+        gchar *bobService = g_strdup("org.bob.test");
+        tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
+                bobService, bobHandle);
+        g_free(bobService);
 
         mExpectedHandle = bobHandle;
         mExpectedId = QLatin1String("bob");
 
         QCOMPARE(mChan->state(), TubeChannelStateRemotePending);
 
+        qDebug() << "Waiting for offer finished";
+
         while (!mOfferFinished) {
             QCOMPARE(mLoop->exec(), 0);
         }
+
+        qDebug() << "Offer finished";
 
         QCOMPARE(mChan->state(), TubeChannelStateOpen);
         QCOMPARE(mChan->parameters().isEmpty(), false);
@@ -548,25 +535,28 @@ void TestDBusTubeChan::testOfferSuccess()
         QCOMPARE(mChan->parameters().contains(QLatin1String("mushroom")), true);
         QCOMPARE(mChan->parameters().value(QLatin1String("mushroom")), QVariant(44));
 
-        if (!mGotRemoteConnection) {
+        // This section makes sense just in a room environment
+        if (!contexts[i].withContact) {
+            if (!mGotRemoteConnection) {
+                QCOMPARE(mLoop->exec(), 0);
+            }
+
+            QCOMPARE(mGotRemoteConnection, true);
+
+            qDebug() << "Connected to host";
+
+            mGotConnectionClosed = false;
+            tp_tests_dbus_tube_channel_peer_disconnected(mChanService,
+                    mExpectedHandle);
             QCOMPARE(mLoop->exec(), 0);
+            QCOMPARE(mGotConnectionClosed, true);
+
+            /* let the internal OutgoingDBusTubeChannel::onConnectionClosed slot be called before
+            * checking the data for that connection */
+            mLoop->processEvents();
+
+            QCOMPARE(chan->busNames().isEmpty(), true);
         }
-
-        QCOMPARE(mGotRemoteConnection, true);
-
-        qDebug() << "Connected to host";
-
-        mGotConnectionClosed = false;
-//         tp_tests_dbus_tube_channel_last_connection_disconnected(mChanService,
-//                 TP_ERROR_STR_DISCONNECTED);
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mGotConnectionClosed, true);
-
-        /* let the internal OutgoingDBusTubeChannel::onConnectionClosed slot be called before
-         * checking the data for that connection */
-        mLoop->processEvents();
-
-        QCOMPARE(chan->busNames().isEmpty(), true);
 
         /* as we run several tests here, let's init/cleanup properly */
         cleanup();
