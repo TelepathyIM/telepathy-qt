@@ -420,7 +420,7 @@ void TestDBusTubeChan::testAcceptFail()
     QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
 
     /* when accept is called the channel will be closed service side */
-//     tp_tests_dbus_tube_channel_set_close_on_accept (mChanService, TRUE);
+    tp_tests_dbus_tube_channel_set_close_on_accept (mChanService, TRUE);
 
     /* calling accept should fail */
     IncomingDBusTubeChannelPtr chan = IncomingDBusTubeChannelPtr::qObjectCast(mChan);
