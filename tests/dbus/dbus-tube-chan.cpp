@@ -110,12 +110,17 @@ void TestDBusTubeChan::onBusNamesChanged(const QHash<ContactPtr, QString> &added
         mCurrentBusNames.insert(i.key(), i.value());
         mGotRemoteConnection = true;
         qDebug() << "Adding " << i.key()->id();
+
+        QCOMPARE(i.value(), mExpectedService);
+        QCOMPARE(i.key()->handle().first(), mExpectedHandle);
     }
     Q_FOREACH (const ContactPtr &contact, removed) {
         QVERIFY(mCurrentBusNames.contains(contact));
         mCurrentBusNames.remove(contact);
         mGotConnectionClosed = true;
         qDebug() << "Removing " << contact->id();
+
+        QCOMPARE(contact->handle().first(), mExpectedHandle);
     }
 
     QCOMPARE(mChan->busNames().size(), mCurrentBusNames.size());
@@ -477,7 +482,7 @@ void TestDBusTubeChan::testOfferSuccess()
         g_free(bobService);
 
         mExpectedHandle = bobHandle;
-        mExpectedService = QLatin1String("bob");
+        mExpectedService = QLatin1String("org.bob.test");
 
         QCOMPARE(mChan->state(), TubeChannelStateRemotePending);
 
@@ -554,7 +559,7 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
     gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
-    mExpectedService = QLatin1String("youhaventseenmeyet");
+    mExpectedService = QLatin1String("org.not.seen.yet");
 
     tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
             service, handle);
