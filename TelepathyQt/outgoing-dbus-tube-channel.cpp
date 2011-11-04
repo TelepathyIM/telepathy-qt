@@ -200,7 +200,7 @@ PendingDBusTubeConnection *OutgoingDBusTubeChannel::offerTube(const QVariantMap 
         OutgoingDBusTubeChannelPtr(this));
 
     PendingDBusTubeConnection *op = new PendingDBusTubeConnection(ps, requireCredentials,
-                                              0, OutgoingDBusTubeChannelPtr(this));
+                                              parameters, OutgoingDBusTubeChannelPtr(this));
     return op;
 }
 

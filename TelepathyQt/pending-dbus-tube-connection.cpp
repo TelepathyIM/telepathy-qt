@@ -44,6 +44,7 @@ struct TP_QT_NO_EXPORT PendingDBusTubeConnection::Private
 
     bool requiresCredentials;
     uchar credentialByte;
+    QVariantMap parameters;
 };
 
 PendingDBusTubeConnection::Private::Private(PendingDBusTubeConnection *parent)
@@ -91,6 +92,32 @@ PendingDBusTubeConnection::PendingDBusTubeConnection(
                 this, SLOT(onConnectionFinished(Tp::PendingOperation*)));
     }
 }
+
+PendingDBusTubeConnection::PendingDBusTubeConnection(
+        PendingString* string,
+        bool requiresCredentials,
+        const QVariantMap& parameters,
+        const DBusTubeChannelPtr& object)
+    : PendingOperation(object)
+    , mPriv(new Private(this))
+{
+    mPriv->tube = object;
+
+    mPriv->requiresCredentials = requiresCredentials;
+    mPriv->parameters = parameters;
+
+    connect(mPriv->tube.data(), SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            this, SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
+
+    if (string->isFinished()) {
+        onConnectionFinished(string);
+    } else {
+        // Connect the pending void
+        connect(string, SIGNAL(finished(Tp::PendingOperation*)),
+                this, SLOT(onConnectionFinished(Tp::PendingOperation*)));
+    }
+}
+
 
 PendingDBusTubeConnection::PendingDBusTubeConnection(
         const QString &errorName,
@@ -185,6 +212,10 @@ void PendingDBusTubeConnection::onStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
+        if (!mPriv->parameters.isEmpty()) {
+            // Inject the parameters into the tube
+            mPriv->tube->setParameters(mPriv->parameters);
+        }
         // The tube is ready: mark the operation as finished
         setFinished();
     }
