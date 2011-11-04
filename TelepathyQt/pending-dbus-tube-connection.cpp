@@ -168,6 +168,7 @@ void PendingDBusTubeConnection::onConnectionFinished(PendingOperation *op)
 
     // Now get the address and set it
     PendingString *ps = qobject_cast<PendingString*>(op);
+    debug() << "Got address " << ps->result();
     mPriv->tube->setAddress(ps->result());
 
     // It might have been already opened - check

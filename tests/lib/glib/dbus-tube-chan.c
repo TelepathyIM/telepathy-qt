@@ -15,6 +15,9 @@
 #include <telepathy-glib/svc-channel.h>
 #include <telepathy-glib/gnio-util.h>
 
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
+
 #include <gio/gunixsocketaddress.h>
 #include <gio/gunixconnection.h>
 
@@ -27,13 +30,38 @@ enum
   PROP_SUPPORTED_ACCESS_CONTROLS,
   PROP_PARAMETERS,
   PROP_STATE,
+  PROP_DBUS_ADDRESS
 };
 
 struct _TpTestsDBusTubeChannelPrivate {
     TpTubeChannelState state;
 
-    /* TpHandle -> gchar * */
+    TpSocketAccessControl access_control;
+
+    /* our unique D-Bus name on the virtual tube bus (NULL for 1-1 D-Bus tubes)*/
+    gchar *dbus_local_name;
+    /* the address that we are listening for D-Bus connections on */
+    gchar *dbus_srv_addr;
+    /* the path of the UNIX socket used by the D-Bus server */
+    gchar *socket_path;
+    /* the server that's listening on dbus_srv_addr */
+    DBusServer *dbus_srv;
+    /* the connection to dbus_srv from a local client, or NULL */
+    DBusConnection *dbus_conn;
+    /* the queue of D-Bus messages to be delivered to a local client when it
+    * will connect */
+    GSList *dbus_msg_queue;
+    /* current size of the queue in bytes. The maximum is MAX_QUEUE_SIZE */
+    unsigned long dbus_msg_queue_size;
+    /* mapping of contact handle -> D-Bus name (empty for 1-1 D-Bus tubes) */
     GHashTable *dbus_names;
+    /* mapping of D-Bus name -> contact handle */
+    GHashTable *dbus_name_to_handle;
+
+    /* Message reassembly buffer (CONTACT tubes only) */
+    GString *reassembly_buffer;
+    /* Number of bytes that will be in the next message, 0 if unknown */
+    guint32 reassembly_bytes_needed;
 
     GArray *supported_access_controls;
 
@@ -66,6 +94,10 @@ tp_tests_dbus_tube_channel_get_property (GObject *object,
 
       case PROP_PARAMETERS:
         g_value_set_boxed (value, self->priv->parameters);
+        break;
+
+      case PROP_DBUS_ADDRESS:
+        g_value_set_string (value, self->priv->dbus_srv_addr);
         break;
 
       case PROP_STATE:
@@ -267,6 +299,15 @@ tp_tests_dbus_tube_channel_class_init (TpTestsDBusTubeChannelClass *klass)
   g_object_class_install_property (object_class,
       PROP_SUPPORTED_ACCESS_CONTROLS, param_spec);
 
+  param_spec = g_param_spec_string (
+      "dbus-address",
+      "D-Bus address",
+      "The D-Bus address on which this tube will listen for connections",
+      "",
+      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_DBUS_ADDRESS,
+      param_spec);
+
   param_spec = g_param_spec_boxed (
       "parameters", "Parameters",
       "parameters of the tube",
@@ -321,6 +362,225 @@ change_state (TpTestsDBusTubeChannel *self,
   tp_svc_channel_interface_tube_emit_tube_channel_state_changed (self, state);
 }
 
+/*
+ * Characters used are permissible both in filenames and in D-Bus names. (See
+ * D-Bus specification for restrictions.)
+ */
+static void
+generate_ascii_string (guint len,
+                       gchar *buf)
+{
+  const gchar *chars =
+    "0123456789"
+    "abcdefghijklmnopqrstuvwxyz"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "_-";
+  guint i;
+
+  for (i = 0; i < len; i++)
+    buf[i] = chars[g_random_int_range (0, 64)];
+}
+
+static DBusHandlerResult
+filter_cb (DBusConnection *conn,
+           DBusMessage *msg,
+           void *user_data)
+{
+  TpTestsDBusTubeChannel *self = TP_TESTS_DBUS_TUBE_CHANNEL (user_data);
+  TpTestsDBusTubeChannelPrivate *priv = self->priv;
+  gchar *marshalled = NULL;
+  gint len;
+
+  if (dbus_message_get_type (msg) == DBUS_MESSAGE_TYPE_SIGNAL &&
+      !tp_strdiff (dbus_message_get_interface (msg),
+        "org.freedesktop.DBus.Local") &&
+      !tp_strdiff (dbus_message_get_member (msg), "Disconnected"))
+    {
+      /* connection was disconnected */
+      g_debug ("connection was disconnected");
+      dbus_connection_close (priv->dbus_conn);
+      tp_clear_pointer (&priv->dbus_conn, dbus_connection_unref);
+      goto out;
+    }
+
+  if (priv->dbus_local_name != NULL)
+    {
+      if (!dbus_message_set_sender (msg, priv->dbus_local_name))
+        g_debug ("dbus_message_set_sender failed");
+    }
+
+  if (!dbus_message_marshal (msg, &marshalled, &len))
+    goto out;
+
+//   if (GABBLE_IS_BYTESTREAM_MUC (priv->bytestream))
+//     {
+//       /* This bytestream support direct send */
+//       const gchar *dest;
+// 
+//       dest = dbus_message_get_destination (msg);
+// 
+//       if (dest != NULL)
+//         {
+//           TpHandle handle;
+// 
+//           handle = GPOINTER_TO_UINT (g_hash_table_lookup (
+//                 priv->dbus_name_to_handle, dest));
+// 
+//           if (handle == 0)
+//             {
+//               g_debug ("Unknown D-Bus name: %s", dest);
+//               goto out;
+//             }
+// 
+//           gabble_bytestream_muc_send_to (
+//               GABBLE_BYTESTREAM_MUC (priv->bytestream), handle, len,
+//               marshalled);
+// 
+//           goto out;
+//         }
+//     }
+// 
+//   gabble_bytestream_iface_send (priv->bytestream, len, marshalled);
+
+out:
+  if (marshalled != NULL)
+    g_free (marshalled);
+
+  return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static dbus_bool_t
+allow_all_connections (DBusConnection *conn,
+                       unsigned long uid,
+                       void *data)
+{
+  return TRUE;
+}
+
+static void
+new_connection_cb (DBusServer *server,
+                   DBusConnection *conn,
+                   void *data)
+{
+  TpTestsDBusTubeChannel *self = TP_TESTS_DBUS_TUBE_CHANNEL (data);
+  TpTestsDBusTubeChannelPrivate *priv = self->priv;
+  guint32 serial;
+  GSList *i;
+
+  g_debug("lol new conn");
+
+  if (priv->dbus_conn != NULL)
+    /* we already have a connection; drop this new one */
+    /* return without reffing conn means it will be dropped */
+    return;
+
+  g_debug ("got connection");
+
+  dbus_connection_ref (conn);
+  dbus_connection_setup_with_g_main (conn, NULL);
+  dbus_connection_add_filter (conn, filter_cb, self, NULL);
+  priv->dbus_conn = conn;
+
+  if (priv->access_control == TP_SOCKET_ACCESS_CONTROL_LOCALHOST)
+    {
+      /* By default libdbus use Credentials access control. If user wants
+       * to use the Localhost access control, we need to bypass this check. */
+      dbus_connection_set_unix_user_function (conn, allow_all_connections,
+          NULL, NULL);
+    }
+
+  /* We may have received messages to deliver before the local connection is
+   * established. Theses messages are kept in the dbus_msg_queue list and are
+   * delivered as soon as we get the connection. */
+  g_debug ("%u messages in the queue (%lu bytes)",
+         g_slist_length (priv->dbus_msg_queue), priv->dbus_msg_queue_size);
+  priv->dbus_msg_queue = g_slist_reverse (priv->dbus_msg_queue);
+  for (i = priv->dbus_msg_queue; i != NULL; i = g_slist_delete_link (i, i))
+    {
+      DBusMessage *msg = i->data;
+      g_debug ("delivering queued message from '%s' to '%s' on the "
+             "new connection",
+             dbus_message_get_sender (msg),
+             dbus_message_get_destination (msg));
+      dbus_connection_send (priv->dbus_conn, msg, &serial);
+      dbus_message_unref (msg);
+    }
+  priv->dbus_msg_queue = NULL;
+  priv->dbus_msg_queue_size = 0;
+}
+
+/* There is two step to enable receiving a D-Bus connection from the local
+ * application:
+ * - listen on the socket
+ * - add the socket in the mainloop
+ *
+ * We need to know the socket path to return from the AcceptDBusTube D-Bus
+ * call but the socket in the mainloop must be added only when we are ready
+ * to receive connections, that is when the bytestream is fully open with the
+ * remote contact.
+ *
+ * See also Bug 13891:
+ * https://bugs.freedesktop.org/show_bug.cgi?id=13891
+ * */
+static gboolean
+create_dbus_server (TpTestsDBusTubeChannel *self,
+                    GError **err)
+{
+#define SERVER_LISTEN_MAX_TRIES 5
+  TpTestsDBusTubeChannelPrivate *priv = self->priv;
+  guint i;
+
+  if (priv->dbus_srv != NULL)
+    return TRUE;
+
+  for (i = 0; i < SERVER_LISTEN_MAX_TRIES; i++)
+    {
+      gchar suffix[8];
+      DBusError error;
+
+      g_free (priv->dbus_srv_addr);
+      g_free (priv->socket_path);
+
+      generate_ascii_string (8, suffix);
+      priv->socket_path = g_strdup_printf ("%s/dbus-tpqt4-test-%.8s",
+          g_get_tmp_dir (), suffix);
+      priv->dbus_srv_addr = g_strdup_printf ("unix:path=%s",
+          priv->socket_path);
+
+      dbus_error_init (&error);
+      priv->dbus_srv = dbus_server_listen (priv->dbus_srv_addr, &error);
+
+      if (priv->dbus_srv != NULL)
+        break;
+
+      g_debug ("dbus_server_listen failed (try %u): %s: %s", i, error.name,
+          error.message);
+      dbus_error_free (&error);
+    }
+
+  if (priv->dbus_srv == NULL)
+    {
+      g_debug ("all attempts failed. Close the tube");
+
+      g_free (priv->dbus_srv_addr);
+      priv->dbus_srv_addr = NULL;
+
+      g_free (priv->socket_path);
+      priv->socket_path = NULL;
+
+      g_set_error (err, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+          "Can't create D-Bus server");
+      return FALSE;
+    }
+
+  g_debug ("listening on %s", priv->dbus_srv_addr);
+
+  dbus_server_set_new_connection_function (priv->dbus_srv, new_connection_cb,
+      self, NULL);
+
+  return TRUE;
+}
+
 static void
 dbus_tube_offer (TpSvcChannelTypeDBusTube *iface,
     GHashTable *parameters,
@@ -343,6 +603,8 @@ dbus_tube_offer (TpSvcChannelTypeDBusTube *iface,
           "Address type not supported with this access control");
       goto fail;
     }
+
+  self->priv->access_control = access_control;
 
 //   self->priv->address_type = address_type;
 //   self->priv->address = tp_g_value_slice_dup (address);
@@ -367,7 +629,6 @@ dbus_tube_accept (TpSvcChannelTypeDBusTube *iface,
 {
   TpTestsDBusTubeChannel *self = (TpTestsDBusTubeChannel *) iface;
   GError *error = NULL;
-  gchar *address = NULL;
 
   if (self->priv->state != TP_TUBE_CHANNEL_STATE_LOCAL_PENDING)
     {
@@ -389,17 +650,12 @@ dbus_tube_accept (TpSvcChannelTypeDBusTube *iface,
       return;
     }
 
-//   address = create_local_socket (self, address_type, access_control, &error);
-//
-//   self->priv->access_control = access_control;
-//   self->priv->access_control_param = tp_g_value_slice_dup (
-//       access_control_param);
+  if (!create_dbus_server (self, &error))
+    goto fail;
 
   change_state (self, TP_TUBE_CHANNEL_STATE_OPEN);
 
-  tp_svc_channel_type_dbus_tube_return_from_accept (context, address);
-
-  g_free (address);
+  tp_svc_channel_type_dbus_tube_return_from_accept (context, self->priv->dbus_srv_addr);
   return;
 
 fail:

@@ -131,6 +131,7 @@ private:
 void TestDBusTubeChan::onBusNamesChanged(const QHash<ContactPtr, QString> &added,
                                          const QList<ContactPtr> &removed)
 {
+    qDebug() << "Bus names changed!";
     for (QHash<ContactPtr, QString>::const_iterator i = added.constBegin();
          i != added.constEnd(); ++i) {
         mCurrentBusNames.insert(i.key(), i.value());
@@ -391,32 +392,13 @@ void TestDBusTubeChan::testAcceptSuccess()
 
             QDBusConnection conn(QLatin1String("tmp"));
 
-            if (contexts[i].withContact) {
-                conn = QDBusConnection::connectToPeer(mChan->address(), mChan->serviceName());
-            } else {
-                conn = QDBusConnection::connectToBus(mChan->address(), mChan->serviceName());
-            }
+            conn = QDBusConnection::connectToPeer(mChan->address(), mChan->serviceName());
 
-//             if (requiresCredentials) {
-//                 qDebug() << "Sending credential byte" << mCredentialByte;
-//                 socket->write(reinterpret_cast<const char*>(&mCredentialByte), 1);
-//             }
-
-            QCOMPARE(mLoop->exec(), 0);
             QCOMPARE(conn.isConnected(), true);
             qDebug() << "Connected to host";
         } else {
             QVERIFY(false);
         }
-
-//         mGotConnectionClosed = false;
-//         QVERIFY(connect(mChan.data(),
-//                     SIGNAL(connectionClosed(uint,QString,QString)),
-//                     SLOT(onConnectionClosed(uint,QString,QString))));
-//         tp_tests_dbus_tube_channel_last_connection_disconnected(mChanService,
-//                 TP_ERROR_STR_DISCONNECTED);
-//         QCOMPARE(mLoop->exec(), 0);
-//         QCOMPARE(mGotConnectionClosed, true);
 
         /* as we run several tests here, let's init/cleanup properly */
         cleanup();

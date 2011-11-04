@@ -5,7 +5,8 @@ include_directories(
     ${GOBJECT_INCLUDE_DIR}
     ${GIO_INCLUDE_DIR}
     ${GIOUNIX_INCLUDE_DIR}
-    ${DBUS_INCLUDE_DIR})
+    ${DBUS_INCLUDE_DIR}
+    ${DBUS_ARCH_INCLUDE_DIR})
 
 if(ENABLE_TP_GLIB_TESTS)
     add_subdirectory(call)
