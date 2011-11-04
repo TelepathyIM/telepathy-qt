@@ -74,9 +74,14 @@ if(ENABLE_TP_GLIB_TESTS)
         tpqt_add_dbus_unit_test(StreamTubeHandlers stream-tube-handlers tp-glib-tests tp-qt-tests-glib-helpers)
         if(ENABLE_TP_GLIB_GIO_TESTS)
             tpqt_add_dbus_unit_test(StreamTubeChannel stream-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
-            tpqt_add_dbus_unit_test(DBusTubeChannel dbus-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
         endif(ENABLE_TP_GLIB_GIO_TESTS)
     endif (ENABLE_TESTS_WITH_RACES_IN_QT_4_6)
+
+    if(NOT (${QT_VERSION_MAJOR} EQUAL 4 AND ${QT_VERSION_MINOR} LESS 8))
+        message(STATUS "Enabling Qt 4.8+ tests")
+        tpqt_add_dbus_unit_test(DBusTubeChannel dbus-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
+    endif(NOT (${QT_VERSION_MAJOR} EQUAL 4 AND ${QT_VERSION_MINOR} LESS 8))
+
 
 endif(ENABLE_TP_GLIB_TESTS)
 
