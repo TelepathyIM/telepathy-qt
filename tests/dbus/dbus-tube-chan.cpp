@@ -136,11 +136,13 @@ void TestDBusTubeChan::onBusNamesChanged(const QHash<ContactPtr, QString> &added
          i != added.constEnd(); ++i) {
         mCurrentBusNames.insert(i.key(), i.value());
         mGotRemoteConnection = true;
+        qDebug() << "Adding " << i.key()->id();
     }
     Q_FOREACH (const ContactPtr &contact, removed) {
         QVERIFY(mCurrentBusNames.contains(contact));
         mCurrentBusNames.remove(contact);
         mGotConnectionClosed = true;
+        qDebug() << "Removing " << contact->id();
     }
 
     QCOMPARE(mChan->busNames().size(), mCurrentBusNames.size());
@@ -565,7 +567,7 @@ void TestDBusTubeChan::testOfferSuccess()
 
 void TestDBusTubeChan::testOutgoingBusNameMonitoring()
 {
-    mCurrentContext = 3; // should point to the room, IPv4, AC port one
+    mCurrentContext = 0; // should point to the room, localhost one
     createTubeChannel(true, TP_SOCKET_ADDRESS_TYPE_UNIX, TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
     QVERIFY(connect(mChan->becomeReady(OutgoingDBusTubeChannel::FeatureCore |
                     DBusTubeChannel::FeatureBusNameMonitoring),
@@ -586,36 +588,21 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
         mLoop->processEvents();
     }
 
-    /* simulate CM when peer connects */
-    GValue *connParam = tp_g_value_slice_new_take_boxed(
-            TP_STRUCT_TYPE_SOCKET_ADDRESS_IPV4,
-            dbus_g_type_specialized_construct(TP_STRUCT_TYPE_SOCKET_ADDRESS_IPV4));
-
-    mExpectedAddress.setAddress(QLatin1String("127.0.0.1"));
-    mExpectedPort = 12345;
-
-    dbus_g_type_struct_set(connParam,
-            0, mExpectedAddress.toString().toLatin1().constData(),
-            1, static_cast<quint16>(mExpectedPort),
-            G_MAXUINT);
-
     // Simulate a peer connection from someone we don't have a prebuilt contact for yet, and
     // immediately drop it
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
     TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", NULL, NULL);
+    gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
     mExpectedId = QLatin1String("youhaventseenmeyet");
 
-//     tp_tests_stream_tube_channel_peer_connected_no_stream(mChanService,
-//             connParam, handle);
-//     tp_tests_stream_tube_channel_last_connection_disconnected(mChanService,
-//             TP_ERROR_STR_DISCONNECTED);
-    tp_g_value_slice_free(connParam);
+    tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
+            service, handle);
+    tp_tests_dbus_tube_channel_peer_disconnected(mChanService, handle);
 
-    // Test that we get newConnection first and only then connectionClosed, unlike how the code has
-    // been for a long time, queueing newConnection events and emitting connectionClosed directly
+    // Test that we get the events in the right sequence
     while (!mOfferFinished || !mGotRemoteConnection) {
         QVERIFY(!mGotConnectionClosed || !mOfferFinished);
         QCOMPARE(mLoop->exec(), 0);
