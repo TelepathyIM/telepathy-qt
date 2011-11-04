@@ -15,12 +15,6 @@
 
 #include <telepathy-glib/telepathy-glib.h>
 
-#include <QHostAddress>
-#include <QLocalServer>
-#include <QLocalSocket>
-#include <QTcpServer>
-#include <QTcpSocket>
-
 #include <stdio.h>
 
 using namespace Tp;
@@ -50,22 +44,6 @@ void destroySocketControlList(gpointer data)
     g_array_free((GArray *) data, TRUE);
 }
 
-GHashTable *createSupportedSocketTypesHash(TpSocketAddressType addressType,
-        TpSocketAccessControl accessControl)
-{
-    GHashTable *ret;
-    GArray *tab;
-
-    ret = g_hash_table_new_full(NULL, NULL, NULL, destroySocketControlList);
-
-    tab = g_array_sized_new(FALSE, FALSE, sizeof(TpSocketAccessControl), 1);
-    g_array_append_val(tab, accessControl);
-
-    g_hash_table_insert(ret, GUINT_TO_POINTER(addressType), tab);
-
-    return ret;
-}
-
 }
 
 class TestDBusTubeChan : public Test
@@ -76,15 +54,14 @@ public:
     TestDBusTubeChan(QObject *parent = 0)
         : Test(parent),
           mConn(0), mChanService(0),
-          mGotLocalConnection(false), mGotRemoteConnection(false),
-          mGotSocketConnection(false), mGotConnectionClosed(false),
+          mGotRemoteConnection(false),
+          mGotConnectionClosed(false),
           mOfferFinished(false), mRequiresCredentials(false), mCredentialByte(0)
     { }
 
 protected Q_SLOTS:
     void onBusNamesChanged(const QHash<ContactPtr,QString> &added,
             const QList<ContactPtr> &removed);
-    void onNewSocketConnection();
     void onOfferFinished(Tp::PendingOperation *op);
     void expectPendingTubeConnectionFinished(Tp::PendingOperation *op);
 
@@ -114,18 +91,14 @@ private:
     uint mCurrentContext;
 
     QHash<ContactPtr, QString> mCurrentBusNames;
-    bool mGotLocalConnection;
     bool mGotRemoteConnection;
-    bool mGotSocketConnection;
     bool mGotConnectionClosed;
     bool mOfferFinished;
     bool mRequiresCredentials;
     uchar mCredentialByte;
 
-    QHostAddress mExpectedAddress;
-    uint mExpectedPort;
     uint mExpectedHandle;
-    QString mExpectedId;
+    QString mExpectedService;
 };
 
 void TestDBusTubeChan::onBusNamesChanged(const QHash<ContactPtr, QString> &added,
@@ -148,13 +121,6 @@ void TestDBusTubeChan::onBusNamesChanged(const QHash<ContactPtr, QString> &added
     QCOMPARE(mChan->busNames().size(), mCurrentBusNames.size());
 
     mLoop->quit();
-}
-
-void TestDBusTubeChan::onNewSocketConnection()
-{
-    qDebug() << "Got new socket connection";
-    mGotSocketConnection = true;
-    mLoop->exit(0);
 }
 
 void TestDBusTubeChan::onOfferFinished(Tp::PendingOperation *op)
@@ -270,18 +236,14 @@ void TestDBusTubeChan::init()
 
     mCurrentContext = -1;
 
-    mGotLocalConnection = false;
     mGotRemoteConnection = false;
     mGotConnectionClosed = false;
-    mGotSocketConnection = false;
     mOfferFinished = false;
     mRequiresCredentials = false;
     mCredentialByte = 0;
 
-    mExpectedAddress = QHostAddress();
-    mExpectedPort = -1;
     mExpectedHandle = -1;
-    mExpectedId = QString();
+    mExpectedService = QString();
 }
 
 void TestDBusTubeChan::testCreation()
@@ -372,7 +334,6 @@ void TestDBusTubeChan::testAcceptSuccess()
         QCOMPARE(mChan->isReady(DBusTubeChannel::FeatureBusNameMonitoring), true);
         QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
 
-        mGotLocalConnection = false;
         QVERIFY(connect(mChan.data(),
                     SIGNAL(busNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>)),
                     SLOT(onBusNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>))));
@@ -474,10 +435,9 @@ void TestDBusTubeChan::testOfferSuccess()
             true : false);
 
         mExpectedHandle = -1;
-        mExpectedId = QString();
+        mExpectedService = QString();
 
         mOfferFinished = false;
-        mGotSocketConnection = false;
         OutgoingDBusTubeChannelPtr chan = OutgoingDBusTubeChannelPtr::qObjectCast(mChan);
         QVariantMap offerParameters;
         offerParameters.insert(QLatin1String("mushroom"), 44);
@@ -496,8 +456,6 @@ void TestDBusTubeChan::testOfferSuccess()
             qDebug() << mLoop;
             mLoop->processEvents();
         }
-
-        QCOMPARE(mGotSocketConnection, false);
 
         // A client now connects to the tube
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
@@ -519,7 +477,7 @@ void TestDBusTubeChan::testOfferSuccess()
         g_free(bobService);
 
         mExpectedHandle = bobHandle;
-        mExpectedId = QLatin1String("bob");
+        mExpectedService = QLatin1String("bob");
 
         QCOMPARE(mChan->state(), TubeChannelStateRemotePending);
 
@@ -553,7 +511,7 @@ void TestDBusTubeChan::testOfferSuccess()
             QCOMPARE(mLoop->exec(), 0);
             QCOMPARE(mGotConnectionClosed, true);
 
-            /* let the internal OutgoingDBusTubeChannel::onConnectionClosed slot be called before
+            /* let the internal OutgoingDBusTubeChannel::onBusNamesChanged slot be called before
             * checking the data for that connection */
             mLoop->processEvents();
 
@@ -567,7 +525,7 @@ void TestDBusTubeChan::testOfferSuccess()
 
 void TestDBusTubeChan::testOutgoingBusNameMonitoring()
 {
-    mCurrentContext = 0; // should point to the room, localhost one
+    mCurrentContext = 0; // should point to room, localhost
     createTubeChannel(true, TP_SOCKET_ADDRESS_TYPE_UNIX, TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
     QVERIFY(connect(mChan->becomeReady(OutgoingDBusTubeChannel::FeatureCore |
                     DBusTubeChannel::FeatureBusNameMonitoring),
@@ -596,7 +554,7 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
     gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
-    mExpectedId = QLatin1String("youhaventseenmeyet");
+    mExpectedService = QLatin1String("youhaventseenmeyet");
 
     tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
             service, handle);
@@ -610,7 +568,7 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
 
     QCOMPARE(mChan->busNames().size(), 1);
 
-    // The connectionClosed emission should finally exit the main loop
+    // The busNamesChanged emission should finally exit the main loop
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mGotConnectionClosed);
 

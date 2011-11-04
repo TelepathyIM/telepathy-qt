@@ -55,13 +55,6 @@ struct _TpTestsDBusTubeChannelPrivate {
     unsigned long dbus_msg_queue_size;
     /* mapping of contact handle -> D-Bus name (empty for 1-1 D-Bus tubes) */
     GHashTable *dbus_names;
-    /* mapping of D-Bus name -> contact handle */
-    GHashTable *dbus_name_to_handle;
-
-    /* Message reassembly buffer (CONTACT tubes only) */
-    GString *reassembly_buffer;
-    /* Number of bytes that will be in the next message, 0 if unknown */
-    guint32 reassembly_bytes_needed;
 
     GArray *supported_access_controls;
 
@@ -412,36 +405,6 @@ filter_cb (DBusConnection *conn,
   if (!dbus_message_marshal (msg, &marshalled, &len))
     goto out;
 
-//   if (GABBLE_IS_BYTESTREAM_MUC (priv->bytestream))
-//     {
-//       /* This bytestream support direct send */
-//       const gchar *dest;
-// 
-//       dest = dbus_message_get_destination (msg);
-// 
-//       if (dest != NULL)
-//         {
-//           TpHandle handle;
-// 
-//           handle = GPOINTER_TO_UINT (g_hash_table_lookup (
-//                 priv->dbus_name_to_handle, dest));
-// 
-//           if (handle == 0)
-//             {
-//               g_debug ("Unknown D-Bus name: %s", dest);
-//               goto out;
-//             }
-// 
-//           gabble_bytestream_muc_send_to (
-//               GABBLE_BYTESTREAM_MUC (priv->bytestream), handle, len,
-//               marshalled);
-// 
-//           goto out;
-//         }
-//     }
-// 
-//   gabble_bytestream_iface_send (priv->bytestream, len, marshalled);
-
 out:
   if (marshalled != NULL)
     g_free (marshalled);
@@ -467,14 +430,10 @@ new_connection_cb (DBusServer *server,
   guint32 serial;
   GSList *i;
 
-  g_debug("lol new conn");
-
   if (priv->dbus_conn != NULL)
     /* we already have a connection; drop this new one */
     /* return without reffing conn means it will be dropped */
     return;
-
-  g_debug ("got connection");
 
   dbus_connection_ref (conn);
   dbus_connection_setup_with_g_main (conn, NULL);
