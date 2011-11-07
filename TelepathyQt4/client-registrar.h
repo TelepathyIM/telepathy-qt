@@ -40,7 +40,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ClientRegistrar : public Object
+class TP_QT_EXPORT ClientRegistrar : public Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(ClientRegistrar)

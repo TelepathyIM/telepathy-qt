@@ -37,7 +37,7 @@ namespace Tp
 class PendingSendMessage;
 class MessageContentPartList;
 
-class TELEPATHY_QT4_EXPORT ContactMessenger  : public QObject, public RefCounted
+class TP_QT_EXPORT ContactMessenger  : public QObject, public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(ContactMessenger)

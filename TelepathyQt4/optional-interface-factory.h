@@ -40,7 +40,7 @@ class AbstractInterface;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-class TELEPATHY_QT4_EXPORT OptionalInterfaceCache
+class TP_QT_EXPORT OptionalInterfaceCache
 {
     Q_DISABLE_COPY(OptionalInterfaceCache)
 

@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_EXPORT AvatarData
+struct TP_QT_EXPORT AvatarData
 {
 public:
     inline AvatarData(const QString &fileName, const QString &mimeType)
@@ -48,7 +48,7 @@ public:
     QString mimeType;
 };
 
-class TELEPATHY_QT4_EXPORT AvatarSpec
+class TP_QT_EXPORT AvatarSpec
 {
 public:
     AvatarSpec();

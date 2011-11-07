@@ -42,7 +42,7 @@ namespace Tp
 
 class ConnectionCapabilities;
 
-class TELEPATHY_QT4_EXPORT ProtocolInfo
+class TP_QT_EXPORT ProtocolInfo
 {
 public:
     ProtocolInfo();

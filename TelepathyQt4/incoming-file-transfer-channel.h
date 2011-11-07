@@ -34,7 +34,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT IncomingFileTransferChannel : public FileTransferChannel
+class TP_QT_EXPORT IncomingFileTransferChannel : public FileTransferChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(IncomingFileTransferChannel)

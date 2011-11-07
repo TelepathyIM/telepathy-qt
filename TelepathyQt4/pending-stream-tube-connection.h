@@ -40,7 +40,7 @@ namespace Tp
 class PendingVariant;
 class IncomingStreamTubeChannel;
 
-class TELEPATHY_QT4_EXPORT PendingStreamTubeConnection : public PendingOperation
+class TP_QT_EXPORT PendingStreamTubeConnection : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingStreamTubeConnection)

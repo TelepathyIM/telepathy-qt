@@ -74,8 +74,8 @@ short, it amounts to:
     private Q_SLOTS
     private
  * friend class xxx definitions must be placed right below the private keyword.
- * All exported classes should use TELEPATHY_QT4_EXPORT macro as following:
-    class TELEPATHY_QT4_EXPORT xxx { ... };
+ * All exported classes should use TP_QT_EXPORT macro as following:
+    class TP_QT_EXPORT xxx { ... };
  * Every issue in APIs which can (or will) only be fixed later should be marked
    with a doxygen \todo and have a corresponding fd.o bug filed and mentioned in
    the \todo annotation

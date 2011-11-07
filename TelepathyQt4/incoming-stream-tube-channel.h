@@ -37,7 +37,7 @@ namespace Tp
 
 class PendingStreamTubeConnection;
 
-class TELEPATHY_QT4_EXPORT IncomingStreamTubeChannel : public StreamTubeChannel
+class TP_QT_EXPORT IncomingStreamTubeChannel : public StreamTubeChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(IncomingStreamTubeChannel)

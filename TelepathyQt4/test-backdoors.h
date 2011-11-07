@@ -42,7 +42,7 @@ class DBusProxy;
 
 // Exported so the tests can use it even if they link dynamically
 // The header is not installed though, so this should be considered private API
-struct TELEPATHY_QT4_EXPORT TestBackdoors
+struct TP_QT_EXPORT TestBackdoors
 {
     static void invalidateProxy(DBusProxy *proxy, const QString &reason, const QString &message);
 

@@ -47,7 +47,7 @@ class PendingOperation;
 class Presence;
 class ReferencedHandles;
 
-class TELEPATHY_QT4_EXPORT Contact : public Object
+class TP_QT_EXPORT Contact : public Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(Contact)

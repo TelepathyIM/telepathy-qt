@@ -38,7 +38,7 @@ namespace Tp
 class ChannelRequestHints;
 class RequestTemporaryHandler;
 
-class TELEPATHY_QT4_EXPORT HandledChannelNotifier : public QObject
+class TP_QT_EXPORT HandledChannelNotifier : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(HandledChannelNotifier)

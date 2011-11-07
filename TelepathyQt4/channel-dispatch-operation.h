@@ -47,7 +47,7 @@ namespace Tp
 
 class PendingOperation;
 
-class TELEPATHY_QT4_EXPORT ChannelDispatchOperation : public StatefulDBusProxy,
+class TP_QT_EXPORT ChannelDispatchOperation : public StatefulDBusProxy,
                 public OptionalInterfaceFactory<ChannelDispatchOperation>
 {
     Q_OBJECT

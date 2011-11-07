@@ -30,9 +30,9 @@
 #include <QtGlobal>
 
 #ifdef BUILDING_TP_QT
-#  define TELEPATHY_QT4_EXPORT Q_DECL_EXPORT
+#  define TP_QT_EXPORT Q_DECL_EXPORT
 #else
-#  define TELEPATHY_QT4_EXPORT Q_DECL_IMPORT
+#  define TP_QT_EXPORT Q_DECL_IMPORT
 #endif
 
 #if !defined(Q_OS_WIN) && defined(QT_VISIBILITY_AVAILABLE)

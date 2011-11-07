@@ -43,7 +43,7 @@ namespace Tp
 class PendingHandles;
 class ReferencedHandles;
 
-class TELEPATHY_QT4_EXPORT PendingHandles : public PendingOperation
+class TP_QT_EXPORT PendingHandles : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingHandles)

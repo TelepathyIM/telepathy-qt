@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT Presence
+class TP_QT_EXPORT Presence
 {
 public:
     Presence();
@@ -71,7 +71,7 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT PresenceSpec
+class TP_QT_EXPORT PresenceSpec
 {
 public:
     PresenceSpec();
@@ -98,7 +98,7 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT PresenceSpecList : public QList<PresenceSpec>
+class TP_QT_EXPORT PresenceSpecList : public QList<PresenceSpec>
 {
 public:
     PresenceSpecList() { }

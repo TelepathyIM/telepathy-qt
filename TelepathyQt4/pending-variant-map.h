@@ -35,7 +35,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT PendingVariantMap : public PendingOperation
+class TP_QT_EXPORT PendingVariantMap : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingVariantMap);

@@ -38,7 +38,7 @@
 namespace Tp
 {
 
-TELEPATHY_QT4_EXPORT void registerTypes();
+TP_QT_EXPORT void registerTypes();
 
 template <typename T> class Filter;
 template <typename T> class GenericCapabilityFilter;

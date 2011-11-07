@@ -38,7 +38,7 @@ namespace Tp
 class RefCounted;
 template <class T> class SharedPtr;
 
-class TELEPATHY_QT4_EXPORT RefCounted
+class TP_QT_EXPORT RefCounted
 {
     Q_DISABLE_COPY(RefCounted)
 

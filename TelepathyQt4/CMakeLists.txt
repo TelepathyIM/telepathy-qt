@@ -542,7 +542,7 @@ tpqt4_types_gen(stable-typesgen ${gen_stable_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
                 Tp TelepathyQt4/types.h TelepathyQt4/Types
                 --must-define=IN_TP_QT_HEADER
-                --visibility=TELEPATHY_QT4_EXPORT
+                --visibility=TP_QT_EXPORT
                 DEPENDS stable-constants)
 tpqt4_types_gen(future-typesgen ${gen_future_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp

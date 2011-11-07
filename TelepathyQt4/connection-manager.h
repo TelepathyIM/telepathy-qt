@@ -49,7 +49,7 @@ class ConnectionManagerLowlevel;
 class PendingConnection;
 class PendingStringList;
 
-class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
+class TP_QT_EXPORT ConnectionManager : public StatelessDBusProxy,
                 public OptionalInterfaceFactory<ConnectionManager>
 {
     Q_OBJECT

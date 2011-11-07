@@ -32,7 +32,7 @@ namespace Tp
 /**
  * Private structure used to circumvent QtDBus' strict demarshalling
  */
-struct TELEPATHY_QT4_EXPORT SUSocketAddress
+struct TP_QT_EXPORT SUSocketAddress
 {
     /**
      * A dotted-quad IPv4 address literal: four ASCII decimal numbers, each
@@ -45,13 +45,13 @@ struct TELEPATHY_QT4_EXPORT SUSocketAddress
     uint port;
 };
 
-TELEPATHY_QT4_EXPORT bool operator==(const SUSocketAddress& v1, const SUSocketAddress& v2);
-TELEPATHY_QT4_EXPORT inline bool operator!=(const SUSocketAddress& v1, const SUSocketAddress& v2)
+TP_QT_EXPORT bool operator==(const SUSocketAddress& v1, const SUSocketAddress& v2);
+TP_QT_EXPORT inline bool operator!=(const SUSocketAddress& v1, const SUSocketAddress& v2)
 {
     return !operator==(v1, v2);
 }
-TELEPATHY_QT4_EXPORT QDBusArgument& operator<<(QDBusArgument& arg, const SUSocketAddress& val);
-TELEPATHY_QT4_EXPORT const QDBusArgument& operator>>(const QDBusArgument& arg, SUSocketAddress& val);
+TP_QT_EXPORT QDBusArgument& operator<<(QDBusArgument& arg, const SUSocketAddress& val);
+TP_QT_EXPORT const QDBusArgument& operator>>(const QDBusArgument& arg, SUSocketAddress& val);
 
 } // Tp
 

@@ -36,7 +36,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT Object : public QObject, public RefCounted
+class TP_QT_EXPORT Object : public QObject, public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(Object)

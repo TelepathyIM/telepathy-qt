@@ -40,7 +40,7 @@ namespace Tp
 
 class ProtocolInfo;
 
-class TELEPATHY_QT4_EXPORT Profile : public RefCounted
+class TP_QT_EXPORT Profile : public RefCounted
 {
     Q_DISABLE_COPY(Profile);
 

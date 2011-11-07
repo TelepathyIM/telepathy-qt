@@ -44,7 +44,7 @@ class PendingOperation;
 class PendingReady;
 class RefCounted;
 
-class TELEPATHY_QT4_EXPORT ReadinessHelper : public QObject
+class TP_QT_EXPORT ReadinessHelper : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(ReadinessHelper)

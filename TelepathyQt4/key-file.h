@@ -38,7 +38,7 @@ class QStringList;
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT KeyFile
+class TP_QT_EXPORT KeyFile
 {
 public:
     enum Status {

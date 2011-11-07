@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT LocationInfo
+class TP_QT_EXPORT LocationInfo
 {
 public:
     LocationInfo();

@@ -47,7 +47,7 @@ class Connection;
 class PendingContacts;
 class PendingOperation;
 
-class TELEPATHY_QT4_EXPORT ContactManager : public Object
+class TP_QT_EXPORT ContactManager : public Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(ContactManager)

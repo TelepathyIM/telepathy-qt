@@ -33,7 +33,7 @@ namespace Tp
 
 class PendingOperation;
 
-class TELEPATHY_QT4_EXPORT SimpleCallObserver : public QObject,
+class TP_QT_EXPORT SimpleCallObserver : public QObject,
                 public RefCounted
 {
     Q_OBJECT

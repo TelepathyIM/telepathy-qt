@@ -46,7 +46,7 @@ namespace Tp
 
 class PendingReady;
 
-class TELEPATHY_QT4_EXPORT ConnectionFactory : public FixedFeatureFactory
+class TP_QT_EXPORT ConnectionFactory : public FixedFeatureFactory
 {
 public:
     static ConnectionFactoryPtr create(const QDBusConnection &bus,

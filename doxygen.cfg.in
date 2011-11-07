@@ -1468,7 +1468,7 @@ ALIASES = \
 	"qpl=<a href=\"http://www.trolltech.com/products/qt/licenses\">QPL</a>"
 
 PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS \
-	TELEPATHY_QT4_EXPORT="" \
+	TP_QT_EXPORT="" \
 	TELEPATHY_QT4_NO_EXPORT="" \
 	Q_SLOTS="slots" \
 	Q_SIGNALS="signals"

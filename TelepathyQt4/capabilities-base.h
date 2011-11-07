@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT CapabilitiesBase
+class TP_QT_EXPORT CapabilitiesBase
 {
 public:
     CapabilitiesBase();

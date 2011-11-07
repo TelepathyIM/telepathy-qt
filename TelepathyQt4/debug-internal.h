@@ -28,7 +28,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT Debug
+class TP_QT_EXPORT Debug
 {
 public:
     inline Debug() : debug(0) { }
@@ -112,8 +112,8 @@ private:
 
 // The telepathy-farsight Qt 4 binding links to these - they're not API outside
 // this source tarball, but they *are* ABI
-TELEPATHY_QT4_EXPORT Debug enabledDebug();
-TELEPATHY_QT4_EXPORT Debug enabledWarning();
+TP_QT_EXPORT Debug enabledDebug();
+TP_QT_EXPORT Debug enabledWarning();
 
 #ifdef ENABLE_DEBUG
 

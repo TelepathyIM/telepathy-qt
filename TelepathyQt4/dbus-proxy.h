@@ -39,7 +39,7 @@ namespace Tp
 
 class TestBackdoors;
 
-class TELEPATHY_QT4_EXPORT DBusProxy : public Object, public ReadyObject
+class TP_QT_EXPORT DBusProxy : public Object, public ReadyObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(DBusProxy)
@@ -77,7 +77,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT StatelessDBusProxy : public DBusProxy
+class TP_QT_EXPORT StatelessDBusProxy : public DBusProxy
 {
     Q_OBJECT
     Q_DISABLE_COPY(StatelessDBusProxy)
@@ -93,7 +93,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT StatefulDBusProxy : public DBusProxy
+class TP_QT_EXPORT StatefulDBusProxy : public DBusProxy
 {
     Q_OBJECT
     Q_DISABLE_COPY(StatefulDBusProxy)

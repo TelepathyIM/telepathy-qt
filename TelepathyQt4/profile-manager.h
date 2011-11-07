@@ -40,7 +40,7 @@ namespace Tp
 
 class PendingOperation;
 
-class TELEPATHY_QT4_EXPORT ProfileManager : public Object, public ReadyObject
+class TP_QT_EXPORT ProfileManager : public Object, public ReadyObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(ProfileManager);

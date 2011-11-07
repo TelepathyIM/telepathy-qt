@@ -35,7 +35,7 @@ namespace Tp
 
 class TestBackdoors;
 
-class TELEPATHY_QT4_EXPORT ConnectionCapabilities : public CapabilitiesBase
+class TP_QT_EXPORT ConnectionCapabilities : public CapabilitiesBase
 {
 public:
     ConnectionCapabilities();

@@ -38,7 +38,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ProtocolParameter
+class TP_QT_EXPORT ProtocolParameter
 {
 public:
     ProtocolParameter();

@@ -43,7 +43,7 @@ namespace Tp
 class ClientRegistrar;
 class ChannelClassSpecList;
 
-class TELEPATHY_QT4_EXPORT AbstractClient : public RefCounted
+class TP_QT_EXPORT AbstractClient : public RefCounted
 {
     Q_DISABLE_COPY(AbstractClient)
 
@@ -52,7 +52,7 @@ public:
     virtual ~AbstractClient();
 };
 
-class TELEPATHY_QT4_EXPORT AbstractClientObserver : public virtual AbstractClient
+class TP_QT_EXPORT AbstractClientObserver : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientObserver)
 
@@ -98,7 +98,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT AbstractClientApprover : public virtual AbstractClient
+class TP_QT_EXPORT AbstractClientApprover : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientApprover)
 
@@ -126,7 +126,7 @@ private:
  *  - DBusTubeHandler(QString(List) serviceName(s))
  *    - handleTube(DBusTubeChannelPtr, userActionTime)
  */
-class TELEPATHY_QT4_EXPORT AbstractClientHandler : public virtual AbstractClient
+class TP_QT_EXPORT AbstractClientHandler : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientHandler)
 

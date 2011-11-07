@@ -37,7 +37,7 @@ namespace Tp
 class Message;
 class ReceivedMessage;
 
-class TELEPATHY_QT4_EXPORT TextChannel : public Channel
+class TP_QT_EXPORT TextChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(TextChannel)

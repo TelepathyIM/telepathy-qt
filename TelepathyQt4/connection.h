@@ -59,7 +59,7 @@ class PendingHandles;
 class PendingOperation;
 class PendingReady;
 
-class TELEPATHY_QT4_EXPORT Connection : public StatefulDBusProxy,
+class TP_QT_EXPORT Connection : public StatefulDBusProxy,
                    public OptionalInterfaceFactory<Connection>
 {
     Q_OBJECT

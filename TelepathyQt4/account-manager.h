@@ -50,7 +50,7 @@ namespace Tp
 
 class PendingAccount;
 
-class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
+class TP_QT_EXPORT AccountManager : public StatelessDBusProxy,
                 public OptionalInterfaceFactory<AccountManager>
 {
     Q_OBJECT

@@ -49,7 +49,7 @@ namespace Tp
 class ChannelRequestHints;
 class PendingOperation;
 
-class TELEPATHY_QT4_EXPORT ChannelRequest : public StatefulDBusProxy,
+class TP_QT_EXPORT ChannelRequest : public StatefulDBusProxy,
                 public OptionalInterfaceFactory<ChannelRequest>
 {
     Q_OBJECT
@@ -123,7 +123,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT ChannelRequestHints
+class TP_QT_EXPORT ChannelRequestHints
 {
 public:
     ChannelRequestHints();

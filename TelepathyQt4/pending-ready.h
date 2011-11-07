@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT PendingReady: public PendingOperation
+class TP_QT_EXPORT PendingReady: public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingReady);

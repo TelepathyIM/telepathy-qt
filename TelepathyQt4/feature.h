@@ -38,7 +38,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT Feature : public QPair<QString, uint>
+class TP_QT_EXPORT Feature : public QPair<QString, uint>
 {
 public:
     Feature();
@@ -58,7 +58,7 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT Features : public QSet<Feature>
+class TP_QT_EXPORT Features : public QSet<Feature>
 {
 public:
     Features() { }

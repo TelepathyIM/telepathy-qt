@@ -41,7 +41,7 @@ namespace Tp
 class Connection;
 class HandledChannelNotifier;
 
-class TELEPATHY_QT4_EXPORT PendingChannel : public PendingOperation
+class TP_QT_EXPORT PendingChannel : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingChannel)

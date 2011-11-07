@@ -65,7 +65,7 @@ class PendingOperation;
 class PendingReady;
 class PendingStringList;
 
-class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
+class TP_QT_EXPORT Account : public StatelessDBusProxy,
                 public OptionalInterfaceFactory<Account>
 {
     Q_OBJECT

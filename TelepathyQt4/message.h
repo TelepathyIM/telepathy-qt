@@ -41,7 +41,7 @@ namespace Tp
 class Contact;
 class TextChannel;
 
-class TELEPATHY_QT4_EXPORT Message
+class TP_QT_EXPORT Message
 {
 public:
     Message(ChannelTextMessageType, const QString &);
@@ -94,7 +94,7 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT ReceivedMessage : public Message
+class TP_QT_EXPORT ReceivedMessage : public Message
 {
 public:
     class DeliveryDetails

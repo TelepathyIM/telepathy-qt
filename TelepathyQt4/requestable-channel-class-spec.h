@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT RequestableChannelClassSpec
+class TP_QT_EXPORT RequestableChannelClassSpec
 {
 public:
     RequestableChannelClassSpec();
@@ -92,7 +92,7 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT RequestableChannelClassSpecList :
+class TP_QT_EXPORT RequestableChannelClassSpecList :
                 public QList<RequestableChannelClassSpec>
 {
 public:

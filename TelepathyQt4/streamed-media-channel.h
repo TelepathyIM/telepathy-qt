@@ -40,7 +40,7 @@ class StreamedMediaChannel;
 
 typedef QList<StreamedMediaStreamPtr> StreamedMediaStreams;
 
-class TELEPATHY_QT4_EXPORT PendingStreamedMediaStreams : public PendingOperation
+class TP_QT_EXPORT PendingStreamedMediaStreams : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingStreamedMediaStreams)
@@ -70,7 +70,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT StreamedMediaStream : public Object, private ReadyObject
+class TP_QT_EXPORT StreamedMediaStream : public Object, private ReadyObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamedMediaStream)
@@ -137,7 +137,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT StreamedMediaChannel : public Channel
+class TP_QT_EXPORT StreamedMediaChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamedMediaChannel)

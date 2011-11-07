@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ManagerFile
+class TP_QT_EXPORT ManagerFile
 {
 public:
     ManagerFile();

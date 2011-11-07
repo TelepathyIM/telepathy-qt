@@ -33,7 +33,7 @@ class QHostAddress;
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT StreamTubeChannel : public TubeChannel
+class TP_QT_EXPORT StreamTubeChannel : public TubeChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamTubeChannel)

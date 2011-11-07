@@ -34,7 +34,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ContactSearchChannel : public Channel
+class TP_QT_EXPORT ContactSearchChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(ContactSearchChannel)

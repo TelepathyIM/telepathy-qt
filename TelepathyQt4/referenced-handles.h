@@ -44,7 +44,7 @@ namespace Tp
 
 class Connection;
 
-class TELEPATHY_QT4_EXPORT ReferencedHandles
+class TP_QT_EXPORT ReferencedHandles
 {
 public:
     typedef UIntList::const_iterator const_iterator;

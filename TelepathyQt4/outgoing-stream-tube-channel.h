@@ -36,7 +36,7 @@ class QLocalServer;
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
+class TP_QT_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(OutgoingStreamTubeChannel)

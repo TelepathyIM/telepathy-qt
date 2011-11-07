@@ -39,7 +39,7 @@ class QTcpServer;
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT StreamTubeServer : public QObject, public RefCounted
+class TP_QT_EXPORT StreamTubeServer : public QObject, public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamTubeServer)

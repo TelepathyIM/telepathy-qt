@@ -34,7 +34,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT AccountPropertyFilter : public GenericPropertyFilter<Account>
+class TP_QT_EXPORT AccountPropertyFilter : public GenericPropertyFilter<Account>
 {
 public:
     static AccountPropertyFilterPtr create()

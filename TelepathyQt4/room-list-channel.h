@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT RoomListChannel : public Channel
+class TP_QT_EXPORT RoomListChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(RoomListChannel)

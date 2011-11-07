@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT MessageContentPart
+class TP_QT_EXPORT MessageContentPart
 {
 public:
     MessageContentPart();
@@ -54,7 +54,7 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT MessageContentPartList :
+class TP_QT_EXPORT MessageContentPartList :
                 public QList<MessageContentPart>
 {
 public:

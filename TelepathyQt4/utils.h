@@ -34,7 +34,7 @@
 namespace Tp
 {
 
-TELEPATHY_QT4_EXPORT QString escapeAsIdentifier(const QString &string);
+TP_QT_EXPORT QString escapeAsIdentifier(const QString &string);
 
 } // Tp
 

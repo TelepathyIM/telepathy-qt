@@ -38,7 +38,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT FileTransferChannelCreationProperties
+class TP_QT_EXPORT FileTransferChannelCreationProperties
 {
 public:
     FileTransferChannelCreationProperties();

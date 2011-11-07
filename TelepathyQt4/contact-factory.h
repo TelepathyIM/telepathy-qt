@@ -41,7 +41,7 @@ namespace Tp
 class ContactManager;
 class ReferencedHandles;
 
-class TELEPATHY_QT4_EXPORT ContactFactory : public RefCounted
+class TP_QT_EXPORT ContactFactory : public RefCounted
 {
     Q_DISABLE_COPY(ContactFactory)
 

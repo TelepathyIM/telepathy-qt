@@ -43,14 +43,14 @@ namespace Tp
 
 class ChannelClassSpec;
 
-class TELEPATHY_QT4_EXPORT ChannelFactory : public DBusProxyFactory
+class TP_QT_EXPORT ChannelFactory : public DBusProxyFactory
 {
     Q_OBJECT
     Q_DISABLE_COPY(ChannelFactory)
 
 public:
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    struct TELEPATHY_QT4_EXPORT Constructor : public RefCounted
+    struct TP_QT_EXPORT Constructor : public RefCounted
     {
         virtual ~Constructor() {}
 

@@ -39,7 +39,7 @@ class PendingVariant;
 class PendingOperation;
 class PendingVariantMap;
 
-class TELEPATHY_QT4_EXPORT AbstractInterface : public QDBusAbstractInterface
+class TP_QT_EXPORT AbstractInterface : public QDBusAbstractInterface
 {
     Q_OBJECT
     Q_DISABLE_COPY(AbstractInterface)
