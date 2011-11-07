@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef BUILDING_TELEPATHY_QT4
+#ifndef BUILDING_TP_QT
 #error "This file is a TpQt4 internal header not to be included by applications"
 #endif
 

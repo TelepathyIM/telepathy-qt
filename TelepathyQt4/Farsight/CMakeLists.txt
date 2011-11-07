@@ -6,9 +6,9 @@ if(FARSIGHT_COMPONENTS_FOUND)
                         ${DBUS_INCLUDE_DIR})
 
     # It gets inherited from the previous directory, hence it has to be removed explicitely
-    remove_definitions(-DBUILDING_TELEPATHY_QT4)
+    remove_definitions(-DBUILDING_TP_QT)
     # We are building Telepathy-Qt4-Farsight
-    add_definitions(-DBUILDING_TELEPATHY_QT4_FARSIGHT -DQT_NO_KEYWORDS)
+    add_definitions(-DBUILDING_TP_QT_FARSIGHT -DQT_NO_KEYWORDS)
 
     set(telepathy_qt4_farsight_SRCS
         channel.cpp)
