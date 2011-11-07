@@ -530,7 +530,7 @@ tpqt4_constants_gen(stable-constants ${gen_stable_spec_xml} ${CMAKE_CURRENT_BINA
                     --namespace=Tp
                     --str-constant-prefix=TELEPATHY_
                     --define-prefix=TP_QT4_
-                    --must-define=IN_TELEPATHY_QT4_HEADER
+                    --must-define=IN_TP_QT_HEADER
                     DEPENDS stable-ifaces-includator)
 tpqt4_constants_gen(future-constants ${gen_future_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
                     --namespace=TpFuture
@@ -541,7 +541,7 @@ tpqt4_constants_gen(future-constants ${gen_future_spec_xml} ${CMAKE_CURRENT_BINA
 tpqt4_types_gen(stable-typesgen ${gen_stable_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
                 Tp TelepathyQt4/types.h TelepathyQt4/Types
-                --must-define=IN_TELEPATHY_QT4_HEADER
+                --must-define=IN_TP_QT_HEADER
                 --visibility=TELEPATHY_QT4_EXPORT
                 DEPENDS stable-constants)
 tpqt4_types_gen(future-typesgen ${gen_future_spec_xml}

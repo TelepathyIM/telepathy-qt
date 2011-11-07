@@ -1,12 +1,12 @@
 #ifndef _TelepathyQt4_ReferencedHandles_HEADER_GUARD_
 #define _TelepathyQt4_ReferencedHandles_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_HEADER
-#define IN_TELEPATHY_QT4_HEADER
+#ifndef IN_TP_QT_HEADER
+#define IN_TP_QT_HEADER
 #endif
 
 #include <TelepathyQt4/referenced-handles.h>
 
-#undef IN_TELEPATHY_QT4_HEADER
+#undef IN_TP_QT_HEADER
 
 #endif

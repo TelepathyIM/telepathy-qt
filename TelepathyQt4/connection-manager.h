@@ -23,8 +23,8 @@
 #ifndef _TelepathyQt4_connection_manager_h_HEADER_GUARD_
 #define _TelepathyQt4_connection_manager_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_HEADER
-#error IN_TELEPATHY_QT4_HEADER
+#ifndef IN_TP_QT_HEADER
+#error IN_TP_QT_HEADER
 #endif
 
 #include <TelepathyQt4/_gen/cli-connection-manager.h>

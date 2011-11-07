@@ -23,7 +23,7 @@
 #ifndef _TelepathyQt4_test_backdoors_h_HEADER_GUARD_
 #define _TelepathyQt4_test_backdoors_h_HEADER_GUARD_
 
-#ifdef IN_TELEPATHY_QT4_HEADER
+#ifdef IN_TP_QT_HEADER
 #error "This file is an internal header and should never be included by a public one"
 #endif
 

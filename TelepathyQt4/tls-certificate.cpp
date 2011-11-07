@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#define IN_TELEPATHY_QT4_HEADER
+#define IN_TP_QT_HEADER
 #include <TelepathyQt4/tls-certificate.h>
 
 #include "TelepathyQt4/_gen/cli-tls-certificate-body.hpp"

@@ -198,7 +198,7 @@ function(tpqt4_client_generator spec group pretty_include namespace)
             --specxml=${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
             --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
             --extraincludes=${TYPES_INCLUDE}
-            --must-define=IN_TELEPATHY_QT4_HEADER
+            --must-define=IN_TP_QT_HEADER
             --visibility=TELEPATHY_QT4_EXPORT
             ${client_generator_args})
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp

@@ -22,9 +22,9 @@
 
 #include <TelepathyQt4/PendingOperation>
 
-#define IN_TELEPATHY_QT4_HEADER
+#define IN_TP_QT_HEADER
 #include "simple-pending-operations.h"
-#undef IN_TELEPATHY_QT4_HEADER
+#undef IN_TP_QT_HEADER
 
 #include "TelepathyQt4/_gen/pending-operation.moc.hpp"
 #include "TelepathyQt4/_gen/simple-pending-operations.moc.hpp"

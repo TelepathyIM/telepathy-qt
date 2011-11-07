@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2009 Nokia Corporation
@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_global_h_HEADER_GUARD_
-#define _TelepathyQt4_global_h_HEADER_GUARD_
+#ifndef _TelepathyQt_global_h_HEADER_GUARD_
+#define _TelepathyQt_global_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_HEADER
-#error IN_TELEPATHY_QT4_HEADER
+#ifndef IN_TP_QT_HEADER
+#error IN_TP_QT_HEADER
 #endif
 
 #include <QtGlobal>
