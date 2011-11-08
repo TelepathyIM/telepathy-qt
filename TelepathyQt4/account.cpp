@@ -554,8 +554,8 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
 {
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
-    QRegExp rx(QLatin1String("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
-                "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
+    QRegExp rx(QLatin1String("^") + TP_QT_ACCOUNT_OBJECT_PATH_BASE +
+                QLatin1String("/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
                 "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
                 "/([_A-Za-z][_A-Za-z0-9]*)"  // account-specific part
                 ));
@@ -567,8 +567,8 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
         warning() << "Account object path is not spec-compliant, "
             "trying again with a different account-specific part check";
 
-        rx = QRegExp(QLatin1String("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
-                    "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
+        rx = QRegExp(QLatin1String("^") + TP_QT_ACCOUNT_OBJECT_PATH_BASE +
+                    QLatin1String("/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
                     "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
                     "/([_A-Za-z0-9]*)"  // account-specific part
                     ));

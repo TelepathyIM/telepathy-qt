@@ -52,7 +52,7 @@ RosterWindow::RosterWindow(const QString &accountName, QWidget *parent)
             Contact::FeatureAlias | Contact::FeatureSimplePresence);
 
     mAccount = Account::create(TP_QT_ACCOUNT_MANAGER_BUS_NAME,
-            TP_QT4_ACCOUNT_OBJECT_PATH_BASE + QLatin1Char('/') + accountName,
+            TP_QT_ACCOUNT_OBJECT_PATH_BASE + QLatin1Char('/') + accountName,
             connectionFactory, channelFactory, contactFactory);
     connect(mAccount->becomeReady(Account::FeatureCore),
             SIGNAL(finished(Tp::PendingOperation *)),

@@ -103,17 +103,7 @@
  *
  * \see Tp::Account
  */
-#define TELEPATHY_ACCOUNT_OBJECT_PATH_BASE \
-    "/org/freedesktop/Telepathy/Account"
-
-/**
- * The prefix for an Account's object path, to which the CM's name (e.g.
- * "gabble"), the protocol (e.g. "jabber") and an element
- * identifying the particular account should be appended.
- *
- * \see Tp::Account
- */
-#define TP_QT4_ACCOUNT_OBJECT_PATH_BASE \
+#define TP_QT_ACCOUNT_OBJECT_PATH_BASE \
     (QLatin1String("/org/freedesktop/Telepathy/Account"))
 
 /**
