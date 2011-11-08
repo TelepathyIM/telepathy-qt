@@ -176,7 +176,7 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
 
         PendingReady *readyOp =
-            accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+            accFactory->proxy(TP_QT_ACCOUNT_MANAGER_BUS_NAME,
                     accountObjectPath.path(), connFactory, chanFactory, contactFactory);
         account = AccountPtr::qObjectCast(readyOp->proxy());
         readyOps.append(readyOp);

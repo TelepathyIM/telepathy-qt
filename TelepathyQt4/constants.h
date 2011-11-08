@@ -73,15 +73,7 @@
  *
  * \see Tp::AccountManager
  */
-#define TELEPATHY_ACCOUNT_MANAGER_BUS_NAME \
-    "org.freedesktop.Telepathy.AccountManager"
-
-/**
- * The well-known bus name of the Account Manager.
- *
- * \see Tp::AccountManager
- */
-#define TP_QT4_ACCOUNT_MANAGER_BUS_NAME \
+#define TP_QT_ACCOUNT_MANAGER_BUS_NAME \
     (QLatin1String("org.freedesktop.Telepathy.AccountManager"))
 
 /**
@@ -89,15 +81,7 @@
  *
  * \see Tp::AccountManager
  */
-#define TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH \
-    "/org/freedesktop/Telepathy/AccountManager"
-
-/**
- * The object path of the Account Manager object.
- *
- * \see Tp::AccountManager
- */
-#define TP_QT4_ACCOUNT_MANAGER_OBJECT_PATH \
+#define TP_QT_ACCOUNT_MANAGER_OBJECT_PATH \
     (QLatin1String("/org/freedesktop/Telepathy/AccountManager"))
 
 /**

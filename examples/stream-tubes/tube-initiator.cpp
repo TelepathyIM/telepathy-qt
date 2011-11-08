@@ -81,7 +81,7 @@ TubeInitiator::TubeInitiator(const QString &accountName, const QString &receiver
     Q_ASSERT(mTubeServer->isRegistered());
 
     connect(accountFactory->proxy(
-                TP_QT4_ACCOUNT_MANAGER_BUS_NAME,
+                TP_QT_ACCOUNT_MANAGER_BUS_NAME,
                 TP_QT4_ACCOUNT_OBJECT_PATH_BASE + QLatin1Char('/') + accountName,
                 connectionFactory,
                 mTubeServer->registrar()->channelFactory(),

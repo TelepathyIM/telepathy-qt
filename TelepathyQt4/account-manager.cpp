@@ -432,8 +432,8 @@ AccountManager::AccountManager(const QDBusConnection &bus,
         const ContactFactoryConstPtr &contactFactory,
         const Feature &coreFeature)
     : StatelessDBusProxy(bus,
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), coreFeature),
+            TP_QT_ACCOUNT_MANAGER_BUS_NAME,
+            TP_QT_ACCOUNT_MANAGER_OBJECT_PATH, coreFeature),
       OptionalInterfaceFactory<AccountManager>(this),
       mPriv(new Private(this, accountFactory, connectionFactory, channelFactory, contactFactory))
 {

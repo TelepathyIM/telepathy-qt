@@ -210,12 +210,12 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
         if (account.isNull() && !accountObjectPath.path().isEmpty()) {
             if (!accFact.isNull()) {
                 readyOp = accFact->proxy(
-                        QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME), accountObjectPath.path(),
+                        TP_QT_ACCOUNT_MANAGER_BUS_NAME, accountObjectPath.path(),
                         connFact, chanFact, contactFact);
                 account = AccountPtr::qObjectCast(readyOp->proxy());
             } else {
                 account = Account::create(
-                        QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+                        TP_QT_ACCOUNT_MANAGER_BUS_NAME,
                         accountObjectPath.path(), connFact, chanFact, contactFact);
                 readyOp = account->becomeReady();
             }

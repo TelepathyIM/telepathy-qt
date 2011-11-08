@@ -130,7 +130,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
 
     QList<PendingOperation *> readyOps;
 
-    PendingReady *accReady = accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+    PendingReady *accReady = accFactory->proxy(TP_QT_ACCOUNT_MANAGER_BUS_NAME,
             accountPath.path(),
             connFactory,
             chanFactory,
@@ -407,7 +407,7 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
         tempHandler->setDBusHandlerInvoked();
     }
 
-    PendingReady *accReady = accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+    PendingReady *accReady = accFactory->proxy(TP_QT_ACCOUNT_MANAGER_BUS_NAME,
             accountPath.path(),
             connFactory,
             chanFactory,

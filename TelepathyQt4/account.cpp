@@ -855,7 +855,7 @@ const Feature Account::FeatureProfile = FeatureProtocolInfo;
  *
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
- *                bus name #TP_QT4_ACCOUNT_MANAGER_BUS_NAME.
+ *                bus name #TP_QT_ACCOUNT_MANAGER_BUS_NAME.
  * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
@@ -879,7 +879,7 @@ AccountPtr Account::create(const QString &busName, const QString &objectPath,
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
- *                bus name #TP_QT4_ACCOUNT_MANAGER_BUS_NAME.
+ *                bus name #TP_QT_ACCOUNT_MANAGER_BUS_NAME.
  * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
@@ -904,7 +904,7 @@ AccountPtr Account::create(const QDBusConnection &bus,
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
- *                bus name #TP_QT4_ACCOUNT_MANAGER_BUS_NAME.
+ *                bus name #TP_QT_ACCOUNT_MANAGER_BUS_NAME.
  * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
