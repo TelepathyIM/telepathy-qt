@@ -64,7 +64,7 @@ PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &messag
     if (!cdMessagesInterface) {
         cdMessagesInterface = new TpFuture::Client::ChannelDispatcherInterfaceMessagesInterface(
                 account->dbusConnection(),
-                TP_QT4_CHANNEL_DISPATCHER_BUS_NAME, TP_QT4_CHANNEL_DISPATCHER_OBJECT_PATH, parent);
+                TP_QT_CHANNEL_DISPATCHER_BUS_NAME, TP_QT_CHANNEL_DISPATCHER_OBJECT_PATH, parent);
     }
 
     PendingSendMessage *op = new PendingSendMessage(ContactMessengerPtr(parent), message);

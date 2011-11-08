@@ -915,7 +915,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
             false,
             hints,
             request);
-    QVERIFY(bus.registerService(TP_QT4_CHANNEL_DISPATCHER_BUS_NAME));
+    QVERIFY(bus.registerService(TP_QT_CHANNEL_DISPATCHER_BUS_NAME));
     QVERIFY(bus.registerObject(requestPath, request));
 
     // Invoke the handler, verifying that we're notified when that happens with the correct tube

@@ -511,7 +511,7 @@ struct TP_QT_NO_EXPORT Account::Private
 struct Account::Private::DispatcherContext
 {
     DispatcherContext(const QDBusConnection &bus)
-        : iface(new Client::ChannelDispatcherInterface(bus, TP_QT4_CHANNEL_DISPATCHER_BUS_NAME, TP_QT4_CHANNEL_DISPATCHER_OBJECT_PATH)),
+        : iface(new Client::ChannelDispatcherInterface(bus, TP_QT_CHANNEL_DISPATCHER_BUS_NAME, TP_QT_CHANNEL_DISPATCHER_OBJECT_PATH)),
           introspected(false), supportsHints(false)
     {
     }
