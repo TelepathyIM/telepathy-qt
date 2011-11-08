@@ -49,12 +49,12 @@ public:
     Contact::InfoFields infoFields() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class Contact;
 
-    TELEPATHY_QT4_NO_EXPORT PendingContactInfo(const ContactPtr &contact);
+    TP_QT_NO_EXPORT PendingContactInfo(const ContactPtr &contact);
 
     struct Private;
     friend struct Private;

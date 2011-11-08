@@ -36,7 +36,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
+struct TP_QT_NO_EXPORT IncomingStreamTubeChannel::Private
 {
     Private(IncomingStreamTubeChannel *parent);
 

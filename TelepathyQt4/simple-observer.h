@@ -70,26 +70,26 @@ Q_SIGNALS:
             const QString &errorMessage);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onAccountConnectionChanged(const Tp::ConnectionPtr &connection);
-    TELEPATHY_QT4_NO_EXPORT void onAccountConnectionConnected();
-    TELEPATHY_QT4_NO_EXPORT void onContactConstructed(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onAccountConnectionChanged(const Tp::ConnectionPtr &connection);
+    TP_QT_NO_EXPORT void onAccountConnectionConnected();
+    TP_QT_NO_EXPORT void onContactConstructed(Tp::PendingOperation *op);
 
-    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const Tp::AccountPtr &channelsAccount,
+    TP_QT_NO_EXPORT void onNewChannels(const Tp::AccountPtr &channelsAccount,
             const QList<Tp::ChannelPtr> &channels);
-    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::AccountPtr &channelAccount,
+    TP_QT_NO_EXPORT void onChannelInvalidated(const Tp::AccountPtr &channelAccount,
             const Tp::ChannelPtr &channel, const QString &errorName, const QString &errorMessage);
 
 private:
     friend class SimpleCallObserver;
     friend class SimpleTextObserver;
 
-    TELEPATHY_QT4_NO_EXPORT static SimpleObserverPtr create(const AccountPtr &account,
+    TP_QT_NO_EXPORT static SimpleObserverPtr create(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
             const QString &contactIdentifier,
             bool requiresNormalization,
             const QList<ChannelClassFeatures> &extraChannelFeatures);
 
-    TELEPATHY_QT4_NO_EXPORT SimpleObserver(const AccountPtr &account,
+    TP_QT_NO_EXPORT SimpleObserver(const AccountPtr &account,
             const ChannelClassSpecList &channelFilter,
             const QString &contactIdentifier,
             bool requiresNormalization,

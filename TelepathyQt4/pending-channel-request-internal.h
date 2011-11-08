@@ -30,7 +30,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT PendingChannelRequestCancelOperation : public PendingOperation
+class TP_QT_NO_EXPORT PendingChannelRequestCancelOperation : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingChannelRequestCancelOperation)

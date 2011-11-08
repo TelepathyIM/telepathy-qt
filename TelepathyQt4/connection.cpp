@@ -59,7 +59,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT Connection::Private
+struct TP_QT_NO_EXPORT Connection::Private
 {
     Private(Connection *parent,
             const ChannelFactoryConstPtr &chanFactory,
@@ -155,7 +155,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     QString protocolName;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT ConnectionLowlevel::Private
+struct TP_QT_NO_EXPORT ConnectionLowlevel::Private
 {
     Private(Connection *conn)
         : conn(QWeakPointer<Connection>(conn))
@@ -167,7 +167,7 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionLowlevel::Private
 };
 
 // Handle tracking
-struct TELEPATHY_QT4_NO_EXPORT Connection::Private::HandleContext
+struct TP_QT_NO_EXPORT Connection::Private::HandleContext
 {
     struct Type
     {
@@ -1116,7 +1116,7 @@ ConnectionStatusReason Connection::statusReason() const
     return (ConnectionStatusReason) mPriv->statusReason;
 }
 
-struct TELEPATHY_QT4_NO_EXPORT Connection::ErrorDetails::Private : public QSharedData
+struct TP_QT_NO_EXPORT Connection::ErrorDetails::Private : public QSharedData
 {
     Private(const QVariantMap &details)
         : details(details) {}

@@ -39,7 +39,7 @@ namespace Tp
 
 class PendingOperation;
 
-class TELEPATHY_QT4_NO_EXPORT SimpleStreamTubeHandler : public QObject,
+class TP_QT_NO_EXPORT SimpleStreamTubeHandler : public QObject,
                 public AbstractClientHandler
 {
     Q_OBJECT

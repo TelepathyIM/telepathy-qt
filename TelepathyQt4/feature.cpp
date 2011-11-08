@@ -25,7 +25,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT Feature::Private : public QSharedData
+struct TP_QT_NO_EXPORT Feature::Private : public QSharedData
 {
     Private(bool critical) : critical(critical) {}
 

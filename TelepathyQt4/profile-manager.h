@@ -59,8 +59,8 @@ public:
     ProfilePtr profileForService(const QString &serviceName) const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onCmNamesRetrieved(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onCMsReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onCmNamesRetrieved(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onCMsReady(Tp::PendingOperation *op);
 
 private:
     ProfileManager(const QDBusConnection &bus);

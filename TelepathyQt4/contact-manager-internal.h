@@ -38,7 +38,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT ContactManager::Roster : public QObject
+class TP_QT_NO_EXPORT ContactManager::Roster : public QObject
 {
     Q_OBJECT
 
@@ -250,7 +250,7 @@ private:
     Contacts blockedContacts;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
+struct TP_QT_NO_EXPORT ContactManager::Roster::ChannelInfo
 {
     enum Type {
         TypeSubscribe = 0,
@@ -278,7 +278,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ChannelInfo
     ChannelPtr channel;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInfo
+struct TP_QT_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInfo
 {
     BlockedContactsChangedInfo(const HandleIdentifierMap &added,
             const HandleIdentifierMap &removed,
@@ -294,7 +294,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInf
     bool continueIntrospectionWhenFinished;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::UpdateInfo
+struct TP_QT_NO_EXPORT ContactManager::Roster::UpdateInfo
 {
     UpdateInfo(const ContactSubscriptionMap &changes, const HandleIdentifierMap &ids,
             const HandleIdentifierMap &removals)
@@ -309,7 +309,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::UpdateInfo
     HandleIdentifierMap removals;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::GroupsUpdateInfo
+struct TP_QT_NO_EXPORT ContactManager::Roster::GroupsUpdateInfo
 {
     GroupsUpdateInfo(const UIntList &contacts,
             const QStringList &groupsAdded, const QStringList &groupsRemoved)
@@ -324,7 +324,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::GroupsUpdateInfo
     QStringList groupsRemoved;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::GroupRenamedInfo
+struct TP_QT_NO_EXPORT ContactManager::Roster::GroupRenamedInfo
 {
     GroupRenamedInfo(const QString &oldName, const QString &newName)
         : oldName(oldName),
@@ -336,7 +336,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::GroupRenamedInfo
     QString newName;
 };
 
-class TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::ModifyFinishOp : public PendingOperation
+class TP_QT_NO_EXPORT ContactManager::Roster::ModifyFinishOp : public PendingOperation
 {
     Q_OBJECT
 
@@ -351,7 +351,7 @@ private:
     QString errorName, errorMessage;
 };
 
-class TELEPATHY_QT4_NO_EXPORT ContactManager::Roster::RemoveGroupOp : public PendingOperation
+class TP_QT_NO_EXPORT ContactManager::Roster::RemoveGroupOp : public PendingOperation
 {
     Q_OBJECT
 
@@ -364,7 +364,7 @@ private Q_SLOTS:
     void onChannelClosed(Tp::PendingOperation *);
 };
 
-class TELEPATHY_QT4_NO_EXPORT ContactManager::PendingRefreshContactInfo : public PendingOperation
+class TP_QT_NO_EXPORT ContactManager::PendingRefreshContactInfo : public PendingOperation
 {
     Q_OBJECT
 

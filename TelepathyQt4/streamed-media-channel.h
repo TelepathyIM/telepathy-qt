@@ -53,15 +53,15 @@ public:
     StreamedMediaStreams streams() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void gotStreams(QDBusPendingCallWatcher *op);
+    TP_QT_NO_EXPORT void gotStreams(QDBusPendingCallWatcher *op);
 
-    TELEPATHY_QT4_NO_EXPORT void onStreamRemoved(const Tp::StreamedMediaStreamPtr &stream);
-    TELEPATHY_QT4_NO_EXPORT void onStreamReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onStreamRemoved(const Tp::StreamedMediaStreamPtr &stream);
+    TP_QT_NO_EXPORT void onStreamReady(Tp::PendingOperation *op);
 
 private:
     friend class StreamedMediaChannel;
 
-    TELEPATHY_QT4_NO_EXPORT PendingStreamedMediaStreams(const StreamedMediaChannelPtr &channel,
+    TP_QT_NO_EXPORT PendingStreamedMediaStreams(const StreamedMediaChannelPtr &channel,
             const ContactPtr &contact,
             const QList<MediaStreamType> &types);
 
@@ -119,7 +119,7 @@ Q_SIGNALS:
     void remoteSendingStateChanged(Tp::StreamedMediaStream::SendingState remoteSendingState);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void gotContact(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotContact(Tp::PendingOperation *op);
 
 private:
     friend class PendingStreamedMediaStreams;
@@ -127,10 +127,10 @@ private:
 
     static const Feature FeatureCore;
 
-    TELEPATHY_QT4_NO_EXPORT StreamedMediaStream(const StreamedMediaChannelPtr &channel, const MediaStreamInfo &info);
+    TP_QT_NO_EXPORT StreamedMediaStream(const StreamedMediaChannelPtr &channel, const MediaStreamInfo &info);
 
-    TELEPATHY_QT4_NO_EXPORT void gotDirection(uint direction, uint pendingSend);
-    TELEPATHY_QT4_NO_EXPORT void gotStreamState(uint state);
+    TP_QT_NO_EXPORT void gotDirection(uint direction, uint pendingSend);
+    TP_QT_NO_EXPORT void gotStreamState(uint state);
 
     struct Private;
     friend struct Private;
@@ -200,17 +200,17 @@ protected:
             const Feature &coreFeature = StreamedMediaChannel::FeatureCore);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onStreamReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onStreamReady(Tp::PendingOperation *op);
 
-    TELEPATHY_QT4_NO_EXPORT void gotStreams(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void onStreamAdded(uint, uint, uint);
-    TELEPATHY_QT4_NO_EXPORT void onStreamRemoved(uint);
-    TELEPATHY_QT4_NO_EXPORT void onStreamDirectionChanged(uint, uint, uint);
-    TELEPATHY_QT4_NO_EXPORT void onStreamStateChanged(uint streamId, uint streamState);
-    TELEPATHY_QT4_NO_EXPORT void onStreamError(uint, uint, const QString &);
+    TP_QT_NO_EXPORT void gotStreams(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void onStreamAdded(uint, uint, uint);
+    TP_QT_NO_EXPORT void onStreamRemoved(uint);
+    TP_QT_NO_EXPORT void onStreamDirectionChanged(uint, uint, uint);
+    TP_QT_NO_EXPORT void onStreamStateChanged(uint streamId, uint streamState);
+    TP_QT_NO_EXPORT void onStreamError(uint, uint, const QString &);
 
-    TELEPATHY_QT4_NO_EXPORT void gotLocalHoldState(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void onLocalHoldStateChanged(uint, uint);
+    TP_QT_NO_EXPORT void gotLocalHoldState(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void onLocalHoldStateChanged(uint, uint);
 
 private:
     friend class PendingStreamedMediaStreams;

@@ -50,15 +50,15 @@ public:
     Features requestedFeatures() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onNestedFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onNestedFinished(Tp::PendingOperation *);
 
 private:
     friend class Connection;
     friend class DBusProxyFactory;
     friend class ReadinessHelper;
 
-    TELEPATHY_QT4_NO_EXPORT PendingReady(const SharedPtr<RefCounted> &object, const Features &requestedFeatures);
-    TELEPATHY_QT4_NO_EXPORT PendingReady(const SharedPtr<DBusProxyFactory> &factory,
+    TP_QT_NO_EXPORT PendingReady(const SharedPtr<RefCounted> &object, const Features &requestedFeatures);
+    TP_QT_NO_EXPORT PendingReady(const SharedPtr<DBusProxyFactory> &factory,
             const DBusProxyPtr &proxy, const Features &requestedFeatures);
 
     struct Private;

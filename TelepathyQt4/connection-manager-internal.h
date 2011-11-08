@@ -38,7 +38,7 @@ namespace Tp
 class ConnectionManager;
 class ReadinessHelper;
 
-struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
+struct TP_QT_NO_EXPORT ConnectionManager::Private
 {
     Private(ConnectionManager *parent, const QString &name,
             const ConnectionFactoryConstPtr &connFactory,
@@ -82,7 +82,7 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
     QSet<SharedPtr<ProtocolWrapper> > wrappers;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT ConnectionManagerLowlevel::Private
+struct TP_QT_NO_EXPORT ConnectionManagerLowlevel::Private
 {
     Private(ConnectionManager *cm)
         : cm(QWeakPointer<ConnectionManager>(cm))
@@ -92,7 +92,7 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManagerLowlevel::Private
     QWeakPointer<ConnectionManager> cm;
 };
 
-class TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private::PendingNames : public PendingStringList
+class TP_QT_NO_EXPORT ConnectionManager::Private::PendingNames : public PendingStringList
 {
     Q_OBJECT
 
@@ -113,7 +113,7 @@ private:
     QDBusConnection mBus;
 };
 
-class TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private::ProtocolWrapper :
+class TP_QT_NO_EXPORT ConnectionManager::Private::ProtocolWrapper :
                 public StatelessDBusProxy, public OptionalInterfaceFactory<ProtocolWrapper>
 {
     Q_OBJECT

@@ -35,7 +35,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT KeyFile::Private
+struct TP_QT_NO_EXPORT KeyFile::Private
 {
     Private();
     Private(const QString &fName);

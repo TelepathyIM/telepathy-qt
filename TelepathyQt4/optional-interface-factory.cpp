@@ -34,7 +34,7 @@ namespace Tp
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-struct TELEPATHY_QT4_NO_EXPORT OptionalInterfaceCache::Private
+struct TP_QT_NO_EXPORT OptionalInterfaceCache::Private
 {
     QObject *proxy;
     QMap<QString, AbstractInterface*> interfaces;

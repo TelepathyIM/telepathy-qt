@@ -55,9 +55,9 @@ protected:
     void connectNotify(const char *);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onChannelReceived(const Tp::ChannelPtr &channel,
+    TP_QT_NO_EXPORT void onChannelReceived(const Tp::ChannelPtr &channel,
             const QDateTime &userActionTime, const Tp::ChannelRequestHints &requestHints);
-    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated();
+    TP_QT_NO_EXPORT void onChannelInvalidated();
 
 private:
     friend class PendingChannel;

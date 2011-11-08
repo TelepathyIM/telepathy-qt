@@ -87,15 +87,15 @@ protected:
     virtual void setFinished();
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *watcher);
 
-    TELEPATHY_QT4_NO_EXPORT void changeState();
-    TELEPATHY_QT4_NO_EXPORT void onStateChanged(uint state, uint stateReason);
-    TELEPATHY_QT4_NO_EXPORT void onInitialOffsetDefined(qulonglong initialOffset);
-    TELEPATHY_QT4_NO_EXPORT void onTransferredBytesChanged(qulonglong count);
+    TP_QT_NO_EXPORT void changeState();
+    TP_QT_NO_EXPORT void onStateChanged(uint state, uint stateReason);
+    TP_QT_NO_EXPORT void onInitialOffsetDefined(qulonglong initialOffset);
+    TP_QT_NO_EXPORT void onTransferredBytesChanged(qulonglong count);
 
 protected Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onUriDefined(const QString &uri);
+    TP_QT_NO_EXPORT void onUriDefined(const QString &uri);
 
 private:
     struct Private;

@@ -247,7 +247,7 @@ private:
     friend class PendingContacts;
     friend class PendingHandles;
 
-    TELEPATHY_QT4_NO_EXPORT ReferencedHandles(const ConnectionPtr &connection,
+    TP_QT_NO_EXPORT ReferencedHandles(const ConnectionPtr &connection,
             HandleType handleType, const UIntList& handles);
 
     struct Private;

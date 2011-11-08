@@ -66,31 +66,31 @@ public:
     HandledChannelNotifier *handledChannelNotifier() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onConnectionCreateChannelFinished(
+    TP_QT_NO_EXPORT void onConnectionCreateChannelFinished(
             QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionEnsureChannelFinished(
+    TP_QT_NO_EXPORT void onConnectionEnsureChannelFinished(
             QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onChannelReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onChannelReady(Tp::PendingOperation *op);
 
-    TELEPATHY_QT4_NO_EXPORT void onHandlerError(const QString &errorName,
+    TP_QT_NO_EXPORT void onHandlerError(const QString &errorName,
             const QString &errorMessage);
-    TELEPATHY_QT4_NO_EXPORT void onHandlerChannelReceived(
+    TP_QT_NO_EXPORT void onHandlerChannelReceived(
             const Tp::ChannelPtr &channel);
-    TELEPATHY_QT4_NO_EXPORT void onAccountCreateChannelFinished(
+    TP_QT_NO_EXPORT void onAccountCreateChannelFinished(
             Tp::PendingOperation *op);
 
 private:
     friend class Account;
     friend class ConnectionLowlevel;
 
-    TELEPATHY_QT4_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
+    TP_QT_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
             const QString &errorName, const QString &errorMessage);
-    TELEPATHY_QT4_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
+    TP_QT_NO_EXPORT PendingChannel(const ConnectionPtr &connection,
             const QVariantMap &request, bool create, int timeout = -1);
-    TELEPATHY_QT4_NO_EXPORT PendingChannel(const AccountPtr &account,
+    TP_QT_NO_EXPORT PendingChannel(const AccountPtr &account,
             const QVariantMap &request, const QDateTime &userActionTime,
             bool create);
-    TELEPATHY_QT4_NO_EXPORT PendingChannel(const QString &errorName,
+    TP_QT_NO_EXPORT PendingChannel(const QString &errorName,
             const QString &errorMessage);
 
     struct Private;

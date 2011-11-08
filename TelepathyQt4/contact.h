@@ -214,22 +214,22 @@ protected:
 private:
     static const Feature FeatureRosterGroups;
 
-    TELEPATHY_QT4_NO_EXPORT void receiveAlias(const QString &alias);
-    TELEPATHY_QT4_NO_EXPORT void receiveAvatarToken(const QString &avatarToken);
-    TELEPATHY_QT4_NO_EXPORT void setAvatarToken(const QString &token);
-    TELEPATHY_QT4_NO_EXPORT void receiveAvatarData(const AvatarData &);
-    TELEPATHY_QT4_NO_EXPORT void receiveSimplePresence(const SimplePresence &presence);
-    TELEPATHY_QT4_NO_EXPORT void receiveCapabilities(const RequestableChannelClassList &caps);
-    TELEPATHY_QT4_NO_EXPORT void receiveLocation(const QVariantMap &location);
-    TELEPATHY_QT4_NO_EXPORT void receiveInfo(const ContactInfoFieldList &info);
+    TP_QT_NO_EXPORT void receiveAlias(const QString &alias);
+    TP_QT_NO_EXPORT void receiveAvatarToken(const QString &avatarToken);
+    TP_QT_NO_EXPORT void setAvatarToken(const QString &token);
+    TP_QT_NO_EXPORT void receiveAvatarData(const AvatarData &);
+    TP_QT_NO_EXPORT void receiveSimplePresence(const SimplePresence &presence);
+    TP_QT_NO_EXPORT void receiveCapabilities(const RequestableChannelClassList &caps);
+    TP_QT_NO_EXPORT void receiveLocation(const QVariantMap &location);
+    TP_QT_NO_EXPORT void receiveInfo(const ContactInfoFieldList &info);
 
-    TELEPATHY_QT4_NO_EXPORT static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
-    TELEPATHY_QT4_NO_EXPORT void setSubscriptionState(SubscriptionState state);
-    TELEPATHY_QT4_NO_EXPORT void setPublishState(SubscriptionState state, const QString &message = QString());
-    TELEPATHY_QT4_NO_EXPORT void setBlocked(bool value);
+    TP_QT_NO_EXPORT static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
+    TP_QT_NO_EXPORT void setSubscriptionState(SubscriptionState state);
+    TP_QT_NO_EXPORT void setPublishState(SubscriptionState state, const QString &message = QString());
+    TP_QT_NO_EXPORT void setBlocked(bool value);
 
-    TELEPATHY_QT4_NO_EXPORT void setAddedToGroup(const QString &group);
-    TELEPATHY_QT4_NO_EXPORT void setRemovedFromGroup(const QString &group);
+    TP_QT_NO_EXPORT void setAddedToGroup(const QString &group);
+    TP_QT_NO_EXPORT void setRemovedFromGroup(const QString &group);
 
     struct Private;
     friend class Connection;

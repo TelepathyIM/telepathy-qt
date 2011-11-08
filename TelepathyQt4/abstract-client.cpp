@@ -90,7 +90,7 @@ AbstractClient::~AbstractClient()
 {
 }
 
-struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
+struct TP_QT_NO_EXPORT AbstractClientObserver::Private
 {
     Private(const ChannelClassList &channelFilter, bool shouldRecover)
         : channelFilter(channelFilter),
@@ -208,7 +208,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  * \sa AbstractClientObserver
  */
 
-struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::ObserverInfo::Private : public QSharedData
+struct TP_QT_NO_EXPORT AbstractClientObserver::ObserverInfo::Private : public QSharedData
 {
     Private(const QVariantMap &info)
         : info(info) {}
@@ -367,7 +367,7 @@ bool AbstractClientObserver::shouldRecover() const
  * \param observerInfo Additional information about these channels.
  */
 
-struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
+struct TP_QT_NO_EXPORT AbstractClientApprover::Private
 {
     Private(const ChannelClassList &channelFilter)
         : channelFilter(channelFilter)
@@ -543,7 +543,7 @@ ChannelClassSpecList AbstractClientApprover::approverFilter() const
  * \param dispatchOperation The dispatch operation to be processed.
  */
 
-struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
+struct TP_QT_NO_EXPORT AbstractClientHandler::Private
 {
     Private(const ChannelClassList &channelFilter,
             const Capabilities &capabilities,
@@ -682,7 +682,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
  * \sa AbstractClientHandler
  */
 
-struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Capabilities::Private : public QSharedData
+struct TP_QT_NO_EXPORT AbstractClientHandler::Capabilities::Private : public QSharedData
 {
     Private(const QStringList &tokens)
         : tokens(QSet<QString>::fromList(tokens)) {}
@@ -735,7 +735,7 @@ QStringList AbstractClientHandler::Capabilities::allTokens() const
     return mPriv->tokens.toList();
 }
 
-struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::HandlerInfo::Private : public QSharedData
+struct TP_QT_NO_EXPORT AbstractClientHandler::HandlerInfo::Private : public QSharedData
 {
     Private(const QVariantMap &info)
         : info(info) {}

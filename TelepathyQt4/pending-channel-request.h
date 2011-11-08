@@ -61,17 +61,17 @@ Q_SIGNALS:
     void channelRequestCreated(const Tp::ChannelRequestPtr &channelRequest);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onWatcherFinished(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onProceedOperationFinished(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onCancelOperationFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onWatcherFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onProceedOperationFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onCancelOperationFinished(Tp::PendingOperation *op);
 
 private:
     friend class Account;
 
-    TELEPATHY_QT4_NO_EXPORT PendingChannelRequest(const AccountPtr &account,
+    TP_QT_NO_EXPORT PendingChannelRequest(const AccountPtr &account,
             const QVariantMap &requestedProperties, const QDateTime &userActionTime,
             const QString &preferredHandler, bool create, const ChannelRequestHints &hints);
-    TELEPATHY_QT4_NO_EXPORT PendingChannelRequest(const AccountPtr &account,
+    TP_QT_NO_EXPORT PendingChannelRequest(const AccountPtr &account,
             const QString &errorName, const QString &errorMessage);
 
     struct Private;

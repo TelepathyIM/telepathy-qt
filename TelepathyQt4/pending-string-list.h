@@ -50,7 +50,7 @@ protected:
     void setResult(const QStringList &result);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     struct Private;

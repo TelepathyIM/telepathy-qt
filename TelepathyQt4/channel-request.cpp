@@ -40,7 +40,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
+struct TP_QT_NO_EXPORT ChannelRequest::Private
 {
     Private(ChannelRequest *parent, const QVariantMap &immutableProperties,
             const AccountFactoryConstPtr &, const ConnectionFactoryConstPtr &,
@@ -723,7 +723,7 @@ void ChannelRequest::connectNotify(const char *signalName)
  * provided by the channel requester when requesting a channel.
  */
 
-struct TELEPATHY_QT4_NO_EXPORT ChannelRequestHints::Private : public QSharedData
+struct TP_QT_NO_EXPORT ChannelRequestHints::Private : public QSharedData
 {
     Private() {}
     Private(const QVariantMap &hints) : hints(hints) {}

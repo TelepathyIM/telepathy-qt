@@ -38,7 +38,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT IncomingFileTransferChannel::Private
+struct TP_QT_NO_EXPORT IncomingFileTransferChannel::Private
 {
     Private(IncomingFileTransferChannel *parent);
     ~Private();
@@ -206,7 +206,7 @@ PendingOperation *IncomingFileTransferChannel::setUri(const QString& uri)
  *               #FileTransferStateCompleted.
  *               If the transfer is cancelled, state() becomes
  *               #FileTransferStateCancelled, the data in \a output should be
- *               ignored 
+ *               ignored
  * \return A PendingOperation object which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa FileTransferChannel::stateChanged(), FileTransferChannel::state(),

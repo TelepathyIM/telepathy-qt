@@ -434,7 +434,7 @@ QVariantMap contactSearchRequest(const ConnectionCapabilities &capabilities,
 
 } // anonymous namespace
 
-struct TELEPATHY_QT4_NO_EXPORT Account::Private
+struct TP_QT_NO_EXPORT Account::Private
 {
     Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
             const ChannelFactoryConstPtr &chanFactory,

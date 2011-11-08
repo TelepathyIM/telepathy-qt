@@ -39,7 +39,7 @@ namespace Tp
 {
 
 /* ====== PendingStreamedMediaStreams ====== */
-struct TELEPATHY_QT4_NO_EXPORT PendingStreamedMediaStreams::Private
+struct TP_QT_NO_EXPORT PendingStreamedMediaStreams::Private
 {
     StreamedMediaStreams streams;
     uint numStreams;
@@ -204,7 +204,7 @@ void PendingStreamedMediaStreams::onStreamReady(PendingOperation *op)
 }
 
 /* ====== StreamedMediaStream ====== */
-struct TELEPATHY_QT4_NO_EXPORT StreamedMediaStream::Private
+struct TP_QT_NO_EXPORT StreamedMediaStream::Private
 {
     Private(StreamedMediaStream *parent, const StreamedMediaChannelPtr &channel,
             const MediaStreamInfo &info);
@@ -745,7 +745,7 @@ void StreamedMediaStream::gotStreamState(uint state)
 }
 
 /* ====== StreamedMediaChannel ====== */
-struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
+struct TP_QT_NO_EXPORT StreamedMediaChannel::Private
 {
     Private(StreamedMediaChannel *parent);
     ~Private();

@@ -42,7 +42,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
+struct TP_QT_NO_EXPORT PendingChannelRequest::Private
 {
     Private(const QDBusConnection &dbusConnection)
         : dbusConnection(dbusConnection),

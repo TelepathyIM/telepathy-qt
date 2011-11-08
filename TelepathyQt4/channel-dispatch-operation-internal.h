@@ -29,7 +29,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::PendingClaim : public PendingOperation
+class TP_QT_NO_EXPORT ChannelDispatchOperation::PendingClaim : public PendingOperation
 {
     Q_OBJECT
 
@@ -39,7 +39,7 @@ public:
     ~PendingClaim();
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onClaimFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onClaimFinished(Tp::PendingOperation *op);
 
 private:
     ChannelDispatchOperationPtr mDispatchOp;

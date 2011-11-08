@@ -83,7 +83,7 @@ namespace Tp
  * to it.
  */
 
-class TELEPATHY_QT4_NO_EXPORT FixedParametersGenerator : public StreamTubeServer::ParametersGenerator
+class TP_QT_NO_EXPORT FixedParametersGenerator : public StreamTubeServer::ParametersGenerator
 {
 public:
 
@@ -100,7 +100,7 @@ private:
     QVariantMap mParams;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT StreamTubeServer::RemoteContact::Private : public QSharedData
+struct TP_QT_NO_EXPORT StreamTubeServer::RemoteContact::Private : public QSharedData
 {
     // empty placeholder for now
 };
@@ -194,7 +194,7 @@ StreamTubeServer::RemoteContact &StreamTubeServer::RemoteContact::operator=(
  * \return A pointer to the object.
  */
 
-struct TELEPATHY_QT4_NO_EXPORT StreamTubeServer::Tube::Private : public QSharedData
+struct TP_QT_NO_EXPORT StreamTubeServer::Tube::Private : public QSharedData
 {
     // empty placeholder for now
 };
@@ -893,7 +893,7 @@ QHash<QPair<QHostAddress, quint16>,
             tube.channel()->connectionsForSourceAddresses();
         QHash<uint, ContactPtr> connContacts =
             tube.channel()->contactsForConnections();
-        
+
         QPair<QHostAddress, quint16> srcAddr;
         foreach (srcAddr, srcAddrConns.keys()) {
             ContactPtr contact = connContacts.take(srcAddrConns.value(srcAddr));

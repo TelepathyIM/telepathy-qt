@@ -38,7 +38,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT PendingOperation::Private
+struct TP_QT_NO_EXPORT PendingOperation::Private
 {
     Private(const SharedPtr<RefCounted> &object)
         : object(object),
@@ -341,7 +341,7 @@ void PendingVoid::watcherFinished(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-struct TELEPATHY_QT4_NO_EXPORT PendingComposite::Private
+struct TP_QT_NO_EXPORT PendingComposite::Private
 {
     Private(bool failOnFirstError, uint nOperations)
         : failOnFirstError(failOnFirstError),

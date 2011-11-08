@@ -156,15 +156,15 @@ protected:
     void connectNotify(const char *);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onAliasesChanged(const Tp::AliasPairList &);
-    TELEPATHY_QT4_NO_EXPORT void doRequestAvatars();
-    TELEPATHY_QT4_NO_EXPORT void onAvatarUpdated(uint, const QString &);
-    TELEPATHY_QT4_NO_EXPORT void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
-    TELEPATHY_QT4_NO_EXPORT void onPresencesChanged(const Tp::SimpleContactPresences &);
-    TELEPATHY_QT4_NO_EXPORT void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
-    TELEPATHY_QT4_NO_EXPORT void onLocationUpdated(uint, const QVariantMap &);
-    TELEPATHY_QT4_NO_EXPORT void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
-    TELEPATHY_QT4_NO_EXPORT void doRefreshInfo();
+    TP_QT_NO_EXPORT void onAliasesChanged(const Tp::AliasPairList &);
+    TP_QT_NO_EXPORT void doRequestAvatars();
+    TP_QT_NO_EXPORT void onAvatarUpdated(uint, const QString &);
+    TP_QT_NO_EXPORT void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
+    TP_QT_NO_EXPORT void onPresencesChanged(const Tp::SimpleContactPresences &);
+    TP_QT_NO_EXPORT void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
+    TP_QT_NO_EXPORT void onLocationUpdated(uint, const QVariantMap &);
+    TP_QT_NO_EXPORT void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
+    TP_QT_NO_EXPORT void doRefreshInfo();
 
 private:
     class PendingRefreshContactInfo;
@@ -174,22 +174,22 @@ private:
     friend class PendingRefreshContactInfo;
     friend class Roster;
 
-    TELEPATHY_QT4_NO_EXPORT ContactManager(Connection *parent);
+    TP_QT_NO_EXPORT ContactManager(Connection *parent);
 
-    TELEPATHY_QT4_NO_EXPORT ContactPtr ensureContact(const ReferencedHandles &handle,
+    TP_QT_NO_EXPORT ContactPtr ensureContact(const ReferencedHandles &handle,
             const Features &features,
             const QVariantMap &attributes);
-    TELEPATHY_QT4_NO_EXPORT ContactPtr ensureContact(uint bareHandle,
+    TP_QT_NO_EXPORT ContactPtr ensureContact(uint bareHandle,
             const QString &id, const Features &features);
 
-    TELEPATHY_QT4_NO_EXPORT static QString featureToInterface(const Feature &feature);
-    TELEPATHY_QT4_NO_EXPORT void ensureTracking(const Feature &feature);
+    TP_QT_NO_EXPORT static QString featureToInterface(const Feature &feature);
+    TP_QT_NO_EXPORT void ensureTracking(const Feature &feature);
 
-    TELEPATHY_QT4_NO_EXPORT PendingOperation *introspectRoster();
-    TELEPATHY_QT4_NO_EXPORT PendingOperation *introspectRosterGroups();
-    TELEPATHY_QT4_NO_EXPORT void resetRoster();
+    TP_QT_NO_EXPORT PendingOperation *introspectRoster();
+    TP_QT_NO_EXPORT PendingOperation *introspectRosterGroups();
+    TP_QT_NO_EXPORT void resetRoster();
 
-    TELEPATHY_QT4_NO_EXPORT PendingOperation *refreshContactInfo(Contact *contact);
+    TP_QT_NO_EXPORT PendingOperation *refreshContactInfo(Contact *contact);
 
     struct Private;
     friend struct Private;

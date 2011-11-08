@@ -61,7 +61,7 @@ public:
     private:
         friend class ContactSearchChannel;
 
-        TELEPATHY_QT4_NO_EXPORT SearchStateChangeDetails(const QVariantMap &details);
+        TP_QT_NO_EXPORT SearchStateChangeDetails(const QVariantMap &details);
 
         struct Private;
         friend struct Private;
@@ -95,11 +95,11 @@ protected:
             const QVariantMap &immutableProperties, const Feature &coreFeature);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotSearchState(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onSearchStateChanged(uint state, const QString &error, const QVariantMap &details);
-    TELEPATHY_QT4_NO_EXPORT void onSearchResultReceived(const Tp::ContactSearchResultMap &result);
-    TELEPATHY_QT4_NO_EXPORT void gotSearchResultContacts(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotSearchState(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onSearchStateChanged(uint state, const QString &error, const QVariantMap &details);
+    TP_QT_NO_EXPORT void onSearchResultReceived(const Tp::ContactSearchResultMap &result);
+    TP_QT_NO_EXPORT void gotSearchResultContacts(Tp::PendingOperation *op);
 
 private:
     class PendingSearch;

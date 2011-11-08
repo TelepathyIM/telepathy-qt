@@ -33,7 +33,7 @@ namespace Tp
  * \brief The AvatarData class represents a Telepathy avatar.
  */
 
-struct TELEPATHY_QT4_NO_EXPORT AvatarSpec::Private : public QSharedData
+struct TP_QT_NO_EXPORT AvatarSpec::Private : public QSharedData
 {
     Private(const QStringList &supportedMimeTypes,
             uint minHeight, uint maxHeight, uint recommendedHeight,

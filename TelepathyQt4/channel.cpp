@@ -57,7 +57,7 @@ namespace Tp
 using TpFuture::Client::ChannelInterfaceMergeableConferenceInterface;
 using TpFuture::Client::ChannelInterfaceSplittableInterface;
 
-struct TELEPATHY_QT4_NO_EXPORT Channel::Private
+struct TP_QT_NO_EXPORT Channel::Private
 {
     Private(Channel *parent, const ConnectionPtr &connection,
             const QVariantMap &immutableProperties);
@@ -210,7 +210,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     static const QString keyActor;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
+struct TP_QT_NO_EXPORT Channel::Private::GroupMembersChangedInfo
 {
     GroupMembersChangedInfo(const UIntList &added, const UIntList &removed,
             const UIntList &localPending, const UIntList &remotePending,
@@ -241,7 +241,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
     static const QString keyContactIds;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT Channel::Private::ConferenceChannelRemovedInfo
+struct TP_QT_NO_EXPORT Channel::Private::ConferenceChannelRemovedInfo
 {
     ConferenceChannelRemovedInfo(const QDBusObjectPath &channelPath, const QVariantMap &details)
         : channelPath(channelPath),
@@ -1241,7 +1241,7 @@ void Channel::Private::processConferenceChannelRemoved()
     }
 }
 
-struct TELEPATHY_QT4_NO_EXPORT Channel::GroupMemberChangeDetails::Private : public QSharedData
+struct TP_QT_NO_EXPORT Channel::GroupMemberChangeDetails::Private : public QSharedData
 {
     Private(const ContactPtr &actor, const QVariantMap &details)
         : actor(actor), details(details) {}

@@ -53,14 +53,14 @@ public:
     AccountPtr account() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onAccountBuilt(Tp::PendingOperation *readyOp);
-    TELEPATHY_QT4_NO_EXPORT void onNewAccount(const Tp::AccountPtr &account);
+    TP_QT_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onAccountBuilt(Tp::PendingOperation *readyOp);
+    TP_QT_NO_EXPORT void onNewAccount(const Tp::AccountPtr &account);
 
 private:
     friend class AccountManager;
 
-    TELEPATHY_QT4_NO_EXPORT PendingAccount(const AccountManagerPtr &manager,
+    TP_QT_NO_EXPORT PendingAccount(const AccountManagerPtr &manager,
             const QString &connectionManager, const QString &protocol,
             const QString &displayName, const QVariantMap &parameters,
             const QVariantMap &properties = QVariantMap());

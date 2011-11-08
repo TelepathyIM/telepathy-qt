@@ -27,7 +27,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT MessageContentPart::Private : public QSharedData
+struct TP_QT_NO_EXPORT MessageContentPart::Private : public QSharedData
 {
     Private(const MessagePart &mp)
         : mp(mp) {}

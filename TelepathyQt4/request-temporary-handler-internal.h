@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT RequestTemporaryHandler : public QObject, public AbstractClientHandler
+class TP_QT_NO_EXPORT RequestTemporaryHandler : public QObject, public AbstractClientHandler
 {
     Q_OBJECT
 

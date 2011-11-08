@@ -39,7 +39,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ContactMessenger::Private
+struct TP_QT_NO_EXPORT ContactMessenger::Private
 {
     Private(ContactMessenger *parent, const AccountPtr &account, const QString &contactIdentifier)
         : parent(parent),

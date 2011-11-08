@@ -31,7 +31,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT PendingSendMessage::Private
+struct TP_QT_NO_EXPORT PendingSendMessage::Private
 {
     Private(const Message &message)
         : message(message)

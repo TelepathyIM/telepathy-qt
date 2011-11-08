@@ -213,31 +213,31 @@ Q_SIGNALS:
             const Tp::OutgoingStreamTubeChannelPtr &tube);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onInvokedForTube(
+    TP_QT_NO_EXPORT void onInvokedForTube(
             const Tp::AccountPtr &account,
             const Tp::StreamTubeChannelPtr &tube,
             const QDateTime &userActionTime,
             const Tp::ChannelRequestHints &requestHints);
 
-    TELEPATHY_QT4_NO_EXPORT void onOfferFinished(
+    TP_QT_NO_EXPORT void onOfferFinished(
             TubeWrapper *wrapper,
             Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onTubeInvalidated(
+    TP_QT_NO_EXPORT void onTubeInvalidated(
             Tp::DBusProxy *proxy,
             const QString &error,
             const QString &message);
 
-    TELEPATHY_QT4_NO_EXPORT void onNewConnection(
+    TP_QT_NO_EXPORT void onNewConnection(
             TubeWrapper *wrapper,
             uint conn);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(
+    TP_QT_NO_EXPORT void onConnectionClosed(
             TubeWrapper *wrapper,
             uint conn,
             const QString &error,
             const QString &message);
 
 private:
-    TELEPATHY_QT4_NO_EXPORT StreamTubeServer(
+    TP_QT_NO_EXPORT StreamTubeServer(
             const ClientRegistrarPtr &registrar,
             const QStringList &p2pServices,
             const QStringList &roomServices,

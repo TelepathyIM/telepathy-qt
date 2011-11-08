@@ -29,7 +29,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ChannelClassSpec::Private : public QSharedData
+struct TP_QT_NO_EXPORT ChannelClassSpec::Private : public QSharedData
 {
     QVariantMap props;
 };
@@ -107,7 +107,7 @@ ChannelClassSpec::~ChannelClassSpec()
 
 bool ChannelClassSpec::isValid() const
 {
-    return mPriv.constData() != 0 && 
+    return mPriv.constData() != 0 &&
         !(qdbus_cast<QString>(
                     mPriv->props.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")))
                 .isEmpty()) &&

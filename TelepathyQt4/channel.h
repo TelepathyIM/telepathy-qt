@@ -139,7 +139,7 @@ public:
         friend class Contact;
         friend class ContactManager;
 
-        TELEPATHY_QT4_NO_EXPORT GroupMemberChangeDetails(const ContactPtr &actor, const QVariantMap &details);
+        TP_QT_NO_EXPORT GroupMemberChangeDetails(const ContactPtr &actor, const QVariantMap &details);
 
         struct Private;
         friend struct Private;
@@ -203,42 +203,42 @@ protected Q_SLOTS:
     PendingOperation *groupAddSelfHandle();
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotChannelType(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotHandle(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotInterfaces(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onClosed();
+    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotChannelType(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotHandle(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotInterfaces(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onClosed();
 
-    TELEPATHY_QT4_NO_EXPORT void onConnectionReady(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionInvalidated();
+    TP_QT_NO_EXPORT void onConnectionReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onConnectionInvalidated();
 
-    TELEPATHY_QT4_NO_EXPORT void gotGroupProperties(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotGroupFlags(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotAllMembers(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotSelfHandle(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotContacts(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotGroupProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotGroupFlags(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotAllMembers(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotSelfHandle(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotContacts(Tp::PendingOperation *op);
 
-    TELEPATHY_QT4_NO_EXPORT void onGroupFlagsChanged(uint added, uint removed);
-    TELEPATHY_QT4_NO_EXPORT void onMembersChanged(const QString &message,
+    TP_QT_NO_EXPORT void onGroupFlagsChanged(uint added, uint removed);
+    TP_QT_NO_EXPORT void onMembersChanged(const QString &message,
             const Tp::UIntList &added, const Tp::UIntList &removed,
             const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
             uint actor, uint reason);
-    TELEPATHY_QT4_NO_EXPORT void onMembersChangedDetailed(
+    TP_QT_NO_EXPORT void onMembersChangedDetailed(
             const Tp::UIntList &added, const Tp::UIntList &removed,
             const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
             const QVariantMap &details);
-    TELEPATHY_QT4_NO_EXPORT void onHandleOwnersChanged(const Tp::HandleOwnerMap &added, const Tp::UIntList &removed);
-    TELEPATHY_QT4_NO_EXPORT void onSelfHandleChanged(uint selfHandle);
+    TP_QT_NO_EXPORT void onHandleOwnersChanged(const Tp::HandleOwnerMap &added, const Tp::UIntList &removed);
+    TP_QT_NO_EXPORT void onSelfHandleChanged(uint selfHandle);
 
-    TELEPATHY_QT4_NO_EXPORT void gotConferenceProperties(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void gotConferenceInitialInviteeContacts(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onConferenceChannelMerged(const QDBusObjectPath &channel, uint channelSpecificHandle,
+    TP_QT_NO_EXPORT void gotConferenceProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotConferenceInitialInviteeContacts(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onConferenceChannelMerged(const QDBusObjectPath &channel, uint channelSpecificHandle,
             const QVariantMap &properties);
-    TELEPATHY_QT4_NO_EXPORT void onConferenceChannelMerged(const QDBusObjectPath &channel);
-    TELEPATHY_QT4_NO_EXPORT void onConferenceChannelRemoved(const QDBusObjectPath &channel, const QVariantMap &details);
-    TELEPATHY_QT4_NO_EXPORT void onConferenceChannelRemoved(const QDBusObjectPath &channel);
-    TELEPATHY_QT4_NO_EXPORT void gotConferenceChannelRemovedActorContact(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onConferenceChannelMerged(const QDBusObjectPath &channel);
+    TP_QT_NO_EXPORT void onConferenceChannelRemoved(const QDBusObjectPath &channel, const QVariantMap &details);
+    TP_QT_NO_EXPORT void onConferenceChannelRemoved(const QDBusObjectPath &channel);
+    TP_QT_NO_EXPORT void gotConferenceChannelRemovedActorContact(Tp::PendingOperation *op);
 
 private:
     class PendingLeave;

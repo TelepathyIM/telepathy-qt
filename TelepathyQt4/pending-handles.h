@@ -72,19 +72,19 @@ public:
     UIntList invalidHandles() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onRequestHandlesFinished(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onHoldHandlesFinished(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onRequestHandlesFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onHoldHandlesFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class ConnectionLowlevel;
 
-    TELEPATHY_QT4_NO_EXPORT PendingHandles(const ConnectionPtr &connection, HandleType handleType,
+    TP_QT_NO_EXPORT PendingHandles(const ConnectionPtr &connection, HandleType handleType,
             const QStringList &names);
-    TELEPATHY_QT4_NO_EXPORT PendingHandles(const ConnectionPtr &connection, HandleType handleType,
+    TP_QT_NO_EXPORT PendingHandles(const ConnectionPtr &connection, HandleType handleType,
             const UIntList &handles, const UIntList &alreadyHeld, const UIntList &notYetHeld);
-    TELEPATHY_QT4_NO_EXPORT PendingHandles(const QString &errorName, const QString &errorMessage);
+    TP_QT_NO_EXPORT PendingHandles(const QString &errorName, const QString &errorMessage);
 
     struct Private;
     friend struct Private;

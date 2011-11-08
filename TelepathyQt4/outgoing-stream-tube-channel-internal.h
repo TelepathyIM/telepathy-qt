@@ -30,7 +30,7 @@ namespace Tp
 
 class PendingVoid;
 
-class TELEPATHY_QT4_NO_EXPORT PendingOpenTube : public PendingOperation
+class TP_QT_NO_EXPORT PendingOpenTube : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingOpenTube)
@@ -51,7 +51,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_NO_EXPORT QueuedContactFactory : public QObject
+class TP_QT_NO_EXPORT QueuedContactFactory : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(QueuedContactFactory)
@@ -81,7 +81,7 @@ private:
     QQueue<Entry> m_queue;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
+struct TP_QT_NO_EXPORT PendingOpenTube::Private
 {
     Private(const QVariantMap &parameters, PendingOpenTube *parent);
 
@@ -92,7 +92,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
     QVariantMap parameters;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannel::Private
+struct TP_QT_NO_EXPORT OutgoingStreamTubeChannel::Private
 {
     Private(OutgoingStreamTubeChannel *parent);
 

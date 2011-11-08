@@ -236,7 +236,7 @@ function(tpqt4_future_client_generator spec namespace)
             --extraincludes=${TYPES_INCLUDE}
             --extraincludes='<TelepathyQt4/Types>'
             --extraincludes='<TelepathyQt4/future-internal.h>'
-            --visibility=TELEPATHY_QT4_NO_EXPORT
+            --visibility=TP_QT_NO_EXPORT
             ${future_client_generator_args})
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
         COMMAND ${PYTHON_EXECUTABLE}

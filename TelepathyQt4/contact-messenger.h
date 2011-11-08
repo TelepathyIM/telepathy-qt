@@ -65,7 +65,7 @@ Q_SIGNALS:
     void messageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
 
 private:
-    TELEPATHY_QT4_NO_EXPORT ContactMessenger(const AccountPtr &account,
+    TP_QT_NO_EXPORT ContactMessenger(const AccountPtr &account,
             const QString &contactIdentifier);
 
     struct Private;

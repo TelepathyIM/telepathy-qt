@@ -25,7 +25,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT RequestableChannelClassSpec::Private : public QSharedData
+struct TP_QT_NO_EXPORT RequestableChannelClassSpec::Private : public QSharedData
 {
     Private(const RequestableChannelClass &rcc)
         : rcc(rcc) {}

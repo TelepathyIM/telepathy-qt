@@ -66,7 +66,7 @@ protected:
             const Feature &coreFeature = IncomingStreamTubeChannel::FeatureCore);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onNewLocalConnection(uint connectionId);
+    TP_QT_NO_EXPORT void onNewLocalConnection(uint connectionId);
 
 private:
     struct Private;

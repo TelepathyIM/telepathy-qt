@@ -46,7 +46,7 @@ namespace Tp
  * See \ref async_model
  */
 
-struct TELEPATHY_QT4_NO_EXPORT PendingContactAttributes::Private
+struct TP_QT_NO_EXPORT PendingContactAttributes::Private
 {
     UIntList contactsRequested;
     QStringList interfacesRequested;

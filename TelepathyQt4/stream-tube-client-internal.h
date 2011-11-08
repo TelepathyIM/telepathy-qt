@@ -28,7 +28,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT StreamTubeClient::TubeWrapper :
+class TP_QT_NO_EXPORT StreamTubeClient::TubeWrapper :
                 public QObject
 {
     Q_OBJECT

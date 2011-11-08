@@ -60,14 +60,14 @@ Q_SIGNALS:
     void messageReceived(const Tp::ReceivedMessage &message, const Tp::TextChannelPtr &channel);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
-    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel);
+    TP_QT_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
+    TP_QT_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel);
 
 private:
-    TELEPATHY_QT4_NO_EXPORT static SimpleTextObserverPtr create(const AccountPtr &account,
+    TP_QT_NO_EXPORT static SimpleTextObserverPtr create(const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization);
 
-    TELEPATHY_QT4_NO_EXPORT SimpleTextObserver(const AccountPtr &account,
+    TP_QT_NO_EXPORT SimpleTextObserver(const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization);
 
     struct Private;

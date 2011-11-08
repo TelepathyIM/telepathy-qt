@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT AccountPropertyFilter::Private
+struct TP_QT_NO_EXPORT AccountPropertyFilter::Private
 {
     Private()
     {

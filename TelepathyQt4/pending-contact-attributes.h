@@ -56,16 +56,16 @@ public:
     ContactAttributesMap attributes() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class ConnectionLowlevel;
 
-    TELEPATHY_QT4_NO_EXPORT PendingContactAttributes(const ConnectionPtr &connection,
+    TP_QT_NO_EXPORT PendingContactAttributes(const ConnectionPtr &connection,
             const UIntList &handles,
             const QStringList &interfaces, bool reference);
 
-    TELEPATHY_QT4_NO_EXPORT void failImmediately(const QString &error, const QString &errorMessage);
+    TP_QT_NO_EXPORT void failImmediately(const QString &error, const QString &errorMessage);
 
     struct Private;
     friend struct Private;

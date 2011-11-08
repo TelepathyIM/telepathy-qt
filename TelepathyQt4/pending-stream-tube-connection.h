@@ -57,16 +57,16 @@ public:
     uchar credentialByte() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(Tp::DBusProxy *proxy,
+    TP_QT_NO_EXPORT void onChannelInvalidated(Tp::DBusProxy *proxy,
             const QString &errorName, const QString &errorMessage);
-    TELEPATHY_QT4_NO_EXPORT void onAcceptFinished(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onTubeStateChanged(Tp::TubeChannelState state);
+    TP_QT_NO_EXPORT void onAcceptFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onTubeStateChanged(Tp::TubeChannelState state);
 
 private:
-    TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection(PendingVariant *acceptOperation,
+    TP_QT_NO_EXPORT PendingStreamTubeConnection(PendingVariant *acceptOperation,
             SocketAddressType type, bool requiresCredentials, uchar credentialByte,
             const IncomingStreamTubeChannelPtr &channel);
-    TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection(
+    TP_QT_NO_EXPORT PendingStreamTubeConnection(
             const QString &errorName, const QString &errorMessage,
             const IncomingStreamTubeChannelPtr &channel);
 

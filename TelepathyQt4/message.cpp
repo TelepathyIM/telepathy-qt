@@ -78,7 +78,7 @@ bool partContains(const MessagePartList &parts, uint index, const char *key)
 
 }
 
-struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
+struct TP_QT_NO_EXPORT Message::Private : public QSharedData
 {
     Private(const MessagePartList &parts);
     ~Private();
@@ -472,7 +472,7 @@ MessagePartList Message::parts() const
  * \brief The ReceivedMessage::DeliveryDetails class represents the details of a delivery report.
  */
 
-struct TELEPATHY_QT4_NO_EXPORT ReceivedMessage::DeliveryDetails::Private : public QSharedData
+struct TP_QT_NO_EXPORT ReceivedMessage::DeliveryDetails::Private : public QSharedData
 {
     Private(const MessagePartList &parts)
         : parts(parts)

@@ -53,15 +53,15 @@ public:
     ConnectionPtr connection() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionBuilt(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onConnectionBuilt(Tp::PendingOperation *op);
 
 private:
     friend class ConnectionManagerLowlevel;
 
-    TELEPATHY_QT4_NO_EXPORT PendingConnection(const ConnectionManagerPtr &manager,
+    TP_QT_NO_EXPORT PendingConnection(const ConnectionManagerPtr &manager,
             const QString &protocol, const QVariantMap &parameters);
-    TELEPATHY_QT4_NO_EXPORT PendingConnection(const QString &error, const QString &errorMessage);
+    TP_QT_NO_EXPORT PendingConnection(const QString &error, const QString &errorMessage);
 
     struct Private;
     friend struct Private;

@@ -38,7 +38,7 @@ namespace Tp
 
 class PendingOperation;
 
-class TELEPATHY_QT4_NO_EXPORT ClientAdaptor : public QDBusAbstractAdaptor
+class TP_QT_NO_EXPORT ClientAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client")
@@ -70,7 +70,7 @@ private:
     QStringList mInterfaces;
 };
 
-class TELEPATHY_QT4_NO_EXPORT ClientObserverAdaptor : public QDBusAbstractAdaptor
+class TP_QT_NO_EXPORT ClientObserverAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Observer")
@@ -149,7 +149,7 @@ private:
     AbstractClientObserver *mClient;
 };
 
-class TELEPATHY_QT4_NO_EXPORT ClientApproverAdaptor : public QDBusAbstractAdaptor
+class TP_QT_NO_EXPORT ClientApproverAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Approver")
@@ -212,7 +212,7 @@ private:
     AbstractClientApprover *mClient;
 };
 
-class TELEPATHY_QT4_NO_EXPORT ClientHandlerAdaptor : public QDBusAbstractAdaptor
+class TP_QT_NO_EXPORT ClientHandlerAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Handler")
@@ -311,7 +311,7 @@ private:
     static QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > mAdaptorsForConnection;
 };
 
-class TELEPATHY_QT4_NO_EXPORT ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor
+class TP_QT_NO_EXPORT ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Interface.Requests")

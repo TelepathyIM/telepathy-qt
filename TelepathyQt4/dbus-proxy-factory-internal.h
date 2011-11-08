@@ -35,7 +35,7 @@ namespace Tp
 
 class DBusProxy;
 
-class TELEPATHY_QT4_NO_EXPORT DBusProxyFactory::Cache : public QObject
+class TP_QT_NO_EXPORT DBusProxyFactory::Cache : public QObject
 {
     Q_OBJECT
 

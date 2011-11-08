@@ -36,11 +36,11 @@
 #endif
 
 #if !defined(Q_OS_WIN) && defined(QT_VISIBILITY_AVAILABLE)
-#  define TELEPATHY_QT4_NO_EXPORT __attribute__((visibility("hidden")))
+#  define TP_QT_NO_EXPORT __attribute__((visibility("hidden")))
 #endif
 
-#ifndef TELEPATHY_QT4_NO_EXPORT
-#  define TELEPATHY_QT4_NO_EXPORT
+#ifndef TP_QT_NO_EXPORT
+#  define TP_QT_NO_EXPORT
 #endif
 
 /**

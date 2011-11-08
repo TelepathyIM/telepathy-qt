@@ -114,9 +114,9 @@ Q_SIGNALS:
     void statusReady(uint status);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void iterateIntrospection();
+    TP_QT_NO_EXPORT void iterateIntrospection();
 
-    TELEPATHY_QT4_NO_EXPORT void onProxyInvalidated(Tp::DBusProxy *proxy,
+    TP_QT_NO_EXPORT void onProxyInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage);
 
 private:

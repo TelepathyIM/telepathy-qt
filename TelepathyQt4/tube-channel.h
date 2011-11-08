@@ -66,8 +66,8 @@ protected:
     void connectNotify(const char *);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onTubeChannelStateChanged(uint newstate);
-    TELEPATHY_QT4_NO_EXPORT void gotTubeProperties(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onTubeChannelStateChanged(uint newstate);
+    TP_QT_NO_EXPORT void gotTubeProperties(Tp::PendingOperation *op);
 
 private:
     struct Private;

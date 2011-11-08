@@ -571,7 +571,7 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
                 mRegistrar->contactFactory()), errorName, errorMessage);
 }
 
-struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
+struct TP_QT_NO_EXPORT ClientRegistrar::Private
 {
     Private(const QDBusConnection &bus, const AccountFactoryConstPtr &accFactory,
             const ConnectionFactoryConstPtr &connFactory, const ChannelFactoryConstPtr &chanFactory,

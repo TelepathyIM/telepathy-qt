@@ -71,17 +71,17 @@ Q_SIGNALS:
             const QString &errorName, const QString &errorMessage);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
-    TELEPATHY_QT4_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel,
+    TP_QT_NO_EXPORT void onNewChannels(const QList<Tp::ChannelPtr> &channels);
+    TP_QT_NO_EXPORT void onChannelInvalidated(const Tp::ChannelPtr &channel,
             const QString &errorName, const QString &errorMessage);
 
 private:
-    TELEPATHY_QT4_NO_EXPORT static SimpleCallObserverPtr create(
+    TP_QT_NO_EXPORT static SimpleCallObserverPtr create(
             const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization,
             CallDirection direction);
 
-    TELEPATHY_QT4_NO_EXPORT SimpleCallObserver(const AccountPtr &account,
+    TP_QT_NO_EXPORT SimpleCallObserver(const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization,
             CallDirection direction);
 

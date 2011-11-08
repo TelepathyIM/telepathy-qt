@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::Private
+struct TP_QT_NO_EXPORT ContactSearchChannel::Private
 {
     Private(ContactSearchChannel *parent,
             const QVariantMap &immutableProperties);
@@ -220,7 +220,7 @@ void ContactSearchChannel::Private::processSearchResultQueue()
     }
 }
 
-struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::SearchStateChangeDetails::Private : public QSharedData
+struct TP_QT_NO_EXPORT ContactSearchChannel::SearchStateChangeDetails::Private : public QSharedData
 {
     Private(const QVariantMap &details)
         : details(details) {}

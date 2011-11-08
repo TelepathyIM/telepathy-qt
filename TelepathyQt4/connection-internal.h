@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT Connection::PendingConnect : public PendingReady
+class TP_QT_NO_EXPORT Connection::PendingConnect : public PendingReady
 {
     Q_OBJECT
 
@@ -40,10 +40,10 @@ public:
     PendingConnect(const ConnectionPtr &connection, const Features &requestedFeatures);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onConnectReply(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void onStatusChanged(Tp::ConnectionStatus newStatus);
-    TELEPATHY_QT4_NO_EXPORT void onBecomeReadyReply(Tp::PendingOperation *);
-    TELEPATHY_QT4_NO_EXPORT void onConnInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
+    TP_QT_NO_EXPORT void onConnectReply(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void onStatusChanged(Tp::ConnectionStatus newStatus);
+    TP_QT_NO_EXPORT void onBecomeReadyReply(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onConnInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
 
 private:
     friend class ConnectionLowlevel;

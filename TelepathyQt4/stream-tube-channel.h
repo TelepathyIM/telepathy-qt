@@ -93,9 +93,9 @@ protected:
     bool isDroppingConnections() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void gotStreamTubeProperties(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint, const QString &, const QString &);
-    TELEPATHY_QT4_NO_EXPORT void dropConnections();
+    TP_QT_NO_EXPORT void gotStreamTubeProperties(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onConnectionClosed(uint, const QString &, const QString &);
+    TP_QT_NO_EXPORT void dropConnections();
 
 private:
     struct Private;

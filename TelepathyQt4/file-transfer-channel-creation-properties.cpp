@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : public QSharedData
+struct TP_QT_NO_EXPORT FileTransferChannelCreationProperties::Private : public QSharedData
 {
     Private(const QString &suggestedFileName, const QString &contentType,
             qulonglong size)

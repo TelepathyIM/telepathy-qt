@@ -65,7 +65,7 @@ Q_SIGNALS:
 
 protected:
     PendingOperation(const SharedPtr<RefCounted> &object);
-    TELEPATHY_QT4_NO_EXPORT SharedPtr<RefCounted> _object() const; // TODO: turn this into _object()
+    TP_QT_NO_EXPORT SharedPtr<RefCounted> _object() const; // TODO: turn this into _object()
 
 protected Q_SLOTS:
     void setFinished();
@@ -73,7 +73,7 @@ protected Q_SLOTS:
     void setFinishedWithError(const QDBusError &error);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void emitFinished();
+    TP_QT_NO_EXPORT void emitFinished();
 
 private:
     friend class ContactManager;

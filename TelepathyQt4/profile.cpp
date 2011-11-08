@@ -40,7 +40,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT Profile::Private
+struct TP_QT_NO_EXPORT Profile::Private
 {
     Private();
 
@@ -97,7 +97,7 @@ void Profile::Private::Data::clear()
 }
 
 
-class TELEPATHY_QT4_NO_EXPORT Profile::Private::XmlHandler :
+class TP_QT_NO_EXPORT Profile::Private::XmlHandler :
                 public QXmlDefaultHandler
 {
 public:
@@ -870,7 +870,7 @@ QStringList Profile::searchDirs()
 }
 
 
-struct TELEPATHY_QT4_NO_EXPORT Profile::Parameter::Private
+struct TP_QT_NO_EXPORT Profile::Parameter::Private
 {
     QString name;
     QDBusSignature dbusSignature;
@@ -1042,7 +1042,7 @@ Profile::Parameter &Profile::Parameter::operator=(const Profile::Parameter &othe
 }
 
 
-struct TELEPATHY_QT4_NO_EXPORT Profile::Presence::Private
+struct TP_QT_NO_EXPORT Profile::Presence::Private
 {
     QString id;
     QString label;

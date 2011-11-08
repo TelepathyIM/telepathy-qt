@@ -28,7 +28,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private
+struct TP_QT_NO_EXPORT SimpleTextObserver::Private
 {
     Private(SimpleTextObserver *parent, const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization);
@@ -43,7 +43,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private
     QHash<ChannelPtr, TextChannelWrapper*> channels;
 };
 
-class TELEPATHY_QT4_NO_EXPORT SimpleTextObserver::Private::TextChannelWrapper :
+class TP_QT_NO_EXPORT SimpleTextObserver::Private::TextChannelWrapper :
                 public QObject
 {
     Q_OBJECT

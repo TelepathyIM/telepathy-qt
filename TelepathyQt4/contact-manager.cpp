@@ -46,7 +46,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
+struct TP_QT_NO_EXPORT ContactManager::Private
 {
     Private(ContactManager *parent, Connection *connection);
     ~Private();

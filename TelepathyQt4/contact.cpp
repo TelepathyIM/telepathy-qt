@@ -41,7 +41,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT Contact::Private
+struct TP_QT_NO_EXPORT Contact::Private
 {
     Private(Contact *parent, ContactManager *manager,
         const ReferencedHandles &handle)
@@ -110,7 +110,7 @@ void Contact::Private::updateAvatarData()
     parent->manager()->requestContactAvatars(QList<ContactPtr>() << ContactPtr(parent));
 }
 
-struct TELEPATHY_QT4_NO_EXPORT Contact::InfoFields::Private : public QSharedData
+struct TP_QT_NO_EXPORT Contact::InfoFields::Private : public QSharedData
 {
     Private(const ContactInfoFieldList &allFields)
         : allFields(allFields) {}

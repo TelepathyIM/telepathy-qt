@@ -31,7 +31,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
+struct TP_QT_NO_EXPORT PendingReady::Private
 {
    Private(const DBusProxyPtr &proxy,
            const Features &requestedFeatures)

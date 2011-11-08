@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT DBusProxyFactory::Private
+struct TP_QT_NO_EXPORT DBusProxyFactory::Private
 {
     Private(const QDBusConnection &bus)
         : bus(bus),

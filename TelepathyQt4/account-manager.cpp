@@ -44,7 +44,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
+struct TP_QT_NO_EXPORT AccountManager::Private
 {
     Private(AccountManager *parent, const AccountFactoryConstPtr &accFactory,
             const ConnectionFactoryConstPtr &connFactory,

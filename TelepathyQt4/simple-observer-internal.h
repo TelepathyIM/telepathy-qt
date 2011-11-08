@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
+struct TP_QT_NO_EXPORT SimpleObserver::Private
 {
     Private(SimpleObserver *parent,
             const AccountPtr &account,
@@ -72,7 +72,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private
     static uint numObservers;
 };
 
-class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::FakeAccountFactory :
+class TP_QT_NO_EXPORT SimpleObserver::Private::FakeAccountFactory :
                 public AccountFactory
 {
     Q_OBJECT
@@ -114,7 +114,7 @@ private:
     QHash<QString, AccountPtr> mAccounts;
 };
 
-class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::Observer : public QObject,
+class TP_QT_NO_EXPORT SimpleObserver::Private::Observer : public QObject,
                 public AbstractClientObserver
 {
     Q_OBJECT
@@ -196,7 +196,7 @@ private:
     QHash<PendingOperation*, ContextInfo*> mObserveChannelsInfo;
 };
 
-class TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelWrapper :
+class TP_QT_NO_EXPORT SimpleObserver::Private::ChannelWrapper :
                 public QObject
 {
     Q_OBJECT
@@ -227,7 +227,7 @@ private:
     Features mExtraChannelFeatures;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::NewChannelsInfo
+struct TP_QT_NO_EXPORT SimpleObserver::Private::NewChannelsInfo
 {
     NewChannelsInfo();
     NewChannelsInfo(const AccountPtr &channelsAccount, const QList<ChannelPtr> &channels)
@@ -240,7 +240,7 @@ struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::NewChannelsInfo
     QList<ChannelPtr> channels;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT SimpleObserver::Private::ChannelInvalidationInfo
+struct TP_QT_NO_EXPORT SimpleObserver::Private::ChannelInvalidationInfo
 {
     ChannelInvalidationInfo();
     ChannelInvalidationInfo(const AccountPtr &channelAccount, const ChannelPtr &channel,

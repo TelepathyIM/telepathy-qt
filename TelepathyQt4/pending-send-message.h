@@ -54,17 +54,17 @@ public:
     Message message() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onTextSent(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onMessageSent(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onCDMessageSent(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onTextSent(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onMessageSent(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onCDMessageSent(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class TextChannel;
     friend class ContactMessenger;
 
-    TELEPATHY_QT4_NO_EXPORT PendingSendMessage(const TextChannelPtr &channel,
+    TP_QT_NO_EXPORT PendingSendMessage(const TextChannelPtr &channel,
             const Message &message);
-    TELEPATHY_QT4_NO_EXPORT PendingSendMessage(const ContactMessengerPtr &messenger,
+    TP_QT_NO_EXPORT PendingSendMessage(const ContactMessengerPtr &messenger,
             const Message &message);
 
     struct Private;

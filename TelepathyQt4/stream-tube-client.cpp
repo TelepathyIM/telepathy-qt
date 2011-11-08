@@ -95,7 +95,7 @@ namespace Tp
  * to it.
  */
 
-struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Tube::Private : public QSharedData
+struct TP_QT_NO_EXPORT StreamTubeClient::Tube::Private : public QSharedData
 {
     // empty placeholder for now
 };
@@ -189,7 +189,7 @@ StreamTubeClient::Tube &StreamTubeClient::Tube::operator=(
  * \return A pointer to the channel.
  */
 
-struct TELEPATHY_QT4_NO_EXPORT StreamTubeClient::Private
+struct TP_QT_NO_EXPORT StreamTubeClient::Private
 {
     Private(const ClientRegistrarPtr &registrar,
             const QStringList &p2pServices,

@@ -64,9 +64,9 @@ Q_SIGNALS:
     void accountRemoved(const Tp::AccountPtr &account);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onNewAccount(const Tp::AccountPtr &account);
-    TELEPATHY_QT4_NO_EXPORT void onAccountRemoved(const Tp::AccountPtr &account);
-    TELEPATHY_QT4_NO_EXPORT void onAccountChanged(const Tp::AccountPtr &account);
+    TP_QT_NO_EXPORT void onNewAccount(const Tp::AccountPtr &account);
+    TP_QT_NO_EXPORT void onAccountRemoved(const Tp::AccountPtr &account);
+    TP_QT_NO_EXPORT void onAccountChanged(const Tp::AccountPtr &account);
 
 private:
     struct Private;

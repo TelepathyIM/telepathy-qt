@@ -69,17 +69,17 @@ public:
     QHash<QString, QPair<QString, QString> > invalidIdentifiers() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onAttributesFinished(Tp::PendingOperation *);
-    TELEPATHY_QT4_NO_EXPORT void onRequestHandlesFinished(Tp::PendingOperation *);
-    TELEPATHY_QT4_NO_EXPORT void onReferenceHandlesFinished(Tp::PendingOperation *);
-    TELEPATHY_QT4_NO_EXPORT void onNestedFinished(Tp::PendingOperation *);
-    TELEPATHY_QT4_NO_EXPORT void onInspectHandlesFinished(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void onAttributesFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onRequestHandlesFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onReferenceHandlesFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onNestedFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onInspectHandlesFinished(QDBusPendingCallWatcher *);
 
 private:
     friend class ContactManager;
 
     // If errorName is non-empty, these will fail instantly
-    TELEPATHY_QT4_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const UIntList &handles,
+    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const UIntList &handles,
             const Features &features,
             const Features &missingFeatures,
             const QStringList &interfaces,
@@ -87,16 +87,16 @@ private:
             const QSet<uint> &otherContacts,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
-    TELEPATHY_QT4_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QStringList &identifiers,
+    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QStringList &identifiers,
             const Features &features,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
-    TELEPATHY_QT4_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QList<ContactPtr> &contacts,
+    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QList<ContactPtr> &contacts,
             const Features &features,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
 
-    TELEPATHY_QT4_NO_EXPORT void allAttributesFetched();
+    TP_QT_NO_EXPORT void allAttributesFetched();
 
     struct Private;
     friend struct Private;

@@ -49,7 +49,7 @@ namespace Tp
 // * making methods always raise an error when called after invalidated
 //   (has to be in the generated code)
 
-struct TELEPATHY_QT4_NO_EXPORT DBusProxy::Private
+struct TP_QT_NO_EXPORT DBusProxy::Private
 {
     Private(const QDBusConnection &dbusConnection, const QString &busName,
             const QString &objectPath);
@@ -247,7 +247,7 @@ void DBusProxy::emitInvalidated()
 
 // ==== StatefulDBusProxy ==============================================
 
-struct TELEPATHY_QT4_NO_EXPORT StatefulDBusProxy::Private
+struct TP_QT_NO_EXPORT StatefulDBusProxy::Private
 {
     Private(const QString &originalName)
         : originalName(originalName) {}

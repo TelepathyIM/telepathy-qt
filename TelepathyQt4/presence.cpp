@@ -27,7 +27,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT Presence::Private : public QSharedData
+struct TP_QT_NO_EXPORT Presence::Private : public QSharedData
 {
     Private(const SimplePresence &sp)
         : sp(sp)
@@ -199,7 +199,7 @@ SimplePresence Presence::barePresence() const
     return mPriv->sp;
 }
 
-struct TELEPATHY_QT4_NO_EXPORT PresenceSpec::Private : public QSharedData
+struct TP_QT_NO_EXPORT PresenceSpec::Private : public QSharedData
 {
     Private(const QString &status, const SimpleStatusSpec &spec)
         : status(status),

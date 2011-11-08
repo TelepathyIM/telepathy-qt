@@ -39,7 +39,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ReadinessHelper::Introspectable::Private : public QSharedData
+struct TP_QT_NO_EXPORT ReadinessHelper::Introspectable::Private : public QSharedData
 {
     Private(const QSet<uint> &makesSenseForStatuses,
             const Features &dependsOnFeatures,
@@ -91,7 +91,7 @@ ReadinessHelper::Introspectable &ReadinessHelper::Introspectable::operator=(
     return *this;
 }
 
-struct TELEPATHY_QT4_NO_EXPORT ReadinessHelper::Private
+struct TP_QT_NO_EXPORT ReadinessHelper::Private
 {
     Private(ReadinessHelper *parent,
             RefCounted *object,

@@ -111,22 +111,22 @@ protected:
             const Feature &coreFeature = TextChannel::FeatureCore);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onContactsFinished(Tp::PendingOperation *);
-    TELEPATHY_QT4_NO_EXPORT void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void onContactsFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
 
-    TELEPATHY_QT4_NO_EXPORT void onMessageSent(const Tp::MessagePartList &, uint,
+    TP_QT_NO_EXPORT void onMessageSent(const Tp::MessagePartList &, uint,
             const QString &);
-    TELEPATHY_QT4_NO_EXPORT void onMessageReceived(const Tp::MessagePartList &);
-    TELEPATHY_QT4_NO_EXPORT void onPendingMessagesRemoved(const Tp::UIntList &);
+    TP_QT_NO_EXPORT void onMessageReceived(const Tp::MessagePartList &);
+    TP_QT_NO_EXPORT void onPendingMessagesRemoved(const Tp::UIntList &);
 
-    TELEPATHY_QT4_NO_EXPORT void onTextSent(uint, uint, const QString &);
-    TELEPATHY_QT4_NO_EXPORT void onTextReceived(uint, uint, uint, uint, uint, const QString &);
-    TELEPATHY_QT4_NO_EXPORT void onTextSendError(uint, uint, uint, const QString &);
+    TP_QT_NO_EXPORT void onTextSent(uint, uint, const QString &);
+    TP_QT_NO_EXPORT void onTextReceived(uint, uint, uint, uint, uint, const QString &);
+    TP_QT_NO_EXPORT void onTextSendError(uint, uint, uint, const QString &);
 
-    TELEPATHY_QT4_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void gotPendingMessages(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void gotPendingMessages(QDBusPendingCallWatcher *);
 
-    TELEPATHY_QT4_NO_EXPORT void onChatStateChanged(uint, uint);
+    TP_QT_NO_EXPORT void onChatStateChanged(uint, uint);
 
 private:
     struct Private;

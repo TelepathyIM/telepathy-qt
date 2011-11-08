@@ -42,7 +42,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT SimpleCallObserver::Private
+struct TP_QT_NO_EXPORT SimpleCallObserver::Private
 {
     Private(SimpleCallObserver *parent, const AccountPtr &account,
             const QString &contactIdentifier, bool requiresNormalization,

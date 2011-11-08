@@ -85,9 +85,9 @@ private:
     friend class ReceivedMessage;
     friend class TextChannel;
 
-    TELEPATHY_QT4_NO_EXPORT Message();
-    TELEPATHY_QT4_NO_EXPORT Message(const MessagePartList &parts);
-    TELEPATHY_QT4_NO_EXPORT Message(uint, uint, const QString &);
+    TP_QT_NO_EXPORT Message();
+    TP_QT_NO_EXPORT Message(const MessagePartList &parts);
+    TP_QT_NO_EXPORT Message(uint, uint, const QString &);
 
     struct Private;
     friend struct Private;
@@ -127,7 +127,7 @@ public:
     private:
         friend class ReceivedMessage;
 
-        TELEPATHY_QT4_NO_EXPORT DeliveryDetails(const MessagePartList &parts);
+        TP_QT_NO_EXPORT DeliveryDetails(const MessagePartList &parts);
 
         struct Private;
         friend struct Private;
@@ -155,17 +155,17 @@ public:
 private:
     friend class TextChannel;
 
-    TELEPATHY_QT4_NO_EXPORT ReceivedMessage(const MessagePartList &parts,
+    TP_QT_NO_EXPORT ReceivedMessage(const MessagePartList &parts,
             const TextChannelPtr &channel);
-    TELEPATHY_QT4_NO_EXPORT ReceivedMessage();
+    TP_QT_NO_EXPORT ReceivedMessage();
 
-    TELEPATHY_QT4_NO_EXPORT uint senderHandle() const;
-    TELEPATHY_QT4_NO_EXPORT QString senderId() const;
-    TELEPATHY_QT4_NO_EXPORT uint pendingId() const;
+    TP_QT_NO_EXPORT uint senderHandle() const;
+    TP_QT_NO_EXPORT QString senderId() const;
+    TP_QT_NO_EXPORT uint pendingId() const;
 
-    TELEPATHY_QT4_NO_EXPORT void setForceNonText();
-    TELEPATHY_QT4_NO_EXPORT void clearSenderHandle();
-    TELEPATHY_QT4_NO_EXPORT void setSender(const ContactPtr &sender);
+    TP_QT_NO_EXPORT void setForceNonText();
+    TP_QT_NO_EXPORT void clearSenderHandle();
+    TP_QT_NO_EXPORT void setSender(const ContactPtr &sender);
 };
 
 } // Tp

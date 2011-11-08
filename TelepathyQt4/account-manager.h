@@ -132,12 +132,12 @@ protected:
     Client::AccountManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void introspectMain();
-    TELEPATHY_QT4_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    TELEPATHY_QT4_NO_EXPORT void onAccountReady(Tp::PendingOperation *op);
-    TELEPATHY_QT4_NO_EXPORT void onAccountValidityChanged(const QDBusObjectPath &objectPath,
+    TP_QT_NO_EXPORT void introspectMain();
+    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onAccountReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onAccountValidityChanged(const QDBusObjectPath &objectPath,
             bool valid);
-    TELEPATHY_QT4_NO_EXPORT void onAccountRemoved(const QDBusObjectPath &objectPath);
+    TP_QT_NO_EXPORT void onAccountRemoved(const QDBusObjectPath &objectPath);
 
 private:
     friend class PendingAccount;

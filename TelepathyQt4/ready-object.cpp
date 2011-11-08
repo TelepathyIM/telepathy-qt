@@ -30,7 +30,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ReadyObject::Private
+struct TP_QT_NO_EXPORT ReadyObject::Private
 {
     Private(ReadyObject *parent, RefCounted *object, Feature featureCore);
     Private(ReadyObject *parent, DBusProxy *proxy, Feature featureCore);

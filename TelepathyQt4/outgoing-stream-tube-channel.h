@@ -70,11 +70,11 @@ protected:
             const Feature &coreFeature = OutgoingStreamTubeChannel::FeatureCore);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onNewRemoteConnection(uint contactId,
+    TP_QT_NO_EXPORT void onNewRemoteConnection(uint contactId,
             const QDBusVariant &parameter, uint connectionId);
-    TELEPATHY_QT4_NO_EXPORT void onContactsRetrieved(const QUuid &uuid,
+    TP_QT_NO_EXPORT void onContactsRetrieved(const QUuid &uuid,
             const QList<Tp::ContactPtr> &contacts);
-    TELEPATHY_QT4_NO_EXPORT void onConnectionClosed(uint connectionId,
+    TP_QT_NO_EXPORT void onConnectionClosed(uint connectionId,
             const QString &errorName, const QString &errorMessage);
 
 private:

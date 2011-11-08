@@ -77,7 +77,7 @@ public:
     PendingVoid(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher*);
+    TP_QT_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
     struct Private;
@@ -97,7 +97,7 @@ public:
     ~PendingComposite();
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onOperationFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onOperationFinished(Tp::PendingOperation *);
 
 private:
     struct Private;

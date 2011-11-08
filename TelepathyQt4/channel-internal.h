@@ -29,7 +29,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT Channel::PendingLeave : public PendingOperation
+class TP_QT_NO_EXPORT Channel::PendingLeave : public PendingOperation
 {
     Q_OBJECT
 
@@ -38,11 +38,11 @@ public:
             ChannelGroupChangeReason reason);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onChanInvalidated(Tp::DBusProxy *proxy);
-    TELEPATHY_QT4_NO_EXPORT void onRemoveFinished(Tp::PendingOperation *);
-    TELEPATHY_QT4_NO_EXPORT void onMembersChanged(const Tp::Contacts &, const Tp::Contacts &, const Tp::Contacts &,
+    TP_QT_NO_EXPORT void onChanInvalidated(Tp::DBusProxy *proxy);
+    TP_QT_NO_EXPORT void onRemoveFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onMembersChanged(const Tp::Contacts &, const Tp::Contacts &, const Tp::Contacts &,
             const Tp::Contacts &);
-    TELEPATHY_QT4_NO_EXPORT void onCloseFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onCloseFinished(Tp::PendingOperation *);
 };
 
 } // Tp

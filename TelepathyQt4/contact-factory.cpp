@@ -25,7 +25,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT ContactFactory::Private
+struct TP_QT_NO_EXPORT ContactFactory::Private
 {
     Features features;
 };

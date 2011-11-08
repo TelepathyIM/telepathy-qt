@@ -107,10 +107,10 @@ protected:
     Client::ConnectionManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void gotProtocolsLegacy(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void gotParametersLegacy(QDBusPendingCallWatcher *);
-    TELEPATHY_QT4_NO_EXPORT void onProtocolReady(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void gotProtocolsLegacy(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void gotParametersLegacy(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void onProtocolReady(Tp::PendingOperation *);
 
 private:
     friend class PendingConnection;

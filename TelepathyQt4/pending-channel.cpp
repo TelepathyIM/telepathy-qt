@@ -41,7 +41,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
+struct TP_QT_NO_EXPORT PendingChannel::Private
 {
     class FakeAccountFactory;
 
@@ -62,7 +62,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
 
 uint PendingChannel::Private::numHandlers = 0;
 
-class TELEPATHY_QT4_NO_EXPORT PendingChannel::Private::FakeAccountFactory : public AccountFactory
+class TP_QT_NO_EXPORT PendingChannel::Private::FakeAccountFactory : public AccountFactory
 {
 public:
     static AccountFactoryPtr create(const AccountPtr &account)

@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-struct TELEPATHY_QT4_NO_EXPORT HandledChannelNotifier::Private
+struct TP_QT_NO_EXPORT HandledChannelNotifier::Private
 {
     Private(const ClientRegistrarPtr &cr,
             const SharedPtr<RequestTemporaryHandler> &handler)

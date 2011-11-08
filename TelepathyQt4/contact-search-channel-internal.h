@@ -30,7 +30,7 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::PendingSearch : public PendingOperation
+class TP_QT_NO_EXPORT ContactSearchChannel::PendingSearch : public PendingOperation
 {
     Q_OBJECT
 
@@ -38,9 +38,9 @@ public:
     PendingSearch(const ContactSearchChannelPtr &chan, QDBusPendingCall call);
 
 private Q_SLOTS:
-    TELEPATHY_QT4_NO_EXPORT void onSearchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,
+    TP_QT_NO_EXPORT void onSearchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,
             const Tp::ContactSearchChannel::SearchStateChangeDetails &details);
-    TELEPATHY_QT4_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher*);
+    TP_QT_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
     bool mFinished;
