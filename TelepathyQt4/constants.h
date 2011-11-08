@@ -115,21 +115,6 @@
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.DBus.Error.NameHasNoOwner".
- *
- * Raised by the D-Bus daemon when looking up the owner of a well-known name,
- * if no process owns that name.
- *
- * Also used by DBusProxy to indicate that the owner of a well-known name
- * has disappeared (usually indicating that the process owning that name
- * exited or crashed).
- */
-#define TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER \
-    "org.freedesktop.DBus.Error.NameHasNoOwner"
-
-/**
- * \ingroup errorstrconsts
- *
  * The error name "org.freedesktop.DBus.Error.NameHasNoOwner" as a QLatin1String.
  *
  * Raised by the D-Bus daemon when looking up the owner of a well-known name,
@@ -139,35 +124,16 @@
  * has disappeared (usually indicating that the process owning that name
  * exited or crashed).
  */
-#define TP_QT4_DBUS_ERROR_NAME_HAS_NO_OWNER \
+#define TP_QT_DBUS_ERROR_NAME_HAS_NO_OWNER \
     (QLatin1String("org.freedesktop.DBus.Error.NameHasNoOwner"))
-
-/**
- * \ingroup errorstrconsts
- *
- * The error name "org.freedesktop.DBus.Error.UnknownInterface".
- */
-#define TELEPATHY_DBUS_ERROR_UNKNOWN_INTERFACE \
-    "org.freedesktop.DBus.Error.UnknownInterface"
 
 /**
  * \ingroup errorstrconsts
  *
  * The error name "org.freedesktop.DBus.Error.UnknownInterface" as a QLatin1String.
  */
-#define TP_QT4_DBUS_ERROR_UNKNOWN_INTERFACE \
+#define TP_QT_DBUS_ERROR_UNKNOWN_INTERFACE \
     (QLatin1String("org.freedesktop.DBus.Error.UnknownInterface"))
-
-/**
- * \ingroup errorstrconsts
- *
- * The error name "org.freedesktop.DBus.Error.UnknownMethod".
- *
- * Raised by the D-Bus daemon when the method name invoked isn't
- * known by the object you invoked it on.
- */
-#define TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD \
-    "org.freedesktop.DBus.Error.UnknownMethod"
 
 /**
  * \ingroup errorstrconsts
@@ -177,7 +143,7 @@
  * Raised by the D-Bus daemon when the method name invoked isn't
  * known by the object you invoked it on.
  */
-#define TP_QT4_DBUS_ERROR_UNKNOWN_METHOD \
+#define TP_QT_DBUS_ERROR_UNKNOWN_METHOD \
     (QLatin1String("org.freedesktop.DBus.Error.UnknownMethod"))
 
 /**

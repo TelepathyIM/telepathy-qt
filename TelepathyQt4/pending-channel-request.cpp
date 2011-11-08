@@ -199,7 +199,7 @@ PendingOperation *PendingChannelRequest::cancel()
 {
     if (isFinished()) {
         // CR has already succeeded or failed, so let's just fail here
-        return new PendingFailure(QLatin1String(TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD),
+        return new PendingFailure(TP_QT_DBUS_ERROR_UNKNOWN_METHOD,
                 QLatin1String("ChannnelRequest already finished"),
                 _object());
     }

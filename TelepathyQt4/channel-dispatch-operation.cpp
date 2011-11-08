@@ -295,7 +295,7 @@ void ChannelDispatchOperation::PendingClaim::onClaimFinished(
  *
  * If the channel dispatcher crashes or exits, the invalidated
  * signal will be emitted with the error code
- * #TP_QT4_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
+ * #TP_QT_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
  * the dispatcher should be restarted, at which point it will create new
  * channel dispatch operations for any undispatched channels, and the approver
  * will be notified again.

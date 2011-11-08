@@ -135,8 +135,8 @@ void PendingSendMessage::onCDMessageSent(QDBusPendingCallWatcher *watcher)
 
     if (reply.isError()) {
         QDBusError error = reply.error();
-        if (error.name() == TP_QT4_DBUS_ERROR_UNKNOWN_METHOD ||
-            error.name() == TP_QT4_DBUS_ERROR_UNKNOWN_INTERFACE) {
+        if (error.name() == TP_QT_DBUS_ERROR_UNKNOWN_METHOD ||
+            error.name() == TP_QT_DBUS_ERROR_UNKNOWN_INTERFACE) {
             setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Channel Dispatcher implementation (e.g. mission-control), "
                         "does not support interface CD.I.Messages"));

@@ -442,7 +442,7 @@ void TestContactMessenger::testNoSupport()
     ContactMessengerPtr messenger = ContactMessenger::create(mAccount, QLatin1String("Ann"));
     QVERIFY(!messenger.isNull());
 
-    mCDMessagesAdaptor->setSimulatedSendError(TP_QT4_DBUS_ERROR_UNKNOWN_METHOD);
+    mCDMessagesAdaptor->setSimulatedSendError(TP_QT_DBUS_ERROR_UNKNOWN_METHOD);
 
     PendingSendMessage *pendingSend = messenger->sendMessage(QLatin1String("Hi!"));
     QVERIFY(pendingSend != NULL);

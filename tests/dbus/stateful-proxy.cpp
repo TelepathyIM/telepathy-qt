@@ -286,9 +286,9 @@ void TestStatefulProxy::testNameOwnerChanged()
     QCOMPARE(mInvalidated, 1);
     QVERIFY(!mProxy->isValid());
     QCOMPARE(mProxy->invalidationReason(),
-            QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER));
+            TP_QT_DBUS_ERROR_NAME_HAS_NO_OWNER);
     QCOMPARE(mSignalledInvalidationReason,
-            QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER));
+            TP_QT_DBUS_ERROR_NAME_HAS_NO_OWNER);
     QVERIFY(!mProxy->invalidationMessage().isEmpty());
     QCOMPARE(mProxy->invalidationMessage(), mSignalledInvalidationMessage);
 }

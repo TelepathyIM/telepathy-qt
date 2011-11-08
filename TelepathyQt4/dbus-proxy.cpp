@@ -343,7 +343,7 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
     // We only want to invalidate this object if it is not already invalidated,
     // and its (not any other object's) name owner changed signal is emitted.
     if (isValid() && name == mPriv->originalName && newOwner.isEmpty()) {
-        invalidate(QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER),
+        invalidate(TP_QT_DBUS_ERROR_NAME_HAS_NO_OWNER,
                 QLatin1String("Name owner lost (service crashed?)"));
     }
 }
