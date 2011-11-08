@@ -46,25 +46,13 @@
  * The prefix for a connection manager's bus name, to which the CM's name (e.g.
  * "gabble") should be appended.
  */
-#define TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE "org.freedesktop.Telepathy.ConnectionManager."
-
-/**
- * The prefix for a connection manager's bus name, to which the CM's name (e.g.
- * "gabble") should be appended.
- */
-#define TP_QT4_CONNECTION_MANAGER_BUS_NAME_BASE QLatin1String("org.freedesktop.Telepathy.ConnectionManager.")
+#define TP_QT_CONNECTION_MANAGER_BUS_NAME_BASE QLatin1String("org.freedesktop.Telepathy.ConnectionManager.")
 
 /**
  * The prefix for a connection manager's object path, to which the CM's name
  * (e.g. "gabble") should be appended.
  */
-#define TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE "/org/freedesktop/Telepathy/ConnectionManager/"
-
-/**
- * The prefix for a connection manager's object path, to which the CM's name
- * (e.g. "gabble") should be appended.
- */
-#define TP_QT4_CONNECTION_MANAGER_OBJECT_PATH_BASE QLatin1String("/org/freedesktop/Telepathy/ConnectionManager/")
+#define TP_QT_CONNECTION_MANAGER_OBJECT_PATH_BASE QLatin1String("/org/freedesktop/Telepathy/ConnectionManager/")
 
 /**
  * The prefix for a connection's bus name, to which the CM's name (e.g.
