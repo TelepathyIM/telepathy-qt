@@ -59,21 +59,14 @@
  * "gabble"), the protocol (e.g. "jabber") and an element
  * representing the account should be appended.
  */
-#define TELEPATHY_CONNECTION_BUS_NAME_BASE "org.freedesktop.Telepathy.Connection."
-
-/**
- * The prefix for a connection's bus name, to which the CM's name (e.g.
- * "gabble"), the protocol (e.g. "jabber") and an element
- * representing the account should be appended.
- */
-#define TP_QT4_CONNECTION_BUS_NAME_BASE QLatin1String("org.freedesktop.Telepathy.Connection.")
+#define TP_QT_CONNECTION_BUS_NAME_BASE QLatin1String("org.freedesktop.Telepathy.Connection.")
 
 /**
  * The prefix for a connection's object path, to which the CM's name (e.g.
  * "gabble"), the protocol (e.g. "jabber") and an element
  * representing the account should be appended.
  */
-#define TELEPATHY_CONNECTION_OBJECT_PATH_BASE "/org/freedesktop/Telepathy/Connection/"
+#define TP_QT_CONNECTION_OBJECT_PATH_BASE "/org/freedesktop/Telepathy/Connection/"
 
 /**
  * The well-known bus name of the Account Manager.
