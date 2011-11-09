@@ -21,6 +21,8 @@ if(ENABLE_TP_GLIB_TESTS)
         bug16307-conn.h
         contacts-conn.c
         contacts-conn.h
+        contacts-noroster-conn.c
+        contacts-noroster-conn.h
         contact-list-manager.h
         contact-list-manager.c
         contact-search-chan.c
