@@ -53,9 +53,6 @@ void TestCapabilities::testConnCapabilities()
     QVERIFY(!connCaps.contactSearches());
     QVERIFY(!connCaps.contactSearchesWithSpecificServer());
     QVERIFY(!connCaps.contactSearchesWithLimit());
-    QVERIFY(!connCaps.contactSearch());
-    QVERIFY(!connCaps.contactSearchWithSpecificServer());
-    QVERIFY(!connCaps.contactSearchWithLimit());
     QVERIFY(!connCaps.streamTubes());
 
     RequestableChannelClassSpecList rccSpecs;
@@ -86,9 +83,6 @@ void TestCapabilities::testConnCapabilities()
     QVERIFY(!connCaps.contactSearches());
     QVERIFY(!connCaps.contactSearchesWithSpecificServer());
     QVERIFY(!connCaps.contactSearchesWithLimit());
-    QVERIFY(!connCaps.contactSearch());
-    QVERIFY(!connCaps.contactSearchWithSpecificServer());
-    QVERIFY(!connCaps.contactSearchWithLimit());
     QVERIFY(!connCaps.streamTubes());
     QCOMPARE(connCaps.allClassSpecs(), rccSpecs);
 
@@ -125,9 +119,6 @@ void TestCapabilities::testConnCapabilities()
     QVERIFY(connCaps.contactSearches());
     QVERIFY(connCaps.contactSearchesWithSpecificServer());
     QVERIFY(connCaps.contactSearchesWithLimit());
-    QVERIFY(connCaps.contactSearch());
-    QVERIFY(connCaps.contactSearchWithSpecificServer());
-    QVERIFY(connCaps.contactSearchWithLimit());
     QCOMPARE(connCaps.allClassSpecs(), rccSpecs);
 
     // start over
@@ -216,9 +207,6 @@ void TestCapabilities::testConnCapabilities()
     QVERIFY(!connCaps.contactSearches());
     QVERIFY(!connCaps.contactSearchesWithSpecificServer());
     QVERIFY(!connCaps.contactSearchesWithLimit());
-    QVERIFY(!connCaps.contactSearch());
-    QVERIFY(!connCaps.contactSearchWithSpecificServer());
-    QVERIFY(!connCaps.contactSearchWithLimit());
     QVERIFY(!connCaps.streamTubes());
 
     rccSpecs.append(RequestableChannelClassSpec::textChat());
@@ -298,9 +286,6 @@ void TestCapabilities::testConnCapabilities()
     QVERIFY(!connCaps.contactSearches());
     QVERIFY(!connCaps.contactSearchesWithSpecificServer());
     QVERIFY(!connCaps.contactSearchesWithLimit());
-    QVERIFY(!connCaps.contactSearch());
-    QVERIFY(!connCaps.contactSearchWithSpecificServer());
-    QVERIFY(!connCaps.contactSearchWithLimit());
     QVERIFY(!connCaps.streamTubes());
 }
 

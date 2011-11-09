@@ -54,10 +54,6 @@ public:
     bool contactSearchesWithSpecificServer() const;
     bool contactSearchesWithLimit() const;
 
-    TP_QT_DEPRECATED bool contactSearch();
-    TP_QT_DEPRECATED bool contactSearchWithSpecificServer() const;
-    TP_QT_DEPRECATED bool contactSearchWithLimit() const;
-
     bool streamTubes() const;
 
 protected:
