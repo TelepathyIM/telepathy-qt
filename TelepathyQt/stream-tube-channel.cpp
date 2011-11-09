@@ -623,22 +623,6 @@ QString StreamTubeChannel::localAddress() const
     return mPriv->unixAddress;
 }
 
-/**
- * \deprecated This method never did anything useful when called from outside,
- * and now does nothing at all. It will be removed in the next API/ABI break.
- */
-void StreamTubeChannel::setBaseTubeType(uint type)
-{
-    Q_UNUSED(type);
-}
-
-void StreamTubeChannel::setConnections(UIntList connections)
-{
-    // This is rather sub-optimal: we'll do a O(n) replace of the old connections list every time a
-    // connection is added, so O(n^2) in total for adding n connections
-    mPriv->connections = QSet<uint>::fromList(connections);
-}
-
 void StreamTubeChannel::addConnection(uint connection)
 {
     if (!mPriv->connections.contains(connection)) {
