@@ -151,7 +151,6 @@ public:
      * Filter on being blocked or not
      */
     bool isBlocked() const;
-    TP_QT_DEPRECATED PendingOperation *block(bool value);
     PendingOperation *block();
     PendingOperation *blockAndReportAbuse();
     PendingOperation *unblock();

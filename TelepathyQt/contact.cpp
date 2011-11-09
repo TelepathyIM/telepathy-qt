@@ -802,15 +802,6 @@ bool Contact::isBlocked() const
 }
 
 /**
- * \deprecated Use block() instead.
- */
-PendingOperation *Contact::block(bool value)
-{
-    return value ? manager()->blockContacts(QList<ContactPtr>() << ContactPtr(this))
-                 : manager()->unblockContacts(QList<ContactPtr>() << ContactPtr(this));
-}
-
-/**
  * Block this contact. Blocked contacts cannot send messages to the user;
  * depending on the protocol, blocking a contact may have other effects.
  *
