@@ -184,7 +184,7 @@ ReadinessHelper::Private::~Private()
 {
     const static QString messageDestroyed(QLatin1String("Destroyed"));
 
-    abortOperations(TP_QT4_ERROR_CANCELLED, messageDestroyed);
+    abortOperations(TP_QT_ERROR_CANCELLED, messageDestroyed);
 }
 
 void ReadinessHelper::Private::setCurrentStatus(uint newStatus)

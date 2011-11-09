@@ -529,13 +529,13 @@ add_custom_target(all-generated-sources)
 tpqt4_constants_gen(stable-constants ${gen_stable_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
                     --namespace=Tp
                     --str-constant-prefix=TELEPATHY_
-                    --define-prefix=TP_QT4_
+                    --define-prefix=TP_QT_
                     --must-define=IN_TP_QT_HEADER
                     DEPENDS stable-ifaces-includator)
 tpqt4_constants_gen(future-constants ${gen_future_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
                     --namespace=TpFuture
                     --str-constant-prefix=TP_FUTURE_
-                    --define-prefix=TP_QT4_FUTURE_
+                    --define-prefix=TP_QT_FUTURE_
                     DEPENDS future-ifaces-includator)
 
 tpqt4_types_gen(stable-typesgen ${gen_stable_spec_xml}

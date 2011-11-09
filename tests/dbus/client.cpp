@@ -522,7 +522,7 @@ void TestClient::testRegister()
     QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), QLatin1String("foo")));
 
     mClientCapabilities.setICEUDPNATTraversalToken();
-    mClientCapabilities.setToken(TP_QT4_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
+    mClientCapabilities.setToken(TP_QT_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING +
             QLatin1String("/audio/speex=true"));
 
     ChannelClassSpecList filters;

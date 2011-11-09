@@ -249,7 +249,7 @@ void TestSimpleObserver::initTestCase()
     // - the channels for the second account have bob as target
     for (int i = 0; i < 2; ++i) {
         // setup account
-        QString accountBusName = TP_QT4_IFACE_ACCOUNT_MANAGER;
+        QString accountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
         QString accountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/account/") +
             QString::number(i);
 
@@ -323,7 +323,7 @@ void TestSimpleObserver::initTestCase()
                     NULL));
 
         QVariantMap immutableProperties;
-        immutableProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
+        immutableProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
         mTextChans[i] = TextChannel::create(conn, messagesChanPath, immutableProperties);
         QVERIFY(connect(mTextChans[i]->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -340,7 +340,7 @@ void TestSimpleObserver::initTestCase()
                     NULL));
 
         immutableProperties.clear();
-        immutableProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
+        immutableProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
         mSMChans[i] = StreamedMediaChannel::create(conn, callableChanPath, immutableProperties);
         QVERIFY(connect(mSMChans[i]->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -731,7 +731,7 @@ QMap<QString, QString> TestSimpleObserver::ourObservers()
             continue;
         }
 
-        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_OBSERVER)) {
+        if (!ifaces.contains(TP_QT_IFACE_CLIENT_OBSERVER)) {
             continue;
         }
 

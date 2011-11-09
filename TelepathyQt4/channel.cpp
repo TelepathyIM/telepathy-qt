@@ -320,7 +320,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
     ReadinessHelper::Introspectable introspectableConferenceInitialInviteeContacts(
         QSet<uint>() << 0,                                           // makesSenseForStatuses
         Features() << FeatureCore,                                   // dependsOnFeatures
-        QStringList() << TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE,  // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE,  // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectConferenceInitialInviteeContacts,
         this);
     introspectables[FeatureConferenceInitialInviteeContacts] =
@@ -1946,7 +1946,7 @@ void Channel::PendingLeave::onCloseFinished(Tp::PendingOperation *op)
  *
  * If leaving any more gracefully is not possible, this will revert to the same as requestClose().
  * In particular, this will be the case for channels with no group interface
- * (#TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP not in the list returned by interfaces()).
+ * (#TP_QT_IFACE_CHANNEL_INTERFACE_GROUP not in the list returned by interfaces()).
  *
  * The returned PendingOperation object will signal the success or failure
  * of this request; under normal circumstances, it can be expected to
@@ -1973,12 +1973,12 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
     }
 
     if (!isReady(Channel::FeatureCore)) {
-        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE,
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel::FeatureCore must be ready to leave a channel"),
                 ChannelPtr(this));
     }
 
-    if (!interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         return requestClose();
     }
 
@@ -2483,7 +2483,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
  * Handle owner lookup is only available if:
  * <ul>
  *  <li>The object is ready
- *  <li>The list returned by interfaces() contains #TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP</li>
+ *  <li>The list returned by interfaces() contains #TP_QT_IFACE_CHANNEL_INTERFACE_GROUP</li>
  *  <li>The set of flags returned by groupFlags() contains
  *      #GroupFlagProperties and #GroupFlagChannelSpecificHandles</li>
  * </ul>
@@ -2645,7 +2645,7 @@ PendingOperation *Channel::groupAddSelfHandle()
 
 /**
  * Return whether this channel implements the conference interface
- * (#TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE is in the list returned by interfaces()).
+ * (#TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE is in the list returned by interfaces()).
  *
  * This method requires Channel::FeatureCore to be ready.
  *
@@ -2653,7 +2653,7 @@ PendingOperation *Channel::groupAddSelfHandle()
  */
 bool Channel::isConference() const
 {
-    return hasInterface(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE);
+    return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE);
 }
 
 /**
@@ -2922,7 +2922,7 @@ void Channel::onClosed()
                 mPriv->groupSelfContactRemoveInfo);
         message = mPriv->groupSelfContactRemoveInfo.message();
     } else {
-        error = TP_QT4_ERROR_CANCELLED;
+        error = TP_QT_ERROR_CANCELLED;
         message = QLatin1String("channel closed");
     }
 

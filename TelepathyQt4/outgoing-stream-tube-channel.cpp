@@ -106,9 +106,9 @@ void PendingOpenTube::onTubeStateChanged(TubeChannelState state)
         setFinished();
     } else {
         if (state != TubeChannelStateRemotePending) {
-            warning() << "Offering tube failed with" << TP_QT4_ERROR_CONNECTION_REFUSED;
+            warning() << "Offering tube failed with" << TP_QT_ERROR_CONNECTION_REFUSED;
             // Something happened
-            setFinishedWithError(TP_QT4_ERROR_CONNECTION_REFUSED,
+            setFinishedWithError(TP_QT_ERROR_CONNECTION_REFUSED,
                     QLatin1String("The connection to this tube was refused"));
         } else {
             debug() << "Awaiting remote to accept the tube";

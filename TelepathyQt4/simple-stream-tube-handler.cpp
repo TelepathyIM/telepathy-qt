@@ -127,7 +127,7 @@ void SimpleStreamTubeHandler::handleChannels(
                 chan->immutableProperties()[QLatin1String(
                         TELEPATHY_INTERFACE_CHANNEL ".ChannelType")].toString();
 
-            if (channelType != TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE) {
+            if (channelType != TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE) {
                 debug() << "We got a non-StreamTube channel" << chan->objectPath() <<
                     "of type" << channelType << ", ignoring";
             } else {
@@ -159,7 +159,7 @@ void SimpleStreamTubeHandler::handleChannels(
     if (invocation->tubes.isEmpty()) {
         warning() << "SSTH::HandleChannels got no suitable channels, admitting we're Confused";
         invocation->readyOp = 0;
-        invocation->error = TP_QT4_ERROR_CONFUSED;
+        invocation->error = TP_QT_ERROR_CONFUSED;
         invocation->message = QLatin1String("Got no suitable channels");
         onReadyOpFinished(0);
     } else {

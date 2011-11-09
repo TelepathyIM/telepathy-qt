@@ -238,7 +238,7 @@ void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels)
     foreach (const ChannelPtr &channel, channels) {
         StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
         if (!smChannel) {
-            if (channel->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+            if (channel->channelType() != TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
                 warning() << "Channel received to observe is not of type StreamedMedia, service "
                     "confused. Ignoring channel";
             } else {
@@ -259,7 +259,7 @@ void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
 {
     StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
     if (!smChannel) {
-        if (channel->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+        if (channel->channelType() != TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
             warning() << "Channel received by this observer is not of type StreamedMedia, service "
                 "confused. Ignoring channel";
         } else {

@@ -646,22 +646,22 @@ QString ReceivedMessage::DeliveryDetails::dbusError() const
     if (ret.isEmpty()) {
         switch (error()) {
             case ChannelTextSendErrorOffline:
-                ret = TP_QT4_ERROR_OFFLINE;
+                ret = TP_QT_ERROR_OFFLINE;
                 break;
             case ChannelTextSendErrorInvalidContact:
-                ret = TP_QT4_ERROR_DOES_NOT_EXIST;
+                ret = TP_QT_ERROR_DOES_NOT_EXIST;
                 break;
             case ChannelTextSendErrorPermissionDenied:
-                ret = TP_QT4_ERROR_PERMISSION_DENIED;
+                ret = TP_QT_ERROR_PERMISSION_DENIED;
                 break;
             case ChannelTextSendErrorTooLong:
-                ret = TP_QT4_ERROR_INVALID_ARGUMENT;
+                ret = TP_QT_ERROR_INVALID_ARGUMENT;
                 break;
             case ChannelTextSendErrorNotImplemented:
-                ret = TP_QT4_ERROR_NOT_IMPLEMENTED;
+                ret = TP_QT_ERROR_NOT_IMPLEMENTED;
                 break;
             default:
-                ret = TP_QT4_ERROR_NOT_AVAILABLE;
+                ret = TP_QT_ERROR_NOT_AVAILABLE;
         }
     }
     return ret;

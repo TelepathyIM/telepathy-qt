@@ -197,7 +197,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
         .arg(Private::numHandlers++);
     if (!mPriv->cr->registerClient(mPriv->handler, handlerName, false)) {
         warning() << "Unable to register handler" << handlerName;
-        setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+        setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Unable to register handler"));
         return;
     }
@@ -536,16 +536,16 @@ void PendingChannel::onAccountCreateChannelFinished(PendingOperation *op)
         // Our handler hasn't be called but the channel request is complete.
         // That means another handler handled the channels so we don't own it.
         if (mPriv->create) {
-            warning() << "Creating/ensuring channel failed with" << TP_QT4_ERROR_SERVICE_CONFUSED
+            warning() << "Creating/ensuring channel failed with" << TP_QT_ERROR_SERVICE_CONFUSED
                 << ":" << QLatin1String("CD.CreateChannel/WithHints returned successfully and "
                         "the handler didn't receive the channel yet");
-            setFinishedWithError(TP_QT4_ERROR_SERVICE_CONFUSED,
+            setFinishedWithError(TP_QT_ERROR_SERVICE_CONFUSED,
                     QLatin1String("CD.CreateChannel/WithHints returned successfully and "
                         "the handler didn't receive the channel yet"));
         } else {
-            warning() << "Creating/ensuring channel failed with" << TP_QT4_ERROR_NOT_YOURS
+            warning() << "Creating/ensuring channel failed with" << TP_QT_ERROR_NOT_YOURS
                 << ":" << QLatin1String("Another handler is handling this channel");
-            setFinishedWithError(TP_QT4_ERROR_NOT_YOURS,
+            setFinishedWithError(TP_QT_ERROR_NOT_YOURS,
                     QLatin1String("Another handler is handling this channel"));
         }
         return;

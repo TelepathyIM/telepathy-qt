@@ -228,7 +228,7 @@ void SimpleTextObserver::onNewChannels(const QList<ChannelPtr> &channels)
     foreach (const ChannelPtr &channel, channels) {
         TextChannelPtr textChannel = TextChannelPtr::qObjectCast(channel);
         if (!textChannel) {
-            if (channel->channelType() != TP_QT4_IFACE_CHANNEL_TYPE_TEXT) {
+            if (channel->channelType() != TP_QT_IFACE_CHANNEL_TYPE_TEXT) {
                 warning() << "Channel received to observe is not of type Text, service confused. "
                     "Ignoring channel";
             } else {

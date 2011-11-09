@@ -638,7 +638,7 @@ QList<ClientHandlerInterface *> TestAccountChannelDispatcher::ourHandlers()
             continue;
         }
 
-        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_HANDLER)) {
+        if (!ifaces.contains(TP_QT_IFACE_CLIENT_HANDLER)) {
             continue;
         }
 
@@ -673,7 +673,7 @@ QStringList TestAccountChannelDispatcher::ourHandledChannels()
             continue;
         }
 
-        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_HANDLER)) {
+        if (!ifaces.contains(TP_QT_IFACE_CLIENT_HANDLER)) {
             continue;
         }
 
@@ -968,7 +968,7 @@ void TestAccountChannelDispatcher::testCreateFileTransferChannelCancel()
 
 void TestAccountChannelDispatcher::testCreateFileTransferChannelInvalidParameters()
 {
-    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, false, true, TP_QT4_ERROR_INVALID_ARGUMENT);
+    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, false, true, TP_QT_ERROR_INVALID_ARGUMENT);
 }
 
 void TestAccountChannelDispatcher::testCreateChannel()
@@ -1043,13 +1043,13 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannel()
 
 void TestAccountChannelDispatcher::testCreateAndHandleChannelNotYours()
 {
-    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(ensureAndHandleChannel, false, true, false, TP_QT4_ERROR_NOT_YOURS, 0, 0);
+    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(ensureAndHandleChannel, false, true, false, TP_QT_ERROR_NOT_YOURS, 0, 0);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testCreateAndHandleChannelFail()
 {
-    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(createAndHandleChannel, true, true, false, TP_QT4_ERROR_NOT_AVAILABLE, 0, 0);
+    TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(createAndHandleChannel, true, true, false, TP_QT_ERROR_NOT_AVAILABLE, 0, 0);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::CC);
 }
 
@@ -1224,7 +1224,7 @@ void TestAccountChannelDispatcher::testCreateAndHandleFileTransferChannelFail()
 
 void TestAccountChannelDispatcher::testCreateAndHandleFileTransferChannelInvalidParameters()
 {
-    TEST_CREATE_AND_HANDLE_FILE_TRANSFER_CHANNEL(true, true, true, true, TP_QT4_ERROR_INVALID_ARGUMENT, 0, 0);
+    TEST_CREATE_AND_HANDLE_FILE_TRANSFER_CHANNEL(true, true, true, true, TP_QT_ERROR_INVALID_ARGUMENT, 0, 0);
 }
 
 void TestAccountChannelDispatcher::cleanup()

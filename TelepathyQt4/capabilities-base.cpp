@@ -319,8 +319,8 @@ bool CapabilitiesBase::streamedMediaVideoCallsWithAudio() const
 bool CapabilitiesBase::upgradingStreamedMediaCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.channelType() == TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            !rccSpec.allowsProperty(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".ImmutableStreams"))) {
+        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            !rccSpec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".ImmutableStreams"))) {
             // TODO should we test all classes that have channelType
             //      StreamedMedia or just one is fine?
             return true;

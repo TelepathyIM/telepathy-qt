@@ -412,7 +412,7 @@ void TestContactMessenger::initTestCase()
                 NULL));
 
     QVariantMap immutableProperties;
-    immutableProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID"),
+    immutableProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
             QLatin1String("ann"));
     mChan = TextChannel::create(mConn, mMessagesChanPath, immutableProperties);
     QVERIFY(connect(mChan->becomeReady(),
@@ -454,7 +454,7 @@ void TestContactMessenger::testNoSupport()
     QVERIFY(pendingSend->isFinished());
     QVERIFY(!pendingSend->isValid());
 
-    QCOMPARE(pendingSend->errorName(), TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QCOMPARE(pendingSend->errorName(), TP_QT_ERROR_NOT_IMPLEMENTED);
 
     // Let's try using the other sendMessage overload similarly as well
 
@@ -470,7 +470,7 @@ void TestContactMessenger::testNoSupport()
     QVERIFY(pendingSend->isFinished());
     QVERIFY(!pendingSend->isValid());
 
-    QCOMPARE(pendingSend->errorName(), TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QCOMPARE(pendingSend->errorName(), TP_QT_ERROR_NOT_IMPLEMENTED);
 }
 
 void TestContactMessenger::testObserverRegistration()
@@ -658,7 +658,7 @@ QList<ClientObserverInterface *> TestContactMessenger::ourObservers()
             continue;
         }
 
-        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_OBSERVER)) {
+        if (!ifaces.contains(TP_QT_IFACE_CLIENT_OBSERVER)) {
             continue;
         }
 

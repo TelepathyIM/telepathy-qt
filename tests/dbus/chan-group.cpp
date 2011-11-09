@@ -165,7 +165,7 @@ void TestChanGroup::init()
 
 void TestChanGroup::testCreateChannel()
 {
-    mChan = mConn->ensureChannel(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_LIST,
+    mChan = mConn->ensureChannel(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_LIST,
             Tp::HandleTypeGroup, QLatin1String("Cambridge"));
     QVERIFY(mChan);
     mChanObjectPath = mChan->objectPath();
@@ -322,7 +322,7 @@ void TestChanGroup::commonTest(gboolean properties)
 
 void TestChanGroup::testLeave()
 {
-    mChan = mConn->ensureChannel(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_LIST,
+    mChan = mConn->ensureChannel(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_LIST,
             Tp::HandleTypeGroup, QLatin1String("Cambridge"));
     QVERIFY(mChan);
     mChanObjectPath = mChan->objectPath();
@@ -332,7 +332,7 @@ void TestChanGroup::testLeave()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_AVAILABLE);
+    QCOMPARE(mLastError, TP_QT_ERROR_NOT_AVAILABLE);
     QVERIFY(!mLastErrorMessage.isEmpty());
 
     QVERIFY(connect(mChan->becomeReady(),
@@ -346,7 +346,7 @@ void TestChanGroup::testLeave()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT4_ERROR_INVALID_ARGUMENT);
+    QCOMPARE(mLastError, TP_QT_ERROR_INVALID_ARGUMENT);
     QVERIFY(!mLastErrorMessage.isEmpty());
 
     // passing an invalid contact too
@@ -354,7 +354,7 @@ void TestChanGroup::testLeave()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT4_ERROR_INVALID_ARGUMENT);
+    QCOMPARE(mLastError, TP_QT_ERROR_INVALID_ARGUMENT);
     QVERIFY(!mLastErrorMessage.isEmpty());
 
     // now it should work
@@ -464,7 +464,7 @@ void TestChanGroup::testGroupFlagsChange()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(textChan->isReady(), true);
 
-    QVERIFY(textChan->interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP));
+    QVERIFY(textChan->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP));
     QVERIFY(!(textChan->groupFlags() & ChannelGroupFlagCanAdd));
     QVERIFY(!textChan->canInviteContacts());
 

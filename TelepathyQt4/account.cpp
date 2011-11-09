@@ -324,7 +324,7 @@ QVariantMap conferenceCommonRequest(const char *channelType, Tp::HandleType targ
         objectPaths << QDBusObjectPath(channel->objectPath());
     }
 
-    request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"),
+    request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"),
             qVariantFromValue(objectPaths));
     return request;
 }
@@ -334,7 +334,7 @@ QVariantMap conferenceRequest(const char *channelType, Tp::HandleType targetHand
 {
     QVariantMap request = conferenceCommonRequest(channelType, targetHandleType, channels);
     if (!initialInviteeContactsIdentifiers.isEmpty()) {
-        request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeIDs"),
+        request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeIDs"),
                 initialInviteeContactsIdentifiers);
     }
     return request;
@@ -353,7 +353,7 @@ QVariantMap conferenceRequest(const char *channelType, Tp::HandleType targetHand
             handles << contact->handle()[0];
         }
         if (!handles.isEmpty()) {
-            request.insert(TP_QT4_IFACE_CHANNEL_INTERFACE_CONFERENCE +
+            request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE +
                         QLatin1String(".InitialInviteeHandles"), qVariantFromValue(handles));
         }
     }
@@ -1613,7 +1613,7 @@ ConnectionStatusReason Account::connectionStatusReason() const
 
 /**
  * Return the D-Bus error name for the last disconnection or connection failure,
- * (in particular, #TP_QT4_ERROR_CANCELLED if it was disconnected by user
+ * (in particular, #TP_QT_ERROR_CANCELLED if it was disconnected by user
  * request), or an empty string if the account is connected.
  *
  * This method requires Account::FeatureCore to be ready.
@@ -2499,7 +2499,7 @@ PendingChannelRequest *Account::createFileTransfer(
     QVariantMap request = fileTransferRequest(contactIdentifier, properties);
 
     if (request.isEmpty()) {
-        return new PendingChannelRequest(AccountPtr(this), TP_QT4_ERROR_INVALID_ARGUMENT,
+        return new PendingChannelRequest(AccountPtr(this), TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Cannot create a file transfer with invalid parameters"));
     }
 
@@ -2548,7 +2548,7 @@ PendingChannelRequest *Account::createFileTransfer(
     QVariantMap request = fileTransferRequest(contact, properties);
 
     if (request.isEmpty()) {
-        return new PendingChannelRequest(AccountPtr(this), TP_QT4_ERROR_INVALID_ARGUMENT,
+        return new PendingChannelRequest(AccountPtr(this), TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Cannot create a file transfer with invalid parameters"));
     }
 
@@ -3211,7 +3211,7 @@ PendingChannel *Account::createAndHandleFileTransfer(
     QVariantMap request = fileTransferRequest(contactIdentifier, properties);
 
     if (request.isEmpty()) {
-        return new PendingChannel(TP_QT4_ERROR_INVALID_ARGUMENT,
+        return new PendingChannel(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Cannot create a file transfer with invalid parameters"));
     }
 
@@ -3242,7 +3242,7 @@ PendingChannel *Account::createAndHandleFileTransfer(
     QVariantMap request = fileTransferRequest(contact, properties);
 
     if (request.isEmpty()) {
-        return new PendingChannel(TP_QT4_ERROR_INVALID_ARGUMENT,
+        return new PendingChannel(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Cannot create a file transfer with invalid parameters"));
     }
 
@@ -3606,7 +3606,7 @@ PendingChannelRequest *Account::ensureChannel(
  * The caller is responsible for closing the channel with
  * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
  *
- * A possible error returned by this method is #TP_QT4_ERROR_NOT_AVAILABLE, in case a conflicting
+ * A possible error returned by this method is #TP_QT_ERROR_NOT_AVAILABLE, in case a conflicting
  * channel that matches \a request already exists.
  *
  * \param request A dictionary containing desirable properties.
@@ -3636,7 +3636,7 @@ PendingChannel *Account::createAndHandleChannel(
  * The caller is responsible for closing the channel with
  * Channel::requestClose() or Channel::requestLeave() when it has finished handling it.
  *
- * A possible error returned by this method is #TP_QT4_ERROR_NOT_YOURS, in case somebody else is
+ * A possible error returned by this method is #TP_QT_ERROR_NOT_YOURS, in case somebody else is
  * already handling a channel that matches \a request.
  *
  * \param request A dictionary containing desirable properties.
@@ -4094,7 +4094,7 @@ void Account::onDispatcherIntrospected(Tp::PendingOperation *op)
             debug() << "Discovered channel dispatcher support for request hints: "
                 << mPriv->dispatcherContext->supportsHints;
         } else {
-            if (pv->errorName() == TP_QT4_ERROR_NOT_IMPLEMENTED) {
+            if (pv->errorName() == TP_QT_ERROR_NOT_IMPLEMENTED) {
                 debug() << "Channel Dispatcher does not implement support for request hints";
             } else {
                 warning() << "(Too old?) Channel Dispatcher failed to tell us whether"

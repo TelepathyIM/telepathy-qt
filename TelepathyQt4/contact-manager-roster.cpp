@@ -78,12 +78,12 @@ PendingOperation *ContactManager::Roster::introspect()
 {
     ConnectionPtr conn(contactManager->connection());
 
-    if (conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
+    if (conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
         debug() << "Connection.ContactList found, using it";
 
         usingFallbackContactList = false;
 
-        if (conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_BLOCKING)) {
+        if (conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_BLOCKING)) {
             debug() << "Connection.ContactBlocking found. using it";
             hasContactBlockingInterface = true;
             introspectContactBlocking();
@@ -136,9 +136,9 @@ PendingOperation *ContactManager::Roster::introspectGroups()
 
     Q_ASSERT(!introspectGroupsPendingOp);
 
-    if (conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
-        if (!conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
-            return new PendingFailure(TP_QT4_ERROR_NOT_IMPLEMENTED,
+    if (conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST)) {
+        if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Roster groups not supported"), conn);
         }
 
@@ -246,7 +246,7 @@ PendingOperation *ContactManager::Roster::addGroup(const QString &group)
         return conn->lowlevel()->ensureChannel(request);
     }
 
-    if (!conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+    if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Not implemented"),
                 conn);
@@ -273,7 +273,7 @@ PendingOperation *ContactManager::Roster::removeGroup(const QString &group)
         return new RemoveGroupOp(channel);
     }
 
-    if (!conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+    if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Not implemented"),
                 conn);
@@ -320,7 +320,7 @@ PendingOperation *ContactManager::Roster::addContactsToGroup(const QString &grou
         return channel->groupAddContacts(contacts);
     }
 
-    if (!conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+    if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Not implemented"),
                 conn);
@@ -353,7 +353,7 @@ PendingOperation *ContactManager::Roster::removeContactsFromGroup(const QString 
         return channel->groupRemoveContacts(contacts);
     }
 
-    if (!conn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
+    if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Not implemented"),
                 conn);
@@ -1273,7 +1273,7 @@ void ContactManager::Roster::onContactListChannelReady()
             emit contactManager->stateChanged((Tp::ContactListState) contactListState);
 
             Q_ASSERT(introspectPendingOp);
-            introspectPendingOp->setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
+            introspectPendingOp->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Roster not supported"));
             introspectPendingOp = 0;
             return;
@@ -1700,7 +1700,7 @@ void ContactManager::Roster::introspectContactListContacts()
             interfaces.insert(contactManager->featureToInterface(feature));
         }
     }
-    interfaces.insert(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST);
+    interfaces.insert(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST);
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             iface->GetContactListAttributes(interfaces.toList(), true), contactManager);

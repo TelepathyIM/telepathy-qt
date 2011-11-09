@@ -65,7 +65,7 @@ void PendingFileSend::onTransferStateChanged(FileTransferState state,
         mFile.setFileName(QUrl(uri).toLocalFile());
         if (!mFile.open(QIODevice::ReadOnly)) {
             qWarning() << "Unable to open" << uri << "for reading, aborting transfer";
-            setFinishedWithError(TP_QT4_ERROR_INVALID_ARGUMENT,
+            setFinishedWithError(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("Unable to open file for reading"));
             return;
         }

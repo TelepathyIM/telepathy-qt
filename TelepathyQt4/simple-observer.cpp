@@ -123,7 +123,7 @@ bool SimpleObserver::Private::filterChannel(const AccountPtr &channelAccount,
     }
 
     QString targetId = channel->immutableProperties().value(
-            TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
     if (targetId != normalizedContactIdentifier) {
         // we didn't filter per contact, let's filter here
         return false;

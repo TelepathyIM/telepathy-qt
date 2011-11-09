@@ -58,9 +58,9 @@ ChannelClassSpec::ChannelClassSpec(const QVariantMap &props)
     : mPriv(new Private)
 {
     setChannelType(qdbus_cast<QString>(
-                props.value(TP_QT4_IFACE_CHANNEL + QLatin1String(".ChannelType"))));
+                props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))));
     setTargetHandleType((HandleType) qdbus_cast<uint>(
-                props.value(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetHandleType"))));
+                props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"))));
 
     foreach (QString propName, props.keys()) {
         setProperty(propName, props.value(propName));

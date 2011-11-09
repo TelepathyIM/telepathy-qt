@@ -1115,7 +1115,7 @@ void StreamTubeServer::onConnectionClosed(
  *
  * Emitted when a TCP connection (previously announced with newTcpConnection()) through one of our
  * handled tubes has been closed due to an error or by a graceful disconnect (in which case the
- * error is ::TP_QT4_ERROR_DISCONNECTED).
+ * error is ::TP_QT_ERROR_DISCONNECTED).
  *
  * This is only emitted if connection monitoring was enabled when creating the StreamTubeServer.
  * Additionally, if the protocol backend the connection is from doesn't support the

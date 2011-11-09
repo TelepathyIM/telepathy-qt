@@ -1366,7 +1366,7 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
 {
     if (!isValid()) {
         warning() << "ConnectionLowlevel::selfHandle() called for a connection which is already destroyed";
-        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE, QLatin1String("Connection already destroyed"),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE, QLatin1String("Connection already destroyed"),
                 ConnectionPtr());
     }
 
@@ -1574,12 +1574,12 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
         mPriv->immortalHandles = qdbus_cast<bool>(props[QLatin1String("HasImmortalHandles")]);
     }
 
-    if (hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
+    if (hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
         mPriv->introspectMainQueue.enqueue(
                 &Private::introspectCapabilities);
     }
 
-    if (hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
+    if (hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
         mPriv->introspectMainQueue.enqueue(
                 &Private::introspectContactAttributeInterfaces);
     }
@@ -1851,7 +1851,7 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request,
 {
     if (!isValid()) {
         return new PendingChannel(ConnectionPtr(),
-                TP_QT4_ERROR_NOT_AVAILABLE,
+                TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
     }
 
@@ -1923,7 +1923,7 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request,
 {
     if (!isValid()) {
         return new PendingChannel(ConnectionPtr(),
-                TP_QT4_ERROR_NOT_AVAILABLE,
+                TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
     }
 
@@ -1989,7 +1989,7 @@ PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const 
     debug() << "Request for" << names.length() << "handles of type" << handleType;
 
     if (!isValid()) {
-        return new PendingHandles(TP_QT4_ERROR_NOT_AVAILABLE,
+        return new PendingHandles(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
     }
 
@@ -2041,7 +2041,7 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
     debug() << "Reference of" << handles.length() << "handles of type" << handleType;
 
     if (!isValid()) {
-        return new PendingHandles(TP_QT4_ERROR_NOT_AVAILABLE,
+        return new PendingHandles(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
     }
 
@@ -2094,7 +2094,7 @@ PendingReady *ConnectionLowlevel::requestConnect(const Features &requestedFeatur
     if (!isValid()) {
         Connection::PendingConnect *pending = new Connection::PendingConnect(ConnectionPtr(),
                 requestedFeatures);
-        pending->setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+        pending->setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
         return pending;
     }
@@ -2118,7 +2118,7 @@ PendingReady *ConnectionLowlevel::requestConnect(const Features &requestedFeatur
 PendingOperation *ConnectionLowlevel::requestDisconnect()
 {
     if (!isValid()) {
-        return new PendingFailure(TP_QT4_ERROR_NOT_AVAILABLE,
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"), ConnectionPtr());
     }
 
@@ -2144,14 +2144,14 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  *
  * If the remote object doesn't support the Contacts interface (as signified by
  * the list returned by interfaces() not containing
- * #TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACTS), the returned
+ * #TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS), the returned
  * PendingContactAttributes instance will fail instantly with the error
- * #TP_QT4_ERROR_NOT_IMPLEMENTED.
+ * #TP_QT_ERROR_NOT_IMPLEMENTED.
  *
  * Similarly, if the connection isn't both connected and ready
  * (<code>status() == ConnectionStatusConnected && isReady(Connection::FeatureCore)</code>),
  * the returned PendingContactAttributes instance will fail instantly with the
- * error #TP_QT4_ERROR_NOT_AVAILABLE.
+ * error #TP_QT_ERROR_NOT_AVAILABLE.
  *
  * This method requires Connection::FeatureCore to be ready.
  *
@@ -2171,7 +2171,7 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &
     if (!isValid()) {
         PendingContactAttributes *pending = new PendingContactAttributes(ConnectionPtr(),
                 handles, interfaces, reference);
-        pending->failImmediately(TP_QT4_ERROR_NOT_AVAILABLE,
+        pending->failImmediately(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
         return pending;
     }

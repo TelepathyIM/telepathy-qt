@@ -176,13 +176,13 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
         debug() << "Got everything we want from the immutable props for" <<
             self->info().name();
 
-        if (self->hasInterface(TP_QT4_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
+        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
             self->introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
         } else {
             debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
         }
 
-        if (self->hasInterface(TP_QT4_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
+        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
             self->introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
         } else {
             debug() << "Full functionality requires CM support for the Protocol.Presence interface";
@@ -195,7 +195,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
     debug() << "Not enough immutable properties, calling Properties::GetAll(Protocol) for" <<
         self->info().name();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT4_IFACE_PROTOCOL),
+            properties->GetAll(TP_QT_IFACE_PROTOCOL),
             self);
     self->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -209,7 +209,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
 
     debug() << "Calling Properties::GetAll(Protocol.Avatars)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT4_IFACE_PROTOCOL_INTERFACE_AVATARS),
+            properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
             this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -223,7 +223,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
 
     debug() << "Calling Properties::GetAll(Protocol.Presence)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT4_IFACE_PROTOCOL_INTERFACE_PRESENCE),
+            properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
             this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -253,7 +253,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         foreach (QString unqualified, unqualifiedProps.keys()) {
             qualifiedProps.insert(
                     QString(QLatin1String("%1.%2")).
-                        arg(TP_QT4_IFACE_PROTOCOL).
+                        arg(TP_QT_IFACE_PROTOCOL).
                         arg(unqualified),
                     unqualifiedProps.value(unqualified));
         }
@@ -265,13 +265,13 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         warning() << "  Full functionality requires CM support for the Protocol interface";
     }
 
-    if (hasInterface(TP_QT4_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
+    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
         introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
     } else {
         debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
     }
 
-    if (hasInterface(TP_QT4_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
+    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
         introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
     } else {
         debug() << "Full functionality requires CM support for the Protocol.Presence interface";
@@ -867,7 +867,7 @@ PendingConnection *ConnectionManagerLowlevel::requestConnection(const QString &p
         const QVariantMap &parameters)
 {
     if (!isValid()) {
-        return new PendingConnection(TP_QT4_ERROR_NOT_AVAILABLE,
+        return new PendingConnection(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection manager has been destroyed already"));
     }
 

@@ -129,13 +129,13 @@ void ContactManager::PendingRefreshContactInfo::refreshInfo()
     Q_ASSERT(!mToRequest.isEmpty());
 
     if (!mConn->isValid()) {
-        setFinishedWithError(TP_QT4_ERROR_NOT_AVAILABLE,
+        setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"));
         return;
     }
 
-    if (!mConn->hasInterface(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
-        setFinishedWithError(TP_QT4_ERROR_NOT_IMPLEMENTED,
+    if (!mConn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
+        setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Connection does not support ContactInfo interface"));
         return;
     }
@@ -1384,21 +1384,21 @@ ContactPtr ContactManager::ensureContact(uint bareHandle, const QString &id,
 QString ContactManager::featureToInterface(const Feature &feature)
 {
     if (feature == Contact::FeatureAlias) {
-        return TP_QT4_IFACE_CONNECTION_INTERFACE_ALIASING;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING;
     } else if (feature == Contact::FeatureAvatarToken) {
-        return TP_QT4_IFACE_CONNECTION_INTERFACE_AVATARS;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS;
     } else if (feature == Contact::FeatureAvatarData) {
-        return TP_QT4_IFACE_CONNECTION_INTERFACE_AVATARS;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS;
     } else if (feature == Contact::FeatureSimplePresence) {
-        return TP_QT4_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
     } else if (feature == Contact::FeatureCapabilities) {
-        return TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES;
     } else if (feature == Contact::FeatureLocation) {
-        return TP_QT4_IFACE_CONNECTION_INTERFACE_LOCATION;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_LOCATION;
     } else if (feature == Contact::FeatureInfo) {
-        return TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_INFO;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO;
     } else if (feature == Contact::FeatureRosterGroups) {
-        return TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
     } else {
         warning() << "ContactManager doesn't know which interface corresponds to feature"
             << feature;

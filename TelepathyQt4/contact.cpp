@@ -914,19 +914,19 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
     mPriv->id = qdbus_cast<QString>(attributes[
             QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id")]);
 
-    if (attributes.contains(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
+    if (attributes.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
                 QLatin1String("/subscribe"))) {
         uint subscriptionState = qdbus_cast<uint>(attributes.value(
-                     TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/subscribe")));
+                     TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/subscribe")));
         setSubscriptionState((SubscriptionState) subscriptionState);
     }
 
-    if (attributes.contains(TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
+    if (attributes.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
                 QLatin1String("/publish"))) {
         uint publishState = qdbus_cast<uint>(attributes.value(
-                    TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish")));
+                    TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish")));
         QString publishRequest = qdbus_cast<QString>(attributes.value(
-                    TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish-request")));
+                    TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish-request")));
         setPublishState((SubscriptionState) publishState, publishRequest);
     }
 
@@ -1023,7 +1023,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureRosterGroups) {
             QStringList groups = qdbus_cast<QStringList>(attributes.value(
-                        TP_QT4_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
             mPriv->groups = groups.toSet();
         } else {
             warning() << "Unknown feature" << feature << "encountered when augmenting Contact";

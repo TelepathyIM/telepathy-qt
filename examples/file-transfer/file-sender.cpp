@@ -221,7 +221,7 @@ void FileSender::onTransferRequestFinished(PendingOperation *op)
 
     // We should always receive outgoing channels of type FileTransfer, as requested,
     // otherwise either MC or tp-qt4 itself is bogus, so let's assert in case they are
-    Q_ASSERT(chan->channelType() == TP_QT4_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    Q_ASSERT(chan->channelType() == TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
     Q_ASSERT(chan->isRequested());
 
     OutgoingFileTransferChannelPtr transferChannel = OutgoingFileTransferChannelPtr::qObjectCast(chan);

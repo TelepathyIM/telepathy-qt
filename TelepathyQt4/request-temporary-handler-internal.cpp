@@ -76,14 +76,14 @@ void RequestTemporaryHandler::handleChannels(
     }
 
     if (!errorMessage.isEmpty()) {
-        warning() << "Handling channel failed with" << TP_QT4_ERROR_SERVICE_CONFUSED << ":" <<
+        warning() << "Handling channel failed with" << TP_QT_ERROR_SERVICE_CONFUSED << ":" <<
             errorMessage;
 
         // Only emit error if we didn't receive any channel yet.
         if (!oldChannel) {
-            emit error(TP_QT4_ERROR_SERVICE_CONFUSED, errorMessage);
+            emit error(TP_QT_ERROR_SERVICE_CONFUSED, errorMessage);
         }
-        context->setFinishedWithError(TP_QT4_ERROR_SERVICE_CONFUSED, errorMessage);
+        context->setFinishedWithError(TP_QT_ERROR_SERVICE_CONFUSED, errorMessage);
         return;
     }
 

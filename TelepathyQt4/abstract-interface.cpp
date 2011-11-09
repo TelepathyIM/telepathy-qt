@@ -105,7 +105,7 @@ void AbstractInterface::invalidate(DBusProxy *proxy,
 PendingVariant *AbstractInterface::internalRequestProperty(const QString &name) const
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(),
-            TP_QT4_IFACE_PROPERTIES, QLatin1String("Get"));
+            TP_QT_IFACE_PROPERTIES, QLatin1String("Get"));
     msg << interface() << name;
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
     DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
@@ -116,7 +116,7 @@ PendingOperation *AbstractInterface::internalSetProperty(const QString &name,
         const QVariant &newValue)
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(),
-            TP_QT4_IFACE_PROPERTIES, QLatin1String("Set"));
+            TP_QT_IFACE_PROPERTIES, QLatin1String("Set"));
     msg << interface() << name << QVariant::fromValue(QDBusVariant(newValue));
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
     DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
@@ -126,7 +126,7 @@ PendingOperation *AbstractInterface::internalSetProperty(const QString &name,
 PendingVariantMap *AbstractInterface::internalRequestAllProperties() const
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(),
-            TP_QT4_IFACE_PROPERTIES, QLatin1String("GetAll"));
+            TP_QT_IFACE_PROPERTIES, QLatin1String("GetAll"));
     msg << interface();
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
     DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
