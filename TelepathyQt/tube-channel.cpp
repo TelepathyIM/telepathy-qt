@@ -207,14 +207,6 @@ TubeChannelState TubeChannel::state() const
     return mPriv->state;
 }
 
-/**
- * \deprecated Use state() instead.
- */
-TubeChannelState TubeChannel::tubeState() const
-{
-    return state();
-}
-
 void TubeChannel::setParameters(const QVariantMap &parameters)
 {
     mPriv->parameters = parameters;

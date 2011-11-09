@@ -47,7 +47,6 @@ public:
     virtual ~TubeChannel();
 
     TubeChannelState state() const;
-    TP_QT_DEPRECATED TubeChannelState tubeState() const;
 
     QVariantMap parameters() const;
 
