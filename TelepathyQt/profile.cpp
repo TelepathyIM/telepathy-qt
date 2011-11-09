@@ -1174,14 +1174,6 @@ bool Profile::Presence::canHaveStatusMessage() const
     return false;
 }
 
-/**
- * \deprecated Use canHaveStatusMessage() instead.
- */
-QString Profile::Presence::message() const
-{
-    return mPriv->message;
-}
-
 void Profile::Presence::setMessage(const QString &message)
 {
     mPriv->message = message;
