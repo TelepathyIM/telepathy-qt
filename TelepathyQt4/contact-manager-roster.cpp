@@ -1173,10 +1173,12 @@ void ContactManager::Roster::gotContactListChannelHandle(PendingOperation *op)
     PendingHandles *ph = qobject_cast<PendingHandles*>(op);
     Q_ASSERT(ph->namesRequested().size() == 1);
     QString channelId = ph->namesRequested().first();
+    uint type = ChannelInfo::typeForIdentifier(channelId);
 
     if (op->isError()) {
         // let's not fail, because the contact lists are not supported
         debug() << "Unable to retrieve handle for" << channelId << "channel, ignoring";
+        contactListChannels.remove(type);
         onContactListChannelReady();
         return;
     }
@@ -1184,6 +1186,7 @@ void ContactManager::Roster::gotContactListChannelHandle(PendingOperation *op)
     if (ph->invalidNames().size() == 1) {
         // let's not fail, because the contact lists are not supported
         debug() << "Unable to retrieve handle for" << channelId << "channel, ignoring";
+        contactListChannels.remove(type);
         onContactListChannelReady();
         return;
     }
@@ -1192,7 +1195,6 @@ void ContactManager::Roster::gotContactListChannelHandle(PendingOperation *op)
 
     debug() << "Got handle for" << channelId << "channel";
 
-    uint type = ChannelInfo::typeForIdentifier(channelId);
     if (!usingFallbackContactList) {
         Q_ASSERT(type == ChannelInfo::TypeDeny);
     } else {
