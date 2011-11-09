@@ -2806,19 +2806,6 @@ PendingChannelRequest *Account::createConferenceTextChat(
 }
 
 /**
- * Same as \c createConferenceTextChatroom(roomName, channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createConferenceTextChatRoom(
-        const QString &roomName,
-        const QList<ChannelPtr> &channels,
-        const QStringList &initialInviteeContactsIdentifiers,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createConferenceTextChatroom(roomName, channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to create a conference text chat room with the given
  * channels \a channels and room name \a roomName.
  *
@@ -2853,19 +2840,6 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
-}
-
-/**
- * Same as \c createConferenceTextChatroom(roomName, channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createConferenceTextChatRoom(
-        const QString &roomName,
-        const QList<ChannelPtr> &channels,
-        const QList<ContactPtr> &initialInviteeContacts,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createConferenceTextChatroom(roomName, channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**

@@ -385,12 +385,6 @@ public:
             const QString &preferredHandler,
             const ChannelRequestHints &hints);
 
-    TP_QT_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
-            const QString &roomName,
-            const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers = QStringList(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
     PendingChannelRequest *createConferenceTextChatroom(
             const QString &roomName,
             const QList<ChannelPtr> &channels,
@@ -399,12 +393,6 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
-    TP_QT_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
-            const QString &roomName,
-            const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
     PendingChannelRequest *createConferenceTextChatroom(
             const QString &roomName,
             const QList<ChannelPtr> &channels,
