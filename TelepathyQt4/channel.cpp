@@ -2958,7 +2958,7 @@ void Channel::onConnectionInvalidated()
 {
     debug() << "Owning connection died leaving an orphan Channel, "
         "changing to closed";
-    invalidate(QLatin1String(TP_QT4_ERROR_ORPHANED),
+    invalidate(TP_QT_ERROR_ORPHANED,
                QLatin1String("Connection given as the owner of this channel was invalidated"));
 }
 

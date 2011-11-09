@@ -1034,7 +1034,7 @@ void StreamTubeClient::onConnectionClosed(
  *
  * Emitted when a connection (previously announced with newConnection()) through one of our
  * handled tubes has been closed due to an error or by a graceful disconnect (in which case the
- * error is ::TP_QT4_ERROR_CANCELLED).
+ * error is ::TP_QT_ERROR_CANCELLED).
  *
  * This is only emitted if connection monitoring was enabled when creating the StreamTubeClient.
  *

@@ -276,7 +276,7 @@ void TestChanBasics::cleanupTestCase()
     if (mChan) {
         QVERIFY(!mChan->isValid());
         QVERIFY(mChan->invalidationReason() == TP_QT4_ERROR_CANCELLED ||
-                mChan->invalidationReason() == TP_QT4_ERROR_ORPHANED);
+                mChan->invalidationReason() == TP_QT_ERROR_ORPHANED);
     }
 
     cleanupTestCaseImpl();

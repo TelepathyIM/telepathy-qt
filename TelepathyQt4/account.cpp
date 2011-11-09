@@ -714,7 +714,7 @@ QMap<QString, QSharedPointer<Account::Private::DispatcherContext> > Account::Pri
  *
  * If the account is deleted from the AccountManager, this object
  * will not be deleted automatically; however, it will emit invalidated()
- * with error code #TP_QT4_ERROR_OBJECT_REMOVED and will cease to
+ * with error code #TP_QT_ERROR_OBJECT_REMOVED and will cease to
  * be useful.
  *
  * \section account_usage_sec Usage
@@ -4225,7 +4225,7 @@ void Account::onRemoved()
 {
     mPriv->valid = false;
     mPriv->enabled = false;
-    invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
+    invalidate(TP_QT_ERROR_OBJECT_REMOVED,
             QLatin1String("Account removed from AccountManager"));
     emit removed();
 }

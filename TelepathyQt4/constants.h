@@ -149,33 +149,17 @@
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved".
- */
-#define TELEPATHY_QT4_ERROR_OBJECT_REMOVED \
-    "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved"
-
-/**
- * \ingroup errorstrconsts
- *
  * The error name "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved" as a QLatin1String.
  */
-#define TP_QT4_ERROR_OBJECT_REMOVED \
+#define TP_QT_ERROR_OBJECT_REMOVED \
     (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved"))
-
-/**
- * \ingroup errorstrconsts
- *
- * The error name "org.freedesktop.Telepathy.Qt4.Error.Inconsistent".
- */
-#define TELEPATHY_QT4_ERROR_INCONSISTENT \
-    "org.freedesktop.Telepathy.Qt4.Error.Inconsistent"
 
 /**
  * \ingroup errorstrconsts
  *
  * The error name "org.freedesktop.Telepathy.Qt4.Error.Inconsistent" as a QLatin1String.
  */
-#define TP_QT4_ERROR_INCONSISTENT \
+#define TP_QT_ERROR_INCONSISTENT \
     (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Inconsistent"))
 
 /**
@@ -188,7 +172,7 @@
  * StreamTube connections when their parent StreamTubeChannel is invalidated. The invalidation
  * reason of the parent proxy might provide more information on the cause of the error.
  */
-#define TP_QT4_ERROR_ORPHANED \
+#define TP_QT_ERROR_ORPHANED \
     (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Orphaned"))
 
 #endif

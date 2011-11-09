@@ -290,7 +290,7 @@ void IncomingFileTransferChannel::connectToHost()
         warning() << "InitialOffset bigger than requested offset, "
             "cancelling the transfer";
         cancel();
-        invalidate(QLatin1String(TELEPATHY_QT4_ERROR_INCONSISTENT),
+        invalidate(TP_QT_ERROR_INCONSISTENT,
                 QLatin1String("Initial offset bigger than requested offset"));
         return;
     }

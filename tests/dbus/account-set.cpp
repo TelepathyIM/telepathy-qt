@@ -151,7 +151,7 @@ void TestAccountSet::removeAccount(const AccountPtr &acc)
     }
 
     QCOMPARE(acc->isValid(), false);
-    QCOMPARE(acc->invalidationReason(), TP_QT4_ERROR_OBJECT_REMOVED);
+    QCOMPARE(acc->invalidationReason(), TP_QT_ERROR_OBJECT_REMOVED);
 }
 
 QStringList TestAccountSet::pathsForAccounts(const QList<Tp::AccountPtr> &list)

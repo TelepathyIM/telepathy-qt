@@ -718,7 +718,7 @@ void StreamTubeChannel::dropConnections()
             << "connections remaining, synthesizing close events";
         mPriv->droppingConnections = true;
         foreach (uint connId, mPriv->connections) {
-            removeConnection(connId, TP_QT4_ERROR_ORPHANED,
+            removeConnection(connId, TP_QT_ERROR_ORPHANED,
                     QLatin1String("parent tube invalidated, streams closing"));
         }
         mPriv->droppingConnections = false;

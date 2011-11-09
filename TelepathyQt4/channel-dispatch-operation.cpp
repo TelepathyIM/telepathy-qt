@@ -287,11 +287,11 @@ void ChannelDispatchOperation::PendingClaim::onClaimFinished(
  *
  * Because all approvers are launched simultaneously, the user might respond
  * to another approver; if this happens, the invalidated signal will be
- * emitted with the error code #TP_QT4_ERROR_OBJECT_REMOVED.
+ * emitted with the error code #TP_QT_ERROR_OBJECT_REMOVED.
  *
  * If a channel closes, the signal channelLost() is emitted. If all channels
  * close, there is nothing more to dispatch, so the invalidated signal will be
- * emitted with the error code #TP_QT4_ERROR_OBJECT_REMOVED.
+ * emitted with the error code #TP_QT_ERROR_OBJECT_REMOVED.
  *
  * If the channel dispatcher crashes or exits, the invalidated
  * signal will be emitted with the error code
@@ -462,7 +462,7 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
  *
  * If successful, this method will cause the ChannelDispatchOperation object to
  * disappear, emitting invalidated with error
- * #TP_QT4_ERROR_OBJECT_REMOVED.
+ * #TP_QT_ERROR_OBJECT_REMOVED.
  *
  * However, this method may fail because the dispatch has already been completed
  * and the object has already gone. If this occurs, it indicates that another
@@ -552,7 +552,7 @@ PendingOperation *ChannelDispatchOperation::claim(const AbstractClientHandlerPtr
  * Emitted when a channel has closed before it could be claimed or handled. If this is
  * emitted for the last remaining channel in a channel dispatch operation, it
  * will immediately be followed by invalidated() with error
- * #TP_QT4_ERROR_OBJECT_REMOVED.
+ * #TP_QT_ERROR_OBJECT_REMOVED.
  *
  * \param channel The channel that was closed.
  * \param error The name of a D-Bus error indicating why the channel closed.
@@ -576,7 +576,7 @@ Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterfa
 void ChannelDispatchOperation::onFinished()
 {
     debug() << "ChannelDispatchOperation finished and was removed";
-    invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
+    invalidate(TP_QT_ERROR_OBJECT_REMOVED,
                QLatin1String("ChannelDispatchOperation finished and was removed"));
 }
 

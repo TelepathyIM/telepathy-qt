@@ -1185,7 +1185,7 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     QCOMPARE(mClosedServerConnectionAddress, expectedAddress);
     QCOMPARE(mClosedServerConnectionPort, quint16(2));
     QCOMPARE(mClosedServerConnectionContact->id(), QLatin1String("second"));
-    QCOMPARE(mServerConnectionCloseError, QString(TP_QT4_ERROR_ORPHANED)); // parent tube died
+    QCOMPARE(mServerConnectionCloseError, TP_QT_ERROR_ORPHANED); // parent tube died
 
     QCOMPARE(mServerClosedTube, mRequestedTube);
     QCOMPARE(mServerCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
@@ -1868,7 +1868,7 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
 
     QVERIFY(client->connections().isEmpty());
     QCOMPARE(mClosedClientConnectionId, secondId);
-    QCOMPARE(mClientConnectionCloseError, QString(TP_QT4_ERROR_ORPHANED)); // parent tube died
+    QCOMPARE(mClientConnectionCloseError, TP_QT_ERROR_ORPHANED); // parent tube died
 
     QCOMPARE(mClientClosedTube, mOfferedTube);
     QCOMPARE(mClientCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
