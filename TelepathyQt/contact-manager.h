@@ -102,8 +102,6 @@ public:
 
     bool canBlockContacts() const;
     bool canReportAbuse() const;
-    TP_QT_DEPRECATED PendingOperation *blockContacts(
-            const QList<ContactPtr> &contacts, bool value);
     PendingOperation *blockContacts(const QList<ContactPtr> &contacts);
     PendingOperation *blockContactsAndReportAbuse(const QList<ContactPtr> &contacts);
     PendingOperation *unblockContacts(const QList<ContactPtr> &contacts);
@@ -123,7 +121,6 @@ public:
 
     ContactPtr lookupContactByHandle(uint handle);
 
-    TP_QT_DEPRECATED void requestContactAvatar(Contact *contact);
     void requestContactAvatars(const QList<ContactPtr> &contacts);
 
     PendingOperation *refreshContactInfo(const QList<ContactPtr> &contact);

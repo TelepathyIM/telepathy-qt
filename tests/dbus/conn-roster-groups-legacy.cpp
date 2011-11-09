@@ -535,7 +535,7 @@ void TestConnRosterGroupsLegacy::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mContact->id() == QLatin1String("friendorfoe@example.com"));
 
-    // Roster operations SHOULD still fail though, as FeatureRoster isn't ready 
+    // Roster operations SHOULD still fail though, as FeatureRoster isn't ready
     QVERIFY(connect(mConn->contactManager()->requestPresenceSubscription(
                     QList<ContactPtr>() << mContact,
                     QLatin1String("I just want to see you fail")),
@@ -564,7 +564,7 @@ void TestConnRosterGroupsLegacy::testNotADeathTrap()
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(connect(mConn->contactManager()->blockContacts(QList<ContactPtr>() << mContact, true),
+    QVERIFY(connect(mConn->contactManager()->blockContacts(QList<ContactPtr>() << mContact),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -784,7 +784,7 @@ void TestConnRosterGroupsLegacy::testNotADeathTrap()
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(connect(mConn->contactManager()->blockContacts(QList<ContactPtr>() << mContact, true),
+    QVERIFY(connect(mConn->contactManager()->blockContacts(QList<ContactPtr>() << mContact),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);

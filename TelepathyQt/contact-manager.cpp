@@ -906,15 +906,6 @@ bool ContactManager::canReportAbuse() const
 }
 
 /**
- * \deprecated Use blockContacts(const QList<ContactPtr> &contacts) instead.
- */
-PendingOperation *ContactManager::blockContacts(
-        const QList<ContactPtr> &contacts, bool value)
-{
-    return mPriv->roster->blockContacts(contacts, value, false);
-}
-
-/**
  * Block the given contacts. Blocked contacts cannot send messages
  * to the user; depending on the protocol, blocking a contact may
  * have other effects.
@@ -1134,17 +1125,6 @@ void ContactManager::requestContactAvatars(const QList<ContactPtr> &contacts)
     }
 
     mPriv->requestAvatarsQueue.unite(contacts.toSet());
-}
-
-/**
- * \deprecated
- *
- * This was never intended to be public API.
- * Use Contact::requestAvatarData() or ContactManager::requestContactAvatars() instead.
- */
-void ContactManager::requestContactAvatar(Contact *contact)
-{
-    requestContactAvatars(QList<ContactPtr>() << ContactPtr(contact));
 }
 
 /**
