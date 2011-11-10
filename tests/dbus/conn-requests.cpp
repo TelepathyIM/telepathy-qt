@@ -4,7 +4,7 @@
 
 #include <tests/lib/glib/echo2/conn.h>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Connection>

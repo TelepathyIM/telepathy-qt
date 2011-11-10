@@ -93,7 +93,7 @@ public:
     static PendingStringList *listNames(
             const QDBusConnection &bus = QDBusConnection::sessionBus());
 
-#if defined(BUILDING_TP_QT) || defined(TP_QT4_ENABLE_LOWLEVEL_API)
+#if defined(BUILDING_TP_QT) || defined(TP_QT_ENABLE_LOWLEVEL_API)
     ConnectionManagerLowlevelPtr lowlevel();
     ConnectionManagerLowlevelConstPtr lowlevel() const;
 #endif

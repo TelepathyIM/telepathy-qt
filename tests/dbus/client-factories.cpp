@@ -7,7 +7,7 @@
 #include <QString>
 #include <QVariantMap>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountFactory>

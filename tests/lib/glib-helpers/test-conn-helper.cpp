@@ -1,7 +1,7 @@
 #include "tests/lib/glib-helpers/test-conn-helper.h"
 #include "tests/lib/glib-helpers/_gen/test-conn-helper.moc.hpp"
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>

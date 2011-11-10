@@ -5,7 +5,7 @@
 
 #include <QtTest/QtTest>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
@@ -535,7 +535,7 @@ void TestConnRosterGroups::testNotADeathTrap()
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mContact->id() == QLatin1String("friendorfoe@example.com"));
 
-    // Roster operations SHOULD still fail though, as FeatureRoster isn't ready 
+    // Roster operations SHOULD still fail though, as FeatureRoster isn't ready
     QVERIFY(connect(mConn->contactManager()->requestPresenceSubscription(
                     QList<ContactPtr>() << mContact,
                     QLatin1String("I just want to see you fail")),

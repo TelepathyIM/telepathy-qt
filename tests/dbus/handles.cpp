@@ -4,7 +4,7 @@
 
 #include <tests/lib/glib/simple-conn.h>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionLowlevel>

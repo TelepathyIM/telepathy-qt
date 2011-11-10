@@ -5,7 +5,7 @@
 #include <tests/lib/glib/echo2/conn.h>
 #include <tests/lib/glib/textchan-null.h>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelFactory>

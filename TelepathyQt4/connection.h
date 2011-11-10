@@ -177,7 +177,7 @@ public:
 
     ContactManagerPtr contactManager() const;
 
-#if defined(BUILDING_TP_QT) || defined(TP_QT4_ENABLE_LOWLEVEL_API)
+#if defined(BUILDING_TP_QT) || defined(TP_QT_ENABLE_LOWLEVEL_API)
     ConnectionLowlevelPtr lowlevel();
     ConnectionLowlevelConstPtr lowlevel() const;
 #endif

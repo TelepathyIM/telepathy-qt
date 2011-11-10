@@ -5,7 +5,7 @@
 #include <QtDBus>
 #include <QtTest>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
