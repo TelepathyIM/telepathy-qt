@@ -80,7 +80,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 include(TelepathyDefaults)
 
 # This file contains all the tpqt macros used in the buildsystem
-include(TpQt4Macros)
+include(TpQtMacros)
 
 include(MacroLogFeature)
 

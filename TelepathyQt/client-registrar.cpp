@@ -661,7 +661,7 @@ struct TP_QT_NO_EXPORT ClientRegistrar::Private
  *
  * The instance will use an account factory creating Tp::Account objects with no features
  * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
- * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
+ * factory creating stock Telepathy-Qt channel subclasses, as appropriate, with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \return A ClientRegistrarPtr object pointing to the newly created ClientRegistrar object.

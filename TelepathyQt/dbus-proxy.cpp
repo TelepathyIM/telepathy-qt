@@ -77,7 +77,7 @@ DBusProxy::Private::Private(const QDBusConnection &dbusConnection,
  *
  * \brief The DBusProxy class is a base class representing a remote object available over D-Bus.
  *
- * All Telepathy-Qt4 client convenience classes that wrap Telepathy interfaces
+ * All Telepathy-Qt client convenience classes that wrap Telepathy interfaces
  * inherit from this class in order to provide basic D-Bus interface
  * information.
  */

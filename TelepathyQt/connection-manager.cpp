@@ -631,7 +631,7 @@ const Feature ConnectionManager::FeatureCore = Feature(QLatin1String(ConnectionM
  * Create a new ConnectionManager object.
  *
  * The instance will use a connection factory creating Tp::Connection objects with no features
- * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * ready, and a channel factory creating stock Telepathy-Qt channel subclasses, as appropriate,
  * with no features ready.
  *
  * \param bus QDBusConnection to use.

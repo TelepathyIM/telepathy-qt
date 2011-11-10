@@ -4,11 +4,11 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIBILITY_HIDDEN_FLAGS} ${COMPILER_COVERAGE_FLAGS} ${DEPRECATED_DECLARATIONS_FLAGS}")
 set(LD_FLAGS "${LD_FLAGS} ${VISIBILITY_HIDDEN_FLAGS} ${COMPILER_COVERAGE_FLAGS} ${DEPRECATED_DECLARATIONS_FLAGS}")
 
-# We are building Telepathy-Qt4
+# We are building Telepathy-Qt
 add_definitions(-DBUILDING_TP_QT)
 
-# Sources for Tp-Qt4
-set(telepathy_qt4_SRCS
+# Sources for Tp-Qt
+set(telepathy_qt_SRCS
     abstract-client.cpp
     abstract-interface.cpp
     account.cpp
@@ -120,8 +120,8 @@ set(telepathy_qt4_SRCS
     types-internal.h
     utils.cpp)
 
-# Exported headers for Tp-Qt4
-set(telepathy_qt4_HEADERS
+# Exported headers for Tp-Qt
+set(telepathy_qt_HEADERS
     AbstractClient
     AbstractClientApprover
     abstract-client.h
@@ -422,7 +422,7 @@ set(telepathy_qt4_HEADERS
     utils.h)
 
 # Generated headers which will be installed and exported
-set(telepathy_qt4_gen_HEADERS
+set(telepathy_qt_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account-manager.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel.h
@@ -441,7 +441,7 @@ set(telepathy_qt4_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 
 # Headers file moc will be run on
-set(telepathy_qt4_MOC_SRCS
+set(telepathy_qt_MOC_SRCS
     abstract-interface.h
     account.h
     account-factory.h
@@ -550,11 +550,11 @@ tpqt_types_gen(future-typesgen ${gen_future_spec_xml}
                 DEPENDS future-constants)
 
 # Add the generated types to the library's sources
-list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
-list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp)
-list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h)
-list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h)
-list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp)
+list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
+list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp)
+list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h)
+list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h)
+list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp)
 
 # For each spec, both stable and future, generate a cli file and add it to the sources (including mocs).
 set(SPECS
@@ -578,8 +578,8 @@ foreach(spec ${SPECS})
     set(NEW_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
-    list(APPEND telepathy_qt4_SRCS ${NEW_FILES})
-    list(APPEND telepathy_qt4_generated_specs_mocs "moc-cli-${spec}.moc.hpp")
+    list(APPEND telepathy_qt_SRCS ${NEW_FILES})
+    list(APPEND telepathy_qt_generated_specs_mocs "moc-cli-${spec}.moc.hpp")
     set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
 endforeach(spec ${SPECS})
 
@@ -594,8 +594,8 @@ foreach(spec ${FUTURE_SPECS})
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp)
-    list(APPEND telepathy_qt4_SRCS ${NEW_FILES})
-    list(APPEND telepathy_qt4_generated_specs_mocs "moc-future-${spec}.moc.hpp")
+    list(APPEND telepathy_qt_SRCS ${NEW_FILES})
+    list(APPEND telepathy_qt_generated_specs_mocs "moc-future-${spec}.moc.hpp")
     set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
 endforeach(spec ${FUTURE_SPECS})
 
@@ -632,49 +632,49 @@ endif (TARGET doxygen-doc)
 
 # Create the library
 if (ENABLE_COMPILER_COVERAGE)
-    add_library(telepathy-qt4 STATIC ${telepathy_qt4_SRCS})
+    add_library(telepathy-qt STATIC ${telepathy_qt_SRCS})
 else (ENABLE_COMPILER_COVERAGE)
-    add_library(telepathy-qt4 SHARED ${telepathy_qt4_SRCS})
+    add_library(telepathy-qt SHARED ${telepathy_qt_SRCS})
 endif (ENABLE_COMPILER_COVERAGE)
 
 # generate client moc files
-foreach(moc_src ${telepathy_qt4_MOC_SRCS})
+foreach(moc_src ${telepathy_qt_MOC_SRCS})
     set(generated_file _gen/${moc_src})
     string(REPLACE ".h" ".moc.hpp" generated_file ${generated_file})
     tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
-                                     ${telepathy_qt4_generated_specs_mocs})
-    list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
+                                     ${telepathy_qt_generated_specs_mocs})
+    list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
     string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
-    add_dependencies(telepathy-qt4 "moc-${moc_src}")
-endforeach(moc_src ${telepathy_qt4_MOC_SRCS})
+    add_dependencies(telepathy-qt "moc-${moc_src}")
+endforeach(moc_src ${telepathy_qt_MOC_SRCS})
 
 # Link
-target_link_libraries(telepathy-qt4
+target_link_libraries(telepathy-qt
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARIES}
     ${QT_QTXML_LIBRARIES})
 
 if (ENABLE_COMPILER_COVERAGE)
-    target_link_libraries(telepathy-qt4 gcov)
+    target_link_libraries(telepathy-qt gcov)
 endif (ENABLE_COMPILER_COVERAGE)
 
 # Set the correct version number
-set_target_properties(telepathy-qt4 PROPERTIES
+set_target_properties(telepathy-qt PROPERTIES
                                     SOVERSION ${TP_QT_ABI_VERSION}
                                     VERSION ${TP_QT_LIBRARY_VERSION})
 
 
 # Install header files
-install(FILES ${telepathy_qt4_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt COMPONENT headers)
-install(FILES ${telepathy_qt4_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt/_gen COMPONENT headers)
+install(FILES ${telepathy_qt_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt COMPONENT headers)
+install(FILES ${telepathy_qt_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt/_gen COMPONENT headers)
 
 # Install the library - watch out for the correct components
 if (WIN32)
-    install(TARGETS telepathy-qt4 RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+    install(TARGETS telepathy-qt RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
                                   ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
 else (WIN32)
-    install(TARGETS telepathy-qt4 LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+    install(TARGETS telepathy-qt LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
                                   ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
 endif (WIN32)
 

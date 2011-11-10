@@ -20,11 +20,11 @@
  */
 
 /**
- * \mainpage Telepathy-Qt4
+ * \mainpage Telepathy-Qt
  *
  * \section Introduction
  *
- * Telepathy-Qt4 is a Qt4 high-level binding for \telepathy.
+ * Telepathy-Qt is a Qt high-level binding for \telepathy.
  *
  * \telepathy is a \dbus framework for unifying real time communication, including instant
  * messaging, voice calls and video calls. It abstracts differences between protocols to
@@ -43,10 +43,10 @@
  *
  * \section examples Examples
  *
- * This is the list of examples in Telepathy-Qt4's examples directory.
- * The examples demonstrate Telepathy-Qt4 features in small, self-contained
+ * This is the list of examples in Telepathy-Qt's examples directory.
+ * The examples demonstrate Telepathy-Qt features in small, self-contained
  * programs. They are not all designed to be impressive when you run them,
- * but their source code is carefully written to show good Telepathy-Qt4
+ * but their source code is carefully written to show good Telepathy-Qt
  * programming practices.
  *
  * \li \subpage accounts_example
@@ -68,7 +68,7 @@
  *
  * \subsection installation_from_source_requirements Requirements
  *
- * Building Telepathy-Qt4 requires:
+ * Building Telepathy-Qt requires:
  * \li Qt, including QtDBus <http://www.qtsoftware.com/>
  * \li GNU make <http://www.gnu.org/software/make/>
  * \li pkg-config <http://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
@@ -105,7 +105,7 @@
  * Bug Tracker</a> to see if the issue is already known.
  *
  * Always include the following information in your bug report:
- * \li The version of Telepathy-Qt4 you are using
+ * \li The version of Telepathy-Qt you are using
  *
  * Please submit the bug report, feature request or "to-do" item
  * <a

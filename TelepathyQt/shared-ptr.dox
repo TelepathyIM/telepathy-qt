@@ -24,7 +24,7 @@
  *
  * \section shared_ptr_overview Overview
  *
- * The Qt parent/child object model does not fit well with Telepathy-Qt4 object
+ * The Qt parent/child object model does not fit well with Telepathy-Qt object
  * model, where in some places we either don't know the object parent or we
  * can't use a parent, as the object can stay alive without it.
  *

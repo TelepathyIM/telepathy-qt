@@ -44,7 +44,7 @@ if (ENABLE_CPACK)
 
     include(InstallRequiredSystemLibraries)
 
-    SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high-level binding for Telepathy in Qt4")
+    SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high-level binding for Telepathy in Qt")
     SET(CPACK_PACKAGE_VENDOR "Collabora Ltd.")
     SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README")
     SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
