@@ -370,12 +370,12 @@ void DBusTubeChannel::onRequestPropertyDBusNamesFinished(PendingOperation *op)
             // Nothing to do actually, simply mark the feature as ready.
             mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
         } else {
-            // Extract the participants, populating the QueuedContactFactory
-            mPriv->extractParticipants(participants);
-
             // Wait for the queue to complete
             connect(mPriv->queuedContactFactory, SIGNAL(queueCompleted()),
                     this, SLOT(onQueueCompleted()));
+
+            // Extract the participants, populating the QueuedContactFactory
+            mPriv->extractParticipants(participants);
         }
     } else {
         warning().nospace() << "RequestPropertyDBusNames failed "
@@ -386,6 +386,8 @@ void DBusTubeChannel::onRequestPropertyDBusNamesFinished(PendingOperation *op)
 
 void DBusTubeChannel::onQueueCompleted()
 {
+    debug() << "Queue was completed";
+
     // Set the feature as completed, and disconnect the signal as it's no longer useful
     mPriv->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureBusNameMonitoring, true);
 
@@ -424,8 +426,10 @@ void DBusTubeChannel::onContactsRetrieved(const QUuid &uuid, const QList<Contact
             added.insert(contact, busName);
         }
 
-        // Time for us to emit the signal
-        emit busNamesChanged(added, QList<ContactPtr>());
+        // Time for us to emit the signal - if the feature is ready
+        if (isReady(FeatureBusNameMonitoring)) {
+            emit busNamesChanged(added, QList<ContactPtr>());
+        }
     } else if (mPriv->pendingNewBusNamesToRemove.contains(uuid)) {
         mPriv->pendingNewBusNamesToRemove.removeOne(uuid);
         QList<ContactPtr> removed;
@@ -441,8 +445,10 @@ void DBusTubeChannel::onContactsRetrieved(const QUuid &uuid, const QList<Contact
             }
         }
 
-        // Time for us to emit the signal
-        emit busNamesChanged(QHash<ContactPtr, QString>(), removed);
+        // Time for us to emit the signal - if the feature is ready
+        if (isReady(FeatureBusNameMonitoring)) {
+            emit busNamesChanged(QHash<ContactPtr, QString>(), removed);
+        }
     } else {
         warning() << "Contacts retrieved but no pending bus names were found";
         return;
