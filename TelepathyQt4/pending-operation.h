@@ -50,7 +50,7 @@ class TP_QT_EXPORT PendingOperation : public QObject
 public:
     virtual ~PendingOperation();
 
-    TELEPATHY_QT4_DEPRECATED SharedPtr<RefCounted> object() const;
+    TP_QT_DEPRECATED SharedPtr<RefCounted> object() const;
 
     bool isFinished() const;
 

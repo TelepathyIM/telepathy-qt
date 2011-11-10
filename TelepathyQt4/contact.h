@@ -151,7 +151,7 @@ public:
      * Filter on being blocked or not
      */
     bool isBlocked() const;
-    TELEPATHY_QT4_DEPRECATED PendingOperation *block(bool value);
+    TP_QT_DEPRECATED PendingOperation *block(bool value);
     PendingOperation *block();
     PendingOperation *blockAndReportAbuse();
     PendingOperation *unblock();

@@ -54,9 +54,9 @@ public:
     bool contactSearchesWithSpecificServer() const;
     bool contactSearchesWithLimit() const;
 
-    TELEPATHY_QT4_DEPRECATED bool contactSearch();
-    TELEPATHY_QT4_DEPRECATED bool contactSearchWithSpecificServer() const;
-    TELEPATHY_QT4_DEPRECATED bool contactSearchWithLimit() const;
+    TP_QT_DEPRECATED bool contactSearch();
+    TP_QT_DEPRECATED bool contactSearchWithSpecificServer() const;
+    TP_QT_DEPRECATED bool contactSearchWithLimit() const;
 
     bool streamTubes() const;
 

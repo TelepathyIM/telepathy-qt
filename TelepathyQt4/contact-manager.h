@@ -102,7 +102,7 @@ public:
 
     bool canBlockContacts() const;
     bool canReportAbuse() const;
-    TELEPATHY_QT4_DEPRECATED PendingOperation *blockContacts(
+    TP_QT_DEPRECATED PendingOperation *blockContacts(
             const QList<ContactPtr> &contacts, bool value);
     PendingOperation *blockContacts(const QList<ContactPtr> &contacts);
     PendingOperation *blockContactsAndReportAbuse(const QList<ContactPtr> &contacts);
@@ -123,7 +123,7 @@ public:
 
     ContactPtr lookupContactByHandle(uint handle);
 
-    TELEPATHY_QT4_DEPRECATED void requestContactAvatar(Contact *contact);
+    TP_QT_DEPRECATED void requestContactAvatar(Contact *contact);
     void requestContactAvatars(const QList<ContactPtr> &contacts);
 
     PendingOperation *refreshContactInfo(const QList<ContactPtr> &contact);

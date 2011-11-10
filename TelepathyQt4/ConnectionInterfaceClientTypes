@@ -5,7 +5,7 @@
 #define IN_TP_QT_HEADER
 #endif
 
-#ifdef TELEPATHY_QT4_DEPRECATED_WARNINGS
+#ifdef TP_QT_DEPRECATED_WARNINGS
 #warning "This file will be removed in a future tp-qt4 release, use #include <TelepathyQt4/ConnectionInterfaceClientTypesInterface> instead"
 #endif
 

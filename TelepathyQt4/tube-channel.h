@@ -47,7 +47,7 @@ public:
     virtual ~TubeChannel();
 
     TubeChannelState state() const;
-    TELEPATHY_QT4_DEPRECATED TubeChannelState tubeState() const;
+    TP_QT_DEPRECATED TubeChannelState tubeState() const;
 
     QVariantMap parameters() const;
 

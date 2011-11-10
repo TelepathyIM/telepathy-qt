@@ -385,7 +385,7 @@ public:
             const QString &preferredHandler,
             const ChannelRequestHints &hints);
 
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
+    TP_QT_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
             const QString &roomName,
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
@@ -399,7 +399,7 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
-    TELEPATHY_QT4_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
+    TP_QT_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
             const QString &roomName,
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
