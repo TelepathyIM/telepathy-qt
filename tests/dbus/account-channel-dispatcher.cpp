@@ -7,20 +7,20 @@
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ChannelRequest>
-#include <TelepathyQt4/ChannelRequestHints>
-#include <TelepathyQt4/Client>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/HandledChannelNotifier>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingChannelRequest>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/ChannelRequest>
+#include <TelepathyQt/ChannelRequestHints>
+#include <TelepathyQt/Client>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/HandledChannelNotifier>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingChannelRequest>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/Types>
 
 #include <telepathy-glib/debug.h>
 

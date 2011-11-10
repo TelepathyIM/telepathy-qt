@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2011 Nokia Corporation
@@ -23,12 +23,12 @@
 #include "sender.h"
 #include "_gen/sender.moc.hpp"
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/ContactMessenger>
-#include <TelepathyQt4/PendingSendMessage>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/ContactMessenger>
+#include <TelepathyQt/PendingSendMessage>
+#include <TelepathyQt/Types>
 
 #include <QCoreApplication>
 

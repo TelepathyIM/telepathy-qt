@@ -7,23 +7,23 @@
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/AbstractClientHandler>
-#include <TelepathyQt4/AbstractClientObserver>
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ChannelDispatchOperation>
-#include <TelepathyQt4/ChannelRequest>
-#include <TelepathyQt4/ClientHandlerInterface>
-#include <TelepathyQt4/ClientInterfaceRequestsInterface>
-#include <TelepathyQt4/ClientObserverInterface>
-#include <TelepathyQt4/ClientRegistrar>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/MethodInvocationContext>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/AbstractClientHandler>
+#include <TelepathyQt/AbstractClientObserver>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/ChannelDispatchOperation>
+#include <TelepathyQt/ChannelRequest>
+#include <TelepathyQt/ClientHandlerInterface>
+#include <TelepathyQt/ClientInterfaceRequestsInterface>
+#include <TelepathyQt/ClientObserverInterface>
+#include <TelepathyQt/ClientRegistrar>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/MethodInvocationContext>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingReady>
 
 #include <telepathy-glib/debug.h>
 

@@ -1,0 +1,111 @@
+/*
+ * This file is part of TelepathyQt
+ *
+ * @copyright Copyright (C) 2008-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2011 Nokia Corporation
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+/**
+ * \page shared_ptr Shared Pointer Usage
+ *
+ * \section shared_ptr_overview Overview
+ *
+ * The Qt parent/child object model does not fit well with Telepathy-Qt4 object
+ * model, where in some places we either don't know the object parent or we
+ * can't use a parent, as the object can stay alive without it.
+ *
+ * To avoid memory leaks, caused by objects that got instantiated and don't have
+ * any parent, we decided to make some of our objects reference counted, by
+ * making them inherit SharedData.
+ *
+ * Making the object reference counted, does not guarantee that it will get
+ * deleted when nobody is referencing it.
+ *
+ * When instantiating new classes that inherits SharedData the reference count
+ * is 0, this is referred to as the floating state. Again this may lead to
+ * memory leaks, caused by objects in the floating state that never get deleted.
+ *
+ * So the solution is to put the object in a SharedPtr as soon as possible,
+ * letting the SharedPtr manage the object lifetime.
+ *
+ * The pattern used is that classes inherit SharedData and are used
+ * together with SharedPtr. When the reference count hits 0, the object
+ * is deleted.
+ *
+ * In order to assure that the object is put in a SharedPtr as soon as possible,
+ * our objects inheriting SharedData will have the constructor either private
+ * or protected, in case we want to support custom classes, and will have a
+ * public static create method that will return a SharedPtr pointing to the
+ * object instance.
+ *
+ * Note that when developing custom classes, this pattern should be followed,
+ * to avoid objects in floating state, avoiding memory leaks.
+ */
+
+/**
+ * \class Tp::RefCounted
+ * \ingroup utils
+ * \headerfile TelepathyQt/shared-ptr.h <TelepathyQt/RefCounted>
+ *
+ * \brief The RefCounted class is a base class for shared objects used by
+ * SharedPtr.
+ *
+ * See \ref shared_ptr
+ */
+
+/**
+ * \class Tp::SharedPtr
+ * \ingroup utils
+ * \headerfile TelepathyQt/shared-ptr.h <TelepathyQt/SharedPtr>
+ *
+ * \brief The SharedPtr class is a pointer to an explicitly shared object.
+ *
+ * See \ref shared_ptr
+ */
+
+/**
+ * \fn static SharedPtr<T> Tp::SharedPtr<T>::dynamicCast(const SharedPtr<X> &)
+ *
+ * Casts the pointer given by src to a pointer pointing to an object of type T. The cast will
+ * succeed if the C++ runtime type identification mechanism considers the type T to be the actual
+ * runtime type of the object pointed to by src or one of its (possibly indirect) parent classes.
+ * Otherwise, a null pointer is returned.
+ *
+ * Note that this also allows down-casting a baseclass pointer to a subclass pointer.
+ *
+ * This cast method should not be used for QObject-derived classes, as Qt provides a more portable
+ * and efficient type identification mechanism, which is used by qObjectCast().
+ *
+ * This cast method requires the C++ dynamic runtime type identification facility to be enabled
+ * (which might be disabled by eg. the -fno-rtti flag of the GNU G++ compiler).
+ */
+
+/**
+ * \fn static SharedPtr<T> Tp::SharedPtr<T>::qObjectCast(const SharedPtr<X> &)
+ *
+ * Casts the pointer given by src to a pointer pointing to an object of type T. The cast will
+ * succeed if the Qt runtime type identification mechanism considers the type T to be the actual
+ * runtime type of the object pointed to by src or one of its (possibly indirect) parent classes.
+ * Otherwise, a null pointer is returned.
+ *
+ * Note that this also allows down-casting a baseclass pointer to a subclass pointer.
+ *
+ * This cast method MUST not be used for classes not derived from QObject. However, dynamicCast()
+ * provides the same semantics for all classes, provided the C++ runtime type identification
+ * facility is enabled. This method, on the other hand, doesn't require the standard C++ facility
+ * and is probably also faster for the types it can be used with.
+ */

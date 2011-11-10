@@ -1,5 +1,5 @@
 /*
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2011 Nokia Corporation
@@ -23,26 +23,26 @@
 
 #include "pending-file-send.h"
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountFactory>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ChannelClassSpecList>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/ClientRegistrar>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionFactory>
-#include <TelepathyQt4/Contact>
-#include <TelepathyQt4/ContactCapabilities>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/OutgoingFileTransferChannel>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingChannelRequest>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountFactory>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/ChannelClassSpecList>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/ClientRegistrar>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionFactory>
+#include <TelepathyQt/Contact>
+#include <TelepathyQt/ContactCapabilities>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/OutgoingFileTransferChannel>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingChannelRequest>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingReady>
 
 #include <QDebug>
 

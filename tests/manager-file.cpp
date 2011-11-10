@@ -1,8 +1,8 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/ManagerFile>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/ManagerFile>
 
 using namespace Tp;
 

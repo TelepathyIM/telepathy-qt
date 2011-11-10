@@ -29,7 +29,7 @@ Coding style
 For C++ code:
 -------------
 
-TelepathyQt4 uses the standard Qt4 coding style for the Qt/C++ code, as also
+TelepathyQt uses the standard Qt4 coding style for the Qt/C++ code, as also
 followed by eg. KDELibs.  The coding style is described in more detail in the
 KDE TechBase at <http://techbase.kde.org/Policies/Kdelibs_Coding_Style>; in
 short, it amounts to:

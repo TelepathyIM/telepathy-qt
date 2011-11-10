@@ -3,8 +3,8 @@ add_custom_command(OUTPUT FIXME.out
 
                    COMMAND egrep
 
-                   ARGS -A 5 '[F]IXME|[T]ODO|[X]XX'  ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.[ch]*
-                         ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.[ch]*
+                   ARGS -A 5 '[F]IXME|[T]ODO|[X]XX'  ${CMAKE_SOURCE_DIR}/TelepathyQt/*.[ch]*
+                         ${CMAKE_SOURCE_DIR}/TelepathyQt/*.[ch]*
                         > FIXME.out || true)
 add_custom_target(check-local DEPENDS FIXME.out)
 

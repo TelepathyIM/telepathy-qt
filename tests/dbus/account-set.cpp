@@ -4,18 +4,18 @@
 
 #include <tests/lib/glib/echo2/conn.h>
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountCapabilityFilter>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/AccountPropertyFilter>
-#include <TelepathyQt4/AccountSet>
-#include <TelepathyQt4/AndFilter>
-#include <TelepathyQt4/NotFilter>
-#include <TelepathyQt4/OrFilter>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingVoid>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountCapabilityFilter>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/AccountPropertyFilter>
+#include <TelepathyQt/AccountSet>
+#include <TelepathyQt/AndFilter>
+#include <TelepathyQt/NotFilter>
+#include <TelepathyQt/OrFilter>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingVoid>
 
 #include <telepathy-glib/debug.h>
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2011 Nokia Corporation
@@ -24,13 +24,13 @@
 
 #include "pending-file-receive.h"
 
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ChannelClassSpecList>
-#include <TelepathyQt4/ChannelRequest>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/MethodInvocationContext>
-#include <TelepathyQt4/IncomingFileTransferChannel>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/ChannelClassSpecList>
+#include <TelepathyQt/ChannelRequest>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/MethodInvocationContext>
+#include <TelepathyQt/IncomingFileTransferChannel>
 
 #include <QDateTime>
 #include <QDebug>

@@ -6,21 +6,21 @@
 #include <tests/lib/glib/stream-tube-chan.h>
 #include <tests/lib/glib/echo/chan.h>
 
-#include <TelepathyQt4/AbstractClient>
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ClientHandlerInterface>
-#include <TelepathyQt4/ClientRegistrar>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/IncomingStreamTubeChannel>
-#include <TelepathyQt4/OutgoingStreamTubeChannel>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/StreamTubeChannel>
-#include <TelepathyQt4/StreamTubeClient>
-#include <TelepathyQt4/StreamTubeServer>
+#include <TelepathyQt/AbstractClient>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/ClientHandlerInterface>
+#include <TelepathyQt/ClientRegistrar>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/IncomingStreamTubeChannel>
+#include <TelepathyQt/OutgoingStreamTubeChannel>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/ReferencedHandles>
+#include <TelepathyQt/StreamTubeChannel>
+#include <TelepathyQt/StreamTubeClient>
+#include <TelepathyQt/StreamTubeServer>
 
 #include <telepathy-glib/telepathy-glib.h>
 

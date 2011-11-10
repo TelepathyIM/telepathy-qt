@@ -1,9 +1,9 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Presence>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Presence>
+#include <TelepathyQt/Types>
 
 using namespace Tp;
 

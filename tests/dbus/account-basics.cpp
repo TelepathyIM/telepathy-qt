@@ -4,16 +4,16 @@
 
 #include <tests/lib/glib/echo2/conn.h>
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/AccountSet>
-#include <TelepathyQt4/ConnectionCapabilities>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingStringList>
-#include <TelepathyQt4/PendingVoid>
-#include <TelepathyQt4/Profile>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/AccountSet>
+#include <TelepathyQt/ConnectionCapabilities>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingStringList>
+#include <TelepathyQt/PendingVoid>
+#include <TelepathyQt/Profile>
 
 #include <telepathy-glib/debug.h>
 

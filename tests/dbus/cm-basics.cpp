@@ -3,11 +3,11 @@
 #include <tests/lib/glib/simple-manager.h>
 #include <tests/lib/glib/echo2/connection-manager.h>
 
-#include <TelepathyQt4/ConnectionCapabilities>
-#include <TelepathyQt4/ConnectionManager>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingStringList>
-#include <TelepathyQt4/PresenceSpec>
+#include <TelepathyQt/ConnectionCapabilities>
+#include <TelepathyQt/ConnectionManager>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingStringList>
+#include <TelepathyQt/PresenceSpec>
 
 #include <telepathy-glib/debug.h>
 

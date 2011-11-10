@@ -193,8 +193,8 @@ function(tpqt_client_generator spec group pretty_include namespace)
             --typesnamespace=Tp
             --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
             --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
-            --realinclude=TelepathyQt4/${spec}.h
-            --prettyinclude=TelepathyQt4/${pretty_include}
+            --realinclude=TelepathyQt/${spec}.h
+            --prettyinclude=TelepathyQt/${pretty_include}
             --specxml=${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
             --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
             --extraincludes=${TYPES_INCLUDE}
@@ -229,13 +229,13 @@ function(tpqt_future_client_generator spec namespace)
             --typesnamespace=TpFuture
             --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
             --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
-            --realinclude=TelepathyQt4/future-internal.h
-            --prettyinclude=TelepathyQt4/future-internal.h
+            --realinclude=TelepathyQt/future-internal.h
+            --prettyinclude=TelepathyQt/future-internal.h
             --specxml=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml
             --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
             --extraincludes=${TYPES_INCLUDE}
-            --extraincludes='<TelepathyQt4/Types>'
-            --extraincludes='<TelepathyQt4/future-internal.h>'
+            --extraincludes='<TelepathyQt/Types>'
+            --extraincludes='<TelepathyQt/future-internal.h>'
             --visibility=TP_QT_NO_EXPORT
             ${future_client_generator_args})
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
@@ -278,8 +278,8 @@ endfunction(tpqt_generate_manager_file MANAGER_FILE)
 
 function(tpqt_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
     tpqt_extract_depends(xincludator_gen_args xincludator_gen_depends ${ARGN})
-    # Gather all .xml files in TelepathyQt4 and spec/ and make this target depend on those
-    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
+    # Gather all .xml files in TelepathyQt and spec/ and make this target depend on those
+    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
 
     add_custom_command(OUTPUT ${_OUTPUT_FILE}
 
@@ -301,8 +301,8 @@ endfunction(tpqt_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
 
 function(tpqt_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
     tpqt_extract_depends(constants_gen_args constants_gen_depends ${ARGN})
-    # Gather all .xml files in TelepathyQt4 and spec/ and make this target depend on those
-    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
+    # Gather all .xml files in TelepathyQt and spec/ and make this target depend on those
+    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
 
     add_custom_command(OUTPUT ${_OUTFILE}
 
@@ -326,8 +326,8 @@ endfunction (tpqt_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
 
 function(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
     tpqt_extract_depends(types_gen_args types_gen_depends ${ARGN})
-    # Gather all .xml files in TelepathyQt4 and spec/ and make this target depend on those
-    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
+    # Gather all .xml files in TelepathyQt and spec/ and make this target depend on those
+    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
 
     add_custom_command(OUTPUT ${_OUTFILE_DECL} ${_OUTFILE_IMPL}
                        COMMAND ${PYTHON_EXECUTABLE}

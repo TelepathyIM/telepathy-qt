@@ -6,13 +6,13 @@
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/StreamedMediaChannel>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/StreamedMediaChannel>
 
 #include <telepathy-glib/debug.h>
 

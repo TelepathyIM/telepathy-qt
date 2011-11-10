@@ -173,7 +173,7 @@ class Generator(object):
 #include <QDBusSignature>
 #include <QDBusVariant>
 
-#include <TelepathyQt4/Global>
+#include <TelepathyQt/Global>
 
 /**
  * \\addtogroup typesconstants Types and constants

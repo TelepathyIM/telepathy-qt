@@ -1,13 +1,13 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/CapabilitiesBase>
-#include <TelepathyQt4/ConnectionCapabilities>
-#include <TelepathyQt4/ContactCapabilities>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/CapabilitiesBase>
+#include <TelepathyQt/ConnectionCapabilities>
+#include <TelepathyQt/ContactCapabilities>
+#include <TelepathyQt/Types>
 
-#include <TelepathyQt4/test-backdoors.h>
+#include <TelepathyQt/test-backdoors.h>
 
 using namespace Tp;
 

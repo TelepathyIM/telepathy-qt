@@ -6,8 +6,8 @@
 #include <tests/lib/glib/echo/conn.h>
 #include <tests/lib/glib/future/conference/chan.h>
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/PendingReady>
 
 #include <telepathy-glib/debug.h>
 

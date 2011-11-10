@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
@@ -24,13 +24,13 @@
 
 #include "roster-widget.h"
 
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionFactory>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionFactory>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingReady>
 
 #include <QDebug>
 

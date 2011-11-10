@@ -7,13 +7,13 @@
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Debug>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/Debug>
 
 #include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>

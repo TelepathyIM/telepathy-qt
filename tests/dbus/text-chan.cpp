@@ -6,11 +6,11 @@
 #include <tests/lib/glib/echo/chan.h>
 #include <tests/lib/glib/echo2/chan.h>
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/Message>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReceivedMessage>
-#include <TelepathyQt4/TextChannel>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/Message>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/ReceivedMessage>
+#include <TelepathyQt/TextChannel>
 
 #include <telepathy-glib/debug.h>
 

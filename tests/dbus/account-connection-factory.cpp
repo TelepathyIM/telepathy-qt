@@ -4,11 +4,11 @@
 
 #include <tests/lib/glib/contacts-conn.h>
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/ConnectionFactory>
-#include <TelepathyQt4/PendingComposite>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/ConnectionFactory>
+#include <TelepathyQt/PendingComposite>
+#include <TelepathyQt/PendingReady>
 
 #include <telepathy-glib/debug.h>
 
@@ -207,7 +207,7 @@ void TestAccountConnectionFactory::testIntrospectSeveralAccounts()
             mLoop->processEvents();
             mLoop->processEvents();
         }
-        
+
         ops.push_back(acc->becomeReady());
     }
 

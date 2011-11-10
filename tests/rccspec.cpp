@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/RequestableChannelClassSpec>
+#include <TelepathyQt/RequestableChannelClassSpec>
 
 using namespace Tp;
 

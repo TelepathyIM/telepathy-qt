@@ -7,16 +7,16 @@
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingHandles>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/TextChannel>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingHandles>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/ReferencedHandles>
+#include <TelepathyQt/TextChannel>
 
 #include <telepathy-glib/debug.h>
 

@@ -86,9 +86,9 @@ class Generator(object):
 
 #include <QDBusPendingReply>
 
-#include <TelepathyQt4/AbstractInterface>
-#include <TelepathyQt4/DBusProxy>
-#include <TelepathyQt4/Global>
+#include <TelepathyQt/AbstractInterface>
+#include <TelepathyQt/DBusProxy>
+#include <TelepathyQt/Global>
 
 namespace Tp
 {

@@ -1,5 +1,5 @@
 /*
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2011 Nokia Corporation
@@ -21,14 +21,14 @@
 
 #include "file-receiver.h"
 
-#include <TelepathyQt4/AccountFactory>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/ClientRegistrar>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionFactory>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/IncomingFileTransferChannel>
+#include <TelepathyQt/AccountFactory>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/ClientRegistrar>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionFactory>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/IncomingFileTransferChannel>
 
 #include <QDebug>
 

@@ -11,18 +11,18 @@
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/Client>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/SimpleCallObserver>
-#include <TelepathyQt4/SimpleObserver>
-#include <TelepathyQt4/SimpleTextObserver>
-#include <TelepathyQt4/StreamedMediaChannel>
-#include <TelepathyQt4/TextChannel>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/Client>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/SimpleCallObserver>
+#include <TelepathyQt/SimpleObserver>
+#include <TelepathyQt/SimpleTextObserver>
+#include <TelepathyQt/StreamedMediaChannel>
+#include <TelepathyQt/TextChannel>
+#include <TelepathyQt/Types>
 
 #include <telepathy-glib/cm-message.h>
 #include <telepathy-glib/debug.h>

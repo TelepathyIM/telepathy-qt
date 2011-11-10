@@ -1,4 +1,4 @@
-project(TelepathyQt4)
+project(TelepathyQt)
 
 cmake_minimum_required(VERSION 2.6)
 
@@ -173,7 +173,7 @@ macro_log_feature(GSTREAMER_FOUND "GStreamer"
                   "Needed, together with Tp-Farsight, to build telepathy-qt4-farsight and some additional examples"
                   "http://www.gstreamer.net/" FALSE)
 
-# Build TelepathyQt4-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
+# Build TelepathyQt-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
 if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
     set (FARSIGHT_COMPONENTS_FOUND 1)
 else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
@@ -204,7 +204,7 @@ else(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
 endif(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
 
 # Add the source subdirectories
-add_subdirectory(TelepathyQt4)
+add_subdirectory(TelepathyQt)
 add_subdirectory(examples)
 add_subdirectory(tests)
 add_subdirectory(tools)

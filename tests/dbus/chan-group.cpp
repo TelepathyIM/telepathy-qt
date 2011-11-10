@@ -6,13 +6,13 @@
 #include <tests/lib/glib/textchan-group.h>
 #include <tests/lib/glib/textchan-null.h>
 
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/TextChannel>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/TextChannel>
 
 #include <telepathy-glib/debug.h>
 

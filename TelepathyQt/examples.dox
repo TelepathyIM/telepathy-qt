@@ -1,0 +1,154 @@
+/*
+ * This file is part of TelepathyQt
+ *
+ * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008 Nokia Corporation
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+/**
+ * \page accounts_example Accounts Example
+ *
+ * \li \subpage accounts_example_account_item_cpp
+ * \li \subpage accounts_example_account_item_h
+ * \li \subpage accounts_example_accounts_window_cpp
+ * \li \subpage accounts_example_accounts_window_h
+ * \li \subpage accounts_example_main
+ */
+
+/**
+ * \page accounts_example_account_item_cpp accounts/account-item.cpp
+ * \include examples/accounts/account-item.cpp
+ */
+
+/**
+ * \page accounts_example_account_item_h accounts/account-item.h
+ * \include examples/accounts/account-item.h
+ */
+
+/**
+ * \page accounts_example_accounts_window_cpp accounts/accounts-window.cpp
+ * \include examples/accounts/accounts-window.cpp
+ */
+
+/**
+ * \page accounts_example_accounts_window_h accounts/accounts-window.h
+ * \include examples/accounts/accounts-window.h
+ */
+
+/**
+ * \page accounts_example_main accounts/main.cpp
+ * \include examples/accounts/main.cpp
+ */
+
+/**
+ * \page contact_messenger_example Contact Messenger Example
+ *
+ * \li \subpage contact_messenger_example_sender_cpp
+ * \li \subpage contact_messenger_example_sender_h
+ */
+
+/**
+ * \page contact_messenger_example_sender_cpp contact-messenger/sender.cpp
+ * \include examples/contact-messenger/sender.cpp
+ */
+
+/**
+ * \page contact_messenger_example_sender_h contact-messenger/sender.h
+ * \include examples/contact-messenger/sender.h
+ */
+
+/**
+ * \page protocols_example Protocols Example
+ *
+ * \li \subpage protocols_example_main
+ * \li \subpage protocols_example_cm_wrapper_cpp
+ * \li \subpage protocols_example_cm_wrapper_h
+ * \li \subpage protocols_example_protocols_cpp
+ * \li \subpage protocols_example_protocols_h
+ */
+
+/**
+ * \page protocols_example_main protocols/main.cpp
+ * \include examples/protocols/main.cpp
+ */
+
+/**
+ * \page protocols_example_cm_wrapper_cpp protocols/cm-wrapper.cpp
+ * \include examples/protocols/cm-wrapper.cpp
+ */
+
+/**
+ * \page protocols_example_cm_wrapper_h protocols/cm-wrapper.h
+ * \include examples/protocols/cm-wrapper.h
+ */
+
+/**
+ * \page protocols_example_protocols_cpp protocols/protocols.cpp
+ * \include examples/protocols/protocols.cpp
+ */
+
+/**
+ * \page protocols_example_protocols_h protocols/protocols.h
+ * \include examples/protocols/protocols.h
+ */
+
+/**
+ * \page roster_example Roster Example
+ *
+ * \li \subpage roster_example_main
+ * \li \subpage roster_example_roster_item_cpp
+ * \li \subpage roster_example_roster_item_h
+ * \li \subpage roster_example_roster_widget_cpp
+ * \li \subpage roster_example_roster_widget_h
+ * \li \subpage roster_example_roster_window_cpp
+ * \li \subpage roster_example_roster_window_h
+ */
+
+/**
+ * \page roster_example_main roster/main.cpp
+ * \include examples/roster/main.cpp
+ */
+
+/**
+ * \page roster_example_roster_item_cpp roster/roster-item.cpp
+ * \include examples/roster/roster-item.cpp
+ */
+
+/**
+ * \page roster_example_roster_item_h roster/roster-item.h
+ * \include examples/roster/roster-item.h
+ */
+
+/**
+ * \page roster_example_roster_widget_cpp roster/roster-widget.cpp
+ * \include examples/roster/roster-widget.cpp
+ */
+
+/**
+ * \page roster_example_roster_widget_h roster/roster-widget.h
+ * \include examples/roster/roster-widget.h
+ */
+
+/**
+ * \page roster_example_roster_window_cpp roster/roster-window.cpp
+ * \include examples/roster/roster-window.cpp
+ */
+
+/**
+ * \page roster_example_roster_window_h roster/roster-window.h
+ * \include examples/roster/roster-window.h
+ */

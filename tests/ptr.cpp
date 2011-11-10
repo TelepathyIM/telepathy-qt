@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/SharedPtr>
+#include <TelepathyQt/SharedPtr>
 
 using namespace Tp;
 

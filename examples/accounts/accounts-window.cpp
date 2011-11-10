@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
@@ -24,12 +24,12 @@
 
 #include "account-item.h"
 
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountFactory>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountFactory>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingReady>
 
 #include <QCheckBox>
 #include <QDebug>

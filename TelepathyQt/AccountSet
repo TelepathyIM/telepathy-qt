@@ -1,0 +1,13 @@
+#ifndef _TelepathyQt_AccountSet_HEADER_GUARD_
+#define _TelepathyQt_AccountSet_HEADER_GUARD_
+
+#ifndef IN_TP_QT_HEADER
+#define IN_TP_QT_HEADER
+#endif
+
+#include <TelepathyQt/account-set.h>
+
+#undef IN_TP_QT_HEADER
+
+#endif
+// vim:set ft=cpp:

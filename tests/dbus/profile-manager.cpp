@@ -1,7 +1,7 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ProfileManager>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/ProfileManager>
 
 #include <tests/lib/test.h>
 

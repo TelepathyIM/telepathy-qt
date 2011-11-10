@@ -1,13 +1,13 @@
 #include <QtCore/QEventLoop>
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingVariantMap>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingVariantMap>
+#include <TelepathyQt/PendingReady>
 
 #include <tests/lib/test.h>
 

@@ -9,22 +9,22 @@
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/Client>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/ContactMessenger>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Message>
-#include <TelepathyQt4/MessageContentPart>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingSendMessage>
-#include <TelepathyQt4/TextChannel>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/Client>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/ContactMessenger>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Message>
+#include <TelepathyQt/MessageContentPart>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingSendMessage>
+#include <TelepathyQt/TextChannel>
+#include <TelepathyQt/Types>
 
 #include <telepathy-glib/cm-message.h>
 #include <telepathy-glib/debug.h>

@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2009 Nokia Corporation
@@ -23,11 +23,11 @@
 #include <QEventLoop>
 #include <QtTest>
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/DBus>
-#include <TelepathyQt4/StatefulDBusProxy>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/DBus>
+#include <TelepathyQt/StatefulDBusProxy>
 
 #include "tests/lib/test.h"
 
