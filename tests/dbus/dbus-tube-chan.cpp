@@ -143,6 +143,10 @@ void TestDBusTubeChan::expectPendingTubeConnectionFinished(PendingOperation *op)
     PendingDBusTubeConnection *pdt = qobject_cast<PendingDBusTubeConnection*>(op);
     mRequiresCredentials = pdt->requiresCredentials();
     mCredentialByte = pdt->credentialByte();
+
+    // Check the addresses match
+    QCOMPARE(mChan->address(), pdt->address());
+
     mLoop->exit(0);
 }
 
