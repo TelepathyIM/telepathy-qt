@@ -20,6 +20,7 @@
 #include <telepathy-glib/debug.h>
 
 #include <tests/lib/glib/bug16307-conn.h>
+#include <tests/lib/glib/contacts-noroster-conn.h>
 #include <tests/lib/glib/simple-conn.h>
 #include <tests/lib/test.h>
 
@@ -46,6 +47,7 @@ private Q_SLOTS:
     void testSelfHandleChangeWhileBuilding();
     void testSlowpath();
     void testStatusChange();
+    void testNoRoster();
 
     void cleanup();
     void cleanupTestCase();
@@ -410,6 +412,53 @@ void TestConnIntrospectCornercases::testStatusChange()
     QCOMPARE(mConn->isReady(Connection::FeatureConnected), true);
     QCOMPARE(static_cast<uint>(mConn->status()),
              static_cast<uint>(ConnectionStatusConnected));
+}
+
+void TestConnIntrospectCornercases::testNoRoster()
+{
+    gchar *name;
+    gchar *connPath;
+    GError *error = 0;
+
+    TpTestsContactsNorosterConnection *connService =
+        TP_TESTS_CONTACTS_NOROSTER_CONNECTION(
+            g_object_new(
+                TP_TESTS_TYPE_CONTACTS_NOROSTER_CONNECTION,
+                "account", "me@example.com",
+                "protocol", "contacts-noroster",
+                NULL));
+    QVERIFY(connService != 0);
+
+    mConnService = TP_BASE_CONNECTION(connService);
+    QVERIFY(mConnService != 0);
+
+    QVERIFY(tp_base_connection_register(mConnService, "simple",
+                &name, &connPath, &error));
+    QVERIFY(error == 0);
+
+    mConn = Connection::create(QLatin1String(name), QLatin1String(connPath),
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+    QCOMPARE(mConn->isReady(), false);
+
+    g_free(name); name = 0;
+    g_free(connPath); connPath = 0;
+
+    PendingOperation *op = mConn->lowlevel()->requestConnect();
+    QVERIFY(connect(op,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->status(), Tp::ConnectionStatusConnected);
+
+    op = mConn->becomeReady(Connection::FeatureRoster);
+    QVERIFY(connect(op,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(op->isFinished());
+    QVERIFY(mConn->isReady(Connection::FeatureRoster));
+    QVERIFY(!mConn->actualFeatures().contains(Connection::FeatureRoster));
 }
 
 void TestConnIntrospectCornercases::cleanup()
