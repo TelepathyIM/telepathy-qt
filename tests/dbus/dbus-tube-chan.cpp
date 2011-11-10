@@ -70,12 +70,12 @@ private Q_SLOTS:
     void init();
 
     void testCreation();
-    void testAcceptTwice();
     void testAcceptSuccess();
     void testAcceptFail();
     void testOfferSuccess();
     void testOutgoingBusNameMonitoring();
     void testExtractBusNameMonitoring();
+    void testAcceptCornerCases();
     void testOfferCornerCases();
 
     void cleanup();
@@ -293,35 +293,6 @@ void TestDBusTubeChan::testCreation()
     QCOMPARE(mChan->supportsCredentials(), false);
     QCOMPARE(mChan->busNames().isEmpty(), true);
     QCOMPARE(mChan->address(), QString());
-}
-
-void TestDBusTubeChan::testAcceptTwice()
-{
-    /* incoming tube */
-    createTubeChannel(false, TP_SOCKET_ADDRESS_TYPE_UNIX,
-            TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
-    QVERIFY(connect(mChan->becomeReady(IncomingDBusTubeChannel::FeatureCore |
-                        DBusTubeChannel::FeatureBusNameMonitoring),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->isReady(IncomingDBusTubeChannel::FeatureCore), true);
-    QCOMPARE(mChan->isReady(DBusTubeChannel::FeatureBusNameMonitoring), true);
-    QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
-
-    IncomingDBusTubeChannelPtr chan = IncomingDBusTubeChannelPtr::qObjectCast(mChan);
-    QVERIFY(connect(chan->acceptTube(),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->state(), TubeChannelStateOpen);
-
-    /* try to re-accept the tube */
-    QVERIFY(connect(chan->acceptTube(),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectFailure(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->state(), TubeChannelStateOpen);
 }
 
 void TestDBusTubeChan::testAcceptSuccess()
@@ -648,6 +619,56 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     // And the signal shouldn't have been called
     QVERIFY(!mGotConnectionClosed);
     QVERIFY(!mGotRemoteConnection);
+}
+
+void TestDBusTubeChan::testAcceptCornerCases()
+{
+    /* incoming tube */
+    createTubeChannel(false, TP_SOCKET_ADDRESS_TYPE_UNIX,
+            TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
+
+    // These should not be ready yet
+    QCOMPARE(mChan->serviceName(), QString());
+    QCOMPARE(mChan->supportsCredentials(), false);
+    QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
+    QCOMPARE(mChan->parameters(), QVariantMap());
+
+    IncomingDBusTubeChannelPtr chan = IncomingDBusTubeChannelPtr::qObjectCast(mChan);
+
+    // Fail as features are not ready
+    QVERIFY(connect(chan->acceptTube(), // DISCARD
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Become ready
+    QVERIFY(connect(mChan->becomeReady(IncomingDBusTubeChannel::FeatureCore),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(IncomingDBusTubeChannel::FeatureCore), true);
+    QCOMPARE(mChan->isReady(DBusTubeChannel::FeatureBusNameMonitoring), false);
+    QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
+
+    // Offer using unsupported method
+    QVERIFY(connect(chan->acceptTube(true), // DISCARD
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Accept successfully
+    QVERIFY(connect(chan->acceptTube(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->state(), TubeChannelStateOpen);
+
+    /* try to re-accept the tube */
+    QVERIFY(connect(chan->acceptTube(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->state(), TubeChannelStateOpen);
 }
 
 void TestDBusTubeChan::testOfferCornerCases()
