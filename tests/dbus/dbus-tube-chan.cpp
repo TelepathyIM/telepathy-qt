@@ -75,6 +75,7 @@ private Q_SLOTS:
     void testAcceptFail();
     void testOfferSuccess();
     void testOutgoingBusNameMonitoring();
+    void testExtractBusNameMonitoring();
 
     void cleanup();
     void cleanupTestCase();
@@ -582,6 +583,70 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
     QVERIFY(mGotConnectionClosed);
 
     QCOMPARE(mChan->busNames().size(), 0);
+}
+
+void TestDBusTubeChan::testExtractBusNameMonitoring()
+{
+    mCurrentContext = 0; // should point to room, localhost
+    createTubeChannel(true, TP_SOCKET_ADDRESS_TYPE_UNIX, TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
+    QVERIFY(connect(mChan->becomeReady(OutgoingDBusTubeChannel::FeatureCore),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(busNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>)),
+                    SLOT(onBusNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>))));
+
+    OutgoingDBusTubeChannelPtr chan = OutgoingDBusTubeChannelPtr::qObjectCast(mChan);
+    QVERIFY(connect(chan->offerTube(QVariantMap()), // DISCARD
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(onOfferFinished(Tp::PendingOperation *))));
+
+    while (mChan->state() != TubeChannelStateRemotePending) {
+        mLoop->processEvents();
+    }
+
+    // Simulate a peer connection from someone
+    TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
+            TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
+    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", NULL, NULL);
+    gchar *service = g_strdup("org.not.seen.yet");
+
+    mExpectedHandle = handle;
+    mExpectedService = QLatin1String("org.not.seen.yet");
+
+    tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
+            service, handle);
+
+    while (mChan->state() != TubeChannelStateOpen) {
+        mLoop->processEvents();
+    }
+
+    // Test that we didn't get a remote connection
+    while (!mOfferFinished) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QVERIFY(!mGotConnectionClosed);
+    QVERIFY(!mGotRemoteConnection);
+
+    // This should also trigger a warning
+    QCOMPARE(mChan->busNames().size(), 0);
+
+    // Now, enable the feature, and let it extract participants
+    QVERIFY(connect(mChan->becomeReady(OutgoingDBusTubeChannel::FeatureBusNameMonitoring),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // This should now be fine
+    QCOMPARE(mChan->busNames().size(), 1);
+    // The name should match
+    QCOMPARE(mChan->busNames().value(mChan->busNames().keys().first()), QLatin1String("org.not.seen.yet"));
+    // And the signal shouldn't have been called
+    QVERIFY(!mGotConnectionClosed);
+    QVERIFY(!mGotRemoteConnection);
 }
 
 void TestDBusTubeChan::cleanup()
