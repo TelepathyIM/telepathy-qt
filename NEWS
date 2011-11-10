@@ -12,6 +12,7 @@ Enhancements:
 Fixes:
  * Our TODO process being completely out of date. Trying to use doxygen \todo
    annotations from now on
+ * FeatureRoster is set on Tp::Connection even for roster-less accounts.
 
 telepathy-qt4 0.7.3 (2011-10-07)
 ================================
