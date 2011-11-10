@@ -9,7 +9,7 @@ set(accounts_MOC_SRCS
     account-item.h
     accounts-window.h)
 
-tpqt4_generate_mocs(${accounts_MOC_SRCS})
+tpqt_generate_mocs(${accounts_MOC_SRCS})
 
 add_executable(accounts ${accounts_SRCS} ${accounts_MOC_SRCS})
 target_link_libraries(accounts

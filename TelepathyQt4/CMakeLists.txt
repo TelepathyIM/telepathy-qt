@@ -521,30 +521,30 @@ set(telepathy_qt4_MOC_SRCS
 set(gen_stable_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml)
 set(gen_future_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml)
 
-tpqt4_xincludator(stable-ifaces-includator ${CMAKE_CURRENT_SOURCE_DIR}/stable-interfaces.xml ${gen_stable_spec_xml})
-tpqt4_xincludator(future-ifaces-includator ${CMAKE_CURRENT_SOURCE_DIR}/future-interfaces.xml ${gen_future_spec_xml})
+tpqt_xincludator(stable-ifaces-includator ${CMAKE_CURRENT_SOURCE_DIR}/stable-interfaces.xml ${gen_stable_spec_xml})
+tpqt_xincludator(future-ifaces-includator ${CMAKE_CURRENT_SOURCE_DIR}/future-interfaces.xml ${gen_future_spec_xml})
 
 add_custom_target(all-generated-sources)
 
-tpqt4_constants_gen(stable-constants ${gen_stable_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
+tpqt_constants_gen(stable-constants ${gen_stable_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
                     --namespace=Tp
                     --str-constant-prefix=TELEPATHY_
                     --define-prefix=TP_QT_
                     --must-define=IN_TP_QT_HEADER
                     DEPENDS stable-ifaces-includator)
-tpqt4_constants_gen(future-constants ${gen_future_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
+tpqt_constants_gen(future-constants ${gen_future_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
                     --namespace=TpFuture
                     --str-constant-prefix=TP_FUTURE_
                     --define-prefix=TP_QT_FUTURE_
                     DEPENDS future-ifaces-includator)
 
-tpqt4_types_gen(stable-typesgen ${gen_stable_spec_xml}
+tpqt_types_gen(stable-typesgen ${gen_stable_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
                 Tp TelepathyQt4/types.h TelepathyQt4/Types
                 --must-define=IN_TP_QT_HEADER
                 --visibility=TP_QT_EXPORT
                 DEPENDS stable-constants)
-tpqt4_types_gen(future-typesgen ${gen_future_spec_xml}
+tpqt_types_gen(future-typesgen ${gen_future_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp
                 TpFuture TelepathyQt4/future-internal.h TelepathyQt4/future-internal.h
                 DEPENDS future-constants)
@@ -573,7 +573,7 @@ set(SPECS
     properties
     tls-certificate)
 foreach(spec ${SPECS})
-    tpqt4_xincludator(${spec}-spec-xincludator ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
+    tpqt_xincludator(${spec}-spec-xincludator ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
                       DEPENDS stable-typesgen)
     set(NEW_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
@@ -588,7 +588,7 @@ set(FUTURE_SPECS
     channel-dispatcher
     misc)
 foreach(spec ${FUTURE_SPECS})
-    tpqt4_xincludator(${spec}-future-xincludator  ${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
+    tpqt_xincludator(${spec}-future-xincludator  ${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
                       DEPENDS stable-typesgen future-typesgen)
     set(NEW_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
@@ -607,24 +607,24 @@ else(MSVC)
 endif(MSVC)
 
 # Use the client generator for generating headers out of specs
-tpqt4_client_generator(account clientaccount AccountManager Tp::Client --mainiface=Tp::Client::AccountInterface DEPENDS account-spec-xincludator)
-tpqt4_client_generator(account-manager clientam AccountManager Tp::Client --mainiface=Tp::Client::AccountManagerInterface DEPENDS account-manager-spec-xincludator)
-tpqt4_client_generator(channel clientchannel Channel Tp::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-spec-xincludator)
-tpqt4_client_generator(channel-dispatcher clientchanneldispatcher ChannelDispatcher Tp::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-spec-xincludator)
-tpqt4_client_generator(channel-dispatch-operation clientchanneldispatchoperation ChannelDispatchOperation Tp::Client --mainiface=Tp::Client::ChannelDispatchOperationInterface DEPENDS channel-dispatch-operation-spec-xincludator)
-tpqt4_client_generator(channel-request clientchannelrequest ChannelRequest Tp::Client --mainiface=Tp::Client::ChannelRequestInterface DEPENDS channel-request-spec-xincludator)
-tpqt4_client_generator(client clientclient Client Tp::Client --mainiface=Tp::Client::ClientInterface DEPENDS client-spec-xincludator)
-tpqt4_client_generator(connection clientconn Connection Tp::Client --mainiface=Tp::Client::ConnectionInterface DEPENDS connection-spec-xincludator)
-tpqt4_client_generator(connection-manager clientcm ConnectionManager Tp::Client --mainiface=Tp::Client::ConnectionManagerInterface DEPENDS connection-manager-spec-xincludator)
-tpqt4_client_generator(dbus clientdbus DBus Tp::Client::DBus DEPENDS dbus-spec-xincludator)
-tpqt4_client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface DEPENDS media-session-handler-spec-xincludator)
-tpqt4_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface DEPENDS media-stream-handler-spec-xincludator)
-tpqt4_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)
-tpqt4_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPENDS tls-certificate-spec-xincludator)
+tpqt_client_generator(account clientaccount AccountManager Tp::Client --mainiface=Tp::Client::AccountInterface DEPENDS account-spec-xincludator)
+tpqt_client_generator(account-manager clientam AccountManager Tp::Client --mainiface=Tp::Client::AccountManagerInterface DEPENDS account-manager-spec-xincludator)
+tpqt_client_generator(channel clientchannel Channel Tp::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-spec-xincludator)
+tpqt_client_generator(channel-dispatcher clientchanneldispatcher ChannelDispatcher Tp::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-spec-xincludator)
+tpqt_client_generator(channel-dispatch-operation clientchanneldispatchoperation ChannelDispatchOperation Tp::Client --mainiface=Tp::Client::ChannelDispatchOperationInterface DEPENDS channel-dispatch-operation-spec-xincludator)
+tpqt_client_generator(channel-request clientchannelrequest ChannelRequest Tp::Client --mainiface=Tp::Client::ChannelRequestInterface DEPENDS channel-request-spec-xincludator)
+tpqt_client_generator(client clientclient Client Tp::Client --mainiface=Tp::Client::ClientInterface DEPENDS client-spec-xincludator)
+tpqt_client_generator(connection clientconn Connection Tp::Client --mainiface=Tp::Client::ConnectionInterface DEPENDS connection-spec-xincludator)
+tpqt_client_generator(connection-manager clientcm ConnectionManager Tp::Client --mainiface=Tp::Client::ConnectionManagerInterface DEPENDS connection-manager-spec-xincludator)
+tpqt_client_generator(dbus clientdbus DBus Tp::Client::DBus DEPENDS dbus-spec-xincludator)
+tpqt_client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface DEPENDS media-session-handler-spec-xincludator)
+tpqt_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface DEPENDS media-stream-handler-spec-xincludator)
+tpqt_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)
+tpqt_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPENDS tls-certificate-spec-xincludator)
 
-tpqt4_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
-tpqt4_future_client_generator(channel-dispatcher TpFuture::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-future-xincludator)
-tpqt4_future_client_generator(misc TpFuture::Client DEPENDS misc-future-xincludator)
+tpqt_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
+tpqt_future_client_generator(channel-dispatcher TpFuture::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-future-xincludator)
+tpqt_future_client_generator(misc TpFuture::Client DEPENDS misc-future-xincludator)
 
 if (TARGET doxygen-doc)
     add_dependencies(doxygen-doc all-generated-sources)
@@ -641,7 +641,7 @@ endif (ENABLE_COMPILER_COVERAGE)
 foreach(moc_src ${telepathy_qt4_MOC_SRCS})
     set(generated_file _gen/${moc_src})
     string(REPLACE ".h" ".moc.hpp" generated_file ${generated_file})
-    tpqt4_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
+    tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
                                      ${telepathy_qt4_generated_specs_mocs})
     list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
     string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})

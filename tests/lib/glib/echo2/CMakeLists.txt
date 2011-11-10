@@ -13,5 +13,5 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_library(example-cm-echo2 STATIC ${example_cm_echo2_SRCS})
     target_link_libraries(example-cm-echo2 ${TPGLIB_LIBRARIES})
-    tpqt4_generate_manager_file(${CMAKE_CURRENT_SOURCE_DIR}/manager-file.py example_echo_2.manager connection-manager.c)
+    tpqt_generate_manager_file(${CMAKE_CURRENT_SOURCE_DIR}/manager-file.py example_echo_2.manager connection-manager.c)
 endif(ENABLE_TP_GLIB_TESTS)

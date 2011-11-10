@@ -4,7 +4,7 @@ set(messenger-sender_SRCS
 set(messenger-sender_MOC_SRCS
     sender.h)
 
-tpqt4_generate_mocs(${messenger-sender_MOC_SRCS})
+tpqt_generate_mocs(${messenger-sender_MOC_SRCS})
 
 add_executable(messenger-sender ${messenger-sender_SRCS} ${messenger-sender_MOC_SRCS})
 target_link_libraries(messenger-sender

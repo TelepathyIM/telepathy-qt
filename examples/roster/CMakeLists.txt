@@ -9,7 +9,7 @@ set(roster_MOC_SRCS
     roster-item.h
     roster-widget.h)
 
-tpqt4_generate_mocs(${roster_MOC_SRCS})
+tpqt_generate_mocs(${roster_MOC_SRCS})
 
 add_executable(roster ${roster_SRCS} ${roster_MOC_SRCS})
 target_link_libraries(roster

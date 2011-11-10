@@ -4,7 +4,7 @@ set(tubereceiver_SRCS
 set(tubereceiver_MOC_SRCS
     tube-receiver.h)
 
-tpqt4_generate_mocs(${tubereceiver_MOC_SRCS})
+tpqt_generate_mocs(${tubereceiver_MOC_SRCS})
 
 add_executable(tubereceiver ${tubereceiver_SRCS} ${tubereceiver_MOC_SRCS})
 target_link_libraries(tubereceiver
@@ -19,7 +19,7 @@ set(tubeinitiator_SRCS
 set(tubeinitiator_MOC_SRCS
     tube-initiator.h)
 
-tpqt4_generate_mocs(${tubeinitiator_MOC_SRCS})
+tpqt_generate_mocs(${tubeinitiator_MOC_SRCS})
 
 add_executable(tubeinitiator ${tubeinitiator_SRCS} ${tubeinitiator_MOC_SRCS})
 target_link_libraries(tubeinitiator

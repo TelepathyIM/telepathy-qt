@@ -79,7 +79,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 # This file contains all the needed initialization macros
 include(TelepathyDefaults)
 
-# This file contains all the tpqt4 macros used in the buildsystem
+# This file contains all the tpqt macros used in the buildsystem
 include(TpQt4Macros)
 
 include(MacroLogFeature)

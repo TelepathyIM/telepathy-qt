@@ -10,7 +10,7 @@ set(ft-receiver_MOC_SRCS
     pending-file-receive.h
     pending-file-transfer.h)
 
-tpqt4_generate_mocs(${ft-receiver_MOC_SRCS})
+tpqt_generate_mocs(${ft-receiver_MOC_SRCS})
 
 add_executable(ft-receiver ${ft-receiver_SRCS} ${ft-receiver_MOC_SRCS})
 target_link_libraries(ft-receiver
@@ -29,7 +29,7 @@ set(ft-sender_MOC_SRCS
     pending-file-send.h
     pending-file-transfer.h)
 
-tpqt4_generate_mocs(${ft-sender_MOC_SRCS})
+tpqt_generate_mocs(${ft-sender_MOC_SRCS})
 
 add_executable(ft-sender ${ft-sender_SRCS} ${ft-sender_MOC_SRCS})
 target_link_libraries(ft-sender

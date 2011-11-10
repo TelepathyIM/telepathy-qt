@@ -240,7 +240,7 @@ void TestConnBasics::cleanup()
 
         GHashTable *details = tp_asv_new(
                 "debug-message", G_TYPE_STRING, "woo i'm going doooooown",
-                "x-tpqt4-test-rgba-herring-color", G_TYPE_UINT, 0xff0000ffU,
+                "x-tpqt-test-rgba-herring-color", G_TYPE_UINT, 0xff0000ffU,
                 NULL
                 );
 
@@ -275,9 +275,9 @@ void TestConnBasics::cleanup()
 #endif
 
         QVERIFY(mConn->errorDetails().allDetails().contains(
-                    QLatin1String("x-tpqt4-test-rgba-herring-color")));
+                    QLatin1String("x-tpqt-test-rgba-herring-color")));
         QCOMPARE(qdbus_cast<uint>(mConn->errorDetails().allDetails().value(
-                        QLatin1String("x-tpqt4-test-rgba-herring-color"))),
+                        QLatin1String("x-tpqt-test-rgba-herring-color"))),
                 0xff0000ffU);
 
         processDBusQueue(mConn.data());

@@ -11,5 +11,5 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_library(example-cm-csh STATIC ${example_cm_csh_SRCS})
     target_link_libraries(example-cm-csh ${TPGLIB_LIBRARIES})
-    tpqt4_generate_manager_file(${CMAKE_CURRENT_SOURCE_DIR}/manager-file.py example_csh.manager connection-manager.c)
+    tpqt_generate_manager_file(${CMAKE_CURRENT_SOURCE_DIR}/manager-file.py example_csh.manager connection-manager.c)
 endif(ENABLE_TP_GLIB_TESTS)

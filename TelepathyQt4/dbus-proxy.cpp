@@ -42,7 +42,7 @@ namespace Tp
 // ==== DBusProxy ======================================================
 
 // Features in TpProxy but not here:
-// * tracking which interfaces we have (in tpqt4, subclasses do that)
+// * tracking which interfaces we have (in tpqt, subclasses do that)
 // * being Introspectable, a Peer and a Properties implementation
 // * disconnecting from signals when invalidated (probably has to be in the
 //   generated code)
