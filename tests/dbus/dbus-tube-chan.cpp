@@ -76,6 +76,7 @@ private Q_SLOTS:
     void testOfferSuccess();
     void testOutgoingBusNameMonitoring();
     void testExtractBusNameMonitoring();
+    void testOfferCornerCases();
 
     void cleanup();
     void cleanupTestCase();
@@ -647,6 +648,76 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     // And the signal shouldn't have been called
     QVERIFY(!mGotConnectionClosed);
     QVERIFY(!mGotRemoteConnection);
+}
+
+void TestDBusTubeChan::testOfferCornerCases()
+{
+    mCurrentContext = 0; // should point to room, localhost
+    createTubeChannel(true, TP_SOCKET_ADDRESS_TYPE_UNIX, TP_SOCKET_ACCESS_CONTROL_LOCALHOST, false);
+
+    // These should not be ready yet
+    QCOMPARE(mChan->serviceName(), QString());
+    QCOMPARE(mChan->supportsCredentials(), false);
+    QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
+    QCOMPARE(mChan->parameters(), QVariantMap());
+    OutgoingDBusTubeChannelPtr chan = OutgoingDBusTubeChannelPtr::qObjectCast(mChan);
+
+    // Fail as features are not ready
+    QVERIFY(connect(chan->offerTube(QVariantMap()), // DISCARD
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Make them ready
+    QVERIFY(connect(mChan->becomeReady(OutgoingDBusTubeChannel::FeatureCore),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(IncomingDBusTubeChannel::FeatureCore), true);
+    QCOMPARE(mChan->isReady(DBusTubeChannel::FeatureBusNameMonitoring), false);
+    QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
+
+    // Offer using unsupported method
+    QVERIFY(connect(chan->offerTube(QVariantMap(), true), // DISCARD
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Do a successful offer
+    QVERIFY(connect(chan->offerTube(QVariantMap()), // DISCARD
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(onOfferFinished(Tp::PendingOperation *))));
+
+    while (mChan->state() != TubeChannelStateRemotePending) {
+        mLoop->processEvents();
+    }
+
+    // Simulate a peer connection from someone
+    TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
+            TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_CONTACT);
+    TpHandle handle = tp_handle_ensure(contactRepo, "YouHaventSeenMeYet", NULL, NULL);
+    gchar *service = g_strdup("org.not.seen.yet");
+
+    mExpectedHandle = handle;
+    mExpectedService = QLatin1String("org.not.seen.yet");
+
+    tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
+            service, handle);
+
+    while (mChan->state() != TubeChannelStateOpen) {
+        mLoop->processEvents();
+    }
+
+    // Get to the connection
+    while (!mOfferFinished) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    // Test offering twice
+    QVERIFY(connect(chan->offerTube(QVariantMap()), // DISCARD
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
 }
 
 void TestDBusTubeChan::cleanup()
