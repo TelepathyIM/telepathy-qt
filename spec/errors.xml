@@ -16,7 +16,7 @@
       indicate specialized failure conditions. For better interoperability,
       if a suitable Telepathy error exists, it should be preferred.</p>
 
-    <p>The namespace <code>org.freedesktop.Telepathy.Qt4.Error.</code>
+    <p>The namespace <code>org.freedesktop.Telepathy.Qt.Error.</code>
       is reserved for use by the D-Bus client implementation in telepathy-qt4,
       which uses it to represent certain error situations that did not involve
       a D-Bus ERROR message. These errors are defined and documented as part of

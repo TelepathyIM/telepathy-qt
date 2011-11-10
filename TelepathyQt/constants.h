@@ -149,23 +149,23 @@
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved" as a QLatin1String.
+ * The error name "org.freedesktop.Telepathy.Qt.Error.ObjectRemoved" as a QLatin1String.
  */
 #define TP_QT_ERROR_OBJECT_REMOVED \
-    (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved"))
+    (QLatin1String("org.freedesktop.Telepathy.Qt.Error.ObjectRemoved"))
 
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.Telepathy.Qt4.Error.Inconsistent" as a QLatin1String.
+ * The error name "org.freedesktop.Telepathy.Qt.Error.Inconsistent" as a QLatin1String.
  */
 #define TP_QT_ERROR_INCONSISTENT \
-    (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Inconsistent"))
+    (QLatin1String("org.freedesktop.Telepathy.Qt.Error.Inconsistent"))
 
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.Telepathy.Qt4.Error.Orphaned" as a QLatin1String.
+ * The error name "org.freedesktop.Telepathy.Qt.Error.Orphaned" as a QLatin1String.
  *
  * This error is used when the "parent" proxy of an object gets invalidated. For example, a Channel
  * whose corresponding Connection is invalidated invalidates itself with this error, as do leftover
@@ -173,6 +173,6 @@
  * reason of the parent proxy might provide more information on the cause of the error.
  */
 #define TP_QT_ERROR_ORPHANED \
-    (QLatin1String("org.freedesktop.Telepathy.Qt4.Error.Orphaned"))
+    (QLatin1String("org.freedesktop.Telepathy.Qt.Error.Orphaned"))
 
 #endif
