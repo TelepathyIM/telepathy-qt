@@ -153,8 +153,7 @@ tp_tests_dbus_tube_channel_init (TpTestsDBusTubeChannel *self)
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE ((self),
       TP_TESTS_TYPE_DBUS_TUBE_CHANNEL, TpTestsDBusTubeChannelPrivate);
 
-  self->priv->dbus_names = g_hash_table_new_full (g_direct_hash,
-      g_direct_equal, NULL, g_free);
+  self->priv->dbus_names = g_hash_table_new (g_direct_hash, g_direct_equal);
 }
 
 static GObject *
@@ -652,6 +651,9 @@ tp_tests_dbus_tube_channel_peer_connected_no_stream (TpTestsDBusTubeChannel *sel
 
   g_hash_table_insert (added, GUINT_TO_POINTER (handle), bus_name);
 
+  // Add to the global hash table as well
+  g_hash_table_insert (self->priv->dbus_names, GUINT_TO_POINTER (handle), bus_name);
+
   tp_svc_channel_type_dbus_tube_emit_dbus_names_changed (self, added,
       removed);
 
@@ -673,6 +675,9 @@ tp_tests_dbus_tube_channel_peer_disconnected (TpTestsDBusTubeChannel *self,
   removed = g_array_new (FALSE, FALSE, sizeof (TpHandle));
 
   g_array_append_val (removed, handle);
+
+  // Remove from the global hash table as well
+  g_hash_table_remove (self->priv->dbus_names, GUINT_TO_POINTER (handle));
 
   tp_svc_channel_type_dbus_tube_emit_dbus_names_changed (self, added,
       removed);
