@@ -36,7 +36,7 @@
 namespace Tp
 {
 
-TELEPATHY_QT4_FS_EXPORT TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel);
+TP_QT_FS_EXPORT TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel);
 
 } // Tp
 
