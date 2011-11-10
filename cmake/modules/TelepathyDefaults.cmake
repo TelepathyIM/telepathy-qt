@@ -49,11 +49,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
         set(DEPRECATED_DECLARATIONS_FLAGS)
     endif (CXX_DEPRECATED_DECLARATIONS)
 
-    if(${TP_QT4_NANO_VERSION} EQUAL 0)
+    if(${TP_QT_NANO_VERSION} EQUAL 0)
         set(NOT_RELEASE 0)
-    else(${TP_QT4_NANO_VERSION} EQUAL 0)
+    else(${TP_QT_NANO_VERSION} EQUAL 0)
         set(NOT_RELEASE 1)
-    endif(${TP_QT4_NANO_VERSION} EQUAL 0)
+    endif(${TP_QT_NANO_VERSION} EQUAL 0)
 
     set(desired
         all

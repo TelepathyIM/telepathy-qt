@@ -38,29 +38,29 @@ endif(POLICY CMP0011)
 #   set nano_version to 0
 #   make the release, tag it
 #   set nano_version to 1
-set(TP_QT4_MAJOR_VERSION 0)
-set(TP_QT4_MINOR_VERSION 8)
-set(TP_QT4_MICRO_VERSION 9999)
-set(TP_QT4_NANO_VERSION  1)
+set(TP_QT_MAJOR_VERSION 0)
+set(TP_QT_MINOR_VERSION 8)
+set(TP_QT_MICRO_VERSION 9999)
+set(TP_QT_NANO_VERSION  1)
 
 # This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
 # occurs, and will be used for the SOVERSION of the generated shared libraries.
-set(TP_QT4_ABI_VERSION 1)
+set(TP_QT_ABI_VERSION 1)
 # This variable is used for the library's long version. It is generated dynamically, so don't change its
-# value! Change TP_QT4_ABI_VERSION and TP_QT4_*_VERSION instead.
-if (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION})
-else (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
-endif (${TP_QT4_NANO_VERSION} EQUAL 0)
+# value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
+if (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
+else (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
+endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
 set(PACKAGE_NAME telepathy-qt4)
 
-if (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION})
-else (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
-endif (${TP_QT4_NANO_VERSION} EQUAL 0)
+if (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
+else (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
+endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is
 # checked
@@ -69,11 +69,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 # Default build type is RelWithDebInfo for release versions and Debug for developement
 # versions
 if(NOT CMAKE_BUILD_TYPE)
-    if(TP_QT4_NANO_VERSION EQUAL 0)
+    if(TP_QT_NANO_VERSION EQUAL 0)
         set(CMAKE_BUILD_TYPE RelWithDebInfo)
-    else(TP_QT4_NANO_VERSION EQUAL 0)
+    else(TP_QT_NANO_VERSION EQUAL 0)
         set(CMAKE_BUILD_TYPE Debug)
-    endif(TP_QT4_NANO_VERSION EQUAL 0)
+    endif(TP_QT_NANO_VERSION EQUAL 0)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # This file contains all the needed initialization macros

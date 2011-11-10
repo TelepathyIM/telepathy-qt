@@ -65,7 +65,7 @@ public:
     bool isSubsetOf(const ChannelClassSpec &other) const;
     bool matches(const QVariantMap &immutableProperties) const;
 
-    // TODO: Use new TP_QT4_... constants
+    // TODO: Use new TP_QT_... constants
     QString channelType() const
     {
         return qdbus_cast<QString>(
