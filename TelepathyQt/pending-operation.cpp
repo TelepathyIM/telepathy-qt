@@ -118,12 +118,6 @@ PendingOperation::~PendingOperation()
  */
 SharedPtr<RefCounted> PendingOperation::object() const
 {
-    return _object();
-}
-
-// Temporary, to allow internal access to the object not warn of deprecation
-SharedPtr<RefCounted> PendingOperation::_object() const
-{
     return mPriv->object;
 }
 

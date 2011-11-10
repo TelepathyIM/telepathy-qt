@@ -1872,7 +1872,7 @@ void Channel::PendingLeave::onRemoveFinished(Tp::PendingOperation *op)
         return;
     }
 
-    ChannelPtr chan = ChannelPtr::staticCast(_object());
+    ChannelPtr chan = ChannelPtr::staticCast(object());
 
     if (op->isValid()) {
         debug() << "We left the channel" << chan->objectPath();
@@ -1913,7 +1913,7 @@ void Channel::PendingLeave::onMembersChanged(const Tp::Contacts &, const Tp::Con
         return;
     }
 
-    ChannelPtr chan = ChannelPtr::staticCast(_object());
+    ChannelPtr chan = ChannelPtr::staticCast(object());
     ContactPtr c = chan->groupSelfContact();
 
     if (removed.contains(c)) {
@@ -1928,7 +1928,7 @@ void Channel::PendingLeave::onCloseFinished(Tp::PendingOperation *op)
         return;
     }
 
-    ChannelPtr chan = ChannelPtr::staticCast(_object());
+    ChannelPtr chan = ChannelPtr::staticCast(object());
 
     if (op->isError()) {
         warning() << "Closing the channel" << chan->objectPath()

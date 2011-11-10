@@ -187,7 +187,7 @@ PendingChannelRequest::~PendingChannelRequest()
  */
 AccountPtr PendingChannelRequest::account() const
 {
-    return AccountPtr(qobject_cast<Account*>((Account*) _object().data()));
+    return AccountPtr(qobject_cast<Account*>((Account*) object().data()));
 }
 
 ChannelRequestPtr PendingChannelRequest::channelRequest() const
@@ -201,7 +201,7 @@ PendingOperation *PendingChannelRequest::cancel()
         // CR has already succeeded or failed, so let's just fail here
         return new PendingFailure(TP_QT_DBUS_ERROR_UNKNOWN_METHOD,
                 QLatin1String("ChannnelRequest already finished"),
-                _object());
+                object());
     }
 
     if (!mPriv->cancelOperation) {
