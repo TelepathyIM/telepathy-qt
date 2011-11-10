@@ -1,15 +1,16 @@
-telepathy-qt4 0.8.0 (2011-11-10)
+telepathy-qt 0.9.0 (UNRELEASED)
 ================================
 
-The "Make your own vacuum tubes" release.
+The "..." release.
 
-This release begins the feature frozen 0.8 stable release series. 0.9 will be
-the new development series.
-0.8 will continue to be backwards compatible API and ABI wise with the earlier
-0.7 development series.
-Starting with 0.9.0 the project will be renamed to telepathy-qt (TelepathyQt) and
-Qt5 support will be added alongside Qt4 support and for that 0.9.0 will be
-API (minor changes) and ABI incompatible with previous versions.
+This release begins the new 0.9 development series for feature additions
+following the 0.8 stable release series.
+Starting with this release the project is renamed to telepathy-qt (TelepathyQt) and
+Qt5 support is added alongside Qt4 support and for that 0.9 will be
+API (see changes below) and ABI incompatible with previous versions.
+
+API changes:
+ * ...
 
 Enhancements:
  * fd.o #35084: The StreamTubeClient and StreamTubeServer classes have been
