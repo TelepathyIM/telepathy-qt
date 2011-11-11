@@ -1,7 +1,8 @@
-/*
+/**
  * This file is part of TelepathyQt
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,82 +59,28 @@ IncomingDBusTubeChannel::Private::~Private()
 
 /**
  * \class IncomingDBusTubeChannel
+ * \ingroup clientchannel
  * \headerfile TelepathyQt/incoming-dbus-tube-channel.h <TelepathyQt/IncomingDBusTubeChannel>
  *
- * An high level wrapper for managing an incoming DBus tube
+ * \brief The IncomingStreamTubeChannel class represents an incoming Telepathy channel
+ * of type StreamTube.
  *
- * \c IncomingDBusTubeChannel is an high level wrapper for managing Telepathy interface
- * #TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE.
- * In particular, this class is meant to be used as a comfortable way for accepting incoming requests.
+ * In particular, this class is meant to be used as a comfortable way for
+ * accepting incoming DBus tubes. Unless a different behavior is specified, tubes
+ * will be always accepted allowing connections just from the current user, unless this
+ * or one of the other ends do not support that. Unless your application has specific needs,
+ * you usually want to keep this behavior.
  *
- * \section incoming_dbus_tube_usage_sec Usage
+ * Once a tube is successfully accepted and open (the PendingDBusTubeConnection returned from the
+ * accepting methods has finished), the application can connect to the DBus server, the address of which
+ * can be retrieved from PendingDBusTubeConnection::address().
  *
- * \subsection incoming_dbus_tube_create_sec Obtaining an incoming DBus tube
+ * \note If you plan to use QtDBus for the DBus connection, please note you should always use
+ *       QDBusConnection::connectToPeer(), regardless of the fact this tube is a p2p or a group one.
+ *       The above function has been introduced in Qt 4.8, previous versions of Qt do not allow the use
+ *       of DBus Tubes through QtDBus.
  *
- * Whenever a contact invites you to open an incoming DBus tube, if you are registered
- * as a channel handler for the channel type #TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE,
- * you will be notified of the offer and you will be able to handle the channel.
- * Please refer to the documentation of #AbstractClientHandler for more
- * details on channel handling.
- *
- * Supposing your channel handler has been created correctly, you would do:
- *
- * \code
- * void MyChannelManager::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
- *                               const Tp::AccountPtr &account,
- *                               const Tp::ConnectionPtr &connection,
- *                               const QList<Tp::ChannelPtr> &channels,
- *                               const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
- *                               const QDateTime &userActionTime,
- *                               const QVariantMap &handlerInfo)
- * {
- *     foreach(const Tp::ChannelPtr &channel, channels) {
- *         QVariantMap properties = channel->immutableProperties();
- *
- *         if (properties[TELEPATHY_INTERFACE_CHANNEL ".ChannelType"] ==
- *                        TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE) {
- *
- *             // Handle the channel
- *             Tp::IncomingDBusTubeChannelPtr myTube =
- *                      Tp::IncomingDBusTubeChannelPtr::qObjectCast(channel);
- *
- *          }
- *     }
- *
- *     context->setFinished();
- * }
- * \endcode
- *
- * \subsection incoming_dbus_tube_accept_sec Accepting the tube
- *
- * Before being ready to accept the tube, we must be sure the required features on our object
- * are ready. In this case, we need to enable TubeChannel::FeatureTube and
- * DBusTubeChannel::FeatureCore.
- *
- * DBusTubeChannel features can be enabled by constructing a ChannelFactory and enabling the desired features,
- * and passing it to ChannelRequest or ClientRegistrar when creating them as appropriate. However,
- * if a particular feature is only ever used in a specific circumstance, such as an user opening
- * some settings dialog separate from the general view of the application, features can be later
- * enabled as needed by calling becomeReady().
- *
- * Once your object is ready, you can use #acceptTube to accept the tube and create a brand
- * new private DBus connection.
- *
- * The returned PendingDBusTubeConnection serves both for monitoring the state of the tube and for
- * obtaining, upon success, the address of the new connection.
- * When the operation finishes, you can do:
- *
- * \code
- * void MyTubeReceiver::onDBusTubeAccepted(PendingDBusTubeConnection *op)
- * {
- *     if (op->isError()) {
- *        return;
- *     }
- *
- *     QString address = op->address();
- *     // Connect to the address
- * }
- * \endcode
+ * For more details, please refer to \telepathy_spec.
  *
  * See \ref async_model, \ref shared_ptr
  */
@@ -191,8 +138,18 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  *
  * This method requires DBusTubeChannel::FeatureCore to be enabled.
  *
- * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
- *                           upon connection.
+ * \param allowOtherUsers Whether the server should allow other users to connect to this tube more
+ *                        than just the current one. If your application has no specific needs, it is
+ *                        advisable not to modify the default value of this argument.
+ *
+ * \note If allowOtherUsers == false, but one of the ends does not support current user restriction,
+ *       the tube will be offered regardless, falling back to allowing any connection. If your
+ *       application requires strictly this condition to be enforced, you should check
+ *       DBusTubeChannel::supportsRestrictingToCurrentUser <b>before</b> accepting the tube,
+ *       and take action from there.
+ *       The tube is guaranteed either to be accepted with the desired
+ *       restriction or to fail the accept phase if supportsRestrictingToCurrentUser is true
+ *       and allowOtherUsers is false.
  *
  * \return A %PendingDBusTubeConnection which will finish as soon as the tube is ready to be used
  *         (hence in the Open state)

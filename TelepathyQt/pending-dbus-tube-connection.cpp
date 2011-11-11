@@ -1,7 +1,8 @@
-/*
+/**
  * This file is part of TelepathyQt
  *
- * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,6 +59,7 @@ PendingDBusTubeConnection::Private::~Private()
 
 /**
  * \class PendingDBusTubeConnection
+ * \ingroup clientchannel
  * \headerfile TelepathyQt4/pending-dbus-tube-connection.h <TelepathyQt4/PendingDBusTubeConnection>
  *
  * A pending operation for accepting or offering a DBus tube
@@ -117,6 +119,11 @@ PendingDBusTubeConnection::~PendingDBusTubeConnection()
  * been completed successfully: in case of failure or non-completion, an empty QString will be
  * returned.
  *
+ * \note If you plan to use QtDBus for the DBus connection, please note you should always use
+ *       QDBusConnection::connectToPeer(), regardless of the fact this tube is a p2p or a group one.
+ *       The above function has been introduced in Qt 4.8, previous versions of Qt do not allow the use
+ *       of DBus Tubes through QtDBus.
+ *
  * \returns The address of the opened DBus connection.
  */
 QString PendingDBusTubeConnection::address() const
@@ -125,14 +132,22 @@ QString PendingDBusTubeConnection::address() const
 }
 
 /**
- * Return whether sending a credential byte once connecting to the socket is required.
+ * Return whether this tube allows other users more than the current one to connect to the
+ * private bus created by the tube.
  *
- * Note that if this method returns \c true, one should send a SCM_CREDS or SCM_CREDENTIALS
- * and the credentialByte() once connected. If SCM_CREDS or SCM_CREDENTIALS cannot be sent,
- * the credentialByte() should still be sent.
+ * Note that even if the tube was accepted or offered specifying not to allow other users, this
+ * method might still return true if one of the ends did not support such a restriction.
  *
- * \return \c true if sending credentials is required, \c false otherwise.
- * \sa credentialByte()
+ * In fact, if one of the ends does not support current user restriction,
+ * the tube will be offered regardless, falling back to allowing any connection. If your
+ * application requires strictly this condition to be enforced, you should check
+ * DBusTubeChannel::supportsRestrictingToCurrentUser <b>before</b> offering the tube,
+ * and take action from there.
+ *
+ * This function, however, is guaranteed to return the same value of the given allowOtherUsers
+ * parameter when accepting or offering a tube if supportsRestrictingToCurrentUser is true.
+ *
+ * \return \c true if any user is allow to connect, \c false otherwise.
  */
 bool PendingDBusTubeConnection::allowsOtherUsers() const
 {

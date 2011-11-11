@@ -1,7 +1,8 @@
-/*
+/**
  * This file is part of TelepathyQt
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -157,22 +158,25 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
 
 /**
  * \class DBusTubeChannel
+<<<<<<< HEAD
  * \headerfile TelepathyQt/stream-tube-channel.h <TelepathyQt/DBusTubeChannel>
+=======
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/dbus-tube-channel.h <TelepathyQt4/DBusTubeChannel>
+>>>>>>> 523c3c3... dbus-tubes: Update and improve the API documentation
  *
- * A class representing a DBus Tube
+ * \brief The DBusTubeChannel class represents a Telepathy channel of type DBusTube.
  *
- * \c DBusTubeChannel is an high level wrapper for managing Telepathy interface
- * #TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE.
- * It provides a private DBus connection, either peer-to-peer or between a group of contacts, which
- * can be used just like a standard DBus connection. As such, services exposed MUST adhere to the
- * DBus specification.
+ * It provides a private bus which can be used as a peer-to-peer connection in case of a
+ * Contact Channel, or as a full-fledged bus in case of a Room Channel.
  *
- * This class provides high level methods for managing both incoming and outgoing tubes - however,
- * you probably want to use one of its subclasses, #OutgoingDBusTubeChannel or
- * #IncomingDBusTubeChannel, which both provide higher level methods for accepting
- * or offering tubes.
+ * DBusTubeChannel is an intermediate base class; OutgoingDBusTubeChannel and
+ * IncomingDBusTubeChannel are the specialized classes used for locally and remotely initiated
+ * tubes respectively.
  *
- * For more details, please refer to Telepathy spec.
+ * For more details, please refer to \telepathy_spec.
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 // Features declaration and documentation
@@ -186,10 +190,11 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
  */
 const Feature DBusTubeChannel::FeatureCore = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 0);
 /**
- * Feature used in order to monitor connections to this tube.
- * Please note that this feature makes sense only in Group tubes.
+ * Feature used in order to monitor bus names in this DBus tube.
  *
- * %busNamesChanged will be emitted when the participants of this tube change
+ * See bus name monitoring specific methods' documentation for more details.
+ *
+ * \sa busNameAdded(), busNameRemoved()
  */
 const Feature DBusTubeChannel::FeatureBusNameMonitoring = Feature(QLatin1String(DBusTubeChannel::staticMetaObject.className()), 1);
 
@@ -239,7 +244,8 @@ DBusTubeChannel::~DBusTubeChannel()
 }
 
 /**
- * Returns the service name which will be used over the tube.
+ * Returns the service name which will be used over the tube. This should be a
+ * well-known and valid DBus service name, in the form "org.my.service".
  *
  * This method requires DBusTubeChannel::FeatureCore to be enabled.
  *
@@ -258,27 +264,21 @@ QString DBusTubeChannel::serviceName() const
 
 /**
  * Checks if this tube is capable to accept or offer a private bus which
- * will require credentials upon connection.
+ * will allow connections only from the current user
  *
- * When this capability is available and enabled, the connecting process must send a byte when
- * it first connects, which is not considered to be part of the data stream.
- * If the operating system uses sendmsg() with SCM_CREDS or SCM_CREDENTIALS to pass
- * credentials over sockets, the connecting process must do so if possible;
- * if not, it must still send the byte.
+ * This method is useful only if your appliance is really security-sensitive:
+ * in general, this restriction is always enabled by default on all tubes offered
+ * or accepted from Telepathy-Qt4, falling back to a general connection allowance
+ * if this feature is not available.
  *
- * The listening process will disconnect the connection unless it can determine
- * by OS-specific means that the connecting process has the same user ID as the listening process.
+ * If your application does not have specific needs regarding DBus credentials,
+ * you can trust Telepathy-Qt4 to do the right thing - in any case, the most secure
+ * method available will be used by default.
  *
  * This method requires DBusTubeChannel::FeatureCore to be enabled.
  *
- * \note It is strongly advised to call this method before attempting to call
- *       #IncomingDBusTubeChannel::acceptTube or
- *       #OutgoingDBusTubeChannel::offerTube requiring
- *       credentials to prevent failures, as the spec implies
- *       this feature is not compulsory for connection managers.
- *
  * \return Whether this DBus tube is capable to accept or offer a private bus
- *         requiring credentials for connecting to it.
+ *         restricting access to it to the current user only.
  *
  * \sa IncomingDBusTubeChannel::acceptTube
  * \sa OutgoingDBusTubeChannel::offerTube
@@ -302,6 +302,11 @@ bool DBusTubeChannel::supportsRestrictingToCurrentUser() const
  * been opened successfully: in case of failure or the tube being still pending, an empty QString will be
  * returned.
  *
+ * \note If you plan to use QtDBus for the DBus connection, please note you should always use
+ *       QDBusConnection::connectToPeer(), regardless of the fact this tube is a p2p or a group one.
+ *       The above function has been introduced in Qt 4.8, previous versions of Qt do not allow the use
+ *       of DBus Tubes through QtDBus.
+ *
  * \returns The address of the private bus opened by this tube
  */
 QString DBusTubeChannel::address() const
@@ -316,9 +321,11 @@ QString DBusTubeChannel::address() const
 }
 
 /**
- * This function returns all the known active connections since FeatureBusNameMonitoring has
- * been enabled. For this method to return all known connections, you need to make
- * FeatureBusNameMonitoring ready before accepting or offering the tube.
+ * This function returns all the known active bus names in this tube. It requires
+ * FeatureBusNameMonitoring to be activated; however, even a late activation of the
+ * feature will make this function return a full list of all the connected bus
+ * names, including the ones which appeared before the activation of the feature
+ * itself.
  *
  * This function will always return an empty hash in case the tube is p2p, even if
  * FeatureBusNameMonitoring has been activated.
@@ -461,15 +468,15 @@ void DBusTubeChannel::setAddress(const QString& address)
 
 // Signals documentation
 /**
- * \fn void DBusTubeChannel::busNamesChanged(const QHash< ContactPtr, QString > &added, const QList< ContactPtr > &removed)
+ * \fn void DBusTubeChannel::busNameAdded(const QString &busName, const Tp::ContactPtr &contact)
  *
- * Emitted when the participants of this tube change.
+ * Emitted when a new participant joins this tube.
  *
  * This signal will be emitted only if the tube is a group tube (not p2p), and if the
  * FeatureBusNameMonitoring feature has been enabled.
  *
- * \param added An hash containing the contacts who joined this tube, with their respective bus name.
- * \param removed A list containing the contacts who left this tube.
+ * \param busName The bus name of the new participant
+ * \param contact The ContactPtr identifying the participant
  */
 
 }

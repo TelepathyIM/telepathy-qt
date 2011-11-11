@@ -1,7 +1,8 @@
-/*
+/**
  * This file is part of TelepathyQt
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,54 +54,26 @@ OutgoingDBusTubeChannel::Private::~Private()
 
 /**
  * \class OutgoingDBusTubeChannel
+ * \ingroup clientchannel
  * \headerfile TelepathyQt/outgoing-dbus-tube-channel.h <TelepathyQt/OutgoingDBusTubeChannel>
  *
- * An high level wrapper for managing an outgoing DBus tube
+ * \brief The OutgoingDBusTubeChannel class represents an outgoing Telepathy channel
+ * of type DBusTube.
  *
- * \c OutgoingDBusTubeChannel is an high level wrapper for managing Telepathy interface
- * #TELEPATHY_INTERFACE_CHANNEL_TYPE_DBUS_TUBE.
- * In particular, this class is meant to be used as a comfortable way for exposing new tubes.
+ * Outgoing (locally initiated/requested) tubes are initially in the #TubeChannelStateNotOffered state.
+ * When offerTube is called, the connection manager takes care of instantiating a new DBus server,
+ * at which point the tube state becomes #TubeChannelStateRemotePending.
  *
- * \section outgoing_dbus_tube_usage_sec Usage
+ * If the target accepts the connection request, the state goes #TubeChannelStateOpen and both sides
+ * can start using the new private bus, the address of which can be retrieved from the completed
+ * PendingDBusTubeConnection or from this class.
  *
- * \subsection outgoing_dbus_tube_create_sec Creating an outgoing DBus tube
+ * \note If you plan to use QtDBus for the DBus connection, please note you should always use
+ *       QDBusConnection::connectToPeer(), regardless of the fact this tube is a p2p or a group one.
+ *       The above function has been introduced in Qt 4.8, previous versions of Qt do not allow the use
+ *       of DBus Tubes through QtDBus.
  *
- * The easiest way to create a DBus tube is through Account. One can
- * just use the Account convenience methods such as
- * Account::createDBusTube() to get a brand new DBus tube channel ready to be used.
- *
- * To create such a channel, it is required to pass Account::createDBusTube()
- * the contact identifier and the DBus service name which will be used over the tube.
- * For example:
- *
- * \code
- * AccountPtr myaccount = getMyAccountSomewhere();
- * ContactPtr myfriend = getMyFriendSomewhereElse();
- *
- * PendingChannelRequest *tube = myaccount->createDBusTube(myfriend, "org.my.service");
- * \endcode
- *
- * \subsection outgoing_dbus_tube_offer_sec Offering the tube
- *
- * Before being ready to offer the tube, we must be sure the required features on our object
- * are ready. In this case, we need to enable TubeChannel::FeatureTube
- * and DBusTubeChannel::FeatureCore.
- *
- * DBusTubeChannel features can be enabled by constructing a ChannelFactory and enabling the desired features,
- * and passing it to ChannelRequest or ClientRegistrar when creating them as appropriate. However,
- * if a particular feature is only ever used in a specific circumstance, such as an user opening
- * some settings dialog separate from the general view of the application, features can be later
- * enabled as needed by calling becomeReady().
- *
- * You can also enable DBusTubeChannel::FeatureBusNameMonitoring to monitor connections
- * to the tube.
- *
- * Once your object is ready, you can use offerTube to create a brand new DBus connection and offer
- * it over the tube.
- *
- * You can now monitor the returned operation to know when the tube will be ready.
- * It is guaranteed that when the operation finishes,
- * the tube will be already opened and ready to be used.
+ * For more details, please refer to \telepathy_spec.
  *
  * See \ref async_model, \ref shared_ptr
  */
@@ -154,11 +127,23 @@ OutgoingDBusTubeChannel::~OutgoingDBusTubeChannel()
  * The %PendingDBusTubeConnection returned by this method will be completed as soon as the tube is
  * opened and ready to be used.
  *
+ * This method requires DBusTubeChannel::FeatureCore to be enabled.
+ *
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
  *                   The other end will receive this QVariantMap in the parameters() method
- *                   of the corresponding IncomingStreamTubeChannel.
- * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
- *                           upon connection.
+ *                   of the corresponding IncomingDBusTubeChannel.
+ * \param allowOtherUsers Whether the server should allow other users to connect to this tube more
+ *                        than just the current one. If your application has no specific needs, it is
+ *                        advisable not to modify the default value of this argument.
+ *
+ * \note If allowOtherUsers == false, but one of the ends does not support current user restriction,
+ *       the tube will be offered regardless, falling back to allowing any connection. If your
+ *       application requires strictly this condition to be enforced, you should check
+ *       DBusTubeChannel::supportsRestrictingToCurrentUser <b>before</b> offering the tube,
+ *       and take action from there.
+ *       The tube is guaranteed either to be offered with the desired
+ *       restriction or to fail the accept phase if supportsRestrictingToCurrentUser is true
+ *       and allowOtherUsers is false.
  *
  * \returns A %PendingDBusTubeConnection which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
