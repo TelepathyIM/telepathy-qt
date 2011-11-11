@@ -18,9 +18,6 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include <gio/gunixsocketaddress.h>
-#include <gio/gunixconnection.h>
-
 #include <glib/gstdio.h>
 
 enum
@@ -114,6 +111,8 @@ tp_tests_dbus_tube_channel_set_property (GObject *object,
   switch (property_id)
     {
       case PROP_SUPPORTED_ACCESS_CONTROLS:
+        if (self->priv->supported_access_controls != NULL)
+          g_array_free (self->priv->supported_access_controls, FALSE);
         self->priv->supported_access_controls = g_value_dup_boxed (value);
         break;
 
@@ -202,6 +201,24 @@ dispose (GObject *object)
   TpTestsDBusTubeChannel *self = (TpTestsDBusTubeChannel *) object;
 
   tp_clear_pointer (&self->priv->dbus_names, g_hash_table_unref);
+
+  if (self->priv->supported_access_controls != NULL)
+    g_array_free (self->priv->supported_access_controls, TRUE);
+
+  if (self->priv->parameters != NULL)
+    g_hash_table_destroy (self->priv->parameters);
+
+  if (self->priv->dbus_srv != NULL)
+    dbus_server_unref (self->priv->dbus_srv);
+
+  if (self->priv->dbus_conn != NULL)
+    dbus_connection_unref (self->priv->dbus_conn);
+
+  if (self->priv->dbus_srv_addr != NULL)
+    g_free (self->priv->dbus_srv_addr);
+
+  if (self->priv->socket_path != NULL)
+    g_free (self->priv->socket_path);
 
   ((GObjectClass *) tp_tests_dbus_tube_channel_parent_class)->dispose (
     object);
