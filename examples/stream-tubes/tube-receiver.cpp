@@ -32,7 +32,7 @@
 TubeReceiver::TubeReceiver(QObject *parent)
     : QObject(parent)
 {
-    mTubeClient = StreamTubeClient::create(QStringList() << QLatin1String("tp-qt4-stube-example"));
+    mTubeClient = StreamTubeClient::create(QStringList() << QLatin1String("tp-qt-stube-example"));
     connect(mTubeClient.data(),
             SIGNAL(tubeAcceptedAsUnix(QString,bool,uchar,Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),
             SLOT(onTubeAccepted(QString)));
