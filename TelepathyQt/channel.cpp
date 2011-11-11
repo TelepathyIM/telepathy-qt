@@ -2942,7 +2942,7 @@ void Channel::onConnectionReady(PendingOperation *op)
     //
     // besides, the only thing which breaks without connecting in the world likely is if you're
     // using idle and decide to change your nick, which I don't think we necessarily even have API
-    // to do from tp-qt4 anyway (or did I make idle change the nick when setting your alias? can't
+    // to do from tp-qt anyway (or did I make idle change the nick when setting your alias? can't
     // remember)
     //
     // Simply put, I just don't care ATM.

@@ -1436,7 +1436,7 @@ SEARCHENGINE           = NO
 GENERATE_QHP           = ${GENERATE_QHP}
 QHP_NAMESPACE          = "org.freedesktop.Telepathy.Qt"
 QHP_VIRTUAL_FOLDER     = "${PROJECT_NAME}-${PACKAGE_VERSION}"
-QCH_FILE               = ${abs_top_builddir}/doc/help/telepathy-qt4.qch
+QCH_FILE               = ${abs_top_builddir}/doc/help/telepathy-qt.qch
 QHG_LOCATION           = ${QHELPGENERATOR_EXECUTABLE}
 
 ### TelepathyQt Settings

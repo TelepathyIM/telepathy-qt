@@ -150,7 +150,7 @@ public:
 
     AvatarSpec avatarRequirements() const;
     // TODO: We probably want to expose the avatar file name once we have the avatar token and MC
-    //       starts sharing the cache used by tp-qt4 and tp-glib and use Tp::AvatarData to represent
+    //       starts sharing the cache used by tp-qt and tp-glib and use Tp::AvatarData to represent
     //       it as used in Tp::Contact
     const Avatar &avatar() const;
     PendingOperation *setAvatar(const Avatar &avatar);

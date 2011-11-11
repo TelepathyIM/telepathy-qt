@@ -31,10 +31,10 @@
  * provide a unified interface for applications.
  *
  * Releases can be found <a
- * href="http://telepathy.freedesktop.org/releases/telepathy-qt4">here</a>.
+ * href="http://telepathy.freedesktop.org/releases/telepathy-qt">here</a>.
  *
  * Development is done in the git repository found <a
- * href="http://cgit.freedesktop.org/telepathy/telepathy-qt4/">here</a>.
+ * href="http://cgit.freedesktop.org/telepathy/telepathy-qt/">here</a>.
  *
  * \li <a href="classes.html">All Classes</a>
  *
@@ -101,7 +101,7 @@
  * \page bugreport How to report a bug
  *
  * Before reporting a bug, please check the <a
- * href="https://bugs.freedesktop.org/query.cgi?product=Telepathy&component=telepathy-qt4">
+ * href="https://bugs.freedesktop.org/query.cgi?product=Telepathy&component=telepathy-qt">
  * Bug Tracker</a> to see if the issue is already known.
  *
  * Always include the following information in your bug report:
@@ -109,7 +109,7 @@
  *
  * Please submit the bug report, feature request or "to-do" item
  * <a
- * href="https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=telepathy-qt4">
+ * href="https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=telepathy-qt">
  * here</a>.
  */
 

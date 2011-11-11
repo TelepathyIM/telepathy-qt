@@ -157,7 +157,7 @@ void TestStreamedMediaChan::expectBusyRequestStreamsFinished(PendingOperation *o
     }
 
     if (op->isError()) {
-        // The service signaled busy even before tp-qt4 finished introspection.
+        // The service signaled busy even before tp-qt finished introspection.
         // FIXME: should the error be something else, actually? Such as, perchance,
         // org.freedesktop.Telepathy.Error.Busy? (fd.o #29757).
         QCOMPARE(op->errorName(), QLatin1String("org.freedesktop.Telepathy.Error.Cancelled"));

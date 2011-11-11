@@ -899,7 +899,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     userActionTime = userActionTime.addMSecs(-userActionTime.time().msec());
 
     QVariantMap hints;
-    hints.insert(QLatin1String("tp-qt4-test-request-hint-herring-color-rgba"), uint(0xff000000));
+    hints.insert(QLatin1String("tp-qt-test-request-hint-herring-color-rgba"), uint(0xff000000));
 
     QObject *request = new QObject(this);
     QString requestPath =
