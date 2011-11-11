@@ -456,7 +456,6 @@ void TestDBusTubeChan::testOfferSuccess()
         gchar *bobService = g_strdup("org.bob.test");
         tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
                 bobService, bobHandle);
-        g_free(bobService);
 
         mExpectedHandle = bobHandle;
         mExpectedService = QLatin1String("org.bob.test");
@@ -502,6 +501,7 @@ void TestDBusTubeChan::testOfferSuccess()
 
         /* as we run several tests here, let's init/cleanup properly */
         cleanup();
+        g_free (bobService);
     }
 }
 
@@ -555,6 +555,8 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
     QVERIFY(mGotConnectionClosed);
 
     QCOMPARE(mChan->busNames().size(), 0);
+
+    g_free (service);
 }
 
 void TestDBusTubeChan::testExtractBusNameMonitoring()
@@ -619,6 +621,8 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     // And the signal shouldn't have been called
     QVERIFY(!mGotConnectionClosed);
     QVERIFY(!mGotRemoteConnection);
+
+    g_free (service);
 }
 
 void TestDBusTubeChan::testAcceptCornerCases()
@@ -739,6 +743,8 @@ void TestDBusTubeChan::testOfferCornerCases()
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+
+    g_free (service);
 }
 
 void TestDBusTubeChan::cleanup()
