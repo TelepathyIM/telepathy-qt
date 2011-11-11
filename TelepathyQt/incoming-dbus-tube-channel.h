@@ -42,7 +42,7 @@ public:
 
     virtual ~IncomingDBusTubeChannel();
 
-    PendingDBusTubeConnection *acceptTube(bool requireCredentials = false);
+    PendingDBusTubeConnection *acceptTube(bool allowOtherUsers = false);
 
 protected:
     IncomingDBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,

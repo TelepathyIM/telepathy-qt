@@ -56,7 +56,7 @@ public:
           mConn(0), mChanService(0),
           mGotRemoteConnection(false),
           mGotConnectionClosed(false),
-          mOfferFinished(false), mRequiresCredentials(false), mCredentialByte(0)
+          mOfferFinished(false), mAllowsOtherUsers(false)
     { }
 
 protected Q_SLOTS:
@@ -96,8 +96,7 @@ private:
     bool mGotRemoteConnection;
     bool mGotConnectionClosed;
     bool mOfferFinished;
-    bool mRequiresCredentials;
-    uchar mCredentialByte;
+    bool mAllowsOtherUsers;
 
     uint mExpectedHandle;
     QString mExpectedService;
@@ -143,8 +142,7 @@ void TestDBusTubeChan::expectPendingTubeConnectionFinished(PendingOperation *op)
     TEST_VERIFY_OP(op);
 
     PendingDBusTubeConnection *pdt = qobject_cast<PendingDBusTubeConnection*>(op);
-    mRequiresCredentials = pdt->requiresCredentials();
-    mCredentialByte = pdt->credentialByte();
+    mAllowsOtherUsers = pdt->allowsOtherUsers();
 
     // Check the addresses match
     QCOMPARE(mChan->address(), pdt->address());
@@ -250,8 +248,7 @@ void TestDBusTubeChan::init()
     mGotRemoteConnection = false;
     mGotConnectionClosed = false;
     mOfferFinished = false;
-    mRequiresCredentials = false;
-    mCredentialByte = 0;
+    mAllowsOtherUsers = false;
 
     mExpectedHandle = -1;
     mExpectedService = QString();
@@ -271,7 +268,7 @@ void TestDBusTubeChan::testCreation()
     QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
     QCOMPARE(mChan->parameters().isEmpty(), true);
     QCOMPARE(mChan->serviceName(), QLatin1String("com.test.Test"));
-    QCOMPARE(mChan->supportsCredentials(), false);
+    QCOMPARE(mChan->supportsRestrictingToCurrentUser(), false);
     QCOMPARE(mChan->busNames().isEmpty(), true);
     QCOMPARE(mChan->address(), QString());
 
@@ -290,7 +287,7 @@ void TestDBusTubeChan::testCreation()
     QCOMPARE(mChan->parameters().contains(QLatin1String("badger")), true);
     QCOMPARE(mChan->parameters().value(QLatin1String("badger")), QVariant(42));
     QCOMPARE(mChan->serviceName(), QLatin1String("com.test.Test"));
-    QCOMPARE(mChan->supportsCredentials(), false);
+    QCOMPARE(mChan->supportsRestrictingToCurrentUser(), false);
     QCOMPARE(mChan->busNames().isEmpty(), true);
     QCOMPARE(mChan->address(), QString());
 }
@@ -320,12 +317,12 @@ void TestDBusTubeChan::testAcceptSuccess()
                     SIGNAL(busNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>)),
                     SLOT(onBusNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>))));
 
-        bool requiresCredentials = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) ?
+        bool allowsOtherUsers = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_LOCALHOST) ?
             true : false);
 
         IncomingDBusTubeChannelPtr chan = IncomingDBusTubeChannelPtr::qObjectCast(mChan);
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
-            QVERIFY(connect(chan->acceptTube(requiresCredentials),
+            QVERIFY(connect(chan->acceptTube(allowsOtherUsers),
                         SIGNAL(finished(Tp::PendingOperation *)),
                         SLOT(expectPendingTubeConnectionFinished(Tp::PendingOperation *))));
         } else {
@@ -334,7 +331,7 @@ void TestDBusTubeChan::testAcceptSuccess()
         }
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->state(), TubeChannelStateOpen);
-        QCOMPARE(mRequiresCredentials, requiresCredentials);
+        QCOMPARE(mAllowsOtherUsers, allowsOtherUsers);
 
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
             qDebug() << "Connecting to bus" << mChan->address();
@@ -413,7 +410,7 @@ void TestDBusTubeChan::testOfferSuccess()
                     SIGNAL(busNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>)),
                     SLOT(onBusNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>))));
 
-        bool requiresCredentials = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_CREDENTIALS) ?
+        bool allowsOtherUsers = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_LOCALHOST) ?
             true : false);
 
         mExpectedHandle = -1;
@@ -425,7 +422,7 @@ void TestDBusTubeChan::testOfferSuccess()
         offerParameters.insert(QLatin1String("mushroom"), 44);
         qDebug() << "About to offer tube";
         if (contexts[i].addressType == TP_SOCKET_ADDRESS_TYPE_UNIX) {
-            QVERIFY(connect(chan->offerTube(offerParameters, requiresCredentials),
+            QVERIFY(connect(chan->offerTube(offerParameters, allowsOtherUsers),
                         SIGNAL(finished(Tp::PendingOperation *)),
                         SLOT(onOfferFinished(Tp::PendingOperation *))));
         } else {
@@ -633,7 +630,7 @@ void TestDBusTubeChan::testAcceptCornerCases()
 
     // These should not be ready yet
     QCOMPARE(mChan->serviceName(), QString());
-    QCOMPARE(mChan->supportsCredentials(), false);
+    QCOMPARE(mChan->supportsRestrictingToCurrentUser(), false);
     QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
     QCOMPARE(mChan->parameters(), QVariantMap());
 
@@ -654,14 +651,12 @@ void TestDBusTubeChan::testAcceptCornerCases()
     QCOMPARE(mChan->isReady(DBusTubeChannel::FeatureBusNameMonitoring), false);
     QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
 
-    // Offer using unsupported method
-    QVERIFY(connect(chan->acceptTube(true), // DISCARD
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectFailure(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    // Accept using unsupported method
+    PendingDBusTubeConnection *connection = chan->acceptTube();
+    // As credentials are not supported, our connection should report we've fallen back.
+    QVERIFY(connection->allowsOtherUsers());
 
-    // Accept successfully
-    QVERIFY(connect(chan->acceptTube(),
+    QVERIFY(connect(connection,
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
@@ -682,7 +677,7 @@ void TestDBusTubeChan::testOfferCornerCases()
 
     // These should not be ready yet
     QCOMPARE(mChan->serviceName(), QString());
-    QCOMPARE(mChan->supportsCredentials(), false);
+    QCOMPARE(mChan->supportsRestrictingToCurrentUser(), false);
     QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
     QCOMPARE(mChan->parameters(), QVariantMap());
     OutgoingDBusTubeChannelPtr chan = OutgoingDBusTubeChannelPtr::qObjectCast(mChan);
@@ -703,13 +698,10 @@ void TestDBusTubeChan::testOfferCornerCases()
     QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
 
     // Offer using unsupported method
-    QVERIFY(connect(chan->offerTube(QVariantMap(), true), // DISCARD
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectFailure(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    // Do a successful offer
-    QVERIFY(connect(chan->offerTube(QVariantMap()), // DISCARD
+    PendingDBusTubeConnection *connection = chan->offerTube(QVariantMap());
+    // As credentials are not supported, our connection should report we've fallen back.
+    QVERIFY(connection->allowsOtherUsers());
+    QVERIFY(connect(connection, // DISCARD
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(onOfferFinished(Tp::PendingOperation *))));
 

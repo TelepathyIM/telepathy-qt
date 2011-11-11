@@ -42,7 +42,7 @@ public:
 
     virtual ~OutgoingDBusTubeChannel();
 
-    PendingDBusTubeConnection *offerTube(const QVariantMap &parameters, bool requireCredentials = false);
+    PendingDBusTubeConnection *offerTube(const QVariantMap &parameters, bool allowOtherUsers = false);
 
 protected:
     OutgoingDBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,

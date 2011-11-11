@@ -42,8 +42,7 @@ public:
 
     QString address() const;
 
-    bool requiresCredentials() const;
-    uchar credentialByte() const;
+    bool allowsOtherUsers() const;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onConnectionFinished(Tp::PendingOperation *op);
@@ -54,10 +53,7 @@ private Q_SLOTS:
 
 private:
     TP_QT_NO_EXPORT PendingDBusTubeConnection(PendingString *string,
-            bool requiresCredentials, uchar credentialByte,
-            const DBusTubeChannelPtr &object);
-    TP_QT_NO_EXPORT PendingDBusTubeConnection(PendingString *string,
-            bool requiresCredentials, const QVariantMap &parameters,
+            bool allowOtherUsers, const QVariantMap &parameters,
             const DBusTubeChannelPtr &object);
     TP_QT_NO_EXPORT PendingDBusTubeConnection(const QString &errorName, const QString &errorMessage,
             const DBusTubeChannelPtr &object);

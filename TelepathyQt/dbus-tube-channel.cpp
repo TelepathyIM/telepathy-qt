@@ -283,10 +283,10 @@ QString DBusTubeChannel::serviceName() const
  * \sa IncomingDBusTubeChannel::acceptTube
  * \sa OutgoingDBusTubeChannel::offerTube
  */
-bool DBusTubeChannel::supportsCredentials() const
+bool DBusTubeChannel::supportsRestrictingToCurrentUser() const
 {
     if (!isReady(FeatureCore)) {
-        warning() << "DBusTubeChannel::supportsCredentials() used with "
+        warning() << "DBusTubeChannel::supportsRestrictingToCurrentUser() used with "
             "FeatureCore not ready";
         return false;
     }

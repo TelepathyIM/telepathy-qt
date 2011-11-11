@@ -197,11 +197,11 @@ IncomingDBusTubeChannel::~IncomingDBusTubeChannel()
  * \return A %PendingDBusTubeConnection which will finish as soon as the tube is ready to be used
  *         (hence in the Open state)
  */
-PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool requireCredentials)
+PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool allowOtherUsers)
 {
-    SocketAccessControl accessControl = requireCredentials ?
-                                        SocketAccessControlCredentials :
-                                        SocketAccessControlLocalhost;
+    SocketAccessControl accessControl = allowOtherUsers ?
+                                        SocketAccessControlLocalhost :
+                                        SocketAccessControlCredentials;
 
     if (!isReady(DBusTubeChannel::FeatureCore)) {
         warning() << "DBusTubeChannel::FeatureCore must be ready before "
@@ -218,27 +218,10 @@ PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool requireCrede
     }
 
     // Let's offer the tube
-    if (requireCredentials && !supportsCredentials()) {
-        warning() << "You requested an access control "
-            "not supported by this channel";
-        return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("The requested access control is not supported"),
-                IncomingDBusTubeChannelPtr(this));
-    }
-
-    QDBusVariant accessControlParam;
-    uchar credentialByte = 0;
-    if (accessControl == SocketAccessControlLocalhost) {
-        accessControlParam.setVariant(qVariantFromValue(static_cast<uint>(0)));
-    } else if (accessControl == SocketAccessControlCredentials) {
-        if (mPriv->initRandom) {
-            qsrand(QTime::currentTime().msec());
-            mPriv->initRandom = false;
-        }
-        credentialByte = static_cast<uchar>(qrand());
-        accessControlParam.setVariant(qVariantFromValue(credentialByte));
-    } else {
-        Q_ASSERT(false);
+    if (!allowOtherUsers && !supportsRestrictingToCurrentUser()) {
+        warning() << "Current user restriction is not available for this tube, "
+            "falling back to allowing any connection";
+        accessControl = SocketAccessControlLocalhost;
     }
 
     PendingString *ps = new PendingString(
@@ -246,8 +229,9 @@ PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool requireCrede
             accessControl),
         IncomingDBusTubeChannelPtr(this));
 
-    PendingDBusTubeConnection *op = new PendingDBusTubeConnection(ps, requireCredentials,
-        credentialByte, IncomingDBusTubeChannelPtr(this));
+    PendingDBusTubeConnection *op = new PendingDBusTubeConnection(ps,
+        accessControl == SocketAccessControlLocalhost,
+        QVariantMap(), IncomingDBusTubeChannelPtr(this));
     return op;
 }
 

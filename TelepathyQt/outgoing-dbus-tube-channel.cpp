@@ -164,11 +164,11 @@ OutgoingDBusTubeChannel::~OutgoingDBusTubeChannel()
  *          (hence in the Open state)
  */
 PendingDBusTubeConnection *OutgoingDBusTubeChannel::offerTube(const QVariantMap &parameters,
-        bool requireCredentials)
+        bool allowOtherUsers)
 {
-    SocketAccessControl accessControl = requireCredentials ?
-                                        SocketAccessControlCredentials :
-                                        SocketAccessControlLocalhost;
+    SocketAccessControl accessControl = allowOtherUsers ?
+                                        SocketAccessControlLocalhost :
+                                        SocketAccessControlCredentials;
 
     if (!isReady(DBusTubeChannel::FeatureCore)) {
         warning() << "DBusTubeChannel::FeatureCore must be ready before "
@@ -185,12 +185,10 @@ PendingDBusTubeConnection *OutgoingDBusTubeChannel::offerTube(const QVariantMap 
     }
 
     // Let's offer the tube
-    if (requireCredentials && !supportsCredentials()) {
-        warning() << "You requested an access control "
-            "not supported by this channel";
-        return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("The requested access control is not supported"),
-                OutgoingDBusTubeChannelPtr(this));
+    if (!allowOtherUsers && !supportsRestrictingToCurrentUser()) {
+        warning() << "Current user restriction is not available for this tube, "
+            "falling back to allowing any connection";
+        accessControl = SocketAccessControlLocalhost;
     }
 
     PendingString *ps = new PendingString(
@@ -199,8 +197,9 @@ PendingDBusTubeConnection *OutgoingDBusTubeChannel::offerTube(const QVariantMap 
             accessControl),
         OutgoingDBusTubeChannelPtr(this));
 
-    PendingDBusTubeConnection *op = new PendingDBusTubeConnection(ps, requireCredentials,
-                                              parameters, OutgoingDBusTubeChannelPtr(this));
+    PendingDBusTubeConnection *op = new PendingDBusTubeConnection(ps,
+            accessControl == SocketAccessControlLocalhost,
+            parameters, OutgoingDBusTubeChannelPtr(this));
     return op;
 }
 

@@ -48,7 +48,7 @@ public:
 
     QString serviceName() const;
 
-    bool supportsCredentials() const;
+    bool supportsRestrictingToCurrentUser() const;
 
     QHash<Tp::ContactPtr, QString> busNames() const;
 

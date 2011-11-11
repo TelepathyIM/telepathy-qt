@@ -42,15 +42,13 @@ struct TP_QT_NO_EXPORT PendingDBusTubeConnection::Private
 
     DBusTubeChannelPtr tube;
 
-    bool requiresCredentials;
-    uchar credentialByte;
+    bool allowOtherUsers;
     QVariantMap parameters;
 };
 
 PendingDBusTubeConnection::Private::Private(PendingDBusTubeConnection *parent)
     : parent(parent),
-      requiresCredentials(false),
-      credentialByte(0)
+      allowOtherUsers(false)
 {
 }
 
@@ -69,33 +67,8 @@ PendingDBusTubeConnection::Private::~Private()
  */
 
 PendingDBusTubeConnection::PendingDBusTubeConnection(
-        PendingString *string,
-        bool requiresCredentials,
-        uchar credentialByte,
-        const DBusTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new Private(this))
-{
-    mPriv->tube = object;
-
-    mPriv->requiresCredentials = requiresCredentials;
-    mPriv->credentialByte = credentialByte;
-
-    connect(mPriv->tube.data(), SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-            this, SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
-
-    if (string->isFinished()) {
-        onConnectionFinished(string);
-    } else {
-        // Connect the pending void
-        connect(string, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onConnectionFinished(Tp::PendingOperation*)));
-    }
-}
-
-PendingDBusTubeConnection::PendingDBusTubeConnection(
         PendingString* string,
-        bool requiresCredentials,
+        bool allowOtherUsers,
         const QVariantMap& parameters,
         const DBusTubeChannelPtr& object)
     : PendingOperation(object)
@@ -103,7 +76,7 @@ PendingDBusTubeConnection::PendingDBusTubeConnection(
 {
     mPriv->tube = object;
 
-    mPriv->requiresCredentials = requiresCredentials;
+    mPriv->allowOtherUsers = allowOtherUsers;
     mPriv->parameters = parameters;
 
     connect(mPriv->tube.data(), SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
@@ -161,21 +134,9 @@ QString PendingDBusTubeConnection::address() const
  * \return \c true if sending credentials is required, \c false otherwise.
  * \sa credentialByte()
  */
-bool PendingDBusTubeConnection::requiresCredentials() const
+bool PendingDBusTubeConnection::allowsOtherUsers() const
 {
-    return mPriv->requiresCredentials;
-}
-
-/**
- * Return the credential byte to send once connecting to the socket if requiresCredentials() is \c
- * true.
- *
- * \return The credential byte.
- * \sa requiresCredentials()
- */
-uchar PendingDBusTubeConnection::credentialByte() const
-{
-    return mPriv->credentialByte;
+    return mPriv->allowOtherUsers;
 }
 
 void PendingDBusTubeConnection::onConnectionFinished(PendingOperation *op)
