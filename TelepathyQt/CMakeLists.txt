@@ -223,19 +223,15 @@ set(telepathy_qt_HEADERS
     ConnectionInterfaceBalanceInterface
     ConnectionInterfaceCapabilitiesInterface
     ConnectionInterfaceCellularInterface
-    ConnectionInterfaceClientTypes
     ConnectionInterfaceContactBlockingInterface
     ConnectionInterfaceClientTypesInterface
     ConnectionInterfaceContactCapabilitiesInterface
-    ConnectionInterfaceContactGroups
     ConnectionInterfaceContactGroupsInterface
     ConnectionInterfaceContactInfoInterface
-    ConnectionInterfaceContactList
     ConnectionInterfaceContactListInterface
     ConnectionInterfaceContactsInterface
     ConnectionInterfaceLocationInterface
     ConnectionInterfaceMailNotificationInterface
-    ConnectionInterfacePowerSaving
     ConnectionInterfacePowerSavingInterface
     ConnectionInterfacePresenceInterface
     ConnectionInterfaceRequestsInterface
