@@ -54,8 +54,8 @@ public:
     TestDBusTubeChan(QObject *parent = 0)
         : Test(parent),
           mConn(0), mChanService(0),
-          mGotRemoteConnection(false),
-          mGotConnectionClosed(false),
+          mBusNameWasAdded(false),
+          mBusNameWasRemoved(false),
           mOfferFinished(false), mAllowsOtherUsers(false)
     { }
 
@@ -93,23 +93,23 @@ private:
     uint mCurrentContext;
 
     QHash<QString, Tp::ContactPtr> mCurrentContactsForBusNames;
-    bool mGotRemoteConnection;
-    bool mGotConnectionClosed;
+    bool mBusNameWasAdded;
+    bool mBusNameWasRemoved;
     bool mOfferFinished;
     bool mAllowsOtherUsers;
 
     uint mExpectedHandle;
-    QString mExpectedService;
+    QString mExpectedBusName;
 };
 
 void TestDBusTubeChan::onBusNameAdded(const QString &busName,
                                       const Tp::ContactPtr &contact)
 {
     mCurrentContactsForBusNames.insert(busName, contact);
-    mGotRemoteConnection = true;
+    mBusNameWasAdded = true;
     qDebug() << "Adding bus name" << busName << "for" << contact->id();
 
-    QCOMPARE(busName, mExpectedService);
+    QCOMPARE(busName, mExpectedBusName);
     QCOMPARE(contact->handle().first(), mExpectedHandle);
 
     QCOMPARE(mChan->contactsForBusNames().size(), mCurrentContactsForBusNames.size());
@@ -122,7 +122,7 @@ void TestDBusTubeChan::onBusNameRemoved(const QString &busName,
 {
     QVERIFY(mCurrentContactsForBusNames.contains(busName));
     mCurrentContactsForBusNames.remove(busName);
-    mGotConnectionClosed = true;
+    mBusNameWasRemoved = true;
     qDebug() << "Removing bus name" << busName << "for" << contact->id();
 
     QCOMPARE(contact->handle().first(), mExpectedHandle);
@@ -248,13 +248,13 @@ void TestDBusTubeChan::init()
 
     mCurrentContext = -1;
 
-    mGotRemoteConnection = false;
-    mGotConnectionClosed = false;
+    mBusNameWasAdded = false;
+    mBusNameWasRemoved = false;
     mOfferFinished = false;
     mAllowsOtherUsers = false;
 
     mExpectedHandle = -1;
-    mExpectedService = QString();
+    mExpectedBusName = QString();
 }
 
 void TestDBusTubeChan::testCreation()
@@ -411,7 +411,7 @@ void TestDBusTubeChan::testOfferSuccess()
         QCOMPARE(mChan->state(), TubeChannelStateNotOffered);
         QCOMPARE(mChan->parameters().isEmpty(), true);
 
-        mGotRemoteConnection = false;
+        mBusNameWasAdded = false;
         QVERIFY(connect(mChan.data(),
                     SIGNAL(busNameAdded(QString,Tp::ContactPtr)),
                     SLOT(onBusNameAdded(QString,Tp::ContactPtr))));
@@ -423,7 +423,7 @@ void TestDBusTubeChan::testOfferSuccess()
             true : false);
 
         mExpectedHandle = -1;
-        mExpectedService = QString();
+        mExpectedBusName = QString();
 
         mOfferFinished = false;
         OutgoingDBusTubeChannelPtr chan = OutgoingDBusTubeChannelPtr::qObjectCast(mChan);
@@ -464,7 +464,7 @@ void TestDBusTubeChan::testOfferSuccess()
                 bobService, bobHandle);
 
         mExpectedHandle = bobHandle;
-        mExpectedService = QLatin1String("org.bob.test");
+        mExpectedBusName = QLatin1String("org.bob.test");
 
         QCOMPARE(mChan->state(), TubeChannelStateRemotePending);
 
@@ -484,19 +484,19 @@ void TestDBusTubeChan::testOfferSuccess()
 
         // This section makes sense just in a room environment
         if (!contexts[i].withContact) {
-            if (!mGotRemoteConnection) {
+            if (!mBusNameWasAdded) {
                 QCOMPARE(mLoop->exec(), 0);
             }
 
-            QCOMPARE(mGotRemoteConnection, true);
+            QCOMPARE(mBusNameWasAdded, true);
 
             qDebug() << "Connected to host";
 
-            mGotConnectionClosed = false;
+            mBusNameWasRemoved = false;
             tp_tests_dbus_tube_channel_peer_disconnected(mChanService,
                     mExpectedHandle);
             QCOMPARE(mLoop->exec(), 0);
-            QCOMPARE(mGotConnectionClosed, true);
+            QCOMPARE(mBusNameWasRemoved, true);
 
             /* let the internal DBusTubeChannel::onBusNamesChanged slot be called before
             * checking the data for that connection */
@@ -545,15 +545,15 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
     gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
-    mExpectedService = QLatin1String("org.not.seen.yet");
+    mExpectedBusName = QLatin1String("org.not.seen.yet");
 
     tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
             service, handle);
     tp_tests_dbus_tube_channel_peer_disconnected(mChanService, handle);
 
     // Test that we get the events in the right sequence
-    while (!mOfferFinished || !mGotRemoteConnection) {
-        QVERIFY(!mGotConnectionClosed || !mOfferFinished);
+    while (!mOfferFinished || !mBusNameWasAdded) {
+        QVERIFY(!mBusNameWasRemoved || !mOfferFinished);
         QCOMPARE(mLoop->exec(), 0);
     }
 
@@ -561,7 +561,7 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
 
     // The busNameRemoved emission should finally exit the main loop
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(mGotConnectionClosed);
+    QVERIFY(mBusNameWasRemoved);
 
     QCOMPARE(mChan->contactsForBusNames().size(), 0);
 
@@ -600,7 +600,7 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
-    mExpectedService = QLatin1String("org.not.seen.yet");
+    mExpectedBusName = QLatin1String("org.not.seen.yet");
 
     tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
             service, handle);
@@ -614,8 +614,8 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    QVERIFY(!mGotConnectionClosed);
-    QVERIFY(!mGotRemoteConnection);
+    QVERIFY(!mBusNameWasRemoved);
+    QVERIFY(!mBusNameWasAdded);
 
     // This should also trigger a warning
     QCOMPARE(mChan->contactsForBusNames().size(), 0);
@@ -631,8 +631,8 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     // The name should match
     QCOMPARE(mChan->contactsForBusNames().keys().first(), QLatin1String("org.not.seen.yet"));
     // And the signal shouldn't have been called
-    QVERIFY(!mGotConnectionClosed);
-    QVERIFY(!mGotRemoteConnection);
+    QVERIFY(!mBusNameWasRemoved);
+    QVERIFY(!mBusNameWasAdded);
 
     g_free (service);
 }
@@ -731,7 +731,7 @@ void TestDBusTubeChan::testOfferCornerCases()
     gchar *service = g_strdup("org.not.seen.yet");
 
     mExpectedHandle = handle;
-    mExpectedService = QLatin1String("org.not.seen.yet");
+    mExpectedBusName = QLatin1String("org.not.seen.yet");
 
     tp_tests_dbus_tube_channel_peer_connected_no_stream(mChanService,
             service, handle);
