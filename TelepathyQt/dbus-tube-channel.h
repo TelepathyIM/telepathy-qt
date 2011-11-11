@@ -50,7 +50,7 @@ public:
 
     bool supportsRestrictingToCurrentUser() const;
 
-    QHash<Tp::ContactPtr, QString> busNames() const;
+    QHash<QString, Tp::ContactPtr> contactsForBusNames() const;
 
     QString address() const;
 
@@ -61,7 +61,8 @@ protected:
     void setAddress(const QString &address);
 
 Q_SIGNALS:
-    void busNamesChanged(const QHash<ContactPtr, QString> &added, const QList<ContactPtr> &removed);
+    void busNameAdded(const QString &busName, const Tp::ContactPtr &contact);
+    void busNameRemoved(const QString &busName, const Tp::ContactPtr &contact);
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onRequestAllPropertiesFinished(Tp::PendingOperation*);

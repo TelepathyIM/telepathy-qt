@@ -52,7 +52,7 @@ struct TP_QT_NO_EXPORT DBusTubeChannel::Private
     // Properties
     UIntList accessControls;
     QString serviceName;
-    QHash<ContactPtr, QString> busNames;
+    QHash<QString, Tp::ContactPtr> contactsForBusNames;
     QString address;
 
     QHash<QUuid, QString> pendingNewBusNamesToAdd;
@@ -101,7 +101,7 @@ void DBusTubeChannel::Private::extractProperties(const QVariantMap &props)
 
 void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipants &participants)
 {
-    busNames.clear();
+    contactsForBusNames.clear();
     for (DBusTubeParticipants::const_iterator i = participants.constBegin();
          i != participants.constEnd();
          ++i) {
@@ -325,15 +325,15 @@ QString DBusTubeChannel::address() const
  *
  * \returns A list of active connection ids known to this tube
  */
-QHash<ContactPtr, QString> DBusTubeChannel::busNames() const
+QHash<QString, Tp::ContactPtr> DBusTubeChannel::contactsForBusNames() const
 {
     if (!isReady(FeatureBusNameMonitoring)) {
-        warning() << "DBusTubeChannel::busNames() used with "
+        warning() << "DBusTubeChannel::contactsForBusNames() used with "
             "FeatureBusNameMonitoring not ready";
-        return QHash<ContactPtr, QString>();
+        return QHash<QString, Tp::ContactPtr>();
     }
 
-    return mPriv->busNames;
+    return mPriv->contactsForBusNames;
 }
 
 void DBusTubeChannel::onRequestAllPropertiesFinished(PendingOperation *op)
@@ -418,36 +418,35 @@ void DBusTubeChannel::onContactsRetrieved(const QUuid &uuid, const QList<Contact
     // Retrieve our hash
     if (mPriv->pendingNewBusNamesToAdd.contains(uuid)) {
         QString busName = mPriv->pendingNewBusNamesToAdd.take(uuid);
-        QHash<ContactPtr, QString> added;
 
         // Add it to our connections hash
         foreach (const Tp::ContactPtr &contact, contacts) {
-            mPriv->busNames.insert(contact, busName);
-            added.insert(contact, busName);
+            mPriv->contactsForBusNames.insert(busName, contact);
+
+            // Time for us to emit the signal - if the feature is ready
+            if (isReady(FeatureBusNameMonitoring)) {
+                emit busNameAdded(busName, contact);
+            }
         }
 
-        // Time for us to emit the signal - if the feature is ready
-        if (isReady(FeatureBusNameMonitoring)) {
-            emit busNamesChanged(added, QList<ContactPtr>());
-        }
+
     } else if (mPriv->pendingNewBusNamesToRemove.contains(uuid)) {
         mPriv->pendingNewBusNamesToRemove.removeOne(uuid);
-        QList<ContactPtr> removed;
 
         // Remove it from our connections hash
         foreach (const Tp::ContactPtr &contact, contacts) {
-            if (mPriv->busNames.contains(contact)) {
-                mPriv->busNames.remove(contact);
-                removed << contact;
+            if (mPriv->contactsForBusNames.values().contains(contact)) {
+                QString busName = mPriv->contactsForBusNames.key(contact);
+                mPriv->contactsForBusNames.remove(busName);
+
+                // Time for us to emit the signal - if the feature is ready
+                if (isReady(FeatureBusNameMonitoring)) {
+                    emit busNameRemoved(busName, contact);
+                }
             } else {
                 warning() << "Trying to remove a bus name for contact " << contact->id()
                           << " which has not been retrieved previously!";
             }
-        }
-
-        // Time for us to emit the signal - if the feature is ready
-        if (isReady(FeatureBusNameMonitoring)) {
-            emit busNamesChanged(QHash<ContactPtr, QString>(), removed);
         }
     } else {
         warning() << "Contacts retrieved but no pending bus names were found";

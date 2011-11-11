@@ -60,8 +60,8 @@ public:
     { }
 
 protected Q_SLOTS:
-    void onBusNamesChanged(const QHash<ContactPtr,QString> &added,
-            const QList<ContactPtr> &removed);
+    void onBusNameAdded(const QString &busName, const Tp::ContactPtr &contact);
+    void onBusNameRemoved(const QString &busName, const Tp::ContactPtr &contact);
     void onOfferFinished(Tp::PendingOperation *op);
     void expectPendingTubeConnectionFinished(Tp::PendingOperation *op);
 
@@ -92,7 +92,7 @@ private:
 
     uint mCurrentContext;
 
-    QHash<ContactPtr, QString> mCurrentBusNames;
+    QHash<QString, Tp::ContactPtr> mCurrentContactsForBusNames;
     bool mGotRemoteConnection;
     bool mGotConnectionClosed;
     bool mOfferFinished;
@@ -102,29 +102,32 @@ private:
     QString mExpectedService;
 };
 
-void TestDBusTubeChan::onBusNamesChanged(const QHash<ContactPtr, QString> &added,
-                                         const QList<ContactPtr> &removed)
+void TestDBusTubeChan::onBusNameAdded(const QString &busName,
+                                      const Tp::ContactPtr &contact)
 {
-    qDebug() << "Bus names changed!";
-    for (QHash<ContactPtr, QString>::const_iterator i = added.constBegin();
-         i != added.constEnd(); ++i) {
-        mCurrentBusNames.insert(i.key(), i.value());
-        mGotRemoteConnection = true;
-        qDebug() << "Adding " << i.key()->id();
+    mCurrentContactsForBusNames.insert(busName, contact);
+    mGotRemoteConnection = true;
+    qDebug() << "Adding bus name" << busName << "for" << contact->id();
 
-        QCOMPARE(i.value(), mExpectedService);
-        QCOMPARE(i.key()->handle().first(), mExpectedHandle);
-    }
-    Q_FOREACH (const ContactPtr &contact, removed) {
-        QVERIFY(mCurrentBusNames.contains(contact));
-        mCurrentBusNames.remove(contact);
-        mGotConnectionClosed = true;
-        qDebug() << "Removing " << contact->id();
+    QCOMPARE(busName, mExpectedService);
+    QCOMPARE(contact->handle().first(), mExpectedHandle);
 
-        QCOMPARE(contact->handle().first(), mExpectedHandle);
-    }
+    QCOMPARE(mChan->contactsForBusNames().size(), mCurrentContactsForBusNames.size());
 
-    QCOMPARE(mChan->busNames().size(), mCurrentBusNames.size());
+    mLoop->quit();
+}
+
+void TestDBusTubeChan::onBusNameRemoved(const QString &busName,
+                                        const Tp::ContactPtr &contact)
+{
+    QVERIFY(mCurrentContactsForBusNames.contains(busName));
+    mCurrentContactsForBusNames.remove(busName);
+    mGotConnectionClosed = true;
+    qDebug() << "Removing bus name" << busName << "for" << contact->id();
+
+    QCOMPARE(contact->handle().first(), mExpectedHandle);
+
+    QCOMPARE(mChan->contactsForBusNames().size(), mCurrentContactsForBusNames.size());
 
     mLoop->quit();
 }
@@ -269,7 +272,7 @@ void TestDBusTubeChan::testCreation()
     QCOMPARE(mChan->parameters().isEmpty(), true);
     QCOMPARE(mChan->serviceName(), QLatin1String("com.test.Test"));
     QCOMPARE(mChan->supportsRestrictingToCurrentUser(), false);
-    QCOMPARE(mChan->busNames().isEmpty(), true);
+    QCOMPARE(mChan->contactsForBusNames().isEmpty(), true);
     QCOMPARE(mChan->address(), QString());
 
     /* incoming tube */
@@ -288,7 +291,7 @@ void TestDBusTubeChan::testCreation()
     QCOMPARE(mChan->parameters().value(QLatin1String("badger")), QVariant(42));
     QCOMPARE(mChan->serviceName(), QLatin1String("com.test.Test"));
     QCOMPARE(mChan->supportsRestrictingToCurrentUser(), false);
-    QCOMPARE(mChan->busNames().isEmpty(), true);
+    QCOMPARE(mChan->contactsForBusNames().isEmpty(), true);
     QCOMPARE(mChan->address(), QString());
 }
 
@@ -314,8 +317,11 @@ void TestDBusTubeChan::testAcceptSuccess()
         QCOMPARE(mChan->state(), TubeChannelStateLocalPending);
 
         QVERIFY(connect(mChan.data(),
-                    SIGNAL(busNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>)),
-                    SLOT(onBusNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>))));
+                    SIGNAL(busNameAdded(QString,Tp::ContactPtr)),
+                    SLOT(onBusNameAdded(QString,Tp::ContactPtr))));
+        QVERIFY(connect(mChan.data(),
+                    SIGNAL(busNameRemoved(QString,Tp::ContactPtr)),
+                    SLOT(onBusNameRemoved(QString,Tp::ContactPtr))));
 
         bool allowsOtherUsers = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_LOCALHOST) ?
             true : false);
@@ -407,8 +413,11 @@ void TestDBusTubeChan::testOfferSuccess()
 
         mGotRemoteConnection = false;
         QVERIFY(connect(mChan.data(),
-                    SIGNAL(busNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>)),
-                    SLOT(onBusNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>))));
+                    SIGNAL(busNameAdded(QString,Tp::ContactPtr)),
+                    SLOT(onBusNameAdded(QString,Tp::ContactPtr))));
+        QVERIFY(connect(mChan.data(),
+                    SIGNAL(busNameRemoved(QString,Tp::ContactPtr)),
+                    SLOT(onBusNameRemoved(QString,Tp::ContactPtr))));
 
         bool allowsOtherUsers = ((contexts[i].accessControl == TP_SOCKET_ACCESS_CONTROL_LOCALHOST) ?
             true : false);
@@ -489,11 +498,11 @@ void TestDBusTubeChan::testOfferSuccess()
             QCOMPARE(mLoop->exec(), 0);
             QCOMPARE(mGotConnectionClosed, true);
 
-            /* let the internal OutgoingDBusTubeChannel::onBusNamesChanged slot be called before
+            /* let the internal DBusTubeChannel::onBusNamesChanged slot be called before
             * checking the data for that connection */
             mLoop->processEvents();
 
-            QCOMPARE(chan->busNames().isEmpty(), true);
+            QCOMPARE(chan->contactsForBusNames().isEmpty(), true);
         }
 
         /* as we run several tests here, let's init/cleanup properly */
@@ -513,8 +522,11 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(busNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>)),
-                    SLOT(onBusNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>))));
+                    SIGNAL(busNameAdded(QString,Tp::ContactPtr)),
+                    SLOT(onBusNameAdded(QString,Tp::ContactPtr))));
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(busNameRemoved(QString,Tp::ContactPtr)),
+                    SLOT(onBusNameRemoved(QString,Tp::ContactPtr))));
 
     OutgoingDBusTubeChannelPtr chan = OutgoingDBusTubeChannelPtr::qObjectCast(mChan);
     QVERIFY(connect(chan->offerTube(QVariantMap()), // DISCARD
@@ -545,13 +557,13 @@ void TestDBusTubeChan::testOutgoingBusNameMonitoring()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    QCOMPARE(mChan->busNames().size(), 1);
+    QCOMPARE(mChan->contactsForBusNames().size(), 1);
 
-    // The busNamesChanged emission should finally exit the main loop
+    // The busNameRemoved emission should finally exit the main loop
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mGotConnectionClosed);
 
-    QCOMPARE(mChan->busNames().size(), 0);
+    QCOMPARE(mChan->contactsForBusNames().size(), 0);
 
     g_free (service);
 }
@@ -566,8 +578,11 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(busNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>)),
-                    SLOT(onBusNamesChanged(QHash<ContactPtr,QString>,QList<ContactPtr>))));
+                    SIGNAL(busNameAdded(QString,Tp::ContactPtr)),
+                    SLOT(onBusNameAdded(QString,Tp::ContactPtr))));
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(busNameRemoved(QString,Tp::ContactPtr)),
+                    SLOT(onBusNameRemoved(QString,Tp::ContactPtr))));
 
     OutgoingDBusTubeChannelPtr chan = OutgoingDBusTubeChannelPtr::qObjectCast(mChan);
     QVERIFY(connect(chan->offerTube(QVariantMap()), // DISCARD
@@ -603,7 +618,7 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     QVERIFY(!mGotRemoteConnection);
 
     // This should also trigger a warning
-    QCOMPARE(mChan->busNames().size(), 0);
+    QCOMPARE(mChan->contactsForBusNames().size(), 0);
 
     // Now, enable the feature, and let it extract participants
     QVERIFY(connect(mChan->becomeReady(OutgoingDBusTubeChannel::FeatureBusNameMonitoring),
@@ -612,9 +627,9 @@ void TestDBusTubeChan::testExtractBusNameMonitoring()
     QCOMPARE(mLoop->exec(), 0);
 
     // This should now be fine
-    QCOMPARE(mChan->busNames().size(), 1);
+    QCOMPARE(mChan->contactsForBusNames().size(), 1);
     // The name should match
-    QCOMPARE(mChan->busNames().value(mChan->busNames().keys().first()), QLatin1String("org.not.seen.yet"));
+    QCOMPARE(mChan->contactsForBusNames().keys().first(), QLatin1String("org.not.seen.yet"));
     // And the signal shouldn't have been called
     QVERIFY(!mGotConnectionClosed);
     QVERIFY(!mGotRemoteConnection);
