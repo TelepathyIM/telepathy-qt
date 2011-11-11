@@ -11,7 +11,7 @@ target_link_libraries(tubereceiver
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    telepathy-qt)
 
 set(tubeinitiator_SRCS
     tube-initiator.cpp)
@@ -26,4 +26,4 @@ target_link_libraries(tubeinitiator
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    telepathy-qt)

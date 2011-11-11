@@ -11,4 +11,4 @@ target_link_libraries(messenger-sender
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    telepathy-qt)

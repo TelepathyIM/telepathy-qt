@@ -141,7 +141,7 @@ void QueuedContactFactory::processNextRequest()
     // TODO: pass id hints to ContactManager if we ever gain support to retrieve contact ids
     //       from NewRemoteConnection.
     PendingContacts *pc = m_manager->contactsForHandles(entry.handles);
-    pc->setProperty("__TpQt4__QueuedContactFactoryUuid", entry.uuid.toString());
+    pc->setProperty("__TpQt__QueuedContactFactoryUuid", entry.uuid.toString());
     connect(pc, SIGNAL(finished(Tp::PendingOperation*)),
             this, SLOT(onPendingContactsFinished(Tp::PendingOperation*)));
 }
@@ -165,7 +165,7 @@ void QueuedContactFactory::onPendingContactsFinished(PendingOperation *op)
 {
     PendingContacts *pc = qobject_cast<PendingContacts*>(op);
 
-    QUuid uuid = QUuid(pc->property("__TpQt4__QueuedContactFactoryUuid").toString());
+    QUuid uuid = QUuid(pc->property("__TpQt__QueuedContactFactoryUuid").toString());
 
     emit contactsRetrieved(uuid, pc->contacts());
 

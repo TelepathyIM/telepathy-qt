@@ -303,7 +303,7 @@ struct StreamTubeServer::Private
           generator(0)
     {
         if (clientName.isEmpty()) {
-            clientName = QString::fromLatin1("TpQt4STubeServer_%1_%2")
+            clientName = QString::fromLatin1("TpQtSTubeServer_%1_%2")
                 .arg(registrar->dbusConnection().baseService()
                         .replace(QLatin1Char(':'), QLatin1Char('_'))
                         .replace(QLatin1Char('.'), QLatin1Char('_')))

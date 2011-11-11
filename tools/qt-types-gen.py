@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, binding_from_decl, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, get_headerfile_cmd, RefRegistry
+from libqtcodegen import binding_from_usage, binding_from_decl, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt_name, get_headerfile_cmd, RefRegistry
 
 class BrokenSpecException(Exception):
     pass
@@ -238,7 +238,7 @@ TP_QT_NO_EXPORT void _registerTypes()
 
 """)
 
-        # Emit Qt4 metatype declarations
+        # Emit Qt metatype declarations
 
         self.to_declare.sort()
 
@@ -296,7 +296,7 @@ TP_QT_NO_EXPORT void _registerTypes()
 %s\
  *
  * Generic list type with %s elements. Convertible with
- * %s, but needed to have a discrete type in the Qt4 type system.
+ * %s, but needed to have a discrete type in the Qt type system.
  */
 """ % (val, get_headerfile_cmd(self.realinclude, self.prettyinclude), array_of, real))
             self.decl(self.faketype(val, real))
@@ -482,7 +482,7 @@ struct %(visibility)s %(name)s
 %s\
  *
  * Mapping type generated from the specification. Convertible with
- * %s, but needed to have a discrete type in the Qt4 type system.
+ * %s, but needed to have a discrete type in the Qt type system.
 %s\
  */
 """ % (depinfo.binding.val, get_headerfile_cmd(self.realinclude, self.prettyinclude), realtype, format_docstring(depinfo.el, self.refs)))

@@ -713,7 +713,7 @@ QMap<QString, QString> TestSimpleObserver::ourObservers()
     QMap<QString, QString> observers;
 
     Q_FOREACH (QString name, registeredNames) {
-        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client.TpQt4SO"))) {
+        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client.TpQtSO"))) {
             continue;
         }
 

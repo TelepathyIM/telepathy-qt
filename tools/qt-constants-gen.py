@@ -23,7 +23,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import format_docstring, RefRegistry
+from libqtcodegen import format_docstring, RefRegistry
 
 class Generator(object):
     def __init__(self, opts):

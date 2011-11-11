@@ -52,7 +52,7 @@ endif(MSVC)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-body.hpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
     COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
+    ARGS ${CMAKE_SOURCE_DIR}/tools/qt-client-gen.py
          --namespace=Example::Client
          --typesnamespace=Example
          --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
@@ -73,4 +73,4 @@ add_dependencies(example_extensions example-extensions-connection-generation)
 target_link_libraries(example_extensions
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    telepathy-qt)

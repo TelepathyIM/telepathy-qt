@@ -70,7 +70,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
                 account->channelFactory(),
                 account->contactFactory());
 
-        QString observerName = QString(QLatin1String("TpQt4SO_%1_%2"))
+        QString observerName = QString(QLatin1String("TpQtSO_%1_%2"))
             .arg(account->dbusConnection().baseService()
                 .replace(QLatin1String(":"), QLatin1String("_"))
                 .replace(QLatin1String("."), QLatin1String("_")))

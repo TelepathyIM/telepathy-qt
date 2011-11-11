@@ -60,7 +60,7 @@ void PendingFileReceive::onTransferStateChanged(FileTransferState state,
             IncomingFileTransferChannelPtr::qObjectCast(channel());
         Q_ASSERT(chan);
 
-        QString fileName(QLatin1String("TpQt4ExampleFTReceiver_") + chan->fileName());
+        QString fileName(QLatin1String("TpQtExampleFTReceiver_") + chan->fileName());
         fileName.replace(QLatin1String("/"), QLatin1String("_"));
         mFile.setFileName(fileName);
 

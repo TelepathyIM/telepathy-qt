@@ -1,6 +1,6 @@
-"""Library code for Qt4 D-Bus-related code generation.
+"""Library code for Qt D-Bus-related code generation.
 
-The master copy of this library is in the telepathy-qt4 repository -
+The master copy of this library is in the telepathy-qt repository -
 please make any changes there.
 """
 
@@ -40,7 +40,7 @@ class Xzibit(Exception):
         """ % (self.parent.nodeName, self.parent.toxml()[:100],
                self.child.toxml()[:100])
 
-class _Qt4TypeBinding:
+class _QtTypeBinding:
     def __init__(self, val, inarg, outarg, array_val, custom_type, array_of,
             array_depth=None):
         self.val = val
@@ -203,7 +203,7 @@ def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_n
         assert False, 'Don\'t know how to map type (%s, %s)' % (sig, tptype)
 
     outarg = val + '&'
-    return _Qt4TypeBinding(val, inarg, outarg, None, custom_type, array_of)
+    return _QtTypeBinding(val, inarg, outarg, None, custom_type, array_of)
 
 def binding_from_decl(name, array_name, array_depth=None, external=False, explicit_own_ns=''):
     val = name.replace('_', '')
@@ -213,7 +213,7 @@ def binding_from_decl(name, array_name, array_depth=None, external=False, explic
         val = explicit_own_ns + '::' + val
     inarg = 'const %s&' % val
     outarg = '%s&' % val
-    return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None, array_depth)
+    return _QtTypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None, array_depth)
 
 def extract_arg_or_member_info(els, custom_lists, externals, typesns, refs, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
     names = []
@@ -221,7 +221,7 @@ def extract_arg_or_member_info(els, custom_lists, externals, typesns, refs, docs
     bindings = []
 
     for el in els:
-        names.append(get_qt4_name(el))
+        names.append(get_qt_name(el))
         docstrings.append(format_docstring(el, refs, docstring_indent, docstring_brackets, docstring_maxwidth))
 
         sig = el.getAttribute('type')
@@ -316,7 +316,7 @@ def format_docstring(el, refs, indent=' * ', brackets=None, maxwidth=80):
             output.append(brackets[0])
         else:
             output.append(indent)
- 
+
         output.append('\n')
 
     for line in lines:
@@ -374,7 +374,7 @@ def get_headerfile_cmd(realinclude, prettyinclude, indent=' * '):
     else:
         return ''
 
-def get_qt4_name(el):
+def get_qt_name(el):
     name = el.getAttribute('name')
 
     if el.localName in ('method', 'signal', 'property'):
@@ -389,9 +389,9 @@ def get_qt4_name(el):
     if name[0].isupper() and name[1].islower():
         name = name[0].lower() + name[1:]
 
-    return qt4_identifier_escape(name.replace('_', ''))
+    return qt_identifier_escape(name.replace('_', ''))
 
-def qt4_identifier_escape(str):
+def qt_identifier_escape(str):
     built = (str[0].isdigit() and ['_']) or []
 
     for c in str:

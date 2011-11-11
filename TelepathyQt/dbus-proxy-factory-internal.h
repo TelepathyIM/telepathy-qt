@@ -21,7 +21,7 @@
  */
 
 #ifndef BUILDING_TP_QT
-#error "This file is a TpQt4 internal header not to be included by applications"
+#error "This file is a TpQt internal header not to be included by applications"
 #endif
 
 #include <QObject>

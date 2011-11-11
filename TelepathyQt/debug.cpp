@@ -30,7 +30,7 @@
  * \defgroup debug Common debug support
  *
  * TelepathyQt has an internal mechanism for displaying debugging output. It
- * uses the Qt4 debugging subsystem, so if you want to redirect the messages,
+ * uses the Qt debugging subsystem, so if you want to redirect the messages,
  * use qInstallMsgHandler() from &lt;QtGlobal&gt;.
  *
  * Debugging output is divided into two categories: normal debug output and
@@ -139,14 +139,14 @@ Debug enabledWarning()
 void Debug::invokeDebugCallback()
 {
     if (debugCallback) {
-        debugCallback(QLatin1String("tp-qt4"), QLatin1String(PACKAGE_VERSION), type, msg);
+        debugCallback(QLatin1String("tp-qt"), QLatin1String(PACKAGE_VERSION), type, msg);
     } else {
         switch (type) {
         case QtDebugMsg:
-            qDebug() << "tp-qt4 " PACKAGE_VERSION " DEBUG:" << qPrintable(msg);
+            qDebug() << "tp-qt " PACKAGE_VERSION " DEBUG:" << qPrintable(msg);
             break;
         case QtWarningMsg:
-            qWarning() << "tp-qt4 " PACKAGE_VERSION " WARN:" << qPrintable(msg);
+            qWarning() << "tp-qt " PACKAGE_VERSION " WARN:" << qPrintable(msg);
             break;
         default:
             break;

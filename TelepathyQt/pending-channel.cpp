@@ -190,7 +190,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
     mPriv->notifier = 0;
     mPriv->create = create;
 
-    QString handlerName = QString(QLatin1String("TpQt4RaH_%1_%2"))
+    QString handlerName = QString(QLatin1String("TpQtRaH_%1_%2"))
         .arg(account->dbusConnection().baseService()
             .replace(QLatin1String(":"), QLatin1String("_"))
             .replace(QLatin1String("."), QLatin1String("_")))

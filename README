@@ -1,5 +1,5 @@
 =============
-telepathy-qt4
+telepathy-qt
 =============
 
 This is a library for Qt-based Telepathy clients.
@@ -22,7 +22,7 @@ the specification that this library claims to implement. The HTML documentation 
 Requirements
 ============
 
-Building telepathy-qt4 requires:
+Building telepathy-qt requires:
   Qt, including QtDBus <http://www.qtsoftware.com/>
 
   GNU make <http://www.gnu.org/software/make/>
@@ -47,7 +47,7 @@ Bugs, feature requests and to-do list
 =====================================
 
 Report all bugs, feature requests and "to-do" items here:
-  <https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=tp-qt4>
+  <https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=tp-qt>
 
 Running "make check" will produce FIXME.out, which lists all the mentions of
 FIXME, TODO or XXX in the source code. Ideally, all of these should be in

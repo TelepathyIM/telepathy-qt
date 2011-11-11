@@ -206,7 +206,7 @@ struct TP_QT_NO_EXPORT StreamTubeClient::Private
           tcpGenerator(0), requireCredentials(false)
     {
         if (clientName.isEmpty()) {
-            clientName = QString::fromLatin1("TpQt4STubeClient_%1_%2")
+            clientName = QString::fromLatin1("TpQtSTubeClient_%1_%2")
                 .arg(registrar->dbusConnection().baseService()
                         .replace(QLatin1Char(':'), QLatin1Char('_'))
                         .replace(QLatin1Char('.'), QLatin1Char('_')))

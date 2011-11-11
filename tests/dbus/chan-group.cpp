@@ -246,7 +246,7 @@ void TestChanGroup::testPropertylessGroup()
 
 void TestChanGroup::commonTest(gboolean properties)
 {
-    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQt4MCDTest%2"))
+    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQtMCDTest%2"))
         .arg(mConn->objectPath())
         .arg(QLatin1String(properties ? "props" : ""));
     QByteArray chanPathLatin1(mChanObjectPath.toLatin1());
@@ -391,7 +391,7 @@ void TestChanGroup::testLeave()
 
 void TestChanGroup::testLeaveWithFallback()
 {
-    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQt4LeaveTestFallback"))
+    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQtLeaveTestFallback"))
         .arg(mConn->objectPath());
     QByteArray chanPathLatin1(mChanObjectPath.toLatin1());
 

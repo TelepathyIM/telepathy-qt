@@ -19,7 +19,7 @@
 #          Internal macro used to extract arguments from ARGN
 #
 # function TPQT_CREATE_MOC_COMMAND_TARGET_DEPS(inputfile outputfile moc_flags moc_options target_dependencies ...)
-#          This function behaves exactly like qt4_create_moc_command, but creates a custom target for the
+#          This function behaves exactly like qt_create_moc_command, but creates a custom target for the
 #          moc file generation, allowing to specify a list of targets the generated moc target will depend on.
 #          Just like qt4_create_moc_command, it is an internal macro and it's not meant to be used explicitely.
 #
@@ -38,12 +38,12 @@
 #          target's sources.
 #
 # function TPQT_CLIENT_GENERATOR(spec group pretty_include namespace [arguments] [DEPENDS dependencies ...])
-#          This function takes care of invoking qt4-client-gen.py with the correct arguments, which generates
+#          This function takes care of invoking qt-client-gen.py with the correct arguments, which generates
 #          headers out of specs. spec is the name of the spec headers will be generated from, group represents
 #          the spec's group, pretty_include is the name of the capitalized header (for example ClientGenerator),
 #          namespace is the C++ namespace the generated header will belong to. This function also accepts
 #          as an optional last argument a list of additional command line arguments which will be passed to
-#          qt4-client-gen.py upon execution. After issuing DEPENDS in the last argument you can pass a list of targets
+#          qt-client-gen.py upon execution. After issuing DEPENDS in the last argument you can pass a list of targets
 #          the generated target will depend on.
 #
 # function TPQT_FUTURE_CLIENT_GENERATOR(spec namespace [arguments] [DEPENDS dependencies ...])
@@ -62,22 +62,22 @@
 #          After issuing DEPENDS in the last argument you can pass a list of targets the generated target will depend on.
 #
 # function TPQT_CONSTANTS_GEN (TARGET_NAME SPEC_XML OUTPUT_FILE [additional_arguments ...] [DEPENDS dependencies ...])
-#          This function takes care of invoking qt4-constants-gen.py with the correct arguments. TARGET_NAME is the name of
+#          This function takes care of invoking qt-constants-gen.py with the correct arguments. TARGET_NAME is the name of
 #          the generated target (see preamble), SPEC_XML is the spec input file, OUTPUT_FILE is the filename
 #          the generated file will be saved to. This function also accepts as an optional last argument a list of
-#          additional command line arguments which will be passed to qt4-constants-gen.py upon execution.
+#          additional command line arguments which will be passed to qt-constants-gen.py upon execution.
 #          After issuing DEPENDS in the last argument you can pass a list of targets the generated target will depend on.
 #
 # function TPQT_TYPES_GEN (TARGET_NAME SPEC_XML OUTFILE_DECL OUTFILE_IMPL NAMESPACE
 #                           REAL_INCLUDE PRETTY_INCLUDE [additional_arguments ...] [DEPENDS dependencies ...])
-#          This function takes care of invoking qt4-types-gen.py with the correct arguments. TARGET_NAME is the name of
+#          This function takes care of invoking qt-types-gen.py with the correct arguments. TARGET_NAME is the name of
 #          the generated target (see preamble), SPEC_XML is the input spec file, OUTFILE_DECL is the filename
 #          the header of the generated file will be saved to, OUTFILE_IMPL is the filename the implementation of the
 #          generated file will be saved to, NAMESPACE is the C++ namespace the generated header will belong to,
 #          REAL_INCLUDE is the real include file you want to use, PRETTY_INCLUDE is the name of the capitalized header
 #          (for example ClientGenerator).
 #          This function also accepts as an optional last argument a list of additional command line arguments
-#          which will be passed to qt4-constants-gen.py upon execution.
+#          which will be passed to qt-constants-gen.py upon execution.
 #          After issuing DEPENDS in the last argument you can pass a list of targets the generated target will depend on.
 #
 # macro TPQT_ADD_GENERIC_UNIT_TEST (fancyName name [libraries ...])
@@ -187,7 +187,7 @@ endfunction(tpqt_generate_mocs)
 function(tpqt_client_generator spec group pretty_include namespace)
     tpqt_extract_depends(client_generator_args client_generator_depends ${ARGN})
     set(ARGS
-        ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
+        ${CMAKE_SOURCE_DIR}/tools/qt-client-gen.py
             --group=${group}
             --namespace=${namespace}
             --typesnamespace=Tp
@@ -206,8 +206,8 @@ function(tpqt_client_generator spec group pretty_include namespace)
         ARGS ${ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 
-        DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
-                ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqtcodegen.py
+                ${CMAKE_SOURCE_DIR}/tools/qt-client-gen.py)
     add_custom_target(generate_cli-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp)
     add_dependencies(all-generated-sources generate_cli-${spec}-body)
 
@@ -218,13 +218,13 @@ function(tpqt_client_generator spec group pretty_include namespace)
     tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp
                        "generate_cli-${spec}-body")
-    list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
+    list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
 endfunction(tpqt_client_generator spec group pretty_include namespace)
 
 function(tpqt_future_client_generator spec namespace)
     tpqt_extract_depends(future_client_generator_args future_client_generator_depends ${ARGN})
     set(ARGS
-        ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
+        ${CMAKE_SOURCE_DIR}/tools/qt-client-gen.py
             --namespace=${namespace}
             --typesnamespace=TpFuture
             --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
@@ -243,8 +243,8 @@ function(tpqt_future_client_generator spec namespace)
         ARGS ${ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 
-        DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
-                ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py)
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqtcodegen.py
+                ${CMAKE_SOURCE_DIR}/tools/qt-client-gen.py)
     add_custom_target(generate_future-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp)
     add_dependencies(all-generated-sources generate_future-${spec}-body)
 
@@ -308,13 +308,13 @@ function(tpqt_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
 
                        COMMAND ${PYTHON_EXECUTABLE}
 
-                       ARGS    ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
+                       ARGS    ${CMAKE_SOURCE_DIR}/tools/qt-constants-gen.py
                                ${constants_gen_args}
                                --specxml=${_SPEC_XML}
                                > ${_OUTFILE}
 
-                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
-                               ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
+                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqtcodegen.py
+                               ${CMAKE_SOURCE_DIR}/tools/qt-constants-gen.py
                                ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE})
     add_dependencies(all-generated-sources ${_TARGET_NAME})
@@ -331,7 +331,7 @@ function(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAME
 
     add_custom_command(OUTPUT ${_OUTFILE_DECL} ${_OUTFILE_IMPL}
                        COMMAND ${PYTHON_EXECUTABLE}
-                       ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
+                       ARGS ${CMAKE_SOURCE_DIR}/tools/qt-types-gen.py
                             --namespace=${_NAMESPACE}
                             --declfile=${_OUTFILE_DECL}
                             --implfile=${_OUTFILE_IMPL}
@@ -340,8 +340,8 @@ function(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAME
                             ${types_gen_args}
                             --specxml=${_SPEC_XML}
 
-                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqt4codegen.py
-                               ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
+                       DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqtcodegen.py
+                               ${CMAKE_SOURCE_DIR}/tools/qt-types-gen.py
                                ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE_IMPL})
     add_dependencies(all-generated-sources ${_TARGET_NAME})
@@ -354,9 +354,9 @@ endfunction(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _N
 macro(tpqt_add_generic_unit_test _fancyName _name)
     tpqt_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
-    target_link_libraries(test-${_name} ${QT_QTDBUS_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt4 tp-qt4-tests ${ARGN})
+    target_link_libraries(test-${_name} ${QT_QTDBUS_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt tp-qt-tests ${ARGN})
     add_test(${_fancyName} ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
-    list(APPEND _telepathy_qt4_test_cases test-${_name})
+    list(APPEND _telepathy_qt_test_cases test-${_name})
 
     # Valgrind and Callgrind targets
     _tpqt_add_check_targets(${_fancyName} ${_name} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
@@ -365,10 +365,10 @@ endmacro(tpqt_add_generic_unit_test _fancyName _name)
 macro(tpqt_add_dbus_unit_test _fancyName _name)
     tpqt_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
-    target_link_libraries(test-${_name} ${QT_QTDBUS_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt4 tp-qt4-tests ${ARGN})
+    target_link_libraries(test-${_name} ${QT_QTDBUS_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt tp-qt-tests ${ARGN})
     set(with_session_bus ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
     add_test(${_fancyName} ${SH} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
-    list(APPEND _telepathy_qt4_test_cases test-${_name})
+    list(APPEND _telepathy_qt_test_cases test-${_name})
 
     # Valgrind and Callgrind targets
     _tpqt_add_check_targets(${_fancyName} ${_name} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
@@ -400,7 +400,7 @@ macro(_tpqt_add_check_targets _fancyName _name _runnerScript)
                 --num-callers=20
                 --gen-suppressions=all
                 --log-file=${CMAKE_CURRENT_BINARY_DIR}/test-${_fancyName}.memcheck.log
-                --suppressions=${CMAKE_SOURCE_DIR}/tools/tp-qt4-tests.supp
+                --suppressions=${CMAKE_SOURCE_DIR}/tools/tp-qt-tests.supp
                 --suppressions=${CMAKE_SOURCE_DIR}/tools/telepathy-glib.supp
                 ${ARGN}
         WORKING_DIRECTORY

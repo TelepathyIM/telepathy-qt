@@ -54,7 +54,7 @@ else (${TP_QT_NANO_VERSION} EQUAL 0)
     set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
 endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
-set(PACKAGE_NAME telepathy-qt4)
+set(PACKAGE_NAME telepathy-qt)
 
 if (${TP_QT_NANO_VERSION} EQUAL 0)
     set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
@@ -164,13 +164,13 @@ find_package(TelepathyFarsight)
 macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
                   "A Framework for dealing with audio/video conferencing protocols"
                   "http://farsight.freedesktop.org/wiki/" FALSE "0.0.4"
-                  "Needed, together with GStreamer, to build telepathy-qt4-farsight and some additional examples")
+                  "Needed, together with GStreamer, to build telepathy-qt-farsight and some additional examples")
 
 # Find GStreamer
 find_package(GStreamer)
 macro_log_feature(GSTREAMER_FOUND "GStreamer"
                   "An open source multimedia framework"
-                  "Needed, together with Tp-Farsight, to build telepathy-qt4-farsight and some additional examples"
+                  "Needed, together with Tp-Farsight, to build telepathy-qt-farsight and some additional examples"
                   "http://www.gstreamer.net/" FALSE)
 
 # Build TelepathyQt-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
