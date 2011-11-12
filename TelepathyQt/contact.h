@@ -207,9 +207,6 @@ protected:
 
     virtual void augment(const Features &requestedFeatures, const QVariantMap &attributes);
 
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
-
 private:
     static const Feature FeatureRosterGroups;
 
