@@ -173,11 +173,6 @@ const Feature StreamTubeChannel::FeatureCore =
         Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0);
 
 /**
- * \deprecated Use StreamTubeChannel::FeatureCore instead.
- */
-const Feature StreamTubeChannel::FeatureStreamTube = StreamTubeChannel::FeatureCore;
-
-/**
  * Feature used in order to monitor connections to this stream tube.
  *
  * See connection monitoring specific methods' documentation for more details.

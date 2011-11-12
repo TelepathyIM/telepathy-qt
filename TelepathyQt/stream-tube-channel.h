@@ -40,8 +40,6 @@ class TP_QT_EXPORT StreamTubeChannel : public TubeChannel
 
 public:
     static const Feature FeatureCore;
-    // FIXME (API/ABI break) Remove FeatureStreamTube in favour of FeatureCore
-    static const Feature FeatureStreamTube;
     static const Feature FeatureConnectionMonitoring;
 
     static StreamTubeChannelPtr create(const ConnectionPtr &connection,
