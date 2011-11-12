@@ -1146,10 +1146,6 @@ void Contact::setSubscriptionState(SubscriptionState state)
 
     mPriv->subscriptionState = state;
 
-    // FIXME (API/ABI break) remove signal with details
-    emit subscriptionStateChanged(subscriptionStateToPresenceState(state),
-            Channel::GroupMemberChangeDetails());
-
     emit subscriptionStateChanged(subscriptionStateToPresenceState(state));
 }
 
@@ -1162,12 +1158,6 @@ void Contact::setPublishState(SubscriptionState state, const QString &message)
     mPriv->publishState = state;
     mPriv->publishStateMessage = message;
 
-    // FIXME (API/ABI break) remove signal with details
-    QVariantMap detailsMap;
-    detailsMap.insert(QLatin1String("message"), message);
-    emit publishStateChanged(subscriptionStateToPresenceState(state),
-            Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap));
-
     emit publishStateChanged(subscriptionStateToPresenceState(state), message);
 }
 
@@ -1178,9 +1168,6 @@ void Contact::setBlocked(bool value)
     }
 
     mPriv->blocked = value;
-
-    // FIXME (API/ABI break) remove signal with details
-    emit blockStatusChanged(value, Channel::GroupMemberChangeDetails());
 
     emit blockStatusChanged(value);
 }

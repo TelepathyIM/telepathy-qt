@@ -179,18 +179,10 @@ Q_SIGNALS:
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
     void subscriptionStateChanged(Tp::Contact::PresenceState state);
-    // deprecated
-    void subscriptionStateChanged(Tp::Contact::PresenceState state,
-            const Tp::Channel::GroupMemberChangeDetails &details);
 
     void publishStateChanged(Tp::Contact::PresenceState state, const QString &message);
-    // deprecated
-    void publishStateChanged(Tp::Contact::PresenceState state,
-            const Tp::Channel::GroupMemberChangeDetails &details);
 
     void blockStatusChanged(bool blocked);
-    // deprecated
-    void blockStatusChanged(bool blocked, const Tp::Channel::GroupMemberChangeDetails &details);
 
     void addedToGroup(const QString &group);
     void removedFromGroup(const QString &group);
