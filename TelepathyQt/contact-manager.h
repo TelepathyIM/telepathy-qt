@@ -129,11 +129,6 @@ Q_SIGNALS:
     void stateChanged(Tp::ContactListState state);
 
     void presencePublicationRequested(const Tp::Contacts &contacts);
-    // deprecated - carry redundant data which can be retrieved (meaningfully) from the Contacts
-    // themselves (note: multiple contacts, but just a single message/details!)
-    void presencePublicationRequested(const Tp::Contacts &contacts, const QString &message);
-    void presencePublicationRequested(const Tp::Contacts &contacts,
-        const Tp::Channel::GroupMemberChangeDetails &details);
 
     void groupAdded(const QString &group);
     void groupRenamed(const QString &oldGroup, const QString &newGroup);
@@ -147,10 +142,6 @@ Q_SIGNALS:
     void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
             const Tp::Contacts &contactsRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
-
-protected:
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onAliasesChanged(const Tp::AliasPairList &);

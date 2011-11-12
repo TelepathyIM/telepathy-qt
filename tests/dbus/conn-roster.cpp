@@ -207,7 +207,7 @@ void TestConnRoster::testRoster()
     QCOMPARE(contacts.size(), ids.size());
 
     QVERIFY(connect(contactManager.data(),
-                    SIGNAL(presencePublicationRequested(Tp::Contacts,QString)),
+                    SIGNAL(presencePublicationRequested(Tp::Contacts)),
                     SLOT(expectPresencePublicationRequested(Tp::Contacts))));
     int i = 0;
     Q_FOREACH (const ContactPtr &contact, contacts) {

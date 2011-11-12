@@ -1560,13 +1560,4 @@ void ContactManager::resetRoster()
  * \sa allKnownContacts()
  */
 
-void ContactManager::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails))) == 0) {
-        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails)";
-    } else if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts,QString))) == 0) {
-        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts,QString)";
-    }
-}
-
 } // Tp

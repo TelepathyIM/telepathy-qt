@@ -1055,11 +1055,6 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
             QVariantMap detailsMap;
             detailsMap.insert(QLatin1String("message"), subscriptions.publishRequest);
             publishRequestDetails = Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap);
-            // FIXME (API/ABI break) remove both of these signals
-            emit contactManager->presencePublicationRequested(Contacts() << contact,
-                    publishRequestDetails);
-            emit contactManager->presencePublicationRequested(Contacts() << contact,
-                    subscriptions.publishRequest);
 
             publishRequested.insert(contact);
         }
@@ -1537,11 +1532,6 @@ void ContactManager::Roster::onPublishChannelMembersChanged(
 
     if (!groupLocalPendingMembersAdded.isEmpty()) {
         emit contactManager->presencePublicationRequested(groupLocalPendingMembersAdded);
-        // FIXME (API/ABI break) remove both of these signals
-        emit contactManager->presencePublicationRequested(groupLocalPendingMembersAdded,
-            details);
-        emit contactManager->presencePublicationRequested(groupLocalPendingMembersAdded,
-            details.message());
     }
 
     // Perform the needed computation for allKnownContactsChanged
