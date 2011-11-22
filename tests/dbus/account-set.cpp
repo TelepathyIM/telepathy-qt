@@ -328,15 +328,15 @@ void TestAccountSet::testFilters()
         RequestableChannelClassList rccs;
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+                TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                TP_QT_IFACE_CHANNEL_TYPE_TEXT);
         rcc.fixedProperties.insert(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeContact);
         rcc.allowedProperties.append(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"));
         rcc.allowedProperties.append(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetFoo"));
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetFoo"));
         rccs.append(rcc);
         filteredAccountSet = AccountSetPtr(new AccountSet(mAM, AccountCapabilityFilter::create(rccs)));
         QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);

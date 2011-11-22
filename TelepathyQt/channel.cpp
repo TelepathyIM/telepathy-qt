@@ -301,7 +301,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
     else {
         warning() << "Connection given as the owner for a Channel was "
             "invalid! Channel will be stillborn.";
-        parent->invalidate(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+        parent->invalidate(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Connection given as the owner of this channel was invalid"));
     }
 
@@ -367,14 +367,14 @@ void Channel::Private::introspectMainProperties()
         QLatin1String("InitiatorID")
     };
     const static QString qualifiedNames[numNames] = {
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Interfaces"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorID")
+        TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".Interfaces"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorID")
     };
     for (unsigned i = 0; i < numNames; ++i) {
         const QString &qualified = qualifiedNames[i];
@@ -399,7 +399,7 @@ void Channel::Private::introspectMainProperties()
         debug() << "Calling Properties::GetAll(Channel)";
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
-                    properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL)),
+                    properties->GetAll(TP_QT_IFACE_CHANNEL),
                     parent);
         parent->connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -483,7 +483,7 @@ void Channel::Private::introspectGroup()
     debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)),
+                properties->GetAll(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP),
                 parent);
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -560,7 +560,7 @@ void Channel::Private::introspectConference()
 
     debug() << "Calling Properties::GetAll(Channel.Interface.Conference)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)),
+            properties->GetAll(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE),
             parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -654,7 +654,7 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
         }
 
         if (!fakeGroupInterfaceIfNeeded() &&
-            !parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) &&
+            !parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP) &&
             initiatorHandle) {
             // No group interface, so nobody will build the poor fellow for us. Will do it ourselves
             // out of pity for him.
@@ -726,11 +726,11 @@ void Channel::Private::nowHaveInterfaces()
 
     QStringList interfaces = parent->interfaces();
 
-    if (interfaces.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    if (interfaces.contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         introspectQueue.enqueue(&Private::introspectGroup);
     }
 
-    if (interfaces.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
+    if (interfaces.contains(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
         introspectQueue.enqueue(&Private::introspectConference);
     }
 }
@@ -794,7 +794,7 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
     groupFlags = newGroupFlags;
 
     // this shouldn't happen but let's make sure
-    if (!parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    if (!parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         return false;
     }
 
@@ -1111,7 +1111,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
 
 bool Channel::Private::fakeGroupInterfaceIfNeeded()
 {
-    if (parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    if (parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         return false;
     } else if (targetHandleType != HandleTypeContact) {
         return false;
@@ -1145,7 +1145,7 @@ void Channel::Private::setReady()
     debug() << " Target handle" << targetHandle;
     debug() << " Target handle type" << targetHandleType;
 
-    if (parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    if (parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         debug() << " Group: flags" << groupFlags;
         if (groupAreHandleOwnersAvailable) {
             debug() << " Group: Number of handle owner mappings" <<
@@ -1174,25 +1174,25 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
     uint reason = details.reason();
     switch (reason) {
         case ChannelGroupChangeReasonOffline:
-            error = QLatin1String(TELEPATHY_ERROR_OFFLINE);
+            error = TP_QT_ERROR_OFFLINE;
             break;
         case ChannelGroupChangeReasonKicked:
-            error = QLatin1String(TELEPATHY_ERROR_CHANNEL_KICKED);
+            error = TP_QT_ERROR_CHANNEL_KICKED;
             break;
         case ChannelGroupChangeReasonBanned:
-            error = QLatin1String(TELEPATHY_ERROR_CHANNEL_BANNED);
+            error = TP_QT_ERROR_CHANNEL_BANNED;
             break;
         case ChannelGroupChangeReasonBusy:
-            error = QLatin1String(TELEPATHY_ERROR_BUSY);
+            error = TP_QT_ERROR_BUSY;
             break;
         case ChannelGroupChangeReasonNoAnswer:
-            error = QLatin1String(TELEPATHY_ERROR_NO_ANSWER);
+            error = TP_QT_ERROR_NO_ANSWER;
             break;
         case ChannelGroupChangeReasonPermissionDenied:
-            error = QLatin1String(TELEPATHY_ERROR_PERMISSION_DENIED);
+            error = TP_QT_ERROR_PERMISSION_DENIED;
             break;
         case ChannelGroupChangeReasonInvalidContact:
-            error = QLatin1String(TELEPATHY_ERROR_DOES_NOT_EXIST);
+            error = TP_QT_ERROR_DOES_NOT_EXIST;
             break;
         // The following change reason are being mapped to default
         // case ChannelGroupChangeReasonNone:
@@ -1204,8 +1204,8 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
             // let's use the actor handle and selfHandle here instead of the
             // contacts, as the contacts may not be ready.
             error = ((qdbus_cast<uint>(details.allDetails().value(QLatin1String("actor"))) == groupSelfHandle) ?
-                     QLatin1String(TELEPATHY_ERROR_CANCELLED) :
-                     QLatin1String(TELEPATHY_ERROR_TERMINATED));
+                     TP_QT_ERROR_CANCELLED :
+                     TP_QT_ERROR_TERMINATED);
             break;
     }
 
@@ -1627,42 +1627,42 @@ QVariantMap Channel::immutableProperties() const
     if (isReady(Channel::FeatureCore)) {
         QString key;
 
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->channelType);
         }
 
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Interfaces");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".Interfaces");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, interfaces());
         }
 
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->targetHandleType);
         }
 
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->targetHandle);
         }
 
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->targetId);
         }
 
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".Requested");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->requested);
         }
 
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->initiatorHandle);
         }
 
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorID");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorID");
         if (!mPriv->immutableProperties.contains(key) && !mPriv->initiatorContact.isNull()) {
             mPriv->immutableProperties.insert(key, mPriv->initiatorContact->id());
         }
@@ -2122,12 +2122,12 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupAddContacts() used channel not ready";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 ChannelPtr(this));
     } else if (contacts.isEmpty()) {
         warning() << "Channel::groupAddContacts() used with empty contacts param";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+        return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("contacts cannot be an empty list"),
                 ChannelPtr(this));
     }
@@ -2136,15 +2136,15 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
         if (!contact) {
             warning() << "Channel::groupAddContacts() used but contacts param contains "
                 "invalid contact";
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+            return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("Unable to add invalid contacts"),
                     ChannelPtr(this));
         }
     }
 
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAddContacts() used with no group interface";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Channel does not support group interface"),
                 ChannelPtr(this));
     }
@@ -2316,14 +2316,14 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupRemoveContacts() used channel not ready";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 ChannelPtr(this));
     }
 
     if (contacts.isEmpty()) {
         warning() << "Channel::groupRemoveContacts() used with empty contacts param";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+        return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("contacts param cannot be an empty list"),
                 ChannelPtr(this));
     }
@@ -2332,15 +2332,15 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
         if (!contact) {
             warning() << "Channel::groupRemoveContacts() used but contacts param contains "
                 "invalid contact:";
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+            return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("Unable to remove invalid contacts"),
                     ChannelPtr(this));
         }
     }
 
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupRemoveContacts() used with no group interface";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Channel does not support group interface"),
                 ChannelPtr(this));
     }
@@ -2388,7 +2388,7 @@ Contacts Channel::groupLocalPendingContacts() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupLocalPendingContacts() used channel not ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupLocalPendingContacts() used with no group interface";
     }
 
@@ -2410,7 +2410,7 @@ Contacts Channel::groupRemotePendingContacts() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupRemotePendingContacts() used channel not ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupRemotePendingContacts() used with no "
             "group interface";
     }
@@ -2433,7 +2433,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupLocalPendingContactChangeInfo() used channel not ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupLocalPendingContactChangeInfo() used with no group interface";
     } else if (!contact) {
         warning() << "Channel::groupLocalPendingContactChangeInfo() used with null contact param";
@@ -2468,7 +2468,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
     // self remove info when it has been closed and hence invalidated is valid
     if (isValid() && !isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupSelfContactRemoveInfo() used before Channel::FeatureCore is ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupSelfContactRemoveInfo() used with "
             "no group interface";
     }
@@ -2503,7 +2503,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used channel not ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with "
             "no group interface";
     }
@@ -2531,7 +2531,7 @@ HandleOwnerMap Channel::groupHandleOwners() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupHandleOwners() used channel not ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with no "
             "group interface";
     }
@@ -2561,7 +2561,7 @@ bool Channel::groupIsSelfContactTracked() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupIsSelfHandleTracked() used channel not ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupIsSelfHandleTracked() used with "
             "no group interface";
     }
@@ -2623,7 +2623,7 @@ PendingOperation *Channel::groupAddSelfHandle()
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupAddSelfHandle() used when channel not "
             "ready";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+        return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Channel object not ready"),
                 ChannelPtr(this));
     }
@@ -2760,8 +2760,7 @@ QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
  */
 bool Channel::supportsConferenceMerging() const
 {
-    return interfaces().contains(QLatin1String(
-                TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE));
+    return interfaces().contains(TP_QT_FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE);
 }
 
 /**
@@ -2776,7 +2775,7 @@ bool Channel::supportsConferenceMerging() const
 PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 {
     if (!supportsConferenceMerging()) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Channel does not support MergeableConference interface"),
                 ChannelPtr(this));
     }
@@ -2796,8 +2795,7 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
  */
 bool Channel::supportsConferenceSplitting() const
 {
-    return interfaces().contains(QLatin1String(
-                TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_SPLITTABLE));
+    return interfaces().contains(TP_QT_FUTURE_IFACE_CHANNEL_INTERFACE_SPLITTABLE);
 }
 
 /**
@@ -2813,7 +2811,7 @@ bool Channel::supportsConferenceSplitting() const
 PendingOperation *Channel::conferenceSplitChannel()
 {
     if (!supportsConferenceSplitting()) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Channel does not support Splittable interface"),
                 ChannelPtr(this));
     }

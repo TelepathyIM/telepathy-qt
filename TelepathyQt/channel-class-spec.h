@@ -69,12 +69,12 @@ public:
     QString channelType() const
     {
         return qdbus_cast<QString>(
-                property(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+                property(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")));
     }
 
     void setChannelType(const QString &type)
     {
-        setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+        setProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 QVariant::fromValue(type));
     }
 
@@ -82,73 +82,69 @@ public:
     {
         return (HandleType) qdbus_cast<uint>(
                 property(
-                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
+                    TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")));
     }
 
     void setTargetHandleType(HandleType type)
     {
-        setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+        setProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 QVariant::fromValue((uint) type));
     }
 
     bool hasRequested() const
     {
-        return hasProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"));
+        return hasProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"));
     }
 
     bool isRequested() const
     {
         return qdbus_cast<bool>(
-                property(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")));
+                property(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")));
     }
 
     void setRequested(bool requested)
     {
-        setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"),
+        setProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"),
                 QVariant::fromValue(requested));
     }
 
     void unsetRequested()
     {
-        unsetProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"));
+        unsetProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"));
     }
 
     bool hasStreamedMediaInitialAudioFlag() const
     {
         return qdbus_cast<bool>(
-                property(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA
-                        ".InitialAudio")));
+                property(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio")));
     }
 
     void setStreamedMediaInitialAudioFlag()
     {
-        setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"),
+        setProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"),
                 QVariant::fromValue(true));
     }
 
     void unsetStreamedMediaInitialAudioFlag()
     {
-        unsetProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA
-                    ".InitialAudio"));
+        unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
     }
 
     bool hasStreamedMediaInitialVideoFlag() const
     {
         return qdbus_cast<bool>(
-                property(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA
-                        ".InitialVideo")));
+                property(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo")));
     }
 
     void setStreamedMediaInitialVideoFlag()
     {
-        setProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"),
+        setProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"),
                 QVariant::fromValue(true));
     }
 
     void unsetStreamedMediaInitialVideoFlag()
     {
-        unsetProperty(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA
-                    ".InitialVideo"));
+        unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"));
     }
 
     bool hasProperty(const QString &qualifiedName) const;

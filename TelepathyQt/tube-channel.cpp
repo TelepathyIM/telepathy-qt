@@ -58,7 +58,7 @@ TubeChannel::Private::Private(TubeChannel *parent)
     ReadinessHelper::Introspectable introspectableTube(
             QSet<uint>() << 0,                                                          // makesSenseForStatuses
             Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
-            QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE), // dependsOnInterfaces
+            QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_TUBE, // dependsOnInterfaces
             (ReadinessHelper::IntrospectFunc) &TubeChannel::Private::introspectTube,
             this);
     introspectables[TubeChannel::FeatureCore] = introspectableTube;

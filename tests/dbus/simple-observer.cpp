@@ -235,7 +235,7 @@ void TestSimpleObserver::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     QDBusConnection bus = QDBusConnection::sessionBus();
-    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
     QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
     Dispatcher *dispatcher = new Dispatcher(this);
     QVERIFY(bus.registerService(channelDispatcherBusName));

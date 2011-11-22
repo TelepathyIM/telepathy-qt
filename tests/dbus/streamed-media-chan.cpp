@@ -440,12 +440,12 @@ void TestStreamedMediaChan::onNewChannels(const Tp::ChannelDetailsList &channels
 {
     qDebug() << "new channels";
     Q_FOREACH (const Tp::ChannelDetails &details, channels) {
-        QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-        bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
+        QString channelType = details.properties.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+        bool requested = details.properties.value(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")).toBool();
         qDebug() << " channelType:" << channelType;
         qDebug() << " requested  :" << requested;
 
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
+        if (channelType == TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             !requested) {
             mChan = StreamedMediaChannel::create(mConn->client(),
                     details.channel.path(), details.properties);

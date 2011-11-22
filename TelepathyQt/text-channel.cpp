@@ -155,7 +155,7 @@ TextChannel::Private::Private(TextChannel *parent)
     ReadinessHelper::Introspectable introspectableChatState(
         QSet<uint>() << 0,                                                                  // makesSenseForStatuses
         Features() << Channel::FeatureCore,                                                 // dependsOnFeatures (core)
-        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE),   // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE,   // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::enableChatStateNotifications,
         this);
     introspectables[FeatureChatState] = introspectableChatState;
@@ -196,7 +196,7 @@ void TextChannel::Private::introspectMessageQueue(
             self->getAllInFlight = true;
             QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                     self->properties->GetAll(
-                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
+                        TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES),
                         parent);
             parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -234,7 +234,7 @@ void TextChannel::Private::introspectMessageCapabilities(
             self->getAllInFlight = true;
             QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                     self->properties->GetAll(
-                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
+                        TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES),
                         parent);
             parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -665,8 +665,7 @@ TextChannel::~TextChannel()
  */
 bool TextChannel::hasMessagesInterface() const
 {
-    return interfaces().contains(QLatin1String(
-                TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES));
+    return interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES);
 }
 
 /**
@@ -682,8 +681,7 @@ bool TextChannel::hasMessagesInterface() const
  */
 bool TextChannel::hasChatStateInterface() const
 {
-    return interfaces().contains(QLatin1String(
-                TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE));
+    return interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE);
 }
 
 /**
@@ -1004,10 +1002,10 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
  */
 PendingOperation *TextChannel::requestChatState(ChannelChatState state)
 {
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE))) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE)) {
         warning() << "TextChannel::requestChatState() used with no chat "
             "state interface";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("TextChannel does not support chat state interface"),
                 TextChannelPtr(this));
     }

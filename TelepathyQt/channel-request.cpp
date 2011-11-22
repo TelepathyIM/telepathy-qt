@@ -132,11 +132,11 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
     QVariantMap mainProps;
     foreach (QString key, immutableProperties.keys()) {
         // The key.count thing is so that we don't match "org.fdo.Tp.CR.OptionalInterface.Prop" too
-        if (key.startsWith(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST "."))
+        if (key.startsWith(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String("."))
                 && key.count(QLatin1Char('.')) ==
-                    QString::fromAscii(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".").count(QLatin1Char('.'))) {
+                    QString(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".")).count(QLatin1Char('.'))) {
             QVariant value = immutableProperties.value(key);
-            mainProps.insert(key.remove(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".")), value);
+            mainProps.insert(key.remove(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".")), value);
         }
     }
     extractMainProps(mainProps, false);
@@ -155,7 +155,7 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
         "PreferredHandler", "Requests", "Interfaces",
         NULL };
     for (unsigned i = 0; propertiesNames[i] != NULL; ++i) {
-        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".");
+        key = TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".");
         key += QLatin1String(propertiesNames[i]);
         if (!self->immutableProperties.contains(key)) {
             needIntrospectMainProps = true;
@@ -169,7 +169,7 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
         debug() << "Calling Properties::GetAll(ChannelRequest)";
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
-                    self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST)),
+                    self->properties->GetAll(TP_QT_IFACE_CHANNEL_REQUEST),
                     self->parent);
         // FIXME: This is a Qt bug fixed upstream, should be in the next Qt release.
         //        We should not need to check watcher->isFinished() here, remove the
@@ -340,7 +340,7 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory)
     : StatefulDBusProxy(bus,
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
+            TP_QT_IFACE_CHANNEL_DISPATCHER,
             objectPath, FeatureCore),
       OptionalInterfaceFactory<ChannelRequest>(this),
       mPriv(new Private(this, immutableProperties, accountFactory, connectionFactory,
@@ -372,7 +372,7 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
 ChannelRequest::ChannelRequest(const AccountPtr &account,
         const QString &objectPath, const QVariantMap &immutableProperties)
     : StatefulDBusProxy(account->dbusConnection(),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
+            TP_QT_IFACE_CHANNEL_DISPATCHER,
             objectPath, FeatureCore),
       OptionalInterfaceFactory<ChannelRequest>(this),
       mPriv(new Private(this, immutableProperties, AccountFactoryPtr(),
@@ -498,26 +498,26 @@ QVariantMap ChannelRequest::immutableProperties() const
     QVariantMap props = mPriv->immutableProperties;
 
     if (!account().isNull()) {
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"),
+        props.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Account"),
             QVariant::fromValue(QDBusObjectPath(account()->objectPath())));
     }
 
     if (userActionTime().isValid()) {
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".UserActionTime"),
+        props.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".UserActionTime"),
             QVariant::fromValue(userActionTime().toTime_t()));
     }
 
     if (!preferredHandler().isNull()) {
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".PreferredHandler"),
+        props.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".PreferredHandler"),
                 preferredHandler());
     }
 
     if (!requests().isEmpty()) {
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Requests"),
+        props.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Requests"),
             QVariant::fromValue(requests()));
     }
 
-    props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interfaces"),
+    props.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Interfaces"),
             QVariant::fromValue(interfaces()));
 
     return props;

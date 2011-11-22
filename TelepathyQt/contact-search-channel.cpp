@@ -133,9 +133,9 @@ void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private
         QLatin1String("Server")
     };
     const static QString qualifiedNames[numNames] = {
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Limit"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".AvailableSearchKeys"),
-        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Server")
+        TP_QT_IFACE_CHANNEL + QLatin1String(".Limit"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".AvailableSearchKeys"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".Server")
     };
     for (unsigned i = 0; i < numNames; ++i) {
         const QString &qualified = qualifiedNames[i];
@@ -150,7 +150,7 @@ void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
                     self->properties->GetAll(
-                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH)),
+                        TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH),
                     self->parent);
         self->parent->connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -161,7 +161,7 @@ void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
                     self->properties->Get(
-                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH),
+                        TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH,
                         QLatin1String("SearchState")),
                     self->parent);
         self->parent->connect(watcher,
@@ -493,7 +493,7 @@ PendingOperation *ContactSearchChannel::search(const QString &searchKey, const Q
 PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
 {
     if (!isReady(FeatureCore)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 ContactSearchChannelPtr(this));
     }
@@ -501,7 +501,7 @@ PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
     if (searchState() != ChannelContactSearchStateNotStarted) {
         warning() << "ContactSearchChannel::search called with "
             "searchState() != ChannelContactSearchStateNotStarted. Doing nothing";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Search already started"),
                 ContactSearchChannelPtr(this));
     }

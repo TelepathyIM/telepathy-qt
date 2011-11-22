@@ -177,7 +177,7 @@ void PendingStreamedMediaStreams::onStreamRemoved(const StreamedMediaStreamPtr &
 
     if (mPriv->streams.contains(stream)) {
         // the stream was removed before becoming ready
-        setFinishedWithError(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+        setFinishedWithError(TP_QT_ERROR_CANCELLED,
                 QLatin1String("Stream removed before ready"));
     }
 }
@@ -530,9 +530,9 @@ PendingOperation *StreamedMediaStream::requestDirection(
 PendingOperation *StreamedMediaStream::startDTMFTone(DTMFEvent event)
 {
     StreamedMediaChannelPtr chan(channel());
-    if (!chan->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF))) {
+    if (!chan->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_DTMF)) {
         warning() << "StreamedMediaStream::startDTMFTone() used with no dtmf interface";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("StreamedMediaChannel does not support dtmf interface"),
                 StreamedMediaStreamPtr(this));
     }
@@ -565,9 +565,9 @@ PendingOperation *StreamedMediaStream::startDTMFTone(DTMFEvent event)
 PendingOperation *StreamedMediaStream::stopDTMFTone()
 {
     StreamedMediaChannelPtr chan(channel());
-    if (!chan->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF))) {
+    if (!chan->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_DTMF)) {
         warning() << "StreamedMediaStream::stopDTMFTone() used with no dtmf interface";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("StreamedMediaChannel does not support dtmf interface"),
                 StreamedMediaStreamPtr(this));
     }
@@ -700,7 +700,7 @@ void StreamedMediaStream::gotContact(PendingOperation *op)
         Q_ASSERT(invalidHandles.size() == 1);
         warning().nospace() << "Error retrieving media stream contact (invalid handle)";
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
-                QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Invalid contact handle"));
     }
 }
@@ -789,7 +789,7 @@ StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
     ReadinessHelper::Introspectable introspectableLocalHoldState(
         QSet<uint>() << 0,                                                          // makesSenseForStatuses
         Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
-        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD), // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_HOLD, // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectLocalHoldState,
         this);
     introspectables[FeatureLocalHoldState] = introspectableLocalHoldState;
@@ -1020,7 +1020,7 @@ PendingOperation *StreamedMediaChannel::acceptCall()
 PendingOperation *StreamedMediaChannel::removeStream(const StreamedMediaStreamPtr &stream)
 {
     if (!stream) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+        return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Unable to remove a null stream"),
                 StreamedMediaChannelPtr(this));
     }
@@ -1056,7 +1056,7 @@ PendingOperation *StreamedMediaChannel::removeStreams(const StreamedMediaStreams
     }
 
     if (ids.isEmpty()) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+        return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Unable to remove invalid streams"),
                 StreamedMediaChannelPtr(this));
     }
@@ -1133,7 +1133,7 @@ PendingOperation *StreamedMediaChannel::hangupCall()
 bool StreamedMediaChannel::handlerStreamingRequired() const
 {
     return interfaces().contains(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING));
+            TP_QT_IFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING);
 }
 
 /**
@@ -1150,7 +1150,7 @@ LocalHoldState StreamedMediaChannel::localHoldState() const
 {
     if (!isReady(FeatureLocalHoldState)) {
         warning() << "StreamedMediaChannel::localHoldState() used with FeatureLocalHoldState not ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
         warning() << "StreamedMediaChannel::localHoldStateReason() used with no hold interface";
     }
 
@@ -1169,7 +1169,7 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
 {
     if (!isReady(FeatureLocalHoldState)) {
         warning() << "StreamedMediaChannel::localHoldStateReason() used with FeatureLocalHoldState not ready";
-    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD))) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
         warning() << "StreamedMediaChannel::localHoldStateReason() used with no hold interface";
     }
 
@@ -1210,9 +1210,9 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  */
 PendingOperation *StreamedMediaChannel::requestHold(bool hold)
 {
-    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD))) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
         warning() << "StreamedMediaChannel::requestHold() used with no hold interface";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("StreamedMediaChannel does not support hold interface"),
                 StreamedMediaChannelPtr(this));
     }

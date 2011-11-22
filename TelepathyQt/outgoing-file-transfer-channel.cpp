@@ -166,7 +166,7 @@ PendingOperation *OutgoingFileTransferChannel::provideFile(QIODevice *input)
     if (!isReady(FileTransferChannel::FeatureCore)) {
         warning() << "FileTransferChannel::FeatureCore must be ready before "
             "calling provideFile";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 OutgoingFileTransferChannelPtr(this));
     }
@@ -175,7 +175,7 @@ PendingOperation *OutgoingFileTransferChannel::provideFile(QIODevice *input)
     if (mPriv->input) {
         warning() << "File transfer can only be started once in the same "
             "channel";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("File transfer can only be started once in the same channel"),
                 OutgoingFileTransferChannelPtr(this));
     }
@@ -183,7 +183,7 @@ PendingOperation *OutgoingFileTransferChannel::provideFile(QIODevice *input)
     if ((!input->isOpen() && !input->open(QIODevice::ReadOnly)) &&
         !input->isReadable()) {
         warning() << "Unable to open IO device for reading";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_PERMISSION_DENIED),
+        return new PendingFailure(TP_QT_ERROR_PERMISSION_DENIED,
                 QLatin1String("Unable to open IO device for reading"),
                 OutgoingFileTransferChannelPtr(this));
     }

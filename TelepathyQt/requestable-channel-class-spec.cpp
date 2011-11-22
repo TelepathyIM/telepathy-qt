@@ -416,7 +416,7 @@ QString RequestableChannelClassSpec::channelType() const
         return QString();
     }
     return qdbus_cast<QString>(mPriv->rcc.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+                TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")));
 }
 
 bool RequestableChannelClassSpec::hasTargetHandleType() const
@@ -425,7 +425,7 @@ bool RequestableChannelClassSpec::hasTargetHandleType() const
         return false;
     }
     return mPriv->rcc.fixedProperties.contains(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"));
 }
 
 HandleType RequestableChannelClassSpec::targetHandleType() const
@@ -434,7 +434,7 @@ HandleType RequestableChannelClassSpec::targetHandleType() const
         return (HandleType) -1;
     }
     return (HandleType) qdbus_cast<uint>(mPriv->rcc.fixedProperties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")));
 }
 
 bool RequestableChannelClassSpec::hasFixedProperty(const QString &name) const

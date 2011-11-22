@@ -286,7 +286,7 @@ void ReadinessHelper::Private::iterateIntrospection()
         if (!depsFor(feature).intersect(missingFeatures).isEmpty()) {
             missingFeatures.insert(feature);
             missingFeaturesErrors.insert(feature,
-                    QPair<QString, QString>(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                    QPair<QString, QString>(TP_QT_ERROR_NOT_AVAILABLE,
                         QLatin1String("Feature depends on other features that are not available")));
         }
     }
@@ -363,7 +363,7 @@ void ReadinessHelper::Private::iterateIntrospection()
                     introspectable.mPriv->dependsOnInterfaces << ", but interface" << interface <<
                     "is not present";
                 setIntrospectCompleted(feature, false,
-                        QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                        TP_QT_ERROR_NOT_AVAILABLE,
                         QLatin1String("Feature depend on interfaces that are not available"));
                 return; // will be called with a single-shot soon again
             }
@@ -528,7 +528,7 @@ bool ReadinessHelper::isReady(const Feature &feature,
 
     if (!mPriv->supportedFeatures.contains(feature)) {
         if (errorName) {
-            *errorName = QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT);
+            *errorName = TP_QT_ERROR_INVALID_ARGUMENT;
         }
         if (errorMessage) {
             *errorMessage = QLatin1String("Unsupported feature");
@@ -611,7 +611,7 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
         PendingReady *operation = new PendingReady(SharedPtr<RefCounted>(mPriv->object),
                 requestedFeatures);
         operation->setFinishedWithError(
-                QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Requested features contains unsupported feature"));
         return operation;
     }

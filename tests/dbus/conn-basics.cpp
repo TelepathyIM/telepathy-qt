@@ -246,7 +246,7 @@ void TestConnBasics::cleanup()
 
         // Disconnect and wait for invalidation
         tp_base_connection_disconnect_with_dbus_error(TP_BASE_CONNECTION(mConnService),
-                TELEPATHY_ERROR_CANCELLED,
+                TP_QT_ERROR_CANCELLED.latin1(),
                 details,
                 TP_CONNECTION_STATUS_REASON_REQUESTED);
 

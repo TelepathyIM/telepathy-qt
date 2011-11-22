@@ -126,7 +126,7 @@ void ConnectionManager::Private::PendingNames::invokeMethod(const QLatin1String 
 void ConnectionManager::Private::PendingNames::parseResult(const QStringList &names)
 {
     foreach (const QString name, names) {
-        if (name.startsWith(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_MANAGER "."))) {
+        if (name.startsWith(TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String("."))) {
             mResult << name.right(name.length() - 44);
         }
     }
@@ -351,46 +351,46 @@ void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
 
     // Text chatrooms
     fixedProps.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     fixedProps.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
             static_cast<uint>(HandleTypeRoom));
 
     RequestableChannelClass textChatroom = {fixedProps, allowedProps};
     classes.append(textChatroom);
 
     // 1-1 text chats
-    fixedProps[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")] =
+    fixedProps[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")] =
         static_cast<uint>(HandleTypeContact);
 
     RequestableChannelClass text = {fixedProps, allowedProps};
     classes.append(text);
 
     // Media calls
-    fixedProps[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")] =
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    fixedProps[TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")] =
+            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA;
 
     RequestableChannelClass media = {fixedProps, allowedProps};
     classes.append(media);
 
     // Initially audio-only calls
     allowedProps.push_back(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
 
     RequestableChannelClass initialAudio = {fixedProps, allowedProps};
     classes.append(initialAudio);
 
     // Initially AV calls
     allowedProps.push_back(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"));
+            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"));
 
     RequestableChannelClass initialAV = {fixedProps, allowedProps};
     classes.append(initialAV);
 
     // Initially video-only calls
     allowedProps.removeAll(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
 
     RequestableChannelClass initialVideo = {fixedProps, allowedProps};
     classes.append(initialVideo);
@@ -403,28 +403,28 @@ void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
 bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVariantMap &props)
 {
     bool gotEverything =
-        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Interfaces")) &&
-        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Parameters")) &&
-        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".ConnectionInterfaces")) &&
-        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses")) &&
-        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".VCardField")) &&
-        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".EnglishName")) &&
-        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Icon"));
+        props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".ConnectionInterfaces")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Icon"));
 
     setInterfaces(qdbus_cast<QStringList>(
-                props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Interfaces")]));
+                props[TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces")]));
     mReadinessHelper->setInterfaces(interfaces());
 
     ParamSpecList parameters = qdbus_cast<ParamSpecList>(
-            props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Parameters")]);
+            props[TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters")]);
     foreach (const ParamSpec &spec, parameters) {
         mInfo.addParameter(spec);
     }
 
     mInfo.setVCardField(qdbus_cast<QString>(
-                props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".VCardField")]));
+                props[TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField")]));
     QString englishName = qdbus_cast<QString>(
-            props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".EnglishName")]);
+            props[TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName")]);
     if (englishName.isEmpty()) {
         QStringList words = mInfo.name().split(QLatin1Char('-'));
         for (int i = 0; i < words.size(); ++i) {
@@ -434,16 +434,16 @@ bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVaria
     }
     mInfo.setEnglishName(englishName);
     QString iconName = qdbus_cast<QString>(
-            props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Icon")]);
+            props[TP_QT_IFACE_PROTOCOL + QLatin1String(".Icon")]);
     if (iconName.isEmpty()) {
         iconName = QString(QLatin1String("im-%1")).arg(mInfo.name());
     }
     mInfo.setIconName(iconName);
 
     // Don't overwrite the everything-is-possible RCCs with an empty list if there is no RCCs key
-    if (props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses"))) {
+    if (props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"))) {
         mInfo.setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
-                props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses")]));
+                props[TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses")]));
     }
 
     return gotEverything;
@@ -532,7 +532,7 @@ void ConnectionManager::Private::introspectMain(ConnectionManager::Private *self
     debug() << "Calling Properties::GetAll(ConnectionManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             self->properties->GetAll(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_MANAGER)),
+                TP_QT_IFACE_CONNECTION_MANAGER),
             self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),

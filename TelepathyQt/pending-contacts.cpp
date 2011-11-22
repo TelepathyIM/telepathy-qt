@@ -154,7 +154,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 
     if (!otherContacts.isEmpty()) {
         ConnectionPtr conn = manager->connection();
-        if (conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+        if (conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
             PendingContactAttributes *attributes =
                 conn->lowlevel()->contactAttributes(otherContacts.toList(),
                         interfaces, true);
@@ -441,7 +441,7 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
     ConnectionPtr conn = mPriv->manager->connection();
     foreach (uint handle, mPriv->handlesToInspect) {
         QVariantMap handleAttributes;
-        handleAttributes.insert(QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id"),
+        handleAttributes.insert(TP_QT_IFACE_CONNECTION + QLatin1String("/contact-id"),
                 names[i++]);
         ReferencedHandles referencedHandle(conn, HandleTypeContact,
                 UIntList() << handle);

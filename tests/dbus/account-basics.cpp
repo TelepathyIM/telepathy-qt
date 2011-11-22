@@ -513,7 +513,7 @@ void TestAccountBasics::testBasics()
     // simulate that the account has a connection
     QVERIFY(connect(new PendingVoid(
                         accPropertiesInterface->Set(
-                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                            TP_QT_IFACE_ACCOUNT,
                             QLatin1String("Connection"),
                             QDBusVariant(mConn->objectPath())),
                         acc),
@@ -553,7 +553,7 @@ void TestAccountBasics::testBasics()
     mProps.clear();
     QVERIFY(connect(new PendingVoid(
                         accPropertiesInterface->Set(
-                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                            TP_QT_IFACE_ACCOUNT,
                             QLatin1String("Connection"),
                             QDBusVariant(QLatin1String("/"))),
                         acc),

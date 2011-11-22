@@ -146,9 +146,9 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
 {
     mPriv->connection = connection;
     mPriv->yours = create;
-    mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-    mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
-    mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+    mPriv->channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+    mPriv->handleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+    mPriv->handle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
     mPriv->notifier = 0;
     mPriv->create = create;
 
@@ -177,9 +177,9 @@ PendingChannel::PendingChannel(const AccountPtr &account,
       mPriv(new Private)
 {
     mPriv->yours = true;
-    mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-    mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
-    mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+    mPriv->channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+    mPriv->handleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+    mPriv->handle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
 
     mPriv->cr = ClientRegistrar::create(
             Private::FakeAccountFactory::create(account),
@@ -344,21 +344,21 @@ QVariantMap PendingChannel::immutableProperties() const
 
     // This is a reasonable guess - if it's Yours it's guaranteedly Requested by us, and if it's not
     // it could be either Requested by somebody else but also an incoming channel just as well.
-    if (!props.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"))) {
+    if (!props.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"))) {
         debug() << "CM didn't provide Requested in channel immutable props, guessing"
             << mPriv->yours;
-        props[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")] =
+        props[TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")] =
             mPriv->yours;
     }
 
     // Also, the spec says that if the channel was Requested by the local user, InitiatorHandle must
     // be the Connection's self handle
-    if (!props.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle"))) {
-        if (qdbus_cast<bool>(props.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")))) {
+    if (!props.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle"))) {
+        if (qdbus_cast<bool>(props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")))) {
             if (connection() && connection()->isReady(Connection::FeatureCore)) {
                 debug() << "CM didn't provide InitiatorHandle in channel immutable props, but we "
                     "know it's the conn's self handle (and have it)";
-                props[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle")] =
+                props[TP_QT_IFACE_CHANNEL + QLatin1String(".InitiatorHandle")] =
                     connection()->selfHandle();
             }
         }
@@ -422,9 +422,9 @@ void PendingChannel::onConnectionCreateChannelFinished(QDBusPendingCallWatcher *
         mPriv->channel = ChannelPtr::qObjectCast(channelReady->proxy());
 
         mPriv->immutableProperties = map;
-        mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-        mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
-        mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+        mPriv->channelType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+        mPriv->handleType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+        mPriv->handle = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
 
         connect(channelReady,
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -454,9 +454,9 @@ void PendingChannel::onConnectionEnsureChannelFinished(QDBusPendingCallWatcher *
         mPriv->channel = ChannelPtr::qObjectCast(channelReady->proxy());
 
         mPriv->immutableProperties = map;
-        mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-        mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
-        mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+        mPriv->channelType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+        mPriv->handleType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+        mPriv->handle = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
 
         connect(channelReady,
                 SIGNAL(finished(Tp::PendingOperation*)),

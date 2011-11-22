@@ -190,7 +190,7 @@ PendingOperation *ContactManager::Roster::introspectGroups()
             contactManager->connection()->interface<Client::DBus::PropertiesInterface>();
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                 properties->Get(
-                    QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),
+                    TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS,
                     QLatin1String("Channels")), this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -237,17 +237,17 @@ PendingOperation *ContactManager::Roster::addGroup(const QString &group)
 
     if (usingFallbackContactList) {
         QVariantMap request;
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                                     QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+        request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                                     TP_QT_IFACE_CHANNEL_TYPE_CONTACT_LIST);
+        request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                                      (uint) Tp::HandleTypeGroup);
-        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+        request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                                      group);
         return conn->lowlevel()->ensureChannel(request);
     }
 
     if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Not implemented"),
                 conn);
     }
@@ -264,7 +264,7 @@ PendingOperation *ContactManager::Roster::removeGroup(const QString &group)
 
     if (usingFallbackContactList) {
         if (!contactListGroupChannels.contains(group)) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+            return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("Invalid group"),
                     conn);
         }
@@ -274,7 +274,7 @@ PendingOperation *ContactManager::Roster::removeGroup(const QString &group)
     }
 
     if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Not implemented"),
                 conn);
     }
@@ -311,7 +311,7 @@ PendingOperation *ContactManager::Roster::addContactsToGroup(const QString &grou
 
     if (usingFallbackContactList) {
         if (!contactListGroupChannels.contains(group)) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+            return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("Invalid group"),
                     conn);
         }
@@ -321,7 +321,7 @@ PendingOperation *ContactManager::Roster::addContactsToGroup(const QString &grou
     }
 
     if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Not implemented"),
                 conn);
     }
@@ -344,7 +344,7 @@ PendingOperation *ContactManager::Roster::removeContactsFromGroup(const QString 
 
     if (usingFallbackContactList) {
         if (!contactListGroupChannels.contains(group)) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+            return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("Invalid group"),
                     conn);
         }
@@ -354,7 +354,7 @@ PendingOperation *ContactManager::Roster::removeContactsFromGroup(const QString 
     }
 
     if (!conn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Not implemented"),
                 conn);
     }
@@ -396,7 +396,7 @@ PendingOperation *ContactManager::Roster::requestPresenceSubscription(
 
     if (usingFallbackContactList) {
         if (!subscribeChannel) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Cannot subscribe to contacts' presence on this protocol"),
                     conn);
         }
@@ -460,7 +460,7 @@ PendingOperation *ContactManager::Roster::removePresenceSubscription(
 
     if (usingFallbackContactList) {
         if (!subscribeChannel) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Cannot subscribe to contacts' presence on this protocol"),
                     conn);
         }
@@ -508,7 +508,7 @@ PendingOperation *ContactManager::Roster::authorizePresencePublication(
 
     if (usingFallbackContactList) {
         if (!publishChannel) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Cannot control publication of presence on this protocol"),
                     conn);
         }
@@ -563,7 +563,7 @@ PendingOperation *ContactManager::Roster::removePresencePublication(
 
     if (usingFallbackContactList) {
         if (!publishChannel) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Cannot control publication of presence on this protocol"),
                     conn);
         }
@@ -611,7 +611,7 @@ PendingOperation *ContactManager::Roster::removeContacts(
         }
 
         if (operations.isEmpty()) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Cannot remove contacts on this protocol"),
                     conn);
         }
@@ -648,11 +648,11 @@ PendingOperation *ContactManager::Roster::blockContacts(
         const QList<ContactPtr> &contacts, bool value, bool reportAbuse)
 {
     if (!contactManager->connection()->isValid()) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"),
                 contactManager->connection());
     } else if (!contactManager->connection()->isReady(Connection::FeatureRoster)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureRoster is not ready"),
                 contactManager->connection());
     }
@@ -678,7 +678,7 @@ PendingOperation *ContactManager::Roster::blockContacts(
         ConnectionPtr conn(contactManager->connection());
 
         if (!denyChannel) {
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("Cannot block contacts on this protocol"),
                     conn);
         }
@@ -1206,11 +1206,11 @@ void ContactManager::Roster::gotContactListChannelHandle(PendingOperation *op)
 
     debug() << "Requesting channel for" << channelId << "channel";
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT_IFACE_CHANNEL_TYPE_CONTACT_LIST);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
             (uint) HandleTypeList);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
             handle[0]);
     ConnectionPtr conn(contactManager->connection());
     /* Request the channel passing INT_MAX as timeout (meaning no timeout), as
@@ -1385,13 +1385,13 @@ void ContactManager::Roster::onNewChannels(const Tp::ChannelDetailsList &channel
     uint handleType;
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
         channelType = channelDetails.properties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-        if (channelType != QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST)) {
+                TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+        if (channelType != TP_QT_IFACE_CHANNEL_TYPE_CONTACT_LIST) {
             continue;
         }
 
         handleType = channelDetails.properties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
         if (handleType != Tp::HandleTypeGroup) {
             continue;
         }
@@ -1590,7 +1590,7 @@ void ContactManager::Roster::onContactListGroupMembersChanged(
     ChannelPtr contactListGroupChannel = ChannelPtr(
             qobject_cast<Channel*>(sender()));
     QString id = contactListGroupChannel->immutableProperties().value(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
 
     foreach (const ContactPtr &contact, groupMembersAdded) {
         contact->setAddedToGroup(id);
@@ -1615,7 +1615,7 @@ void ContactManager::Roster::onContactListGroupRemoved(Tp::DBusProxy *proxy,
     // invalidates itself when it gets closed.
     ChannelPtr contactListGroupChannel = ChannelPtr(qobject_cast<Channel*>(proxy));
     QString id = contactListGroupChannel->immutableProperties().value(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
     contactListGroupChannels.remove(id);
     removedContactListGroupChannels.append(contactListGroupChannel);
     disconnect(contactListGroupChannel.data(), 0, 0, 0);
@@ -2096,7 +2096,7 @@ void ContactManager::Roster::setContactListGroupChannelsReady()
 QString ContactManager::Roster::addContactListGroupChannel(const ChannelPtr &contactListGroupChannel)
 {
     QString id = contactListGroupChannel->immutableProperties().value(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
     contactListGroupChannels.insert(id, contactListGroupChannel);
     connect(contactListGroupChannel.data(),
             SIGNAL(groupMembersChanged(

@@ -181,13 +181,13 @@ void TestContacts::testSupport()
     QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().isEmpty());
 
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION)));
+                TP_QT_IFACE_CONNECTION));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)));
+                TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)));
+                TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)));
+                TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
 
     Features supportedFeatures = mConn->contactManager()->supportedFeatures();
     QVERIFY(!supportedFeatures.isEmpty());

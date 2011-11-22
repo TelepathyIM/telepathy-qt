@@ -263,9 +263,9 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
 
     if (reply.isError()) {
         QDBusError error = reply.error();
-        if (error.name() != QLatin1String(TELEPATHY_ERROR_INVALID_HANDLE) &&
-            error.name() != QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT) &&
-            error.name() != QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)) {
+        if (error.name() != TP_QT_ERROR_INVALID_HANDLE &&
+            error.name() != TP_QT_ERROR_INVALID_ARGUMENT &&
+            error.name() != TP_QT_ERROR_NOT_AVAILABLE) {
             // do not fallback
             foreach (const QString &name, mPriv->namesRequested) {
                 mPriv->invalidNames.insert(name,
@@ -327,9 +327,9 @@ void PendingHandles::onHoldHandlesFinished(QDBusPendingCallWatcher *watcher)
             reply.error().message();
 
         QDBusError error = reply.error();
-        if (error.name() != QLatin1String(TELEPATHY_ERROR_INVALID_HANDLE) &&
-            error.name() != QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT) &&
-            error.name() != QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)) {
+        if (error.name() != TP_QT_ERROR_INVALID_HANDLE &&
+            error.name() != TP_QT_ERROR_INVALID_ARGUMENT &&
+            error.name() != TP_QT_ERROR_NOT_AVAILABLE) {
             // do not fallback
             mPriv->invalidHandles = mPriv->handlesToReference;
             setFinishedWithError(error);
@@ -385,9 +385,9 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
 
         // if the error is disconnected for example, fail immediately
         QDBusError error = reply.error();
-        if (error.name() != QLatin1String(TELEPATHY_ERROR_INVALID_HANDLE) &&
-            error.name() != QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT) &&
-            error.name() != QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)) {
+        if (error.name() != TP_QT_ERROR_INVALID_HANDLE &&
+            error.name() != TP_QT_ERROR_INVALID_ARGUMENT &&
+            error.name() != TP_QT_ERROR_NOT_AVAILABLE) {
             foreach (const QString &name, mPriv->namesRequested) {
                 mPriv->invalidNames.insert(name,
                         QPair<QString, QString>(error.name(),
@@ -455,9 +455,9 @@ void PendingHandles::onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watc
 
         // if the error is disconnected for example, fail immediately
         QDBusError error = reply.error();
-        if (error.name() != QLatin1String(TELEPATHY_ERROR_INVALID_HANDLE) &&
-            error.name() != QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT) &&
-            error.name() != QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)) {
+        if (error.name() != TP_QT_ERROR_INVALID_HANDLE &&
+            error.name() != TP_QT_ERROR_INVALID_ARGUMENT &&
+            error.name() != TP_QT_ERROR_NOT_AVAILABLE) {
             mPriv->invalidHandles = mPriv->handlesToReference;
             setFinishedWithError(error);
             watcher->deleteLater();

@@ -140,7 +140,7 @@ public Q_SLOTS: // Methods
 
     void Cancel()
     {
-        Q_EMIT Failed(QLatin1String(TELEPATHY_ERROR_CANCELLED), QLatin1String("Cancelled"));
+        Q_EMIT Failed(QLatin1String(TP_QT_ERROR_CANCELLED), QLatin1String("Cancelled"));
     }
 
 Q_SIGNALS: // Signals
@@ -152,7 +152,7 @@ Q_SIGNALS: // Signals
 private Q_SLOTS:
     void fail()
     {
-        Q_EMIT Failed(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE), QLatin1String("Not available"));
+        Q_EMIT Failed(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE), QLatin1String("Not available"));
     }
 
     void succeed()
@@ -494,7 +494,7 @@ void TestAccountChannelDispatcher::initTestCase()
 
     // Create the CD first, because Accounts try to introspect it
     QDBusConnection bus = QDBusConnection::sessionBus();
-    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
     QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
     QObject *dispatcher = new QObject(this);
     mChannelDispatcherAdaptor = new ChannelDispatcherAdaptor(bus, dispatcher);
@@ -766,11 +766,11 @@ void TestAccountChannelDispatcher::checkHandlerHandledChannels(ClientHandlerInte
 { \
     mHints = hints; \
     QVariantMap request; \
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), \
-                                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)); \
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), \
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"), \
+                                 TP_QT_IFACE_CHANNEL_TYPE_TEXT); \
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"), \
                                  (uint) Tp::HandleTypeContact); \
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), \
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), \
                                  QLatin1String("foo@bar")); \
     mChannelDispatcherAdaptor->mInvokeHandler = false; \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
@@ -805,15 +805,15 @@ void TestAccountChannelDispatcher::testEnsureTextChat()
 
 void TestAccountChannelDispatcher::testEnsureTextChatFail()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureTextChat, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, true, false, TP_QT_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureTextChat, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureTextChatCancel()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, true, true, TELEPATHY_ERROR_CANCELLED);
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureTextChat, true, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, true, true, TP_QT_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureTextChat, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
@@ -825,13 +825,13 @@ void TestAccountChannelDispatcher::testEnsureTextChatroom()
 
 void TestAccountChannelDispatcher::testEnsureTextChatroomFail()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureTextChatroomCancel()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, true, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
@@ -860,38 +860,38 @@ void TestAccountChannelDispatcher::testEnsureMediaCall()
 void TestAccountChannelDispatcher::testEnsureMediaCallFail()
 {
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaCall, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaAudioCall, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaAudioCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaAudioCall, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaAudioCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureMediaCallCancel()
 {
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaCall, true, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaCall, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaAudioCall, true, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaAudioCall, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaAudioCall, true, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaAudioCall, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
@@ -958,12 +958,12 @@ void TestAccountChannelDispatcher::testCreateFileTransferChannel()
 
 void TestAccountChannelDispatcher::testCreateFileTransferChannelFail()
 {
-    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, false, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, false, false, TP_QT_ERROR_NOT_AVAILABLE);
 }
 
 void TestAccountChannelDispatcher::testCreateFileTransferChannelCancel()
 {
-    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, true, false, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_FILE_TRANSFER_CHANNEL(true, true, false, TP_QT_ERROR_CANCELLED);
 }
 
 void TestAccountChannelDispatcher::testCreateFileTransferChannelInvalidParameters()
@@ -979,13 +979,13 @@ void TestAccountChannelDispatcher::testCreateChannel()
 
 void TestAccountChannelDispatcher::testCreateChannelFail()
 {
-    TEST_CREATE_ENSURE_CHANNEL(createChannel, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL(createChannel, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::CC);
 }
 
 void TestAccountChannelDispatcher::testCreateChannelCancel()
 {
-    TEST_CREATE_ENSURE_CHANNEL(createChannel, true, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL(createChannel, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::CC);
 }
 
@@ -997,24 +997,24 @@ void TestAccountChannelDispatcher::testEnsureChannel()
 
 void TestAccountChannelDispatcher::testEnsureChannelFail()
 {
-    TEST_CREATE_ENSURE_CHANNEL(ensureChannel, true, false, TELEPATHY_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CHANNEL(ensureChannel, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureChannelCancel()
 {
-    TEST_CREATE_ENSURE_CHANNEL(ensureChannel, true, true, TELEPATHY_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CHANNEL(ensureChannel, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 #define TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(method_name, channelRequestShouldFail, shouldFail, invokeHandler, expectedError, channelOut, pcOut) \
   { \
     QVariantMap request; \
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), \
-                                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)); \
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), \
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"), \
+                                 TP_QT_IFACE_CHANNEL_TYPE_TEXT); \
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"), \
                                  (uint) Tp::HandleTypeContact); \
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), \
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), \
                                  QLatin1String("foo@bar")); \
     mChannelDispatcherAdaptor->mInvokeHandler = invokeHandler; \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = channelRequestShouldFail; \
@@ -1219,7 +1219,7 @@ void TestAccountChannelDispatcher::testCreateAndHandleFileTransferChannel()
 
 void TestAccountChannelDispatcher::testCreateAndHandleFileTransferChannelFail()
 {
-    TEST_CREATE_AND_HANDLE_FILE_TRANSFER_CHANNEL(true, true, false, true, TELEPATHY_ERROR_NOT_AVAILABLE, 0, 0);
+    TEST_CREATE_AND_HANDLE_FILE_TRANSFER_CHANNEL(true, true, false, true, TP_QT_ERROR_NOT_AVAILABLE, 0, 0);
 }
 
 void TestAccountChannelDispatcher::testCreateAndHandleFileTransferChannelInvalidParameters()

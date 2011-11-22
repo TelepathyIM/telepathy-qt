@@ -91,7 +91,7 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
       mPriv(new Private(account->dbusConnection()))
 {
     QString channelDispatcherObjectPath =
-        QString(QLatin1String("/%1")).arg(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER));
+        QString(QLatin1String("/%1")).arg(TP_QT_IFACE_CHANNEL_DISPATCHER);
     channelDispatcherObjectPath.replace(QLatin1String("."), QLatin1String("/"));
     Client::ChannelDispatcherInterface *channelDispatcherInterface =
         account->dispatcherInterface();
@@ -268,7 +268,7 @@ void PendingChannelRequest::onCancelOperationFinished(PendingOperation *op)
 {
     mPriv->cancelOperation = 0;
     if (!isFinished()) {
-        setFinishedWithError(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+        setFinishedWithError(TP_QT_ERROR_CANCELLED,
                 QLatin1String("ChannelRequest cancelled"));
     }
 }

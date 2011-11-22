@@ -65,7 +65,7 @@ TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel)
 
     TpChannel *gchannel = tp_channel_new(gconnection,
             channel->objectPath().toAscii(),
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA.latin1(),
             (TpHandleType) channel->targetHandleType(),
             channel->targetHandle(),
             0);

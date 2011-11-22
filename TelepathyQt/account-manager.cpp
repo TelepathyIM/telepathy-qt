@@ -158,7 +158,7 @@ void AccountManager::Private::introspectMain(AccountManager::Private *self)
     debug() << "Calling Properties::GetAll(AccountManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             self->properties->GetAll(
-                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER)),
+                TP_QT_IFACE_ACCOUNT_MANAGER),
             self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),

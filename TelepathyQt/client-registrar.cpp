@@ -169,13 +169,13 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         // Currently something like the following can be used for testing the CDO "we've got
         // everything we need" codepath:
         //
-        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
+        // props.insert(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Account"),
         //        QVariant::fromValue(QDBusObjectPath(accountPath.path())));
-        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
+        // props.insert(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Connection"),
         //      QVariant::fromValue(QDBusObjectPath(connectionPath.path())));
-        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Interfaces"),
+        // props.insert(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Interfaces"),
         //         QVariant::fromValue(QStringList()));
-        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".PossibleHandlers"),
+        // props.insert(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".PossibleHandlers"),
         //         QVariant::fromValue(QStringList()));
 
         invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
@@ -282,7 +282,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
 
     QDBusObjectPath connectionPath = qdbus_cast<QDBusObjectPath>(
             properties.value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection")));
+                TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Connection")));
     debug() << "addDispatchOperation: connection:" << connectionPath.path();
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));

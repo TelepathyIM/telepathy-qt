@@ -148,7 +148,7 @@ public Q_SLOTS: // Methods
 
     void Cancel()
     {
-        Q_EMIT Failed(QLatin1String(TELEPATHY_ERROR_CANCELLED), QLatin1String("Cancelled"));
+        Q_EMIT Failed(QLatin1String(TP_QT_ERROR_CANCELLED), QLatin1String("Cancelled"));
     }
 
 Q_SIGNALS: // Signals
@@ -160,7 +160,7 @@ Q_SIGNALS: // Signals
 private Q_SLOTS:
     void fail()
     {
-        Q_EMIT Failed(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE), QLatin1String("Not available"));
+        Q_EMIT Failed(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE), QLatin1String("Not available"));
     }
 
     void succeed()

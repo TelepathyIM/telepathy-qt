@@ -122,10 +122,10 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
 {
     QVariantMap mainProps;
     foreach (QString key, self->immutableProperties.keys()) {
-        if (key.startsWith(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION "."))) {
+        if (key.startsWith(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String("."))) {
             QVariant value = self->immutableProperties.value(key);
             mainProps.insert(
-                    key.remove(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".")),
+                    key.remove(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".")),
                     value);
         }
     }
@@ -143,7 +143,7 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
     debug() << "Calling Properties::GetAll(ChannelDispatchOperation)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION)),
+                self->properties->GetAll(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION),
                 self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -362,7 +362,7 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
         const ChannelFactoryConstPtr &channelFactory,
         const ContactFactoryConstPtr &contactFactory)
     : StatefulDBusProxy(bus,
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
+            TP_QT_IFACE_CHANNEL_DISPATCHER,
             objectPath, FeatureCore),
       OptionalInterfaceFactory<ChannelDispatchOperation>(this),
       mPriv(new Private(this))

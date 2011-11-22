@@ -97,7 +97,7 @@ DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
       mPriv(new Private(dbusConnection, busName, objectPath))
 {
     if (!dbusConnection.isConnected()) {
-        invalidate(QLatin1String(TELEPATHY_ERROR_DISCONNECTED),
+        invalidate(TP_QT_ERROR_DISCONNECTED,
                 QLatin1String("DBus connection disconnected"));
     }
 }

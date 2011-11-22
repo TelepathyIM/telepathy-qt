@@ -302,7 +302,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
     if (!isReady(OutgoingStreamTubeChannel::FeatureCore)) {
         warning() << "OutgoingStreamTubeChannel::FeatureCore must be ready before "
                 "calling offerTube";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 OutgoingStreamTubeChannelPtr(this));
     }
@@ -310,7 +310,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
     // The tube must be not offered
     if (state() != TubeChannelStateNotOffered) {
         warning() << "You can not expose more than a socket for each Stream Tube";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel busy"),
                 OutgoingStreamTubeChannelPtr(this));
     }
@@ -332,7 +332,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
             // There are no combinations supported for this socket
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("The requested address type/access control "
                             "combination is not supported"),
                     OutgoingStreamTubeChannelPtr(this));
@@ -368,7 +368,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
             // There are no combinations supported for this socket
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("The requested address type/access control "
                             "combination is not supported"),
                     OutgoingStreamTubeChannelPtr(this));
@@ -396,7 +396,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
         // We're handling an IPv4/IPv6 socket only
         warning() << "offerTube can be called only with a QHostAddress representing "
                 "an IPv4 or IPv6 address";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+        return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Invalid host given"),
                 OutgoingStreamTubeChannelPtr(this));
     }
@@ -472,7 +472,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
     if (!isReady(OutgoingStreamTubeChannel::FeatureCore)) {
         warning() << "OutgoingStreamTubeChannel::FeatureCore must be ready before "
                 "calling offerTube";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 OutgoingStreamTubeChannelPtr(this));
     }
@@ -480,7 +480,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
     // The tube must be not offered
     if (state() != TubeChannelStateNotOffered) {
         warning() << "You can not expose more than a socket for each Stream Tube";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel busy"), OutgoingStreamTubeChannelPtr(this));
     }
 
@@ -494,7 +494,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
                 !supportsAbstractUnixSocketsWithCredentials()) ) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("The requested address type/access control "
                             "combination is not supported"),
                     OutgoingStreamTubeChannelPtr(this));
@@ -525,7 +525,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
                 accessControl != SocketAccessControlCredentials) ) {
             warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
-            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                     QLatin1String("The requested address type/access control "
                             "combination is not supported"),
                     OutgoingStreamTubeChannelPtr(this));

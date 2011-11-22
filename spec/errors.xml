@@ -539,7 +539,7 @@
         also analogous to
         <tp:type>Media_Stream_Error</tp:type>_Invalid_CM_Behavior,
         <code>TP_DBUS_ERROR_INCONSISTENT</code> in telepathy-glib, and
-        <code>TELEPATHY_QT_ERROR_INCONSISTENT</code> in telepathy-qt.
+        <code>TP_QT_ERROR_INCONSISTENT</code> in telepathy-qt.
       </tp:rationale>
     </tp:docstring>
   </tp:error>

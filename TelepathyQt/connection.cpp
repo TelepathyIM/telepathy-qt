@@ -252,7 +252,7 @@ Connection::Private::Private(Connection *parent,
         QSet<uint>() << ConnectionStatusDisconnected <<
                         ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
-        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),   // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,   // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
         this);
     introspectables[FeatureSimplePresence] = introspectableSimplePresence;
@@ -260,7 +260,7 @@ Connection::Private::Private(Connection *parent,
     ReadinessHelper::Introspectable introspectableRoster(
         QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
-        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS),          // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS,          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectRoster,
         this);
     introspectables[FeatureRoster] = introspectableRoster;
@@ -268,7 +268,7 @@ Connection::Private::Private(Connection *parent,
     ReadinessHelper::Introspectable introspectableRosterGroups(
         QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureRoster,                                                                // dependsOnFeatures (core)
-        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),          // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS,          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectRosterGroups,
         this);
     introspectables[FeatureRosterGroups] = introspectableRosterGroups;
@@ -276,7 +276,7 @@ Connection::Private::Private(Connection *parent,
     ReadinessHelper::Introspectable introspectableBalance(
         QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
-        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_BALANCE),           // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_BALANCE,           // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectBalance,
         this);
     introspectables[FeatureAccountBalance] = introspectableBalance;
@@ -406,7 +406,7 @@ void Connection::Private::introspectMain(Connection::Private *self)
     debug() << "Calling Properties::GetAll(Connection)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CONNECTION)),
+                self->properties->GetAll(TP_QT_IFACE_CONNECTION),
                 self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -451,7 +451,7 @@ void Connection::Private::introspectCapabilities()
     debug() << "Retrieving capabilities";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->Get(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),
+                TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS,
                 QLatin1String("RequestableChannelClasses")), parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -463,7 +463,7 @@ void Connection::Private::introspectContactAttributeInterfaces()
     debug() << "Retrieving contact attribute interfaces";
     QDBusPendingCall call =
         properties->Get(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS),
+                TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS,
                 QLatin1String("ContactAttributeInterfaces"));
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, parent);
@@ -496,7 +496,7 @@ void Connection::Private::introspectSimplePresence(Connection::Private *self)
         "Connection.I.SimplePresence.Statuses)";
     QDBusPendingCall call =
         self->properties->GetAll(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
+                TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, self->parent);
     self->parent->connect(watcher,
@@ -541,7 +541,7 @@ void Connection::Private::introspectBalance(Connection::Private *self)
     debug() << "Retrieving balance";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             self->properties->Get(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_BALANCE),
+                TP_QT_IFACE_CONNECTION_INTERFACE_BALANCE,
                 QLatin1String("AccountBalance")), self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -1372,8 +1372,8 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
 
     ConnectionPtr conn(mPriv->conn);
 
-    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+    if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Connection does not support SimplePresence"), conn);
     }
 
@@ -1860,20 +1860,20 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request,
     if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
         return new PendingChannel(conn,
-                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection not yet connected"));
     }
 
-    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
+    if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
         warning() << "Requests interface is not support by this connection";
         return new PendingChannel(conn,
-                QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Connection does not support Requests Interface"));
     }
 
-    if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
+    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
         return new PendingChannel(conn,
-                QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Invalid 'request' argument"));
     }
 
@@ -1932,20 +1932,20 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request,
     if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
         return new PendingChannel(conn,
-                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection not yet connected"));
     }
 
-    if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
+    if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
         warning() << "Requests interface is not support by this connection";
         return new PendingChannel(conn,
-                QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Connection does not support Requests Interface"));
     }
 
-    if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
+    if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
         return new PendingChannel(conn,
-                QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Invalid 'request' argument"));
     }
 
@@ -2183,18 +2183,18 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &
                 handles, interfaces, reference);
     if (!conn->isReady(Connection::FeatureCore)) {
         warning() << "ConnectionLowlevel::contactAttributes() used when not ready";
-        pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        pending->failImmediately(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection isn't ready"));
         return pending;
     } else if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "ConnectionLowlevel::contactAttributes() used with status" << conn->status() << "!= ConnectionStatusConnected";
-        pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        pending->failImmediately(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection isn't Connected"));
         return pending;
-    } else if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+    } else if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
         warning() << "ConnectionLowlevel::contactAttributes() used without the remote object supporting"
                   << "the Contacts interface";
-        pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        pending->failImmediately(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("The connection doesn't support the Contacts interface"));
         return pending;
     }
@@ -2227,7 +2227,7 @@ QStringList ConnectionLowlevel::contactAttributeInterfaces() const
     if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "ConnectionLowlevel::contactAttributeInterfaces() used with status"
             << conn->status() << "!= ConnectionStatusConnected";
-    } else if (!conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+    } else if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
         warning() << "ConnectionLowlevel::contactAttributeInterfaces() used without the remote object supporting"
                   << "the Contacts interface";
     }
@@ -2452,75 +2452,75 @@ void Connection::onBalanceChanged(const Tp::CurrencyAmount &value)
 QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason reason,
         Tp::ConnectionStatus oldStatus)
 {
-    const char *errorName;
+    QString errorName;
 
     switch (reason) {
         case ConnectionStatusReasonNoneSpecified:
-            errorName = TELEPATHY_ERROR_DISCONNECTED;
+            errorName = TP_QT_ERROR_DISCONNECTED;
             break;
 
         case ConnectionStatusReasonRequested:
-            errorName = TELEPATHY_ERROR_CANCELLED;
+            errorName = TP_QT_ERROR_CANCELLED;
             break;
 
         case ConnectionStatusReasonNetworkError:
-            errorName = TELEPATHY_ERROR_NETWORK_ERROR;
+            errorName = TP_QT_ERROR_NETWORK_ERROR;
             break;
 
         case ConnectionStatusReasonAuthenticationFailed:
-            errorName = TELEPATHY_ERROR_AUTHENTICATION_FAILED;
+            errorName = TP_QT_ERROR_AUTHENTICATION_FAILED;
             break;
 
         case ConnectionStatusReasonEncryptionError:
-            errorName = TELEPATHY_ERROR_ENCRYPTION_ERROR;
+            errorName = TP_QT_ERROR_ENCRYPTION_ERROR;
             break;
 
         case ConnectionStatusReasonNameInUse:
             if (oldStatus == ConnectionStatusConnected) {
-                errorName = TELEPATHY_ERROR_CONNECTION_REPLACED;
+                errorName = TP_QT_ERROR_CONNECTION_REPLACED;
             } else {
-                errorName = TELEPATHY_ERROR_ALREADY_CONNECTED;
+                errorName = TP_QT_ERROR_ALREADY_CONNECTED;
             }
             break;
 
         case ConnectionStatusReasonCertNotProvided:
-            errorName = TELEPATHY_ERROR_CERT_NOT_PROVIDED;
+            errorName = TP_QT_ERROR_CERT_NOT_PROVIDED;
             break;
 
         case ConnectionStatusReasonCertUntrusted:
-            errorName = TELEPATHY_ERROR_CERT_UNTRUSTED;
+            errorName = TP_QT_ERROR_CERT_UNTRUSTED;
             break;
 
         case ConnectionStatusReasonCertExpired:
-            errorName = TELEPATHY_ERROR_CERT_EXPIRED;
+            errorName = TP_QT_ERROR_CERT_EXPIRED;
             break;
 
         case ConnectionStatusReasonCertNotActivated:
-            errorName = TELEPATHY_ERROR_CERT_NOT_ACTIVATED;
+            errorName = TP_QT_ERROR_CERT_NOT_ACTIVATED;
             break;
 
         case ConnectionStatusReasonCertHostnameMismatch:
-            errorName = TELEPATHY_ERROR_CERT_HOSTNAME_MISMATCH;
+            errorName = TP_QT_ERROR_CERT_HOSTNAME_MISMATCH;
             break;
 
         case ConnectionStatusReasonCertFingerprintMismatch:
-            errorName = TELEPATHY_ERROR_CERT_FINGERPRINT_MISMATCH;
+            errorName = TP_QT_ERROR_CERT_FINGERPRINT_MISMATCH;
             break;
 
         case ConnectionStatusReasonCertSelfSigned:
-            errorName = TELEPATHY_ERROR_CERT_SELF_SIGNED;
+            errorName = TP_QT_ERROR_CERT_SELF_SIGNED;
             break;
 
         case ConnectionStatusReasonCertOtherError:
-            errorName = TELEPATHY_ERROR_CERT_INVALID;
+            errorName = TP_QT_ERROR_CERT_INVALID;
             break;
 
         default:
-            errorName = TELEPATHY_ERROR_DISCONNECTED;
+            errorName = TP_QT_ERROR_DISCONNECTED;
             break;
     }
 
-    return QLatin1String(errorName);
+    return errorName;
 }
 
 /**

@@ -166,14 +166,14 @@ PendingOperation *IncomingFileTransferChannel::setUri(const QString& uri)
     if (!isReady(FileTransferChannel::FeatureCore)) {
         warning() << "FileTransferChannel::FeatureCore must be ready before "
             "calling setUri";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 IncomingFileTransferChannelPtr(this));
     }
 
     if (state() != FileTransferStatePending) {
         warning() << "setUri must be called before calling acceptFile";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Cannot set URI after calling acceptFile"),
                 IncomingFileTransferChannelPtr(this));
     }
@@ -218,7 +218,7 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
     if (!isReady(FileTransferChannel::FeatureCore)) {
         warning() << "FileTransferChannel::FeatureCore must be ready before "
             "calling acceptFile";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 IncomingFileTransferChannelPtr(this));
     }
@@ -227,7 +227,7 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
     if (mPriv->output) {
         warning() << "File transfer can only be started once in the same "
             "channel";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("File transfer can only be started once in the same channel"),
                 IncomingFileTransferChannelPtr(this));
     }
@@ -235,7 +235,7 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
     if ((!output->isOpen() && !output->open(QIODevice::WriteOnly)) &&
         (!output->isWritable())) {
         warning() << "Unable to open IO device for writing";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_PERMISSION_DENIED),
+        return new PendingFailure(TP_QT_ERROR_PERMISSION_DENIED,
                 QLatin1String("Unable to open IO device for writing"),
                 IncomingFileTransferChannelPtr(this));
     }

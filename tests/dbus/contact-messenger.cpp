@@ -332,14 +332,14 @@ void TestContactMessenger::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     QDBusConnection bus = QDBusConnection::sessionBus();
-    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
     QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
     Dispatcher *dispatcher = new Dispatcher(this);
     mCDMessagesAdaptor = new CDMessagesAdaptor(bus, this, dispatcher);
     QVERIFY(bus.registerService(channelDispatcherBusName));
     QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
 
-    mAccountBusName = QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER);
+    mAccountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
     mAccountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/simple/account");
     QObject *acc = new QObject(this);
 

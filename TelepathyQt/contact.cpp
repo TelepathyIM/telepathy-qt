@@ -319,7 +319,7 @@ Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
 {
     mPriv->requestedFeatures.unite(requestedFeatures);
     mPriv->id = qdbus_cast<QString>(attributes[
-            QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id")]);
+            TP_QT_IFACE_CONNECTION + QLatin1String("/contact-id")]);
 }
 
 /**
@@ -625,7 +625,7 @@ PendingOperation *Contact::refreshInfo()
     if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
         warning() << "Contact::refreshInfo() used on" << this
             << "for which FeatureInfo hasn't been requested - failing";
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("FeatureInfo needs to be ready in order to "
                     "use this method"),
                 ContactPtr(this));
@@ -912,7 +912,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
     mPriv->requestedFeatures.unite(requestedFeatures);
 
     mPriv->id = qdbus_cast<QString>(attributes[
-            QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id")]);
+            TP_QT_IFACE_CONNECTION + QLatin1String("/contact-id")]);
 
     if (attributes.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
                 QLatin1String("/subscribe"))) {
@@ -939,7 +939,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
 
         if (feature == FeatureAlias) {
             maybeAlias = qdbus_cast<QString>(attributes.value(
-                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING "/alias")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING + QLatin1String("/alias")));
 
             if (!maybeAlias.isEmpty()) {
                 receiveAlias(maybeAlias);
@@ -953,9 +953,9 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureAvatarToken) {
             if (attributes.contains(
-                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token"))) {
+                        TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS + QLatin1String("/token"))) {
                 receiveAvatarToken(qdbus_cast<QString>(attributes.value(
-                                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token"))));
+                                TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS + QLatin1String("/token"))));
             } else {
                 if (manager()->supportedFeatures().contains(FeatureAvatarToken)) {
                     // AvatarToken being supported but not included in the mapping indicates
@@ -968,7 +968,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureCapabilities) {
             maybeCaps = qdbus_cast<RequestableChannelClassList>(attributes.value(
-                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES "/capabilities")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES + QLatin1String("/capabilities")));
 
             if (!maybeCaps.isEmpty()) {
                 receiveCapabilities(maybeCaps);
@@ -983,7 +983,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureInfo) {
             maybeInfo = qdbus_cast<ContactInfoFieldList>(attributes.value(
-                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_INFO "/info")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO + QLatin1String("/info")));
 
             if (!maybeInfo.isEmpty()) {
                 receiveInfo(maybeInfo);
@@ -998,7 +998,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureLocation) {
             maybeLocation = qdbus_cast<QVariantMap>(attributes.value(
-                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION "/location")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_LOCATION + QLatin1String("/location")));
 
             if (!maybeLocation.isEmpty()) {
                 receiveLocation(maybeLocation);
@@ -1013,7 +1013,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureSimplePresence) {
             maybePresence = qdbus_cast<SimplePresence>(attributes.value(
-                        QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE "/presence")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE + QLatin1String("/presence")));
 
             if (!maybePresence.status.isEmpty()) {
                 receiveSimplePresence(maybePresence);

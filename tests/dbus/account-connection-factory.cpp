@@ -171,7 +171,7 @@ void TestAccountConnectionFactory::initTestCase()
             NULL);
     QCOMPARE(mConn2->isReady(), false);
 
-    mAccountBusName = QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER);
+    mAccountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
     mAccountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/simple/account");
 }
 

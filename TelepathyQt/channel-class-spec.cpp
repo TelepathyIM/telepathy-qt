@@ -109,9 +109,9 @@ bool ChannelClassSpec::isValid() const
 {
     return mPriv.constData() != 0 &&
         !(qdbus_cast<QString>(
-                    mPriv->props.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")))
+                    mPriv->props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")))
                 .isEmpty()) &&
-        mPriv->props.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"));
+        mPriv->props.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"));
 }
 
 ChannelClassSpec &ChannelClassSpec::operator=(const ChannelClassSpec &other)
@@ -209,7 +209,7 @@ ChannelClassSpec ChannelClassSpec::textChat(const QVariantMap &additionalPropert
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
                 HandleTypeContact);
     }
 
@@ -225,7 +225,7 @@ ChannelClassSpec ChannelClassSpec::textChatroom(const QVariantMap &additionalPro
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
                 HandleTypeRoom);
     }
 
@@ -241,7 +241,7 @@ ChannelClassSpec ChannelClassSpec::unnamedTextChat(const QVariantMap &additional
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
                 HandleTypeNone);
     }
 
@@ -257,7 +257,7 @@ ChannelClassSpec ChannelClassSpec::streamedMediaCall(const QVariantMap &addition
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
                 HandleTypeContact);
     }
 
@@ -273,7 +273,7 @@ ChannelClassSpec ChannelClassSpec::streamedMediaAudioCall(const QVariantMap &add
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
                 HandleTypeContact);
         spec.setStreamedMediaInitialAudioFlag();
     }
@@ -290,7 +290,7 @@ ChannelClassSpec ChannelClassSpec::streamedMediaVideoCall(const QVariantMap &add
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
                 HandleTypeContact);
         spec.setStreamedMediaInitialVideoFlag();
     }
@@ -307,7 +307,7 @@ ChannelClassSpec ChannelClassSpec::streamedMediaVideoCallWithAudio(const QVarian
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
                 HandleTypeContact);
         spec.setStreamedMediaInitialAudioFlag();
         spec.setStreamedMediaInitialVideoFlag();
@@ -325,7 +325,7 @@ ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaCall(const QVariantMap &a
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
                 HandleTypeNone);
     }
 
@@ -341,7 +341,7 @@ ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaAudioCall(const QVariantM
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
                 HandleTypeNone);
         spec.setStreamedMediaInitialAudioFlag();
     }
@@ -358,7 +358,7 @@ ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaVideoCall(const QVariantM
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
                 HandleTypeNone);
         spec.setStreamedMediaInitialVideoFlag();
     }
@@ -375,7 +375,7 @@ ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaVideoCallWithAudio(const 
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA,
                 HandleTypeNone);
         spec.setStreamedMediaInitialAudioFlag();
         spec.setStreamedMediaInitialVideoFlag();
@@ -393,7 +393,7 @@ ChannelClassSpec ChannelClassSpec::roomList(const QVariantMap &additionalPropert
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_ROOM_LIST,
                 HandleTypeNone);
     }
 
@@ -409,7 +409,7 @@ ChannelClassSpec ChannelClassSpec::outgoingFileTransfer(const QVariantMap &addit
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER,
                 HandleTypeContact, true);
     }
 
@@ -425,7 +425,7 @@ ChannelClassSpec ChannelClassSpec::incomingFileTransfer(const QVariantMap &addit
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER,
                 HandleTypeContact, false);
     }
 
@@ -442,13 +442,13 @@ ChannelClassSpec ChannelClassSpec::outgoingStreamTube(const QString &service,
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE,
                 HandleTypeContact, true);
     }
 
     QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
                 service);
     }
 
@@ -465,13 +465,13 @@ ChannelClassSpec ChannelClassSpec::incomingStreamTube(const QString &service,
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE,
                 HandleTypeContact, false);
     }
 
     QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
                 service);
     }
 
@@ -488,13 +488,13 @@ ChannelClassSpec ChannelClassSpec::outgoingRoomStreamTube(const QString &service
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE,
                 HandleTypeRoom, true);
     }
 
     QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
                 service);
     }
 
@@ -511,13 +511,13 @@ ChannelClassSpec ChannelClassSpec::incomingRoomStreamTube(const QString &service
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE,
                 HandleTypeRoom, false);
     }
 
     QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
                 service);
     }
 
@@ -533,7 +533,7 @@ ChannelClassSpec ChannelClassSpec::contactSearch(const QVariantMap &additionalPr
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH),
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH,
                 HandleTypeNone);
     }
 

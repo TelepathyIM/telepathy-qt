@@ -168,7 +168,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     if (!isReady(IncomingStreamTubeChannel::FeatureCore)) {
         warning() << "IncomingStreamTubeChannel::FeatureCore must be ready before "
                 "calling acceptTubeAsTcpSocket";
-        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingStreamTubeConnection(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 IncomingStreamTubeChannelPtr(this));
     }
@@ -176,7 +176,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     // The tube must be in local pending state
     if (state() != TubeChannelStateLocalPending) {
         warning() << "You can accept tubes only when they are in LocalPending state";
-        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingStreamTubeConnection(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 IncomingStreamTubeChannelPtr(this));
     }
@@ -189,7 +189,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         // We need to have a valid QHostAddress AND Port.
         if (allowedAddress.isNull() || allowedPort == 0) {
             warning() << "You have to set a valid allowed address+port to use Port access control";
-            return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+            return new PendingStreamTubeConnection(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("The supplied allowed address and/or port was invalid"),
                     IncomingStreamTubeChannelPtr(this));
         }
@@ -215,7 +215,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
             // We're handling an IPv4/IPv6 socket only
             warning() << "acceptTubeAsTcpSocket can be called only with a QHostAddress "
                     "representing an IPv4 or IPv6 address";
-            return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+            return new PendingStreamTubeConnection(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("Invalid host given"),
                     IncomingStreamTubeChannelPtr(this));
         }
@@ -247,7 +247,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
             !supportsIPv6SocketsWithSpecifiedAddress())) {
         warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
-        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingStreamTubeConnection(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("The requested address type/access control "
                               "combination is not supported"),
                 IncomingStreamTubeChannelPtr(this));
@@ -327,7 +327,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     if (!isReady(IncomingStreamTubeChannel::FeatureCore)) {
         warning() << "IncomingStreamTubeChannel::FeatureCore must be ready before "
                 "calling acceptTubeAsUnixSocket";
-        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingStreamTubeConnection(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 IncomingStreamTubeChannelPtr(this));
     }
@@ -335,7 +335,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     // The tube must be in local pending state
     if (state() != TubeChannelStateLocalPending) {
         warning() << "You can accept tubes only when they are in LocalPending state";
-        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+        return new PendingStreamTubeConnection(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 IncomingStreamTubeChannelPtr(this));
     }
@@ -361,7 +361,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
            !supportsAbstractUnixSocketsWithCredentials())) {
         warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
-        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+        return new PendingStreamTubeConnection(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("The requested address type/access control "
                         "combination is not supported"),
                 IncomingStreamTubeChannelPtr(this));

@@ -476,7 +476,7 @@ void TestClient::initTestCase()
 
     // Fake ChannelRequest
 
-    mChannelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    mChannelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
     mChannelRequestPath = QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/Request1");
 
     QObject *request = new QObject(this);
@@ -630,7 +630,7 @@ void TestClient::testRequests()
                                   const QString &)),
             SLOT(expectSignalEmission()));
     handlerRequestsIface->RemoveRequest(QDBusObjectPath(mChannelRequestPath),
-            QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+            QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
             QLatin1String("Not available"));
     if (!client->mRemoveRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
@@ -638,7 +638,7 @@ void TestClient::testRequests()
     QCOMPARE(client->mRemoveRequestRequest->objectPath(),
              mChannelRequestPath);
     QCOMPARE(client->mRemoveRequestErrorName,
-             QString(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)));
+             QString(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE)));
     QCOMPARE(client->mRemoveRequestErrorMessage,
              QString(QLatin1String("Not available")));
 }
@@ -662,9 +662,8 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     ObjectImmutablePropertiesMap reqPropsMap;
     QVariantMap channelReqImmutableProps;
     channelReqImmutableProps.insert(
-            QLatin1String(
-                TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interface.DomainSpecific.IntegerProp"), 3);
-    channelReqImmutableProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"),
+                TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Interface.DomainSpecific.IntegerProp"), 3);
+    channelReqImmutableProps.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Account"),
             qVariantFromValue(QDBusObjectPath(mAccount->objectPath())));
     reqPropsMap.insert(QDBusObjectPath(mChannelRequestPath), channelReqImmutableProps);
     observerInfo.insert(QLatin1String("request-properties"), qVariantFromValue(reqPropsMap));
@@ -682,11 +681,9 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     QVERIFY(client->mObserveChannelsDispatchOperation.isNull());
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->immutableProperties().contains(
-            QLatin1String(
-                TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interface.DomainSpecific.IntegerProp")), true);
+                TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Interface.DomainSpecific.IntegerProp")), true);
     QCOMPARE(qdbus_cast<int>(client->mObserveChannelsRequestsSatisfied.first()->immutableProperties().value(
-            QLatin1String(
-                TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interface.DomainSpecific.IntegerProp"))), 3);
+                TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Interface.DomainSpecific.IntegerProp"))), 3);
 }
 
 void TestClient::testObserveChannels()
@@ -715,13 +712,13 @@ void TestClient::testAddDispatchOperation()
 
     QVariantMap dispatchOperationProperties;
     dispatchOperationProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
+            TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Connection"),
             QVariant::fromValue(QDBusObjectPath(mConn->objectPath())));
     dispatchOperationProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
+            TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Account"),
             QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
     dispatchOperationProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".PossibleHandlers"),
+            TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".PossibleHandlers"),
             QVariant::fromValue(ObjectPathList() << QDBusObjectPath(mClientObject1Path)
                 << QDBusObjectPath(mClientObject2Path)));
 
