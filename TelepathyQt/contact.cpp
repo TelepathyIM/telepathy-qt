@@ -1260,13 +1260,6 @@ void Contact::setRemovedFromGroup(const QString &group)
  */
 
 /**
- * \fn void Contact::subscriptionStateChanged(Tp::Contact::PresenceState state,
- *          const Tp::Channel::GroupMemberChangeDetails &details)
- *
- * \deprecated Use subscriptionStateChanged(Tp::Contact::PresenceState state) instead.
- */
-
-/**
  * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state, const QString &message)
  *
  * Emitted when the value of publishState() changes.
@@ -1276,26 +1269,12 @@ void Contact::setRemovedFromGroup(const QString &group)
  */
 
 /**
- * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state,
- *          const Tp::Channel::GroupMemberChangeDetails &details)
- *
- * \deprecated Use publishStateChanged(Tp::Contact::PresenceState state, const QString &message) instead.
- */
-
-/**
  * \fn void Contact::blockStatusChanged(bool blocked)
  *
  * Emitted when the value of isBlocked() changes.
  *
  * \param status The new block status of this contact.
  * \sa isBlocked()
- */
-
-/**
- * \fn void Contact::blockStatusChanged(bool blocked,
- *          const Tp::Channel::GroupMemberChangeDetails &details)
- *
- * \deprecated Use blockStatusChanged(bool blocked) instead.
  */
 
 /**
