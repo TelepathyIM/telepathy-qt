@@ -84,7 +84,6 @@ public:
 
 Q_SIGNALS:
     void failed(const QString &errorName, const QString &errorMessage);
-    void succeeded(); // TODO API/ABI break: remove
     void succeeded(const Tp::ChannelPtr &channel);
 
 protected:
@@ -99,10 +98,6 @@ protected:
             const QString &objectPath, const QVariantMap &immutableProperties);
 
     Client::ChannelRequestInterface *baseInterface() const;
-
-protected:
-    // TODO: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);

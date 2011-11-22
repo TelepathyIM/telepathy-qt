@@ -624,7 +624,6 @@ void ChannelRequest::onLegacySucceeded()
         return;
     }
 
-    emit succeeded(); // API/ABI break TODO: don't
     emit succeeded(ChannelPtr());
 }
 
@@ -667,7 +666,6 @@ void ChannelRequest::onChanBuilt(Tp::PendingOperation *op)
         mPriv->chan.reset();
     }
 
-    emit succeeded(); // API/ABI break TODO: don't
     emit succeeded(mPriv->chan);
 }
 
@@ -681,12 +679,6 @@ void ChannelRequest::onChanBuilt(Tp::PendingOperation *op)
  * \param errorName The name of a D-Bus error.
  * \param errorMessage The error message.
  * \sa succeeded()
- */
-
-/**
- * \fn void ChannelRequest::succeeded()
- *
- * \deprecated Use ChannelRequest::succeeded(const ChannelPtr &) instead.
  */
 
 /**
@@ -706,13 +698,6 @@ void ChannelRequest::onChanBuilt(Tp::PendingOperation *op)
  * \param channel Pointer to a proxy for the resulting channel, if the Channel Dispatcher reported it.
  * \sa failed()
  */
-
-void ChannelRequest::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(succeeded())) == 0) {
-        warning() << "Connecting to deprecated signal ChannelRequest::succeeded()";
-    }
-}
 
 /**
  * \class ChannelRequestHints
