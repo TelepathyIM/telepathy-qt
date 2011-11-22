@@ -1478,26 +1478,6 @@ void ContactManager::resetRoster()
  */
 
 /**
- * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
- *          const QString &message)
- *
- * \deprecated Turned out this didn't make sense at all. There can be multiple contacts, but this
- *             signal carries just a single message.
- *             Use presencePublicationRequested(const Tp::Contacts &contacts) instead,
- *             and extract the messages from the individual Tp::Contact objects.
- */
-
-/**
- * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
- *          const Tp::Channel::GroupMemberChangeDetails &details)
- *
- * \deprecated Turned out this didn't make sense at all. There can be multiple contacts, but this
- *             signal carries just a single details.
- *             Use presencePublicationRequested(const Tp::Contacts &contacts) instead,
- *             and extract the details (message) from the individual Tp::Contact objects.
- */
-
-/**
  * \fn void ContactManager::groupAdded(const QString &group)
  *
  * Emitted when a new contact list group is created.
