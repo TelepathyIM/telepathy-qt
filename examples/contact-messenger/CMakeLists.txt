@@ -8,7 +8,8 @@ tpqt_generate_mocs(${messenger-sender_MOC_SRCS})
 
 add_executable(messenger-sender ${messenger-sender_SRCS} ${messenger-sender_MOC_SRCS})
 target_link_libraries(messenger-sender
-    ${QT_QTDBUS_LIBRARY}
-    ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
+    ${QT_QTDBUS_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTXML_LIBRARY}
     telepathy-qt)
