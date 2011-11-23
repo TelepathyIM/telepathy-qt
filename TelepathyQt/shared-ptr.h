@@ -65,7 +65,7 @@ public:
     inline SharedPtr(const SharedPtr<T> &o) : d(o.d) { if (d) { d->ref(); } }
     explicit inline SharedPtr(const QWeakPointer<T> &o)
     {
-        if (o.data() && o.data()->strongref > 0) {
+        if (o.data() && o.data()->strongref.fetchAndAddOrdered(0) > 0) {
             d = static_cast<T*>(o.data());
             d->ref();
         } else {
