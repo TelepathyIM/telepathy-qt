@@ -2,6 +2,7 @@
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Types>
 
+#include <QApplication>
 #include <QtGui>
 
 #include "accounts-window.h"
