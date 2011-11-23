@@ -21,10 +21,10 @@
 # function TPQT_CREATE_MOC_COMMAND_TARGET_DEPS(inputfile outputfile moc_flags moc_options target_dependencies ...)
 #          This function behaves exactly like qt_create_moc_command, but creates a custom target for the
 #          moc file generation, allowing to specify a list of targets the generated moc target will depend on.
-#          Just like qt4_create_moc_command, it is an internal macro and it's not meant to be used explicitely.
+#          Just like qt_create_moc_command, it is an internal macro and it's not meant to be used explicitely.
 #
 # function TPQT_GENERATE_MOC_I(inputfile outputfile)
-#          This function behaves exactly like qt4_generate_moc, but it generates moc files with the -i option,
+#          This function behaves exactly like qt_generate_moc, but it generates moc files with the -i option,
 #          which disables the generation of an #include directive. This macro has to be used always when building
 #          Tp-Qt internals due to the internal header files restrictions.
 #
@@ -160,15 +160,15 @@ ENDFUNCTION (TPQT_CREATE_MOC_COMMAND_TARGET_DEPS)
 
 # add the -i option to QT_GENERATE_MOC
 function(TPQT_GENERATE_MOC_I infile outfile)
-    qt4_get_moc_flags(moc_flags)
+    qt_get_moc_flags(moc_flags)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
-    qt4_create_moc_command(${abs_infile} ${outfile} "${moc_flags}" "-i")
+    qt_create_moc_command(${abs_infile} ${outfile} "${moc_flags}" "-i")
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
 endfunction(TPQT_GENERATE_MOC_I)
 
 # same as tpqt_generate_moc_i, but lets the caller specify a list of targets which the mocs should depend on
 function(TPQT_GENERATE_MOC_I_TARGET_DEPS infile outfile)
-    qt4_get_moc_flags(moc_flags)
+    qt_get_moc_flags(moc_flags)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
     tpqt_create_moc_command_target_deps(${abs_infile} ${outfile} "${moc_flags}" "-i" ${ARGN})
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
@@ -180,7 +180,7 @@ function(tpqt_generate_mocs)
     foreach(moc_src ${ARGN})
         string(REPLACE ".h" ".moc.hpp" generated_file ${moc_src})
         tpqt_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
-        macro_add_file_dependencies(${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
+        set_property(SOURCE ${moc_src} APPEND PROPERTY OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
     endforeach(moc_src ${ARGN})
 endfunction(tpqt_generate_mocs)
 
@@ -354,7 +354,7 @@ endfunction(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _N
 macro(tpqt_add_generic_unit_test _fancyName _name)
     tpqt_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
-    target_link_libraries(test-${_name} ${QT_QTDBUS_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt tp-qt-tests ${ARGN})
+    target_link_libraries(test-${_name} ${QT_QTCORE_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt tp-qt-tests ${ARGN})
     add_test(${_fancyName} ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
     list(APPEND _telepathy_qt_test_cases test-${_name})
 
@@ -365,7 +365,7 @@ endmacro(tpqt_add_generic_unit_test _fancyName _name)
 macro(tpqt_add_dbus_unit_test _fancyName _name)
     tpqt_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
-    target_link_libraries(test-${_name} ${QT_QTDBUS_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt tp-qt-tests ${ARGN})
+    target_link_libraries(test-${_name} ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt tp-qt-tests ${ARGN})
     set(with_session_bus ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
     add_test(${_fancyName} ${SH} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
     list(APPEND _telepathy_qt_test_cases test-${_name})
