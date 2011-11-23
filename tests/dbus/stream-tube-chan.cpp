@@ -515,7 +515,11 @@ void TestStreamTubeChan::testAcceptSuccess()
                 port = g_inet_socket_address_get_port(G_INET_SOCKET_ADDRESS(localAddr));
                 g_object_unref(localAddr);
             } else {
+#if QT_VERSION >= 0x050000
+                addr = QHostAddress::AnyIPv4;
+#else
                 addr = QHostAddress::Any;
+#endif
                 port = 0;
             }
 
@@ -672,7 +676,11 @@ void TestStreamTubeChan::testOfferSuccess()
                         SLOT(onOfferFinished(Tp::PendingOperation *))));
         } else {
             tcpServer = new QTcpServer(this);
-            tcpServer->listen();
+#if QT_VERSION >= 0x050000
+            tcpServer->listen(QHostAddress::AnyIPv4, 0);
+#else
+            tcpServer->listen(QHostAddress::Any, 0);
+#endif
             connect(tcpServer, SIGNAL(newConnection()), SLOT(onNewSocketConnection()));
 
             QVERIFY(connect(chan->offerTcpSocket(tcpServer, offerParameters),

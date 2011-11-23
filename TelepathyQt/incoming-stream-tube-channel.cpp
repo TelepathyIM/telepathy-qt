@@ -148,10 +148,12 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * socket. Connections with other source addresses won't be accepted. The accessors
  * supportsIPv4SocketsWithSpecifiedAddress() and supportsIPv6SocketsWithSpecifiedAddress() can be
  * used to verify that the connection manager supports this kind of access control; otherwise, this
- * method will always fail unless QHostAddress::Any or QHostAddress::AnyIPv6 is passed, in which
- * case the behavior is identical to the always supported acceptTubeAsTcpSocket() overload.
+ * method will always fail unless QHostAddress::Any (QHostAddress::AnyIPv4 if using Qt5) or
+ * QHostAddress::AnyIPv6 is passed, in which case the behavior is identical to the always supported
+ * acceptTubeAsTcpSocket() overload.
  *
- * Note that when using QHostAddress::Any or QHostAddress::AnyIPv6, \a allowedPort is ignored.
+ * Note that when using QHostAddress::Any (QHostAddress::AnyIPv4 if using Qt5) or
+ * QHostAddress::AnyIPv6, \a allowedPort is ignored.
  *
  * This method requires IncomingStreamTubeChannel::FeatureCore to be ready.
  *
@@ -185,7 +187,11 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     SocketAccessControl accessControl;
 
     // Now, let's check what we need to do with accessControl. There is just one special case, Port.
+#if QT_VERSION >= 0x050000
+    if (allowedAddress != QHostAddress::AnyIPv4 && allowedAddress != QHostAddress::AnyIPv6) {
+#else
     if (allowedAddress != QHostAddress::Any && allowedAddress != QHostAddress::AnyIPv6) {
+#endif
         // We need to have a valid QHostAddress AND Port.
         if (allowedAddress.isNull() || allowedPort == 0) {
             warning() << "You have to set a valid allowed address+port to use Port access control";
@@ -288,7 +294,11 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
  */
 PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
 {
+#if QT_VERSION >= 0x050000
+    return acceptTubeAsTcpSocket(QHostAddress::AnyIPv4, 0);
+#else
     return acceptTubeAsTcpSocket(QHostAddress::Any, 0);
+#endif
 }
 
 /**

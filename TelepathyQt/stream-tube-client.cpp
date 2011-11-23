@@ -64,7 +64,7 @@ namespace Tp
  * Return the source address from which connections will be allowed to the given \a tube once it has
  * been accepted.
  *
- * Returning the pair (QHostAddress::Any, 0) makes the protocol backend allow connections from any
+ * Returning the pair (QHostAddress::Any, 0) (QHostAddress::AnyIPv4 if using Qt5) makes the protocol backend allow connections from any
  * address on the local computer. This can be used on a tube-by-tube basis if for some tubes its
  * known that multiple connections need to be made, so a single source address doesn't suffice.
  *
@@ -257,8 +257,13 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
                  !tube->supportsIPv6SocketsWithSpecifiedAddress())) {
             debug() << "StreamTubeClient falling back to Localhost AC for tube" <<
                 tube->objectPath();
+#if QT_VERSION >= 0x050000
+            mSourceAddress = sourceAddress.protocol() == QAbstractSocket::IPv4Protocol ?
+                QHostAddress::AnyIPv4 : QHostAddress::AnyIPv6;
+#else
             mSourceAddress = sourceAddress.protocol() == QAbstractSocket::IPv4Protocol ?
                 QHostAddress::Any : QHostAddress::AnyIPv6;
+#endif
             mSourcePort = 0;
         }
     }
@@ -664,13 +669,13 @@ bool StreamTubeClient::acceptsAsUnix() const
  * endpoint to those from that source address.
  *
  * However, if the protocol backend doesn't actually support source address based access control,
- * tubeAcceptedAsTcp() will be emitted with QHostAddress::Any as the allowed source address to
- * signal that it doesn't matter where we connect from, but more importantly, that anybody else on
- * the same host could have, and can, connect to the tube. The tube can be closed at this point if
- * this would be unacceptable security-wise. To totally prevent the tube from being accepted in the
- * first place, one can close it already when tubeOffered() is emitted for it - support for the
- * needed security mechanism can be queried using its supportsIPv4SocketsWithSpecifiedAddress()
- * accessor.
+ * tubeAcceptedAsTcp() will be emitted with QHostAddress::Any (QHostAddress::AnyIPv4 if using Qt5)
+ * as the allowed source address to signal that it doesn't matter where we connect from, but more
+ * importantly, that anybody else on the same host could have, and can, connect to the tube.
+ * The tube can be closed at this point if this would be unacceptable security-wise.
+ * To totally prevent the tube from being accepted in the first place, one can close it already when
+ * tubeOffered() is emitted for it - support for the needed security mechanism can be queried using
+ * its supportsIPv4SocketsWithSpecifiedAddress() accessor.
  *
  * The handler is registered on the bus at the latest when this method or setToAcceptAsUnix() is
  * called for the first time, so one should check the return value of isRegistered() at that point
@@ -819,8 +824,13 @@ void StreamTubeClient::onInvokedForTube(
     TubeWrapper *wrapper = 0;
 
     if (mPriv->acceptsAsTcp) {
+#if QT_VERSION >= 0x050000
+        QPair<QHostAddress, quint16> srcAddr =
+            qMakePair(QHostAddress(QHostAddress::AnyIPv4), quint16(0));
+#else
         QPair<QHostAddress, quint16> srcAddr =
             qMakePair(QHostAddress(QHostAddress::Any), quint16(0));
+#endif
 
         if (mPriv->tcpGenerator) {
             srcAddr = mPriv->tcpGenerator->nextSourceAddress(acc, incoming);
@@ -958,8 +968,8 @@ void StreamTubeClient::onConnectionClosed(
  *
  * \param listenAddress The listen address of the local endpoint socket.
  * \param listenPort The listen port of the local endpoint socket.
- * \param sourceAddress The host address allowed to connect to the tube, or QHostAddress::Any if
- * source address based access control is not in use.
+ * \param sourceAddress The host address allowed to connect to the tube, or QHostAddress::Any
+ * (QHostAddress::AnyIPv4 if using Qt5) if source address based access control is not in use.
  * \param sourcePort The port from which connections are allowed to the tube, or 0 if source address
  * based access control is not in use.
  * \param account A pointer to the account object through which the tube was offered.
