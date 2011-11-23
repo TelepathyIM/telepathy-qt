@@ -22,6 +22,7 @@
 #include <TelepathyQt/Debug>
 #include <TelepathyQt/Types>
 
+#include <QApplication>
 #include <QDebug>
 #include <QtGui>
 
