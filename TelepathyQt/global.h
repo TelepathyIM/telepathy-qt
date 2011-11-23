@@ -45,7 +45,7 @@
 
 /**
  * @def TP_QT_DEPRECATED
- * @ingroup TELEPATHY_QT_MACROS
+ * @ingroup macros
  *
  * The TP_QT_DEPRECATED macro can be used to trigger compile-time
  * warnings with newer compilers when deprecated functions are used.
