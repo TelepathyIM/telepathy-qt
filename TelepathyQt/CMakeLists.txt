@@ -646,8 +646,8 @@ endforeach(moc_src ${telepathy_qt_MOC_SRCS})
 target_link_libraries(telepathy-qt
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
-    ${QT_QTNETWORK_LIBRARIES}
-    ${QT_QTXML_LIBRARIES})
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTXML_LIBRARY})
 
 if (ENABLE_COMPILER_COVERAGE)
     target_link_libraries(telepathy-qt gcov)
