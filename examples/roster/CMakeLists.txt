@@ -13,10 +13,12 @@ tpqt_generate_mocs(${roster_MOC_SRCS})
 
 add_executable(roster ${roster_SRCS} ${roster_MOC_SRCS})
 target_link_libraries(roster
+    ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTWIDGETS_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    ${QT_QTCORE_LIBRARY}
     telepathy-qt)
 
 set(telepathy_qt_examples_roster_SRCS
@@ -27,8 +29,10 @@ set(telepathy_qt_examples_roster_SRCS
 
 add_library(telepathy-qt-examples-roster ${telepathy_qt_examples_roster_SRCS})
 target_link_libraries(telepathy-qt-examples-roster
+    ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTWIDGETS_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    ${QT_QTCORE_LIBRARY}
     telepathy-qt)
