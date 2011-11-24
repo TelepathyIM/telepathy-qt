@@ -50,6 +50,17 @@ class TP_QT_EXPORT AbstractClient : public RefCounted
 public:
     AbstractClient();
     virtual ~AbstractClient();
+
+    bool isRegistered() const;
+
+private:
+    friend class ClientRegistrar;
+
+    void setRegistered(bool registered);
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
 };
 
 class TP_QT_EXPORT AbstractClientObserver : public virtual AbstractClient
@@ -277,9 +288,6 @@ public:
 
     virtual ~AbstractClientHandler();
 
-    // FIXME (API/ABI break) Move isRegistered/setRegistered to AbstractClient
-    bool isRegistered() const;
-
     ChannelClassSpecList handlerFilter() const;
 
     Capabilities handlerCapabilities() const;
@@ -305,10 +313,6 @@ protected:
             bool wantsRequestNotification = false);
 
 private:
-    friend class ClientRegistrar;
-
-    void setRegistered(bool registered);
-
     struct Private;
     friend struct Private;
     Private *mPriv;
