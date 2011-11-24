@@ -63,6 +63,7 @@ set(telepathy_qt_SRCS
     key-file.h
     location-info.cpp
     manager-file.cpp
+    manager-file.h
     media-session-handler.cpp
     media-stream-handler.cpp
     message.cpp
@@ -293,8 +294,6 @@ set(telepathy_qt_HEADERS
     IntrospectableInterface
     LocationInfo
     location-info.h
-    ManagerFile
-    manager-file.h
     MediaSessionHandler
     media-session-handler.h
     MediaSessionHandlerInterface

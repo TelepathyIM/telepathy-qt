@@ -23,16 +23,14 @@
 #ifndef _TelepathyQt_manager_file_h_HEADER_GUARD_
 #define _TelepathyQt_manager_file_h_HEADER_GUARD_
 
-#ifndef IN_TP_QT_HEADER
-#error IN_TP_QT_HEADER
-#endif
-
 #include <TelepathyQt/AvatarSpec>
 #include <TelepathyQt/PresenceSpec>
 #include <TelepathyQt/Types>
 
 #include <QMetaType>
 #include <QVariant>
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 namespace Tp
 {
@@ -74,5 +72,7 @@ private:
 }
 
 Q_DECLARE_METATYPE(Tp::ManagerFile);
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif

@@ -31,13 +31,13 @@
 #include "TelepathyQt/_gen/connection-manager-lowlevel.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/manager-file.h"
 
 #include <TelepathyQt/ConnectionCapabilities>
 #include <TelepathyQt/DBus>
 #include <TelepathyQt/PendingConnection>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/Constants>
-#include <TelepathyQt/ManagerFile>
 #include <TelepathyQt/Types>
 
 #include <QDBusConnectionInterface>

@@ -2,7 +2,7 @@
 
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Debug>
-#include <TelepathyQt/ManagerFile>
+#include "TelepathyQt/manager-file.h"
 
 using namespace Tp;
 
