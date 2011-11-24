@@ -2052,17 +2052,6 @@ bool Account::requestsSucceedWithChannel() const
 }
 
 /**
- * Same as \c ensureTextChat(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureTextChat(
-        const QString &contactIdentifier,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureTextChat(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to ensure that a text channel with the given
  * contact \a contactIdentifier exists, creating it if necessary.
  *
@@ -2092,17 +2081,6 @@ PendingChannelRequest *Account::ensureTextChat(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
-}
-
-/**
- * Same as \c ensureTextChat(contact, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureTextChat(
-        const ContactPtr &contact,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureTextChat(contact, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2138,17 +2116,6 @@ PendingChannelRequest *Account::ensureTextChat(
 }
 
 /**
- * Same as \c ensureTextChatroom(roomName, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureTextChatroom(
-        const QString &roomName,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureTextChatroom(roomName, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to ensure that a text chat room with the given
  * room name \a roomName exists, creating it if necessary.
  *
@@ -2178,17 +2145,6 @@ PendingChannelRequest *Account::ensureTextChatroom(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
-}
-
-/**
- * Same as \c ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureStreamedMediaCall(
-        const QString &contactIdentifier,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaCall(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2224,17 +2180,6 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
 }
 
 /**
- * Same as \c ensureStreamedMediaCall(contact, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureStreamedMediaCall(
-        const ContactPtr &contact,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaCall(contact, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to ensure that a media channel with the given
  * contact \a contact exists, creating it if necessary.
  *
@@ -2264,17 +2209,6 @@ PendingChannelRequest *Account::ensureStreamedMediaCall(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
-}
-
-/**
- * Same as \c ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
-        const QString &contactIdentifier,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaAudioCall(contactIdentifier, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2313,17 +2247,6 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
 }
 
 /**
- * Same as \c ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
-        const ContactPtr &contact,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaAudioCall(contact, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to ensure that an audio call with the given
  * contact \a contact exists, creating it if necessary.
  *
@@ -2356,18 +2279,6 @@ PendingChannelRequest *Account::ensureStreamedMediaAudioCall(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, false, hints);
-}
-
-/**
- * Same as \c ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
-        const QString &contactIdentifier,
-        bool withAudio,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaVideoCall(contactIdentifier, withAudio, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2409,18 +2320,6 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
 }
 
 /**
- * Same as \c ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
-        const ContactPtr &contact,
-        bool withAudio,
-        QDateTime userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureStreamedMediaVideoCall(contact, withAudio, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to ensure that a video call with the given
  * contact \a contact exists, creating it if necessary.
  *
@@ -2459,18 +2358,6 @@ PendingChannelRequest *Account::ensureStreamedMediaVideoCall(
 }
 
 /**
- * Same as \c createFileTransfer(contactIdentifier, properties, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createFileTransfer(
-        const QString &contactIdentifier,
-        const FileTransferChannelCreationProperties &properties,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createFileTransfer(contactIdentifier, properties, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to create a file transfer channel with the given
  * contact \a contact.
  *
@@ -2505,18 +2392,6 @@ PendingChannelRequest *Account::createFileTransfer(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
-}
-
-/**
- * Same as \c createFileTransfer(contact, properties, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createFileTransfer(
-        const ContactPtr &contact,
-        const FileTransferChannelCreationProperties &properties,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createFileTransfer(contact, properties, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2621,18 +2496,6 @@ PendingChannelRequest *Account::createStreamTube(
 }
 
 /**
- * Same as \c createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createConferenceStreamedMediaCall(
-        const QList<ChannelPtr> &channels,
-        const QStringList &initialInviteeContactsIdentifiers,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createConferenceStreamedMediaCall(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to create a conference media call with the given
  * channels \a channels.
  *
@@ -2665,18 +2528,6 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
-}
-
-/**
- * Same as \c createConferenceStreamedMediaCall(channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createConferenceStreamedMediaCall(
-        const QList<ChannelPtr> &channels,
-        const QList<ContactPtr> &initialInviteeContacts,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createConferenceStreamedMediaCall(channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2714,18 +2565,6 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
 }
 
 /**
- * Same as \c createConferenceTextChat(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createConferenceTextChat(
-        const QList<ChannelPtr> &channels,
-        const QStringList &initialInviteeContactsIdentifiers,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createConferenceTextChat(channels, initialInviteeContactsIdentifiers, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to create a conference text chat with the given
  * channels \a channels.
  *
@@ -2757,18 +2596,6 @@ PendingChannelRequest *Account::createConferenceTextChat(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
-}
-
-/**
- * Same as \c createConferenceTextChat(channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createConferenceTextChat(
-        const QList<ChannelPtr> &channels,
-        const QList<ContactPtr> &initialInviteeContacts,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createConferenceTextChat(channels, initialInviteeContacts, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -2877,18 +2704,6 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
-}
-
-/**
- * Same as \c createContactSearch(server, limit, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createContactSearch(
-        const QString &server,
-        uint limit,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createContactSearch(server, limit, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
@@ -3482,17 +3297,6 @@ PendingChannel *Account::createAndHandleContactSearch(
 }
 
 /**
- * Same as \c createChannel(request, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::createChannel(
-        const QVariantMap &request,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return createChannel(request, userActionTime, preferredHandler, ChannelRequestHints());
-}
-
-/**
  * Start a request to create a channel.
  * This initially just creates a PendingChannelRequest object,
  * which can be used to track the success or failure of the request,
@@ -3523,17 +3327,6 @@ PendingChannelRequest *Account::createChannel(
 {
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
-}
-
-/**
- * Same as \c ensureChannel(request, userActionTime, preferredHandler, ChannelRequestHints())
- */
-PendingChannelRequest *Account::ensureChannel(
-        const QVariantMap &request,
-        const QDateTime &userActionTime,
-        const QString &preferredHandler)
-{
-    return ensureChannel(request, userActionTime, preferredHandler, ChannelRequestHints());
 }
 
 /**
