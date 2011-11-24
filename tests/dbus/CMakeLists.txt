@@ -49,11 +49,18 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt_add_dbus_unit_test(SimpleObserver simple-observer tp-glib-tests)
     tpqt_add_dbus_unit_test(StatefulProxy stateful-proxy tp-glib-tests)
     tpqt_add_dbus_unit_test(StreamedMediaChannel streamed-media-chan tp-glib-tests tp-qt-tests-glib-helpers)
+    # FIXME - Re-enable tube tests once Qt5 QHostAddress bugs are fixed
+if(${QT_VERSION_MAJOR} EQUAL 4)
     tpqt_add_dbus_unit_test(StreamTubeHandlers stream-tube-handlers tp-glib-tests tp-qt-tests-glib-helpers)
+endif(${QT_VERSION_MAJOR} EQUAL 4)
+
     tpqt_add_dbus_unit_test(TextChannel text-chan tp-glib-tests tp-qt-tests-glib-helpers)
 
     if(ENABLE_TP_GLIB_GIO_TESTS)
-        tpqt_add_dbus_unit_test(StreamTubeChannel stream-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
+        # FIXME - Re-enable tube tests once Qt5 QHostAddress bugs are fixed
+        if(${QT_VERSION_MAJOR} EQUAL 4)
+            tpqt_add_dbus_unit_test(StreamTubeChannel stream-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
+        endif(${QT_VERSION_MAJOR} EQUAL 4)
     endif(ENABLE_TP_GLIB_GIO_TESTS)
 endif(ENABLE_TP_GLIB_TESTS)
 
