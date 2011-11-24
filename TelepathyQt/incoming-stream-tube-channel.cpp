@@ -185,15 +185,22 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
 
     QVariant controlParameter;
     SocketAccessControl accessControl;
+    QHostAddress hostAddress = allowedAddress;
+
+#if QT_VERSION >= 0x050000
+    if (hostAddress == QHostAddress(QHostAddress::Any)) {
+        hostAddress = QHostAddress::AnyIPv4;
+    }
+#endif
 
     // Now, let's check what we need to do with accessControl. There is just one special case, Port.
-    if (allowedAddress != QHostAddress::Any &&
+    if (hostAddress != QHostAddress(QHostAddress::Any) &&
 #if QT_VERSION >= 0x050000
-        allowedAddress != QHostAddress::AnyIPv4 &&
+        hostAddress != QHostAddress(QHostAddress::AnyIPv4) &&
 #endif
-        allowedAddress != QHostAddress::AnyIPv6) {
+        hostAddress != QHostAddress(QHostAddress::AnyIPv6)) {
         // We need to have a valid QHostAddress AND Port.
-        if (allowedAddress.isNull() || allowedPort == 0) {
+        if (hostAddress.isNull() || allowedPort == 0) {
             warning() << "You have to set a valid allowed address+port to use Port access control";
             return new PendingStreamTubeConnection(TP_QT_ERROR_INVALID_ARGUMENT,
                     QLatin1String("The supplied allowed address and/or port was invalid"),
@@ -203,17 +210,17 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         accessControl = SocketAccessControlPort;
 
         // IPv4 or IPv6?
-        if (allowedAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+        if (hostAddress.protocol() == QAbstractSocket::IPv4Protocol) {
             // IPv4 case
             SocketAddressIPv4 addr;
-            addr.address = allowedAddress.toString();
+            addr.address = hostAddress.toString();
             addr.port = allowedPort;
 
             controlParameter = QVariant::fromValue(addr);
-        } else if (allowedAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+        } else if (hostAddress.protocol() == QAbstractSocket::IPv6Protocol) {
             // IPv6 case
             SocketAddressIPv6 addr;
-            addr.address = allowedAddress.toString();
+            addr.address = hostAddress.toString();
             addr.port = allowedPort;
 
             controlParameter = QVariant::fromValue(addr);
@@ -233,7 +240,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     }
 
     // Set the correct address type and access control
-    setAddressType(allowedAddress.protocol() == QAbstractSocket::IPv4Protocol ?
+    setAddressType(hostAddress.protocol() == QAbstractSocket::IPv4Protocol ?
             SocketAddressTypeIPv4 :
             SocketAddressTypeIPv6);
     setAccessControl(accessControl);

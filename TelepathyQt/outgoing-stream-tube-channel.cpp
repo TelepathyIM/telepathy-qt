@@ -318,8 +318,15 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
     SocketAccessControl accessControl = SocketAccessControlLocalhost;
     // Check if port is supported
 
+    QHostAddress hostAddress = address;
+#if QT_VERSION >= 0x050000
+    if (hostAddress == QHostAddress(QHostAddress::Any)) {
+        hostAddress = QHostAddress::AnyIPv4;
+    }
+#endif
+
     // In this specific overload, we're handling an IPv4/IPv6 socket
-    if (address.protocol() == QAbstractSocket::IPv4Protocol) {
+    if (hostAddress.protocol() == QAbstractSocket::IPv4Protocol) {
         // IPv4 case
         SocketAccessControl accessControl;
         // Do some heuristics to find out the best access control.We always prefer port for tracking
@@ -340,10 +347,10 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
 
         setAddressType(SocketAddressTypeIPv4);
         setAccessControl(accessControl);
-        setIpAddress(qMakePair<QHostAddress, quint16>(address, port));
+        setIpAddress(qMakePair<QHostAddress, quint16>(hostAddress, port));
 
         SocketAddressIPv4 addr;
-        addr.address = address.toString();
+        addr.address = hostAddress.toString();
         addr.port = port;
 
         PendingVoid *pv = new PendingVoid(
@@ -356,7 +363,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
         PendingOpenTube *op = new PendingOpenTube(pv, parameters,
                 OutgoingStreamTubeChannelPtr(this));
         return op;
-    } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
+    } else if (hostAddress.protocol() == QAbstractSocket::IPv6Protocol) {
         // IPv6 case
         // Do some heuristics to find out the best access control.We always prefer port for tracking
         // connections and source addresses.
@@ -376,10 +383,10 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
 
         setAddressType(SocketAddressTypeIPv6);
         setAccessControl(accessControl);
-        setIpAddress(qMakePair<QHostAddress, quint16>(address, port));
+        setIpAddress(qMakePair<QHostAddress, quint16>(hostAddress, port));
 
         SocketAddressIPv6 addr;
-        addr.address = address.toString();
+        addr.address = hostAddress.toString();
         addr.port = port;
 
         PendingVoid *pv = new PendingVoid(

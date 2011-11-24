@@ -251,15 +251,24 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
         StreamTubeClient *parent)
     : QObject(parent), mAcc(acc), mTube(tube), mSourceAddress(sourceAddress), mSourcePort(sourcePort)
 {
+    QHostAddress hostAddress = sourceAddress;
+
     if (sourcePort != 0) {
-        if ((sourceAddress.protocol() == QAbstractSocket::IPv4Protocol &&
+#if QT_VERSION >= 0x050000
+        if (hostAddress == QHostAddress(QHostAddress::Any) ||
+            hostAddress == QHostAddress(QHostAddress::LocalHost)) {
+            hostAddress = QHostAddress::AnyIPv4;
+        }
+#endif
+
+        if ((hostAddress.protocol() == QAbstractSocket::IPv4Protocol &&
                     !tube->supportsIPv4SocketsWithSpecifiedAddress()) ||
-                (sourceAddress.protocol() == QAbstractSocket::IPv6Protocol &&
+                (hostAddress.protocol() == QAbstractSocket::IPv6Protocol &&
                  !tube->supportsIPv6SocketsWithSpecifiedAddress())) {
             debug() << "StreamTubeClient falling back to Localhost AC for tube" <<
                 tube->objectPath();
             mSourceAddress = sourceAddress.protocol() == QAbstractSocket::IPv4Protocol ?
-                QHostAddress::Any : QHostAddress::AnyIPv6;
+                 QHostAddress::Any : QHostAddress::AnyIPv6;
             mSourcePort = 0;
         }
     }
