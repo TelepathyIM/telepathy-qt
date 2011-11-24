@@ -1470,11 +1470,7 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
     QVERIFY(mOfferedTube->isValid());
     QCOMPARE(mClientTcpAcceptAddr, QHostAddress(QHostAddress::LocalHost));
     QVERIFY(mClientTcpAcceptPort != 0);
-#if QT_VERSION >= 0x050000
-    QCOMPARE(mClientTcpAcceptSrcAddr, QHostAddress(QHostAddress::AnyIPv4));
-#else
     QCOMPARE(mClientTcpAcceptSrcAddr, QHostAddress(QHostAddress::Any));
-#endif
     QCOMPARE(mClientTcpAcceptSrcPort, quint16(0));
     QCOMPARE(mClientTcpAcceptTube, mOfferedTube);
 
@@ -1768,11 +1764,7 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
     QVERIFY(mOfferedTube->isValid());
     QCOMPARE(mClientTcpAcceptAddr, QHostAddress(QHostAddress::LocalHost));
     QVERIFY(mClientTcpAcceptPort != 0);
-#if QT_VERSION >= 0x050000
-    QCOMPARE(mClientTcpAcceptSrcAddr, QHostAddress(QHostAddress::AnyIPv4));
-#else
     QCOMPARE(mClientTcpAcceptSrcAddr, QHostAddress(QHostAddress::Any));
-#endif
     QCOMPARE(mClientTcpAcceptSrcPort, quint16(0));
     QCOMPARE(mClientTcpAcceptTube, mOfferedTube);
 
