@@ -320,7 +320,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
 
     QHostAddress hostAddress = address;
 #if QT_VERSION >= 0x050000
-    if (hostAddress == QHostAddress(QHostAddress::Any)) {
+    if (hostAddress == QHostAddress::Any) {
         hostAddress = QHostAddress::AnyIPv4;
     }
 #endif

@@ -764,13 +764,13 @@ void StreamTubeServer::exportTcpSocket(
         return;
     }
 
-    if (server->serverAddress() == QHostAddress(QHostAddress::Any)
+    if (server->serverAddress() == QHostAddress::Any
 #if QT_VERSION >= 0x050000
-        || server->serverAddress() == QHostAddress(QHostAddress::AnyIPv4)
+        || server->serverAddress() == QHostAddress::AnyIPv4
 #endif
        ) {
         return exportTcpSocket(QHostAddress::LocalHost, server->serverPort(), parameters);
-    } else if (server->serverAddress() == QHostAddress(QHostAddress::AnyIPv6)) {
+    } else if (server->serverAddress() == QHostAddress::AnyIPv6) {
         return exportTcpSocket(QHostAddress::LocalHostIPv6, server->serverPort(), parameters);
     } else {
         return exportTcpSocket(server->serverAddress(), server->serverPort(), parameters);
@@ -827,13 +827,13 @@ void StreamTubeServer::exportTcpSocket(
         return;
     }
 
-    if (server->serverAddress() == QHostAddress(QHostAddress::Any)
+    if (server->serverAddress() == QHostAddress::Any
 #if QT_VERSION >= 0x050000
-        || server->serverAddress() == QHostAddress(QHostAddress::AnyIPv4)
+        || server->serverAddress() == QHostAddress::AnyIPv4
 #endif
        ) {
         return exportTcpSocket(QHostAddress::LocalHost, server->serverPort(), generator);
-    } else if (server->serverAddress() == QHostAddress(QHostAddress::AnyIPv6)) {
+    } else if (server->serverAddress() == QHostAddress::AnyIPv6) {
         return exportTcpSocket(QHostAddress::LocalHostIPv6, server->serverPort(), generator);
     } else {
         return exportTcpSocket(server->serverAddress(), server->serverPort(), generator);

@@ -255,8 +255,8 @@ StreamTubeClient::TubeWrapper::TubeWrapper(
 
     if (sourcePort != 0) {
 #if QT_VERSION >= 0x050000
-        if (hostAddress == QHostAddress(QHostAddress::Any) ||
-            hostAddress == QHostAddress(QHostAddress::LocalHost)) {
+        if (hostAddress == QHostAddress::Any ||
+            hostAddress == QHostAddress::LocalHost) {
             hostAddress = QHostAddress::AnyIPv4;
         }
 #endif
