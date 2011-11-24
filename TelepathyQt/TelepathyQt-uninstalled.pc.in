@@ -3,7 +3,7 @@ exec_prefix=/nonexistent
 abs_top_builddir=${CMAKE_BINARY_DIR}
 abs_top_srcdir=${CMAKE_SOURCE_DIR}
 
-Name: Telepathy-Qt (uninstalled copy)
+Name: TelepathyQt${QT_VERSION_MAJOR} (uninstalled copy)
 Description: Qt utility library for the Telepathy framework
 Version: ${PACKAGE_VERSION}
 Requires.private: QtCore >= ${QT_MIN_VERSION}, QtDBus >= ${QT_MIN_VERSION}, QtNetwork >= ${QT_MIN_VERSION}, QtXml >= ${QT_MIN_VERSION}

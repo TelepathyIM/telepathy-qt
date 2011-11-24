@@ -3,7 +3,7 @@ exec_prefix=${CMAKE_INSTALL_PREFIX}
 libdir=${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}
 includedir=${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}
 
-Name: Telepathy-Qt
+Name: TelepathyQt${QT_VERSION_MAJOR}
 Description: Qt utility library for the Telepathy framework
 Version: ${PACKAGE_VERSION}
 Requires.private: QtCore >= ${QT_MIN_VERSION}, QtDBus >= ${QT_MIN_VERSION}, QtNetwork >= ${QT_MIN_VERSION}, QtXml >= ${QT_MIN_VERSION}
