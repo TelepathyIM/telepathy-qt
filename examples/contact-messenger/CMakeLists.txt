@@ -12,4 +12,4 @@ target_link_libraries(messenger-sender
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    telepathy-qt)
+    telepathy-qt${QT_VERSION_MAJOR})

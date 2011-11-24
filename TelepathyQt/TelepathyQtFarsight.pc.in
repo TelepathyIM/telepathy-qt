@@ -7,5 +7,5 @@ Name: Telepathy-Qt-Farsight
 Description: Qt Telepathy Farsight utility library for the Telepathy framework
 Version: ${PACKAGE_VERSION}
 Requires.private: QtCore >= ${QT_MIN_VERSION}, QtDBus >= ${QT_MIN_VERSION}, telepathy-glib >= 0.7.28, telepathy-farsight >= 0.0.4, TelepathyQt = ${PACKAGE_VERSION}
-Libs: -L${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR} -ltelepathy-qt-farsight
+Libs: -L${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR} -ltelepathy-qt${QT_VERSION_MAJOR}-farsight
 Cflags: -I${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}/telepathy-1.0

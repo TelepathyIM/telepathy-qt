@@ -18,7 +18,7 @@ target_link_libraries(ft-receiver
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    telepathy-qt)
+    telepathy-qt${QT_VERSION_MAJOR})
 
 set(ft-sender_SRCS
     file-sender.cpp
@@ -38,4 +38,4 @@ target_link_libraries(ft-sender
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    telepathy-qt)
+    telepathy-qt${QT_VERSION_MAJOR})

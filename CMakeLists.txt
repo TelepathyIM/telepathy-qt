@@ -43,17 +43,6 @@ set(TP_QT_MINOR_VERSION 8)
 set(TP_QT_MICRO_VERSION 9999)
 set(TP_QT_NANO_VERSION  1)
 
-# This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
-# occurs, and will be used for the SOVERSION of the generated shared libraries.
-set(TP_QT_ABI_VERSION 1)
-# This variable is used for the library's long version. It is generated dynamically, so don't change its
-# value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
-if (${TP_QT_NANO_VERSION} EQUAL 0)
-    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
-else (${TP_QT_NANO_VERSION} EQUAL 0)
-    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
-endif (${TP_QT_NANO_VERSION} EQUAL 0)
-
 set(PACKAGE_NAME telepathy-qt)
 
 if (${TP_QT_NANO_VERSION} EQUAL 0)
@@ -92,13 +81,21 @@ set(QT4_MIN_VERSION "4.8.0")
 set(QT5_MIN_VERSION "5.0.0")
 find_package(Qt REQUIRED)
 
-IF(QT_VERSION_MAJOR MATCHES 4)
-  SET(MIN_QT_VERSION ${QT_MIN_VERSION})
-ELSE(QT_VERSION_MAJOR MATCHES 4)
-  IF(QT_VERSION_MAJOR MATCHES 5)
-    SET(MIN_QT_VERSION "5.0.0")
-  ENDIF(QT_VERSION_MAJOR MATCHES 5)
-ENDIF(QT_VERSION_MAJOR MATCHES 4)
+# This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
+# occurs, and will be used for the SOVERSION of the generated shared libraries.
+if (${QT_VERSION_MAJOR} EQUAL 4)
+    set(TP_QT_ABI_VERSION 2)
+else (${QT_VERSION_MAJOR} EQUAL 4)
+    set(TP_QT_ABI_VERSION 0)
+endif (${QT_VERSION_MAJOR} EQUAL 4)
+
+# This variable is used for the library's long version. It is generated dynamically, so don't change its
+# value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
+if (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
+else (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
+endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)

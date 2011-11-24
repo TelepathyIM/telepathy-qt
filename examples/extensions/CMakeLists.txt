@@ -73,4 +73,4 @@ add_dependencies(example_extensions example-extensions-connection-generation)
 target_link_libraries(example_extensions
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTCORE_LIBRARY}
-    telepathy-qt)
+    telepathy-qt${QT_VERSION_MAJOR})

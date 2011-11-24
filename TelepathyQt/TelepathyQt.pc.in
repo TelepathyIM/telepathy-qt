@@ -7,5 +7,5 @@ Name: Telepathy-Qt
 Description: Qt utility library for the Telepathy framework
 Version: ${PACKAGE_VERSION}
 Requires.private: QtCore >= ${QT_MIN_VERSION}, QtDBus >= ${QT_MIN_VERSION}, QtNetwork >= ${QT_MIN_VERSION}, QtXml >= ${QT_MIN_VERSION}
-Libs: -L${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR} -ltelepathy-qt
+Libs: -L${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR} -ltelepathy-qt${QT_VERSION_MAJOR}
 Cflags: -I${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}/telepathy-1.0

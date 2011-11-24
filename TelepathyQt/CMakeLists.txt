@@ -626,9 +626,9 @@ endif (TARGET doxygen-doc)
 
 # Create the library
 if (ENABLE_COMPILER_COVERAGE)
-    add_library(telepathy-qt STATIC ${telepathy_qt_SRCS})
+    add_library(telepathy-qt${QT_VERSION_MAJOR} STATIC ${telepathy_qt_SRCS})
 else (ENABLE_COMPILER_COVERAGE)
-    add_library(telepathy-qt SHARED ${telepathy_qt_SRCS})
+    add_library(telepathy-qt${QT_VERSION_MAJOR} SHARED ${telepathy_qt_SRCS})
 endif (ENABLE_COMPILER_COVERAGE)
 
 # generate client moc files
@@ -639,22 +639,22 @@ foreach(moc_src ${telepathy_qt_MOC_SRCS})
                                      ${telepathy_qt_generated_specs_mocs})
     list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
     string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
-    add_dependencies(telepathy-qt "moc-${moc_src}")
+    add_dependencies(telepathy-qt${QT_VERSION_MAJOR} "moc-${moc_src}")
 endforeach(moc_src ${telepathy_qt_MOC_SRCS})
 
 # Link
-target_link_libraries(telepathy-qt
+target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTXML_LIBRARY})
 
 if (ENABLE_COMPILER_COVERAGE)
-    target_link_libraries(telepathy-qt gcov)
+    target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} gcov)
 endif (ENABLE_COMPILER_COVERAGE)
 
 # Set the correct version number
-set_target_properties(telepathy-qt PROPERTIES
+set_target_properties(telepathy-qt${QT_VERSION_MAJOR} PROPERTIES
                                     SOVERSION ${TP_QT_ABI_VERSION}
                                     VERSION ${TP_QT_LIBRARY_VERSION})
 
@@ -665,10 +665,10 @@ install(FILES ${telepathy_qt_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/tel
 
 # Install the library - watch out for the correct components
 if (WIN32)
-    install(TARGETS telepathy-qt RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+    install(TARGETS telepathy-qt${QT_VERSION_MAJOR} RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
                                   ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
 else (WIN32)
-    install(TARGETS telepathy-qt LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+    install(TARGETS telepathy-qt${QT_VERSION_MAJOR} LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
                                   ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
 endif (WIN32)
 

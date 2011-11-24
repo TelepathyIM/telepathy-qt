@@ -20,29 +20,29 @@ if(FARSIGHT_COMPONENTS_FOUND)
 
     # Create the library
     if (ENABLE_COMPILER_COVERAGE)
-        add_library(telepathy-qt-farsight STATIC ${telepathy_qt_farsight_SRCS})
+        add_library(telepathy-qt-farsight${QT_VERSION_MAJOR} STATIC ${telepathy_qt_farsight_SRCS})
     else (ENABLE_COMPILER_COVERAGE)
-        add_library(telepathy-qt-farsight SHARED ${telepathy_qt_farsight_SRCS})
+        add_library(telepathy-qt-farsight${QT_VERSION_MAJOR} SHARED ${telepathy_qt_farsight_SRCS})
     endif (ENABLE_COMPILER_COVERAGE)
     # Link
-    target_link_libraries(telepathy-qt-farsight
+    target_link_libraries(telepathy-qt-farsight${QT_VERSION_MAJOR}
         ${QT_QTDBUS_LIBRARY}
         ${QT_QTCORE_LIBRARY}
         ${TELEPATHY_FARSIGHT_LIBRARIES}
         ${GSTREAMER_INTERFACE_LIBRARY}
-        telepathy-qt)
+        telepathy-qt${QT_VERSION_MAJOR})
 
     # Set the correct version number
-    set_target_properties(telepathy-qt-farsight PROPERTIES
+    set_target_properties(telepathy-qt-farsight${QT_VERSION_MAJOR} PROPERTIES
                                                  SOVERSION ${TP_QT_ABI_VERSION}
                                                  VERSION ${TP_QT_LIBRARY_VERSION})
 
     # Install the library - watch out for the correct components
     if (WIN32)
-        install(TARGETS telepathy-qt-farsight RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight
+        install(TARGETS telepathy-qt-farsight${QT_VERSION_MAJOR} RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight
                                                ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight_headers)
     else (WIN32)
-        install(TARGETS telepathy-qt-farsight LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight
+        install(TARGETS telepathy-qt-farsight${QT_VERSION_MAJOR} LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight
                                                ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight_headers)
     endif (WIN32)
 

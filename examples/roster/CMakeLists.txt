@@ -19,7 +19,7 @@ target_link_libraries(roster
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTWIDGETS_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    telepathy-qt)
+    telepathy-qt${QT_VERSION_MAJOR})
 
 set(telepathy_qt_examples_roster_SRCS
     roster-item.cpp
@@ -35,4 +35,4 @@ target_link_libraries(telepathy-qt-examples-roster
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTWIDGETS_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    telepathy-qt)
+    telepathy-qt${QT_VERSION_MAJOR})

@@ -19,4 +19,4 @@ target_link_libraries(accounts
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTWIDGETS_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    telepathy-qt)
+    telepathy-qt${QT_VERSION_MAJOR})
