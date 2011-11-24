@@ -148,11 +148,11 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * socket. Connections with other source addresses won't be accepted. The accessors
  * supportsIPv4SocketsWithSpecifiedAddress() and supportsIPv6SocketsWithSpecifiedAddress() can be
  * used to verify that the connection manager supports this kind of access control; otherwise, this
- * method will always fail unless QHostAddress::Any (also QHostAddress::AnyIPv4 if using Qt5) or
+ * method will always fail unless QHostAddress::Any (or QHostAddress::AnyIPv4 in Qt5) or
  * QHostAddress::AnyIPv6 is passed, in which case the behavior is identical to the always supported
  * acceptTubeAsTcpSocket() overload.
  *
- * Note that when using QHostAddress::Any (also QHostAddress::AnyIPv4 if using Qt5) or
+ * Note that when using QHostAddress::Any (or QHostAddress::AnyIPv4 in Qt5) or
  * QHostAddress::AnyIPv6, \a allowedPort is ignored.
  *
  * This method requires IncomingStreamTubeChannel::FeatureCore to be ready.
