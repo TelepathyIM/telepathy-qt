@@ -76,8 +76,8 @@ include(MacroLogFeature)
 # external dependencies
 
 # Required dependencies
-# Find qt4 version >= 4.8 or qt5 >= 5.0.0
-set(QT4_MIN_VERSION "4.8.0")
+# Find qt4 version >= 4.6 or qt5 >= 5.0.0
+set(QT4_MIN_VERSION "4.6.0")
 set(QT5_MIN_VERSION "5.0.0")
 find_package(Qt REQUIRED)
 
