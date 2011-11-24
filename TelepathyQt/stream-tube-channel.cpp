@@ -537,15 +537,15 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
  * \return The list of active connection ids.
  * \sa newConnection(), connectionClosed()
  */
-UIntList StreamTubeChannel::connections() const
+QSet<uint> StreamTubeChannel::connections() const
 {
     if (!isReady(FeatureConnectionMonitoring)) {
         warning() << "StreamTubeChannel::connections() used with "
                 "FeatureConnectionMonitoring not ready";
-        return UIntList();
+        return QSet<uint>();
     }
 
-    return mPriv->connections.toList();
+    return mPriv->connections;
 }
 
 /**

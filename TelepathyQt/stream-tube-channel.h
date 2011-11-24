@@ -61,8 +61,7 @@ public:
     bool supportsAbstractUnixSocketsOnLocalhost() const;
     bool supportsAbstractUnixSocketsWithCredentials() const;
 
-    // API/ABI break TODO: return QSet<uint> instead
-    UIntList connections() const;
+    QSet<uint> connections() const;
 
     SocketAddressType addressType() const;
 
