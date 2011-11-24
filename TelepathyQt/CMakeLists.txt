@@ -60,6 +60,7 @@ set(telepathy_qt_SRCS
     incoming-file-transfer-channel.cpp
     incoming-stream-tube-channel.cpp
     key-file.cpp
+    key-file.h
     location-info.cpp
     manager-file.cpp
     media-session-handler.cpp
@@ -290,8 +291,6 @@ set(telepathy_qt_HEADERS
     IncomingStreamTubeChannel
     incoming-stream-tube-channel.h
     IntrospectableInterface
-    KeyFile
-    key-file.h
     LocationInfo
     location-info.h
     ManagerFile

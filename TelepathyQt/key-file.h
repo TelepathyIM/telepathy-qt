@@ -23,10 +23,6 @@
 #ifndef _TelepathyQt_key_file_h_HEADER_GUARD_
 #define _TelepathyQt_key_file_h_HEADER_GUARD_
 
-#ifndef IN_TP_QT_HEADER
-#error IN_TP_QT_HEADER
-#endif
-
 #include <TelepathyQt/Global>
 
 #include <QMetaType>
@@ -34,6 +30,8 @@
 
 class QString;
 class QStringList;
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 namespace Tp
 {
@@ -87,5 +85,7 @@ private:
 }
 
 Q_DECLARE_METATYPE(Tp::KeyFile);
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif

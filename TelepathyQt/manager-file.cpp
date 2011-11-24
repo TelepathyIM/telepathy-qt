@@ -23,9 +23,9 @@
 #include <TelepathyQt/ManagerFile>
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/key-file.h"
 
 #include <TelepathyQt/Constants>
-#include <TelepathyQt/KeyFile>
 
 #include <QtCore/QDir>
 #include <QtCore/QHash>
