@@ -2364,12 +2364,15 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
  * \return A set of pointers to the Contact objects.
  * \sa groupLocalPendingContacts(), groupRemotePendingContacts()
  */
-Contacts Channel::groupContacts() const
+Contacts Channel::groupContacts(bool includeSelfContact) const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupMembers() used channel not ready";
     }
 
+    if (!includeSelfContact) {
+        return mPriv->groupContacts.values().toSet() - Contacts() << groupSelfContact();
+    }
     return mPriv->groupContacts.values().toSet();
 }
 
@@ -2384,7 +2387,7 @@ Contacts Channel::groupContacts() const
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupRemotePendingContacts()
  */
-Contacts Channel::groupLocalPendingContacts() const
+Contacts Channel::groupLocalPendingContacts(bool includeSelfContact) const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupLocalPendingContacts() used channel not ready";
@@ -2392,6 +2395,9 @@ Contacts Channel::groupLocalPendingContacts() const
         warning() << "Channel::groupLocalPendingContacts() used with no group interface";
     }
 
+    if (!includeSelfContact) {
+        return mPriv->groupLocalPendingContacts.values().toSet() - Contacts() << groupSelfContact();
+    }
     return mPriv->groupLocalPendingContacts.values().toSet();
 }
 
@@ -2406,7 +2412,7 @@ Contacts Channel::groupLocalPendingContacts() const
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupLocalPendingContacts()
  */
-Contacts Channel::groupRemotePendingContacts() const
+Contacts Channel::groupRemotePendingContacts(bool includeSelfContact) const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupRemotePendingContacts() used channel not ready";
@@ -2415,6 +2421,9 @@ Contacts Channel::groupRemotePendingContacts() const
             "group interface";
     }
 
+    if (!includeSelfContact) {
+        return mPriv->groupRemotePendingContacts.values().toSet() - Contacts() << groupSelfContact();
+    }
     return mPriv->groupRemotePendingContacts.values().toSet();
 }
 

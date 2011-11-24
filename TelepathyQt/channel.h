@@ -98,13 +98,9 @@ public:
             const QString &message = QString(),
             ChannelGroupChangeReason reason = ChannelGroupChangeReasonNone);
 
-    /**
-     * TODO: have parameters on these like
-     * Contacts groupContacts(bool includeSelfContact = true);
-     */
-    Contacts groupContacts() const;
-    Contacts groupLocalPendingContacts() const;
-    Contacts groupRemotePendingContacts() const;
+    Contacts groupContacts(bool includeSelfContact = true) const;
+    Contacts groupLocalPendingContacts(bool includeSelfContact = true) const;
+    Contacts groupRemotePendingContacts(bool includeSelfContact = true) const;
 
     class GroupMemberChangeDetails
     {
