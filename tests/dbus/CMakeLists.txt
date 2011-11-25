@@ -50,6 +50,8 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt_add_dbus_unit_test(StatefulProxy stateful-proxy tp-glib-tests)
     tpqt_add_dbus_unit_test(StreamedMediaChannel streamed-media-chan tp-glib-tests tp-qt-tests-glib-helpers)
     # FIXME - Re-enable tube tests once Qt5 QHostAddress bugs are fixed
+    #         See https://bugreports.qt.nokia.com/browse/QTBUG-22898 and
+    #         https://bugreports.qt.nokia.com/browse/QTBUG-22899
 if(${QT_VERSION_MAJOR} EQUAL 4)
     tpqt_add_dbus_unit_test(StreamTubeHandlers stream-tube-handlers tp-glib-tests tp-qt-tests-glib-helpers)
 endif(${QT_VERSION_MAJOR} EQUAL 4)
@@ -58,6 +60,8 @@ endif(${QT_VERSION_MAJOR} EQUAL 4)
 
     if(ENABLE_TP_GLIB_GIO_TESTS)
         # FIXME - Re-enable tube tests once Qt5 QHostAddress bugs are fixed
+        #         See https://bugreports.qt.nokia.com/browse/QTBUG-22898 and
+        #         https://bugreports.qt.nokia.com/browse/QTBUG-22899
         if(${QT_VERSION_MAJOR} EQUAL 4)
             tpqt_add_dbus_unit_test(StreamTubeChannel stream-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
         endif(${QT_VERSION_MAJOR} EQUAL 4)
