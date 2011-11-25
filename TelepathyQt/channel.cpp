@@ -2357,11 +2357,15 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
 /**
  * Return the current contacts of the group.
  *
+ * It is possible to omit the contact representing the local user, even if
+ * the contact is in the set, by passing \c false as the parameter \a
+ * includeSelfContact.
+ *
  * Change notification is via the groupMembersChanged() signal.
  *
  * This method requires Channel::FeatureCore to be ready.
  *
- * \param includeSelfContact Whether to include the self contact to the returned set.
+ * \param includeSelfContact Whether to include the self contact in the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupLocalPendingContacts(), groupRemotePendingContacts()
  */
@@ -2382,11 +2386,15 @@ Contacts Channel::groupContacts(bool includeSelfContact) const
  * Return the contacts currently waiting for local approval to join the
  * group.
  *
+ * It is possible to omit the contact representing the local user, even if
+ * the contact is in the set, by passing \c false as the parameter \a
+ * includeSelfContact.
+ *
  * Change notification is via the groupMembersChanged() signal.
  *
  * This method requires Channel::FeatureCore to be ready.
  *
- * \param includeSelfContact Whether to include the self contact to the returned set.
+ * \param includeSelfContact Whether to include the self contact in the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupRemotePendingContacts()
  */
@@ -2409,11 +2417,15 @@ Contacts Channel::groupLocalPendingContacts(bool includeSelfContact) const
  * Return the contacts currently waiting for remote approval to join the
  * group.
  *
+ * It is possible to omit the contact representing the local user, even if
+ * the contact is in the set, by passing \c false as the parameter \a
+ * includeSelfContact.
+ *
  * Change notification is via the groupMembersChanged() signal.
  *
  * This method requires Channel::FeatureCore to be ready.
  *
- * \param includeSelfContact Whether to include the self contact to the returned set.
+ * \param includeSelfContact Whether to include the self contact in the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupLocalPendingContacts()
  */
