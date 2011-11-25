@@ -64,7 +64,7 @@ namespace Tp
  * Return the source address from which connections will be allowed to the given \a tube once it has
  * been accepted.
  *
- * Returning the pair (QHostAddress::Any, 0) (or also the pair (QHostAddress::AnyIPv4, 0) in Qt5)
+ * Returning the pair (QHostAddress::Any, 0) (or alternatively (QHostAddress::AnyIPv4, 0) in Qt5)
  * makes the protocol backend allow connections from any address on the local computer.
  * This can be used on a tube-by-tube basis if for some tubes its known that multiple connections
  * need to be made, so a single source address doesn't suffice.
