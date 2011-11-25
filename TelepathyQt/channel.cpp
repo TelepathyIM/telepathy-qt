@@ -2361,6 +2361,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
  *
  * This method requires Channel::FeatureCore to be ready.
  *
+ * \param includeSelfContact Whether to include the self contact to the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupLocalPendingContacts(), groupRemotePendingContacts()
  */
@@ -2370,10 +2371,11 @@ Contacts Channel::groupContacts(bool includeSelfContact) const
         warning() << "Channel::groupMembers() used channel not ready";
     }
 
+    Contacts ret = mPriv->groupContacts.values().toSet();
     if (!includeSelfContact) {
-        return mPriv->groupContacts.values().toSet() - Contacts() << groupSelfContact();
+        ret.remove(groupSelfContact());
     }
-    return mPriv->groupContacts.values().toSet();
+    return ret;
 }
 
 /**
@@ -2384,6 +2386,7 @@ Contacts Channel::groupContacts(bool includeSelfContact) const
  *
  * This method requires Channel::FeatureCore to be ready.
  *
+ * \param includeSelfContact Whether to include the self contact to the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupRemotePendingContacts()
  */
@@ -2395,10 +2398,11 @@ Contacts Channel::groupLocalPendingContacts(bool includeSelfContact) const
         warning() << "Channel::groupLocalPendingContacts() used with no group interface";
     }
 
+    Contacts ret = mPriv->groupLocalPendingContacts.values().toSet();
     if (!includeSelfContact) {
-        return mPriv->groupLocalPendingContacts.values().toSet() - Contacts() << groupSelfContact();
+        ret.remove(groupSelfContact());
     }
-    return mPriv->groupLocalPendingContacts.values().toSet();
+    return ret;
 }
 
 /**
@@ -2409,6 +2413,7 @@ Contacts Channel::groupLocalPendingContacts(bool includeSelfContact) const
  *
  * This method requires Channel::FeatureCore to be ready.
  *
+ * \param includeSelfContact Whether to include the self contact to the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupLocalPendingContacts()
  */
@@ -2421,10 +2426,11 @@ Contacts Channel::groupRemotePendingContacts(bool includeSelfContact) const
             "group interface";
     }
 
+    Contacts ret = mPriv->groupRemotePendingContacts.values().toSet();
     if (!includeSelfContact) {
-        return mPriv->groupRemotePendingContacts.values().toSet() - Contacts() << groupSelfContact();
+        ret.remove(groupSelfContact());
     }
-    return mPriv->groupRemotePendingContacts.values().toSet();
+    return ret;
 }
 
 /**
