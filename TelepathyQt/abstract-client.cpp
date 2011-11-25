@@ -100,6 +100,7 @@ AbstractClient::AbstractClient()
  */
 AbstractClient::~AbstractClient()
 {
+    delete mPriv;
 }
 
 /**
