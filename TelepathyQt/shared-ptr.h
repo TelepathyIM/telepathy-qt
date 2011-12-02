@@ -64,6 +64,7 @@ public:
     {
         sc->weakref.ref();
     }
+
     inline virtual ~RefCounted()
     {
         sc->d = 0;
@@ -116,6 +117,7 @@ public:
             d = 0;
         }
     }
+
     inline ~SharedPtr()
     {
         if (d && !d->deref()) {
