@@ -41,7 +41,7 @@
 namespace Tp
 {
 
-QHash<QPair<QString, QSet<ChannelClassSpec> >, QWeakPointer<SimpleObserver::Private::Observer> > SimpleObserver::Private::observers;
+QHash<QPair<QString, QSet<ChannelClassSpec> >, WeakPtr<SimpleObserver::Private::Observer> > SimpleObserver::Private::observers;
 uint SimpleObserver::Private::numObservers = 0;
 
 SimpleObserver::Private::Private(SimpleObserver *parent,
@@ -75,7 +75,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
                 .replace(QLatin1String(":"), QLatin1String("_"))
                 .replace(QLatin1String("."), QLatin1String("_")))
             .arg(numObservers++);
-        observer = SharedPtr<Observer>(new Observer(cr.data(), fakeAccountFactory,
+        observer = SharedPtr<Observer>(new Observer(cr, fakeAccountFactory,
                     normalizedChannelFilter.toList(), observerName));
         if (!cr->registerClient(observer, observerName, false)) {
             warning() << "Unable to register observer" << observerName;
@@ -85,7 +85,7 @@ SimpleObserver::Private::Private(SimpleObserver *parent,
         }
 
         debug() << "Observer" << observerName << "registered";
-        observers.insert(observerUniqueId, observer.data());
+        observers.insert(observerUniqueId, observer);
     } else {
         debug() << "Observer" << observer->observerName() <<
             "already registered and matches filter, using it";
@@ -184,7 +184,7 @@ void SimpleObserver::Private::processChannelsInvalidationQueue()
     removeChannel(info.channelAccount, info.channel, info.errorName, info.errorMessage);
 }
 
-SimpleObserver::Private::Observer::Observer(const QWeakPointer<ClientRegistrar> &cr,
+SimpleObserver::Private::Observer::Observer(const WeakPtr<ClientRegistrar> &cr,
         const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
         const ChannelClassSpecList &channelFilter,
         const QString &observerName)

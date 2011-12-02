@@ -23,8 +23,6 @@
 #ifndef _TelepathyQt_request_temporary_handler_internal_h_HEADER_GUARD_
 #define _TelepathyQt_request_temporary_handler_internal_h_HEADER_GUARD_
 
-#include <QWeakPointer>
-
 #include <TelepathyQt/AbstractClientHandler>
 #include <TelepathyQt/Account>
 #include <TelepathyQt/Channel>
@@ -80,7 +78,7 @@ private:
     void processChannelReceivedQueue();
 
     AccountPtr mAccount;
-    QWeakPointer<Channel> mChannel;
+    WeakPtr<Channel> mChannel;
     bool mQueueChannelReceived;
     QQueue<QPair<QDateTime, ChannelRequestHints> > mChannelReceivedQueue;
     bool dbusHandlerInvoked;

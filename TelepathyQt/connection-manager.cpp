@@ -592,7 +592,7 @@ ConnectionManagerLowlevel::~ConnectionManagerLowlevel()
 
 bool ConnectionManagerLowlevel::isValid() const
 {
-    return !mPriv->cm.isNull();
+    return !(connectionManager().isNull());
 }
 
 ConnectionManagerPtr ConnectionManagerLowlevel::connectionManager() const

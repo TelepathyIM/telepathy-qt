@@ -158,11 +158,11 @@ struct TP_QT_NO_EXPORT Connection::Private
 struct TP_QT_NO_EXPORT ConnectionLowlevel::Private
 {
     Private(Connection *conn)
-        : conn(QWeakPointer<Connection>(conn))
+        : conn(conn)
     {
     }
 
-    QWeakPointer<Connection> conn;
+    QPointer<Connection> conn;
     HandleIdentifierMap contactsIds;
 };
 
@@ -643,7 +643,7 @@ ConnectionLowlevel::~ConnectionLowlevel()
 
 bool ConnectionLowlevel::isValid() const
 {
-    return !mPriv->conn.isNull();
+    return !(connection().isNull());
 }
 
 ConnectionPtr ConnectionLowlevel::connection() const

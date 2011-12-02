@@ -34,7 +34,7 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT ReferencedHandles::Private : public QSharedData
 {
-    QWeakPointer<Connection> connection;
+    WeakPtr<Connection> connection;
     HandleType handleType;
     UIntList handles;
 
@@ -45,7 +45,7 @@ struct TP_QT_NO_EXPORT ReferencedHandles::Private : public QSharedData
 
     Private(const ConnectionPtr &conn, HandleType handleType,
             const UIntList &handles)
-        : connection(conn.data()), handleType(handleType), handles(handles)
+        : connection(conn), handleType(handleType), handles(handles)
     {
         Q_ASSERT(!conn.isNull());
         Q_ASSERT(handleType != 0);

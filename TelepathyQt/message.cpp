@@ -95,7 +95,7 @@ struct TP_QT_NO_EXPORT Message::Private : public QSharedData
     bool forceNonText;
 
     // for received messages only
-    QWeakPointer<TextChannel> textChannel;
+    WeakPtr<TextChannel> textChannel;
     ContactPtr sender;
 };
 
@@ -728,7 +728,7 @@ ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
                 QDBusVariant(static_cast<qlonglong>(
                         QDateTime::currentDateTime().toTime_t())));
     }
-    mPriv->textChannel = QWeakPointer<TextChannel>(channel.data());
+    mPriv->textChannel = channel;
 }
 
 /**
