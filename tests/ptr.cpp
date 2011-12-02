@@ -1,4 +1,5 @@
 #include <QtTest/QtTest>
+#include <QtCore/QThread>
 
 #include <TelepathyQt/SharedPtr>
 
@@ -12,6 +13,7 @@ private Q_SLOTS:
     void testSharedPtrDict();
     void testSharedPtrBoolConversion();
     void testWeakPtrBoolConversion();
+    void testThreadSafety();
 };
 
 class Data;
@@ -235,6 +237,89 @@ void TestSharedPtr::testWeakPtrBoolConversion()
     QVERIFY(validPtrAlternative.isNull());
     QVERIFY(validPtrAlternative ? false : true);
     QVERIFY(!validPtrAlternative ? true : false);
+}
+
+class Thread : public QThread
+{
+public:
+    Thread(const DataPtr &ptr, QObject *parent = 0) : QThread(parent), mPtr(ptr) {}
+
+    void run()
+    {
+        QVERIFY(!mPtr.isNull());
+        for (int i = 0; i < 100; ++i) {
+            WeakPtr<Data> wptrtmp(mPtr);
+            QVERIFY(!wptrtmp.isNull());
+            DataPtr ptrtmp(wptrtmp);
+            QVERIFY(!ptrtmp.isNull());
+
+            usleep(10);
+            DataPtr ptrtmp2(ptrtmp);
+            QVERIFY(!ptrtmp2.isNull());
+            WeakPtr<Data> wptrtmp2 = ptrtmp2;
+            QVERIFY(!wptrtmp2.isNull());
+
+            usleep(10);
+            WeakPtr<Data> wptrtmp3(wptrtmp2);
+            QVERIFY(!wptrtmp3.isNull());
+            wptrtmp3 = wptrtmp2;
+            QVERIFY(!wptrtmp3.isNull());
+
+            DataPtr ptrtmp3(wptrtmp3);
+            QCOMPARE(ptrtmp3.data(), mPtr.data());
+            QVERIFY(!ptrtmp3.isNull());
+        }
+    }
+
+private:
+    DataPtr mPtr;
+};
+
+void TestSharedPtr::testThreadSafety()
+{
+    DataPtr ptr = Data::create();
+    WeakPtr<Data> weakPtr(ptr);
+    Data *savedData = ptr.data();
+    QVERIFY(savedData != NULL);
+    QVERIFY(!ptr.isNull());
+    QVERIFY(!weakPtr.isNull());
+
+    Thread *t[5];
+    for (int i = 0; i < 5; ++i) {
+        t[i] = new Thread(ptr, this);
+        t[i]->start();
+    }
+
+    for (int i = 0; i < 5; ++i) {
+        t[i]->wait();
+        delete t[i];
+    }
+
+    QCOMPARE(ptr.data(), savedData);
+    QVERIFY(!ptr.isNull());
+
+    QVERIFY(!weakPtr.isNull());
+
+    for (int i = 0; i < 5; ++i) {
+        t[i] = new Thread(ptr, this);
+        t[i]->start();
+    }
+
+    ptr.reset();
+    QVERIFY(ptr.isNull());
+
+    for (int i = 0; i < 5; ++i) {
+        t[i]->wait();
+        delete t[i];
+    }
+
+    QVERIFY(!ptr.data());
+    QVERIFY(ptr.isNull());
+    QVERIFY(weakPtr.isNull());
+
+    DataPtr promotedPtr(weakPtr);
+    QVERIFY(!promotedPtr.data());
+    QVERIFY(promotedPtr.isNull());
 }
 
 QTEST_MAIN(TestSharedPtr)
