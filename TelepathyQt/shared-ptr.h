@@ -36,9 +36,10 @@ namespace Tp
 {
 
 class RefCounted;
-class SharedCount;
 template <class T> class SharedPtr;
 template <class T> class WeakPtr;
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 class TP_QT_EXPORT SharedCount
 {
@@ -54,6 +55,8 @@ public:
     mutable QAtomicInt strongref;
     mutable QAtomicInt weakref;
 };
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 class TP_QT_EXPORT RefCounted
 {
@@ -76,7 +79,9 @@ public:
     inline void ref() const { sc->strongref.ref(); }
     inline bool deref() const { return sc->strongref.deref(); }
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     SharedCount *sc;
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 };
 
 template <class T>
