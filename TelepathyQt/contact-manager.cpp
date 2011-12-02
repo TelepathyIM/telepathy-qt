@@ -55,7 +55,7 @@ struct TP_QT_NO_EXPORT ContactManager::Private
         QString &avatarFileName, QString &mimeTypeFileName);
 
     ContactManager *parent;
-    QPointer<Connection> connection;
+    QWeakPointer<Connection> connection;
     ContactManager::Roster *roster;
 
     QMap<uint, WeakPtr<Contact> > contacts;
@@ -199,7 +199,7 @@ ContactManager::~ContactManager()
  */
 ConnectionPtr ContactManager::connection() const
 {
-    return ConnectionPtr(mPriv->connection);
+    return ConnectionPtr(mPriv->connection.data());
 }
 
 /**

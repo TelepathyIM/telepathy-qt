@@ -28,7 +28,6 @@
 #include <TelepathyQt/TextChannel>
 
 #include <QDateTime>
-#include <QPointer>
 #include <QSet>
 
 namespace Tp

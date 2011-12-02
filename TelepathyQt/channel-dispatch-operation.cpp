@@ -42,8 +42,6 @@
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingVoid>
 
-#include <QPointer>
-
 namespace Tp
 {
 

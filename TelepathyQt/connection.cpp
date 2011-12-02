@@ -162,7 +162,7 @@ struct TP_QT_NO_EXPORT ConnectionLowlevel::Private
     {
     }
 
-    QPointer<Connection> conn;
+    QWeakPointer<Connection> conn;
     HandleIdentifierMap contactsIds;
 };
 
@@ -648,7 +648,7 @@ bool ConnectionLowlevel::isValid() const
 
 ConnectionPtr ConnectionLowlevel::connection() const
 {
-    return ConnectionPtr(mPriv->conn);
+    return ConnectionPtr(mPriv->conn.data());
 }
 
 Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,
@@ -1301,8 +1301,7 @@ SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
         return SimpleStatusSpecMap();
     }
 
-    ConnectionPtr conn(mPriv->conn);
-
+    ConnectionPtr conn(connection());
     if (!conn->isReady(Connection::FeatureSimplePresence)) {
         warning() << "Trying to retrieve allowed presence statuses from connection, but "
                      "simple presence is not supported or was not requested. "
@@ -1331,8 +1330,7 @@ uint ConnectionLowlevel::maxPresenceStatusMessageLength() const
         return 0;
     }
 
-    ConnectionPtr conn(mPriv->conn);
-
+    ConnectionPtr conn(connection());
     if (!conn->isReady(Connection::FeatureSimplePresence)) {
         warning() << "Trying to retrieve max presence status message length connection, but "
                      "simple presence is not supported or was not requested. "
@@ -1370,8 +1368,7 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
                 ConnectionPtr());
     }
 
-    ConnectionPtr conn(mPriv->conn);
-
+    ConnectionPtr conn(connection());
     if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
         return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Connection does not support SimplePresence"), conn);
@@ -1855,8 +1852,7 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request,
                 QLatin1String("The connection has been destroyed"));
     }
 
-    ConnectionPtr conn(mPriv->conn);
-
+    ConnectionPtr conn(connection());
     if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
         return new PendingChannel(conn,
@@ -1927,8 +1923,7 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request,
                 QLatin1String("The connection has been destroyed"));
     }
 
-    ConnectionPtr conn(mPriv->conn);
-
+    ConnectionPtr conn(connection());
     if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
         return new PendingChannel(conn,
@@ -1993,7 +1988,7 @@ PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const 
                 QLatin1String("The connection has been destroyed"));
     }
 
-    ConnectionPtr conn(mPriv->conn);
+    ConnectionPtr conn(connection());
     if (!hasImmortalHandles()) {
         Connection::Private::HandleContext *handleContext = conn->mPriv->handleContext;
         QMutexLocker locker(&handleContext->lock);
@@ -2045,7 +2040,7 @@ PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, cons
                 QLatin1String("The connection has been destroyed"));
     }
 
-    ConnectionPtr conn(mPriv->conn);
+    ConnectionPtr conn(connection());
     UIntList alreadyHeld;
     UIntList notYetHeld;
     if (!hasImmortalHandles()) {
@@ -2099,7 +2094,7 @@ PendingReady *ConnectionLowlevel::requestConnect(const Features &requestedFeatur
         return pending;
     }
 
-    return new Connection::PendingConnect(ConnectionPtr(mPriv->conn), requestedFeatures);
+    return new Connection::PendingConnect(connection(), requestedFeatures);
 }
 
 /**
@@ -2122,7 +2117,7 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
                 QLatin1String("The connection has been destroyed"), ConnectionPtr());
     }
 
-    ConnectionPtr conn(mPriv->conn);
+    ConnectionPtr conn(connection());
 
     return new PendingVoid(conn->baseInterface()->Disconnect(), conn);
 }
@@ -2176,8 +2171,7 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &
         return pending;
     }
 
-    ConnectionPtr conn(mPriv->conn);
-
+    ConnectionPtr conn(connection());
     PendingContactAttributes *pending =
         new PendingContactAttributes(conn,
                 handles, interfaces, reference);
@@ -2222,8 +2216,7 @@ QStringList ConnectionLowlevel::contactAttributeInterfaces() const
         return QStringList();
     }
 
-    ConnectionPtr conn(mPriv->conn);
-
+    ConnectionPtr conn(connection());
     if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
         warning() << "ConnectionLowlevel::contactAttributeInterfaces() used with status"
             << conn->status() << "!= ConnectionStatusConnected";
@@ -2283,9 +2276,7 @@ QString ConnectionLowlevel::contactId(uint handle) const
  */
 bool ConnectionLowlevel::hasImmortalHandles() const
 {
-    ConnectionPtr conn(mPriv->conn);
-
-    return conn->mPriv->immortalHandles;
+    return connection()->mPriv->immortalHandles;
 }
 
 /**

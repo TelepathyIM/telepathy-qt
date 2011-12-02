@@ -26,7 +26,6 @@
 
 #include <TelepathyQt/Connection>
 
-#include <QPointer>
 #include <QSharedData>
 
 namespace Tp
