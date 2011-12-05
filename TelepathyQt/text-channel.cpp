@@ -727,10 +727,14 @@ QStringList TextChannel::supportedContentTypes() const
     return mPriv->supportedContentTypes;
 }
 
-/** Returns true if the provided message type is supported.
-  *
-  */
-
+/**
+ * Return whether the provided message type is supported.
+ *
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
+ *
+ * \param messageType The message type to check.
+ * \return \c true if supported, \c false otherwise
+ */
 bool TextChannel::supportsMessageType(ChannelTextMessageType messageType) const
 {
     return mPriv->channelTextMessageTypes.contains(messageType);
