@@ -51,6 +51,11 @@ public:
     {
     }
 
+private:
+    template <class T> friend class SharedPtr;
+    template <class T> friend class WeakPtr;
+    friend class RefCounted;
+
     RefCounted *d;
     mutable QAtomicInt strongref;
     mutable QAtomicInt weakref;
@@ -79,9 +84,11 @@ public:
     inline void ref() const { sc->strongref.ref(); }
     inline bool deref() const { return sc->strongref.deref(); }
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+private:
+    template <class T> friend class SharedPtr;
+    template <class T> friend class WeakPtr;
+
     SharedCount *sc;
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 };
 
 template <class T>
