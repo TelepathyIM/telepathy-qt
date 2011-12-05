@@ -322,7 +322,7 @@ void TextChannel::Private::updateCapabilities()
     // Populate the list with the correct variable type
     supportedMessageTypes.clear();
 
-    Q_FOREACH (uint messageType, messageTypesAsUIntList) {
+    foreach (uint messageType, messageTypesAsUIntList) {
         supportedMessageTypes.append(static_cast<ChannelTextMessageType>(messageType));
     }
 
