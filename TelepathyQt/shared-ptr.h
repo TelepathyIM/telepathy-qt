@@ -81,12 +81,17 @@ public:
         }
     }
 
-    inline void ref() const { sc->strongref.ref(); }
-    inline bool deref() const { return sc->strongref.deref(); }
-
 private:
     template <class T> friend class SharedPtr;
     template <class T> friend class WeakPtr;
+    // TODO: Remove when Conn.I.ContactList, etc becomes mandatory. This is required to circumvent
+    //       a reference cycle when using contact list channels, due to the fact that Channels hold
+    //       strong references to their parent Connection, but not needed when using
+    //       Conn.I.ContactList and friends.
+    friend class ContactManager;
+
+    inline void ref() const { sc->strongref.ref(); }
+    inline bool deref() const { return sc->strongref.deref(); }
 
     SharedCount *sc;
 };
