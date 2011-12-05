@@ -743,7 +743,7 @@ QStringList TextChannel::supportedContentTypes() const
  */
 QList<ChannelTextMessageType> TextChannel::supportedMessageTypes() const
 {
-    if (!isReady(FeatureCore)) {
+    if (!isReady(FeatureMessageCapabilities)) {
         warning() << "TextChannel::supportedMessageTypes() used with "
                 "FeatureMessageCapabilities not ready";
     }
@@ -761,7 +761,7 @@ QList<ChannelTextMessageType> TextChannel::supportedMessageTypes() const
  */
 bool TextChannel::supportsMessageType(ChannelTextMessageType messageType) const
 {
-    if (!isReady(FeatureCore)) {
+    if (!isReady(FeatureMessageCapabilities)) {
         warning() << "TextChannel::supportsMessageType() used with "
                 "FeatureMessageCapabilities not ready";
     }
