@@ -10,7 +10,23 @@ Qt5 support is added alongside Qt4 support and for that 0.9 will be
 API (see changes below) and ABI incompatible with previous versions.
 
 API changes:
- * ...
+ * Everything containing qt4 (with or without caps) was renamed to qt.
+   Eg.:
+     - TP_QT4_DEPRECATED -> TP_QT_DEPRECATED
+     - #include <TelepathyQt4/Foo> -> #include <TelepathyQt/Foo>
+ * Errors and constant macros starting with TELEPATHY_ (const char *
+   versions) were removed, remaining only the versions that expand to
+   QLatin1String.
+   Eg.:
+     - TELEPATHY_ERROR_INVALID_HANDLE <- removed
+     - TP_QT4_ERROR_INVALID_HANDLE -> TP_QT_ERROR_INVALID_HANDLE
+ * All deprecated methods (marked with TP_QT4_DEPRECATED) and signals
+   (those that used to emit warnings at runtime when connecting to them)
+   were removed.
+ * StreamTubeChannel::connections() now returns a QSet<uint> instead of an
+   UIntList.
+ * Channel::groupContacts and groupLocal/RemotePendingContacts() gained
+   a "includeSelfContact" param defaulting to true.
 
 Enhancements:
  * fd.o #35084: The StreamTubeClient and StreamTubeServer classes have been
