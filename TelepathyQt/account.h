@@ -318,6 +318,19 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
+    PendingChannelRequest *createDBusTube(
+            const QString &contactIdentifier,
+            const QString &serviceName,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *createDBusTube(
+            const ContactPtr &contact,
+            const QString &serviceName,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+
     PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
@@ -443,6 +456,15 @@ public:
     PendingChannel *createAndHandleStreamTube(
             const ContactPtr &contact,
             const QString &service,
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+
+    PendingChannel *createAndHandleDBusTube(
+            const QString &contactIdentifier,
+            const QString &serviceName,
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+    PendingChannel *createAndHandleDBusTube(
+            const ContactPtr &contact,
+            const QString &serviceName,
             const QDateTime &userActionTime = QDateTime::currentDateTime());
 
     PendingChannel *createAndHandleConferenceTextChat(

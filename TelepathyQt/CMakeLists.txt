@@ -55,6 +55,7 @@ set(telepathy_qt_SRCS
     dbus-proxy.cpp
     dbus-proxy-factory.cpp
     dbus-proxy-factory-internal.h
+    dbus-tube-channel.cpp
     debug.cpp
     debug-receiver.cpp
     debug-internal.h
@@ -315,6 +316,8 @@ set(telepathy_qt_HEADERS
     dbus-proxy.h
     DBusProxyFactory
     dbus-proxy-factory.h
+    DBusTubeChannel
+    dbus-tube-channel.h
     Debug
     debug.h
     DebugReceiver
@@ -545,6 +548,7 @@ set(telepathy_qt_MOC_SRCS
     dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
     debug-receiver.h
+    dbus-tube-channel.h
     fake-handler-manager-internal.h
     file-transfer-channel.h
     fixed-feature-factory.h

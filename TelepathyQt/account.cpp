@@ -390,6 +390,34 @@ QVariantMap streamTubeRequest(const Tp::ContactPtr &contact, const QString &serv
     return request;
 }
 
+QVariantMap dBusTubeCommonRequest(const QString &serviceName)
+{
+    QVariantMap request;
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                   TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+                   serviceName);
+    return request;
+}
+
+QVariantMap dBusTubeRequest(const QString &contactIdentifier, const QString &serviceName)
+{
+    QVariantMap request = dBusTubeCommonRequest(serviceName);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
+                   contactIdentifier);
+    return request;
+}
+
+QVariantMap dBusTubeRequest(const Tp::ContactPtr &contact, const QString &serviceName)
+{
+    QVariantMap request = dBusTubeCommonRequest(serviceName);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+    return request;
+}
+
 QVariantMap conferenceCommonRequest(const QString &channelType, Tp::HandleType targetHandleType,
         const QList<Tp::ChannelPtr> &channels)
 {
@@ -2796,6 +2824,75 @@ PendingChannelRequest *Account::createStreamTube(
 }
 
 /**
+ * Start a request to create a DBus tube channel with the given
+ * contact \a contactIdentifier.
+ *
+ * \param contactIdentifier The contact identifier of the contact to open a DBus tube with.
+ * \param serviceName the service name that will be used over the
+ *                    tube. It should be a well-known D-Bus service name, of the form
+ *                    \c com.example.ServiceName
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest* Account::createDBusTube(
+        const QString& contactIdentifier,
+        const QString& serviceName,
+        const QDateTime& userActionTime,
+        const QString& preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = dBusTubeRequest(contactIdentifier, serviceName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true, hints);
+}
+
+
+/**
+ * Start a request to create a DBus tube channel with the given
+ * contact \a contact.
+ *
+ * \param contact The contact to open a DBus tube with.
+ * \param serviceName the service name that will be used over the
+ *                    tube. It should be a well-known D-Bus service name, of the form
+ *                    \c com.example.ServiceName
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest* Account::createDBusTube(
+        const Tp::ContactPtr& contact,
+        const QString& serviceName,
+        const QDateTime& userActionTime,
+        const QString& preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = dBusTubeRequest(contact, serviceName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true, hints);
+}
+
+/**
  * Start a request to create a conference media call with the given
  * channels \a channels.
  *
@@ -3556,6 +3653,58 @@ PendingChannel *Account::createAndHandleStreamTube(
         const QDateTime &userActionTime)
 {
     QVariantMap request = streamTubeRequest(contact, service);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a DBus tube channel with the given
+ * contact identifier \a contactIdentifier.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contactIdentifier The identifier of the contact to open a DBus tube with.
+ * \param serviceName The DBus tube service name.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleDBusTube(
+        const QString &contactIdentifier,
+        const QString &serviceName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = dBusTubeRequest(contactIdentifier, serviceName);
+
+    return createAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to create a DBus tube channel with the given
+ * contact \a contact.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contact The contact to open a DBus tube with.
+ * \param service The DBus tube service name.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::createAndHandleDBusTube(
+        const ContactPtr &contact,
+        const QString &serviceName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = dBusTubeRequest(contact, serviceName);
 
     return createAndHandleChannel(request, userActionTime);
 }
