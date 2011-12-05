@@ -737,6 +737,11 @@ QStringList TextChannel::supportedContentTypes() const
  */
 bool TextChannel::supportsMessageType(ChannelTextMessageType messageType) const
 {
+    if (!isReady(FeatureCore)) {
+        warning() << "TextChannel::supportsMessageType() used with "
+                "FeatureMessageCapabilities not ready";
+    }
+
     return mPriv->channelTextMessageTypes.contains(messageType);
 }
 
