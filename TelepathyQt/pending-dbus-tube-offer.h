@@ -1,5 +1,5 @@
 /*
- * This file is part of TelepathyQt
+ * This file is part of TelepathyQt4
  *
  * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
  *
@@ -18,45 +18,46 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt_outgoing_dbus_tube_channel_h_HEADER_GUARD_
-#define _TelepathyQt_outgoing_dbus_tube_channel_h_HEADER_GUARD_
+#ifndef _TelepathyQt_pending_dbus_tube_offer_h_HEADER_GUARD_
+#define _TelepathyQt_pending_dbus_tube_offer_h_HEADER_GUARD_
 
 #ifndef IN_TP_QT_HEADER
 #error IN_TP_QT_HEADER
 #endif
 
-#include <TelepathyQt/DBusTubeChannel>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/OutgoingDBusTubeChannel>
 
 namespace Tp {
 
-class PendingDBusTubeOffer;
+class PendingString;
 
-class TP_QT_EXPORT OutgoingDBusTubeChannel : public DBusTubeChannel
+class TP_QT_EXPORT PendingDBusTubeOffer : public PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(OutgoingDBusTubeChannel)
+    Q_DISABLE_COPY(PendingDBusTubeOffer)
 
 public:
-    static OutgoingDBusTubeChannelPtr create(const ConnectionPtr &connection,
-            const QString &objectPath, const QVariantMap &immutableProperties);
-
-    virtual ~OutgoingDBusTubeChannel();
-
-    PendingDBusTubeOffer *offerTube(const QVariantMap &parameters, bool requireCredentials = false);
+    virtual ~PendingDBusTubeOffer();
 
     QString address() const;
 
-protected:
-    OutgoingDBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties);
-
 private:
+    PendingDBusTubeOffer(PendingString *string, const OutgoingDBusTubeChannelPtr &object);
+    PendingDBusTubeOffer(const QString &errorName, const QString &errorMessage,
+                         const OutgoingDBusTubeChannelPtr &object);
+
     struct Private;
-    friend struct PendingDBusTubeOffer;
     friend struct Private;
     Private *mPriv;
+
+    friend class OutgoingDBusTubeChannel;
+
+private Q_SLOTS:
+    TP_QT_NO_EXPORT void onOfferFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onTubeStateChanged(Tp::TubeChannelState state);
 };
 
 }
 
-#endif // TP_OUTGOING_DBUS_TUBE_CHANNEL_H
+#endif

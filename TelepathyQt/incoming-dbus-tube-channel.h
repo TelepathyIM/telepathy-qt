@@ -26,40 +26,11 @@
 #endif
 
 #include <TelepathyQt/DBusTubeChannel>
-#include <TelepathyQt/PendingOperation>
 
 namespace Tp {
 
-class PendingString;
+class PendingDBusTubeAccept;
 
-class PendingDBusTubeAcceptPrivate;
-class TP_QT_EXPORT PendingDBusTubeAccept : public PendingOperation
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(PendingDBusTubeAccept)
-
-public:
-    virtual ~PendingDBusTubeAccept();
-
-    QString address() const;
-
-private:
-    PendingDBusTubeAccept(PendingString *string, const IncomingDBusTubeChannelPtr &object);
-    PendingDBusTubeAccept(const QString &errorName, const QString &errorMessage,
-                          const IncomingDBusTubeChannelPtr &object);
-
-    friend class PendingDBusTubeAcceptPrivate;
-    PendingDBusTubeAcceptPrivate *mPriv;
-
-    friend class IncomingDBusTubeChannel;
-
-// private slots:
-    Q_PRIVATE_SLOT(mPriv, void onAcceptFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(mPriv, void onStateChanged(Tp::TubeChannelState))
-};
-
-
-class IncomingDBusTubeChannelPrivate;
 class TP_QT_EXPORT IncomingDBusTubeChannel : public DBusTubeChannel
 {
     Q_OBJECT
@@ -81,7 +52,7 @@ protected:
 
 private:
     struct Private;
-    friend class PendingDBusTubeAcceptPrivate;
+    friend class PendingDBusTubeAccept;
     friend struct Private;
     Private *mPriv;
 

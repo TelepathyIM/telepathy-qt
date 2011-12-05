@@ -19,9 +19,11 @@
  */
 
 #include <TelepathyQt/OutgoingDBusTubeChannel>
+#include "TelepathyQt/outgoing-dbus-tube-channel-internal.h"
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingDBusTubeOffer>
 #include <TelepathyQt/PendingString>
 #include <TelepathyQt/Types>
 
@@ -29,17 +31,6 @@
 
 namespace Tp
 {
-
-struct TP_QT_NO_EXPORT OutgoingDBusTubeChannel::Private
-{
-    Private(OutgoingDBusTubeChannel* parent);
-    virtual ~Private();
-
-    // Public object
-    OutgoingDBusTubeChannel *parent;
-
-    QString address;
-};
 
 OutgoingDBusTubeChannel::Private::Private(OutgoingDBusTubeChannel* parent)
         : parent(parent)
@@ -49,108 +40,6 @@ OutgoingDBusTubeChannel::Private::Private(OutgoingDBusTubeChannel* parent)
 OutgoingDBusTubeChannel::Private::~Private()
 {
 }
-
-
-
-struct TP_QT_NO_EXPORT PendingDBusTubeOfferPrivate
-{
-    PendingDBusTubeOfferPrivate(PendingDBusTubeOffer *parent);
-    ~PendingDBusTubeOfferPrivate();
-
-    // Public object
-    PendingDBusTubeOffer *parent;
-
-    OutgoingDBusTubeChannelPtr tube;
-
-    // Private slots
-    void onOfferFinished(Tp::PendingOperation* op);
-    void onStateChanged(Tp::TubeChannelState state);
-};
-
-PendingDBusTubeOfferPrivate::PendingDBusTubeOfferPrivate(PendingDBusTubeOffer* parent)
-    : parent(parent)
-{
-}
-
-PendingDBusTubeOfferPrivate::~PendingDBusTubeOfferPrivate()
-{
-}
-
-void PendingDBusTubeOfferPrivate::onOfferFinished(PendingOperation* op)
-{
-    if (op->isError()) {
-        // Fail
-        parent->setFinishedWithError(op->errorName(), op->errorMessage());
-        return;
-    }
-
-    debug() << "Offer tube finished successfully";
-
-    // Now get the address and set it
-    PendingString *ps = qobject_cast< PendingString* >(op);
-    tube->mPriv->address = ps->result();
-
-    // It might have been already opened - check
-    if (tube->state() == TubeChannelStateOpen) {
-        onStateChanged(tube->state());
-    } else {
-        // Wait until the tube gets opened on the other side
-        parent->connect(tube.data(), SIGNAL(stateChanged(Tp::TubeChannelState)),
-                        parent, SLOT(onStateChanged(Tp::TubeChannelState)));
-    }
-}
-
-void PendingDBusTubeOfferPrivate::onStateChanged(TubeChannelState state)
-{
-    debug() << "Tube state changed to " << state;
-    if (state == TubeChannelStateOpen) {
-        // The tube is ready: let's finish the operation
-        parent->setFinished();
-    } else if (state != TubeChannelStateRemotePending) {
-        // Something happened
-        parent->setFinishedWithError(QLatin1String("Connection refused"),
-                      QLatin1String("The connection to this tube was refused"));
-    }
-}
-
-PendingDBusTubeOffer::PendingDBusTubeOffer(
-        PendingString* string,
-        const OutgoingDBusTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new PendingDBusTubeOfferPrivate(this))
-{
-    mPriv->tube = object;
-
-    if (string->isFinished()) {
-        mPriv->onOfferFinished(string);
-    } else {
-        // Connect the pending void
-        connect(string, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onOfferFinished(Tp::PendingOperation*)));
-    }
-}
-
-PendingDBusTubeOffer::PendingDBusTubeOffer(
-        const QString& errorName,
-        const QString& errorMessage,
-        const OutgoingDBusTubeChannelPtr &object)
-    : PendingOperation(object)
-    , mPriv(new PendingDBusTubeOfferPrivate(this))
-{
-    setFinishedWithError(errorName, errorMessage);
-}
-
-PendingDBusTubeOffer::~PendingDBusTubeOffer()
-{
-    delete mPriv;
-}
-
-QString PendingDBusTubeOffer::address() const
-{
-    return mPriv->tube->address();
-}
-
-
 
 /**
  * \class OutgoingDBusTubeChannel
