@@ -802,15 +802,6 @@ bool Contact::isBlocked() const
 }
 
 /**
- * \deprecated Use block() instead.
- */
-PendingOperation *Contact::block(bool value)
-{
-    return value ? manager()->blockContacts(QList<ContactPtr>() << ContactPtr(this))
-                 : manager()->unblockContacts(QList<ContactPtr>() << ContactPtr(this));
-}
-
-/**
  * Block this contact. Blocked contacts cannot send messages to the user;
  * depending on the protocol, blocking a contact may have other effects.
  *
@@ -1155,10 +1146,6 @@ void Contact::setSubscriptionState(SubscriptionState state)
 
     mPriv->subscriptionState = state;
 
-    // FIXME (API/ABI break) remove signal with details
-    emit subscriptionStateChanged(subscriptionStateToPresenceState(state),
-            Channel::GroupMemberChangeDetails());
-
     emit subscriptionStateChanged(subscriptionStateToPresenceState(state));
 }
 
@@ -1171,12 +1158,6 @@ void Contact::setPublishState(SubscriptionState state, const QString &message)
     mPriv->publishState = state;
     mPriv->publishStateMessage = message;
 
-    // FIXME (API/ABI break) remove signal with details
-    QVariantMap detailsMap;
-    detailsMap.insert(QLatin1String("message"), message);
-    emit publishStateChanged(subscriptionStateToPresenceState(state),
-            Channel::GroupMemberChangeDetails(ContactPtr(), detailsMap));
-
     emit publishStateChanged(subscriptionStateToPresenceState(state), message);
 }
 
@@ -1187,9 +1168,6 @@ void Contact::setBlocked(bool value)
     }
 
     mPriv->blocked = value;
-
-    // FIXME (API/ABI break) remove signal with details
-    emit blockStatusChanged(value, Channel::GroupMemberChangeDetails());
 
     emit blockStatusChanged(value);
 }
@@ -1282,13 +1260,6 @@ void Contact::setRemovedFromGroup(const QString &group)
  */
 
 /**
- * \fn void Contact::subscriptionStateChanged(Tp::Contact::PresenceState state,
- *          const Tp::Channel::GroupMemberChangeDetails &details)
- *
- * \deprecated Use subscriptionStateChanged(Tp::Contact::PresenceState state) instead.
- */
-
-/**
  * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state, const QString &message)
  *
  * Emitted when the value of publishState() changes.
@@ -1298,26 +1269,12 @@ void Contact::setRemovedFromGroup(const QString &group)
  */
 
 /**
- * \fn void Contact::publishStateChanged(Tp::Contact::PresenceState state,
- *          const Tp::Channel::GroupMemberChangeDetails &details)
- *
- * \deprecated Use publishStateChanged(Tp::Contact::PresenceState state, const QString &message) instead.
- */
-
-/**
  * \fn void Contact::blockStatusChanged(bool blocked)
  *
  * Emitted when the value of isBlocked() changes.
  *
  * \param status The new block status of this contact.
  * \sa isBlocked()
- */
-
-/**
- * \fn void Contact::blockStatusChanged(bool blocked,
- *          const Tp::Channel::GroupMemberChangeDetails &details)
- *
- * \deprecated Use blockStatusChanged(bool blocked) instead.
  */
 
 /**
@@ -1337,16 +1294,5 @@ void Contact::setRemovedFromGroup(const QString &group)
  * \param group The group name.
  * \sa groups(), addedToGroup()
  */
-
-void Contact::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails))) == 0) {
-        warning() << "Connecting to deprecated signal subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)";
-    } else if (qstrcmp(signalName, SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails))) == 0) {
-        warning() << "Connecting to deprecated signal publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)";
-    } else if (qstrcmp(signalName, SIGNAL(blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails))) == 0) {
-        warning() << "Connecting to deprecated signal blockStatusChanged(bool,Tp::Channel::GroupMemberChangeDetails)";
-    }
-}
 
 } // Tp

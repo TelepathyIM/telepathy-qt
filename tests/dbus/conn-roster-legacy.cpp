@@ -194,10 +194,10 @@ void TestConnRosterLegacy::testRoster()
         mGotPresenceStateChanged = false;
 
         QVERIFY(connect(contact.data(),
-                        SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
+                        SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
         QVERIFY(connect(contact.data(),
-                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
+                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState, QString)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
         if ((i % 2) == 0) {
             contact->requestPresenceSubscription(QLatin1String("please add me"));
@@ -268,7 +268,7 @@ void TestConnRosterLegacy::testRoster()
         mGotPresenceStateChanged = false;
 
         QVERIFY(connect(contact.data(),
-                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState,Tp::Channel::GroupMemberChangeDetails)),
+                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState, QString)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
 
         if ((i++ % 2) == 0) {

@@ -203,126 +203,68 @@ public:
     bool supportsRequestHints() const;
     bool requestsSucceedWithChannel() const;
 
-    // TODO ABI break: collapse all of the overloads without a hints arg with the corresponding
-    // hints versions and add a default param for the hints args
-
     PendingChannelRequest *ensureTextChat(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureTextChat(
-            const QString &contactIdentifier,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *ensureTextChat(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureTextChat(
-            const ContactPtr &contact,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
     PendingChannelRequest *ensureTextChatroom(
             const QString &roomName,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureTextChatroom(
-            const QString &roomName,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
     PendingChannelRequest *ensureStreamedMediaCall(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureStreamedMediaCall(
-            const QString &contactIdentifier,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *ensureStreamedMediaCall(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureStreamedMediaCall(
-            const ContactPtr &contact,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *ensureStreamedMediaAudioCall(
             const QString &contactIdentifier,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureStreamedMediaAudioCall(
-            const QString &contactIdentifier,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *ensureStreamedMediaAudioCall(
             const ContactPtr &contact,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureStreamedMediaAudioCall(
-            const ContactPtr &contact,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *ensureStreamedMediaVideoCall(
             const QString &contactIdentifier,
             bool withAudio = true,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureStreamedMediaVideoCall(
-            const QString &contactIdentifier,
-            bool withAudio,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *ensureStreamedMediaVideoCall(
             const ContactPtr &contact,
-            bool withAudio = true,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureStreamedMediaVideoCall(
-            const ContactPtr &contact,
-            bool withAudio,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            bool withAudio = false,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
     PendingChannelRequest *createFileTransfer(
             const QString &contactIdentifier,
             const FileTransferChannelCreationProperties &properties,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *createFileTransfer(
-            const QString &contactIdentifier,
-            const FileTransferChannelCreationProperties &properties,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *createFileTransfer(
             const ContactPtr &contact,
             const FileTransferChannelCreationProperties &properties,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *createFileTransfer(
-            const ContactPtr &contact,
-            const FileTransferChannelCreationProperties &properties,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
     PendingChannelRequest *createStreamTube(
             const QString &contactIdentifier,
@@ -341,56 +283,28 @@ public:
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *createConferenceStreamedMediaCall(
-            const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *createConferenceStreamedMediaCall(
-            const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
     PendingChannelRequest *createConferenceTextChat(
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *createConferenceTextChat(
-            const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
-
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
     PendingChannelRequest *createConferenceTextChat(
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *createConferenceTextChat(
-            const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
-    TP_QT_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
-            const QString &roomName,
-            const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers = QStringList(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
     PendingChannelRequest *createConferenceTextChatroom(
             const QString &roomName,
             const QList<ChannelPtr> &channels,
@@ -398,13 +312,6 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
-
-    TP_QT_DEPRECATED PendingChannelRequest *createConferenceTextChatRoom(
-            const QString &roomName,
-            const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
     PendingChannelRequest *createConferenceTextChatroom(
             const QString &roomName,
             const QList<ChannelPtr> &channels,
@@ -413,17 +320,12 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
-    PendingChannelRequest *createContactSearch(
-            const QString &server = QString(),
-            uint limit = 0,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
     PendingChannelRequest *createContactSearch(
             const QString &server,
-            uint limit,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            uint limit = 0,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
     PendingChannel *ensureAndHandleTextChat(
             const QString &contactIdentifier,
@@ -515,22 +417,14 @@ public:
     PendingChannelRequest *createChannel(
             const QVariantMap &requestedProperties,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *createChannel(
-            const QVariantMap &requestedProperties,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
     PendingChannelRequest *ensureChannel(
             const QVariantMap &requestedProperties,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString());
-    PendingChannelRequest *ensureChannel(
-            const QVariantMap &requestedProperties,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            const ChannelRequestHints &hints);
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
 
     PendingChannel *createAndHandleChannel(
             const QVariantMap &requestedProperties,

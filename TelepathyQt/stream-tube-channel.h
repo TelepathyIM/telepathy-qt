@@ -40,8 +40,6 @@ class TP_QT_EXPORT StreamTubeChannel : public TubeChannel
 
 public:
     static const Feature FeatureCore;
-    // FIXME (API/ABI break) Remove FeatureStreamTube in favour of FeatureCore
-    static const Feature FeatureStreamTube;
     static const Feature FeatureConnectionMonitoring;
 
     static StreamTubeChannelPtr create(const ConnectionPtr &connection,
@@ -63,8 +61,7 @@ public:
     bool supportsAbstractUnixSocketsOnLocalhost() const;
     bool supportsAbstractUnixSocketsWithCredentials() const;
 
-    // API/ABI break TODO: return QSet<uint> instead
-    UIntList connections() const;
+    QSet<uint> connections() const;
 
     SocketAddressType addressType() const;
 
@@ -81,8 +78,6 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureCore);
 
-    TP_QT_DEPRECATED void setBaseTubeType(uint type);
-    TP_QT_DEPRECATED void setConnections(UIntList connections); // -> {add,remove}Connection
     void addConnection(uint connection);
     void removeConnection(uint connection, const QString &error, const QString &message);
     void setAddressType(SocketAddressType type);

@@ -173,11 +173,6 @@ const Feature StreamTubeChannel::FeatureCore =
         Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 0);
 
 /**
- * \deprecated Use StreamTubeChannel::FeatureCore instead.
- */
-const Feature StreamTubeChannel::FeatureStreamTube = StreamTubeChannel::FeatureCore;
-
-/**
  * Feature used in order to monitor connections to this stream tube.
  *
  * See connection monitoring specific methods' documentation for more details.
@@ -542,15 +537,15 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
  * \return The list of active connection ids.
  * \sa newConnection(), connectionClosed()
  */
-UIntList StreamTubeChannel::connections() const
+QSet<uint> StreamTubeChannel::connections() const
 {
     if (!isReady(FeatureConnectionMonitoring)) {
         warning() << "StreamTubeChannel::connections() used with "
                 "FeatureConnectionMonitoring not ready";
-        return UIntList();
+        return QSet<uint>();
     }
 
-    return mPriv->connections.toList();
+    return mPriv->connections;
 }
 
 /**
@@ -621,22 +616,6 @@ QString StreamTubeChannel::localAddress() const
     }
 
     return mPriv->unixAddress;
-}
-
-/**
- * \deprecated This method never did anything useful when called from outside,
- * and now does nothing at all. It will be removed in the next API/ABI break.
- */
-void StreamTubeChannel::setBaseTubeType(uint type)
-{
-    Q_UNUSED(type);
-}
-
-void StreamTubeChannel::setConnections(UIntList connections)
-{
-    // This is rather sub-optimal: we'll do a O(n) replace of the old connections list every time a
-    // connection is added, so O(n^2) in total for adding n connections
-    mPriv->connections = QSet<uint>::fromList(connections);
 }
 
 void StreamTubeChannel::addConnection(uint connection)

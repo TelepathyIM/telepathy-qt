@@ -213,30 +213,6 @@ bool ConnectionCapabilities::conferenceTextChatroomsWithInvitees() const
 }
 
 /**
- * \deprecated Use contactSearches() instead.
- */
-bool ConnectionCapabilities::contactSearch()
-{
-    return contactSearches();
-}
-
-/**
- * \deprecated Use contactSearchesWithSpecificServer() instead.
- */
-bool ConnectionCapabilities::contactSearchWithSpecificServer() const
-{
-    return contactSearchesWithSpecificServer();
-}
-
-/**
- * \deprecated Use contactSearchesWithLimit() instead.
- */
-bool ConnectionCapabilities::contactSearchWithLimit() const
-{
-    return contactSearchesWithLimit();
-}
-
-/**
  * Return whether creating a ContactSearch channel is supported.
  *
  * \return \c true if supported, \c false otherwise.

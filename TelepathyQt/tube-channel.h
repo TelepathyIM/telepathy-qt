@@ -38,8 +38,6 @@ class TP_QT_EXPORT TubeChannel : public Channel
 
 public:
     static const Feature FeatureCore;
-    // FIXME (API/ABI break) Remove FeatureTube in favour of FeatureCore
-    static const Feature FeatureTube;
 
     static TubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -47,13 +45,11 @@ public:
     virtual ~TubeChannel();
 
     TubeChannelState state() const;
-    TP_QT_DEPRECATED TubeChannelState tubeState() const;
 
     QVariantMap parameters() const;
 
 Q_SIGNALS:
     void stateChanged(Tp::TubeChannelState state);
-    void tubeStateChanged(Tp::TubeChannelState state);
 
 protected:
     TubeChannel(const ConnectionPtr &connection, const QString &objectPath,
@@ -61,9 +57,6 @@ protected:
             const Feature &coreFeature = TubeChannel::FeatureCore);
 
     void setParameters(const QVariantMap &parameters);
-
-    // FIXME (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onTubeChannelStateChanged(uint newstate);

@@ -50,8 +50,6 @@ class TP_QT_EXPORT PendingOperation : public QObject
 public:
     virtual ~PendingOperation();
 
-    TP_QT_DEPRECATED SharedPtr<RefCounted> object() const;
-
     bool isFinished() const;
 
     bool isValid() const;
@@ -65,7 +63,7 @@ Q_SIGNALS:
 
 protected:
     PendingOperation(const SharedPtr<RefCounted> &object);
-    TP_QT_NO_EXPORT SharedPtr<RefCounted> _object() const; // TODO: turn this into _object()
+    SharedPtr<RefCounted> object() const;
 
 protected Q_SLOTS:
     void setFinished();

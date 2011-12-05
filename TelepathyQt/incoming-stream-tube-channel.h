@@ -55,10 +55,6 @@ public:
             quint16 allowedPort);
     PendingStreamTubeConnection *acceptTubeAsUnixSocket(bool requireCredentials = false);
 
-    // FIXME: (API/ABI break) Remove ipAddress() and localAddress() (already in StreamTubeChannel)
-    QPair<QHostAddress, quint16> ipAddress() const;
-    QString localAddress() const;
-
 protected:
     IncomingStreamTubeChannel(const ConnectionPtr &connection,
             const QString &objectPath,

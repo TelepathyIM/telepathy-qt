@@ -408,38 +408,6 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     return op;
 }
 
-/**
- * Return the local address of the opened stream tube.
- *
- * Calling this method when the tube has not been opened will cause it
- * to return an undefined value. The same will happen if the tube has been accepted as a TCP
- * socket. Use ipAddress() if that is the case.
- *
- * \return Unix socket address if using an Unix socket,
- *         or an undefined value otherwise.
- * \sa acceptTubeAsUnixSocket(), ipAddress()
- */
-QString IncomingStreamTubeChannel::localAddress() const
-{
-    return StreamTubeChannel::localAddress();
-}
-
-/**
- * Return the IP address/port combination of the opened stream tube.
- *
- * Calling this method when the tube has not been opened will cause it
- * to return an undefined value. The same will happen if the tube has been accepted as an Unix
- * socket. Use localAddress() if that is the case.
- *
- * \return Pair of IP address as QHostAddress and port if using a TCP socket,
- *         or an undefined value otherwise.
- * \sa acceptTubeAsTcpSocket(), localAddress()
- */
-QPair<QHostAddress, quint16> IncomingStreamTubeChannel::ipAddress() const
-{
-    return StreamTubeChannel::ipAddress();
-}
-
 void IncomingStreamTubeChannel::onNewLocalConnection(uint connectionId)
 {
     addConnection(connectionId);

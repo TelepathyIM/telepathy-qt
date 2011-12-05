@@ -136,7 +136,7 @@ void SimpleStreamTubeHandler::handleChannels(
             continue;
         }
 
-        Features features = StreamTubeChannel::FeatureStreamTube;
+        Features features = StreamTubeChannel::FeatureCore;
         if (mMonitorConnections) {
             features.insert(StreamTubeChannel::FeatureConnectionMonitoring);
         }

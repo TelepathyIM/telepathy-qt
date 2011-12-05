@@ -122,7 +122,6 @@ public:
         QString label() const;
         QString iconName() const;
         bool canHaveStatusMessage() const;
-        TP_QT_DEPRECATED QString message() const;
 
         bool isDisabled() const;
 

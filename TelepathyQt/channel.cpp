@@ -1872,7 +1872,7 @@ void Channel::PendingLeave::onRemoveFinished(Tp::PendingOperation *op)
         return;
     }
 
-    ChannelPtr chan = ChannelPtr::staticCast(_object());
+    ChannelPtr chan = ChannelPtr::staticCast(object());
 
     if (op->isValid()) {
         debug() << "We left the channel" << chan->objectPath();
@@ -1913,7 +1913,7 @@ void Channel::PendingLeave::onMembersChanged(const Tp::Contacts &, const Tp::Con
         return;
     }
 
-    ChannelPtr chan = ChannelPtr::staticCast(_object());
+    ChannelPtr chan = ChannelPtr::staticCast(object());
     ContactPtr c = chan->groupSelfContact();
 
     if (removed.contains(c)) {
@@ -1928,7 +1928,7 @@ void Channel::PendingLeave::onCloseFinished(Tp::PendingOperation *op)
         return;
     }
 
-    ChannelPtr chan = ChannelPtr::staticCast(_object());
+    ChannelPtr chan = ChannelPtr::staticCast(object());
 
     if (op->isError()) {
         warning() << "Closing the channel" << chan->objectPath()
@@ -2357,34 +2357,48 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
 /**
  * Return the current contacts of the group.
  *
+ * It is possible to omit the contact representing the local user, even if
+ * the contact is in the set, by passing \c false as the parameter \a
+ * includeSelfContact.
+ *
  * Change notification is via the groupMembersChanged() signal.
  *
  * This method requires Channel::FeatureCore to be ready.
  *
+ * \param includeSelfContact Whether to include the self contact in the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupLocalPendingContacts(), groupRemotePendingContacts()
  */
-Contacts Channel::groupContacts() const
+Contacts Channel::groupContacts(bool includeSelfContact) const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupMembers() used channel not ready";
     }
 
-    return mPriv->groupContacts.values().toSet();
+    Contacts ret = mPriv->groupContacts.values().toSet();
+    if (!includeSelfContact) {
+        ret.remove(groupSelfContact());
+    }
+    return ret;
 }
 
 /**
  * Return the contacts currently waiting for local approval to join the
  * group.
  *
+ * It is possible to omit the contact representing the local user, even if
+ * the contact is in the set, by passing \c false as the parameter \a
+ * includeSelfContact.
+ *
  * Change notification is via the groupMembersChanged() signal.
  *
  * This method requires Channel::FeatureCore to be ready.
  *
+ * \param includeSelfContact Whether to include the self contact in the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupRemotePendingContacts()
  */
-Contacts Channel::groupLocalPendingContacts() const
+Contacts Channel::groupLocalPendingContacts(bool includeSelfContact) const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupLocalPendingContacts() used channel not ready";
@@ -2392,21 +2406,30 @@ Contacts Channel::groupLocalPendingContacts() const
         warning() << "Channel::groupLocalPendingContacts() used with no group interface";
     }
 
-    return mPriv->groupLocalPendingContacts.values().toSet();
+    Contacts ret = mPriv->groupLocalPendingContacts.values().toSet();
+    if (!includeSelfContact) {
+        ret.remove(groupSelfContact());
+    }
+    return ret;
 }
 
 /**
  * Return the contacts currently waiting for remote approval to join the
  * group.
  *
+ * It is possible to omit the contact representing the local user, even if
+ * the contact is in the set, by passing \c false as the parameter \a
+ * includeSelfContact.
+ *
  * Change notification is via the groupMembersChanged() signal.
  *
  * This method requires Channel::FeatureCore to be ready.
  *
+ * \param includeSelfContact Whether to include the self contact in the returned set.
  * \return A set of pointers to the Contact objects.
  * \sa groupContacts(), groupLocalPendingContacts()
  */
-Contacts Channel::groupRemotePendingContacts() const
+Contacts Channel::groupRemotePendingContacts(bool includeSelfContact) const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupRemotePendingContacts() used channel not ready";
@@ -2415,7 +2438,11 @@ Contacts Channel::groupRemotePendingContacts() const
             "group interface";
     }
 
-    return mPriv->groupRemotePendingContacts.values().toSet();
+    Contacts ret = mPriv->groupRemotePendingContacts.values().toSet();
+    if (!includeSelfContact) {
+        ret.remove(groupSelfContact());
+    }
+    return ret;
 }
 
 /**

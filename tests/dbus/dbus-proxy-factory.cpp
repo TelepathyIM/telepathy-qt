@@ -133,7 +133,6 @@ void TestDBusProxyFactory::testCaching()
             ContactFactory::create());
 
     QVERIFY(first != NULL);
-    QVERIFY(!first->object().isNull());
     QVERIFY(!first->proxy().isNull());
 
     PendingReady *same = mFactory->proxy(mConnName1, mConnPath1,
@@ -141,10 +140,8 @@ void TestDBusProxyFactory::testCaching()
             ContactFactory::create());
 
     QVERIFY(same != NULL);
-    QVERIFY(!same->object().isNull());
     QVERIFY(!same->proxy().isNull());
 
-    QCOMPARE(same->object().data(), first->object().data());
     QCOMPARE(same->proxy().data(), first->proxy().data());
 
     PendingReady *different = mFactory->proxy(mConnName2, mConnPath2,
@@ -152,10 +149,8 @@ void TestDBusProxyFactory::testCaching()
             ContactFactory::create());
 
     QVERIFY(different != NULL);
-    QVERIFY(!different->object().isNull());
     QVERIFY(!different->proxy().isNull());
 
-    QVERIFY(different->object() == first->object());
     QVERIFY(different->proxy() != first->proxy());
 
     ConnectionPtr firstProxy = ConnectionPtr::qObjectCast(first->proxy());
@@ -180,7 +175,6 @@ void TestDBusProxyFactory::testCaching()
             ContactFactory::create());
 
     QVERIFY(another != NULL);
-    QVERIFY(!another->object().isNull());
     QVERIFY(!another->proxy().isNull());
 
     // Should still be the same even if all the initial requests already finished
@@ -198,7 +192,6 @@ void TestDBusProxyFactory::testDropRefs()
             ContactFactory::create());
 
     QVERIFY(first != NULL);
-    QVERIFY(!first->object().isNull());
     QVERIFY(!first->proxy().isNull());
 
     ConnectionPtr firstProxy = ConnectionPtr::qObjectCast(first->proxy());
@@ -213,7 +206,6 @@ void TestDBusProxyFactory::testDropRefs()
             ContactFactory::create());
 
     QVERIFY(same != NULL);
-    QVERIFY(!same->object().isNull());
     QVERIFY(!same->proxy().isNull());
 
     // The first one is in scope so we should've got it again
@@ -235,7 +227,6 @@ void TestDBusProxyFactory::testDropRefs()
             ContactFactory::create());
 
     QVERIFY(different != NULL);
-    QVERIFY(!different->object().isNull());
     QVERIFY(!different->proxy().isNull());
 
     // The first one has gone out of scope and deleted so we should've got a different one
@@ -249,7 +240,6 @@ void TestDBusProxyFactory::testInvalidate()
             ContactFactory::create());
 
     QVERIFY(first != NULL);
-    QVERIFY(!first->object().isNull());
     QVERIFY(!first->proxy().isNull());
 
     ConnectionPtr firstProxy = ConnectionPtr::qObjectCast(first->proxy());
@@ -264,7 +254,6 @@ void TestDBusProxyFactory::testInvalidate()
             ContactFactory::create());
 
     QVERIFY(same != NULL);
-    QVERIFY(!same->object().isNull());
     QVERIFY(!same->proxy().isNull());
 
     // The first one is in scope and valid so we should've got it again
@@ -317,7 +306,6 @@ void TestDBusProxyFactory::testBogusService()
             ContactFactory::create());
 
     QVERIFY(bogus != NULL);
-    QVERIFY(!bogus->object().isNull());
     QVERIFY(!bogus->proxy().isNull());
 
     QVERIFY(!ConnectionPtr::qObjectCast(bogus->proxy())->isValid());
@@ -328,7 +316,6 @@ void TestDBusProxyFactory::testBogusService()
             ContactFactory::create());
 
     QVERIFY(another != NULL);
-    QVERIFY(!another->object().isNull());
     QVERIFY(!another->proxy().isNull());
 
     QVERIFY(!ConnectionPtr::qObjectCast(another->proxy())->isValid());
@@ -336,7 +323,6 @@ void TestDBusProxyFactory::testBogusService()
     // We shouldn't get the same proxy twice ie. a proxy should not be cached if not present on bus
     // and invalidated because of that, otherwise we'll return an invalid instance from the cache
     // even if after the service appears on the bus
-    QCOMPARE(another->object(), bogus->object());
     QVERIFY(another->proxy() != bogus->proxy());
 
     // The PendingReady itself should finish with failure

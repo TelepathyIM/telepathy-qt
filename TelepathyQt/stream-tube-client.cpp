@@ -793,7 +793,7 @@ QHash<StreamTubeClient::Tube, QSet<uint> > StreamTubeClient::connections() const
             continue;
         }
 
-        QSet<uint> tubeConns = QSet<uint>::fromList(tube.channel()->connections());
+        QSet<uint> tubeConns = tube.channel()->connections();
         if (!tubeConns.empty()) {
             conns.insert(tube, tubeConns);
         }

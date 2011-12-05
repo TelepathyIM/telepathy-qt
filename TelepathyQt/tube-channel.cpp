@@ -118,11 +118,6 @@ void TubeChannel::Private::extractTubeProperties(const QVariantMap &props)
 const Feature TubeChannel::FeatureCore = Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
 
 /**
- * \deprecated Use TubeChannel::FeatureCore instead.
- */
-const Feature TubeChannel::FeatureTube = TubeChannel::FeatureCore;
-
-/**
  * Create a new TubeChannel channel.
  *
  * \param connection Connection owning this channel, and specifying the
@@ -207,14 +202,6 @@ TubeChannelState TubeChannel::state() const
     return mPriv->state;
 }
 
-/**
- * \deprecated Use state() instead.
- */
-TubeChannelState TubeChannel::tubeState() const
-{
-    return state();
-}
-
 void TubeChannel::setParameters(const QVariantMap &parameters)
 {
     mPriv->parameters = parameters;
@@ -234,8 +221,6 @@ void TubeChannel::onTubeChannelStateChanged(uint newState)
     /* only emit stateChanged if we already received the state from initial introspection */
     if (oldState != (uint) -1) {
         emit stateChanged((Tp::TubeChannelState) newState);
-        // FIXME (API/ABI break) Remove tubeStateChanged call
-        emit tubeStateChanged((Tp::TubeChannelState) newState);
     }
 }
 
@@ -263,19 +248,5 @@ void TubeChannel::gotTubeProperties(PendingOperation *op)
  *
  * \sa state The new state of this tube.
  */
-
-/**
- * \fn void TubeChannel::tubeStateChanged(Tp::TubeChannelState state)
- *
- * \deprecated Use stateChanged() instead.
- */
-
-void TubeChannel::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(tubeStateChanged(Tp::TubeChannelState))) == 0) {
-        warning() << "Connecting to deprecated signal tubeStateChanged(Tp::TubeChannelState)";
-    }
-}
-
 
 } // Tp

@@ -151,7 +151,6 @@ public:
      * Filter on being blocked or not
      */
     bool isBlocked() const;
-    TP_QT_DEPRECATED PendingOperation *block(bool value);
     PendingOperation *block();
     PendingOperation *blockAndReportAbuse();
     PendingOperation *unblock();
@@ -180,18 +179,10 @@ Q_SIGNALS:
     void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
     void subscriptionStateChanged(Tp::Contact::PresenceState state);
-    // deprecated
-    void subscriptionStateChanged(Tp::Contact::PresenceState state,
-            const Tp::Channel::GroupMemberChangeDetails &details);
 
     void publishStateChanged(Tp::Contact::PresenceState state, const QString &message);
-    // deprecated
-    void publishStateChanged(Tp::Contact::PresenceState state,
-            const Tp::Channel::GroupMemberChangeDetails &details);
 
     void blockStatusChanged(bool blocked);
-    // deprecated
-    void blockStatusChanged(bool blocked, const Tp::Channel::GroupMemberChangeDetails &details);
 
     void addedToGroup(const QString &group);
     void removedFromGroup(const QString &group);
@@ -207,9 +198,6 @@ protected:
             const Features &requestedFeatures, const QVariantMap &attributes);
 
     virtual void augment(const Features &requestedFeatures, const QVariantMap &attributes);
-
-    // FIXME: (API/ABI break) Remove connectNotify
-    void connectNotify(const char *);
 
 private:
     static const Feature FeatureRosterGroups;

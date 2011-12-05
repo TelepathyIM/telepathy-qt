@@ -30,6 +30,17 @@
 namespace Tp
 {
 
+struct TP_QT_NO_EXPORT AbstractClient::Private
+{
+    Private()
+        : registered(false)
+    {
+    }
+
+    bool registered;
+};
+
+
 /**
  * \class AbstractClient
  * \ingroup clientclient
@@ -80,6 +91,7 @@ namespace Tp
  * AbstractClientHandler instead.
  */
 AbstractClient::AbstractClient()
+    : mPriv(new Private())
 {
 }
 
@@ -88,6 +100,22 @@ AbstractClient::AbstractClient()
  */
 AbstractClient::~AbstractClient()
 {
+    delete mPriv;
+}
+
+/**
+ * Return whether this client is registered.
+ *
+ * \return \c true if registered, \c false otherwise.
+ */
+bool AbstractClient::isRegistered() const
+{
+    return mPriv->registered;
+}
+
+void AbstractClient::setRegistered(bool registered)
+{
+    mPriv->registered = registered;
 }
 
 struct TP_QT_NO_EXPORT AbstractClientObserver::Private
@@ -550,15 +578,13 @@ struct TP_QT_NO_EXPORT AbstractClientHandler::Private
             bool wantsRequestNotification)
         : channelFilter(channelFilter),
           capabilities(capabilities),
-          wantsRequestNotification(wantsRequestNotification),
-          registered(false)
+          wantsRequestNotification(wantsRequestNotification)
     {
     }
 
     ChannelClassList channelFilter;
     Capabilities capabilities;
     bool wantsRequestNotification;
-    bool registered;
 };
 
 /**
@@ -800,16 +826,6 @@ AbstractClientHandler::~AbstractClientHandler()
 }
 
 /**
- * Return whether this handler is registered.
- *
- * \return \c true if registered, \c false otherwise.
- */
-bool AbstractClientHandler::isRegistered() const
-{
-    return mPriv->registered;
-}
-
-/**
  * Return the property containing a specification of the channels that this
  * channel handler can deal with. It will be offered to approvers as a potential
  * channel handler for bundles that contain only suitable channels, or for
@@ -978,11 +994,6 @@ void AbstractClientHandler::removeRequest(
 {
     // do nothing, subclasses that want to listen requests should reimplement
     // this method
-}
-
-void AbstractClientHandler::setRegistered(bool registered)
-{
-    mPriv->registered = registered;
 }
 
 } // Tp

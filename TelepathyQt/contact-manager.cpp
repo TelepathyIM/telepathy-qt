@@ -906,15 +906,6 @@ bool ContactManager::canReportAbuse() const
 }
 
 /**
- * \deprecated Use blockContacts(const QList<ContactPtr> &contacts) instead.
- */
-PendingOperation *ContactManager::blockContacts(
-        const QList<ContactPtr> &contacts, bool value)
-{
-    return mPriv->roster->blockContacts(contacts, value, false);
-}
-
-/**
  * Block the given contacts. Blocked contacts cannot send messages
  * to the user; depending on the protocol, blocking a contact may
  * have other effects.
@@ -1134,17 +1125,6 @@ void ContactManager::requestContactAvatars(const QList<ContactPtr> &contacts)
     }
 
     mPriv->requestAvatarsQueue.unite(contacts.toSet());
-}
-
-/**
- * \deprecated
- *
- * This was never intended to be public API.
- * Use Contact::requestAvatarData() or ContactManager::requestContactAvatars() instead.
- */
-void ContactManager::requestContactAvatar(Contact *contact)
-{
-    requestContactAvatars(QList<ContactPtr>() << ContactPtr(contact));
 }
 
 /**
@@ -1498,26 +1478,6 @@ void ContactManager::resetRoster()
  */
 
 /**
- * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
- *          const QString &message)
- *
- * \deprecated Turned out this didn't make sense at all. There can be multiple contacts, but this
- *             signal carries just a single message.
- *             Use presencePublicationRequested(const Tp::Contacts &contacts) instead,
- *             and extract the messages from the individual Tp::Contact objects.
- */
-
-/**
- * \fn void ContactManager::presencePublicationRequested(const Tp::Contacts &contacts,
- *          const Tp::Channel::GroupMemberChangeDetails &details)
- *
- * \deprecated Turned out this didn't make sense at all. There can be multiple contacts, but this
- *             signal carries just a single details.
- *             Use presencePublicationRequested(const Tp::Contacts &contacts) instead,
- *             and extract the details (message) from the individual Tp::Contact objects.
- */
-
-/**
  * \fn void ContactManager::groupAdded(const QString &group)
  *
  * Emitted when a new contact list group is created.
@@ -1579,14 +1539,5 @@ void ContactManager::resetRoster()
  * \param details The change details.
  * \sa allKnownContacts()
  */
-
-void ContactManager::connectNotify(const char *signalName)
-{
-    if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails))) == 0) {
-        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts,Tp::Channel::GroupMemberChangeDetails)";
-    } else if (qstrcmp(signalName, SIGNAL(presencePublicationRequested(Tp::Contacts,QString))) == 0) {
-        warning() << "Connecting to deprecated signal presencePublicationRequested(Tp::Contacts,QString)";
-    }
-}
 
 } // Tp
