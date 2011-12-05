@@ -735,6 +735,23 @@ QStringList TextChannel::supportedContentTypes() const
 }
 
 /**
+ * Return the message types supported by this channel.
+ *
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
+ *
+ * \return The list of supported message types
+ */
+QList<ChannelTextMessageType> TextChannel::supportedMessageTypes() const
+{
+    if (!isReady(FeatureCore)) {
+        warning() << "TextChannel::supportedMessageTypes() used with "
+                "FeatureMessageCapabilities not ready";
+    }
+
+    return mPriv->supportedMessageTypes;
+}
+
+/**
  * Return whether the provided message type is supported.
  *
  * This method requires TextChannel::FeatureMessageCapabilities to be ready.
