@@ -221,6 +221,15 @@ class WeakPtr
 
 public:
     inline WeakPtr() : sc(0) { }
+    explicit inline WeakPtr(T *d)
+    {
+        if (d) {
+            sc = d->sc;
+            sc->weakref.ref();
+        } else {
+            sc = 0;
+        }
+    }
     inline WeakPtr(const WeakPtr<T> &o) : sc(o.sc) { if (sc) { sc->weakref.ref(); } }
     inline WeakPtr(const SharedPtr<T> &o)
     {

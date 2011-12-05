@@ -162,7 +162,7 @@ struct TP_QT_NO_EXPORT ConnectionLowlevel::Private
     {
     }
 
-    QWeakPointer<Connection> conn;
+    WeakPtr<Connection> conn;
     HandleIdentifierMap contactsIds;
 };
 
@@ -648,7 +648,7 @@ bool ConnectionLowlevel::isValid() const
 
 ConnectionPtr ConnectionLowlevel::connection() const
 {
-    return ConnectionPtr(mPriv->conn.data());
+    return ConnectionPtr(mPriv->conn);
 }
 
 Connection::PendingConnect::PendingConnect(const ConnectionPtr &connection,

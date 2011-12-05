@@ -88,7 +88,7 @@ struct TP_QT_NO_EXPORT ConnectionManagerLowlevel::Private
     {
     }
 
-    QWeakPointer<ConnectionManager> cm;
+    WeakPtr<ConnectionManager> cm;
 };
 
 class TP_QT_NO_EXPORT ConnectionManager::Private::PendingNames : public PendingStringList

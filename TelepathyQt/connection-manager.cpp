@@ -597,7 +597,7 @@ bool ConnectionManagerLowlevel::isValid() const
 
 ConnectionManagerPtr ConnectionManagerLowlevel::connectionManager() const
 {
-    return ConnectionManagerPtr(mPriv->cm.data());
+    return ConnectionManagerPtr(mPriv->cm);
 }
 
 /**
