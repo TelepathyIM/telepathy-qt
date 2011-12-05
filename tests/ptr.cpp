@@ -247,27 +247,34 @@ public:
     void run()
     {
         QVERIFY(!mPtr.isNull());
-        for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 200; ++i) {
             WeakPtr<Data> wptrtmp(mPtr);
             QVERIFY(!wptrtmp.isNull());
             DataPtr ptrtmp(wptrtmp);
+            wptrtmp = WeakPtr<Data>();
             QVERIFY(!ptrtmp.isNull());
 
-            usleep(10);
             DataPtr ptrtmp2(ptrtmp);
+            ptrtmp.reset();
             QVERIFY(!ptrtmp2.isNull());
             WeakPtr<Data> wptrtmp2 = ptrtmp2;
+            ptrtmp2.reset();
             QVERIFY(!wptrtmp2.isNull());
 
-            usleep(10);
             WeakPtr<Data> wptrtmp3(wptrtmp2);
             QVERIFY(!wptrtmp3.isNull());
             wptrtmp3 = wptrtmp2;
+            wptrtmp2 = WeakPtr<Data>();
             QVERIFY(!wptrtmp3.isNull());
 
             DataPtr ptrtmp3(wptrtmp3);
+            wptrtmp3 = WeakPtr<Data>();
             QCOMPARE(ptrtmp3.data(), mPtr.data());
             QVERIFY(!ptrtmp3.isNull());
+
+            WeakPtr<Data> wptrtmp4(ptrtmp3.data());
+            ptrtmp3.reset();
+            QVERIFY(!wptrtmp4.isNull());
         }
     }
 
@@ -305,6 +312,8 @@ void TestSharedPtr::testThreadSafety()
         t[i]->start();
     }
 
+    QVERIFY(!ptr.isNull());
+    QVERIFY(!weakPtr.isNull());
     ptr.reset();
     QVERIFY(ptr.isNull());
 
