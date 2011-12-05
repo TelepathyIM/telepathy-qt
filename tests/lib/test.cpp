@@ -4,12 +4,12 @@
 
 #include <QtCore/QTimer>
 
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/DBus>
-#include <TelepathyQt4/PendingVoid>
-#include <TelepathyQt4/SharedPtr>
-#include <TelepathyQt4/RefCounted>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/DBus>
+#include <TelepathyQt/PendingVoid>
+#include <TelepathyQt/SharedPtr>
+#include <TelepathyQt/RefCounted>
 
 using Tp::PendingOperation;
 using Tp::PendingVoid;

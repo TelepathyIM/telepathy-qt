@@ -9,26 +9,30 @@ set(roster_MOC_SRCS
     roster-item.h
     roster-widget.h)
 
-tpqt4_generate_mocs(${roster_MOC_SRCS})
+tpqt_generate_mocs(${roster_MOC_SRCS})
 
 add_executable(roster ${roster_SRCS} ${roster_MOC_SRCS})
 target_link_libraries(roster
+    ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTWIDGETS_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    telepathy-qt${QT_VERSION_MAJOR})
 
-set(telepathy_qt4_examples_roster_SRCS
+set(telepathy_qt_examples_roster_SRCS
     roster-item.cpp
     roster-widget.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/roster-item.moc.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/roster-widget.moc.hpp)
 
-add_library(telepathy-qt4-examples-roster ${telepathy_qt4_examples_roster_SRCS})
-target_link_libraries(telepathy-qt4-examples-roster
+add_library(telepathy-qt-examples-roster ${telepathy_qt_examples_roster_SRCS})
+target_link_libraries(telepathy-qt-examples-roster
+    ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTWIDGETS_LIBRARY}
     ${QT_QTXML_LIBRARY}
-    ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    telepathy-qt${QT_VERSION_MAJOR})

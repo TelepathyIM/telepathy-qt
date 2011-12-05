@@ -4,10 +4,10 @@
 
 #include <tests/lib/glib/contactlist/conn.h>
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/Contact>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/Contact>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingContacts>
 
 #include <telepathy-glib/debug.h>
 

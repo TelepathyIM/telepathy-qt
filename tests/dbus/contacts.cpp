@@ -5,21 +5,21 @@
 #include <QtDBus>
 #include <QtTest>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/Contact>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingVoid>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Presence>
-#include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/Contact>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingVoid>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/Presence>
+#include <TelepathyQt/ReferencedHandles>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Types>
 
 #include <telepathy-glib/debug.h>
 
@@ -181,13 +181,13 @@ void TestContacts::testSupport()
     QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().isEmpty());
 
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION)));
+                TP_QT_IFACE_CONNECTION));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)));
+                TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)));
+                TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)));
+                TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
 
     Features supportedFeatures = mConn->contactManager()->supportedFeatures();
     QVERIFY(!supportedFeatures.isEmpty());

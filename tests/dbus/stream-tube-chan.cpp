@@ -5,13 +5,13 @@
 #include <tests/lib/glib/simple-conn.h>
 #include <tests/lib/glib/stream-tube-chan.h>
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/IncomingStreamTubeChannel>
-#include <TelepathyQt4/OutgoingStreamTubeChannel>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingStreamTubeConnection>
-#include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/StreamTubeChannel>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/IncomingStreamTubeChannel>
+#include <TelepathyQt/OutgoingStreamTubeChannel>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingStreamTubeConnection>
+#include <TelepathyQt/ReferencedHandles>
+#include <TelepathyQt/StreamTubeChannel>
 
 #include <telepathy-glib/telepathy-glib.h>
 
@@ -672,7 +672,7 @@ void TestStreamTubeChan::testOfferSuccess()
                         SLOT(onOfferFinished(Tp::PendingOperation *))));
         } else {
             tcpServer = new QTcpServer(this);
-            tcpServer->listen();
+            tcpServer->listen(QHostAddress::Any, 0);
             connect(tcpServer, SIGNAL(newConnection()), SLOT(onNewSocketConnection()));
 
             QVERIFY(connect(chan->offerTcpSocket(tcpServer, offerParameters),

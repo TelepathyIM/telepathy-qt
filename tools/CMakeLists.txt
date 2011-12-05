@@ -3,8 +3,8 @@ add_custom_command(OUTPUT FIXME.out
 
                    COMMAND egrep
 
-                   ARGS -A 5 '[F]IXME|[T]ODO|[X]XX'  ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.[ch]*
-                         ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.[ch]*
+                   ARGS -A 5 '[F]IXME|[T]ODO|[X]XX'  ${CMAKE_SOURCE_DIR}/TelepathyQt/*.[ch]*
+                         ${CMAKE_SOURCE_DIR}/TelepathyQt/*.[ch]*
                         > FIXME.out || true)
 add_custom_target(check-local DEPENDS FIXME.out)
 
@@ -18,7 +18,7 @@ if (GIT_BRANCH_CURRENT)
     if (HAVE_GIT_BRANCH)
         string(REPLACE "\n" "" GIT_BRANCH_CURRENT ${GIT_BRANCH_CURRENT})
 
-        set(UPLOAD_BRANCH_TO people.freedesktop.org:public_html/telepathy-qt4)
+        set(UPLOAD_BRANCH_TO people.freedesktop.org:public_html/telepathy-qt)
 
         add_custom_target(upload-branch-docs rsync -rtzvPp --chmod=a+rX doc/html/ ${UPLOAD_BRANCH_TO}-${GIT_BRANCH_CURRENT}
                                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -35,7 +35,7 @@ if (PERL_FOUND)
 endif (PERL_FOUND)
 
 add_custom_target(maintainer-upload-release-docs
-        rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt4/
+        rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt/
 
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
@@ -84,10 +84,10 @@ set(toolchain_files
     glib-signals-marshal-gen.py
     libtpcodegen.py
     libglibcodegen.py
-    libqt4codegen.py
-    qt4-client-gen.py
-    qt4-constants-gen.py
-    qt4-types-gen.py
+    libqtcodegen.py
+    qt-client-gen.py
+    qt-constants-gen.py
+    qt-types-gen.py
     manager-file.py
     with-session-bus.sh
     xincludator.py

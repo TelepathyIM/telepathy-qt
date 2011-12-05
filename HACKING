@@ -11,15 +11,15 @@ Contents:
 Version control
 ===============================================================================
 
-The current development version of telepathy-qt4 is available from the
+The current development version of telepathy-qt is available from the
 'master' branch in the git repository:
 
-  <git://anongit.freedesktop.org/telepathy/telepathy-qt4>
-  <ssh://git.freedesktop.org/git/telepathy/telepathy-qt4> (for committers)
-  <http://cgit.freedesktop.org/telepathy/telepathy-qt4/> (cgit)
+  <git://anongit.freedesktop.org/telepathy/telepathy-qt>
+  <ssh://git.freedesktop.org/git/telepathy/telepathy-qt> (for committers)
+  <http://cgit.freedesktop.org/telepathy/telepathy-qt/> (cgit)
 
 Stable branches are available from branches with names like
-'telepathy-qt4-0.2' in the same repository.
+'telepathy-qt-0.2' in the same repository.
 
 
 ===============================================================================
@@ -29,7 +29,7 @@ Coding style
 For C++ code:
 -------------
 
-TelepathyQt4 uses the standard Qt4 coding style for the Qt/C++ code, as also
+TelepathyQt uses the standard Qt coding style for the Qt/C++ code, as also
 followed by eg. KDELibs.  The coding style is described in more detail in the
 KDE TechBase at <http://techbase.kde.org/Policies/Kdelibs_Coding_Style>; in
 short, it amounts to:
@@ -74,8 +74,8 @@ short, it amounts to:
     private Q_SLOTS
     private
  * friend class xxx definitions must be placed right below the private keyword.
- * All exported classes should use TELEPATHY_QT4_EXPORT macro as following:
-    class TELEPATHY_QT4_EXPORT xxx { ... };
+ * All exported classes should use TP_QT_EXPORT macro as following:
+    class TP_QT_EXPORT xxx { ... };
  * Every issue in APIs which can (or will) only be fixed later should be marked
    with a doxygen \todo and have a corresponding fd.o bug filed and mentioned in
    the \todo annotation
@@ -97,14 +97,14 @@ Submitting patches
 Patches should be made as (preferably) git branches or (last resort) -uNr diffs
 against upstream git master, as found at:
 
-  git://anongit.freedesktop.org/telepathy/telepathy-qt4
-  ssh://git.freedesktop.org/git/telepathy/telepathy-qt4 (for committers)
-  http://cgit.freedesktop.org/telepathy/telepathy-qt4/ (cgit)
+  git://anongit.freedesktop.org/telepathy/telepathy-qt
+  ssh://git.freedesktop.org/git/telepathy/telepathy-qt (for committers)
+  http://cgit.freedesktop.org/telepathy/telepathy-qt/ (cgit)
 
 Patches can be announced at the freedesktop.org bugzilla, using the product
-"Telepathy" and component "tp-qt4":
+"Telepathy" and component "tp-qt":
 
-  https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=tp-qt4
+  https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=tp-qt
 
 If submitting a Git branch, please set the URL field of the bug to point to
 your Git branch. Regardless of whether you are referring to a Git branch or

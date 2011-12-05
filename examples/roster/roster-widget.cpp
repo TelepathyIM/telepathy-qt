@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
@@ -24,13 +24,13 @@
 
 #include "roster-item.h"
 
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/Contact>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingConnection>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/Contact>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingConnection>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingReady>
 
 #include <QAction>
 #include <QDebug>

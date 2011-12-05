@@ -1,9 +1,9 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/Types>
 
 using namespace Tp;
 
@@ -124,27 +124,27 @@ void TestChannelClassSpec::testChannelClassSpecHash()
 void TestChannelClassSpec::testServiceLeaks()
 {
     ChannelClassSpec bareTube = ChannelClassSpec::outgoingStreamTube();
-    QVERIFY(!bareTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QVERIFY(!bareTube.allProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")));
 
     ChannelClassSpec ftpTube = ChannelClassSpec::outgoingStreamTube(QLatin1String("ftp"));
-    QVERIFY(ftpTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QVERIFY(ftpTube.allProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")));
-    QCOMPARE(ftpTube.allProperties().value(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QCOMPARE(ftpTube.allProperties().value(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")).toString(), QString::fromLatin1("ftp"));
-    QVERIFY(!bareTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QVERIFY(!bareTube.allProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")));
 
     ChannelClassSpec httpTube = ChannelClassSpec::outgoingStreamTube(QLatin1String("http"));
-    QVERIFY(httpTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QVERIFY(httpTube.allProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")));
-    QVERIFY(ftpTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QVERIFY(ftpTube.allProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")));
-    QCOMPARE(httpTube.allProperties().value(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QCOMPARE(httpTube.allProperties().value(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")).toString(), QString::fromLatin1("http"));
-    QCOMPARE(ftpTube.allProperties().value(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QCOMPARE(ftpTube.allProperties().value(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")).toString(), QString::fromLatin1("ftp"));
-    QVERIFY(!bareTube.allProperties().contains(TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE +
+    QVERIFY(!bareTube.allProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE +
                 QString::fromLatin1(".Service")));
 }
 

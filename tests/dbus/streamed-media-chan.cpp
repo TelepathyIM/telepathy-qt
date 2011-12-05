@@ -4,15 +4,15 @@
 
 #include <tests/lib/glib/callable/conn.h>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/StreamedMediaChannel>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/StreamedMediaChannel>
 
 #include <telepathy-glib/debug.h>
 
@@ -157,7 +157,7 @@ void TestStreamedMediaChan::expectBusyRequestStreamsFinished(PendingOperation *o
     }
 
     if (op->isError()) {
-        // The service signaled busy even before tp-qt4 finished introspection.
+        // The service signaled busy even before tp-qt finished introspection.
         // FIXME: should the error be something else, actually? Such as, perchance,
         // org.freedesktop.Telepathy.Error.Busy? (fd.o #29757).
         QCOMPARE(op->errorName(), QLatin1String("org.freedesktop.Telepathy.Error.Cancelled"));
@@ -440,12 +440,12 @@ void TestStreamedMediaChan::onNewChannels(const Tp::ChannelDetailsList &channels
 {
     qDebug() << "new channels";
     Q_FOREACH (const Tp::ChannelDetails &details, channels) {
-        QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-        bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
+        QString channelType = details.properties.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
+        bool requested = details.properties.value(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")).toBool();
         qDebug() << " channelType:" << channelType;
         qDebug() << " requested  :" << requested;
 
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
+        if (channelType == TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             !requested) {
             mChan = StreamedMediaChannel::create(mConn->client(),
                     details.channel.path(), details.properties);
@@ -511,7 +511,7 @@ void TestStreamedMediaChan::testOutgoingCall()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -699,7 +699,7 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -752,7 +752,7 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -824,7 +824,7 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -1054,7 +1054,7 @@ void TestStreamedMediaChan::testHold()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureLocalHoldState),
@@ -1111,7 +1111,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureLocalHoldState),
@@ -1164,7 +1164,7 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureLocalHoldState),
@@ -1234,7 +1234,7 @@ void TestStreamedMediaChan::testDTMF()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
@@ -1310,7 +1310,7 @@ void TestStreamedMediaChan::testDTMFNoContinuousTone()
     QVERIFY(otherContact);
 
     mChan = StreamedMediaChannelPtr::qObjectCast(
-            mConn->createChannel(TP_QT4_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
+            mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA, otherContact));
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),

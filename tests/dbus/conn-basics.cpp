@@ -5,15 +5,15 @@
 
 #include <QtTest/QtTest>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Debug>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/Debug>
 
 #include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
@@ -240,13 +240,13 @@ void TestConnBasics::cleanup()
 
         GHashTable *details = tp_asv_new(
                 "debug-message", G_TYPE_STRING, "woo i'm going doooooown",
-                "x-tpqt4-test-rgba-herring-color", G_TYPE_UINT, 0xff0000ffU,
+                "x-tpqt-test-rgba-herring-color", G_TYPE_UINT, 0xff0000ffU,
                 NULL
                 );
 
         // Disconnect and wait for invalidation
         tp_base_connection_disconnect_with_dbus_error(TP_BASE_CONNECTION(mConnService),
-                TELEPATHY_ERROR_CANCELLED,
+                TP_QT_ERROR_CANCELLED.latin1(),
                 details,
                 TP_CONNECTION_STATUS_REASON_REQUESTED);
 
@@ -275,9 +275,9 @@ void TestConnBasics::cleanup()
 #endif
 
         QVERIFY(mConn->errorDetails().allDetails().contains(
-                    QLatin1String("x-tpqt4-test-rgba-herring-color")));
+                    QLatin1String("x-tpqt-test-rgba-herring-color")));
         QCOMPARE(qdbus_cast<uint>(mConn->errorDetails().allDetails().value(
-                        QLatin1String("x-tpqt4-test-rgba-herring-color"))),
+                        QLatin1String("x-tpqt-test-rgba-herring-color"))),
                 0xff0000ffU);
 
         processDBusQueue(mConn.data());

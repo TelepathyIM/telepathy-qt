@@ -16,11 +16,11 @@
       indicate specialized failure conditions. For better interoperability,
       if a suitable Telepathy error exists, it should be preferred.</p>
 
-    <p>The namespace <code>org.freedesktop.Telepathy.Qt4.Error.</code>
-      is reserved for use by the D-Bus client implementation in telepathy-qt4,
+    <p>The namespace <code>org.freedesktop.Telepathy.Qt.Error.</code>
+      is reserved for use by the D-Bus client implementation in telepathy-qt,
       which uses it to represent certain error situations that did not involve
       a D-Bus ERROR message. These errors are defined and documented as part of
-      telepathy-qt4's C++ API, and should not be used on D-Bus.</p>
+      telepathy-qt's C++ API, and should not be used on D-Bus.</p>
   </tp:docstring>
 
   <tp:error name="Network Error">
@@ -539,7 +539,7 @@
         also analogous to
         <tp:type>Media_Stream_Error</tp:type>_Invalid_CM_Behavior,
         <code>TP_DBUS_ERROR_INCONSISTENT</code> in telepathy-glib, and
-        <code>TELEPATHY_QT4_ERROR_INCONSISTENT</code> in telepathy-qt4.
+        <code>TP_QT_ERROR_INCONSISTENT</code> in telepathy-qt.
       </tp:rationale>
     </tp:docstring>
   </tp:error>

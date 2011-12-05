@@ -1,5 +1,5 @@
 /*
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2011 Nokia Corporation
@@ -22,9 +22,9 @@
 #include "pending-file-transfer.h"
 #include "_gen/pending-file-transfer.moc.hpp"
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/OutgoingFileTransferChannel>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/OutgoingFileTransferChannel>
 
 #include <QDebug>
 #include <QFile>

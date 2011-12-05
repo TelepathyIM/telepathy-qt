@@ -4,8 +4,8 @@
 
 #include <tests/lib/glib/echo2/conn.h>
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionCapabilities>
 
 #include <telepathy-glib/debug.h>
 

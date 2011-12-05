@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2009 Nokia Corporation
@@ -23,11 +23,11 @@
 #include <QEventLoop>
 #include <QtTest>
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/DBus>
-#include <TelepathyQt4/StatefulDBusProxy>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/DBus>
+#include <TelepathyQt/StatefulDBusProxy>
 
 #include "tests/lib/test.h"
 
@@ -100,12 +100,12 @@ private:
 
 QString TestStatefulProxy::wellKnownName()
 {
-    return QLatin1String("org.freedesktop.Telepathy.Qt4.TestStatefulProxy");
+    return QLatin1String("org.freedesktop.Telepathy.Qt.TestStatefulProxy");
 }
 
 QString TestStatefulProxy::objectPath()
 {
-    return QLatin1String("/org/freedesktop/Telepathy/Qt4/TestStatefulProxy/Object");
+    return QLatin1String("/org/freedesktop/Telepathy/Qt/TestStatefulProxy/Object");
 }
 
 TestStatefulProxy::TestStatefulProxy(QObject *parent)
@@ -286,9 +286,9 @@ void TestStatefulProxy::testNameOwnerChanged()
     QCOMPARE(mInvalidated, 1);
     QVERIFY(!mProxy->isValid());
     QCOMPARE(mProxy->invalidationReason(),
-            QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER));
+            TP_QT_DBUS_ERROR_NAME_HAS_NO_OWNER);
     QCOMPARE(mSignalledInvalidationReason,
-            QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER));
+            TP_QT_DBUS_ERROR_NAME_HAS_NO_OWNER);
     QVERIFY(!mProxy->invalidationMessage().isEmpty());
     QCOMPARE(mProxy->invalidationMessage(), mSignalledInvalidationMessage);
 }

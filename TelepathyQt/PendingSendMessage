@@ -1,0 +1,13 @@
+#ifndef _TelepathyQt_PendingSendMessage_HEADER_GUARD_
+#define _TelepathyQt_PendingSendMessage_HEADER_GUARD_
+
+#ifndef IN_TP_QT_HEADER
+#define IN_TP_QT_HEADER
+#endif
+
+#include <TelepathyQt/pending-send-message.h>
+
+#undef IN_TP_QT_HEADER
+
+#endif
+// vim:set ft=cpp:

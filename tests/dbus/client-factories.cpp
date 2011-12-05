@@ -7,41 +7,41 @@
 #include <QString>
 #include <QVariantMap>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountFactory>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/AbstractClientHandler>
-#include <TelepathyQt4/AbstractClientObserver>
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ChannelClassSpecList>
-#include <TelepathyQt4/ChannelDispatchOperation>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/ChannelRequest>
-#include <TelepathyQt4/ClientHandlerInterface>
-#include <TelepathyQt4/ClientInterfaceRequestsInterface>
-#include <TelepathyQt4/ClientObserverInterface>
-#include <TelepathyQt4/ClientRegistrar>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionFactory>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ContactSearchChannel>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/FileTransferChannel>
-#include <TelepathyQt4/IncomingFileTransferChannel>
-#include <TelepathyQt4/IncomingStreamTubeChannel>
-#include <TelepathyQt4/MethodInvocationContext>
-#include <TelepathyQt4/OutgoingFileTransferChannel>
-#include <TelepathyQt4/OutgoingStreamTubeChannel>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/StreamedMediaChannel>
-#include <TelepathyQt4/StreamTubeChannel>
-#include <TelepathyQt4/TextChannel>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountFactory>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/AbstractClientHandler>
+#include <TelepathyQt/AbstractClientObserver>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/ChannelClassSpecList>
+#include <TelepathyQt/ChannelDispatchOperation>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/ChannelRequest>
+#include <TelepathyQt/ClientHandlerInterface>
+#include <TelepathyQt/ClientInterfaceRequestsInterface>
+#include <TelepathyQt/ClientObserverInterface>
+#include <TelepathyQt/ClientRegistrar>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionFactory>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/ContactSearchChannel>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/FileTransferChannel>
+#include <TelepathyQt/IncomingFileTransferChannel>
+#include <TelepathyQt/IncomingStreamTubeChannel>
+#include <TelepathyQt/MethodInvocationContext>
+#include <TelepathyQt/OutgoingFileTransferChannel>
+#include <TelepathyQt/OutgoingStreamTubeChannel>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/StreamedMediaChannel>
+#include <TelepathyQt/StreamTubeChannel>
+#include <TelepathyQt/TextChannel>
+#include <TelepathyQt/Types>
 
 #include <telepathy-glib/debug.h>
 
@@ -539,7 +539,7 @@ void TestClientFactories::initTestCase()
 
     // Fake ChannelRequest
 
-    mChannelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    mChannelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
     mChannelRequestPath = QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/Request1");
 
     QObject *request = new QObject(this);
@@ -682,10 +682,10 @@ void TestClientFactories::testRequests()
             SLOT(expectSignalEmission()));
 
     QVariantMap requestProps;
-    requestProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"),
+    requestProps.insert(TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".Account"),
             QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
-    requestProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST
-                ".Interface.DomainSpecific.IntegerProp"),
+    requestProps.insert(TP_QT_IFACE_CHANNEL_REQUEST +
+                QLatin1String(".Interface.DomainSpecific.IntegerProp"),
             QVariant::fromValue(3));
 
     handlerRequestsIface->AddRequest(QDBusObjectPath(mChannelRequestPath), requestProps);
@@ -699,11 +699,11 @@ void TestClientFactories::testRequests()
              mAccount.data());
 
     QVERIFY(client->mAddRequestRequest->immutableProperties().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST
-                    ".Interface.DomainSpecific.IntegerProp")));
+                TP_QT_IFACE_CHANNEL_REQUEST +
+                    QLatin1String(".Interface.DomainSpecific.IntegerProp")));
     QCOMPARE(qdbus_cast<int>(client->mAddRequestRequest->immutableProperties().value(
-                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST
-                        ".Interface.DomainSpecific.IntegerProp"))),
+                    TP_QT_IFACE_CHANNEL_REQUEST +
+                        QLatin1String(".Interface.DomainSpecific.IntegerProp"))),
             3);
 
     QVERIFY(connect(client->mAddRequestRequest->becomeReady(),
@@ -712,9 +712,9 @@ void TestClientFactories::testRequests()
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(client->mAddRequestRequest->immutableProperties().contains(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".UserActionTime")));
+                TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".UserActionTime")));
     QCOMPARE(qdbus_cast<uint>(client->mAddRequestRequest->immutableProperties().value(
-                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".UserActionTime"))),
+                    TP_QT_IFACE_CHANNEL_REQUEST + QLatin1String(".UserActionTime"))),
             mUserActionTime);
 
     connect(client,
@@ -723,7 +723,7 @@ void TestClientFactories::testRequests()
                                   const QString &)),
             SLOT(expectSignalEmission()));
     handlerRequestsIface->RemoveRequest(QDBusObjectPath(mChannelRequestPath),
-            QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+            QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
             QLatin1String("Not available"));
     if (!client->mRemoveRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
@@ -733,7 +733,7 @@ void TestClientFactories::testRequests()
 //    QCOMPARE(client->mRemoveRequestRequest->account().data(),
 //             mAccount.data());
     QCOMPARE(client->mRemoveRequestErrorName,
-             QString(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)));
+             QString(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE)));
     QCOMPARE(client->mRemoveRequestErrorMessage,
              QString(QLatin1String("Not available")));
 }
@@ -805,16 +805,16 @@ void TestClientFactories::testAddDispatchOperation()
 
     QVariantMap dispatchOperationProperties;
     dispatchOperationProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
+            TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Connection"),
             QVariant::fromValue(mCDO->Connection()));
     dispatchOperationProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
+            TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Account"),
             QVariant::fromValue(mCDO->Account()));
     dispatchOperationProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".PossibleHandlers"),
+            TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".PossibleHandlers"),
             QVariant::fromValue(mCDO->PossibleHandlers()));
     dispatchOperationProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Interfaces"),
+            TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Interfaces"),
             QVariant::fromValue(mCDO->Interfaces()));
 
     approverIface->AddDispatchOperation(mCDO->Channels(), QDBusObjectPath(mCDOPath),

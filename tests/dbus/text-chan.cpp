@@ -6,11 +6,11 @@
 #include <tests/lib/glib/echo/chan.h>
 #include <tests/lib/glib/echo2/chan.h>
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/Message>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReceivedMessage>
-#include <TelepathyQt4/TextChannel>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/Message>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/ReceivedMessage>
+#include <TelepathyQt/TextChannel>
 
 #include <telepathy-glib/debug.h>
 
@@ -231,7 +231,7 @@ void TestTextChan::commonTest(bool withMessages)
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectFailure(Tp::PendingOperation *))));
         QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mLastError, TP_QT4_ERROR_NOT_IMPLEMENTED);
+        QCOMPARE(mLastError, TP_QT_ERROR_NOT_IMPLEMENTED);
         QVERIFY(!mLastErrorMessage.isEmpty());
     }
 
@@ -491,7 +491,7 @@ void TestTextChan::commonTest(bool withMessages)
         QCOMPARE(r.deliveryDetails().error(), Tp::ChannelTextSendErrorPermissionDenied);
         QVERIFY(r.deliveryDetails().hasDebugMessage());
         QCOMPARE(r.deliveryDetails().debugMessage(), QLatin1String("You asked for it"));
-        QCOMPARE(r.deliveryDetails().dbusError(), TP_QT4_ERROR_PERMISSION_DENIED);
+        QCOMPARE(r.deliveryDetails().dbusError(), TP_QT_ERROR_PERMISSION_DENIED);
         QVERIFY(r.deliveryDetails().hasEchoedMessage());
         QCOMPARE(r.deliveryDetails().echoedMessage().text(), QLatin1String("Three (fail)"));
 

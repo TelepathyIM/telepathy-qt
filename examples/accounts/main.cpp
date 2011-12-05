@@ -1,7 +1,8 @@
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Types>
 
+#include <QApplication>
 #include <QtGui>
 
 #include "accounts-window.h"

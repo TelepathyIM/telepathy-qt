@@ -246,7 +246,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <tp:rationale>
           <p>This matches the initial implementations - service-side in
-            telepathy-gabble, and client-side in telepathy-qt4 - and means
+            telepathy-gabble, and client-side in telepathy-qt - and means
             that clients can use exactly the same code to interpret
             RequestableChannelClasses and contact capabilities.</p>
         </tp:rationale>

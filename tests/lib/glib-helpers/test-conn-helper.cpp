@@ -1,16 +1,16 @@
 #include "tests/lib/glib-helpers/test-conn-helper.h"
 #include "tests/lib/glib-helpers/_gen/test-conn-helper.moc.hpp"
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingReady>
 
 TestConnHelper::TestConnHelper(Test *parent,
         GType gType, const QString &account, const QString &protocol)
@@ -247,11 +247,11 @@ Tp::ChannelPtr TestConnHelper::createChannel(const QVariantMap &request)
 Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType, const Tp::ContactPtr &target)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    target->handle()[0]);
     return createChannel(request);
 }
@@ -260,11 +260,11 @@ Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType,
         Tp::HandleType targetHandleType, uint targetHandle)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) targetHandleType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    targetHandle);
     return createChannel(request);
 }
@@ -273,11 +273,11 @@ Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType,
         Tp::HandleType targetHandleType, const QString &targetID)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) targetHandleType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                    targetID);
     return ensureChannel(request);
 }
@@ -301,11 +301,11 @@ Tp::ChannelPtr TestConnHelper::ensureChannel(const QVariantMap &request)
 Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType, const Tp::ContactPtr &target)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    target->handle()[0]);
     return ensureChannel(request);
 }
@@ -314,11 +314,11 @@ Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType,
         Tp::HandleType targetHandleType, uint targetHandle)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) targetHandleType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    targetHandle);
     return ensureChannel(request);
 }
@@ -327,11 +327,11 @@ Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType,
         Tp::HandleType targetHandleType, const QString &targetID)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) targetHandleType);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                    targetID);
     return ensureChannel(request);
 }

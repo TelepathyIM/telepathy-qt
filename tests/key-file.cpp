@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/KeyFile>
+#include <TelepathyQt/KeyFile>
 
 using namespace Tp;
 

@@ -4,11 +4,11 @@
 
 #include <tests/lib/glib/contacts-conn.h>
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/ConnectionFactory>
-#include <TelepathyQt4/PendingComposite>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/ConnectionFactory>
+#include <TelepathyQt/PendingComposite>
+#include <TelepathyQt/PendingReady>
 
 #include <telepathy-glib/debug.h>
 
@@ -171,7 +171,7 @@ void TestAccountConnectionFactory::initTestCase()
             NULL);
     QCOMPARE(mConn2->isReady(), false);
 
-    mAccountBusName = QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER);
+    mAccountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
     mAccountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/simple/account");
 }
 
@@ -207,7 +207,7 @@ void TestAccountConnectionFactory::testIntrospectSeveralAccounts()
             mLoop->processEvents();
             mLoop->processEvents();
         }
-        
+
         ops.push_back(acc->becomeReady());
     }
 

@@ -1,11 +1,11 @@
-#ifndef _TelepathyQt4_tests_lib_glib_helpers_test_conn_helper_h_HEADER_GUARD_
-#define _TelepathyQt4_tests_lib_glib_helpers_test_conn_helper_h_HEADER_GUARD_
+#ifndef _TelepathyQt_tests_lib_glib_helpers_test_conn_helper_h_HEADER_GUARD_
+#define _TelepathyQt_tests_lib_glib_helpers_test_conn_helper_h_HEADER_GUARD_
 
 #include <tests/lib/test.h>
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Features>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Features>
+#include <TelepathyQt/Types>
 
 #include <glib-object.h>
 
@@ -99,4 +99,4 @@ private:
     Tp::ChannelPtr mChannel;
 };
 
-#endif // _TelepathyQt4_tests_lib_glib_helpers_test_conn_helper_h_HEADER_GUARD_
+#endif // _TelepathyQt_tests_lib_glib_helpers_test_conn_helper_h_HEADER_GUARD_

@@ -9,20 +9,20 @@
 #include <QString>
 #include <QVariantMap>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/Client>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/SimpleCallObserver>
-#include <TelepathyQt4/SimpleObserver>
-#include <TelepathyQt4/SimpleTextObserver>
-#include <TelepathyQt4/StreamedMediaChannel>
-#include <TelepathyQt4/TextChannel>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/Client>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/SimpleCallObserver>
+#include <TelepathyQt/SimpleObserver>
+#include <TelepathyQt/SimpleTextObserver>
+#include <TelepathyQt/StreamedMediaChannel>
+#include <TelepathyQt/TextChannel>
+#include <TelepathyQt/Types>
 
 #include <telepathy-glib/cm-message.h>
 #include <telepathy-glib/debug.h>
@@ -235,7 +235,7 @@ void TestSimpleObserver::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     QDBusConnection bus = QDBusConnection::sessionBus();
-    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
     QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
     Dispatcher *dispatcher = new Dispatcher(this);
     QVERIFY(bus.registerService(channelDispatcherBusName));
@@ -249,7 +249,7 @@ void TestSimpleObserver::initTestCase()
     // - the channels for the second account have bob as target
     for (int i = 0; i < 2; ++i) {
         // setup account
-        QString accountBusName = TP_QT4_IFACE_ACCOUNT_MANAGER;
+        QString accountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
         QString accountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/account/") +
             QString::number(i);
 
@@ -323,7 +323,7 @@ void TestSimpleObserver::initTestCase()
                     NULL));
 
         QVariantMap immutableProperties;
-        immutableProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
+        immutableProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
         mTextChans[i] = TextChannel::create(conn, messagesChanPath, immutableProperties);
         QVERIFY(connect(mTextChans[i]->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -340,7 +340,7 @@ void TestSimpleObserver::initTestCase()
                     NULL));
 
         immutableProperties.clear();
-        immutableProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
+        immutableProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
         mSMChans[i] = StreamedMediaChannel::create(conn, callableChanPath, immutableProperties);
         QVERIFY(connect(mSMChans[i]->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -713,7 +713,7 @@ QMap<QString, QString> TestSimpleObserver::ourObservers()
     QMap<QString, QString> observers;
 
     Q_FOREACH (QString name, registeredNames) {
-        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client.TpQt4SO"))) {
+        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client.TpQtSO"))) {
             continue;
         }
 
@@ -731,7 +731,7 @@ QMap<QString, QString> TestSimpleObserver::ourObservers()
             continue;
         }
 
-        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_OBSERVER)) {
+        if (!ifaces.contains(TP_QT_IFACE_CLIENT_OBSERVER)) {
             continue;
         }
 

@@ -7,24 +7,24 @@
 #include <QString>
 #include <QVariantMap>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/Client>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/ContactMessenger>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Message>
-#include <TelepathyQt4/MessageContentPart>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingSendMessage>
-#include <TelepathyQt4/TextChannel>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/Client>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/ContactMessenger>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Message>
+#include <TelepathyQt/MessageContentPart>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingSendMessage>
+#include <TelepathyQt/TextChannel>
+#include <TelepathyQt/Types>
 
 #include <telepathy-glib/cm-message.h>
 #include <telepathy-glib/debug.h>
@@ -332,14 +332,14 @@ void TestContactMessenger::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     QDBusConnection bus = QDBusConnection::sessionBus();
-    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
     QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
     Dispatcher *dispatcher = new Dispatcher(this);
     mCDMessagesAdaptor = new CDMessagesAdaptor(bus, this, dispatcher);
     QVERIFY(bus.registerService(channelDispatcherBusName));
     QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
 
-    mAccountBusName = QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER);
+    mAccountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
     mAccountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/simple/account");
     QObject *acc = new QObject(this);
 
@@ -412,7 +412,7 @@ void TestContactMessenger::initTestCase()
                 NULL));
 
     QVariantMap immutableProperties;
-    immutableProperties.insert(TP_QT4_IFACE_CHANNEL + QLatin1String(".TargetID"),
+    immutableProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
             QLatin1String("ann"));
     mChan = TextChannel::create(mConn, mMessagesChanPath, immutableProperties);
     QVERIFY(connect(mChan->becomeReady(),
@@ -442,7 +442,7 @@ void TestContactMessenger::testNoSupport()
     ContactMessengerPtr messenger = ContactMessenger::create(mAccount, QLatin1String("Ann"));
     QVERIFY(!messenger.isNull());
 
-    mCDMessagesAdaptor->setSimulatedSendError(TP_QT4_DBUS_ERROR_UNKNOWN_METHOD);
+    mCDMessagesAdaptor->setSimulatedSendError(TP_QT_DBUS_ERROR_UNKNOWN_METHOD);
 
     PendingSendMessage *pendingSend = messenger->sendMessage(QLatin1String("Hi!"));
     QVERIFY(pendingSend != NULL);
@@ -454,7 +454,7 @@ void TestContactMessenger::testNoSupport()
     QVERIFY(pendingSend->isFinished());
     QVERIFY(!pendingSend->isValid());
 
-    QCOMPARE(pendingSend->errorName(), TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QCOMPARE(pendingSend->errorName(), TP_QT_ERROR_NOT_IMPLEMENTED);
 
     // Let's try using the other sendMessage overload similarly as well
 
@@ -470,7 +470,7 @@ void TestContactMessenger::testNoSupport()
     QVERIFY(pendingSend->isFinished());
     QVERIFY(!pendingSend->isValid());
 
-    QCOMPARE(pendingSend->errorName(), TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QCOMPARE(pendingSend->errorName(), TP_QT_ERROR_NOT_IMPLEMENTED);
 }
 
 void TestContactMessenger::testObserverRegistration()
@@ -658,7 +658,7 @@ QList<ClientObserverInterface *> TestContactMessenger::ourObservers()
             continue;
         }
 
-        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_OBSERVER)) {
+        if (!ifaces.contains(TP_QT_IFACE_CLIENT_OBSERVER)) {
             continue;
         }
 

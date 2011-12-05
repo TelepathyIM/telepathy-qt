@@ -6,13 +6,13 @@
 #include <tests/lib/glib/textchan-group.h>
 #include <tests/lib/glib/textchan-null.h>
 
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ContactManager>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/TextChannel>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingContacts>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/TextChannel>
 
 #include <telepathy-glib/debug.h>
 
@@ -165,7 +165,7 @@ void TestChanGroup::init()
 
 void TestChanGroup::testCreateChannel()
 {
-    mChan = mConn->ensureChannel(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_LIST,
+    mChan = mConn->ensureChannel(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_LIST,
             Tp::HandleTypeGroup, QLatin1String("Cambridge"));
     QVERIFY(mChan);
     mChanObjectPath = mChan->objectPath();
@@ -246,7 +246,7 @@ void TestChanGroup::testPropertylessGroup()
 
 void TestChanGroup::commonTest(gboolean properties)
 {
-    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQt4MCDTest%2"))
+    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQtMCDTest%2"))
         .arg(mConn->objectPath())
         .arg(QLatin1String(properties ? "props" : ""));
     QByteArray chanPathLatin1(mChanObjectPath.toLatin1());
@@ -322,7 +322,7 @@ void TestChanGroup::commonTest(gboolean properties)
 
 void TestChanGroup::testLeave()
 {
-    mChan = mConn->ensureChannel(TP_QT4_IFACE_CHANNEL_TYPE_CONTACT_LIST,
+    mChan = mConn->ensureChannel(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_LIST,
             Tp::HandleTypeGroup, QLatin1String("Cambridge"));
     QVERIFY(mChan);
     mChanObjectPath = mChan->objectPath();
@@ -332,7 +332,7 @@ void TestChanGroup::testLeave()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_AVAILABLE);
+    QCOMPARE(mLastError, TP_QT_ERROR_NOT_AVAILABLE);
     QVERIFY(!mLastErrorMessage.isEmpty());
 
     QVERIFY(connect(mChan->becomeReady(),
@@ -346,7 +346,7 @@ void TestChanGroup::testLeave()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT4_ERROR_INVALID_ARGUMENT);
+    QCOMPARE(mLastError, TP_QT_ERROR_INVALID_ARGUMENT);
     QVERIFY(!mLastErrorMessage.isEmpty());
 
     // passing an invalid contact too
@@ -354,7 +354,7 @@ void TestChanGroup::testLeave()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT4_ERROR_INVALID_ARGUMENT);
+    QCOMPARE(mLastError, TP_QT_ERROR_INVALID_ARGUMENT);
     QVERIFY(!mLastErrorMessage.isEmpty());
 
     // now it should work
@@ -391,7 +391,7 @@ void TestChanGroup::testLeave()
 
 void TestChanGroup::testLeaveWithFallback()
 {
-    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQt4LeaveTestFallback"))
+    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQtLeaveTestFallback"))
         .arg(mConn->objectPath());
     QByteArray chanPathLatin1(mChanObjectPath.toLatin1());
 
@@ -464,7 +464,7 @@ void TestChanGroup::testGroupFlagsChange()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(textChan->isReady(), true);
 
-    QVERIFY(textChan->interfaces().contains(TP_QT4_IFACE_CHANNEL_INTERFACE_GROUP));
+    QVERIFY(textChan->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP));
     QVERIFY(!(textChan->groupFlags() & ChannelGroupFlagCanAdd));
     QVERIFY(!textChan->canInviteContacts());
 

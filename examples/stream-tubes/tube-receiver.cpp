@@ -1,5 +1,5 @@
 /*
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2009,2011 Nokia Corporation
@@ -21,9 +21,9 @@
 
 #include "tube-receiver.h"
 
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/IncomingStreamTubeChannel>
-#include <TelepathyQt4/StreamTubeClient>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/IncomingStreamTubeChannel>
+#include <TelepathyQt/StreamTubeClient>
 
 #include <QDebug>
 #include <QIODevice>
@@ -32,7 +32,7 @@
 TubeReceiver::TubeReceiver(QObject *parent)
     : QObject(parent)
 {
-    mTubeClient = StreamTubeClient::create(QStringList() << QLatin1String("tp-qt4-stube-example"));
+    mTubeClient = StreamTubeClient::create(QStringList() << QLatin1String("tp-qt-stube-example"));
     connect(mTubeClient.data(),
             SIGNAL(tubeAcceptedAsUnix(QString,bool,uchar,Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),
             SLOT(onTubeAccepted(QString)));

@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
@@ -22,7 +22,7 @@
 #include "roster-item.h"
 #include "_gen/roster-item.moc.hpp"
 
-#include <TelepathyQt4/Presence>
+#include <TelepathyQt/Presence>
 
 using namespace Tp;
 

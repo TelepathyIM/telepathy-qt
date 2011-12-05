@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2010 Nokia Corporation
@@ -23,9 +23,9 @@
 #include "protocols.h"
 #include "_gen/protocols.moc.hpp"
 
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/ConnectionManager>
-#include <TelepathyQt4/PendingStringList>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/ConnectionManager>
+#include <TelepathyQt/PendingStringList>
 
 #include <QCoreApplication>
 #include <QDebug>

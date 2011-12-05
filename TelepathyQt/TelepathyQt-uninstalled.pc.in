@@ -1,0 +1,11 @@
+prefix=/nonexistent
+exec_prefix=/nonexistent
+abs_top_builddir=${CMAKE_BINARY_DIR}
+abs_top_srcdir=${CMAKE_SOURCE_DIR}
+
+Name: TelepathyQt${QT_VERSION_MAJOR} (uninstalled copy)
+Description: Qt utility library for the Telepathy framework
+Version: ${PACKAGE_VERSION}
+Requires.private: QtCore >= ${QT_MIN_VERSION}, QtCore < ${QT_MAX_VERSION}, QtDBus >= ${QT_MIN_VERSION}, QtDBus < ${QT_MAX_VERSION}, QtNetwork >= ${QT_MIN_VERSION}, QtNetwork < ${QT_MAX_VERSION}, QtXml >= ${QT_MIN_VERSION}, QtXml < ${QT_MAX_VERSION}
+Libs: ${CMAKE_BINARY_DIR}/TelepathyQt/libtelepathy-qt${QT_VERSION_MAJOR}.so
+Cflags: -I${CMAKE_SOURCE_DIR} -I${CMAKE_BINARY_DIR}

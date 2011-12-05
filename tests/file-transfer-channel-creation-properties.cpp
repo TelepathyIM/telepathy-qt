@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/FileTransferChannelCreationProperties>
+#include <TelepathyQt/FileTransferChannelCreationProperties>
 
 using namespace Tp;
 

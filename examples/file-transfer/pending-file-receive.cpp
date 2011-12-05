@@ -1,5 +1,5 @@
 /*
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2011 Nokia Corporation
@@ -22,9 +22,9 @@
 #include "pending-file-receive.h"
 #include "_gen/pending-file-receive.moc.hpp"
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/IncomingFileTransferChannel>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/IncomingFileTransferChannel>
 
 #include <QDebug>
 #include <QFile>
@@ -60,7 +60,7 @@ void PendingFileReceive::onTransferStateChanged(FileTransferState state,
             IncomingFileTransferChannelPtr::qObjectCast(channel());
         Q_ASSERT(chan);
 
-        QString fileName(QLatin1String("TpQt4ExampleFTReceiver_") + chan->fileName());
+        QString fileName(QLatin1String("TpQtExampleFTReceiver_") + chan->fileName());
         fileName.replace(QLatin1String("/"), QLatin1String("_"));
         mFile.setFileName(fileName);
 

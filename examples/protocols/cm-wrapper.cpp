@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2010 Nokia Corporation
@@ -23,9 +23,9 @@
 #include "cm-wrapper.h"
 #include "_gen/cm-wrapper.moc.hpp"
 
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/ConnectionManager>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/ConnectionManager>
+#include <TelepathyQt/PendingReady>
 
 #include <QDebug>
 

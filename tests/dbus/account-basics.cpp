@@ -4,16 +4,16 @@
 
 #include <tests/lib/glib/echo2/conn.h>
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/AccountSet>
-#include <TelepathyQt4/ConnectionCapabilities>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingStringList>
-#include <TelepathyQt4/PendingVoid>
-#include <TelepathyQt4/Profile>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/AccountSet>
+#include <TelepathyQt/ConnectionCapabilities>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingStringList>
+#include <TelepathyQt/PendingVoid>
+#include <TelepathyQt/Profile>
 
 #include <telepathy-glib/debug.h>
 
@@ -513,7 +513,7 @@ void TestAccountBasics::testBasics()
     // simulate that the account has a connection
     QVERIFY(connect(new PendingVoid(
                         accPropertiesInterface->Set(
-                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                            TP_QT_IFACE_ACCOUNT,
                             QLatin1String("Connection"),
                             QDBusVariant(mConn->objectPath())),
                         acc),
@@ -553,7 +553,7 @@ void TestAccountBasics::testBasics()
     mProps.clear();
     QVERIFY(connect(new PendingVoid(
                         accPropertiesInterface->Set(
-                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                            TP_QT_IFACE_ACCOUNT,
                             QLatin1String("Connection"),
                             QDBusVariant(QLatin1String("/"))),
                         acc),

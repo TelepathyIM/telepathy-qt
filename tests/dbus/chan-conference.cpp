@@ -6,8 +6,8 @@
 #include <tests/lib/glib/echo/conn.h>
 #include <tests/lib/glib/future/conference/chan.h>
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/PendingReady>
 
 #include <telepathy-glib/debug.h>
 
@@ -201,7 +201,7 @@ void TestConferenceChan::testConference()
                     SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mLastError, TP_QT4_ERROR_NOT_IMPLEMENTED);
+    QCOMPARE(mLastError, TP_QT_ERROR_NOT_IMPLEMENTED);
     QVERIFY(!mLastErrorMessage.isEmpty());
 
     ChannelPtr otherChannel = Channel::create(mConn->client(), mTextChan3Path, QVariantMap());

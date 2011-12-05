@@ -44,16 +44,16 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 
     CHECK_CXX_ACCEPTS_FLAG("-Wdeprecated-declarations" CXX_DEPRECATED_DECLARATIONS)
     if (CXX_DEPRECATED_DECLARATIONS)
-        set(DEPRECATED_DECLARATIONS_FLAGS "-Wdeprecated-declarations -DTELEPATHY_QT4_DEPRECATED_WARNINGS")
+        set(DEPRECATED_DECLARATIONS_FLAGS "-Wdeprecated-declarations -DTP_QT_DEPRECATED_WARNINGS")
     else (CXX_DEPRECATED_DECLARATIONS)
         set(DEPRECATED_DECLARATIONS_FLAGS)
     endif (CXX_DEPRECATED_DECLARATIONS)
 
-    if(${TP_QT4_NANO_VERSION} EQUAL 0)
+    if(${TP_QT_NANO_VERSION} EQUAL 0)
         set(NOT_RELEASE 0)
-    else(${TP_QT4_NANO_VERSION} EQUAL 0)
+    else(${TP_QT_NANO_VERSION} EQUAL 0)
         set(NOT_RELEASE 1)
-    endif(${TP_QT4_NANO_VERSION} EQUAL 0)
+    endif(${TP_QT_NANO_VERSION} EQUAL 0)
 
     set(desired
         all
@@ -101,7 +101,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 
     # Compiler coverage
     set(ENABLE_COMPILER_COVERAGE OFF CACHE BOOL "Enables compiler coverage tests through lcov. Enabling this option will build
-Telepathy-Qt4 as a static library.")
+Telepathy-Qt as a static library.")
 
     if (ENABLE_COMPILER_COVERAGE)
         check_cxx_accepts_flag("-fprofile-arcs -ftest-coverage" CXX_FPROFILE_ARCS)
@@ -113,7 +113,7 @@ Telepathy-Qt4 as a static library.")
             if (NOT LCOV OR NOT LCOV_GENHTML)
                 message(FATAL_ERROR "You chose to use compiler coverage tests, but lcov or genhtml could not be found in your PATH.")
             else (NOT LCOV OR NOT LCOV_GENHTML)
-                message(STATUS "Compiler coverage tests enabled - Telepathy-Qt4 will be compiled as a static library")
+                message(STATUS "Compiler coverage tests enabled - Telepathy-Qt will be compiled as a static library")
                 set(COMPILER_COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage")
             endif (NOT LCOV OR NOT LCOV_GENHTML)
         else (CXX_FPROFILE_ARCS AND CXX_FTEST_COVERAGE)

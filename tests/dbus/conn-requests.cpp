@@ -4,14 +4,14 @@
 
 #include <tests/lib/glib/echo2/conn.h>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/PendingChannel>
-#include <TelepathyQt4/PendingHandles>
-#include <TelepathyQt4/ReferencedHandles>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/PendingChannel>
+#include <TelepathyQt/PendingHandles>
+#include <TelepathyQt/ReferencedHandles>
 
 #include <telepathy-glib/debug.h>
 
@@ -121,11 +121,11 @@ void TestConnRequests::testRequestHandle()
 void TestConnRequests::testCreateChannel()
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                   TP_QT_IFACE_CHANNEL_TYPE_TEXT);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    mHandle);
     QVERIFY(connect(mConn->client()->lowlevel()->createChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -136,11 +136,11 @@ void TestConnRequests::testCreateChannel()
 void TestConnRequests::testEnsureChannel()
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                   TP_QT_IFACE_CHANNEL_TYPE_TEXT);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    mHandle);
     QVERIFY(connect(mConn->client()->lowlevel()->ensureChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),

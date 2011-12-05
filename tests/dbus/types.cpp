@@ -1,8 +1,8 @@
 #include <tests/lib/test.h>
 
-#include <TelepathyQt4/Channel>
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/types-internal.h>
+#include <TelepathyQt/Channel>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/types-internal.h>
 
 using namespace Tp;
 

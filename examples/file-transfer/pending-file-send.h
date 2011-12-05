@@ -1,5 +1,5 @@
 /*
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2011 Nokia Corporation
@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_file_transfer_pending_file_send_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_file_transfer_pending_file_send_h_HEADER_GUARD_
+#ifndef _TelepathyQt_examples_file_transfer_pending_file_send_h_HEADER_GUARD_
+#define _TelepathyQt_examples_file_transfer_pending_file_send_h_HEADER_GUARD_
 
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/OutgoingFileTransferChannel>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/OutgoingFileTransferChannel>
+#include <TelepathyQt/Types>
 
 #include "pending-file-transfer.h"
 

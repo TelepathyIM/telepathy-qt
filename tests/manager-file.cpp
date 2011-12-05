@@ -1,8 +1,8 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/ManagerFile>
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/ManagerFile>
 
 using namespace Tp;
 
@@ -93,30 +93,30 @@ void TestManagerFile::testManagerFile()
 
     RequestableChannelClass ftRcc;
     ftRcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
     ftRcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
             HandleTypeContact);
     ftRcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
+            TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHashType"),
             FileHashTypeMD5);
     ftRcc.allowedProperties.append(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"));
     ftRcc.allowedProperties.append(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"));
 
     RequestableChannelClass fooTextRcc;
     fooTextRcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+            TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     fooTextRcc.fixedProperties.insert(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
             HandleTypeContact);
     fooTextRcc.allowedProperties.append(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"));
     fooTextRcc.allowedProperties.append(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"));
 
     RequestableChannelClassList expectedRccs;
 

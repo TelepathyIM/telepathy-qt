@@ -1,12 +1,12 @@
-#ifndef _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_
-#define _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_
+#ifndef _TelepathyQt_tests_lib_test_h_HEADER_GUARD_
+#define _TelepathyQt_tests_lib_test_h_HEADER_GUARD_
 
 #include <QtDBus>
 #include <QtTest>
 
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingVariant>
-#include <TelepathyQt4/Constants>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingVariant>
+#include <TelepathyQt/Constants>
 
 namespace Tp
 {
@@ -85,4 +85,4 @@ bool Test::waitForProperty(Tp::PendingVariant *pv, T *value)
     } \
     qDebug() << "finished";
 
-#endif // _TelepathyQt4_tests_lib_test_h_HEADER_GUARD_
+#endif // _TelepathyQt_tests_lib_test_h_HEADER_GUARD_

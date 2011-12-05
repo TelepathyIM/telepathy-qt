@@ -1,7 +1,7 @@
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Profile>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Profile>
 
 using namespace Tp;
 

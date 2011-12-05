@@ -10,14 +10,15 @@ set(ft-receiver_MOC_SRCS
     pending-file-receive.h
     pending-file-transfer.h)
 
-tpqt4_generate_mocs(${ft-receiver_MOC_SRCS})
+tpqt_generate_mocs(${ft-receiver_MOC_SRCS})
 
 add_executable(ft-receiver ${ft-receiver_SRCS} ${ft-receiver_MOC_SRCS})
 target_link_libraries(ft-receiver
-    ${QT_QTDBUS_LIBRARY}
-    ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    ${QT_QTDBUS_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTXML_LIBRARY}
+    telepathy-qt${QT_VERSION_MAJOR})
 
 set(ft-sender_SRCS
     file-sender.cpp
@@ -29,11 +30,12 @@ set(ft-sender_MOC_SRCS
     pending-file-send.h
     pending-file-transfer.h)
 
-tpqt4_generate_mocs(${ft-sender_MOC_SRCS})
+tpqt_generate_mocs(${ft-sender_MOC_SRCS})
 
 add_executable(ft-sender ${ft-sender_SRCS} ${ft-sender_MOC_SRCS})
 target_link_libraries(ft-sender
-    ${QT_QTDBUS_LIBRARY}
-    ${QT_QTXML_LIBRARY}
     ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    ${QT_QTDBUS_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTXML_LIBRARY}
+    telepathy-qt${QT_VERSION_MAJOR})

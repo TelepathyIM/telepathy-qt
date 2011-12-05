@@ -1,4 +1,4 @@
-project(TelepathyQt4)
+project(TelepathyQt)
 
 cmake_minimum_required(VERSION 2.6)
 
@@ -38,29 +38,18 @@ endif(POLICY CMP0011)
 #   set nano_version to 0
 #   make the release, tag it
 #   set nano_version to 1
-set(TP_QT4_MAJOR_VERSION 0)
-set(TP_QT4_MINOR_VERSION 8)
-set(TP_QT4_MICRO_VERSION 9999)
-set(TP_QT4_NANO_VERSION  1)
+set(TP_QT_MAJOR_VERSION 0)
+set(TP_QT_MINOR_VERSION 8)
+set(TP_QT_MICRO_VERSION 9999)
+set(TP_QT_NANO_VERSION  1)
 
-# This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
-# occurs, and will be used for the SOVERSION of the generated shared libraries.
-set(TP_QT4_ABI_VERSION 1)
-# This variable is used for the library's long version. It is generated dynamically, so don't change its
-# value! Change TP_QT4_ABI_VERSION and TP_QT4_*_VERSION instead.
-if (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION})
-else (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
-endif (${TP_QT4_NANO_VERSION} EQUAL 0)
+set(PACKAGE_NAME telepathy-qt)
 
-set(PACKAGE_NAME telepathy-qt4)
-
-if (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION})
-else (${TP_QT4_NANO_VERSION} EQUAL 0)
-    set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
-endif (${TP_QT4_NANO_VERSION} EQUAL 0)
+if (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
+else (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(PACKAGE_VERSION ${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
+endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is
 # checked
@@ -69,27 +58,46 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 # Default build type is RelWithDebInfo for release versions and Debug for developement
 # versions
 if(NOT CMAKE_BUILD_TYPE)
-    if(TP_QT4_NANO_VERSION EQUAL 0)
+    if(TP_QT_NANO_VERSION EQUAL 0)
         set(CMAKE_BUILD_TYPE RelWithDebInfo)
-    else(TP_QT4_NANO_VERSION EQUAL 0)
+    else(TP_QT_NANO_VERSION EQUAL 0)
         set(CMAKE_BUILD_TYPE Debug)
-    endif(TP_QT4_NANO_VERSION EQUAL 0)
+    endif(TP_QT_NANO_VERSION EQUAL 0)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # This file contains all the needed initialization macros
 include(TelepathyDefaults)
 
-# This file contains all the tpqt4 macros used in the buildsystem
-include(TpQt4Macros)
+# This file contains all the tpqt macros used in the buildsystem
+include(TpQtMacros)
 
 include(MacroLogFeature)
 
 # external dependencies
 
 # Required dependencies
-# Find qt4 version >= 4.5
-set (QT_MIN_VERSION "4.6.0")
-find_package(Qt4 REQUIRED)
+# Find qt4 version >= 4.6 or qt5 >= 5.0.0
+set(QT4_MIN_VERSION "4.6.0")
+set(QT4_MAX_VERSION "5.0.0")
+set(QT5_MIN_VERSION "5.0.0")
+set(QT5_MAX_VERSION "6.0.0")
+find_package(Qt REQUIRED)
+
+# This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
+# occurs, and will be used for the SOVERSION of the generated shared libraries.
+if (${QT_VERSION_MAJOR} EQUAL 4)
+    set(TP_QT_ABI_VERSION 2)
+else (${QT_VERSION_MAJOR} EQUAL 4)
+    set(TP_QT_ABI_VERSION 0)
+endif (${QT_VERSION_MAJOR} EQUAL 4)
+
+# This variable is used for the library's long version. It is generated dynamically, so don't change its
+# value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
+if (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION})
+else (${TP_QT_NANO_VERSION} EQUAL 0)
+    set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
+endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)
@@ -105,7 +113,7 @@ if (ENABLE_DEBUG_OUTPUT)
     add_definitions(-DENABLE_DEBUG)
 endif (ENABLE_DEBUG_OUTPUT)
 
-# Check for Qt4 Glib support
+# Check for Qt Glib support
 include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_INCLUDES ${QT_INCLUDES})
 set(CMAKE_REQUIRED_DEFINITIONS "")
@@ -120,8 +128,8 @@ int main()
 #endif
 return 0;
 }"
-QT4_GLIB_SUPPORT)
-macro_log_feature(QT4_GLIB_SUPPORT "Qt4 Glib Support"
+QT_GLIB_SUPPORT)
+macro_log_feature(QT_GLIB_SUPPORT "Qt Glib Support"
                   "QtCore library using Glib's main event loop"
                   "http://qt.nokia.com/" FALSE ""
                   "Needed, together with Telepathy-Glib, to build most of the unit tests")
@@ -164,16 +172,16 @@ find_package(TelepathyFarsight)
 macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
                   "A Framework for dealing with audio/video conferencing protocols"
                   "http://farsight.freedesktop.org/wiki/" FALSE "0.0.4"
-                  "Needed, together with GStreamer, to build telepathy-qt4-farsight and some additional examples")
+                  "Needed, together with GStreamer, to build telepathy-qt-farsight and some additional examples")
 
 # Find GStreamer
 find_package(GStreamer)
 macro_log_feature(GSTREAMER_FOUND "GStreamer"
                   "An open source multimedia framework"
-                  "Needed, together with Tp-Farsight, to build telepathy-qt4-farsight and some additional examples"
+                  "Needed, together with Tp-Farsight, to build telepathy-qt-farsight and some additional examples"
                   "http://www.gstreamer.net/" FALSE)
 
-# Build TelepathyQt4-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
+# Build TelepathyQt-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
 if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
     set (FARSIGHT_COMPONENTS_FOUND 1)
 else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
@@ -190,21 +198,21 @@ macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
 
-# Enable glib-based tests only if Qt4 has GLib support and Telepathy-glib was found
-if(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+# Enable glib-based tests only if Qt has GLib support and Telepathy-glib was found
+if(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
     set(ENABLE_TP_GLIB_TESTS 1)
     if(GIO_FOUND AND GIOUNIX_FOUND)
         set(ENABLE_TP_GLIB_GIO_TESTS 1)
     else(GIO_FOUND AND GIOUNIX_FOUND)
         set(ENABLE_TP_GLIB_GIO_TESTS 0)
     endif(GIO_FOUND AND GIOUNIX_FOUND)
-else(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+else(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
     set(ENABLE_TP_GLIB_TESTS 0)
     set(ENABLE_TP_GLIB_GIO_TESTS 0)
-endif(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+endif(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
 
 # Add the source subdirectories
-add_subdirectory(TelepathyQt4)
+add_subdirectory(TelepathyQt)
 add_subdirectory(examples)
 add_subdirectory(tests)
 add_subdirectory(tools)

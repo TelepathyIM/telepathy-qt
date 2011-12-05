@@ -7,15 +7,15 @@
 #include <QString>
 #include <QVariantMap>
 
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionFactory>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionFactory>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/Types>
 
-#include <TelepathyQt4/test-backdoors.h>
+#include <TelepathyQt/test-backdoors.h>
 
 #include <telepathy-glib/debug.h>
 

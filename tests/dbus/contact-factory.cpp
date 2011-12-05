@@ -4,9 +4,9 @@
 
 #include <tests/lib/glib/contacts-conn.h>
 
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ContactFactory>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ContactFactory>
 
 #include <telepathy-glib/debug.h>
 

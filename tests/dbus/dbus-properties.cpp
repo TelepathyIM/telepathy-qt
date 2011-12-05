@@ -1,13 +1,13 @@
 #include <QtCore/QEventLoop>
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingVariantMap>
-#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingVariantMap>
+#include <TelepathyQt/PendingReady>
 
 #include <tests/lib/test.h>
 
@@ -133,7 +133,7 @@ void TestDBusProperties::testDBusProperties()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAllProperties[QLatin1String("DisplayName")].value<QString>(), oldDisplayName);
     QVERIFY(mAllProperties[QLatin1String("Interfaces")].value<QStringList>().contains(
-                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR)));
+                TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR));
 
     const QString newDisplayName = QLatin1String("Foo bar account");
     QVERIFY(connect(cliAccount->setPropertyDisplayName(newDisplayName),

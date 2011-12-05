@@ -1,5 +1,5 @@
 /**
- * This file is part of TelepathyQt4
+ * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_accounts_accounts_window_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_accounts_accounts_window_h_HEADER_GUARD_
+#ifndef _TelepathyQt_examples_accounts_accounts_window_h_HEADER_GUARD_
+#define _TelepathyQt_examples_accounts_accounts_window_h_HEADER_GUARD_
 
 #include <QMainWindow>
 
-#include <TelepathyQt4/Types>
+#include <TelepathyQt/Types>
 
 namespace Tp {
 class PendingOperation;

@@ -4,18 +4,18 @@
 
 #include <tests/lib/glib/echo2/conn.h>
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountCapabilityFilter>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/AccountPropertyFilter>
-#include <TelepathyQt4/AccountSet>
-#include <TelepathyQt4/AndFilter>
-#include <TelepathyQt4/NotFilter>
-#include <TelepathyQt4/OrFilter>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingVoid>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountCapabilityFilter>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/AccountPropertyFilter>
+#include <TelepathyQt/AccountSet>
+#include <TelepathyQt/AndFilter>
+#include <TelepathyQt/NotFilter>
+#include <TelepathyQt/OrFilter>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingVoid>
 
 #include <telepathy-glib/debug.h>
 
@@ -151,7 +151,7 @@ void TestAccountSet::removeAccount(const AccountPtr &acc)
     }
 
     QCOMPARE(acc->isValid(), false);
-    QCOMPARE(acc->invalidationReason(), TP_QT4_ERROR_OBJECT_REMOVED);
+    QCOMPARE(acc->invalidationReason(), TP_QT_ERROR_OBJECT_REMOVED);
 }
 
 QStringList TestAccountSet::pathsForAccounts(const QList<Tp::AccountPtr> &list)
@@ -328,15 +328,15 @@ void TestAccountSet::testFilters()
         RequestableChannelClassList rccs;
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+                TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                TP_QT_IFACE_CHANNEL_TYPE_TEXT);
         rcc.fixedProperties.insert(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeContact);
         rcc.allowedProperties.append(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"));
         rcc.allowedProperties.append(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetFoo"));
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetFoo"));
         rccs.append(rcc);
         filteredAccountSet = AccountSetPtr(new AccountSet(mAM, AccountCapabilityFilter::create(rccs)));
         QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);

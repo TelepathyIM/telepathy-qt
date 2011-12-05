@@ -5,15 +5,15 @@
 
 #include <QtTest/QtTest>
 
-#define TP_QT4_ENABLE_LOWLEVEL_API
+#define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt4/ChannelFactory>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/ConnectionLowlevel>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/Debug>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReferencedHandles>
+#include <TelepathyQt/ChannelFactory>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactFactory>
+#include <TelepathyQt/Debug>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/ReferencedHandles>
 
 #include <telepathy-glib/base-connection.h>
 #include <telepathy-glib/dbus.h>

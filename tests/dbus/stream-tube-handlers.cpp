@@ -6,21 +6,21 @@
 #include <tests/lib/glib/stream-tube-chan.h>
 #include <tests/lib/glib/echo/chan.h>
 
-#include <TelepathyQt4/AbstractClient>
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/AccountManager>
-#include <TelepathyQt4/ChannelClassSpec>
-#include <TelepathyQt4/ClientHandlerInterface>
-#include <TelepathyQt4/ClientRegistrar>
-#include <TelepathyQt4/Connection>
-#include <TelepathyQt4/IncomingStreamTubeChannel>
-#include <TelepathyQt4/OutgoingStreamTubeChannel>
-#include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/StreamTubeChannel>
-#include <TelepathyQt4/StreamTubeClient>
-#include <TelepathyQt4/StreamTubeServer>
+#include <TelepathyQt/AbstractClient>
+#include <TelepathyQt/Account>
+#include <TelepathyQt/AccountManager>
+#include <TelepathyQt/ChannelClassSpec>
+#include <TelepathyQt/ClientHandlerInterface>
+#include <TelepathyQt/ClientRegistrar>
+#include <TelepathyQt/Connection>
+#include <TelepathyQt/IncomingStreamTubeChannel>
+#include <TelepathyQt/OutgoingStreamTubeChannel>
+#include <TelepathyQt/PendingAccount>
+#include <TelepathyQt/PendingReady>
+#include <TelepathyQt/ReferencedHandles>
+#include <TelepathyQt/StreamTubeChannel>
+#include <TelepathyQt/StreamTubeClient>
+#include <TelepathyQt/StreamTubeServer>
 
 #include <telepathy-glib/telepathy-glib.h>
 
@@ -148,7 +148,7 @@ public Q_SLOTS: // Methods
 
     void Cancel()
     {
-        Q_EMIT Failed(QLatin1String(TELEPATHY_ERROR_CANCELLED), QLatin1String("Cancelled"));
+        Q_EMIT Failed(QLatin1String(TP_QT_ERROR_CANCELLED), QLatin1String("Cancelled"));
     }
 
 Q_SIGNALS: // Signals
@@ -160,7 +160,7 @@ Q_SIGNALS: // Signals
 private Q_SLOTS:
     void fail()
     {
-        Q_EMIT Failed(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE), QLatin1String("Not available"));
+        Q_EMIT Failed(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE), QLatin1String("Not available"));
     }
 
     void succeed()
@@ -367,10 +367,10 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
         .arg(supportMonitoring);
     QVariantMap chanProps;
 
-    chanProps.insert(TP_QT4_IFACE_CHANNEL + QString::fromLatin1(".ChannelType"),
-            TP_QT4_IFACE_CHANNEL_TYPE_STREAM_TUBE);
-    chanProps.insert(TP_QT4_IFACE_CHANNEL + QString::fromLatin1(".Requested"), requested);
-    chanProps.insert(TP_QT4_IFACE_CHANNEL + QString::fromLatin1(".TargetHandleType"),
+    chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".ChannelType"),
+            TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE);
+    chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".Requested"), requested);
+    chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetHandleType"),
             static_cast<uint>(handleType));
 
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
@@ -382,16 +382,16 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
     if (handleType == HandleTypeContact) {
         handle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
         type = TP_TESTS_TYPE_CONTACT_STREAM_TUBE_CHANNEL;
-        chanProps.insert(TP_QT4_IFACE_CHANNEL + QString::fromLatin1(".TargetID"),
+        chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetID"),
                 QString::fromLatin1("bob"));
     } else {
         handle = tp_handle_ensure(roomRepo, "#test", NULL, NULL);
         type = TP_TESTS_TYPE_ROOM_STREAM_TUBE_CHANNEL;
-        chanProps.insert(TP_QT4_IFACE_CHANNEL + QString::fromLatin1(".TargetID"),
+        chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetID"),
                 QString::fromLatin1("#test"));
     }
 
-    chanProps.insert(TP_QT4_IFACE_CHANNEL + QString::fromLatin1(".TargetHandle"), handle);
+    chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetHandle"), handle);
 
     TpHandle alfHandle = tp_handle_ensure(contactRepo, "alf", NULL, NULL);
 
@@ -441,7 +441,7 @@ QMap<QString, ClientHandlerInterface *> TestStreamTubeHandlers::ourHandlers()
             continue;
         }
 
-        if (!ifaces.contains(TP_QT4_IFACE_CLIENT_HANDLER)) {
+        if (!ifaces.contains(TP_QT_IFACE_CLIENT_HANDLER)) {
             continue;
         }
 
@@ -899,7 +899,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     userActionTime = userActionTime.addMSecs(-userActionTime.time().msec());
 
     QVariantMap hints;
-    hints.insert(QLatin1String("tp-qt4-test-request-hint-herring-color-rgba"), uint(0xff000000));
+    hints.insert(QLatin1String("tp-qt-test-request-hint-herring-color-rgba"), uint(0xff000000));
 
     QObject *request = new QObject(this);
     QString requestPath =
@@ -915,7 +915,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
             false,
             hints,
             request);
-    QVERIFY(bus.registerService(TP_QT4_CHANNEL_DISPATCHER_BUS_NAME));
+    QVERIFY(bus.registerService(TP_QT_CHANNEL_DISPATCHER_BUS_NAME));
     QVERIFY(bus.registerObject(requestPath, request));
 
     // Invoke the handler, verifying that we're notified when that happens with the correct tube
@@ -974,7 +974,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mServerClosedTube, mRequestedTube);
-    QCOMPARE(mServerCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
+    QCOMPARE(mServerCloseError, QString(TP_QT_ERROR_CANCELLED)); // == local close request
 }
 
 void TestStreamTubeHandlers::testFailedExport()
@@ -1021,7 +1021,7 @@ void TestStreamTubeHandlers::testFailedExport()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mServerClosedTube, mRequestedTube);
-    QCOMPARE(mServerCloseError, QString(TP_QT4_ERROR_NOT_IMPLEMENTED)); // == AF unsupported by "CM"
+    QCOMPARE(mServerCloseError, QString(TP_QT_ERROR_NOT_IMPLEMENTED)); // == AF unsupported by "CM"
 }
 
 void TestStreamTubeHandlers::testServerConnMonitoring()
@@ -1127,7 +1127,7 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     QCOMPARE(mClosedServerConnectionAddress, expectedAddress);
     QCOMPARE(mClosedServerConnectionPort, expectedPort);
     QCOMPARE(mClosedServerConnectionContact, mNewServerConnectionContact);
-    QCOMPARE(mServerConnectionCloseError, QString(TP_QT4_ERROR_DISCONNECTED));
+    QCOMPARE(mServerConnectionCloseError, QString(TP_QT_ERROR_DISCONNECTED));
     QVERIFY(server->tcpConnections().isEmpty());
 
     // Fire up two new connections
@@ -1165,7 +1165,7 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     QCOMPARE(mClosedServerConnectionAddress, expectedAddress);
     QCOMPARE(mClosedServerConnectionPort, quint16(3));
     QCOMPARE(mClosedServerConnectionContact, mNewServerConnectionContact);
-    QCOMPARE(mServerConnectionCloseError, QString(TP_QT4_ERROR_DISCONNECTED));
+    QCOMPARE(mServerConnectionCloseError, QString(TP_QT_ERROR_DISCONNECTED));
     QCOMPARE(server->tcpConnections().size(), 1);
 
     // Now, close the tube and verify we're signaled about that
@@ -1185,10 +1185,10 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     QCOMPARE(mClosedServerConnectionAddress, expectedAddress);
     QCOMPARE(mClosedServerConnectionPort, quint16(2));
     QCOMPARE(mClosedServerConnectionContact->id(), QLatin1String("second"));
-    QCOMPARE(mServerConnectionCloseError, QString(TP_QT4_ERROR_ORPHANED)); // parent tube died
+    QCOMPARE(mServerConnectionCloseError, TP_QT_ERROR_ORPHANED); // parent tube died
 
     QCOMPARE(mServerClosedTube, mRequestedTube);
-    QCOMPARE(mServerCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
+    QCOMPARE(mServerCloseError, QString(TP_QT_ERROR_CANCELLED)); // == local close request
 }
 
 void TestStreamTubeHandlers::testSSTHErrorPaths()
@@ -1391,7 +1391,7 @@ void TestStreamTubeHandlers::testClientBasicTcp()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mClientClosedTube, mOfferedTube);
-    QCOMPARE(mClientCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
+    QCOMPARE(mClientCloseError, QString(TP_QT_ERROR_CANCELLED)); // == local close request
 }
 
 void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
@@ -1482,7 +1482,7 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mClientClosedTube, mOfferedTube);
-    QCOMPARE(mClientCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
+    QCOMPARE(mClientCloseError, QString(TP_QT_ERROR_CANCELLED)); // == local close request
 }
 
 void TestStreamTubeHandlers::testClientTcpUnsupported()
@@ -1540,7 +1540,7 @@ void TestStreamTubeHandlers::testClientTcpUnsupported()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mClientClosedTube, mOfferedTube);
-    QCOMPARE(mClientCloseError, QString(TP_QT4_ERROR_NOT_IMPLEMENTED)); // == AF unsupported
+    QCOMPARE(mClientCloseError, QString(TP_QT_ERROR_NOT_IMPLEMENTED)); // == AF unsupported
 }
 
 void TestStreamTubeHandlers::testClientBasicUnix()
@@ -1622,7 +1622,7 @@ void TestStreamTubeHandlers::testClientBasicUnix()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mClientClosedTube, mOfferedTube);
-    QCOMPARE(mClientCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
+    QCOMPARE(mClientCloseError, QString(TP_QT_ERROR_CANCELLED)); // == local close request
 }
 
 void TestStreamTubeHandlers::testClientUnixCredsIgnore()
@@ -1703,7 +1703,7 @@ void TestStreamTubeHandlers::testClientUnixCredsIgnore()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mClientClosedTube, mOfferedTube);
-    QCOMPARE(mClientCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
+    QCOMPARE(mClientCloseError, QString(TP_QT_ERROR_CANCELLED)); // == local close request
 }
 
 void TestStreamTubeHandlers::testClientConnMonitoring()
@@ -1801,7 +1801,7 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mClosedClientConnectionId, firstId);
-    QCOMPARE(mClientConnectionCloseError, QString(TP_QT4_ERROR_DISCONNECTED));
+    QCOMPARE(mClientConnectionCloseError, QString(TP_QT_ERROR_DISCONNECTED));
     QVERIFY(client->connections().isEmpty());
 
     // Fire up two new connections
@@ -1841,7 +1841,7 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mClosedClientConnectionId, thirdId);
-    QCOMPARE(mClientConnectionCloseError, QString(TP_QT4_ERROR_DISCONNECTED));
+    QCOMPARE(mClientConnectionCloseError, QString(TP_QT_ERROR_DISCONNECTED));
     QCOMPARE(mClosedServerConnectionContact, mNewServerConnectionContact);
 
     conns = client->connections();
@@ -1868,10 +1868,10 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
 
     QVERIFY(client->connections().isEmpty());
     QCOMPARE(mClosedClientConnectionId, secondId);
-    QCOMPARE(mClientConnectionCloseError, QString(TP_QT4_ERROR_ORPHANED)); // parent tube died
+    QCOMPARE(mClientConnectionCloseError, TP_QT_ERROR_ORPHANED); // parent tube died
 
     QCOMPARE(mClientClosedTube, mOfferedTube);
-    QCOMPARE(mClientCloseError, QString(TP_QT4_ERROR_CANCELLED)); // == local close request
+    QCOMPARE(mClientCloseError, QString(TP_QT_ERROR_CANCELLED)); // == local close request
 }
 
 void TestStreamTubeHandlers::cleanup()

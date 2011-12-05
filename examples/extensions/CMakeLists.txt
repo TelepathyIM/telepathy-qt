@@ -21,38 +21,38 @@ set(example_extensions_SRCS
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_gen)
 set(generated_all_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/all.xml)
-tpqt4_xincludator(example-extensions-includator ${CMAKE_CURRENT_SOURCE_DIR}/all.xml ${generated_all_xml})
-tpqt4_constants_gen(example-extensions-constants ${generated_all_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
+tpqt_xincludator(example-extensions-includator ${CMAKE_CURRENT_SOURCE_DIR}/all.xml ${generated_all_xml})
+tpqt_constants_gen(example-extensions-constants ${generated_all_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
                     --namespace=Example
                     --str-constant-prefix=EXAMPLE_
                     DEPENDS example-extensions-includator)
 
 if(MSVC)
-    set(TYPES_INCLUDE ^<TelepathyQt4/Types^>)
+    set(TYPES_INCLUDE ^<TelepathyQt/Types^>)
 else(MSVC)
-    set(TYPES_INCLUDE '<TelepathyQt4/Types>')
+    set(TYPES_INCLUDE '<TelepathyQt/Types>')
 endif(MSVC)
 
-tpqt4_types_gen(example-extensions-typesgen ${generated_all_xml}
+tpqt_types_gen(example-extensions-typesgen ${generated_all_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
                 Example types.h types.h
                 --extraincludes=${TYPES_INCLUDE}
                 DEPENDS example-extensions-constants)
 
 set(connection_generated_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/connection.xml)
-tpqt4_xincludator(example-extensions-connection-includator ${CMAKE_CURRENT_SOURCE_DIR}/connection.xml ${connection_generated_xml})
+tpqt_xincludator(example-extensions-connection-includator ${CMAKE_CURRENT_SOURCE_DIR}/connection.xml ${connection_generated_xml})
 
 if(MSVC)
   set(ESCAPED_QUOTES \"\"\")
-  set(connection_include ^<TelepathyQt4/Connection^>)
+  set(connection_include ^<TelepathyQt/Connection^>)
 else(MSVC)
   set(ESCAPED_QUOTES \\\")
-  set(connection_include '<TelepathyQt4/Connection>')
+  set(connection_include '<TelepathyQt/Connection>')
 endif(MSVC)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-body.hpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
     COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
+    ARGS ${CMAKE_SOURCE_DIR}/tools/qt-client-gen.py
          --namespace=Example::Client
          --typesnamespace=Example
          --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
@@ -65,7 +65,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-body.h
 add_custom_target(example-extensions-connection-generation)
 add_dependencies(example-extensions-connection-generation example-extensions-connection-includator example-extensions-typesgen)
 list(APPEND example_extensions_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-body.hpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h)
-tpqt4_generate_moc_i(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.moc.hpp)
+tpqt_generate_moc_i(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.moc.hpp)
 list(APPEND example_extensions_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.moc.hpp)
 
 add_library(example_extensions STATIC ${example_extensions_SRCS})
@@ -73,4 +73,4 @@ add_dependencies(example_extensions example-extensions-connection-generation)
 target_link_libraries(example_extensions
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTCORE_LIBRARY}
-    telepathy-qt4)
+    telepathy-qt${QT_VERSION_MAJOR})
