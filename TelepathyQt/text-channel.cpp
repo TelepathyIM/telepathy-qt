@@ -74,7 +74,7 @@ struct TP_QT_NO_EXPORT TextChannel::Private
     bool gotProperties;
 
     // requires FeatureMessageCapabilities
-    UIntList supportedMessageTypes;
+    QList<ChannelTextMessageType> supportedMessageTypes;
     QStringList supportedContentTypes;
     MessagePartSupportFlags messagePartSupport;
     DeliveryReportingSupportFlags deliveryReportingSupport;
@@ -317,7 +317,14 @@ void TextChannel::Private::updateCapabilities()
         return;
     }
 
-    supportedMessageTypes = qdbus_cast<UIntList>(props[QLatin1String("MessageTypes")]);
+    UIntList messageTypesAsUIntList = qdbus_cast<UIntList>(props[QLatin1String("MessageTypes")]);
+
+    // Populate the list with the correct variable type
+    supportedMessageTypes.clear();
+
+    Q_FOREACH (uint messageType, messageTypesAsUIntList) {
+        supportedMessageTypes.append(static_cast<ChannelTextMessageType>(messageType));
+    }
 
     supportedContentTypes = qdbus_cast<QStringList>(
             props[QLatin1String("SupportedContentTypes")]);
