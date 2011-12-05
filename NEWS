@@ -33,6 +33,8 @@ Enhancements:
    added to allow implementing Telepathy Stream Tube connectivity for
    applications without having to worry about the channel dispatching details
  * Contact::refreshInfo() requests are now batched together on D-Bus
+ * fd.o #41356: Implement methods to retrieve available message types on
+   TextChannel.
 
 Fixes:
  * Our TODO process being completely out of date. Trying to use doxygen \todo
