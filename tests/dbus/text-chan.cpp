@@ -331,6 +331,8 @@ void TestTextChan::commonTest(bool withMessages)
                 static_cast<uint>(Tp::MessagePartSupportFlagOneAttachment |
                     Tp::MessagePartSupportFlagMultipleAttachments));
         QCOMPARE(mChan->deliveryReportingSupport(), DeliveryReportingSupportFlagReceiveFailures);
+        QCOMPARE(mChan->supportedMessageTypes().size(), 3);
+        QVERIFY(mChan->supportsMessageType(static_cast<ChannelTextMessageType>(0U)));
     } else {
         QCOMPARE(mChan->supportedContentTypes(), QStringList() << QLatin1String("text/plain"));
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);
