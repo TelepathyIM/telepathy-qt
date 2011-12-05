@@ -74,7 +74,7 @@ struct TP_QT_NO_EXPORT TextChannel::Private
     bool gotProperties;
 
     // requires FeatureMessageCapabilities
-    UIntList channelTextMessageTypes;
+    UIntList supportedMessageTypes;
     QStringList supportedContentTypes;
     MessagePartSupportFlags messagePartSupport;
     DeliveryReportingSupportFlags deliveryReportingSupport;
@@ -317,7 +317,7 @@ void TextChannel::Private::updateCapabilities()
         return;
     }
 
-    channelTextMessageTypes = qdbus_cast<UIntList>(props[QLatin1String("MessageTypes")]);
+    supportedMessageTypes = qdbus_cast<UIntList>(props[QLatin1String("MessageTypes")]);
 
     supportedContentTypes = qdbus_cast<QStringList>(
             props[QLatin1String("SupportedContentTypes")]);
@@ -742,7 +742,7 @@ bool TextChannel::supportsMessageType(ChannelTextMessageType messageType) const
                 "FeatureMessageCapabilities not ready";
     }
 
-    return mPriv->channelTextMessageTypes.contains(messageType);
+    return mPriv->supportedMessageTypes.contains(messageType);
 }
 
 /**
