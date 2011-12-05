@@ -331,6 +331,13 @@ void TestTextChan::commonTest(bool withMessages)
                 static_cast<uint>(Tp::MessagePartSupportFlagOneAttachment |
                     Tp::MessagePartSupportFlagMultipleAttachments));
         QCOMPARE(mChan->deliveryReportingSupport(), DeliveryReportingSupportFlagReceiveFailures);
+        QCOMPARE(mChan->supportedMessageTypes().size(), 3);
+        // Supports normal, action, notice
+        QVERIFY(mChan->supportsMessageType(Tp::ChannelTextMessageTypeNormal));
+        QVERIFY(mChan->supportsMessageType(Tp::ChannelTextMessageTypeAction));
+        QVERIFY(mChan->supportsMessageType(Tp::ChannelTextMessageTypeNotice));
+        QVERIFY(!mChan->supportsMessageType(Tp::ChannelTextMessageTypeAutoReply));
+        QVERIFY(!mChan->supportsMessageType(Tp::ChannelTextMessageTypeDeliveryReport));
     } else {
         QCOMPARE(mChan->supportedContentTypes(), QStringList() << QLatin1String("text/plain"));
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);

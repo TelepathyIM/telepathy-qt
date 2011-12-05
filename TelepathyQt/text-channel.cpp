@@ -74,6 +74,7 @@ struct TP_QT_NO_EXPORT TextChannel::Private
     bool gotProperties;
 
     // requires FeatureMessageCapabilities
+    QList<ChannelTextMessageType> supportedMessageTypes;
     QStringList supportedContentTypes;
     MessagePartSupportFlags messagePartSupport;
     DeliveryReportingSupportFlags deliveryReportingSupport;
@@ -314,6 +315,15 @@ void TextChannel::Private::updateCapabilities()
     if (!readinessHelper->requestedFeatures().contains(FeatureMessageCapabilities) ||
         readinessHelper->isReady(Features() << FeatureMessageCapabilities)) {
         return;
+    }
+
+    UIntList messageTypesAsUIntList = qdbus_cast<UIntList>(props[QLatin1String("MessageTypes")]);
+
+    // Populate the list with the correct variable type
+    supportedMessageTypes.clear();
+
+    foreach (uint messageType, messageTypesAsUIntList) {
+        supportedMessageTypes.append(static_cast<ChannelTextMessageType>(messageType));
     }
 
     supportedContentTypes = qdbus_cast<QStringList>(
@@ -722,6 +732,41 @@ bool TextChannel::canInviteContacts() const
 QStringList TextChannel::supportedContentTypes() const
 {
     return mPriv->supportedContentTypes;
+}
+
+/**
+ * Return the message types supported by this channel.
+ *
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
+ *
+ * \return The list of supported message types
+ */
+QList<ChannelTextMessageType> TextChannel::supportedMessageTypes() const
+{
+    if (!isReady(FeatureMessageCapabilities)) {
+        warning() << "TextChannel::supportedMessageTypes() used with "
+                "FeatureMessageCapabilities not ready";
+    }
+
+    return mPriv->supportedMessageTypes;
+}
+
+/**
+ * Return whether the provided message type is supported.
+ *
+ * This method requires TextChannel::FeatureMessageCapabilities to be ready.
+ *
+ * \param messageType The message type to check.
+ * \return \c true if supported, \c false otherwise
+ */
+bool TextChannel::supportsMessageType(ChannelTextMessageType messageType) const
+{
+    if (!isReady(FeatureMessageCapabilities)) {
+        warning() << "TextChannel::supportsMessageType() used with "
+                "FeatureMessageCapabilities not ready";
+    }
+
+    return mPriv->supportedMessageTypes.contains(messageType);
 }
 
 /**
