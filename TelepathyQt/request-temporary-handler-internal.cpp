@@ -90,7 +90,7 @@ void RequestTemporaryHandler::handleChannels(
     ChannelRequestPtr channelRequest = requestsSatisfied.first();
 
     if (!oldChannel) {
-        mChannel = QWeakPointer<Channel>(channels.first().data());
+        mChannel = WeakPtr<Channel>(channels.first());
         emit channelReceived(channel(), userActionTime, channelRequest->hints());
     } else {
         if (mQueueChannelReceived) {

@@ -30,7 +30,6 @@
 #include <QQueue>
 #include <QSet>
 #include <QString>
-#include <QWeakPointer>
 
 namespace Tp
 {
@@ -85,11 +84,11 @@ struct TP_QT_NO_EXPORT ConnectionManager::Private
 struct TP_QT_NO_EXPORT ConnectionManagerLowlevel::Private
 {
     Private(ConnectionManager *cm)
-        : cm(QWeakPointer<ConnectionManager>(cm))
+        : cm(cm)
     {
     }
 
-    QWeakPointer<ConnectionManager> cm;
+    WeakPtr<ConnectionManager> cm;
 };
 
 class TP_QT_NO_EXPORT ConnectionManager::Private::PendingNames : public PendingStringList

@@ -52,7 +52,7 @@ private Q_SLOTS:
     void onProxyInvalidated(Tp::DBusProxy *proxy); // The error itself is not interesting
 
 private:
-    QHash<Key, QWeakPointer<DBusProxy> > proxies;
+    QHash<Key, WeakPtr<DBusProxy> > proxies;
 };
 
 }

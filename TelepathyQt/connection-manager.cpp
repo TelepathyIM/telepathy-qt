@@ -592,7 +592,7 @@ ConnectionManagerLowlevel::~ConnectionManagerLowlevel()
 
 bool ConnectionManagerLowlevel::isValid() const
 {
-    return !mPriv->cm.isNull();
+    return !(connectionManager().isNull());
 }
 
 ConnectionManagerPtr ConnectionManagerLowlevel::connectionManager() const
@@ -871,8 +871,7 @@ PendingConnection *ConnectionManagerLowlevel::requestConnection(const QString &p
                 QLatin1String("The connection manager has been destroyed already"));
     }
 
-    return new PendingConnection(ConnectionManagerPtr(mPriv->cm),
-            protocol, parameters);
+    return new PendingConnection(connectionManager(), protocol, parameters);
 }
 
 /**

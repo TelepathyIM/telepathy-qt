@@ -216,7 +216,7 @@ struct TP_QT_NO_EXPORT StreamedMediaStream::Private
     SendingState remoteSendingStateFromDirection();
 
     StreamedMediaStream *parent;
-    QPointer<StreamedMediaChannel> channel;
+    WeakPtr<StreamedMediaChannel> channel;
     ReadinessHelper *readinessHelper;
 
     uint id;
@@ -232,7 +232,7 @@ StreamedMediaStream::Private::Private(StreamedMediaStream *parent,
         const StreamedMediaChannelPtr &channel,
         const MediaStreamInfo &streamInfo)
     : parent(parent),
-      channel(channel.data()),
+      channel(channel),
       readinessHelper(parent->readinessHelper()),
       id(streamInfo.identifier),
       type(streamInfo.type),

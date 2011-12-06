@@ -35,7 +35,7 @@
  * Making the object reference counted, does not guarantee that it will get
  * deleted when nobody is referencing it.
  *
- * When instantiating new classes that inherits SharedData the reference count
+ * When instantiating new classes that inherits RefCounted the reference count
  * is 0, this is referred to as the floating state. Again this may lead to
  * memory leaks, caused by objects in the floating state that never get deleted.
  *
@@ -47,7 +47,7 @@
  * is deleted.
  *
  * In order to assure that the object is put in a SharedPtr as soon as possible,
- * our objects inheriting SharedData will have the constructor either private
+ * our objects inheriting RefCounted will have the constructor either private
  * or protected, in case we want to support custom classes, and will have a
  * public static create method that will return a SharedPtr pointing to the
  * object instance.
@@ -73,6 +73,10 @@
  * \headerfile TelepathyQt/shared-ptr.h <TelepathyQt/SharedPtr>
  *
  * \brief The SharedPtr class is a pointer to an explicitly shared object.
+ *
+ * Note that from Telepathy-Qt >= 0.9.0, Tp::SharedPtr cannot be constructed from a QWeakPointer as
+ * the conversion from a QWeakPointer to a Tp::SharedPtr can't be made thread-safe.
+ * Tp::WeakPtr is reintroduced as a weak pointer class safely promoteable to a Tp::SharedPtr.
  *
  * See \ref shared_ptr
  */
@@ -108,4 +112,17 @@
  * provides the same semantics for all classes, provided the C++ runtime type identification
  * facility is enabled. This method, on the other hand, doesn't require the standard C++ facility
  * and is probably also faster for the types it can be used with.
+ */
+
+/**
+ * \class Tp::WeakPtr
+ * \ingroup utils
+ * \headerfile TelepathyQt/shared-ptr.h <TelepathyQt/WeakPtr>
+ *
+ * \brief The WeakPtr class holds a weak reference to an object managed by SharedPtr.
+ *
+ * Tp::WeakPtr is useful for example for breaking reference cycles which would result from
+ * using a Tp::SharedPtr for both ends of a pair of mutually linked objects to refer to each other.
+ *
+ * See \ref shared_ptr
  */

@@ -46,7 +46,7 @@ struct TP_QT_NO_EXPORT Contact::Private
     Private(Contact *parent, ContactManager *manager,
         const ReferencedHandles &handle)
         : parent(parent),
-          manager(manager),
+          manager(ContactManagerPtr(manager)),
           handle(handle),
           caps(manager->supportedFeatures().contains(Contact::FeatureCapabilities) ?
                    ContactCapabilities(true) :  ContactCapabilities(
@@ -62,7 +62,7 @@ struct TP_QT_NO_EXPORT Contact::Private
 
     Contact *parent;
 
-    QWeakPointer<ContactManager> manager;
+    WeakPtr<ContactManager> manager;
     ReferencedHandles handle;
     QString id;
 

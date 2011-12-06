@@ -41,7 +41,6 @@
 #include <TelepathyQt/Utils>
 
 #include <QMap>
-#include <QWeakPointer>
 
 namespace Tp
 {
@@ -56,10 +55,10 @@ struct TP_QT_NO_EXPORT ContactManager::Private
         QString &avatarFileName, QString &mimeTypeFileName);
 
     ContactManager *parent;
-    QWeakPointer<Connection> connection;
+    WeakPtr<Connection> connection;
     ContactManager::Roster *roster;
 
-    QMap<uint, QWeakPointer<Contact> > contacts;
+    QMap<uint, WeakPtr<Contact> > contacts;
 
     QMap<Feature, bool> tracking;
     Features supportedFeatures;
@@ -1333,7 +1332,7 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
 
     if (!contact) {
         contact = connection()->contactFactory()->construct(this, handle, features, attributes);
-        mPriv->contacts.insert(bareHandle, contact.data());
+        mPriv->contacts.insert(bareHandle, contact);
     }
 
     contact->augment(features, attributes);
@@ -1353,7 +1352,7 @@ ContactPtr ContactManager::ensureContact(uint bareHandle, const QString &id,
         contact = connection()->contactFactory()->construct(this,
                 ReferencedHandles(connection(), HandleTypeContact, UIntList() << bareHandle),
                 features, attributes);
-        mPriv->contacts.insert(bareHandle, contact.data());
+        mPriv->contacts.insert(bareHandle, contact);
 
         // do not call augment here as this is a fake contact
     }

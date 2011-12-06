@@ -68,7 +68,7 @@ struct TP_QT_NO_EXPORT SimpleObserver::Private
     QQueue<void (SimpleObserver::Private::*)()> channelsQueue;
     QQueue<ChannelInvalidationInfo> channelsInvalidationQueue;
     QQueue<NewChannelsInfo> newChannelsQueue;
-    static QHash<QPair<QString, QSet<ChannelClassSpec> >, QWeakPointer<Observer> > observers;
+    static QHash<QPair<QString, QSet<ChannelClassSpec> >, WeakPtr<Observer> > observers;
     static uint numObservers;
 };
 
@@ -138,13 +138,13 @@ public:
         QList<ChannelPtr> channels;
     };
 
-    Observer(const QWeakPointer<ClientRegistrar> &cr,
+    Observer(const WeakPtr<ClientRegistrar> &cr,
              const SharedPtr<FakeAccountFactory> &fakeAccountFactory,
              const ChannelClassSpecList &channelFilter,
              const QString &observerName);
     ~Observer();
 
-    QWeakPointer<ClientRegistrar> clientRegistrar() const { return mCr; }
+    WeakPtr<ClientRegistrar> clientRegistrar() const { return mCr; }
     SharedPtr<FakeAccountFactory> fakeAccountFactory() const { return mFakeAccountFactory; }
 
     QString observerName() const { return mObserverName; }
@@ -186,7 +186,7 @@ private Q_SLOTS:
 private:
     Features featuresFor(const ChannelClassSpec &channelClass) const;
 
-    QWeakPointer<ClientRegistrar> mCr;
+    WeakPtr<ClientRegistrar> mCr;
     SharedPtr<FakeAccountFactory> mFakeAccountFactory;
     QString mObserverName;
     QSet<ChannelClassFeatures> mExtraChannelFeatures;

@@ -411,7 +411,8 @@ set(telepathy_qt_HEADERS
     Types
     types.h
     Utils
-    utils.h)
+    utils.h
+    SharedPtr)
 
 # Generated headers which will be installed and exported
 set(telepathy_qt_gen_HEADERS
