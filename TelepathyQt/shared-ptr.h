@@ -39,33 +39,29 @@ class RefCounted;
 template <class T> class SharedPtr;
 template <class T> class WeakPtr;
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
-class TP_QT_EXPORT SharedCount
-{
-    Q_DISABLE_COPY(SharedCount)
-
-public:
-    SharedCount(RefCounted *d)
-        : d(d), strongref(0), weakref(0)
-    {
-    }
-
-private:
-    template <class T> friend class SharedPtr;
-    template <class T> friend class WeakPtr;
-    friend class RefCounted;
-
-    RefCounted *d;
-    mutable QAtomicInt strongref;
-    mutable QAtomicInt weakref;
-};
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
 class TP_QT_EXPORT RefCounted
 {
     Q_DISABLE_COPY(RefCounted)
+
+    class SharedCount
+    {
+        Q_DISABLE_COPY(SharedCount)
+
+    public:
+        SharedCount(RefCounted *d)
+            : d(d), strongref(0), weakref(0)
+        {
+        }
+
+    private:
+        template <class T> friend class SharedPtr;
+        template <class T> friend class WeakPtr;
+        friend class RefCounted;
+
+        RefCounted *d;
+        mutable QAtomicInt strongref;
+        mutable QAtomicInt weakref;
+    };
 
 public:
     inline RefCounted() : sc(new SharedCount(this))
@@ -109,7 +105,7 @@ public:
     inline SharedPtr(const SharedPtr<T> &o) : d(o.d) { if (d) { d->ref(); } }
     explicit inline SharedPtr(const WeakPtr<T> &o)
     {
-        SharedCount *sc = o.sc;
+        RefCounted::SharedCount *sc = o.sc;
         if (sc) {
             // increase the strongref, but never up from zero
             // or less (negative is used on untracked objects)
@@ -265,7 +261,7 @@ public:
 
     inline void swap(WeakPtr<T> &o)
     {
-        SharedCount *tmp = sc;
+        RefCounted::SharedCount *tmp = sc;
         sc = o.sc;
         o.sc = tmp;
     }
@@ -276,7 +272,7 @@ private:
     friend class SharedPtr<T>;
     friend uint qHash<T>(const WeakPtr<T> &ptr);
 
-    SharedCount *sc;
+    RefCounted::SharedCount *sc;
 };
 
 template<typename T>
