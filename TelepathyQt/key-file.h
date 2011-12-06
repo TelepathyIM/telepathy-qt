@@ -36,7 +36,7 @@ class QStringList;
 namespace Tp
 {
 
-class TP_QT_EXPORT KeyFile
+class TP_QT_NO_EXPORT KeyFile
 {
 public:
     enum Status {
