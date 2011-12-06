@@ -27,6 +27,7 @@ API changes:
    UIntList.
  * Channel::groupContacts and groupLocal/RemotePendingContacts() gained
    a "includeSelfContact" param defaulting to true.
+ * KeyFile and ManagerFile classes are now removed from public API.
 
 Enhancements:
  * fd.o #35084: The StreamTubeClient and StreamTubeServer classes have been
