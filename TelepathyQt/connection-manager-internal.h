@@ -139,6 +139,7 @@ private Q_SLOTS:
 
 private:
     static void introspectMain(ProtocolWrapper *self);
+    void introspectInterfaces();
     void introspectAvatars();
     void introspectPresence();
 

@@ -175,20 +175,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
     if (self->receiveProperties(self->mImmutableProps)) {
         debug() << "Got everything we want from the immutable props for" <<
             self->info().name();
-
-        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
-            self->introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
-        } else {
-            debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
-        }
-
-        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
-            self->introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
-        } else {
-            debug() << "Full functionality requires CM support for the Protocol.Presence interface";
-        }
-
-        self->continueIntrospection();
+        self->introspectInterfaces();
         return;
     }
 
@@ -200,6 +187,23 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
     self->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+}
+
+void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
+{
+    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
+        introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
+    } else {
+        debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
+    }
+
+    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
+        introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
+    } else {
+        debug() << "Full functionality requires CM support for the Protocol.Presence interface";
+    }
+
+    continueIntrospection();
 }
 
 void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
@@ -265,19 +269,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         warning() << "  Full functionality requires CM support for the Protocol interface";
     }
 
-    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
-        introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
-    } else {
-        debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
-    }
-
-    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
-        introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
-    } else {
-        debug() << "Full functionality requires CM support for the Protocol.Presence interface";
-    }
-
-    continueIntrospection();
+    introspectInterfaces();
 
     watcher->deleteLater();
 }
