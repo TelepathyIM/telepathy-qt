@@ -113,8 +113,6 @@ set(telepathy_qt_SRCS
     stream-tube-server.cpp
     stream-tube-server-internal.h
     streamed-media-channel.cpp
-    test-backdoors.cpp
-    test-backdoors.h
     text-channel.cpp
     tls-certificate.cpp
     tube-channel.cpp
