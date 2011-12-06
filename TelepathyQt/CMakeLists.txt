@@ -511,6 +511,13 @@ set(telepathy_qt_MOC_SRCS
     text-channel.h
     tube-channel.h)
 
+# Sources for test library, used by tests to test some unexported functionality
+set(telepathy_qt_test_backdoors_SRCS
+    key-file.cpp
+    manager-file.cpp
+    test-backdoors.cpp
+    utils.cpp)
+
 # Generate the spec files for both stable and future spec
 set(gen_stable_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml)
 set(gen_future_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml)
@@ -629,6 +636,11 @@ else (ENABLE_COMPILER_COVERAGE)
     add_library(telepathy-qt${QT_VERSION_MAJOR} SHARED ${telepathy_qt_SRCS})
 endif (ENABLE_COMPILER_COVERAGE)
 
+# Library used by tests to test some unexported functionality
+add_library(telepathy-qt-test-backdoors STATIC ${telepathy_qt_test_backdoors_SRCS})
+add_dependencies(telepathy-qt-test-backdoors stable-constants)
+add_dependencies(telepathy-qt-test-backdoors stable-typesgen)
+
 # generate client moc files
 foreach(moc_src ${telepathy_qt_MOC_SRCS})
     set(generated_file _gen/${moc_src})
@@ -647,8 +659,16 @@ target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTXML_LIBRARY})
 
+# Link - Library used by tests to test some unexported functionality
+target_link_libraries(telepathy-qt-test-backdoors
+    ${QT_QTCORE_LIBRARY}
+    ${QT_QTDBUS_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTXML_LIBRARY})
+
 if (ENABLE_COMPILER_COVERAGE)
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} gcov)
+    target_link_libraries(telepathy-qt-test-backdoors gcov)
 endif (ENABLE_COMPILER_COVERAGE)
 
 # Set the correct version number
