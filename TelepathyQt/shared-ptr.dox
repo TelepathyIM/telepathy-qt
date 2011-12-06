@@ -119,7 +119,10 @@
  * \ingroup utils
  * \headerfile TelepathyQt/shared-ptr.h <TelepathyQt/WeakPtr>
  *
- * \brief The WeakPtr class holds a weak reference to a shared pointer.
+ * \brief The WeakPtr class holds a weak reference to an object managed by SharedPtr.
+ *
+ * Tp::WeakPtr is useful for example for breaking reference cycles which would result from
+ * using a Tp::SharedPtr for both ends of a pair of mutually linked objects to refer to each other.
  *
  * See \ref shared_ptr
  */
