@@ -28,6 +28,10 @@ API changes:
  * Channel::groupContacts and groupLocal/RemotePendingContacts() gained
    a "includeSelfContact" param defaulting to true.
  * KeyFile and ManagerFile classes are now removed from public API.
+ * SharedPtr cannot be constructed from a QWeakPointer anymore as the
+   conversion from a QWeakPointer to a SharedPtr can't be made thread-safe.
+   WeakPtr is reintroduced as a weak pointer class safely promoteable to a
+   SharedPtr.
 
 Enhancements:
  * fd.o #35084: The StreamTubeClient and StreamTubeServer classes have been
