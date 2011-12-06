@@ -22,7 +22,7 @@
 
 #include <TelepathyQt/ProtocolParameter>
 
-#include <TelepathyQt/ManagerFile>
+#include "TelepathyQt/manager-file.h"
 
 namespace Tp
 {

@@ -23,8 +23,8 @@
 #include <TelepathyQt/Profile>
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/manager-file.h"
 
-#include <TelepathyQt/ManagerFile>
 #include <TelepathyQt/Utils>
 #include <TelepathyQt/ProtocolInfo>
 #include <TelepathyQt/ProtocolParameter>

@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt/ManagerFile>
+#include "TelepathyQt/manager-file.h"
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/key-file.h"
 
 #include <TelepathyQt/Constants>
-#include <TelepathyQt/KeyFile>
 
 #include <QtCore/QDir>
 #include <QtCore/QHash>
@@ -371,9 +371,6 @@ QVariant ManagerFile::Private::valueForKey(const QString &param,
  *
  * \brief The ManagerFile class provides an easy way to read Telepathy manager
  * files according to the \telepathy_spec.
- *
- * \todo Consider making this private, because the ConnectionManager and Account classes provide a
- * nice view to the data parsed by this class anyway (fd.o #41655).
  */
 
 /**
