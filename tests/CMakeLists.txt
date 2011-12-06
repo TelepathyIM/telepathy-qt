@@ -34,7 +34,7 @@ tpqt_add_generic_unit_test(Capabilities capabilities telepathy-qt-test-backdoors
 tpqt_add_generic_unit_test(ChannelClassSpec channel-class-spec)
 tpqt_add_generic_unit_test(Features features)
 tpqt_add_generic_unit_test(KeyFile key-file telepathy-qt-test-backdoors)
-tpqt_add_generic_unit_test(ManagerFile manager-file)
+tpqt_add_generic_unit_test(ManagerFile manager-file telepathy-qt-test-backdoors)
 tpqt_add_generic_unit_test(Presence presence)
 tpqt_add_generic_unit_test(Profile profile)
 tpqt_add_generic_unit_test(Ptr ptr)

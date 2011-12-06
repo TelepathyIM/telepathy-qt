@@ -35,7 +35,7 @@
 namespace Tp
 {
 
-class TP_QT_EXPORT ManagerFile
+class TP_QT_NO_EXPORT ManagerFile
 {
 public:
     ManagerFile();
