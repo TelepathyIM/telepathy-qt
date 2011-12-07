@@ -24,6 +24,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     interface="org.freedesktop.Telepathy.Channel.Interface.Messages"/>
     <tp:changed version="0.21.5">The Messages interface is now
       mandatory</tp:changed>
+    <tp:changed version="0.24.0">This interface used to have a bunch of
+      clunky <tp:dbus-ref
+      namespace='org.freedesktop'>Telepathy.Properties</tp:dbus-ref>. They have
+      been removed in favour of D-Bus properties on the <tp:dbus-ref
+      namespace='ofdT.Channel.Interface'>Room2</tp:dbus-ref>, <tp:dbus-ref
+      namespace='ofdT.Channel.Interface'>Subject2</tp:dbus-ref> and
+      <tp:dbus-ref namespace='ofdT.Channel.Interface'>RoomConfig1</tp:dbus-ref>
+      interfaces.</tp:changed>
 
     <tp:simple-type name="Message_ID" type="u" array-name="Message_ID_List">
       <tp:docstring>
@@ -430,92 +438,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:flag>
     </tp:flags>
 
-    <tp:property name="anonymous" type="b">
-      <tp:docstring>
-      True if people may join the channel without other members being made
-      aware of their identity.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="invite-only" type="b">
-      <tp:docstring>
-      True if people may not join the channel until they have been invited.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="limit" type="u">
-      <tp:docstring>
-      The limit to the number of members, if limited is true.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="limited" type="b">
-      <tp:docstring>
-      True if there is a limit to the number of channel members.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="moderated" type="b">
-      <tp:docstring>
-      True if channel membership is not sufficient to allow participation.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="name" type="s">
-      <tp:docstring>
-      A human-visible name for the channel, if it differs from the channel's
-      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">TargetID</tp:dbus-ref>.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="description" type="s">
-      <tp:docstring>
-      A human-readable description of the channel's overall purpose.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="password" type="s">
-      <tp:docstring>
-      The password required to enter the channel if password-required is true.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="password-required" type="b">
-      <tp:docstring>
-      True if a password must be provided to enter the channel.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="persistent" type="b">
-      <tp:docstring>
-      True if the channel will remain in existence on the server after all
-      members have left it.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="private" type="b">
-      <tp:docstring>
-      True if the channel is not visible to non-members.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="subject" type="s">
-      <tp:docstring>
-      A human-readable description of the current subject of conversation in
-      the channel, similar to /topic in IRC. This is equivalent to the
-      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
-      >Subject</tp:dbus-ref> property in the Room interface which will replace
-      this Telepathy property.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="subject-contact" type="u" tp:type="Contact_Handle">
-      <tp:docstring>
-      A contact handle representing who last modified the subject, or 0
-      if it isn't known. This is equivalent to the
-      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
-      >Subject</tp:dbus-ref> property in the Room interface which will replace
-      this Telepathy property.
-      </tp:docstring>
-    </tp:property>
-    <tp:property name="subject-timestamp" type="u" tp:type="Unix_Timestamp">
-      <tp:docstring>
-      A unix timestamp indicating when the subject was last modified.
-      This is equivalent to the
-      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
-      >Subject</tp:dbus-ref> property in the Room interface which will replace
-      this Telepathy property.
-      </tp:docstring>
-    </tp:property>
-
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type for sending and receiving messages. This channel type
         is primarily used for textual messages, but can also be used for
@@ -555,14 +477,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>Simple one-to-one chats (such as streams of private messages in
         XMPP or IRC) should be represented by a Text channel whose
         <tp:dbus-ref namespace="ofdT.Channel">TargetHandleType</tp:dbus-ref>
-        is <tp:type>Handle_Type</tp:type>_Contact. The expected way to
-        request such a channel is to set the ChannelType, TargetHandleType,
-        and either TargetHandle or TargetID in a call to EnsureChannel.</p>
+        is <tp:value-ref type="Handle_Type">Contact</tp:value-ref>. The
+        expected way to request such a channel is to set the <tp:dbus-ref
+        namespace='ofdT.Channel'>ChannelType</tp:dbus-ref>, <tp:dbus-ref
+        namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref>,
+        and either <tp:dbus-ref
+        namespace='ofdT.Channel'>TargetHandle</tp:dbus-ref> or <tp:dbus-ref
+        namespace='ofdT.Channel'>TargetID</tp:dbus-ref> in a call to
+        <tp:dbus-ref
+        namespace='ofdT.ChannelDispatcher'>EnsureChannel</tp:dbus-ref>.</p>
 
       <p>Named chat rooms whose identity can be saved and used again later
         (IRC channels, Jabber MUCs) are expected to be represented by Text
-        channels with <tp:type>Handle_Type</tp:type>_Room and the <tp:dbus-ref
-          namespace="ofdT.Channel.Interface">Group</tp:dbus-ref>
+        channels with <tp:dbus-ref
+        namespace="ofdT.Channel">TargetHandleType</tp:dbus-ref> =
+        <tp:value-ref type="Handle_Type">Room</tp:value-ref> and the
+        <tp:dbus-ref namespace="ofdT.Channel.Interface">Group</tp:dbus-ref>
         interface. In protocols where a chatroom can be used as a continuation
         of one or more one-to-one chats, these channels should also have the
         <tp:dbus-ref namespace="ofdT.Channel.Interface">Conference</tp:dbus-ref>
@@ -571,7 +501,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>Unnamed, transient chat rooms which cannot be rejoined by their
         unique identifier (e.g. a conversation on MSN which has, or once had,
         three or more participants) are expected to be represented by Text
-        channels with Handle_Type_None (and hence TargetHandle 0), the
+        channels with <tp:dbus-ref
+        namespace="ofdT.Channel">TargetHandleType</tp:dbus-ref> = <tp:value-ref
+        type="Handle_Type">None</tp:value-ref> (and hence <tp:dbus-ref
+        namespace="ofdT.Channel">TargetHandle</tp:dbus-ref> = 0),
         <tp:dbus-ref namespace="ofdT.Channel.Interface">Group</tp:dbus-ref>
         interface, and optionally the
         <tp:dbus-ref namespace="ofdT.Channel.Interface">Conference</tp:dbus-ref>
@@ -580,7 +513,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>On protocols like MSN where a conversation with a user is actually
         just a nameless chat room starting with exactly two members, to which
         more members can be invited, the initial one-to-one conversation
-        SHOULD be represented with Handle_Type_Contact. If a third participant
+        SHOULD be represented with <tp:dbus-ref
+        namespace="ofdT.Channel">TargetHandleType</tp:dbus-ref> =
+        <tp:value-ref type="Handle_Type">Contact</tp:value-ref>. If a third
+        participant
         joins or is invited, this SHOULD be represented by signalling
         a new <tp:dbus-ref
           namespace="ofdT.Channel.Interface">Conference</tp:dbus-ref> channel
@@ -606,8 +542,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:dbus-ref
           namespace="ofdT.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
         signal. The new channel should resemble the old channel, but have
-        Requested = FALSE regardless of its previous value; the InitiatorHandle
-        and InitiatorID should correspond to the sender of one of the pending
+        <tp:dbus-ref namespace='ofdT.Channel'>Requested</tp:dbus-ref> = FALSE
+        regardless of its previous value; the <tp:dbus-ref
+        namespace='ofdT.Channel'>InitiatorHandle</tp:dbus-ref>
+        and <tp:dbus-ref namespace='ofdT.Channel'>InitiatorID</tp:dbus-ref>
+        should correspond to the sender of one of the pending
         messages.</p>
 
       <tp:rationale>
@@ -662,6 +601,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           understand one extra interface, however many channel types
           eventually need a distinction between Close and Destroy.</p>
       </tp:rationale>
+
+      <p>Opaquely-named rejoinable chatrooms (such as Skype rooms) are
+        represented using the properties in the <tp:dbus-ref
+        namespace="ofdT.Channel.Interface">Room2</tp:dbus-ref>
+        interface. Instructions and examples of how to request
+        such channels are given in said interface's description.</p>
 
     </tp:docstring>
   </interface>

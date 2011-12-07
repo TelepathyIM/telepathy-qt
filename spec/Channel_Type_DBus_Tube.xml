@@ -174,7 +174,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of the access control types that are supported with this channel.
         Note that only Socket_Access_Control_Localhost and
-        Socket_Access_Control_Credentials can be used with D-Bus tubes.</p>
+        Socket_Access_Control_Credentials can be used with D-Bus tubes.
+        Using Socket_Access_Control_Credentials is recommended.</p>
+
+        <tp:rationale>
+          <p>Socket_Access_Control_Credentials is easy to implement for a
+            D-Bus tube, because typical D-Bus library implementations like
+            libdbus and GDBus already have to support it to be able to
+            connect to the system or session bus, and usually enable it
+            by default; so there's typically no good reason to relax
+            access control to Localhost.</p>
+        </tp:rationale>
 
         <p>When requesting a channel with
           <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,

@@ -599,15 +599,66 @@ USA.</p>
 
             <dt>supersedes (s – <tp:type>Protocol_Message_Token</tp:type>)</dt>
             <dd>If present, this message supersedes a previous message,
-              identified by its <tt>protocol-token</tt> or
-              <tt>message-token</tt> header. The user interface MAY, for
-              example, choose to replace the superseded message with this
-              message, or grey out the superseded message.
+              identified by its <tt>message-token</tt> header. The user
+              interface MAY, for example, choose to replace the superseded
+              message with this message, or grey out the superseded message.
 
               <tp:rationale>Skype, for example, allows the user to amend
                 messages they have already sent (to correct typos,
                 etc.).</tp:rationale>
-              </dd>
+
+              Connection Managers SHOULD represent repeatedly edited messages
+              in the following form:
+              <pre>
+                message {token = a};
+                message {token = b, supersedes = a};
+                message {token = c, supersedes = a};
+              </pre>
+
+              <tp:rationale>The alternative form is:
+                <pre>
+                  message {token = a};
+                  message {token = b, supersedes = a};
+                  message {token = c, supersedes = b};
+                </pre>
+                but it is more difficult to implement in UIs/loggers, and it
+                breaks irrecoverably if message b is lost. If a CM is forced
+                to use this form, it should be tested extensively for
+                interoperability with existing clients.
+                </tp:rationale>
+
+              Clients should deal gracefully if the original message gets
+              lost, but one or more corrections to it get through:
+              <pre>
+                message {token = x} gets lost;
+                message {token = y, supersedes = x};
+                message {token = z, supersedes = x};
+              </pre>
+
+              <tp:rationale>This is the form that CMs will use to mean "I know
+                that this message was edited, but I don't know what it
+                originally said." It is often in the interests of the
+                remote side for message x to be lost (e.g. to hide
+                embarassing mistakes or sensitive information) so it might not
+                be possible to retrieve it (even on protocols with reliable
+                message-delivery guarantees).</tp:rationale></dd>
+
+            <dt>original-message-sent (x - <tp:type>Unix_Timestamp64</tp:type>)</dt>
+            <dd>The <tt>message-sent</tt> header of the message that this
+              one supersedes.
+              This key should only be present if <tt>supersedes</tt> is also
+              present. It MAY be used as a hint to help clients locate the
+              original message in its logs. If present, comparing the tuple
+              (original-message-sent, supersedes) with (message-sent,
+              message-token) SHOULD be enough to uniquely
+              identify the original message.</dd>
+
+            <dt>original-message-received (x - <tp:type>Unix_Timestamp64</tp:type>)</dt>
+            <dd>The <tt>message-received</tt> header of the message that this
+              one supersedes.
+              This key should only be present if <tt>supersedes</tt> is also
+              present. It MAY be used as a hint in a similar way to
+              <tt>original-message-sent</tt>.</dd>
 
             <dt>pending-message-id (u - <tp:type>Message_ID</tp:type>)</dt>
             <dd>The incoming message ID. This MUST NOT be present on outgoing
@@ -996,7 +1047,7 @@ USA.</p>
           recipient. If a delivery failure is detected later, this is
           signalled by receiving a message whose <code>message-type</code>
           header maps to
-          <tp:type>Channel_Text_Message_Type</tp:type>_Delivery_Report.
+          <tp:value-ref type="Channel_Text_Message_Type">Delivery_Report</tp:value-ref>.
           Similarly, if delivery is detected to have been successful
           (which is not possible in all protocols), a successful delivery
           report will be signalled.</p>

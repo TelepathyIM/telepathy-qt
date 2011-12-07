@@ -40,6 +40,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <tp:struct name="Avatar">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A struct containing avatar data marked with its MIME type.</p>
+
+        <p>May be set to an empty byte-array and an empty string, indicating
+          no avatar.</p>
       </tp:docstring>
       <tp:member type="ay" name="Avatar_Data"/>
       <tp:member type="s" name="MIME_Type"/>

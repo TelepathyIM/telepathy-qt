@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.22.0</tp:version>
+<tp:version>0.25.1</tp:version>
 
 <tp:copyright>Copyright © 2005-2011 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2011 Nokia Corporation</tp:copyright>
@@ -162,13 +162,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_Addressing.xml"/>
    <xi:include href="Channel_Interface_Anonymity.xml"/>
    <xi:include href="Channel_Interface_Destroyable.xml"/>
+   <xi:include href="Channel_Interface_File_Transfer_Metadata.xml"/>
    <xi:include href="Channel_Interface_Group.xml"/>
    <xi:include href="Channel_Interface_Password.xml"/>
    <xi:include href="Channel_Interface_Room.xml"/>
+   <xi:include href="Channel_Interface_Room_Config.xml"/>
    <xi:include href="Channel_Interface_SASL_Authentication.xml"/>
    <xi:include href="Channel_Interface_Credentials_Storage.xml"/>
    <xi:include href="Channel_Interface_Securable.xml"/>
    <xi:include href="Channel_Interface_Service_Point.xml"/>
+   <xi:include href="Channel_Interface_Subject.xml"/>
+   <xi:include href="Channel_Interface_Picture.xml"/>
    <xi:include href="Channel_Interface_Tube.xml"/>
 
    <tp:section name="Text-specific interfaces">
@@ -191,7 +195,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
        namespace='ofdT.Channel.Interface'>Hold</tp:dbus-ref> and
        <tp:dbus-ref namespace="ofdT.Channel.Interface">DTMF</tp:dbus-ref>
        interfaces, which may also appear on <tp:dbus-ref
-       namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref> channels.</p>
+       namespace='ofdT.Channel.Type'>Call1</tp:dbus-ref> channels.</p>
     </tp:docstring>
 
     <xi:include href="Channel_Interface_Call_State.xml"/>
@@ -206,7 +210,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
        chat rooms. They are primarily intended for <tp:dbus-ref
        namespace='ofdT.Channel.Type'>Text</tp:dbus-ref>, <tp:dbus-ref
        namespace='ofdT.Channel.Type'>StreamedMedia</tp:dbus-ref> and
-       <tp:dbus-ref namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref>
+       <tp:dbus-ref namespace='ofdT.Channel.Type'>Call1</tp:dbus-ref>
        channels, but may also appear on other types of channel.</p>
     </tp:docstring>
 
@@ -236,9 +240,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <tp:section name="Calls">
    <xi:include href="Call_Content.xml"/>
    <xi:include href="Call_Content_Interface_Media.xml"/>
-   <xi:include href="Call_Content_Interface_Mute.xml"/>
+   <xi:include href="Call_Interface_Mute.xml"/>
    <xi:include href="Call_Content_Interface_Video_Control.xml"/>
-   <xi:include href="Call_Content_Codec_Offer.xml"/>
+   <xi:include href="Call_Content_Interface_Audio_Control.xml"/>
+   <xi:include href="Call_Content_Media_Description.xml"/>
+   <xi:include href="Call_Content_Media_Description_Interface_RTP_Header_Extensions.xml"/>
+   <xi:include href="Call_Content_Media_Description_Interface_RTCP_Feedback.xml"/>
+   <xi:include
+   href="Call_Content_Media_Description_Interface_RTCP_Extended_Reports.xml"/>
    <xi:include href="Call_Stream.xml"/>
    <xi:include href="Call_Stream_Interface_Media.xml"/>
    <xi:include href="Call_Stream_Endpoint.xml"/>
@@ -278,7 +287,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  </tp:docstring>
  <xi:include href="Channel_Dispatcher.xml"/>
  <xi:include href="Channel_Dispatcher_Interface_Operation_List.xml"/>
- <xi:include href="Channel_Dispatcher_Interface_Messages.xml"/>
  <xi:include href="Channel_Dispatch_Operation.xml"/>
  <xi:include href="Channel_Request.xml"/>
 </tp:section>

@@ -25,19 +25,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         details.</p>
 
       <p>The current account manager is defined to be the process that owns
-        the well-known bus name org.freedesktop.Telepathy.AccountManager on
+        the well-known bus name <tt>org.freedesktop.Telepathy.AccountManager</tt> on
         the session bus. This process must export an
-        /org/freedesktop/Telepathy/AccountManager object with the
+        <tt>/org/freedesktop/Telepathy/AccountManager</tt> object with the
         AccountManager interface.</p>
-
-      <p>Until a mechanism exists for making a reasonable automatic choice
-        of AccountManager implementation, implementations SHOULD NOT
-        register as an activatable service for the AccountManager's
-        well-known bus name. Instead, it is RECOMMENDED that some component
-        of the user's session will select and activate a particular
-        implementation, and that other Telepathy-enabled programs can
-        detect whether Telepathy is in use by checking whether the
-        AccountManager's well-known name is in use at runtime.</p>
     </tp:docstring>
     <tp:added version="0.17.2"/>
 
@@ -275,16 +266,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-            <p>The Connection_Manager is not installed or does not
-              implement the given Protocol, or one of the properties in the
-              Properties argument is unsupported.</p>
+            <p>The <var>Connection_Manager</var> is not installed or does not
+              implement the given <var>Protocol</var>.</p>
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-            <p>The Parameters provided omit a required parameter
-              or provide unsupported parameter, or the type of one
-              of the Parameters or Properties is inappropriate.</p>
+            <p>The <var>Parameters</var> provided were unacceptable: they might
+              omit a
+              <tp:value-ref type='Conn_Mgr_Param_Flags'>Required</tp:value-ref>
+              parameter, include an unsupported parameter, or have a value of
+              the wrong type.</p>
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>

@@ -99,10 +99,15 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       access="read" type="a(susv)" tp:type="Param_Spec[]"
       tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The parameters which must or may be provided to the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.ConnectionManager"
-            >RequestConnection</tp:dbus-ref> method when connecting to the
-          given protocol.</p>
+        <p>The parameters which may be specified in the
+          <tp:dbus-ref namespace='ofdT.Account'>Parameters</tp:dbus-ref> of an
+          <tp:dbus-ref namespace='ofdT'>Account</tp:dbus-ref> (or, for
+          specialised applications which do not use the account manager, passed
+          to <tp:dbus-ref
+          namespace='ofdT.ConnectionManager'>RequestConnection</tp:dbus-ref>).
+          Some parameters are mandatory, and some parameters only make sense
+          when registering new accounts with the server; see the
+          <tp:type>Param_Spec</tp:type> documentation for more details.</p>
 
         <p>Connection managers with a <code>.manager</code> file
           (as described as part of the
@@ -221,7 +226,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
 
         <p>A more exhaustive list of addressable vCard fields can be found in
           the Protocol's Addressing interface's
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Protocol.Interface.Addressing.DRAFT">AddressableVCardFields</tp:dbus-ref>.</p>
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Protocol.Interface.Addressing">AddressableVCardFields</tp:dbus-ref>.</p>
 
         <p>It is not necessarily valid to interpret contacts' identifiers
           as values of this vCard field. For instance, telepathy-sofiasip

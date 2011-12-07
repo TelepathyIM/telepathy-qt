@@ -21,9 +21,10 @@
   </tp:license>
 
   <interface
-     name="org.freedesktop.Telepathy.Protocol.Interface.Addressing.DRAFT"
-     tp:causes-havoc="experimental">
-    <tp:added version="0.19.12">(as draft)</tp:added>
+     name="org.freedesktop.Telepathy.Protocol.Interface.Addressing">
+    <tp:added version="0.25.1">(as stable API). From the draft,
+      NormalizeURI was renamed to NormalizeContactURI, clarifying that
+      it removes any actions from the URI.</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for protocols that support multiple forms of
         addressing contacts, for example through vCard addresses and URIs.</p>
@@ -62,13 +63,6 @@ AddressableURISchemes=tel;sip;
               schemes that make sense to resolve as a contact.</p>
           </tp:rationale>
 
-        <p>This property should only be used when the connection is
-          offline. When it is connected the addressable fields should be
-          retrieved from the
-          <tp:dbus-ref
-             namespace="org.freedesktop.Telepathy.Connection.Interface">Requests.RequestableChannelClasses</tp:dbus-ref>'s
-             TargetVCardField fixed-property instead.</p>
-
         <p>Connection managers with a <code>.manager</code> file
           MUST cache this property in the protocol's section of the
           <code>.manager</code> file if it is non-empty, using the key
@@ -102,6 +96,9 @@ AddressableURISchemes=tel;sip;
           <dd>The X-MSN vCard field. Used for MSN contacts.</dd>
           <dt><code>x-yahoo</code></dt>
           <dd>The X-YAHOO vCard field. Used for Yahoo! IDs.</dd>
+          <dt><code>x-facebook-id</code></dt>
+          <dd>Used for Facebook IDs in XMPP. If the user JID is
+          "-12345@chat.facebook.com" then the x-facebook-id is "12345"</dd>
         </dl>
 
       </tp:docstring>
@@ -147,7 +144,7 @@ AddressableURISchemes=tel;sip;
             For example: <code>xmpp:julien@example.com</code>.</dd>
           <dt><code>msnim</code></dt>
           <dd>For the purposes of
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing</tp:dbus-ref>,
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing.DRAFT</tp:dbus-ref>,
             and
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing.DRAFT</tp:dbus-ref>,
@@ -157,7 +154,7 @@ AddressableURISchemes=tel;sip;
             For example: <code>msnim:add?contact=julien</code>.</dd>
           <dt><code>aim</code></dt>
           <dd>For the purposes of
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing</tp:dbus-ref>,
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing.DRAFT</tp:dbus-ref>,
             and
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing.DRAFT</tp:dbus-ref>,
@@ -170,7 +167,7 @@ AddressableURISchemes=tel;sip;
             For example: <code>skype:julien</code>.</dd>
           <dt><code>ymsgr</code></dt>
           <dd>For the purposes of
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing</tp:dbus-ref>,
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing.DRAFT</tp:dbus-ref>,
             and
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing.DRAFT</tp:dbus-ref>,
@@ -217,7 +214,8 @@ AddressableURISchemes=tel;sip;
 
       <arg direction="in" name="VCard_Address" type="s">
         <tp:docstring>
-          The address to normalize.
+          The address to normalize, which is assumed to belong to a
+          contact (and not, for instance, a chatroom or server).
         </tp:docstring>
       </arg>
 
@@ -243,8 +241,9 @@ AddressableURISchemes=tel;sip;
       </tp:possible-errors>
     </method>
 
-    <method name="NormalizeURI"
-      tp:name-for-bindings="Normalize_URI">
+    <method name="NormalizeContactURI"
+      tp:name-for-bindings="Normalize_Contact_URI">
+      <tp:added version="0.25.1">(renamed from NormalizeURI)</tp:added>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Attempt to normalize the given contact URI. Where possible, this
           SHOULD return an address that would appear in the
@@ -258,8 +257,28 @@ AddressableURISchemes=tel;sip;
             namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>,
           this method SHOULD perform a best-effort normalization.</p>
 
-        <p>Example: <code>xmpp:eitan@EXAMPLE.COM</code> would be normalized to
-        <code>xmpp:eitan@example.com</code>.</p>
+        <p>If the URI has extra information beyond what's necessary to
+          identify a particular contact, such as an XMPP resource or an
+          action to carry out, this extra information SHOULD be removed.
+          If all URIs in a scheme contain a verb or action
+          (like <code>aim</code>, <code>ymsgr</code> and
+          <code>msnim</code> URIs), then the verb SHOULD be replaced
+          with the one specified in
+          <tp:member-ref>AddressableURISchemes</tp:member-ref>.</p>
+
+        <tp:rationale>
+          <p>This method is intended to normalize URIs stored in address
+            books, for instance. In protocols like XMPP, if you
+            vary the resource or action (query string), the URI still
+            refers to the same high-level contact.</p>
+        </tp:rationale>
+
+        <p>For instance,
+          <code>xmpp:romeo@Example.Com/Empathy?message;body=Hello</code>
+          would be normalized to <code>xmpp:romeo@example.com</code>,
+          and <code>aim:goim?screenname=Romeo%20M&amp;message=Hello</code>
+          would be normalized to
+          <code>aim:addbuddy?screenname=romeom</code>.</p>
 
         <p>This method MAY simply raise NotImplemented on some
         protocols, if it has no use.</p>
@@ -267,9 +286,18 @@ AddressableURISchemes=tel;sip;
 
       <arg direction="in" name="URI" type="s">
         <tp:docstring>
-          The URI to normalize. The URI's scheme (i.e. the part before
-          the first colon) MUST appear in
-          <tp:member-ref>AddressableURISchemes</tp:member-ref>.
+          <p>The URI to normalize, which is assumed to refer to a contact
+            (as opposed to, for instance, a chatroom or a server).</p>
+
+        <tp:rationale>
+          <p>In some protocols, like XMPP, there is no way to tell whether
+            a given URI refers to a contact or a chatroom by looking at
+            its syntax.</p>
+        </tp:rationale>
+
+          <p>The URI's scheme (i.e. the part before
+            the first colon) MUST appear in
+            <tp:member-ref>AddressableURISchemes</tp:member-ref>.</p>
         </tp:docstring>
       </arg>
 
@@ -289,7 +317,14 @@ AddressableURISchemes=tel;sip;
 
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
           <tp:docstring>
-            The URI is syntactically incorrect.
+            <p>The URI is syntactically incorrect or cannot be interpreted
+              as a reference to a contact.</p>
+
+            <tp:rationale>
+              <p>For instance, <code>aim:!?</code> is not a valid AIM URI,
+                while <code>aim:goaway?message=Absent</code> is a
+                valid AIM URI, but not a contact.</p>
+            </tp:rationale>
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>

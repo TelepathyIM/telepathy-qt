@@ -22,7 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   <interface name="org.freedesktop.Telepathy.Channel.Interface.Hold">
     <tp:xor-requires>
       <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
-      <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT"/>
+      <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Call1"/>
+      <tp:requires interface="org.freedesktop.Telepathy.Call1.Content"/>
     </tp:xor-requires>
     <tp:changed version="0.17.4">first API-stable version</tp:changed>
 
@@ -31,7 +32,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         This only makes sense for channels where
         you are streaming media to or from the members. (To see whether the
         other participant has put you on hold, see <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Interface">CallState</tp:dbus-ref>.)</p>
+          namespace="org.freedesktop.Telepathy.Channel.Interface"
+        >CallState</tp:dbus-ref>.)</p>
 
       <p>If you place a channel on hold, this indicates that you do not wish
         to be sent media streams by any of its members and will be ignoring
@@ -40,6 +42,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         an actively used channel (e.g. in a GSM or PBX call, it will be
         necessary to place an active call on hold before you can start
         another call).</p>
+
+      <p>This can also be used for putting a single Content on hold, if the
+        protocol supports it (This interface is in the Channel namespace for
+        historical reasons).</p>
     </tp:docstring>
 
     <method name="GetHoldState" tp:name-for-bindings="Get_Hold_State">
@@ -107,14 +113,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           The connection manager is attempting to move to state Held, but
           has not yet completed that operation. It is unspecified whether
           any, all or none of the streams making up the channel are on hold.
+          Examining the Hold state of Call Contents (if applicable) may
+          provide more useful information.
         </tp:docstring>
       </tp:enumvalue>
 
       <tp:enumvalue value="3" suffix="Pending_Unhold">
         <tp:docstring>
-          The connection manager is attempting to move to state Held, but
+          The connection manager is attempting to move to state Unheld, but
           has not yet completed that operation. It is unspecified whether
           any, all or none of the streams making up the channel are on hold.
+          Examining the Hold state of Call Contents (if applicable) may
+          provide more useful information.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>

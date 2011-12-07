@@ -218,7 +218,7 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A dictionary of metadata provided by the channel
           requester, which the handler and other clients MAY choose to
-          interpret.  Currently no standard keys are defined; clients MAY
+          interpret.  Clients MAY
           choose to use platform-specific keys for their own purposes, but MUST
           ignore unknown keys and MUST cope with expected keys being
           missing. Clients SHOULD namespace hint names by having them
@@ -249,6 +249,48 @@
           namespace="ofdT.Client.Interface.Requests">AddRequest</tp:dbus-ref>
           by the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy">ChannelDispatcher</tp:dbus-ref>.</p>
+        <p>The following standardised hints are defined:</p>
+
+        <dl>
+          <dt>org.freedesktop.Telepathy.ChannelRequest.DelegateToPreferredHandler - b</dt>
+          <dd>If present and True the client currently handling the channel
+            SHOULD pass the channel to the
+            <tp:member-ref>PreferredHandler</tp:member-ref> using
+            <tp:dbus-ref namespace="ofdT.ChannelDispatcher">DelegateChannels</tp:dbus-ref>.
+
+            <tp:rationale>
+              This hint allows the user to request a channel in their
+              preferred client in a situation where there are two chat
+              handlers (for example: requesting a channel in Empathy which is
+              currently being handled by gnome-shell).
+            </tp:rationale>
+
+            If the channel is currently unhandled, clients SHOULD ignore this
+            hint.
+
+            <tp:rationale>
+              It is assumed that Mission Control will correctly delegate an
+              unhandled channel to the preferred Handler. This allows
+              requesting clients to always include this hint in their channel
+              request.
+            </tp:rationale>
+
+            The Handler should check each
+            <tp:dbus-ref namespace="ofdT">ChannelRequest</tp:dbus-ref>
+            of the Requests_Satisfied parameter of
+            <tp:dbus-ref namespace="ofdT.Client.Handler">HandleChannels</tp:dbus-ref>
+            for the hint. The first request containing the hint SHOULD be used
+            and all further hints SHOULD be ignored.
+
+            <tp:rationale>
+              This covers the very unlikely case where
+              <tp:dbus-ref namespace="ofdT.Client.Handler">HandleChannels</tp:dbus-ref>
+              satisfies two separate requests which have different
+              <tp:member-ref>PreferredHandler</tp:member-ref>s.
+            </tp:rationale>
+          </dd>
+        </dl>
+
       </tp:docstring>
     </property>
 

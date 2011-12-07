@@ -595,11 +595,17 @@ USA.</p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="List" value="3">
+        <tp:deprecated version="0.25.0">Replaced by <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection.Interface.ContactList</tp:dbus-ref>
+        </tp:deprecated>
         <tp:docstring>
           A server-generated contact list (see Channel.Interface.Group)
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Group" value="4">
+        <tp:deprecated version="0.25.0">Replaced by <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection.Interface.ContactList</tp:dbus-ref>
+        </tp:deprecated>
         <tp:docstring>
           A user-defined contact list (see Channel.Interface.Group)
         </tp:docstring>
@@ -625,12 +631,18 @@ USA.</p>
 
     <tp:simple-type name="List_Handle" type="u"
       array-name="List_Handle_List">
+      <tp:deprecated version="0.25.0">Replaced by <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy">Connection.Interface.ContactList</tp:dbus-ref>
+      </tp:deprecated>
       <tp:docstring>An unsigned 32-bit integer representing a handle of type
         Handle_Type_List</tp:docstring>
     </tp:simple-type>
 
     <tp:simple-type name="Group_Handle" type="u"
       array-name="Group_Handle_List">
+      <tp:deprecated version="0.25.0">Replaced by <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy">Connection.Interface.ContactList</tp:dbus-ref>
+      </tp:deprecated>
       <tp:docstring>An unsigned 32-bit integer representing a handle of type
         Handle_Type_Group</tp:docstring>
     </tp:simple-type>

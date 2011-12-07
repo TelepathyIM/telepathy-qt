@@ -272,6 +272,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           <li><tt>lj-talk</tt> (for <a
             href="http://www.livejournal.com/chat/">LiveJournal's IM
             service</a>)</li>
+          <li><tt>windows-live</tt> (for <a
+            href="http://live.com">Windows Live Messenger IM service</a>)</li>
 
         </ul>
 

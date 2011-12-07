@@ -31,12 +31,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>A channel type for searching server-stored user directories. A new
         channel should be requested by a client for each search attempt, and
         closed when the search is completed or the required result has been
-        found. Channels of this type should have <tp:dbus-ref
+        found.</p>
+
+      <p>Connections that support contact search channels SHOULD have an entry
+        in <tp:dbus-ref namespace='ofdT.Connection.Interface.Requests'
+          >RequestableChannelClasses</tp:dbus-ref> with the <tp:dbus-ref
+          namespace='ofdT.Channel'>ChannelType</tp:dbus-ref> fixed to this
+        interface, and no other fixed properties. That requestable
+        channel class MAY also have the Server and Limit properties in its
+        list of allowed properties, depending on the protocol.</p>
+
+      <tp:rationale>
+        <p>The requestable channel class would normally also have <tp:dbus-ref
+            namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref> fixed to
+          <code>None</code>, but the initial implementation of ContactSearch
+          (in telepathy-gabble) didn't do this.</p>
+      </tp:rationale>
+
+      <p>All channels of this type should have <tp:dbus-ref
         namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref>
         <code>None</code> (and hence <tp:dbus-ref
         namespace='ofdT.Channel'>TargetHandle</tp:dbus-ref> <code>0</code> and
         <tp:dbus-ref namespace='ofdT.Channel'>TargetID</tp:dbus-ref>
-        <code>""</code>). Requests for channels of this type need only
+        <code>""</code>).</p>
+
+      <p>Requests for channels of this type need only
         optionally specify the <tp:member-ref>Server</tp:member-ref> property
         (if it is an allowed property in the connection's <tp:dbus-ref
         namespace='ofdT.Connection.Interface.Requests'>RequestableChannelClasses</tp:dbus-ref>).</p>

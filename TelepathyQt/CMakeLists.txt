@@ -176,6 +176,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceChatStateInterface
     ChannelInterfaceConferenceInterface
     ChannelInterfaceDTMFInterface
+    ChannelInterfaceFileTransferMetadataInterface
     ChannelInterfaceGroupInterface
     ChannelInterfaceHoldInterface
     ChannelInterfaceMediaSignallingInterface
@@ -184,6 +185,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceSASLAuthenticationInterface
     ChannelInterfaceSecurableInterface
     ChannelInterfaceServicePointInterface
+    ChannelInterfaceSMSInterface
     ChannelInterfaceTubeInterface
     ChannelRequest
     ChannelRequestHints
@@ -365,10 +367,14 @@ set(telepathy_qt_HEADERS
     properties.h
     PropertiesInterface
     PropertiesInterfaceInterface
+    ProtocolAddressingInterface
+    ProtocolAvatarsInterface
     ProtocolInfo
     protocol-info.h
+    ProtocolInterface
     ProtocolParameter
     protocol-parameter.h
+    ProtocolPresenceInterface
     ReadinessHelper
     readiness-helper.h
     ReadyObject

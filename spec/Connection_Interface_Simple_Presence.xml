@@ -276,6 +276,49 @@
       </tp:docstring>
     </property>
 
+    <property name="MaximumStatusMessageLength"
+      tp:name-for-bindings="Maximum_Status_Message_Length" access="read"
+      type="u">
+      <tp:added version="0.22.2"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The maximum length in characters for any individual status
+          message, or 0 if there is no limit.</p>
+
+        <p>While the connection is in the DISCONNECTED state, this property will
+          be 0. The connection manager will attempt to set the appropriate value
+          when the connection becomes connected, but cannot necessarily
+          guarantee it. The maximum length cannot change until the
+          connection status changes, so there is no change notification.</p>
+
+        <p>While the connection is in the CONNECTED state, this property
+          contains the maximum length in characters for any individual status
+          message which is actually allowed on this protocol.
+          This value is constant for the remaining lifetime
+          of the connection, so again, there is no change notification.</p>
+
+        <p>While the connection is in the CONNECTING state, the value of
+          this property is undefined and SHOULD NOT be used. It can change
+          at any time without notification (in particular, any cached values
+          from when the connection was in the DISCONNECTED or CONNECTING
+          state MUST NOT be assumed to still be correct when the state has
+          become CONNECTED).</p>
+
+        <p>If a message passed to <tp:member-ref>SetPresence</tp:member-ref> is
+          longer than allowed by this property, the connection manager MUST
+          truncate the supplied message; when emitting
+          <tp:member-ref>PresencesChanged</tp:member-ref>, the truncated version
+          of the message MUST be used.</p>
+
+        <tp:rationale>
+          <p>Some XMPP servers, like Google Talk, define a maximum length for
+          status messages. Whether the user's server is one of
+          these cannot be detected until quite late in the connection
+          process.</p>
+        </tp:rationale>
+
+      </tp:docstring>
+    </property>
+
     <signal name="PresencesChanged" tp:name-for-bindings="Presences_Changed">
       <arg name="Presence" type="a{u(uss)}" tp:type="Simple_Contact_Presences">
         <tp:docstring>
@@ -547,57 +590,75 @@
 
       <table>
         <tr>
-          <th>status identifier</th>
-          <th>Connection_Presence_Type</th>
-          <th>comments</th>
+          <th>Status identifier</th>
+          <th><tp:type>Connection_Presence_Type</tp:type></th>
+          <th>Remarks</th>
         </tr>
         <tr>
-          <td>available</td>
-          <td>Connection_Presence_Type_Available</td>
+          <td><code>"available"</code></td>
+          <td>Available</td>
           <td></td>
         </tr>
         <tr>
-          <td>away</td>
-          <td>Connection_Presence_Type_Away</td>
+          <td><code>"chat"</code></td>
+          <td>Available</td>
+          <td>Actively interested in chatting, as opposed to merely
+            available.</td>
+        </tr>
+        <tr>
+          <td><code>"pstn"</code></td>
+          <td>Available</td>
+          <td>This contact is actually a phone number, not an IM account. As
+            such, the contact is conceptually always available, but not in the
+            same way that a contact can set their IM status to “available”.
+            It does not make sense to allow the user to set this status on
+            herself; hence, on protocols where this status is supported, its
+            entry in <tp:member-ref>Statuses</tp:member-ref> SHOULD have
+            <var>May_Set_On_Self</var> set to <code>False</code>.</td>
+        </tr>
+        <tr>
+          <td><code>"away"</code></td>
+          <td>Away</td>
           <td></td>
         </tr>
         <tr>
-          <td>brb</td>
-          <td>Connection_Presence_Type_Away</td>
+          <td><code>"brb"</code></td>
+          <td>Away</td>
           <td>Be Right Back (a more specific form of Away)</td>
         </tr>
         <tr>
-          <td>busy</td>
-          <td>Connection_Presence_Type_Busy</td>
+          <td><code>"busy"</code></td>
+          <td>Busy</td>
           <td></td>
         </tr>
-        <tr><td>dnd</td>
-          <td>Connection_Presence_Type_Busy</td>
+        <tr>
+          <td><code>"dnd"</code></td>
+          <td>Busy</td>
           <td>Do Not Disturb (a more specific form of Busy)</td>
         </tr>
         <tr>
-          <td>xa</td>
-          <td>Connection_Presence_Type_Extended_Away</td>
+          <td><code>"xa"</code></td>
+          <td>Extended_Away</td>
           <td>Extended Away</td>
         </tr>
         <tr>
-          <td>hidden</td>
-          <td>Connection_Presence_Type_Hidden</td>
+          <td><code>"hidden"</code></td>
+          <td>Hidden</td>
           <td>Also known as "Invisible" or "Appear Offline"</td>
         </tr>
         <tr>
-          <td>offline</td>
-          <td>Connection_Presence_Type_Offline</td>
+          <td><code>"offline"</code></td>
+          <td>Offline</td>
           <td></td>
         </tr>
         <tr>
-          <td>unknown</td>
-          <td>Connection_Presence_Type_Unknown</td>
+          <td><code>"unknown"</code></td>
+          <td>Unknown</td>
           <td>special, see below</td>
         </tr>
         <tr>
-          <td>error</td>
-          <td>Connection_Presence_Type_Error</td>
+          <td><code>"error"</code></td>
+          <td>Error</td>
           <td>special, see below</td>
         </tr>
       </table>

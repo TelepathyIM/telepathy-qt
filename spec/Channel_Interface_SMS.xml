@@ -50,7 +50,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 { ...<tp:dbus-ref namespace='ofdT.Channel'>ChannelType</tp:dbus-ref>:
       ...<tp:dbus-ref namespace='ofdT.Channel.Type'>Text</tp:dbus-ref>,<br/>
   ...<tp:dbus-ref namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref>:
-      <tp:type>Handle_Type</tp:type>_Contact,<br/>
+      <tp:value-ref type="Handle_Type">Contact</tp:value-ref>,<br/>
   ...<tp:dbus-ref namespace='ofdT.Channel.Interface'>SMS.Flash</tp:dbus-ref>:
       True,<br/>
 }</code></blockquote>
@@ -59,6 +59,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         namespace='ofdT.Client.Handler'>BypassApproval</tp:dbus-ref> property
         to <code>True</code>, so that it is invoked immediately for new
         channels.</p>
+
+      <h4>Contact Capabilities</h4>
+
+      <p>Contacts to whom SMSes can be sent SHOULD indicate this via a
+        requestable channel class with
+        <tp:member-ref>SMSChannel</tp:member-ref> = True as a fixed
+        property.</p>
+
+      <p>For instance, a contact that can accept both text and SMS channels:</p>
+
+      <blockquote><code>
+[<br/>
+ ({ ...<tp:dbus-ref namespace='ofdT.Channel'>ChannelType</tp:dbus-ref>:
+     ...<tp:dbus-ref namespace='ofdT.Channel.Type'>Text</tp:dbus-ref>,<br/>
+    ...<tp:dbus-ref namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref>:
+       <tp:value-ref type="Handle_Type">Contact</tp:value-ref>,<br/>
+  },<br/>
+  [ ...<tp:dbus-ref namespace='ofdT.Channel'>TargetHandle</tp:dbus-ref>,
+    ...<tp:dbus-ref namespace='ofdT.Channel'>TargetID</tp:dbus-ref> ]),<br/>
+<br/>
+ ({ ...<tp:dbus-ref namespace='ofdT.Channel'>ChannelType</tp:dbus-ref>:
+       ...<tp:dbus-ref namespace='ofdT.Channel.Type'>Text</tp:dbus-ref>,<br/>
+    ...<tp:dbus-ref namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref>:
+       <tp:value-ref type="Handle_Type">Contact</tp:value-ref>,<br/>
+    ...<tp:member-ref>SMSChannel</tp:member-ref>: True,<br/>
+  },<br/>
+  [ ...<tp:dbus-ref namespace='ofdT.Channel'>TargetHandle</tp:dbus-ref>,
+    ...<tp:dbus-ref namespace='ofdT.Channel'>TargetID</tp:dbus-ref> ]),<br/>
+]
+      </code></blockquote>
     </tp:docstring>
 
     <property name="Flash" tp:name-for-bindings="Flash"
@@ -175,5 +205,83 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:member-ref>SMSChannel</tp:member-ref> property.
       </tp:docstring>
     </signal>
+
+    <method name="GetSMSLength"
+            tp:name-for-bindings="Get_SMS_Length">
+      <tp:added version="0.23.1"/>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Returns the number of 140 octet chunks required to send a message
+          via SMS, as well as the number of remaining characters available in
+          the final chunk and, if possible, an estimate of the cost.</p>
+
+        <tp:rationale>
+          <p>There are a number of different SMS encoding mechanisms, and the
+            client doesn't know which mechanisms an individual CM might support.
+            This method allows the client, without any knowledge of the
+            encoding mechanism, to provide length details to the user.</p>
+        </tp:rationale>
+
+        <p>Clients SHOULD limit the frequency with which this method is called
+        and SHOULD NOT call it for every keystroke. Clients MAY estimate the
+        remaining size between single keystrokes.</p>
+      </tp:docstring>
+
+      <arg name="Message" type="aa{sv}" tp:type="Message_Part[]" direction="in">
+        <tp:docstring>
+          The message the user wishes to send.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Chunks_Required" type="u" direction="out">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The number of 140 octet chunks required to send this message.</p>
+
+          <p>For example, in the GSM standard 7-bit encoding, a 162 character
+            message would require 2 chunks.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Remaining_Characters" type="i" direction="out">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The number of further characters that can be fit in the final
+            chunk. A negative value indicates that the message will be
+            truncated by <code>abs(Remaining_Characters)</code>. The value
+            <code>MIN_INT32</code> (<code>-2<sup>31</sup></code>)
+            indicates the message will be truncated by an unknown amount.</p>
+
+          <p>For example, in the GSM standard 7-bit encoding, a 162 character
+            message would return 144 remaining characters (because of the
+            space required for the multipart SMS header).</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Estimated_Cost" type="i" direction="out">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The estimated cost of sending this message. The currency and
+            scale of this value are the same as the
+            <tp:dbus-ref namespace="ofdT.Connection.Interface">Balance.AccountBalance</tp:dbus-ref>
+            property.</p>
+
+          <p>A value of <code>-1</code> indicates the cost could not be
+            estimated.</p>
+
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Raised when the method is not available on this channel.
+            Clients MAY choose to make their own estimation.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            Raised when the content cannot be encoded into a valid SMS.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
   </interface>
 </node>
