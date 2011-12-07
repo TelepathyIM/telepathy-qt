@@ -176,6 +176,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceChatStateInterface
     ChannelInterfaceConferenceInterface
     ChannelInterfaceDTMFInterface
+    ChannelInterfaceFileTransferMetadataInterface
     ChannelInterfaceGroupInterface
     ChannelInterfaceHoldInterface
     ChannelInterfaceMediaSignallingInterface
@@ -184,6 +185,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceSASLAuthenticationInterface
     ChannelInterfaceSecurableInterface
     ChannelInterfaceServicePointInterface
+    ChannelInterfaceSMSInterface
     ChannelInterfaceTubeInterface
     ChannelRequest
     ChannelRequestHints
