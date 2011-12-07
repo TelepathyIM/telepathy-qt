@@ -152,7 +152,7 @@ namespace %s
 %(headercmd)s\
 %(groupcmd)s\
  *
- * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
+ * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s".
  */
 class %(visibility)s %(name)s : public Tp::AbstractInterface
 {
