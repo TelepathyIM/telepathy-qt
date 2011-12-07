@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Type.ContactList">
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Interface.Group"/>
+    <tp:deprecated version="0.25.0">Replaced by <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy">Connection.Interface.ContactList</tp:dbus-ref>
+      </tp:deprecated>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type for representing a list of people on the server which is

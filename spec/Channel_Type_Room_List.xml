@@ -86,7 +86,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <dt>subject (s)</dt>
           <dd>The current subject of conversation in the room (as would
             be returned by getting the string part of the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
+            namespace="org.freedesktop.Telepathy.Channel.Interface.Subject2"
             >Subject</tp:dbus-ref> property)</dd>
 
           <dt>members (u)</dt>
@@ -101,13 +101,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <dt>room-id (s)</dt>
           <dd>The human-readable identifier of a chat room (as would be
             returned by getting the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
-            >RoomID</tp:dbus-ref> property)</dd>
+            namespace="org.freedesktop.Telepathy.Channel.Interface.Room2"
+            >RoomName</tp:dbus-ref> property)</dd>
 
           <dt>server (s)</dt>
           <dd>The DNS name of the server hosting these channels (as would be
             returned by getting the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
+            namespace="org.freedesktop.Telepathy.Channel.Interface.Room2"
             >Server</tp:dbus-ref> property)</dd>
         </dl>
       </tp:docstring>

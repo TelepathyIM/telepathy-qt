@@ -21,6 +21,7 @@
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
     <tp:requires interface="org.freedesktop.Telepathy.Connection.Interface.Contacts"/>
     <tp:added version="0.19.12">(as draft)</tp:added>
+    <tp:changed version="0.25.1">Both methods now return two dictionaries.</tp:changed>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface deals with the multiple address types that can
       refer to the same contact, such as vCard fields and URIs.</p>
@@ -39,7 +40,7 @@
           <p>The vCard field of the addresses we are requesting. The
             field name SHOULD be in lower case. Supported
             fields can be found in
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy.Protocol.Interface.Addressing.DRAFT">AddressableVCardFields</tp:dbus-ref>.</p>
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy.Protocol.Interface.Addressing">AddressableVCardFields</tp:dbus-ref>.</p>
 
           <p>The <code>url</code> vCard field MUST NOT appear here; see
             <tp:member-ref>GetContactsByURI</tp:member-ref> instead.</p>
@@ -76,7 +77,18 @@
           </tp:docstring>
       </arg>
 
-      <arg direction="out" type="a{ua{sv}}" name="Requested_Contacts"
+      <arg direction="out" type="a{su}" name="Requested"
+           tp:type="Addressing_Normalization_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A mapping from requested vCard addresses to the corresponding
+            contact handles.</p>
+
+          <p>Requested addresses that are not valid or understood for this protocol
+            MUST be omitted from the mapping.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="a{ua{sv}}" name="Attributes"
            tp:type="Contact_Attributes_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary mapping the contact handles to contact attributes.
@@ -86,14 +98,12 @@
             the attribute should either be omitted from the result or
             replaced with a default value.</p>
 
-          <p>Requested addresses that cannot be satisfied MUST be ommitted
-            from the mapping.</p>
+          <p>Requested addresses that are not valid or understood for this protocol
+            MUST be omitted from the mapping.</p>
 
           <p>Each contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
-            (<code>org.freedesktop.Telepathy.Connection/contact-id</code>),
-          and the vCard field used for requesting the contact in
-            <code>org.freedesktop.Telepathy.Connection.Interface.ContactInfo/info</code>.
+            (<code>org.freedesktop.Telepathy.Connection/contact-id</code>).
           </p>
         </tp:docstring>
       </arg>
@@ -121,7 +131,7 @@
         <tp:docstring>
           The URI addresses to get contact handles for. Supported
           schemes can be found in
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Protocol.Interface.Addressing.DRAFT">AddressableURISchemes</tp:dbus-ref>.
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Protocol.Interface.Addressing">AddressableURISchemes</tp:dbus-ref>.
         </tp:docstring>
       </arg>
       <arg direction="in" name="Interfaces" type="as"
@@ -143,7 +153,17 @@
           </tp:docstring>
       </arg>
 
-      <arg direction="out" type="a{ua{sv}}" name="Requested_Contacts"
+      <arg direction="out" type="a{su}" name="Requested"
+           tp:type="Addressing_Normalization_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A mapping of requested URIs to the corresponding contact handles.</p>
+
+          <p>Requested URIs that are not valid or understood for this protocol
+            MUST be omitted from the mapping.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="a{ua{sv}}" name="Attributes"
            tp:type="Contact_Attributes_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary mapping the contact handles to contact attributes.
@@ -153,8 +173,8 @@
             the attribute should either be omitted from the result or
             replaced with a default value.</p>
 
-          <p>Requested URIs that cannot be satisfied MUST be ommitted
-            from the mapping.</p>
+          <p>Requested URIs that are not valid or understood for this protocol
+            MUST be omitted from the mapping.</p>
 
           <p>Each contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
@@ -201,57 +221,25 @@
       </tp:docstring>
     </tp:contact-attribute>
 
-    <tp:contact-attribute name="requested-address" type="(ss)"
-                          tp:type="Requested_Address">
-      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The contact's address, as it was requested
-        through <tp:member-ref>GetContactsByVCardField</tp:member-ref>. This
-        attribute MUST be ommitted if the contact was not retrieved
-        through <tp:member-ref>GetContactsByVCardField</tp:member-ref>.</p>
-      <tp:rationale>
-        <p>When retrieving more than one contact
-          through <tp:member-ref>GetContactsByVCardField</tp:member-ref>,
-          there needs to be a way to map the given contact back o the
-          original request.</p>
-      </tp:rationale>
-      </tp:docstring>
-    </tp:contact-attribute>
-
-    <tp:contact-attribute name="requested-uri" type="s">
-      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The contact's URI, as it was requested through
-        <tp:member-ref>GetContactsByURI</tp:member-ref>. This
-        attribute MUST be ommitted if the contact was not retrieved
-        through <tp:member-ref>GetContactsByURI</tp:member-ref>.</p>
-      <tp:rationale>
-        <p>When retrieving more than one contact
-        through <tp:member-ref>GetContactsByURI</tp:member-ref>,
-        there needs to be a way to map the given contact back o the
-        original request.</p>
-      </tp:rationale>
-      </tp:docstring>
-    </tp:contact-attribute>
-
-    <tp:struct name="Requested_Address" array-name="">
+    <tp:mapping name="Addressing_Normalization_Map">
       <tp:docstring>
-        The address that has been requested by
+        A map from URIs/vCard addresses to the corresponding handle.
+      </tp:docstring>
+      <tp:added version="0.25.1"/>
+
+      <tp:member type="s" name="Requested_String">
+        <tp:docstring>
+        The URI or vCard address that has been requested by
         <tp:member-ref>GetContactsByVCardField</tp:member-ref> or
         <tp:member-ref>GetContactsByURI</tp:member-ref>.
-      </tp:docstring>
-
-      <tp:member name="Field" type="s">
-        <tp:docstring>
-          The vCard field used in <tp:member-ref>GetContactsByVCardField</tp:member-ref>.
         </tp:docstring>
       </tp:member>
-
-      <tp:member name="Address" type="s">
+      <tp:member type="u" name="Handle" tp:type="Contact_Handle">
         <tp:docstring>
-          The address that was requested.
+          A nonzero handle.
         </tp:docstring>
       </tp:member>
-
-    </tp:struct>
+    </tp:mapping>
 
   </interface>
 </node>

@@ -20,34 +20,209 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT"
+  <interface name="org.freedesktop.Telepathy.Call1.Stream.Interface.Media"
       tp:causes-havoc="experimental">
     <tp:added version="0.19.0">(draft 1)</tp:added>
-    <tp:requires interface="org.freedesktop.Telepathy.Call.Stream.DRAFT"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Call1.Stream"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      [FIXME]
+      <p>This interface deals with how to connect a stream to an
+      endpoint.  It contains all that is required to describe the
+      local endpoint, to succesfully establish a connection. While a
+      call is established, one may try to connect to multiple remote
+      endpoints at the same time. This is called forking in the SIP
+      jargon.  Informations related to the connections are on the
+      <tp:dbus-ref
+      namespace="ofdT.Call1.Stream">Endpoint</tp:dbus-ref>
+      objects. Once the call is established, there MUST be a single
+      endpoint left.</p>
 
       <h4>ICE restarts</h4>
 
-      <p>If the <tp:dbus-ref
-        namespace="ofdT.Call.Stream.Endpoint.DRAFT">RemoteCredentialsSet</tp:dbus-ref>
-        signal is fired during a call once it has been called before
-        whilst setting up the call for initial use, and the
-        credentials have changed, then there has been an ICE
-        restart. In such a case, the CM SHOULD also empty the remote
-        candidate list in the <tp:dbus-ref
-        namespace="ofdT.Call.Stream">Endpoint.DRAFT</tp:dbus-ref>.</p>
-
-      <p>If the CM does an ICE restart, then the
-        <tp:member-ref>PleaseRestartICE</tp:member-ref> signal is
-        emitted and the streaming implementation should then call
-        <tp:member-ref>SetCredentials</tp:member-ref> again.</p>
+      <p>If the CM wants to do an ICE restart, then the
+        <tp:member-ref>ICERestartPending</tp:member-ref> property is set,
+        and the <tp:member-ref>ICERestartRequested</tp:member-ref> signal is
+        emitted. The streaming implementation should then call
+        <tp:member-ref>SetCredentials</tp:member-ref> again. This will trigger
+        the actual ICE restart, and cause
+        <tp:member-ref>LocalCandidates</tp:member-ref> to be cleared.</p>
 
       <p>For more information on ICE restarts see
         <a href="http://tools.ietf.org/html/rfc5245#section-9.1.1.1">RFC 5245
         section 9.1.1.1</a></p>
     </tp:docstring>
+
+    <tp:enum type="u" name="Stream_Flow_State">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        The type of <tp:member-ref>SendingState</tp:member-ref>
+        and <tp:member-ref>ReceivingState</tp:member-ref>.
+      </tp:docstring>
+      <tp:enumvalue suffix="Stopped" value="0">
+        <tp:docstring>
+          No data is flowing (or expected to be flowing) at this time.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Pending_Start" value="1">
+        <tp:docstring>
+          The streaming implementation has been told to start or receiving,
+          but has not yet indicated that it is doing so.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Pending_Stop" value="2">
+        <tp:docstring>
+          The streaming implementation has been told to stop sending or
+          receiving data, but it has not yet indicated that it has done so.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Started" value="3">
+        <tp:docstring>
+          The streaming implementation is successfully sending or receiving
+          data, and everything is going swimmingly.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Pending_Pause" value="4">
+        <tp:docstring>
+          The streaming implementation has been told to pause sending or
+          displaying data, but it has not yet indicated that it has done so.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Paused" value="5">
+        <tp:docstring>
+          The streaming implementation has successfully paused either sending or
+          displaying data, and the local user's privacy or peace-and-quiet is
+          protected.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <property name="SendingState" tp:name-for-bindings="Sending_State"
+        type="u" tp:type="Stream_Flow_State" access="read">
+      <tp:docstring>
+        Indicates whether the streaming implementation is/should be sending
+        media for this stream. The streaming implementation should be able to
+        rely on reading this value and listening to
+        <tp:member-ref>SendingStateChanged</tp:member-ref> to
+        determine whether it should be sending media or not. It should not
+        need to listen to the Mute/Hold interfaces on the Call/Content.
+        Feedback on success should be given via
+        <tp:member-ref>CompleteSendingStateChange</tp:member-ref>. Failures
+        should be reported via <tp:member-ref>ReportSendingFailure</tp:member-ref>.
+      </tp:docstring>
+    </property>
+
+    <signal name="SendingStateChanged"
+        tp:name-for-bindings="Sending_State_Changed">
+      <tp:docstring>
+        Change notification for <tp:member-ref>SendingState</tp:member-ref>.
+        Note that this information is duplicated onto the Stream interface, so
+        that UIs can ignore the Media interface, and streaming implementations
+        can ignore everything but the media interface.
+      </tp:docstring>
+      <arg name="State" type="u" tp:type="Stream_Flow_State">
+        <tp:docstring>
+          The new value of SendingState.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="CompleteSendingStateChange"
+        tp:name-for-bindings="Complete_Sending_State_Change">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Called in response to
+          <tp:member-ref>SendingStateChanged</tp:member-ref>(Pending_*, *) to
+          indicate that the media state has successfully progressed from
+          Pending_{Start, Stop, Pause} to the corresponding non-pending
+          state.</p>
+      </tp:docstring>
+      <arg name="State" type="u" tp:type="Stream_Flow_State" direction="in">
+        <tp:docstring>
+          The new (non-pending) value of SendingState.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The state change made no sense, and was ignored by the CM. The
+            most likely cause for this is a race-condition between the CM
+            emitting a new state change and the streaming implementation
+            responding to the previous state change.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="ReportSendingFailure"
+        tp:name-for-bindings="Report_Sending_Failure">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        Can be called at any point to indicate a failure in the outgoing
+        portion of the stream.
+      </tp:docstring>
+      <arg name="Reason" type="u" tp:type="Call_State_Change_Reason"
+        direction="in"/>
+      <arg name="Error" type="s" tp:type="DBus_Error_Name" direction="in"/>
+      <arg name="Message" type="s" direction="in"/>
+    </method>
+
+    <property name="ReceivingState" tp:name-for-bindings="Receiving_State"
+        type="u" tp:type="Stream_Flow_State" access="read">
+      <tp:docstring>
+        The counterpart of <tp:member-ref>SendingState</tp:member-ref>.
+        Indicates whether the streaming implementation is/should be expecting
+        to receive media for this stream. The CM should only tell the
+        streaming implementation to stop receiving if it has been told to put
+        the stream on hold, or the stream has been removed from the call.
+      </tp:docstring>
+    </property>
+
+    <signal name="ReceivingStateChanged"
+        tp:name-for-bindings="Receiving_State_Changed">
+      <tp:docstring>
+        Change notification for <tp:member-ref>ReceivingState</tp:member-ref>.
+      </tp:docstring>
+      <arg name="State" type="u" tp:type="Stream_Flow_State">
+        <tp:docstring>
+          The new value of ReceivingState.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="CompleteReceivingStateChange"
+        tp:name-for-bindings="Complete_Receiving_State_Change">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Called in response to
+          <tp:member-ref>ReceivingStateChanged</tp:member-ref>(Pending_*, *) to
+          indicate that the media state has successfully progressed from
+          Pending_{Start, Stop, Pause} to the corresponding non-pending
+          state.</p>
+      </tp:docstring>
+      <arg name="State" type="u" tp:type="Stream_Flow_State" direction="in">
+        <tp:docstring>
+          The new (non-pending) value of ReceivingState.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The state change made no sense, and was ignored by the CM. The
+            most likely cause for this is a race-condition between the CM
+            emitting a new state change and the streaming implementation
+            responding to the previous state change.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="ReportReceivingFailure"
+        tp:name-for-bindings="Report_Receiving_Failure">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        Can be called at any point to indicate a failure in the outgoing
+        portion of the stream.
+      </tp:docstring>
+      <arg name="Reason" type="u" tp:type="Call_State_Change_Reason"
+        direction="in"/>
+      <arg name="Error" type="s" tp:type="DBus_Error_Name" direction="in"/>
+      <arg name="Message" type="s" direction="in"/>
+    </method>
 
     <method name="SetCredentials" tp:name-for-bindings="Set_Credentials">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -66,6 +241,57 @@
       </arg>
     </method>
 
+    <tp:enum type="u" name="Call_Stream_Candidate_Type">
+      <tp:docstring>
+        The network topology that an IP candidate represents. This can
+        sometimes be used to infer what kind of performance characteristics
+        (latency, bandwith, etc) can be expected of connections made to this
+        candidate.
+      </tp:docstring>
+      <tp:enumvalue suffix="None" value="0">
+        <tp:docstring>
+          This is not an IP candidate. This is a reserved value, and should
+          not be seen on the bus.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Host" value="1">
+        <tp:docstring>
+          This candidate represents a direct connection to the host, as its
+          address is taken directly the host's IP stack.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Server_Reflexive" value="2">
+        <tp:docstring>
+          This candidate probably represents a connection to the host through
+          a NAT device, as its address was discovered by sending a binding
+          request to a STUN server or similar.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Peer_Reflexive" value="3">
+        <tp:docstring>
+          This candidate probably represents a good route between the host and
+          its peer, as its address was discovered by sending a STUN binding
+          request to one of the candidates advertised by the peer.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Relay" value="4">
+        <tp:docstring>
+          This candidate represents the address of a relay server (usually
+          somewhere on the public internet). This candidate is the most likely
+          to work, but all media will go via a relay server, so latency is
+          likely to be higher than other types of candidate.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Multicast" value="5">
+        <tp:docstring>
+          This candidate represents a Multicast group. This value should only
+          appear if the Stream's <tp:member-ref>Transport</tp:member-ref> is
+          set to Multicast.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+
     <tp:mapping name="Candidate_Info">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Extra information about the candidate. Allowed and mandatory keys
@@ -73,32 +299,48 @@
           used:</p>
 
         <dl>
-          <dt>Type (u)</dt>
-          <dd>type of candidate (host, srflx, prflx, relay)</dd>
+          <dt><code>type</code> - u</dt>
+          <dd>The type of candidate
+            (<tp:type>Call_Stream_Candidate_Type</tp:type>)</dd>
 
-          <dt>Foundation (s)</dt>
-          <dd>the foundation of this candiate</dd>
+          <dt><code>foundation</code> - s</dt>
+          <dd>The foundation of this candidate</dd>
 
-          <dt>Protocol (u) </dt>
-          <dd>Underlying protocol of the candidate (udp, tcp) </dd>
+          <dt><code>protocol</code> - u</dt>
+          <dd>Underlying protocol of the candidate
+            (<tp:type>Media_Stream_Base_Proto</tp:type>) </dd>
 
-          <dt>Priority (u) </dt>
-          <dd>Priority of the candidate </dd>
+          <dt><code>priority</code> - u</dt>
+          <dd>Priority of the candidate (should be a number between 0 and
+            65535). Most ICE implementations will prefer the highest priority
+            candidate pair that manages to connect. For backwards
+            compatibility with non-ICE SIP clients, the lowest priority
+            candidate may be sent as a raw UDP fallback candidate.
+            It is recommended that a relay candidate is used as the lowest
+            priority candidate if possible. If both IPv4 and IPv6 raw udp
+            fallback candidates are available, they should be set to the
+            same priority and advertised to the CM at the same time. The CM
+            will decide which to advertise to the remote end.</dd>
 
-          <dt>BaseIP (u) </dt>
-          <dd>Base IP of this candidate </dd>
+          <dt><code>base-ip</code> - s</dt>
+          <dd>The underlying Host address where media sent to this
+            (non-host-type) candidate will eventually arrive.</dd>
 
-          <dt>Username (s) </dt>
+          <dt><code>base-port</code> - u</dt>
+          <dd>The underlying Host port where media sent to this
+            (non-host-type) candidate will eventually arrive.</dd>
+
+          <dt><code>username</code> - s</dt>
           <dd>Username of this candidate
             (only if credentials are per candidate)</dd>
 
-          <dt>Password (s) </dt>
+          <dt><code>password</code> - s</dt>
           <dd>Password of this candidate
             (only if credentials are per candidate)</dd>
 
-          <dt>RawUDPFallback (b) </dt>
-          <dd>Indicate whether this candidate may be used to provide a UDP
-               fallback</dd>
+          <dt><code>ttl</code> - u</dt>
+          <dd>The TTL mandated for RTP/RTCP packets sent to a multicast group
+            (only valid for Multicast Streams)</dd>
         </dl>
       </tp:docstring>
       <tp:member name="Key" type="s">
@@ -156,7 +398,9 @@
       <tp:docstring>
         Add candidates to the
         <tp:member-ref>LocalCandidates</tp:member-ref> property and
-        signal them to the remote contact(s).
+        signal them to the remote contact(s). Note that connection managers
+        MAY delay the sending of candidates until
+        <tp:member-ref>FinishInitialCandidates</tp:member-ref> is called.
       </tp:docstring>
       <arg name="Candidates" direction="in"
         type="a(usua{sv})" tp:type="Candidate[]">
@@ -166,11 +410,15 @@
       </arg>
     </method>
 
-    <method name="CandidatesPrepared"
-      tp:name-for-bindings="Candidates_Prepared">
+    <method name="FinishInitialCandidates"
+      tp:name-for-bindings="Finish_Initial_Candidates">
       <tp:docstring>
         This indicates to the CM that the initial batch of candidates
-        has been added.
+        has been added, and should now be processed/sent to the remote side.
+        <tp:rationale>
+          Protocols supporting Raw UDP SHOULD wait for FinishInitialCandidates,
+          and then set the lowest priority candidate as the Raw UDP candidate.
+        </tp:rationale>
       </tp:docstring>
     </method>
 
@@ -190,7 +438,7 @@
           Raw UDP, with or without STUN. All streaming clients are assumed to
           support this transport, so there is no handler capability token for
           it in the <tp:dbus-ref namespace="ofdT.Channel.Type"
-          >Call.DRAFT</tp:dbus-ref> interface.
+          >Call1</tp:dbus-ref> interface.
           [This corresponds to "none" or "stun" in the old Media.StreamHandler
           interface.]
         </tp:docstring>
@@ -277,8 +525,14 @@
     <property name="LocalCredentials" tp:name-for-bindings="Local_Credentials"
       type="(ss)" tp:type="Stream_Credentials" access="read">
       <tp:docstring>
-        [FIXME]. Change notification is via the
+        The local credentials are sent to the remote site over the
+        signalling protocol. They are used in ICE to make sure that
+        the connectivity checks come from the right peer. Change
+        notification is via the
         <tp:member-ref>LocalCredentialsChanged</tp:member-ref> signal.
+
+        This property will be a pair of empty strings if ICE has not yet been
+        started.
       </tp:docstring>
     </property>
 
@@ -287,7 +541,10 @@
       <tp:changed version="0.21.2">renamed from LocalCredentailsSet</tp:changed>
       <tp:docstring>
         Emitted when the value of
-        <tp:member-ref>LocalCredentials</tp:member-ref> changes.
+        <tp:member-ref>LocalCredentials</tp:member-ref> changes to a non-empty
+        value. This should only happen when the streaming implementation calls
+        <tp:member-ref>SetCredentials</tp:member-ref>, so this signal is
+        mostly useful for debugging.
       </tp:docstring>
       <arg name="Username" type="s" />
       <arg name="Password" type="s" />
@@ -333,7 +590,7 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of mappings describing TURN or Google relay servers
           available for the client to use in its candidate gathering, as
-          determined from the protocol. Map keys are:</p>
+          determined from the protocol. Well-known map keys are:</p>
 
         <dl>
           <dt><code>ip</code> - s</dt>
@@ -365,6 +622,22 @@
           <dt><code>port</code> - q</dt>
           <dd>The UDP or TCP port of the relay server as an ASCII unsigned
             integer</dd>
+
+          <dt><code>unique-id</code> - s</dt>
+          <dd>A string identifying the relay server. If two RelayInfo entries
+            have the same unique-id, but different <code>type</code>s, there
+            is usually little point in connecting to both. Use
+            <code>priority</code> to determine which version to prefer in this
+            case. Can also be used by the streaming implementation to avoid
+            connecting to the same relay multiple times if relaying is
+            required for both audio and video.</dd>
+
+          <dt><code>priority</code> - u</dt>
+          <dd>A number determining which version of a server to prefer (if
+            multiple are present with the same <code>unique-id</code>,
+            the one with the highest priority should be used, or the streaming
+            implementation should use the one whose <code>type</code> has the
+            most desirable properties)</dd>
 
           <dt><code>username</code> - s</dt>
           <dd>The username to use</dd>
@@ -451,8 +724,8 @@
     <property name="Endpoints" tp:name-for-bindings="Endpoints"
       type="ao" access="read">
       <tp:docstring>
-        <p>The list of <tp:dbus-ref namespace="ofdT.Call.Stream"
-          >Endpoint.DRAFT</tp:dbus-ref> objects that exist for this
+        <p>The list of <tp:dbus-ref namespace="ofdT.Call1.Stream"
+          >Endpoint</tp:dbus-ref> objects that exist for this
           stream.</p>
 
         <p>Change notification is via the
@@ -460,14 +733,38 @@
       </tp:docstring>
     </property>
 
-    <signal name="PleaseRestartICE"
-      tp:name-for-bindings="Please_Restart_ICE">
+    <signal name="ICERestartRequested"
+      tp:name-for-bindings="ICE_Restart_Requested">
       <tp:docstring>
-        Emitted when the CM does an ICE restart to notify the
-        streaming implementation that it should call
+        Emitted when the remote side requests an ICE restart (e.g. third party
+        call control, when the remote endpoint changes). The streaming
+        implementation should call
         <tp:member-ref>SetCredentials</tp:member-ref> again.
       </tp:docstring>
     </signal>
+
+    <property name="ICERestartPending"
+      tp:name-for-bindings="ICE_Restart_Pending" access="read" type="b">
+      <tp:docstring>
+        State recovery for <tp:member-ref>ICERestartRequested</tp:member-ref>.
+        Set when the signal is emitted, and unset when
+        <tp:member-ref>SetCredentials</tp:member-ref> is called.
+        Useful for debugging.
+      </tp:docstring>
+    </property>
+
+    <method name="Fail" tp:name-for-bindings="Fail">
+      <tp:docstring>
+        Signal an unrecoverable error for this stream, and remove it. If all
+        streams are removed from a content, then it will also be removed.
+      </tp:docstring>
+      <arg direction="in" name="Reason" type="(uuss)"
+        tp:type="Call_State_Reason">
+        <tp:docstring>
+          A structured reason for stream removal.
+        </tp:docstring>
+      </arg>
+    </method>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

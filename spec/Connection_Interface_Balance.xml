@@ -93,6 +93,26 @@
       </tp:docstring>
     </property>
 
+    <property name="ManageCreditURI"
+              tp:name-for-bindings="Manage_Credit_URI"
+              access="read" type="s">
+      <tp:added version="0.22.2"/>
+      <tp:docstring>
+        A URI the user may visit via the web browser to manage and top-up their
+        account balance. This property is not guaranteed to be well-defined
+        until the connection becomes Connected; there is no change
+        notification.
+
+        <tp:rationale>
+          Different protocols and even servers or gateways (e.g. SIP and XMPP
+          PSTN gateways) will have a different website used to manage a user's
+          account balance. This property enables the client to provide that
+          to the user. A Connection Manager MAY set this itself (because it is
+          static or discoverable), or expose it as a connection parameter.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
     <signal name="BalanceChanged" tp:name-for-bindings="Balance_Changed">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Emitted when the user's balance has changed.</p>

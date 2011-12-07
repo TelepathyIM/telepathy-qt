@@ -68,7 +68,7 @@ MaximumAvatarBytes=8192
 
     <property name="SupportedAvatarMIMETypes"
       tp:name-for-bindings="Supported_Avatar_MIME_Types"
-      type="as" access="read">
+      type="as" access="read" tp:immutable="yes">
       <tp:docstring>
         The expected value of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"
@@ -79,7 +79,7 @@ MaximumAvatarBytes=8192
 
     <property name="MinimumAvatarHeight"
       tp:name-for-bindings="Minimum_Avatar_Height"
-      type="u" access="read">
+      type="u" access="read" tp:immutable="yes">
       <tp:docstring>
         The expected value of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"
@@ -90,7 +90,7 @@ MaximumAvatarBytes=8192
 
     <property name="MinimumAvatarWidth"
       tp:name-for-bindings="Minimum_Avatar_Width"
-      type="u" access="read">
+      type="u" access="read" tp:immutable="yes">
       <tp:docstring>
         The expected value of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"
@@ -101,7 +101,7 @@ MaximumAvatarBytes=8192
 
     <property name="RecommendedAvatarHeight"
       tp:name-for-bindings="Recommended_Avatar_Height"
-      type="u" access="read">
+      type="u" access="read" tp:immutable="yes">
       <tp:docstring>
         The expected value of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"
@@ -112,7 +112,7 @@ MaximumAvatarBytes=8192
 
     <property name="RecommendedAvatarWidth"
       tp:name-for-bindings="Recommended_Avatar_Width"
-      type="u" access="read">
+      type="u" access="read" tp:immutable="yes">
       <tp:docstring>
         The expected value of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"
@@ -123,7 +123,7 @@ MaximumAvatarBytes=8192
 
     <property name="MaximumAvatarHeight"
       tp:name-for-bindings="Maximum_Avatar_Height"
-      type="u" access="read">
+      type="u" access="read" tp:immutable="yes">
       <tp:docstring>
         The expected value of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"
@@ -134,7 +134,7 @@ MaximumAvatarBytes=8192
 
     <property name="MaximumAvatarWidth"
       tp:name-for-bindings="Maximum_Avatar_Width"
-      type="u" access="read">
+      type="u" access="read" tp:immutable="yes">
       <tp:docstring>
         The expected value of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"
@@ -145,7 +145,7 @@ MaximumAvatarBytes=8192
 
     <property name="MaximumAvatarBytes"
       tp:name-for-bindings="Maximum_Avatar_Bytes"
-      type="u" access="read">
+      type="u" access="read" tp:immutable="yes">
       <tp:docstring>
         The expected value of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"

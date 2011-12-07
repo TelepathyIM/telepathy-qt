@@ -19,6 +19,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Properties">
+    <tp:deprecated version="0.24.0">All uses of this interface have been
+      expunged, and it may now be laid to rest.</tp:deprecated>
 
     <tp:struct name="Property_Spec" array-name="Property_Spec_List">
       <tp:docstring>A struct (property ID, property name, D-Bus signature,

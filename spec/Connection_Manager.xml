@@ -196,11 +196,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
       <tp:docstring>
-        Get a list of the parameters which must or may be provided to the
-        <tp:member-ref>RequestConnection</tp:member-ref> method when connecting
-        to the given protocol,
-        or registering (the boolean &quot;register&quot; parameter is available,
-        and set to true).
+        Get a list of the parameters which may be specified in the
+        <tp:dbus-ref namespace='ofdT.Account'>Parameters</tp:dbus-ref> of an
+        <tp:dbus-ref namespace='ofdT'>Account</tp:dbus-ref> (or, for
+        specialised applications which do not use the account manager, passed
+        to <tp:member-ref>RequestConnection</tp:member-ref>). Some parameters
+        are mandatory, and some parameters only make sense when registering new
+        accounts with the server; see the <tp:type>Param_Spec</tp:type>
+        documentation for more details.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
@@ -322,6 +325,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           with the
           <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">Connect</tp:dbus-ref>
           method.</p>
+
+        <p><strong>Most applications should not use this method</strong>: they
+          should instead use the the <tp:dbus-ref
+          namespace='ofdT.Account'>Connection</tp:dbus-ref> property on an
+          <tp:dbus-ref namespace='ofdT'>Account</tp:dbus-ref> object obtained
+          from the <tp:dbus-ref
+          namespace='ofdT'>AccountManager</tp:dbus-ref>. This method is used
+          internally by the account manager to create connections when
+          needed.</p>
 
         <p>The parameters which must and may be provided in the parameters
         dictionary can be discovered with the

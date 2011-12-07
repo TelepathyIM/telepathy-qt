@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Interface.MediaSignalling">
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+    <tp:changed version="0.24.0">The old-style Telepathy properties,
+      deprecated since March 2009, have been removed.</tp:changed>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for signalling a channel containing synchronised media
@@ -103,54 +105,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         within.
       </tp:docstring>
     </signal>
-
-    <tp:property name="nat-traversal" type="s">
-      <tp:deprecated version="0.17.22">Use the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
-        property on the Media.StreamHandler, if available; use this
-        as a fallback.</tp:deprecated>
-      <tp:docstring>
-        A string indicating the NAT traversal techniques employed by the
-        streams within this channel if they do not have a <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
-        property. The possible values are the same as for the NATTraversal
-        property on the streams.
-      </tp:docstring>
-    </tp:property>
-
-    <tp:property name="stun-server" type="s">
-      <tp:deprecated version="0.17.22">Use the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Media.StreamHandler">STUNServers</tp:dbus-ref>
-        property on the Media.StreamHandler, if available; use this
-        as a fallback.</tp:deprecated>
-      <tp:docstring>
-        The IP address or hostname of the STUN server to use for NAT traversal
-        if the individual streams do not specify one.
-      </tp:docstring>
-    </tp:property>
-
-    <tp:property name="stun-port" type="q">
-      <tp:deprecated version="0.17.22">Use the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Media.StreamHandler">STUNServers</tp:dbus-ref>
-        property on the Media.StreamHandler, if available; use this
-        as a fallback.</tp:deprecated>
-      <tp:docstring>
-      The UDP port number to use on the provided STUN server.
-      </tp:docstring>
-    </tp:property>
-
-    <tp:property name="gtalk-p2p-relay-token" type="s">
-      <tp:deprecated version="0.17.22">XMPP connection managers
-        supporting the Google Talk relay server SHOULD make the necessary
-        HTTP requests to find a username and password, and use those
-        to populate the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Media.StreamHandler">RelayInfo</tp:dbus-ref>
-        property on the Media.StreamHandler.</tp:deprecated>
-      <tp:docstring>
-      The authentication token for use with the Google Talk peer-to-peer relay
-      server.
-      </tp:docstring>
-    </tp:property>
 
     <tp:hct name="gtalk-p2p">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

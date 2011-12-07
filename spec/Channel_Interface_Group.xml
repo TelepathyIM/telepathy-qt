@@ -334,6 +334,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
       <tp:added version="0.17.6">This signal should not be relied on
         unless Channel_Group_Flag_Properties is present.</tp:added>
+      <tp:deprecated version="0.23.4">Clients should listen to
+        <tp:member-ref>HandleOwnersChangedDetailed</tp:member-ref> instead to
+        get the new identifiers as well.
+        </tp:deprecated>
 
       <arg name="Added" type="a{uu}" tp:type="Handle_Owner_Map">
         <tp:docstring>
@@ -348,6 +352,44 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The channel-specific handles that were removed from the keys of the
           HandleOwners property, as a result of the contact leaving this group
           in a previous <tp:member-ref>MembersChanged</tp:member-ref> signal
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="HandleOwnersChangedDetailed"
+      tp:name-for-bindings="Handle_Owners_Changed_Detailed">
+      <tp:docstring>
+        <p>Emitted whenever the <tp:member-ref>HandleOwners</tp:member-ref>
+        property changes.</p>
+
+        <p>Clients can assume this signal is emitted by the Connection Manager
+        if the <tp:member-ref>MemberIdentifiers</tp:member-ref> property exists
+        </p>
+      </tp:docstring>
+      <tp:added version="0.23.4"/>
+
+      <arg name="Added" type="a{uu}" tp:type="Handle_Owner_Map">
+        <tp:docstring>
+          A map from channel-specific handles to their owners, in which the
+          keys include all the handles that were added to the keys of the
+          HandleOwners property, and all the handles in that property whose
+          owner has changed
+        </tp:docstring>
+      </arg>
+      <arg name="Removed" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          The channel-specific handles that were removed from the keys of the
+          HandleOwners property, as a result of the contact leaving this group
+          in a previous <tp:member-ref>MembersChanged</tp:member-ref> signal
+        </tp:docstring>
+      </arg>
+      <arg name="Identifiers" type="a{us}" tp:type="Handle_Identifier_Map">
+        <tp:docstring>
+          The string identifiers for handles mentioned in this signal, to
+          give clients the minimal information necessary to create contacts
+          without waiting for round-trips. Connection managers MUST include at
+          least the identifiers for all handles in the Added map, and MAY
+          include those from Removed array.
         </tp:docstring>
       </arg>
     </signal>
@@ -519,10 +561,37 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
       <tp:added version="0.17.6">This signal should not be relied on
         unless Channel_Group_Flag_Properties is present.</tp:added>
+      <tp:deprecated version="0.23.4">Clients should listen to
+        <tp:member-ref>SelfContactChanged</tp:member-ref> instead to get the new
+        identifier as well.
+        </tp:deprecated>
 
       <arg type="u" tp:type="Contact_Handle" name="Self_Handle">
         <tp:docstring>
           The new value of the SelfHandle property.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="SelfContactChanged" tp:name-for-bindings="Self_Contact_Changed">
+      <tp:docstring>
+        <p>Emitted whenever the <tp:member-ref>SelfHandle</tp:member-ref> property
+        changes.</p>
+
+        <p>Clients can assume this signal is emitted by the Connection Manager
+        if the <tp:member-ref>MemberIdentifiers</tp:member-ref> property exists.
+        </p>
+      </tp:docstring>
+      <tp:added version="0.23.4"/>
+
+      <arg type="u" tp:type="Contact_Handle" name="Self_Handle">
+        <tp:docstring>
+          The new value of the SelfHandle property.
+        </tp:docstring>
+      </arg>
+      <arg type="s" name="Self_ID">
+        <tp:docstring>
+          The new value of the SelfHandle property's identifier.
         </tp:docstring>
       </arg>
     </signal>
@@ -543,6 +612,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:added version="0.17.6">For backwards compatibility,
         clients should fall back to calling GetSelfHandle if
         Channel_Group_Flag_Properties is not present.</tp:added>
+    </property>
+
+    <property name="MemberIdentifiers" type="a{us}" tp:type="Handle_Identifier_Map"
+      access="read" tp:name-for-bindings="Member_Identifiers">
+      <tp:docstring>
+        The string identifiers for handles mentioned in this channel, to
+        give clients the minimal information necessary to create contacts
+        without waiting for round-trips. Connection managers MUST include at
+        least the identifiers for
+        <tp:member-ref>SelfHandle</tp:member-ref>,
+        <tp:member-ref>Members</tp:member-ref>,
+        <tp:member-ref>LocalPendingMembers</tp:member-ref> (and their actors if
+        any),
+        <tp:member-ref>RemotePendingMembers</tp:member-ref> and
+        <tp:member-ref>HandleOwners</tp:member-ref>.
+      </tp:docstring>
+      <tp:added version="0.23.4"/>
     </property>
 
     <method name="GetSelfHandle" tp:name-for-bindings="Get_Self_Handle">

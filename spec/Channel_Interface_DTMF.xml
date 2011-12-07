@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Interface.DTMF">
     <tp:xor-requires>
       <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
-      <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT"/>
+      <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Call1"/>
     </tp:xor-requires>
     <tp:changed version="0.19.6">The <tp:type>Stream_ID</tp:type>s in this
       interface should now be ignored by CMs. This is primarily to allow this
       interface to be used with <tp:dbus-ref
-      namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref>
+      namespace='ofdT.Channel.Type'>Call1</tp:dbus-ref>
       channels.</tp:changed>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

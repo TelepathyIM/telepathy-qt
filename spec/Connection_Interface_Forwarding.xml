@@ -92,7 +92,7 @@
         the group with the self handle as the actor, and
         <tp:type>Channel_Group_Change_Reason</tp:type> <code>No_Answer</code> or
         <code>Busy</code>, as appropriate. For <tp:dbus-ref
-        namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref> channels, the
+        namespace='ofdT.Channel.Type'>Call1</tp:dbus-ref> channels, the
         <tp:type>Call_State_Change_Reason</tp:type> <code>Forwarded</code>
         should be used.</p>
     </tp:docstring>

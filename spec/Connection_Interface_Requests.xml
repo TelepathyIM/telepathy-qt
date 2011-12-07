@@ -486,7 +486,10 @@
           <tp:dbus-ref>org.freedesktop.Telepathy.Channel.ChannelType</tp:dbus-ref>
           and
           <tp:dbus-ref>org.freedesktop.Telepathy.Channel.TargetHandleType</tp:dbus-ref>.
-          </p>
+          (One exception is that <tp:dbus-ref namespace="ofdT.Channel.Type"
+            >ContactSearch</tp:dbus-ref> channels do not have TargetHandleType
+          <code>None</code> in their requestable channel classes, for
+          historical reasons.)</p>
       </tp:docstring>
 
       <tp:member type="s" name="Key" tp:type="DBus_Qualified_Member">

@@ -60,7 +60,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <!-- Potentially to be reinstated later:
          http://bugs.freedesktop.org/show_bug.cgi?id=19585
-    <tp:enum name="Location_Accuracy_Level" type="i">
+    <tp:enum name="Location_Accuracy_Level" type="u">
       <tp:docstring>
         A location accuracy level. This should be kept in sync with
         GeoclueAccuracyLevel in the Geoclue project.
