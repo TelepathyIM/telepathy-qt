@@ -31,7 +31,7 @@
 
 #include <TelepathyQt/Types>
 
-#include <telepathy-farsight/channel.h>
+typedef struct _TfChannel TfChannel;
 
 namespace Tp
 {

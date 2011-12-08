@@ -32,6 +32,8 @@
 #include <telepathy-glib/connection.h>
 #include <telepathy-glib/dbus.h>
 
+#include <telepathy-farsight/channel.h>
+
 namespace Tp
 {
 
