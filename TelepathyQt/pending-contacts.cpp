@@ -21,7 +21,13 @@
  */
 
 #include <TelepathyQt/PendingContacts>
+#include "TelepathyQt/pending-contacts-internal.h"
+
 #include "TelepathyQt/_gen/pending-contacts.moc.hpp"
+#include "TelepathyQt/_gen/pending-contacts-internal.moc.hpp"
+
+#include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/future-internal.h"
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ConnectionLowlevel>
@@ -30,8 +36,6 @@
 #include <TelepathyQt/PendingContactAttributes>
 #include <TelepathyQt/PendingHandles>
 #include <TelepathyQt/ReferencedHandles>
-
-#include "TelepathyQt/debug-internal.h"
 
 namespace Tp
 {
@@ -543,6 +547,87 @@ void PendingContacts::allAttributesFetched()
     }
 
     mPriv->setFinished();
+}
+
+PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &connection,
+        const QString &vcardField, const QStringList &vcardAddresses)
+    : PendingOperation(connection),
+      mConnection(connection),
+      mVCardField(vcardField),
+      mVCardAddresses(vcardAddresses)
+{
+    // no check for the interface here again, we expect this interface to be used only when
+    // Conn.I.Addressing is available
+    TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+        connection->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            connAddressingIface->GetContactsByVCardField(vcardField, vcardAddresses, QStringList()));
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onGetContactsByVCardFieldFinished(QDBusPendingCallWatcher*)));
+}
+
+PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &connection,
+        const QStringList &uris)
+    : PendingOperation(connection),
+      mConnection(connection),
+      mUris(uris)
+{
+    // no check for the interface here again, we expect this interface to be used only when
+    // Conn.I.Addressing is available
+    TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+        connection->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            connAddressingIface->GetContactsByURI(uris, QStringList()));
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onGetContactsByURIFinished(QDBusPendingCallWatcher*)));
+}
+
+PendingAddressingGetContacts::~PendingAddressingGetContacts()
+{
+}
+
+void PendingAddressingGetContacts::onGetContactsByVCardFieldFinished(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<TpFuture::AddressingNormalizationMap, Tp::ContactAttributesMap> reply = *watcher;
+
+    if (!reply.isError()) {
+        TpFuture::AddressingNormalizationMap requested = reply.argumentAt<0>();
+
+        mValidHandles = requested.values();
+        mValidVCardAddresses = requested.keys();
+        mInvalidVCardAddresses = mVCardAddresses.toSet().subtract(mValidVCardAddresses.toSet()).toList();
+        setFinished();
+    } else {
+        debug().nospace() << "GetContactsByVCardField failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+    }
+
+    watcher->deleteLater();
+}
+
+void PendingAddressingGetContacts::onGetContactsByURIFinished(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<TpFuture::AddressingNormalizationMap, Tp::ContactAttributesMap> reply = *watcher;
+
+    if (!reply.isError()) {
+        TpFuture::AddressingNormalizationMap requested = reply.argumentAt<0>();
+
+        mValidHandles = requested.values();
+        mValidUris = requested.keys();
+        mInvalidUris = mVCardAddresses.toSet().subtract(mValidVCardAddresses.toSet()).toList();
+        setFinished();
+    } else {
+        debug().nospace() << "GetContactsByURI failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+    }
+
+    watcher->deleteLater();
 }
 
 } // Tp

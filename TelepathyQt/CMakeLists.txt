@@ -491,6 +491,7 @@ set(telepathy_qt_MOC_SRCS
     pending-contact-attributes.h
     pending-contact-info.h
     pending-contacts.h
+    pending-contacts-internal.h
     pending-handles.h
     pending-operation.h
     pending-ready.h
