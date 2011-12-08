@@ -700,12 +700,5 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt.pc.in ${CMAKE_CURRENT_BIN
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}-uninstalled.pc)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfiwwwwg)
 
-# If Farsight was found, install its pkg-config files as well, and go into the subdirectory
-if(FARSIGHT_COMPONENTS_FOUND)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtFarsight.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtFarsight-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight-uninstalled.pc)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT farsight_headers)
-endif(FARSIGHT_COMPONENTS_FOUND)
-
 add_subdirectory(Farsight)
 

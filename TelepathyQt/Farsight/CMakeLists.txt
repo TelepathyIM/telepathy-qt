@@ -49,4 +49,9 @@ if(FARSIGHT_COMPONENTS_FOUND)
     # Install headers
     install(FILES ${telepathy_qt_farsight_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt/Farsight
             COMPONENT farsight_headers)
+
+    # pkg-config files
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtFarsight.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtFarsight-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight-uninstalled.pc)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT farsight_headers)
 endif(FARSIGHT_COMPONENTS_FOUND)
