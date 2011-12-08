@@ -49,6 +49,8 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
     QString iconName;
     PresenceSpecList statuses;
     AvatarSpec avatarRequirements;
+    QStringList addressableVCardFields;
+    QStringList addressableUriSchemes;
 };
 
 /**
@@ -293,6 +295,37 @@ AvatarSpec ProtocolInfo::avatarRequirements() const
     return mPriv->avatarRequirements;
 }
 
+/**
+ * Return the vCard fields that can be used to request a contact with on this protocol,
+ * normalized to lower case.
+ *
+ * \return The vCard fields normalized to lower case.
+ * \sa addressableUriSchemes()
+ */
+QStringList ProtocolInfo::addressableVCardFields() const
+{
+    if (!isValid()) {
+        return QStringList();
+    }
+
+    return mPriv->addressableVCardFields;
+}
+
+/**
+ * Return the URI schemes that are supported by this protocol.
+ *
+ * \return The URI schemes.
+ * \sa addressableVCardFields()
+ */
+QStringList ProtocolInfo::addressableUriSchemes() const
+{
+    if (!isValid()) {
+        return QStringList();
+    }
+
+    return mPriv->addressableUriSchemes;
+}
+
 void ProtocolInfo::addParameter(const ParamSpec &spec)
 {
     if (!isValid()) {
@@ -369,6 +402,24 @@ void ProtocolInfo::setAvatarRequirements(const AvatarSpec &avatarRequirements)
     }
 
     mPriv->avatarRequirements = avatarRequirements;
+}
+
+void ProtocolInfo::setAddressableVCardFields(const QStringList &vcardFields)
+{
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
+    mPriv->addressableVCardFields = vcardFields;
+}
+
+void ProtocolInfo::setAddressableUriSchemes(const QStringList &uriSchemes)
+{
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
+    mPriv->addressableUriSchemes = uriSchemes;
 }
 
 } // Tp

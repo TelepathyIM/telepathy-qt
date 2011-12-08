@@ -74,6 +74,9 @@ public:
 
     AvatarSpec avatarRequirements() const;
 
+    QStringList addressableVCardFields() const;
+    QStringList addressableUriSchemes() const;
+
 private:
     friend class ConnectionManager;
 
@@ -86,6 +89,8 @@ private:
     TP_QT_NO_EXPORT void setRequestableChannelClasses(const RequestableChannelClassList &caps);
     TP_QT_NO_EXPORT void setAllowedPresenceStatuses(const PresenceSpecList &statuses);
     TP_QT_NO_EXPORT void setAvatarRequirements(const AvatarSpec &avatarRequirements);
+    TP_QT_NO_EXPORT void setAddressableVCardFields(const QStringList &vcardFields);
+    TP_QT_NO_EXPORT void setAddressableUriSchemes(const QStringList &uriSchemes);
 
     struct Private;
     friend struct Private;
