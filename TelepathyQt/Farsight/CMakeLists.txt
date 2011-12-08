@@ -58,7 +58,7 @@ if(FARSIGHT_COMPONENTS_FOUND)
     if (NOT WIN32)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtFarsight.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtFarsight-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight-uninstalled.pc)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT farsight_headers)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
     endif (NOT WIN32)
 
     # Configure the actual Config file

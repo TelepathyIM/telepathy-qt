@@ -703,7 +703,7 @@ endif (WIN32)
 if (NOT WIN32)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}-uninstalled.pc)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfiwwwwg)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
 endif (NOT WIN32)
 
 # CMake Version and config files
