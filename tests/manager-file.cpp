@@ -91,6 +91,11 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(QLatin1String("Foo"), managerFile.englishName(QLatin1String("foo")));
     QCOMPARE(QLatin1String("im-foo"), managerFile.iconName(QLatin1String("foo")));
 
+    QStringList addressableVCardFields = managerFile.addressableVCardFields(QLatin1String("foo"));
+    QCOMPARE(addressableVCardFields, QStringList() << QLatin1String("x-foo"));
+    QStringList addressableUriSchemes = managerFile.addressableUriSchemes(QLatin1String("foo"));
+    QCOMPARE(addressableUriSchemes, QStringList() << QLatin1String("foo"));
+
     RequestableChannelClass ftRcc;
     ftRcc.fixedProperties.insert(
             TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
