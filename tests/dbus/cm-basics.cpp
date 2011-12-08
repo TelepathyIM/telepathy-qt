@@ -6,6 +6,7 @@
 #include <TelepathyQt/ConnectionCapabilities>
 #include <TelepathyQt/ConnectionManager>
 #include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingString>
 #include <TelepathyQt/PendingStringList>
 #include <TelepathyQt/PresenceSpec>
 
@@ -39,6 +40,7 @@ public:
 
 protected Q_SLOTS:
     void expectListNamesFinished(Tp::PendingOperation *);
+    void expectPendingStringFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
@@ -59,6 +61,7 @@ private:
     Tp::ConnectionManagerPtr mCMLegacy;
 
     QStringList mCMNames;
+    QString mPendingStringResult;
 };
 
 void TestCmBasics::expectListNamesFinished(PendingOperation *op)
@@ -67,6 +70,15 @@ void TestCmBasics::expectListNamesFinished(PendingOperation *op)
 
     PendingStringList *ps = qobject_cast<PendingStringList*>(op);
     mCMNames = ps->result();
+    mLoop->exit(0);
+}
+
+void TestCmBasics::expectPendingStringFinished(PendingOperation *op)
+{
+    TEST_VERIFY_OP(op);
+
+    PendingString *ps = qobject_cast<PendingString*>(op);
+    mPendingStringResult = ps->result();
     mLoop->exit(0);
 }
 
@@ -206,6 +218,32 @@ void TestCmBasics::testBasics()
     QCOMPARE(addressableVCardFields, QStringList() << QLatin1String("x-echo2"));
     QStringList addressableUriSchemes = info.addressableUriSchemes();
     QCOMPARE(addressableUriSchemes, QStringList() << QLatin1String("echo2"));
+
+    mPendingStringResult = QString();
+    QVERIFY(connect(info.normalizeVCardAddress(QLatin1String("x-EcHo2"), QLatin1String("EcHo2")),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectPendingStringFinished(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mPendingStringResult, QLatin1String("echo2"));
+
+    mPendingStringResult = QString();
+    QVERIFY(connect(info.normalizeVCardAddress(QLatin1String("x-unsupported"), QLatin1String("EcHo2")),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    mPendingStringResult = QString();
+    QVERIFY(connect(info.normalizeContactUri(QLatin1String("eCho2:FooBaR")),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectPendingStringFinished(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mPendingStringResult, QLatin1String("echo2:foobar"));
+
+    mPendingStringResult = QString();
+    QVERIFY(connect(info.normalizeContactUri(QLatin1String("unsupported:echo2")),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
