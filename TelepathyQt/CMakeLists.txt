@@ -84,6 +84,7 @@ set(telepathy_qt_SRCS
     pending-operation.cpp
     pending-ready.cpp
     pending-send-message.cpp
+    pending-string.cpp
     pending-string-list.cpp
     pending-stream-tube-connection.cpp
     pending-variant.cpp
@@ -347,6 +348,8 @@ set(telepathy_qt_HEADERS
     PendingStreamedMediaStreams
     PendingStreamTubeConnection
     pending-stream-tube-connection.h
+    PendingString
+    pending-string.h
     PendingStringList
     pending-string-list.h
     PendingSuccess
@@ -493,6 +496,7 @@ set(telepathy_qt_MOC_SRCS
     pending-ready.h
     pending-send-message.h
     pending-stream-tube-connection.h
+    pending-string.h
     pending-string-list.h
     pending-variant.h
     pending-variant-map.h
