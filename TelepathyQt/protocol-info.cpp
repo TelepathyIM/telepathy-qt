@@ -24,6 +24,8 @@
 
 #include <TelepathyQt/ConnectionCapabilities>
 #include <TelepathyQt/ConnectionManager>
+#include <TelepathyQt/PendingFailure>
+#include <TelepathyQt/PendingString>
 
 namespace Tp
 {
@@ -31,14 +33,39 @@ namespace Tp
 struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
 {
     Private()
+        : addressingIface(0)
     {
     }
 
     Private(const ConnectionManagerPtr &cm, const QString &name)
         : cm(cm),
           name(name),
-          iconName(QString(QLatin1String("im-%1")).arg(name))
+          iconName(QString(QLatin1String("im-%1")).arg(name)),
+          addressingIface(0)
     {
+    }
+
+    ~Private()
+    {
+        delete addressingIface;
+    }
+
+    Client::ProtocolInterfaceAddressingInterface *addressingInterface()
+    {
+        if (!addressingIface) {
+            ConnectionManagerPtr connectionManager(cm);
+            QString escapedProtocolName = name;
+            escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
+            QString protocolPath = QString(
+                    QLatin1String("%1/%2"))
+                        .arg(connectionManager->objectPath())
+                        .arg(escapedProtocolName);
+            addressingIface = new Client::ProtocolInterfaceAddressingInterface(
+                connectionManager->dbusConnection(),
+                connectionManager->busName(), protocolPath);
+        }
+
+        return addressingIface;
     }
 
     WeakPtr<ConnectionManager> cm;
@@ -52,6 +79,8 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
     AvatarSpec avatarRequirements;
     QStringList addressableVCardFields;
     QStringList addressableUriSchemes;
+
+    Client::ProtocolInterfaceAddressingInterface *addressingIface;
 };
 
 /**
@@ -335,6 +364,69 @@ QStringList ProtocolInfo::addressableUriSchemes() const
     }
 
     return mPriv->addressableUriSchemes;
+}
+
+/**
+ * Attempt to normalize the given \a vcardAddress.
+ *
+ * An example would be a vCard TEL field with a formatted number in the form of
+ * +1 (206) 555 1234, this would be normalized to +12065551234.
+ *
+ * \param vcardField The vCard field of the address we are normalizing.
+ * \param vcardAddress The address to normalize.
+ * \return A PendingString which will emit PendingString::finished
+ *         when the address has being normalized or an error occurred.
+ * \sa normalizeContactUri()
+ */
+PendingString *ProtocolInfo::normalizeVCardAddress(const QString &vcardField,
+        const QString &vcardAddress)
+{
+    if (!isValid()) {
+        return new PendingString(TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Protocol object is invalid"));
+    }
+
+    Client::ProtocolInterfaceAddressingInterface *iface = mPriv->addressingInterface();
+    if (!iface->isValid()) {
+        // cm is still valid but no Protocol object found
+        return new PendingString(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("ConnectionManager does not support Protocol.I.Addressing"));
+    }
+
+    return new PendingString(iface->NormalizeVCardAddress(vcardField, vcardAddress),
+            connectionManager());
+}
+
+/**
+ * Attempt to normalize the given contact \a uri.
+ *
+ * If the URI has extra information beyond what's necessary to identify a particular contact, such
+ * as an XMPP resource or an action to carry out, this extra information wil be removed.
+ *
+ * An example would be xmpp:romeo@Example.Com/Empathy?message;body=Hello, which would be normalized
+ * to xmpp:romeo@example.com.
+ *
+ * \param uri The URI to normalize.
+ * \return A PendingString which will emit PendingString::finished
+ *         when the \a uri has being normalized or an error occurred.
+ * \sa normalizeVCardAddress()
+ */
+PendingString *ProtocolInfo::normalizeContactUri(const QString &uri)
+{
+    if (!isValid()) {
+        return new PendingString(TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Protocol object is invalid"));
+    }
+
+    Client::ProtocolInterfaceAddressingInterface *iface = mPriv->addressingInterface();
+    if (!iface->isValid()) {
+        // cm is still valid but no Protocol object found
+        return new PendingString(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("ConnectionManager does not support Protocol.I.Addressing"));
+    }
+
+    return new PendingString(iface->NormalizeContactURI(uri),
+            connectionManager());
 }
 
 void ProtocolInfo::addParameter(const ParamSpec &spec)

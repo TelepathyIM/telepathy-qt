@@ -41,6 +41,7 @@ namespace Tp
 {
 
 class ConnectionCapabilities;
+class PendingString;
 
 class TP_QT_EXPORT ProtocolInfo
 {
@@ -78,6 +79,9 @@ public:
 
     QStringList addressableVCardFields() const;
     QStringList addressableUriSchemes() const;
+
+    PendingString *normalizeVCardAddress(const QString &vcardField, const QString &vcardAddress);
+    PendingString *normalizeContactUri(const QString &uri);
 
 private:
     friend class ConnectionManager;
