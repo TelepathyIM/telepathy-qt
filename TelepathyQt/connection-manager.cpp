@@ -203,6 +203,12 @@ void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
         debug() << "Full functionality requires CM support for the Protocol.Presence interface";
     }
 
+    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING)) {
+        introspectQueue.enqueue(&ProtocolWrapper::introspectAddressing);
+    } else {
+        debug() << "Full functionality requires CM support for the Protocol.Addressing interface";
+    }
+
     continueIntrospection();
 }
 
@@ -232,6 +238,20 @@ void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotPresenceProperties(QDBusPendingCallWatcher*)));
+}
+
+void ConnectionManager::Private::ProtocolWrapper::introspectAddressing()
+{
+    Client::DBus::PropertiesInterface *properties = propertiesInterface();
+    Q_ASSERT(properties != 0);
+
+    debug() << "Calling Properties::GetAll(Protocol.Addressing)";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
+            this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotAddressingProperties(QDBusPendingCallWatcher*)));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::continueIntrospection()
@@ -327,6 +347,34 @@ void ConnectionManager::Private::ProtocolWrapper::gotPresenceProperties(
             "Properties.GetAll(Protocol.Presence) failed: " <<
             reply.error().name() << ": " << reply.error().message();
         warning() << "  Full functionality requires CM support for the Protocol.Presence interface";
+    }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
+}
+
+void ConnectionManager::Private::ProtocolWrapper::gotAddressingProperties(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties.GetAll(Protocol.Addressing)";
+        props = reply.value();
+
+        QStringList vcardFields = qdbus_cast<QStringList>(
+                props[QLatin1String("AddressableVCardFields")]);
+        QStringList uriSchemes = qdbus_cast<QStringList>(
+                props[QLatin1String("AddressableURISchemes")]);
+        mInfo.setAddressableVCardFields(vcardFields);
+        mInfo.setAddressableUriSchemes(uriSchemes);
+    } else {
+        warning().nospace() <<
+            "Properties.GetAll(Protocol.Addressing) failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+        warning() << "  Full functionality requires CM support for the Protocol.Addressing interface";
     }
 
     continueIntrospection();
@@ -504,6 +552,8 @@ bool ConnectionManager::Private::parseConfigFile()
         info.setIconName(f.iconName(protocol));
         info.setAllowedPresenceStatuses(f.allowedPresenceStatuses(protocol));
         info.setAvatarRequirements(f.avatarRequirements(protocol));
+        info.setAddressableVCardFields(f.addressableVCardFields(protocol));
+        info.setAddressableUriSchemes(f.addressableUriSchemes(protocol));
 
         protocols.append(info);
     }
