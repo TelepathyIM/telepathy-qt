@@ -711,7 +711,7 @@ include(MacroWriteBasicCMakeVersionFile)
 
 # all the following variables are put into TelepathyQt*Config.cmake, so
 # they are usable by projects using TelepathyQt.
-make_install_path_absolute(TELEPATHY_QT_INCLUDE_DIR         ${INCLUDE_INSTALL_DIR})
+make_install_path_absolute(TELEPATHY_QT_INCLUDE_DIR         ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR})
 make_install_path_absolute(TELEPATHY_QT_LIB_DIR             ${LIB_INSTALL_DIR})
 make_install_path_absolute(TELEPATHY_QT_DATA_DIR            ${DATA_INSTALL_DIR})
 
