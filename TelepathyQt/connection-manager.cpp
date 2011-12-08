@@ -137,13 +137,13 @@ const Feature ConnectionManager::Private::ProtocolWrapper::FeatureCore =
             0, true);
 
 ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
-        const QDBusConnection &bus,
-        const QString &busName, const QString &objectPath,
-        const QString &cmName, const QString &name, const QVariantMap &props)
-    : StatelessDBusProxy(bus, busName, objectPath, FeatureCore),
+        const ConnectionManagerPtr &cm,
+        const QString &objectPath,
+        const QString &name, const QVariantMap &props)
+    : StatelessDBusProxy(cm->dbusConnection(), cm->busName(), objectPath, FeatureCore),
       OptionalInterfaceFactory<ProtocolWrapper>(this),
       mReadinessHelper(readinessHelper()),
-      mInfo(ProtocolInfo(cmName, name)),
+      mInfo(ProtocolInfo(cm, name)),
       mImmutableProps(props)
 {
     fillRCCs();
@@ -540,7 +540,7 @@ bool ConnectionManager::Private::parseConfigFile()
     }
 
     foreach (const QString &protocol, f.protocols()) {
-        ProtocolInfo info(name, protocol);
+        ProtocolInfo info(ConnectionManagerPtr(parent), protocol);
 
         foreach (const ParamSpec &spec, f.parameters(protocol)) {
             info.addParameter(spec);
@@ -997,9 +997,8 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
             QString protocolPath = QString(
                     QLatin1String("%1/%2")).arg(objectPath()).arg(escapedProtocolName);
             SharedPtr<Private::ProtocolWrapper> wrapper = SharedPtr<Private::ProtocolWrapper>(
-                    new Private::ProtocolWrapper(
-                        dbusConnection(), busName(), protocolPath,
-                        mPriv->name, protocolName, i.value()));
+                    new Private::ProtocolWrapper(ConnectionManagerPtr(this),
+                        protocolPath, protocolName, i.value()));
             connect(wrapper->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(onProtocolReady(Tp::PendingOperation*)));
@@ -1023,7 +1022,7 @@ void ConnectionManager::gotProtocolsLegacy(QDBusPendingCallWatcher *watcher)
         protocolsNames = reply.value();
 
         foreach (const QString &protocolName, protocolsNames) {
-            mPriv->protocols.append(ProtocolInfo(mPriv->name, protocolName));
+            mPriv->protocols.append(ProtocolInfo(ConnectionManagerPtr(this), protocolName));
             mPriv->parametersQueue.enqueue(protocolName);
         }
 

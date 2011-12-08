@@ -23,6 +23,7 @@
 #include <TelepathyQt/ProtocolInfo>
 
 #include <TelepathyQt/ConnectionCapabilities>
+#include <TelepathyQt/ConnectionManager>
 
 namespace Tp
 {
@@ -33,14 +34,14 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
     {
     }
 
-    Private(const QString &cmName, const QString &name)
-        : cmName(cmName),
+    Private(const ConnectionManagerPtr &cm, const QString &name)
+        : cm(cm),
           name(name),
           iconName(QString(QLatin1String("im-%1")).arg(name))
     {
     }
 
-    QString cmName;
+    WeakPtr<ConnectionManager> cm;
     QString name;
     ProtocolParameterList params;
     ConnectionCapabilities caps;
@@ -69,11 +70,11 @@ ProtocolInfo::ProtocolInfo()
 /**
  * Construct a new ProtocolInfo object.
  *
- * \param cmName Connection manager name.
+ * \param cm Connection manager owning this ProtocolInfo.
  * \param name Protocol name.
  */
-ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
-    : mPriv(new Private(cmName, name))
+ProtocolInfo::ProtocolInfo(const ConnectionManagerPtr &cm, const QString &name)
+    : mPriv(new Private(cm, name))
 {
 }
 
@@ -87,6 +88,16 @@ ProtocolInfo::ProtocolInfo(const ProtocolInfo &other)
  */
 ProtocolInfo::~ProtocolInfo()
 {
+}
+
+bool ProtocolInfo::isValid() const
+{
+    return ((mPriv.constData() != 0) && !(connectionManager().isNull()));
+}
+
+ConnectionManagerPtr ProtocolInfo::connectionManager() const
+{
+    return (mPriv.constData() != 0 ? ConnectionManagerPtr(mPriv->cm) : ConnectionManagerPtr());
 }
 
 ProtocolInfo &ProtocolInfo::operator=(const ProtocolInfo &other)
@@ -106,7 +117,7 @@ QString ProtocolInfo::cmName() const
         return QString();
     }
 
-    return mPriv->cmName;
+    return connectionManager()->name();
 }
 
 /**

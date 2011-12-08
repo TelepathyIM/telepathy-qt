@@ -49,7 +49,9 @@ public:
     ProtocolInfo(const ProtocolInfo &other);
     ~ProtocolInfo();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const;
+
+    ConnectionManagerPtr connectionManager() const;
 
     ProtocolInfo &operator=(const ProtocolInfo &other);
 
@@ -80,7 +82,7 @@ public:
 private:
     friend class ConnectionManager;
 
-    TP_QT_NO_EXPORT ProtocolInfo(const QString &cmName, const QString &name);
+    TP_QT_NO_EXPORT ProtocolInfo(const ConnectionManagerPtr &cm, const QString &name);
 
     TP_QT_NO_EXPORT void addParameter(const ParamSpec &spec);
     TP_QT_NO_EXPORT void setVCardField(const QString &vcardField);

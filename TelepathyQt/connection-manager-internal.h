@@ -120,9 +120,9 @@ class TP_QT_NO_EXPORT ConnectionManager::Private::ProtocolWrapper :
 public:
     static const Feature FeatureCore;
 
-    ProtocolWrapper(const QDBusConnection &bus, const QString &busName,
+    ProtocolWrapper(const ConnectionManagerPtr &cm,
             const QString &objectPath,
-            const QString &cmName, const QString &name, const QVariantMap &props);
+            const QString &name, const QVariantMap &props);
     ~ProtocolWrapper();
 
     ProtocolInfo info() const { return mInfo; }
