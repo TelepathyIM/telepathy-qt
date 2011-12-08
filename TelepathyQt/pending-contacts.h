@@ -1,8 +1,8 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * @copyright Copyright (C) 2008 Nokia Corporation
+ * @copyright Copyright (C) 2008-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2011 Nokia Corporation
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -60,6 +60,13 @@ public:
     bool isForIdentifiers() const;
     QStringList identifiers() const;
 
+    bool isForVCardAddresses() const;
+    QString vcardField() const;
+    QStringList vcardAddresses() const;
+
+    bool isForUris() const;
+    QStringList uris() const;
+
     bool isUpgrade() const;
     QList<ContactPtr> contactsToUpgrade() const;
 
@@ -78,6 +85,11 @@ private Q_SLOTS:
 private:
     friend class ContactManager;
 
+    enum ListType {
+        ListTypeId,
+        ListTypeUri
+    };
+
     // If errorName is non-empty, these will fail instantly
     TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const UIntList &handles,
             const Features &features,
@@ -87,7 +99,13 @@ private:
             const QSet<uint> &otherContacts,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
-    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QStringList &identifiers,
+    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QStringList &list,
+            ListType listType,
+            const Features &features,
+            const QString &errorName = QString(),
+            const QString &errorMessage = QString());
+    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QString &vcardField,
+            const QStringList &vcardAddresses,
             const Features &features,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());

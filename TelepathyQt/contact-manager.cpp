@@ -1049,11 +1049,13 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
         const Features &features)
 {
     if (!connection()->isValid()) {
-        return new PendingContacts(ContactManagerPtr(this), identifiers, features,
+        return new PendingContacts(ContactManagerPtr(this), identifiers,
+                PendingContacts::ListTypeId, features,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
-        return new PendingContacts(ContactManagerPtr(this), identifiers, features,
+        return new PendingContacts(ContactManagerPtr(this), identifiers,
+                PendingContacts::ListTypeId, features,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
@@ -1061,7 +1063,49 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
     Features realFeatures(features);
     realFeatures.unite(connection()->contactFactory()->features());
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), identifiers,
-            realFeatures);
+            PendingContacts::ListTypeId, realFeatures);
+    return contacts;
+}
+
+PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardField,
+        const QStringList &vcardAddresses, const Features &features)
+{
+    if (!connection()->isValid()) {
+        return new PendingContacts(ContactManagerPtr(this), vcardField, vcardAddresses, features,
+                TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection is invalid"));
+    } else if (!connection()->isReady(Connection::FeatureCore)) {
+        return new PendingContacts(ContactManagerPtr(this), vcardField, vcardAddresses, features,
+                TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection::FeatureCore is not ready"));
+    }
+
+    Features realFeatures(features);
+    realFeatures.unite(connection()->contactFactory()->features());
+    PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), vcardField,
+            vcardAddresses, realFeatures);
+    return contacts;
+}
+
+PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
+        const Features &features)
+{
+    if (!connection()->isValid()) {
+        return new PendingContacts(ContactManagerPtr(this), uris,
+                PendingContacts::ListTypeUri, features,
+                TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection is invalid"));
+    } else if (!connection()->isReady(Connection::FeatureCore)) {
+        return new PendingContacts(ContactManagerPtr(this), uris,
+                PendingContacts::ListTypeUri, features,
+                TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection::FeatureCore is not ready"));
+    }
+
+    Features realFeatures(features);
+    realFeatures.unite(connection()->contactFactory()->features());
+    PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), uris,
+            PendingContacts::ListTypeUri, realFeatures);
     return contacts;
 }
 

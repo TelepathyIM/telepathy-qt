@@ -1,8 +1,8 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * @copyright Copyright (C) 2008 Nokia Corporation
+ * @copyright Copyright (C) 2008-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2011 Nokia Corporation
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -42,6 +42,8 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
     {
         ForHandles,
         ForIdentifiers,
+        ForVCardAddresses,
+        ForUris,
         Upgrade
     };
 
@@ -59,13 +61,32 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
     {
     }
 
-    Private(PendingContacts *parent, const ContactManagerPtr &manager, const QStringList &identifiers,
-            const Features &features)
+    Private(PendingContacts *parent, const ContactManagerPtr &manager, const QStringList &list,
+            ListType listType, const Features &features)
         : parent(parent),
           manager(manager),
           features(features),
-          requestType(ForIdentifiers),
-          identifiers(identifiers),
+          nested(0)
+    {
+        if (listType == PendingContacts::ListTypeId) {
+            requestType = ForIdentifiers;
+            identifiers = list;
+        } else if (listType == PendingContacts::ListTypeUri) {
+            requestType = ForUris;
+            uris = list;
+        } else {
+            Q_ASSERT(false);
+        }
+    }
+
+    Private(PendingContacts *parent, const ContactManagerPtr &manager, const QString &vcardField,
+            const QStringList &vcardAddresses, const Features &features)
+        : parent(parent),
+          manager(manager),
+          features(features),
+          requestType(ForVCardAddresses),
+          vcardField(vcardField),
+          vcardAddresses(vcardAddresses),
           nested(0)
     {
     }
@@ -97,6 +118,9 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
     RequestType requestType;
     UIntList handles;
     QStringList identifiers;
+    QString vcardField;
+    QStringList vcardAddresses;
+    QStringList uris;
     QList<ContactPtr> contactsToUpgrade;
     PendingContacts *nested;
 
@@ -176,10 +200,10 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 }
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const QStringList &identifiers, const Features &features,
+        const QStringList &list, ListType listType, const Features &features,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager->connection()),
-      mPriv(new Private(this, manager, identifiers, features))
+      mPriv(new Private(this, manager, list, listType, features))
 {
     if (!errorName.isEmpty()) {
         setFinishedWithError(errorName, errorMessage);
@@ -187,11 +211,30 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
     }
 
     ConnectionPtr conn = manager->connection();
-    PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, identifiers);
 
-    connect(handles,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
+    if (listType == ListTypeId) {
+        PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, list);
+        connect(handles,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
+    } else if (listType == ListTypeUri) {
+        // FIXME - Conn.I.Addressing.GetContactsByURI()
+    }
+}
+
+PendingContacts::PendingContacts(const ContactManagerPtr &manager,
+        const QString &vcardField, const QStringList &vcardAddresses, const Features &features,
+        const QString &errorName, const QString &errorMessage)
+    : PendingOperation(manager->connection()),
+      mPriv(new Private(this, manager, vcardField, vcardAddresses, features))
+{
+    if (!errorName.isEmpty()) {
+        setFinishedWithError(errorName, errorMessage);
+        return;
+    }
+
+    // ConnectionPtr conn = manager->connection();
+    // FIXME - Conn.I.Addressing.GetContactsByVCardField()
 }
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
@@ -260,6 +303,43 @@ QStringList PendingContacts::identifiers() const
     }
 
     return mPriv->identifiers;
+}
+
+bool PendingContacts::isForVCardAddresses() const
+{
+    return mPriv->requestType == Private::ForVCardAddresses;
+}
+
+QString PendingContacts::vcardField() const
+{
+    if (!isForVCardAddresses()) {
+        warning() << "Tried to get vcard field from" << this << "which is not for vcard addresses!";
+    }
+
+    return mPriv->vcardField;
+}
+
+QStringList PendingContacts::vcardAddresses() const
+{
+    if (!isForVCardAddresses()) {
+        warning() << "Tried to get vcard addresses from" << this << "which is not for vcard addresses!";
+    }
+
+    return mPriv->vcardAddresses;
+}
+
+bool PendingContacts::isForUris() const
+{
+    return mPriv->requestType == Private::ForUris;
+}
+
+QStringList PendingContacts::uris() const
+{
+    if (!isForUris()) {
+        warning() << "Tried to get uris from" << this << "which is not for uris!";
+    }
+
+    return mPriv->uris;
 }
 
 bool PendingContacts::isUpgrade() const
