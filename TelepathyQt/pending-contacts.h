@@ -74,10 +74,16 @@ public:
     UIntList invalidHandles() const;
     QStringList validIdentifiers() const;
     QHash<QString, QPair<QString, QString> > invalidIdentifiers() const;
+    QStringList validVCardAddresses() const;
+    QStringList invalidVCardAddresses() const;
+    QStringList validUris() const;
+    QStringList invalidUris() const;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onAttributesFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onRequestHandlesFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onGetContactsByURIFinished(PendingOperation *);
+    TP_QT_NO_EXPORT void onGetContactsByVCardFieldFinished(PendingOperation *);
     TP_QT_NO_EXPORT void onReferenceHandlesFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onNestedFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onInspectHandlesFinished(QDBusPendingCallWatcher *);
