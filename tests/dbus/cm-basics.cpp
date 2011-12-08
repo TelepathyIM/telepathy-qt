@@ -202,6 +202,11 @@ void TestCmBasics::testBasics()
     QCOMPARE(avatarReqs.recommendedWidth(), (uint) 64);
     QCOMPARE(avatarReqs.maximumBytes(), (uint) 37748736);
 
+    QStringList addressableVCardFields = info.addressableVCardFields();
+    QCOMPARE(addressableVCardFields, QStringList() << QLatin1String("x-echo2"));
+    QStringList addressableUriSchemes = info.addressableUriSchemes();
+    QCOMPARE(addressableUriSchemes, QStringList() << QLatin1String("echo2"));
+
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
 
