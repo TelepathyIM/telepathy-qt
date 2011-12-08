@@ -32,6 +32,8 @@ API changes:
    conversion from a QWeakPointer to a SharedPtr can't be made thread-safe.
    WeakPtr is reintroduced as a weak pointer class safely promoteable to a
    SharedPtr.
+ * TelepathyQt-Farsight does not include telepathy-farsight/channel.h
+   directly anymore.
 
 Enhancements:
  * fd.o #35084: The StreamTubeClient and StreamTubeServer classes have been
