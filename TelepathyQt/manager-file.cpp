@@ -68,6 +68,8 @@ struct TP_QT_NO_EXPORT ManagerFile::Private
         RequestableChannelClassList rccs;
         PresenceSpecList statuses;
         AvatarSpec avatarRequirements;
+        QStringList addressableVCardFields;
+        QStringList addressableUriSchemes;
     };
 
     QString cmName;
@@ -283,6 +285,11 @@ bool ManagerFile::Private::parse(const QString &fileName)
                     minWidth, maxWidth, recommendedWidth,
                     maxBytes);
 
+            info.addressableVCardFields = keyFile.valueAsStringList(
+                    QLatin1String("AddressableVCardFields"));
+            info.addressableUriSchemes = keyFile.valueAsStringList(
+                    QLatin1String("AddressableURISchemes"));
+
             QStringList rccGroups = keyFile.valueAsStringList(
                     QLatin1String("RequestableChannelClasses"));
             RequestableChannelClass rcc;
@@ -465,6 +472,16 @@ ParamSpecList ManagerFile::parameters(const QString &protocol) const
 QString ManagerFile::vcardField(const QString &protocol) const
 {
     return mPriv->protocolsMap.value(protocol).vcardField;
+}
+
+QStringList ManagerFile::addressableVCardFields(const QString &protocol) const
+{
+    return mPriv->protocolsMap.value(protocol).addressableVCardFields;
+}
+
+QStringList ManagerFile::addressableUriSchemes(const QString &protocol) const
+{
+    return mPriv->protocolsMap.value(protocol).addressableUriSchemes;
 }
 
 /**

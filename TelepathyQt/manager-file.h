@@ -57,6 +57,8 @@ public:
             const QString &protocol) const;
     PresenceSpecList allowedPresenceStatuses(const QString &protocol) const;
     AvatarSpec avatarRequirements(const QString &protocol) const;
+    QStringList addressableVCardFields(const QString &protocol) const;
+    QStringList addressableUriSchemes(const QString &protocol) const;
 
     static QVariant::Type variantTypeFromDBusSignature(
             const QString &dbusSignature);
