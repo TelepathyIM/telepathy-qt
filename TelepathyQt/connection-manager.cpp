@@ -34,10 +34,11 @@
 #include "TelepathyQt/manager-file.h"
 
 #include <TelepathyQt/ConnectionCapabilities>
+#include <TelepathyQt/Constants>
 #include <TelepathyQt/DBus>
 #include <TelepathyQt/PendingConnection>
 #include <TelepathyQt/PendingReady>
-#include <TelepathyQt/Constants>
+#include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/Types>
 
 #include <QDBusConnectionInterface>
@@ -213,58 +214,50 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
 
 void ConnectionManager::Private::ProtocolWrapper::introspectMainProperties()
 {
-    Client::DBus::PropertiesInterface *properties = propertiesInterface();
-    Q_ASSERT(properties != 0);
+    Client::ProtocolInterface *protocol = baseInterface();
+    Q_ASSERT(protocol != 0);
 
     debug() << "Calling Properties::GetAll(Protocol) for" << info().name();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT_IFACE_PROTOCOL),
-            this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    PendingVariantMap *pvm = protocol->requestAllProperties();
+    connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotMainProperties(Tp::PendingOperation*)));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
 {
-    Client::DBus::PropertiesInterface *properties = propertiesInterface();
-    Q_ASSERT(properties != 0);
+    Client::ProtocolInterfaceAvatarsInterface *avatars = avatarsInterface();
+    Q_ASSERT(avatars != 0);
 
     debug() << "Calling Properties::GetAll(Protocol.Avatars) for" << info().name();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
-            this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotAvatarsProperties(QDBusPendingCallWatcher*)));
+    PendingVariantMap *pvm = avatars->requestAllProperties();
+    connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotAvatarsProperties(Tp::PendingOperation*)));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
 {
-    Client::DBus::PropertiesInterface *properties = propertiesInterface();
-    Q_ASSERT(properties != 0);
+    Client::ProtocolInterfacePresenceInterface *presence = presenceInterface();
+    Q_ASSERT(presence != 0);
 
     debug() << "Calling Properties::GetAll(Protocol.Presence) for" << info().name();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
-            this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotPresenceProperties(QDBusPendingCallWatcher*)));
+    PendingVariantMap *pvm = presence->requestAllProperties();
+    connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotPresenceProperties(Tp::PendingOperation*)));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::introspectAddressing()
 {
-    Client::DBus::PropertiesInterface *properties = propertiesInterface();
-    Q_ASSERT(properties != 0);
+    Client::ProtocolInterfaceAddressingInterface *addressing = addressingInterface();
+    Q_ASSERT(addressing != 0);
 
     debug() << "Calling Properties::GetAll(Protocol.Addressing) for" << info().name();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
-            this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotAddressingProperties(QDBusPendingCallWatcher*)));
+    PendingVariantMap *pvm = addressing->requestAllProperties();
+    connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotAddressingProperties(Tp::PendingOperation*)));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::continueIntrospection()
@@ -277,98 +270,84 @@ void ConnectionManager::Private::ProtocolWrapper::continueIntrospection()
 }
 
 void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
-        QDBusPendingCallWatcher *watcher)
+        Tp::PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap unqualifiedProps;
-
-    if (!reply.isError()) {
+    if (!op->isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol)";
-        unqualifiedProps = reply.value();
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+        QVariantMap unqualifiedProps = pvm->result();
 
         loadMainProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL, unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
+            op->errorName() << ": " << op->errorMessage();
         warning() << "  Full functionality requires CM support for the Protocol interface";
     }
 
     continueIntrospection();
-
-    watcher->deleteLater();
 }
 
 void ConnectionManager::Private::ProtocolWrapper::gotAvatarsProperties(
-        QDBusPendingCallWatcher *watcher)
+        Tp::PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap unqualifiedProps;
-
-    if (!reply.isError()) {
+    if (!op->isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol.Avatars)";
-        unqualifiedProps = reply.value();
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+        QVariantMap unqualifiedProps = pvm->result();
 
         loadAvatarsProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol.Avatars) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
+            op->errorName() << ": " << op->errorMessage();
         warning() << "  Full functionality requires CM support for the Protocol.Avatars interface";
     }
 
     continueIntrospection();
-
-    watcher->deleteLater();
 }
 
 void ConnectionManager::Private::ProtocolWrapper::gotPresenceProperties(
-        QDBusPendingCallWatcher *watcher)
+        Tp::PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap unqualifiedProps;
-
-    if (!reply.isError()) {
+    if (!op->isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol.Presence)";
-        unqualifiedProps = reply.value();
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+        QVariantMap unqualifiedProps = pvm->result();
 
         loadPresenceProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol.Presence) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
+            op->errorName() << ": " << op->errorMessage();
         warning() << "  Full functionality requires CM support for the Protocol.Presence interface";
     }
 
     continueIntrospection();
-
-    watcher->deleteLater();
 }
 
 void ConnectionManager::Private::ProtocolWrapper::gotAddressingProperties(
-        QDBusPendingCallWatcher *watcher)
+        Tp::PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap unqualifiedProps;
 
-    if (!reply.isError()) {
+    if (!op->isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol.Addressing)";
-        unqualifiedProps = reply.value();
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+        QVariantMap unqualifiedProps = pvm->result();
 
         loadAddressingProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol.Addressing) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
+            op->errorName() << ": " << op->errorMessage();
         warning() << "  Full functionality requires CM support for the Protocol.Addressing interface";
     }
 
     continueIntrospection();
-
-    watcher->deleteLater();
 }
 
 QVariantMap ConnectionManager::Private::ProtocolWrapper::qualifyProperties(
@@ -653,13 +632,10 @@ void ConnectionManager::Private::introspectMain(ConnectionManager::Private *self
         << self->name << "- introspecting";
 
     debug() << "Calling Properties::GetAll(ConnectionManager)";
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            self->properties->GetAll(
-                TP_QT_IFACE_CONNECTION_MANAGER),
-            self->parent);
-    self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    PendingVariantMap *pvm = self->baseInterface->requestAllProperties();
+    self->parent->connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotMainProperties(Tp::PendingOperation*)));
 }
 
 void ConnectionManager::Private::introspectProtocolsLegacy()
@@ -1036,14 +1012,15 @@ Client::ConnectionManagerInterface *ConnectionManager::baseInterface() const
 }
 
 /**** Private ****/
-void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
+void ConnectionManager::gotMainProperties(Tp::PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
 
-    if (!reply.isError()) {
+    if (!op->isError()) {
         debug() << "Got reply to Properties.GetAll(ConnectionManager)";
-        props = reply.value();
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+
+        props = pvm->result();
 
         // If Interfaces is not supported, the spec says to assume it's
         // empty, so keep the empty list mPriv was initialized with
@@ -1054,10 +1031,10 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
     } else {
         warning().nospace() <<
             "Properties.GetAll(ConnectionManager) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
+            op->errorName() << ": " << op->errorMessage();
 
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
-        watcher->deleteLater();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
+                op->errorName(), op->errorMessage());
         return;
     }
 
@@ -1089,8 +1066,6 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
     } else {
         mPriv->introspectProtocolsLegacy();
     }
-
-    watcher->deleteLater();
 }
 
 void ConnectionManager::gotProtocolsLegacy(QDBusPendingCallWatcher *watcher)

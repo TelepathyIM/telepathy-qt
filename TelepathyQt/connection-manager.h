@@ -107,10 +107,10 @@ protected:
     Client::ConnectionManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *);
-    TP_QT_NO_EXPORT void gotProtocolsLegacy(QDBusPendingCallWatcher *);
-    TP_QT_NO_EXPORT void gotParametersLegacy(QDBusPendingCallWatcher *);
-    TP_QT_NO_EXPORT void onProtocolReady(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void gotMainProperties(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotProtocolsLegacy(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotParametersLegacy(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onProtocolReady(Tp::PendingOperation *watcher);
 
 private:
     friend class PendingConnection;

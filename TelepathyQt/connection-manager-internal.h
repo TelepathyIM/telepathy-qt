@@ -127,16 +127,31 @@ public:
 
     ProtocolInfo info() const { return mInfo; }
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    inline Client::ProtocolInterface *baseInterface() const
     {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
+        return interface<Client::ProtocolInterface>();
+    }
+
+    inline Client::ProtocolInterfaceAvatarsInterface *avatarsInterface() const
+    {
+        return interface<Client::ProtocolInterfaceAvatarsInterface>();
+    }
+
+    inline Client::ProtocolInterfacePresenceInterface *presenceInterface() const
+    {
+        return interface<Client::ProtocolInterfacePresenceInterface>();
+    }
+
+    inline Client::ProtocolInterfaceAddressingInterface *addressingInterface() const
+    {
+        return interface<Client::ProtocolInterfaceAddressingInterface>();
     }
 
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void gotAvatarsProperties(QDBusPendingCallWatcher *watcher);
-    void gotPresenceProperties(QDBusPendingCallWatcher *watcher);
-    void gotAddressingProperties(QDBusPendingCallWatcher *watcher);
+    void gotMainProperties(Tp::PendingOperation *op);
+    void gotAvatarsProperties(Tp::PendingOperation *op);
+    void gotPresenceProperties(Tp::PendingOperation *op);
+    void gotAddressingProperties(Tp::PendingOperation *op);
 
 private:
     static void introspectMain(ProtocolWrapper *self);
