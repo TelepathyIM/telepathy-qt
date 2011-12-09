@@ -144,7 +144,11 @@ ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
       OptionalInterfaceFactory<ProtocolWrapper>(this),
       mReadinessHelper(readinessHelper()),
       mInfo(ProtocolInfo(cm, name)),
-      mImmutableProps(props)
+      mImmutableProps(props),
+      mHasMainProps(false),
+      mHasAvatarsProps(false),
+      mHasPresenceProps(false),
+      mHasAddressingProps(false)
 {
     fillRCCs();
 
@@ -169,47 +173,56 @@ ConnectionManager::Private::ProtocolWrapper::~ProtocolWrapper()
 void ConnectionManager::Private::ProtocolWrapper::introspectMain(
         ConnectionManager::Private::ProtocolWrapper *self)
 {
-    Client::DBus::PropertiesInterface *properties = self->propertiesInterface();
-    Q_ASSERT(properties != 0);
-
-    if (self->receiveProperties(self->mImmutableProps)) {
+    if (self->loadImmutableProperties()) {
         debug() << "Got everything we want from the immutable props for" <<
             self->info().name();
-        self->introspectInterfaces();
+        self->continueIntrospection();
         return;
     }
 
-    debug() << "Not enough immutable properties, calling Properties::GetAll(Protocol) for" <<
-        self->info().name();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT_IFACE_PROTOCOL),
-            self);
-    self->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    if (!self->mHasMainProps) {
+        self->introspectQueue.enqueue(&ProtocolWrapper::introspectMainProperties);
+    }
+
+    if (!self->mHasAvatarsProps) {
+        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
+            self->introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
+        } else {
+            debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
+        }
+    }
+
+    if (!self->mHasPresenceProps) {
+        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
+            self->introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
+        } else {
+            debug() << "Full functionality requires CM support for the Protocol.Presence interface";
+        }
+    }
+
+    if (!self->mHasAddressingProps) {
+        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING)) {
+            self->introspectQueue.enqueue(&ProtocolWrapper::introspectAddressing);
+        } else {
+            debug() << "Full functionality requires CM support for the Protocol.Addressing interface";
+        }
+    }
+
+    self->continueIntrospection();
 }
 
-void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
+void ConnectionManager::Private::ProtocolWrapper::introspectMainProperties()
 {
-    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
-        introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
-    } else {
-        debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
-    }
+    Client::DBus::PropertiesInterface *properties = propertiesInterface();
+    Q_ASSERT(properties != 0);
 
-    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
-        introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
-    } else {
-        debug() << "Full functionality requires CM support for the Protocol.Presence interface";
-    }
-
-    if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING)) {
-        introspectQueue.enqueue(&ProtocolWrapper::introspectAddressing);
-    } else {
-        debug() << "Full functionality requires CM support for the Protocol.Addressing interface";
-    }
-
-    continueIntrospection();
+    debug() << "Calling Properties::GetAll(Protocol) for" << info().name();
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            properties->GetAll(TP_QT_IFACE_PROTOCOL),
+            this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
@@ -217,7 +230,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
     Client::DBus::PropertiesInterface *properties = propertiesInterface();
     Q_ASSERT(properties != 0);
 
-    debug() << "Calling Properties::GetAll(Protocol.Avatars)";
+    debug() << "Calling Properties::GetAll(Protocol.Avatars) for" << info().name();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
             this);
@@ -231,7 +244,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
     Client::DBus::PropertiesInterface *properties = propertiesInterface();
     Q_ASSERT(properties != 0);
 
-    debug() << "Calling Properties::GetAll(Protocol.Presence)";
+    debug() << "Calling Properties::GetAll(Protocol.Presence) for" << info().name();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
             this);
@@ -245,7 +258,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectAddressing()
     Client::DBus::PropertiesInterface *properties = propertiesInterface();
     Q_ASSERT(properties != 0);
 
-    debug() << "Calling Properties::GetAll(Protocol.Addressing)";
+    debug() << "Calling Properties::GetAll(Protocol.Addressing) for" << info().name();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->GetAll(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
             this);
@@ -267,21 +280,13 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap props;
+    QVariantMap unqualifiedProps;
 
     if (!reply.isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol)";
+        unqualifiedProps = reply.value();
 
-        QVariantMap unqualifiedProps = reply.value();
-        QVariantMap qualifiedProps;
-        foreach (QString unqualified, unqualifiedProps.keys()) {
-            qualifiedProps.insert(
-                    QString(QLatin1String("%1.%2")).
-                        arg(TP_QT_IFACE_PROTOCOL).
-                        arg(unqualified),
-                    unqualifiedProps.value(unqualified));
-        }
-        receiveProperties(qualifiedProps);
+        loadMainProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL, unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol) failed: " <<
@@ -289,7 +294,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         warning() << "  Full functionality requires CM support for the Protocol interface";
     }
 
-    introspectInterfaces();
+    continueIntrospection();
 
     watcher->deleteLater();
 }
@@ -298,27 +303,14 @@ void ConnectionManager::Private::ProtocolWrapper::gotAvatarsProperties(
         QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap props;
+    QVariantMap unqualifiedProps;
 
     if (!reply.isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol.Avatars)";
-        props = reply.value();
+        unqualifiedProps = reply.value();
 
-        QStringList supportedMimeTypes = qdbus_cast<QStringList>(
-                props[QLatin1String("SupportedAvatarMIMETypes")]);
-        uint minHeight = qdbus_cast<uint>(props[QLatin1String("MinimumAvatarHeight")]);
-        uint maxHeight = qdbus_cast<uint>(props[QLatin1String("MaximumAvatarHeight")]);
-        uint recommendedHeight = qdbus_cast<uint>(
-                props[QLatin1String("RecommendedAvatarHeight")]);
-        uint minWidth = qdbus_cast<uint>(props[QLatin1String("MinimumAvatarWidth")]);
-        uint maxWidth = qdbus_cast<uint>(props[QLatin1String("MaximumAvatarWidth")]);
-        uint recommendedWidth = qdbus_cast<uint>(
-                props[QLatin1String("RecommendedAvatarWidth")]);
-        uint maxBytes = qdbus_cast<uint>(props[QLatin1String("MaximumAvatarBytes")]);
-        mInfo.setAvatarRequirements(AvatarSpec(supportedMimeTypes,
-                    minHeight, maxHeight, recommendedHeight,
-                    minWidth, maxWidth, recommendedWidth,
-                    maxBytes));
+        loadAvatarsProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS,
+                    unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol.Avatars) failed: " <<
@@ -335,13 +327,14 @@ void ConnectionManager::Private::ProtocolWrapper::gotPresenceProperties(
         QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap props;
+    QVariantMap unqualifiedProps;
 
     if (!reply.isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol.Presence)";
-        props = reply.value();
-        mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<SimpleStatusSpecMap>(
-                props[QLatin1String("Statuses")])));
+        unqualifiedProps = reply.value();
+
+        loadPresenceProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE,
+                    unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol.Presence) failed: " <<
@@ -358,18 +351,14 @@ void ConnectionManager::Private::ProtocolWrapper::gotAddressingProperties(
         QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap props;
+    QVariantMap unqualifiedProps;
 
     if (!reply.isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol.Addressing)";
-        props = reply.value();
+        unqualifiedProps = reply.value();
 
-        QStringList vcardFields = qdbus_cast<QStringList>(
-                props[QLatin1String("AddressableVCardFields")]);
-        QStringList uriSchemes = qdbus_cast<QStringList>(
-                props[QLatin1String("AddressableURISchemes")]);
-        mInfo.setAddressableVCardFields(vcardFields);
-        mInfo.setAddressableUriSchemes(uriSchemes);
+        loadAddressingProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING,
+                    unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol.Addressing) failed: " <<
@@ -380,6 +369,21 @@ void ConnectionManager::Private::ProtocolWrapper::gotAddressingProperties(
     continueIntrospection();
 
     watcher->deleteLater();
+}
+
+QVariantMap ConnectionManager::Private::ProtocolWrapper::qualifyProperties(
+        const QString &ifaceName,
+        const QVariantMap &unqualifiedProps)
+{
+    QVariantMap qualifiedProps;
+    foreach (const QString &unqualifiedProp, unqualifiedProps.keys()) {
+        qualifiedProps.insert(
+                QString(QLatin1String("%1.%2")).
+                    arg(ifaceName).
+                    arg(unqualifiedProp),
+                unqualifiedProps.value(unqualifiedProp));
+    }
+    return qualifiedProps;
 }
 
 void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
@@ -440,7 +444,17 @@ void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
     mInfo.setRequestableChannelClasses(classes);
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVariantMap &props)
+bool ConnectionManager::Private::ProtocolWrapper::loadImmutableProperties()
+{
+    loadMainProperties(mImmutableProps);
+    loadAvatarsProperties(mImmutableProps);
+    loadPresenceProperties(mImmutableProps);
+    loadAddressingProperties(mImmutableProps);
+
+    return mHasMainProps && mHasAvatarsProps && mHasPresenceProps && mHasAddressingProps;
+}
+
+bool ConnectionManager::Private::ProtocolWrapper::loadMainProperties(const QVariantMap &props)
 {
     bool gotEverything =
         props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces")) &&
@@ -486,6 +500,73 @@ bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVaria
                 props[TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses")]));
     }
 
+    mHasMainProps = gotEverything;
+    return gotEverything;
+}
+
+bool ConnectionManager::Private::ProtocolWrapper::loadAvatarsProperties(const QVariantMap &props)
+{
+    bool gotEverything =
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes"));
+
+    QStringList supportedMimeTypes = qdbus_cast<QStringList>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes")]);
+    uint minHeight = qdbus_cast<uint>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")]);
+    uint maxHeight = qdbus_cast<uint>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight")]);
+    uint recommendedHeight = qdbus_cast<uint>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight")]);
+    uint minWidth = qdbus_cast<uint>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth")]);
+    uint maxWidth = qdbus_cast<uint>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth")]);
+    uint recommendedWidth = qdbus_cast<uint>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth")]);
+    uint maxBytes = qdbus_cast<uint>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes")]);
+    mInfo.setAvatarRequirements(AvatarSpec(supportedMimeTypes,
+                minHeight, maxHeight, recommendedHeight,
+                minWidth, maxWidth, recommendedWidth,
+                maxBytes));
+
+    mHasAvatarsProps = gotEverything;
+    return gotEverything;
+}
+
+bool ConnectionManager::Private::ProtocolWrapper::loadPresenceProperties(const QVariantMap &props)
+{
+    bool gotEverything =
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"));
+
+    mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<SimpleStatusSpecMap>(
+                props[TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses")])));
+
+    mHasPresenceProps = gotEverything;
+    return gotEverything;
+}
+
+bool ConnectionManager::Private::ProtocolWrapper::loadAddressingProperties(const QVariantMap &props)
+{
+    bool gotEverything =
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableVCardFields")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableURISchemes"));
+
+    QStringList vcardFields = qdbus_cast<QStringList>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableVCardFields")]);
+    QStringList uriSchemes = qdbus_cast<QStringList>(
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableURISchemes")]);
+    mInfo.setAddressableVCardFields(vcardFields);
+    mInfo.setAddressableUriSchemes(uriSchemes);
+
+    mHasAddressingProps = gotEverything;
     return gotEverything;
 }
 

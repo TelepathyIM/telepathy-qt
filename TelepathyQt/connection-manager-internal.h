@@ -140,19 +140,29 @@ private Q_SLOTS:
 
 private:
     static void introspectMain(ProtocolWrapper *self);
-    void introspectInterfaces();
+    void introspectMainProperties();
     void introspectAvatars();
     void introspectPresence();
     void introspectAddressing();
 
     void continueIntrospection();
 
+    QVariantMap qualifyProperties(const QString &ifaceName,
+            const QVariantMap &unqualifiedProps);
     void fillRCCs();
-    bool receiveProperties(const QVariantMap &props);
+    bool loadImmutableProperties();
+    bool loadMainProperties(const QVariantMap &props);
+    bool loadAvatarsProperties(const QVariantMap &props);
+    bool loadPresenceProperties(const QVariantMap &props);
+    bool loadAddressingProperties(const QVariantMap &props);
 
     ReadinessHelper *mReadinessHelper;
     ProtocolInfo mInfo;
     QVariantMap mImmutableProps;
+    bool mHasMainProps;
+    bool mHasAvatarsProps;
+    bool mHasPresenceProps;
+    bool mHasAddressingProps;
     QQueue<void (ProtocolWrapper::*)()> introspectQueue;
 };
 
