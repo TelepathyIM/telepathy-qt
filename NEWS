@@ -42,6 +42,8 @@ Enhancements:
  * Contact::refreshInfo() requests are now batched together on D-Bus
  * fd.o #41356: Implement methods to retrieve available message types on
    TextChannel.
+ * fd.o #43631: Add CMake config files. Now CMake projects can find Tp-Qt
+   straight away without the need of Find* files.
 
 Fixes:
  * Our TODO process being completely out of date. Trying to use doxygen \todo
