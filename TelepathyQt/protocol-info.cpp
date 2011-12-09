@@ -369,13 +369,13 @@ QStringList ProtocolInfo::addressableUriSchemes() const
 /**
  * Attempt to normalize the given \a vcardAddress.
  *
- * An example would be a vCard TEL field with a formatted number in the form of
- * +1 (206) 555 1234, this would be normalized to +12065551234.
+ * For example, a vCard TEL field with a formatted number in the form of
+ * +1 (206) 555 1234, could be normalized to +12065551234.
  *
- * \param vcardField The vCard field of the address we are normalizing.
+ * \param vcardField The vCard field the \a vcardAddress belongs to.
  * \param vcardAddress The address to normalize.
  * \return A PendingString which will emit PendingString::finished
- *         when the address has being normalized or an error occurred.
+ *         when the address has been normalized or an error occurred.
  * \sa normalizeContactUri()
  */
 PendingString *ProtocolInfo::normalizeVCardAddress(const QString &vcardField,
@@ -408,7 +408,7 @@ PendingString *ProtocolInfo::normalizeVCardAddress(const QString &vcardField,
  *
  * \param uri The URI to normalize.
  * \return A PendingString which will emit PendingString::finished
- *         when the \a uri has being normalized or an error occurred.
+ *         when the \a uri has been normalized or an error occurred.
  * \sa normalizeVCardAddress()
  */
 PendingString *ProtocolInfo::normalizeContactUri(const QString &uri)
