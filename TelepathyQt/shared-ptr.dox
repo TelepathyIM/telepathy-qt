@@ -30,7 +30,7 @@
  *
  * To avoid memory leaks, caused by objects that got instantiated and don't have
  * any parent, we decided to make some of our objects reference counted, by
- * making them inherit SharedData.
+ * making them inherit RefCounted.
  *
  * Making the object reference counted, does not guarantee that it will get
  * deleted when nobody is referencing it.
@@ -42,7 +42,7 @@
  * So the solution is to put the object in a SharedPtr as soon as possible,
  * letting the SharedPtr manage the object lifetime.
  *
- * The pattern used is that classes inherit SharedData and are used
+ * The pattern used is that classes inherit RefCounted and are used
  * together with SharedPtr. When the reference count hits 0, the object
  * is deleted.
  *
