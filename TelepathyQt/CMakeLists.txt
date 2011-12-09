@@ -688,24 +688,54 @@ install(FILES ${telepathy_qt_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/tel
 
 # Install the library - watch out for the correct components
 if (WIN32)
-    install(TARGETS telepathy-qt${QT_VERSION_MAJOR} RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
-                                  ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
+    install(TARGETS telepathy-qt${QT_VERSION_MAJOR}
+            EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
+            RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+            ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
 else (WIN32)
-    install(TARGETS telepathy-qt${QT_VERSION_MAJOR} LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
-                                  ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
+    install(TARGETS telepathy-qt${QT_VERSION_MAJOR}
+            EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
+            LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+            ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
 endif (WIN32)
 
-# pkg-config file
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}-uninstalled.pc)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfiwwwwg)
+# pkg-config files, only if we are not using windows
+if (NOT WIN32)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}-uninstalled.pc)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
+endif (NOT WIN32)
 
-# If Farsight was found, install its pkg-config files as well, and go into the subdirectory
-if(FARSIGHT_COMPONENTS_FOUND)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtFarsight.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtFarsight-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight-uninstalled.pc)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Farsight.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT farsight_headers)
-endif(FARSIGHT_COMPONENTS_FOUND)
+# CMake Version and config files
+include(MacroWriteBasicCMakeVersionFile)
+
+# all the following variables are put into TelepathyQt*Config.cmake, so
+# they are usable by projects using TelepathyQt.
+make_install_path_absolute(TELEPATHY_QT_INCLUDE_DIR         ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR})
+make_install_path_absolute(TELEPATHY_QT_LIB_DIR             ${LIB_INSTALL_DIR})
+make_install_path_absolute(TELEPATHY_QT_DATA_DIR            ${DATA_INSTALL_DIR})
+
+# Configure the actual Config file
+configure_file(TelepathyQtConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Config.cmake" @ONLY)
+
+# this file is used by to check if the installed version can be used.
+macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVersion.cmake
+                                     ${PACKAGE_VERSION})
+
+# Find out the correct installation directory
+if (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+    set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR})
+else (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+    set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}/cmake)
+endif (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
+
+install(EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
+        DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
+        COMPONENT headers)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVersion.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Config.cmake
+        DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
+        COMPONENT headers)
 
 add_subdirectory(Farsight)
 

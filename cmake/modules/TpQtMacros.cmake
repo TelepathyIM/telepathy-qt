@@ -104,6 +104,13 @@
 #          This function MUST be called before calling TPQT_ADD_DBUS_UNIT_TEST. It takes care of preparing the test
 #          environment for DBus tests and generating the needed files.
 #
+# macro MAKE_INSTALL_PATH_ABSOLUTE (out in)
+#       This macro makes the path given in the "in" variable absolute (or leaves it unchanged
+#       if it's absolute already) by prefixing it with TELEPATHY_QT_INSTALL_DIR,
+#       and returns the absolute path in the "out" variable. This macro is mainly used for
+#       generating *Config.cmake files.
+#
+#
 
 MACRO (TPQT_EXTRACT_DEPENDS _tpqt_other _tpqt_depends)
   SET(${_tpqt_other})
@@ -433,3 +440,11 @@ sh ${CMAKE_SOURCE_DIR}/tools/with-session-bus.sh \\
     --config-file=${CMAKE_BINARY_DIR}/tests/dbus-1/session.conf -- $@
 ")
 endfunction(tpqt_setup_dbus_test_environment)
+
+macro(make_install_path_absolute out in)
+    if (IS_ABSOLUTE "${in}")
+        set(${out} "${in}")
+    else (IS_ABSOLUTE "${in}")
+        set(${out} "\${TELEPATHY_QT${QT_VERSION_MAJOR}_INSTALL_DIR}/${in}")
+    endif (IS_ABSOLUTE "${in}")
+endmacro(make_install_path_absolute out in)
