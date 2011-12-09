@@ -26,6 +26,7 @@
 #include "TelepathyQt/_gen/contact-manager.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/future-internal.h"
 
 #include <TelepathyQt/AvatarData>
 #include <TelepathyQt/Connection>
@@ -221,7 +222,8 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureCapabilities
             << Contact::FeatureLocation
             << Contact::FeatureInfo
-            << Contact::FeatureRosterGroups;
+            << Contact::FeatureRosterGroups
+            << Contact::FeatureAddressing;
         QStringList interfaces = connection()->lowlevel()->contactAttributeInterfaces();
         foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
@@ -1422,6 +1424,8 @@ QString ContactManager::featureToInterface(const Feature &feature)
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO;
     } else if (feature == Contact::FeatureRosterGroups) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
+    } else if (feature == Contact::FeatureAddressing) {
+        return TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING;
     } else {
         warning() << "ContactManager doesn't know which interface corresponds to feature"
             << feature;
@@ -1486,7 +1490,7 @@ void ContactManager::ensureTracking(const Feature &feature)
         connect(simplePresenceInterface,
                 SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
                 SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
-    } else if (feature == Contact::FeatureRosterGroups) {
+    } else if (feature == Contact::FeatureRosterGroups || feature == Contact::FeatureAddressing) {
         // nothing to do here, but we don't want to warn
         ;
     } else {

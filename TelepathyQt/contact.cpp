@@ -25,6 +25,7 @@
 #include "TelepathyQt/_gen/contact.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/future-internal.h"
 
 #include <TelepathyQt/AvatarData>
 #include <TelepathyQt/Connection>
@@ -70,6 +71,8 @@ struct TP_QT_NO_EXPORT Contact::Private
     Features actualFeatures;
 
     QString alias;
+    QMap<QString, QString> addressableVCardAddresses;
+    QStringList addressableUris;
     Presence presence;
     ContactCapabilities caps;
     LocationInfo location;
@@ -304,6 +307,8 @@ const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::st
  */
 const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::staticMetaObject.className()), 7, false);
 
+const Feature Contact::FeatureAddressing = Feature(QLatin1String(Contact::staticMetaObject.className()), 8, false);
+
 /**
  * Construct a new Contact object.
  *
@@ -399,6 +404,16 @@ QString Contact::alias() const
     }
 
     return mPriv->alias;
+}
+
+QMap<QString, QString> Contact::addressableVCardAddresses() const
+{
+    return mPriv->addressableVCardAddresses;
+}
+
+QStringList Contact::addressableUris() const
+{
+    return mPriv->addressableUris;
 }
 
 /**
@@ -1016,6 +1031,12 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             QStringList groups = qdbus_cast<QStringList>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
             mPriv->groups = groups.toSet();
+        } else if (feature == FeatureAddressing) {
+            TpFuture::VCardFieldAddressMap addresses = qdbus_cast<TpFuture::VCardFieldAddressMap>(attributes.value(
+                        TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/addresses")));
+            QStringList uris = qdbus_cast<QStringList>(attributes.value(
+                        TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/uris")));
+            receiveAddressing(addresses, uris);
         } else {
             warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
         }
@@ -1124,6 +1145,18 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
         mPriv->info = InfoFields(info);
         emit infoFieldsChanged(mPriv->info);
     }
+}
+
+void Contact::receiveAddressing(const QMap<QString, QString> &addresses,
+        const QStringList &uris)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAddressing)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureAddressing);
+    mPriv->addressableVCardAddresses = addresses;
+    mPriv->addressableUris = uris;
 }
 
 Contact::PresenceState Contact::subscriptionStateToPresenceState(uint subscriptionState)

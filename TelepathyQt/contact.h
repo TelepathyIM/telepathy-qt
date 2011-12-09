@@ -60,6 +60,7 @@ public:
     static const Feature FeatureInfo;
     static const Feature FeatureLocation;
     static const Feature FeatureSimplePresence;
+    static const Feature FeatureAddressing;
 
     enum PresenceState {
          PresenceStateNo,
@@ -103,6 +104,9 @@ public:
 
     // TODO filter: exact, prefix, substring match
     QString alias() const;
+
+    QMap<QString, QString> addressableVCardAddresses() const;
+    QStringList addressableUris() const;
 
     bool isAvatarTokenKnown() const;
     QString avatarToken() const;
@@ -210,6 +214,8 @@ private:
     TP_QT_NO_EXPORT void receiveCapabilities(const RequestableChannelClassList &caps);
     TP_QT_NO_EXPORT void receiveLocation(const QVariantMap &location);
     TP_QT_NO_EXPORT void receiveInfo(const ContactInfoFieldList &info);
+    TP_QT_NO_EXPORT void receiveAddressing(const QMap<QString, QString> &addresses,
+            const QStringList &uris);
 
     TP_QT_NO_EXPORT static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
     TP_QT_NO_EXPORT void setSubscriptionState(SubscriptionState state);
