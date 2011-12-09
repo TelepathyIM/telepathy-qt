@@ -33,16 +33,22 @@ namespace Tp
 struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
 {
     Private()
-        : addressingIface(0)
+        : dbusConnection(QDBusConnection::sessionBus()), // make the compiler happy
+          addressingIface(0)
     {
     }
 
     Private(const ConnectionManagerPtr &cm, const QString &name)
-        : cm(cm),
+        : dbusConnection(cm->dbusConnection()),
+          busName(cm->busName()),
+          cmName(cm->name()),
           name(name),
           iconName(QString(QLatin1String("im-%1")).arg(name)),
           addressingIface(0)
     {
+        QString escapedProtocolName = name;
+        escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
+        objectPath = QString(QLatin1String("%1/%2")).arg(cm->objectPath()).arg(escapedProtocolName);
     }
 
     ~Private()
@@ -53,22 +59,17 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
     Client::ProtocolInterfaceAddressingInterface *addressingInterface()
     {
         if (!addressingIface) {
-            ConnectionManagerPtr connectionManager(cm);
-            QString escapedProtocolName = name;
-            escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
-            QString protocolPath = QString(
-                    QLatin1String("%1/%2"))
-                        .arg(connectionManager->objectPath())
-                        .arg(escapedProtocolName);
             addressingIface = new Client::ProtocolInterfaceAddressingInterface(
-                connectionManager->dbusConnection(),
-                connectionManager->busName(), protocolPath);
+                    dbusConnection, busName, objectPath);
         }
 
         return addressingIface;
     }
 
-    WeakPtr<ConnectionManager> cm;
+    QDBusConnection dbusConnection;
+    QString busName;
+    QString objectPath;
+    QString cmName;
     QString name;
     ProtocolParameterList params;
     ConnectionCapabilities caps;
@@ -119,16 +120,6 @@ ProtocolInfo::~ProtocolInfo()
 {
 }
 
-bool ProtocolInfo::isValid() const
-{
-    return ((mPriv.constData() != 0) && !(connectionManager().isNull()));
-}
-
-ConnectionManagerPtr ProtocolInfo::connectionManager() const
-{
-    return (mPriv.constData() != 0 ? ConnectionManagerPtr(mPriv->cm) : ConnectionManagerPtr());
-}
-
 ProtocolInfo &ProtocolInfo::operator=(const ProtocolInfo &other)
 {
     this->mPriv = other.mPriv;
@@ -146,7 +137,7 @@ QString ProtocolInfo::cmName() const
         return QString();
     }
 
-    return connectionManager()->name();
+    return mPriv->cmName;
 }
 
 /**
@@ -394,7 +385,7 @@ PendingString *ProtocolInfo::normalizeVCardAddress(const QString &vcardField,
     }
 
     return new PendingString(iface->NormalizeVCardAddress(vcardField, vcardAddress),
-            connectionManager());
+            SharedPtr<RefCounted>());
 }
 
 /**
@@ -426,7 +417,7 @@ PendingString *ProtocolInfo::normalizeContactUri(const QString &uri)
     }
 
     return new PendingString(iface->NormalizeContactURI(uri),
-            connectionManager());
+            SharedPtr<RefCounted>());
 }
 
 void ProtocolInfo::addParameter(const ParamSpec &spec)
