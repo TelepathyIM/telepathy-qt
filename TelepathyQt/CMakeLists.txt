@@ -91,6 +91,7 @@ set(telepathy_qt_SRCS
     pending-contact-attributes.cpp
     pending-contact-info.cpp
     pending-contacts.cpp
+    pending-debug-message-list.cpp
     pending-handles.cpp
     pending-operation.cpp
     pending-ready.cpp
@@ -390,6 +391,8 @@ set(telepathy_qt_HEADERS
     pending-contact-info.h
     PendingContacts
     pending-contacts.h
+    PendingDebugMessageList
+    pending-debug-message-list.h
     PendingFailure
     PendingHandles
     pending-handles.h
@@ -562,6 +565,7 @@ set(telepathy_qt_MOC_SRCS
     pending-contact-info.h
     pending-contacts.h
     pending-contacts-internal.h
+    pending-debug-message-list.h
     pending-handles.h
     pending-operation.h
     pending-ready.h
