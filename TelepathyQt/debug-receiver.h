@@ -34,22 +34,36 @@
 namespace Tp
 {
 
+class PendingDebugMessageList;
+
 class TP_QT_EXPORT DebugReceiver : public StatefulDBusProxy
 {
     Q_OBJECT
     Q_DISABLE_COPY(DebugReceiver)
 public:
     static const Feature FeatureCore;
+    static const Feature FeatureMonitor;
 
     static DebugReceiverPtr create(const QString &busName,
             const QDBusConnection &bus = QDBusConnection::sessionBus());
     virtual ~DebugReceiver();
+
+    PendingDebugMessageList *fetchMessages() const;
+
+Q_SIGNALS:
+    void newDebugMessage(const Tp::DebugMessage & message);
 
 protected:
     DebugReceiver(const QDBusConnection &bus,
                   const QString &busName,
                   const QString &objectPath,
                   const Feature &featureCore);
+
+private Q_SLOTS:
+    TP_QT_NO_EXPORT void onRequestAllPropertiesFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onSetPropertyEnabledFinished(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onNewDebugMessage(double time, const QString &domain,
+                                           uint level, const QString &message);
 
 private:
     struct Private;
