@@ -360,8 +360,8 @@ QStringList ProtocolInfo::addressableUriSchemes() const
 /**
  * Attempt to normalize the given \a vcardAddress.
  *
- * For example, a vCard TEL field with a formatted number in the form of
- * +1 (206) 555 1234, could be normalized to +12065551234.
+ * For example, a vCard TEL field formatted as +1 (206) 555 1234,
+ * could be normalized to +12065551234.
  *
  * \param vcardField The vCard field the \a vcardAddress belongs to.
  * \param vcardAddress The address to normalize.
