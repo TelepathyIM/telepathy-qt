@@ -174,7 +174,7 @@ ConnectionManager::Private::ProtocolWrapper::~ProtocolWrapper()
 void ConnectionManager::Private::ProtocolWrapper::introspectMain(
         ConnectionManager::Private::ProtocolWrapper *self)
 {
-    if (self->loadImmutableProperties()) {
+    if (self->extractImmutableProperties()) {
         debug() << "Got everything we want from the immutable props for" <<
             self->info().name();
         self->continueIntrospection();
@@ -277,7 +277,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
         QVariantMap unqualifiedProps = pvm->result();
 
-        loadMainProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL, unqualifiedProps));
+        extractMainProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL, unqualifiedProps));
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol) failed: " <<
@@ -296,7 +296,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotAvatarsProperties(
         PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
         QVariantMap unqualifiedProps = pvm->result();
 
-        loadAvatarsProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS,
+        extractAvatarsProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
@@ -316,7 +316,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotPresenceProperties(
         PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
         QVariantMap unqualifiedProps = pvm->result();
 
-        loadPresenceProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE,
+        extractPresenceProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
@@ -338,7 +338,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotAddressingProperties(
         PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
         QVariantMap unqualifiedProps = pvm->result();
 
-        loadAddressingProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING,
+        extractAddressingProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
@@ -423,17 +423,17 @@ void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
     mInfo.setRequestableChannelClasses(classes);
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::loadImmutableProperties()
+bool ConnectionManager::Private::ProtocolWrapper::extractImmutableProperties()
 {
-    loadMainProperties(mImmutableProps);
-    loadAvatarsProperties(mImmutableProps);
-    loadPresenceProperties(mImmutableProps);
-    loadAddressingProperties(mImmutableProps);
+    extractMainProperties(mImmutableProps);
+    extractAvatarsProperties(mImmutableProps);
+    extractPresenceProperties(mImmutableProps);
+    extractAddressingProperties(mImmutableProps);
 
     return mHasMainProps && mHasAvatarsProps && mHasPresenceProps && mHasAddressingProps;
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::loadMainProperties(const QVariantMap &props)
+bool ConnectionManager::Private::ProtocolWrapper::extractMainProperties(const QVariantMap &props)
 {
     bool gotEverything =
         props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces")) &&
@@ -483,7 +483,7 @@ bool ConnectionManager::Private::ProtocolWrapper::loadMainProperties(const QVari
     return gotEverything;
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::loadAvatarsProperties(const QVariantMap &props)
+bool ConnectionManager::Private::ProtocolWrapper::extractAvatarsProperties(const QVariantMap &props)
 {
     bool gotEverything =
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes")) &&
@@ -520,7 +520,7 @@ bool ConnectionManager::Private::ProtocolWrapper::loadAvatarsProperties(const QV
     return gotEverything;
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::loadPresenceProperties(const QVariantMap &props)
+bool ConnectionManager::Private::ProtocolWrapper::extractPresenceProperties(const QVariantMap &props)
 {
     bool gotEverything =
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"));
@@ -532,7 +532,7 @@ bool ConnectionManager::Private::ProtocolWrapper::loadPresenceProperties(const Q
     return gotEverything;
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::loadAddressingProperties(const QVariantMap &props)
+bool ConnectionManager::Private::ProtocolWrapper::extractAddressingProperties(const QVariantMap &props)
 {
     bool gotEverything =
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableVCardFields")) &&

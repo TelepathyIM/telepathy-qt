@@ -165,11 +165,11 @@ private:
     QVariantMap qualifyProperties(const QString &ifaceName,
             const QVariantMap &unqualifiedProps);
     void fillRCCs();
-    bool loadImmutableProperties();
-    bool loadMainProperties(const QVariantMap &props);
-    bool loadAvatarsProperties(const QVariantMap &props);
-    bool loadPresenceProperties(const QVariantMap &props);
-    bool loadAddressingProperties(const QVariantMap &props);
+    bool extractImmutableProperties();
+    bool extractMainProperties(const QVariantMap &props);
+    bool extractAvatarsProperties(const QVariantMap &props);
+    bool extractPresenceProperties(const QVariantMap &props);
+    bool extractAddressingProperties(const QVariantMap &props);
 
     ReadinessHelper *mReadinessHelper;
     ProtocolInfo mInfo;
