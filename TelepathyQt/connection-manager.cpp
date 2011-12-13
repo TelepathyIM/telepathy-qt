@@ -433,9 +433,9 @@ bool ConnectionManager::Private::ProtocolWrapper::extractImmutableProperties()
     return mHasMainProps && mHasAvatarsProps && mHasPresenceProps && mHasAddressingProps;
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::extractMainProperties(const QVariantMap &props)
+void ConnectionManager::Private::ProtocolWrapper::extractMainProperties(const QVariantMap &props)
 {
-    bool gotEverything =
+    mHasMainProps =
         props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces")) &&
         props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters")) &&
         props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".ConnectionInterfaces")) &&
@@ -478,14 +478,11 @@ bool ConnectionManager::Private::ProtocolWrapper::extractMainProperties(const QV
         mInfo.setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
                 props[TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses")]));
     }
-
-    mHasMainProps = gotEverything;
-    return gotEverything;
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::extractAvatarsProperties(const QVariantMap &props)
+void ConnectionManager::Private::ProtocolWrapper::extractAvatarsProperties(const QVariantMap &props)
 {
-    bool gotEverything =
+    mHasAvatarsProps =
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes")) &&
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")) &&
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight")) &&
@@ -515,26 +512,20 @@ bool ConnectionManager::Private::ProtocolWrapper::extractAvatarsProperties(const
                 minHeight, maxHeight, recommendedHeight,
                 minWidth, maxWidth, recommendedWidth,
                 maxBytes));
-
-    mHasAvatarsProps = gotEverything;
-    return gotEverything;
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::extractPresenceProperties(const QVariantMap &props)
+void ConnectionManager::Private::ProtocolWrapper::extractPresenceProperties(const QVariantMap &props)
 {
-    bool gotEverything =
+    mHasPresenceProps =
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"));
 
     mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<SimpleStatusSpecMap>(
                 props[TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses")])));
-
-    mHasPresenceProps = gotEverything;
-    return gotEverything;
 }
 
-bool ConnectionManager::Private::ProtocolWrapper::extractAddressingProperties(const QVariantMap &props)
+void ConnectionManager::Private::ProtocolWrapper::extractAddressingProperties(const QVariantMap &props)
 {
-    bool gotEverything =
+    mHasAddressingProps =
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableVCardFields")) &&
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableURISchemes"));
 
@@ -544,9 +535,6 @@ bool ConnectionManager::Private::ProtocolWrapper::extractAddressingProperties(co
             props[TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableURISchemes")]);
     mInfo.setAddressableVCardFields(vcardFields);
     mInfo.setAddressableUriSchemes(uriSchemes);
-
-    mHasAddressingProps = gotEverything;
-    return gotEverything;
 }
 
 ConnectionManager::Private::Private(ConnectionManager *parent, const QString &name,

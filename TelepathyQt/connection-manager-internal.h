@@ -166,10 +166,10 @@ private:
             const QVariantMap &unqualifiedProps);
     void fillRCCs();
     bool extractImmutableProperties();
-    bool extractMainProperties(const QVariantMap &props);
-    bool extractAvatarsProperties(const QVariantMap &props);
-    bool extractPresenceProperties(const QVariantMap &props);
-    bool extractAddressingProperties(const QVariantMap &props);
+    void extractMainProperties(const QVariantMap &props);
+    void extractAvatarsProperties(const QVariantMap &props);
+    void extractPresenceProperties(const QVariantMap &props);
+    void extractAddressingProperties(const QVariantMap &props);
 
     ReadinessHelper *mReadinessHelper;
     ProtocolInfo mInfo;
