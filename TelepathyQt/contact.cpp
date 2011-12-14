@@ -307,7 +307,7 @@ const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::st
  */
 const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::staticMetaObject.className()), 7, false);
 
-const Feature Contact::FeatureAddressing = Feature(QLatin1String(Contact::staticMetaObject.className()), 8, false);
+const Feature Contact::FeatureAddresses = Feature(QLatin1String(Contact::staticMetaObject.className()), 8, false);
 
 /**
  * Construct a new Contact object.
@@ -1031,12 +1031,12 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             QStringList groups = qdbus_cast<QStringList>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
             mPriv->groups = groups.toSet();
-        } else if (feature == FeatureAddressing) {
+        } else if (feature == FeatureAddresses) {
             TpFuture::VCardFieldAddressMap addresses = qdbus_cast<TpFuture::VCardFieldAddressMap>(attributes.value(
                         TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/addresses")));
             QStringList uris = qdbus_cast<QStringList>(attributes.value(
                         TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/uris")));
-            receiveAddressing(addresses, uris);
+            receiveAddresses(addresses, uris);
         } else {
             warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
         }
@@ -1147,14 +1147,14 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
     }
 }
 
-void Contact::receiveAddressing(const QMap<QString, QString> &addresses,
+void Contact::receiveAddresses(const QMap<QString, QString> &addresses,
         const QStringList &uris)
 {
-    if (!mPriv->requestedFeatures.contains(FeatureAddressing)) {
+    if (!mPriv->requestedFeatures.contains(FeatureAddresses)) {
         return;
     }
 
-    mPriv->actualFeatures.insert(FeatureAddressing);
+    mPriv->actualFeatures.insert(FeatureAddresses);
     mPriv->addressableVCardAddresses = addresses;
     mPriv->addressableUris = uris;
 }

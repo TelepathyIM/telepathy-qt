@@ -223,7 +223,7 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureLocation
             << Contact::FeatureInfo
             << Contact::FeatureRosterGroups
-            << Contact::FeatureAddressing;
+            << Contact::FeatureAddresses;
         QStringList interfaces = connection()->lowlevel()->contactAttributeInterfaces();
         foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
@@ -1424,7 +1424,7 @@ QString ContactManager::featureToInterface(const Feature &feature)
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO;
     } else if (feature == Contact::FeatureRosterGroups) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
-    } else if (feature == Contact::FeatureAddressing) {
+    } else if (feature == Contact::FeatureAddresses) {
         return TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING;
     } else {
         warning() << "ContactManager doesn't know which interface corresponds to feature"
@@ -1490,7 +1490,7 @@ void ContactManager::ensureTracking(const Feature &feature)
         connect(simplePresenceInterface,
                 SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
                 SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
-    } else if (feature == Contact::FeatureRosterGroups || feature == Contact::FeatureAddressing) {
+    } else if (feature == Contact::FeatureRosterGroups || feature == Contact::FeatureAddresses) {
         // nothing to do here, but we don't want to warn
         ;
     } else {

@@ -60,7 +60,7 @@ public:
     static const Feature FeatureInfo;
     static const Feature FeatureLocation;
     static const Feature FeatureSimplePresence;
-    static const Feature FeatureAddressing;
+    static const Feature FeatureAddresses;
 
     enum PresenceState {
          PresenceStateNo,
@@ -214,7 +214,7 @@ private:
     TP_QT_NO_EXPORT void receiveCapabilities(const RequestableChannelClassList &caps);
     TP_QT_NO_EXPORT void receiveLocation(const QVariantMap &location);
     TP_QT_NO_EXPORT void receiveInfo(const ContactInfoFieldList &info);
-    TP_QT_NO_EXPORT void receiveAddressing(const QMap<QString, QString> &addresses,
+    TP_QT_NO_EXPORT void receiveAddresses(const QMap<QString, QString> &addresses,
             const QStringList &uris);
 
     TP_QT_NO_EXPORT static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
