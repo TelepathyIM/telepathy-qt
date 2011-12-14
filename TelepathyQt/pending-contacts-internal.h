@@ -46,13 +46,12 @@ public:
     bool isForVCardAddresses() const { return !mVCardField.isEmpty(); }
     QString vcardField() const { return mVCardField; }
     QStringList vcardAddresses() const { return mVCardAddresses; }
-    QStringList validVCardAddresses() const { return mValidVCardAddresses; }
-    QStringList invalidVCardAddresses() const { return mInvalidVCardAddresses; }
 
     bool isForUris() const { return !mUris.isEmpty(); }
     QStringList uris() const { return mUris; }
-    QStringList validUris() const { return mValidUris; }
-    QStringList invalidUris() const { return mInvalidUris; }
+
+    QStringList validAddresses() const { return mValidAddresses; }
+    QStringList invalidAddresses() const { return mInvalidAddresses; }
 
 private Q_SLOTS:
     void onGetContactsByVCardFieldFinished(QDBusPendingCallWatcher* watcher);
@@ -67,10 +66,8 @@ private:
     QStringList mVCardAddresses;
     QStringList mUris;
 
-    QStringList mValidVCardAddresses;
-    QStringList mInvalidVCardAddresses;
-    QStringList mValidUris;
-    QStringList mInvalidUris;
+    QStringList mValidAddresses;
+    QStringList mInvalidAddresses;
 };
 
 } // Tp

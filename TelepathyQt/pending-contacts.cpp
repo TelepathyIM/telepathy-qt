@@ -119,10 +119,8 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
     UIntList invalidHandles;
     QStringList validIds;
     QHash<QString, QPair<QString, QString> > invalidIds;
-    QStringList validVCardAddresses;
-    QStringList invalidVCardAddresses;
-    QStringList validUris;
-    QStringList invalidUris;
+    QStringList validAddresses;
+    QStringList invalidAddresses;
 
     ReferencedHandles handlesToInspect;
 };
@@ -394,10 +392,13 @@ UIntList PendingContacts::invalidHandles() const
 {
     if (!isFinished()) {
         warning() << "PendingContacts::invalidHandles() called before finished";
+        return UIntList();
     } else if (isError()) {
         warning() << "PendingContacts::invalidHandles() called when errored";
+        return UIntList();
     } else if (!isForHandles()) {
         warning() << "PendingContacts::invalidHandles() called for" << this << "which is not for handles!";
+        return UIntList();
     }
 
     return mPriv->invalidHandles;
@@ -407,10 +408,13 @@ QStringList PendingContacts::validIdentifiers() const
 {
     if (!isFinished()) {
         warning() << "PendingContacts::validIdentifiers() called before finished";
+        return QStringList();
     } else if (isError()) {
         warning() << "PendingContacts::validIdentifiers() called when errored";
+        return QStringList();
     } else if (!isForIdentifiers()) {
         warning() << "PendingContacts::validIdentifiers() called for" << this << "which is not for IDs!";
+        return QStringList();
     }
 
     return mPriv->validIds;
@@ -420,10 +424,13 @@ QHash<QString, QPair<QString, QString> > PendingContacts::invalidIdentifiers() c
 {
     if (!isFinished()) {
         warning() << "PendingContacts::invalidIdentifiers() called before finished";
+        return QHash<QString, QPair<QString, QString> >();
     } else if (isError()) {
         warning() << "PendingContacts::invalidIdentifiers() called when errored";
+        return QHash<QString, QPair<QString, QString> >();
     } else if (!isForIdentifiers()) {
         warning() << "PendingContacts::invalidIdentifiers() called for" << this << "which is not for IDs!";
+        return QHash<QString, QPair<QString, QString> >();
     }
 
     return mPriv->invalidIds;
@@ -433,52 +440,64 @@ QStringList PendingContacts::validVCardAddresses() const
 {
     if (!isFinished()) {
         warning() << "PendingContacts::validVCardAddresses() called before finished";
+        return QStringList();
     } else if (isError()) {
         warning() << "PendingContacts::validVCardAddresses() called when errored";
+        return QStringList();
     } else if (!isForVCardAddresses()) {
         warning() << "PendingContacts::validVCardAddresses() called for" << this << "which is not for vcard addresses!";
+        return QStringList();
     }
 
-    return mPriv->validVCardAddresses;
+    return mPriv->validAddresses;
 }
 
 QStringList PendingContacts::invalidVCardAddresses() const
 {
     if (!isFinished()) {
         warning() << "PendingContacts::invalidVCardAddresses() called before finished";
+        return QStringList();
     } else if (isError()) {
         warning() << "PendingContacts::invalidVCardAddresses() called when errored";
+        return QStringList();
     } else if (!isForVCardAddresses()) {
         warning() << "PendingContacts::invalidVCardAddresses() called for" << this << "which is not for vcard addresses!";
+        return QStringList();
     }
 
-    return mPriv->invalidVCardAddresses;
+    return mPriv->invalidAddresses;
 }
 
 QStringList PendingContacts::validUris() const
 {
     if (!isFinished()) {
         warning() << "PendingContacts::validUris() called before finished";
+        return QStringList();
     } else if (isError()) {
         warning() << "PendingContacts::validUris() called when errored";
+        return QStringList();
     } else if (!isForUris()) {
         warning() << "PendingContacts::validUris() called for" << this << "which is not for URIs!";
+        return QStringList();
     }
 
-    return mPriv->validUris;
+    return mPriv->validAddresses;
 }
 
 QStringList PendingContacts::invalidUris() const
 {
     if (!isFinished()) {
         warning() << "PendingContacts::invalidUris() called before finished";
+        return QStringList();
     } else if (isError()) {
         warning() << "PendingContacts::invalidUris() called when errored";
+        return QStringList();
     } else if (!isForUris()) {
         warning() << "PendingContacts::invalidUris() called for" << this << "which is not for URIs!";
+        return QStringList();
     }
 
-    return mPriv->invalidUris;
+    return mPriv->invalidAddresses;
 }
 
 void PendingContacts::onAttributesFinished(PendingOperation *operation)
@@ -537,8 +556,9 @@ void PendingContacts::onGetContactsByURIFinished(PendingOperation *operation)
 {
     PendingAddressingGetContacts *pa = qobject_cast<PendingAddressingGetContacts *>(operation);
 
-    mPriv->validUris = pa->validUris();
-    mPriv->invalidUris = pa->invalidUris();
+    Q_ASSERT(pa->isForUris());
+    mPriv->validAddresses = pa->validAddresses();
+    mPriv->invalidAddresses = pa->invalidAddresses();
 
     if (pa->isError()) {
         setFinishedWithError(operation->errorName(), operation->errorMessage());
@@ -555,8 +575,9 @@ void PendingContacts::onGetContactsByVCardFieldFinished(PendingOperation *operat
 {
     PendingAddressingGetContacts *pa = qobject_cast<PendingAddressingGetContacts *>(operation);
 
-    mPriv->validVCardAddresses = pa->validVCardAddresses();
-    mPriv->invalidVCardAddresses = pa->invalidVCardAddresses();
+    Q_ASSERT(pa->isForVCardAddresses());
+    mPriv->validAddresses = pa->validAddresses();
+    mPriv->invalidAddresses = pa->invalidAddresses();
 
     if (pa->isError()) {
         setFinishedWithError(operation->errorName(), operation->errorMessage());
@@ -711,8 +732,8 @@ void PendingAddressingGetContacts::onGetContactsByVCardFieldFinished(QDBusPendin
         TpFuture::AddressingNormalizationMap requested = reply.argumentAt<0>();
 
         mValidHandles = requested.values();
-        mValidVCardAddresses = requested.keys();
-        mInvalidVCardAddresses = mVCardAddresses.toSet().subtract(mValidVCardAddresses.toSet()).toList();
+        mValidAddresses = requested.keys();
+        mInvalidAddresses = mVCardAddresses.toSet().subtract(mValidAddresses.toSet()).toList();
         setFinished();
     } else {
         debug().nospace() << "GetContactsByVCardField failed: " <<
@@ -731,8 +752,8 @@ void PendingAddressingGetContacts::onGetContactsByURIFinished(QDBusPendingCallWa
         TpFuture::AddressingNormalizationMap requested = reply.argumentAt<0>();
 
         mValidHandles = requested.values();
-        mValidUris = requested.keys();
-        mInvalidUris = mVCardAddresses.toSet().subtract(mValidVCardAddresses.toSet()).toList();
+        mValidAddresses = requested.keys();
+        mInvalidAddresses = mVCardAddresses.toSet().subtract(mValidAddresses.toSet()).toList();
         setFinished();
     } else {
         debug().nospace() << "GetContactsByURI failed: " <<
