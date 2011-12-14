@@ -91,9 +91,13 @@ private Q_SLOTS:
 private:
     friend class ContactManager;
 
-    enum ListType {
-        ListTypeId,
-        ListTypeUri
+    enum RequestType
+    {
+        ForHandles,
+        ForIdentifiers,
+        ForVCardAddresses,
+        ForUris,
+        Upgrade
     };
 
     // If errorName is non-empty, these will fail instantly
@@ -106,7 +110,7 @@ private:
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
     TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QStringList &list,
-            ListType listType,
+            RequestType requestType,
             const Features &features,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());

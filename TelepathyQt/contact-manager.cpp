@@ -1052,12 +1052,12 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
 {
     if (!connection()->isValid()) {
         return new PendingContacts(ContactManagerPtr(this), identifiers,
-                PendingContacts::ListTypeId, features,
+                PendingContacts::ForIdentifiers, features,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
         return new PendingContacts(ContactManagerPtr(this), identifiers,
-                PendingContacts::ListTypeId, features,
+                PendingContacts::ForIdentifiers, features,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
@@ -1065,7 +1065,7 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
     Features realFeatures(features);
     realFeatures.unite(connection()->contactFactory()->features());
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), identifiers,
-            PendingContacts::ListTypeId, realFeatures);
+            PendingContacts::ForIdentifiers, realFeatures);
     return contacts;
 }
 
@@ -1094,12 +1094,12 @@ PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
 {
     if (!connection()->isValid()) {
         return new PendingContacts(ContactManagerPtr(this), uris,
-                PendingContacts::ListTypeUri, features,
+                PendingContacts::ForUris, features,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
         return new PendingContacts(ContactManagerPtr(this), uris,
-                PendingContacts::ListTypeUri, features,
+                PendingContacts::ForUris, features,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
@@ -1107,7 +1107,7 @@ PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
     Features realFeatures(features);
     realFeatures.unite(connection()->contactFactory()->features());
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), uris,
-            PendingContacts::ListTypeUri, realFeatures);
+            PendingContacts::ForUris, realFeatures);
     return contacts;
 }
 

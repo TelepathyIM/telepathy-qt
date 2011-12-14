@@ -42,15 +42,6 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT PendingContacts::Private
 {
-    enum RequestType
-    {
-        ForHandles,
-        ForIdentifiers,
-        ForVCardAddresses,
-        ForUris,
-        Upgrade
-    };
-
     Private(PendingContacts *parent, const ContactManagerPtr &manager, const UIntList &handles,
             const Features &features, const Features &missingFeatures,
             const QMap<uint, ContactPtr> &satisfyingContacts)
@@ -59,24 +50,24 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
           features(features),
           missingFeatures(missingFeatures),
           satisfyingContacts(satisfyingContacts),
-          requestType(ForHandles),
+          requestType(PendingContacts::ForHandles),
           handles(handles),
           nested(0)
     {
     }
 
     Private(PendingContacts *parent, const ContactManagerPtr &manager, const QStringList &list,
-            ListType listType, const Features &features)
+            PendingContacts::RequestType type, const Features &features)
         : parent(parent),
           manager(manager),
           features(features),
           nested(0)
     {
-        if (listType == PendingContacts::ListTypeId) {
-            requestType = ForIdentifiers;
+        if (type == PendingContacts::ForIdentifiers) {
+            requestType = type;
             identifiers = list;
-        } else if (listType == PendingContacts::ListTypeUri) {
-            requestType = ForUris;
+        } else if (type == PendingContacts::ForUris) {
+            requestType = type;
             uris = list;
         } else {
             Q_ASSERT(false);
@@ -88,7 +79,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
         : parent(parent),
           manager(manager),
           features(features),
-          requestType(ForVCardAddresses),
+          requestType(PendingContacts::ForVCardAddresses),
           vcardField(vcardField),
           vcardAddresses(vcardAddresses),
           nested(0)
@@ -101,7 +92,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
         : parent(parent),
           manager(manager),
           features(features),
-          requestType(Upgrade),
+          requestType(PendingContacts::Upgrade),
           contactsToUpgrade(contactsToUpgrade),
           nested(0)
     {
@@ -208,10 +199,10 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 }
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const QStringList &list, ListType listType, const Features &features,
+        const QStringList &list, RequestType type, const Features &features,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager->connection()),
-      mPriv(new Private(this, manager, list, listType, features))
+      mPriv(new Private(this, manager, list, type, features))
 {
     if (!errorName.isEmpty()) {
         setFinishedWithError(errorName, errorMessage);
@@ -220,12 +211,12 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 
     ConnectionPtr conn = manager->connection();
 
-    if (listType == ListTypeId) {
+    if (type == ForIdentifiers) {
         PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, list);
         connect(handles,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
-    } else if (listType == ListTypeUri) {
+    } else if (type == ForUris) {
         TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
             conn->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
                     OptionalInterfaceFactory<Connection>::CheckInterfaceSupported);
@@ -313,7 +304,7 @@ Features PendingContacts::features() const
 
 bool PendingContacts::isForHandles() const
 {
-    return mPriv->requestType == Private::ForHandles;
+    return mPriv->requestType == ForHandles;
 }
 
 UIntList PendingContacts::handles() const
@@ -327,7 +318,7 @@ UIntList PendingContacts::handles() const
 
 bool PendingContacts::isForIdentifiers() const
 {
-    return mPriv->requestType == Private::ForIdentifiers;
+    return mPriv->requestType == ForIdentifiers;
 }
 
 QStringList PendingContacts::identifiers() const
@@ -341,7 +332,7 @@ QStringList PendingContacts::identifiers() const
 
 bool PendingContacts::isForVCardAddresses() const
 {
-    return mPriv->requestType == Private::ForVCardAddresses;
+    return mPriv->requestType == ForVCardAddresses;
 }
 
 QString PendingContacts::vcardField() const
@@ -364,7 +355,7 @@ QStringList PendingContacts::vcardAddresses() const
 
 bool PendingContacts::isForUris() const
 {
-    return mPriv->requestType == Private::ForUris;
+    return mPriv->requestType == ForUris;
 }
 
 QStringList PendingContacts::uris() const
@@ -378,7 +369,7 @@ QStringList PendingContacts::uris() const
 
 bool PendingContacts::isUpgrade() const
 {
-    return mPriv->requestType == Private::Upgrade;
+    return mPriv->requestType == Upgrade;
 }
 
 QList<ContactPtr> PendingContacts::contactsToUpgrade() const
