@@ -13,6 +13,7 @@ if(ENABLE_TP_GLIB_TESTS)
              > ${CMAKE_CURRENT_BINARY_DIR}/_gen/all.xml
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/all.xml
                 ${CMAKE_CURRENT_SOURCE_DIR}/channel.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/connection.xml
                 ${CMAKE_CURRENT_SOURCE_DIR}/misc.xml
                 ${CMAKE_SOURCE_DIR}/tools/xincludator.py)
 
@@ -64,6 +65,7 @@ if(ENABLE_TP_GLIB_TESTS)
                 ${CMAKE_SOURCE_DIR}/tools/glib-interfaces-gen.py)
 
     set(SPECS
+        connection
         channel
         misc)
     foreach(spec ${SPECS})
@@ -95,6 +97,7 @@ if(ENABLE_TP_GLIB_TESTS)
     endfunction(SVC_GENERATOR spec)
 
     svc_generator(channel)
+    svc_generator(connection)
     svc_generator(misc)
 
     set(NEW_FILES
@@ -108,6 +111,8 @@ if(ENABLE_TP_GLIB_TESTS)
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/signals-marshal.list
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.c
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.h
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection.c
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-misc.c
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-misc.h)
         list(APPEND tp_glib_tests_future_extensions_SRCS ${NEW_FILES})

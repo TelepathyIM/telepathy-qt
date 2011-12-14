@@ -3,9 +3,11 @@
 
 #include <glib-object.h>
 #include <telepathy-glib/channel.h>
+#include <telepathy-glib/connection.h>
 
 #include "tests/lib/glib/future/extensions/_gen/enums.h"
 #include "tests/lib/glib/future/extensions/_gen/svc-channel.h"
+#include "tests/lib/glib/future/extensions/_gen/svc-connection.h"
 #include "tests/lib/glib/future/extensions/_gen/svc-misc.h"
 
 G_BEGIN_DECLS
