@@ -61,15 +61,12 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
         : parent(parent),
           manager(manager),
           features(features),
+          requestType(type),
+          addresses(list),
           nested(0)
     {
-        if (type == PendingContacts::ForIdentifiers) {
-            requestType = type;
-            identifiers = list;
-        } else if (type == PendingContacts::ForUris) {
-            requestType = type;
-            uris = list;
-        } else {
+        if (type != PendingContacts::ForIdentifiers &&
+            type != PendingContacts::ForUris) {
             Q_ASSERT(false);
         }
     }
@@ -80,8 +77,8 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
           manager(manager),
           features(features),
           requestType(PendingContacts::ForVCardAddresses),
+          addresses(vcardAddresses),
           vcardField(vcardField),
-          vcardAddresses(vcardAddresses),
           nested(0)
     {
     }
@@ -112,10 +109,8 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
     // Request type specific parameters
     RequestType requestType;
     UIntList handles;
-    QStringList identifiers;
+    QStringList addresses;
     QString vcardField;
-    QStringList vcardAddresses;
-    QStringList uris;
     QList<ContactPtr> contactsToUpgrade;
     PendingContacts *nested;
 
@@ -325,9 +320,10 @@ QStringList PendingContacts::identifiers() const
 {
     if (!isForIdentifiers()) {
         warning() << "Tried to get identifiers from" << this << "which is not for identifiers!";
+        return QStringList();
     }
 
-    return mPriv->identifiers;
+    return mPriv->addresses;
 }
 
 bool PendingContacts::isForVCardAddresses() const
@@ -348,9 +344,10 @@ QStringList PendingContacts::vcardAddresses() const
 {
     if (!isForVCardAddresses()) {
         warning() << "Tried to get vcard addresses from" << this << "which is not for vcard addresses!";
+        return QStringList();
     }
 
-    return mPriv->vcardAddresses;
+    return mPriv->addresses;
 }
 
 bool PendingContacts::isForUris() const
@@ -362,9 +359,10 @@ QStringList PendingContacts::uris() const
 {
     if (!isForUris()) {
         warning() << "Tried to get uris from" << this << "which is not for uris!";
+        return QStringList();
     }
 
-    return mPriv->uris;
+    return mPriv->addresses;
 }
 
 bool PendingContacts::isUpgrade() const
