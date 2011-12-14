@@ -1,4 +1,5 @@
 if(ENABLE_TP_GLIB_TESTS)
     add_subdirectory(extensions)
     add_subdirectory(conference)
+    add_subdirectory(conn-addressing)
 endif(ENABLE_TP_GLIB_TESTS)
