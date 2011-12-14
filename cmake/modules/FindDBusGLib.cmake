@@ -35,6 +35,13 @@ find_path(DBUS_GLIB_INCLUDE_DIR
           ${PC_DBUS_GLIB_INCLUDE_DIRS}
 )
 
+find_path(DBUS_GLIB_LOWLEVEL_INCLUDE_DIR
+          NAMES dbus/dbus-arch-deps.h
+          HINTS
+          ${PC_DBUS_GLIB_INCLUDEDIR}
+          ${PC_DBUS_GLIB_INCLUDE_DIRS}
+)
+
 # HACK! Workaround appending "/dbus-1.0" to the HINTS above not working for some reason.
 set (DBUS_GLIB_INCLUDE_DIR
      "${DBUS_GLIB_INCLUDE_DIR}/dbus-1.0"
