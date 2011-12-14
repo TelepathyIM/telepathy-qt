@@ -43,28 +43,34 @@ public:
 
     UIntList validHandles() const { return mValidHandles; }
 
-    bool isForVCardAddresses() const { return !mVCardField.isEmpty(); }
+    bool isForVCardAddresses() const { return mRequestType == ForVCardAddresses; }
     QString vcardField() const { return mVCardField; }
-    QStringList vcardAddresses() const { return mVCardAddresses; }
+    QStringList vcardAddresses() const { return mAddresses; }
 
-    bool isForUris() const { return !mUris.isEmpty(); }
-    QStringList uris() const { return mUris; }
+    bool isForUris() const { return mRequestType == ForUris; }
+    QStringList uris() const { return mAddresses; }
 
     QStringList validAddresses() const { return mValidAddresses; }
     QStringList invalidAddresses() const { return mInvalidAddresses; }
 
 private Q_SLOTS:
-    void onGetContactsByVCardFieldFinished(QDBusPendingCallWatcher* watcher);
-    void onGetContactsByURIFinished(QDBusPendingCallWatcher* watcher);
+    void onGetContactsFinished(QDBusPendingCallWatcher* watcher);
 
 private:
+    enum RequestType
+    {
+        ForVCardAddresses,
+        ForUris
+    };
+
     ConnectionPtr mConnection;
+
+    RequestType mRequestType;
 
     UIntList mValidHandles;
 
     QString mVCardField;
-    QStringList mVCardAddresses;
-    QStringList mUris;
+    QStringList mAddresses;
 
     QStringList mValidAddresses;
     QStringList mInvalidAddresses;

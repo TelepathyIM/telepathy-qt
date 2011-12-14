@@ -687,8 +687,9 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
         const QString &vcardField, const QStringList &vcardAddresses)
     : PendingOperation(connection),
       mConnection(connection),
+      mRequestType(ForVCardAddresses),
       mVCardField(vcardField),
-      mVCardAddresses(vcardAddresses)
+      mAddresses(vcardAddresses)
 {
     // no check for the interface here again, we expect this interface to be used only when
     // Conn.I.Addressing is available
@@ -699,14 +700,15 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
             connAddressingIface->GetContactsByVCardField(vcardField, vcardAddresses, QStringList()));
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(onGetContactsByVCardFieldFinished(QDBusPendingCallWatcher*)));
+            SLOT(onGetContactsFinished(QDBusPendingCallWatcher*)));
 }
 
 PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &connection,
         const QStringList &uris)
     : PendingOperation(connection),
       mConnection(connection),
-      mUris(uris)
+      mRequestType(ForUris),
+      mAddresses(uris)
 {
     // no check for the interface here again, we expect this interface to be used only when
     // Conn.I.Addressing is available
@@ -717,14 +719,14 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
             connAddressingIface->GetContactsByURI(uris, QStringList()));
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(onGetContactsByURIFinished(QDBusPendingCallWatcher*)));
+            SLOT(onGetContactsFinished(QDBusPendingCallWatcher*)));
 }
 
 PendingAddressingGetContacts::~PendingAddressingGetContacts()
 {
 }
 
-void PendingAddressingGetContacts::onGetContactsByVCardFieldFinished(QDBusPendingCallWatcher* watcher)
+void PendingAddressingGetContacts::onGetContactsFinished(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<TpFuture::AddressingNormalizationMap, Tp::ContactAttributesMap> reply = *watcher;
 
@@ -733,30 +735,10 @@ void PendingAddressingGetContacts::onGetContactsByVCardFieldFinished(QDBusPendin
 
         mValidHandles = requested.values();
         mValidAddresses = requested.keys();
-        mInvalidAddresses = mVCardAddresses.toSet().subtract(mValidAddresses.toSet()).toList();
+        mInvalidAddresses = mAddresses.toSet().subtract(mValidAddresses.toSet()).toList();
         setFinished();
     } else {
-        debug().nospace() << "GetContactsByVCardField failed: " <<
-            reply.error().name() << ": " << reply.error().message();
-        setFinishedWithError(reply.error());
-    }
-
-    watcher->deleteLater();
-}
-
-void PendingAddressingGetContacts::onGetContactsByURIFinished(QDBusPendingCallWatcher* watcher)
-{
-    QDBusPendingReply<TpFuture::AddressingNormalizationMap, Tp::ContactAttributesMap> reply = *watcher;
-
-    if (!reply.isError()) {
-        TpFuture::AddressingNormalizationMap requested = reply.argumentAt<0>();
-
-        mValidHandles = requested.values();
-        mValidAddresses = requested.keys();
-        mInvalidAddresses = mVCardAddresses.toSet().subtract(mValidAddresses.toSet()).toList();
-        setFinished();
-    } else {
-        debug().nospace() << "GetContactsByURI failed: " <<
+        debug().nospace() << "GetContactsBy* failed: " <<
             reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
     }
