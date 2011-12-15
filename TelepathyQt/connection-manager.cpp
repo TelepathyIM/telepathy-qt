@@ -183,30 +183,8 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
 
     if (!self->mHasMainProps) {
         self->introspectQueue.enqueue(&ProtocolWrapper::introspectMainProperties);
-    }
-
-    if (!self->mHasAvatarsProps) {
-        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
-            self->introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
-        } else {
-            debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
-        }
-    }
-
-    if (!self->mHasPresenceProps) {
-        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
-            self->introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
-        } else {
-            debug() << "Full functionality requires CM support for the Protocol.Presence interface";
-        }
-    }
-
-    if (!self->mHasAddressingProps) {
-        if (self->hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING)) {
-            self->introspectQueue.enqueue(&ProtocolWrapper::introspectAddressing);
-        } else {
-            debug() << "Full functionality requires CM support for the Protocol.Addressing interface";
-        }
+    } else {
+        self->introspectInterfaces();
     }
 
     self->continueIntrospection();
@@ -222,6 +200,33 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMainProperties()
     connect(pvm,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(gotMainProperties(Tp::PendingOperation*)));
+}
+
+void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
+{
+    if (!mHasAvatarsProps) {
+        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
+            introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
+        } else {
+            debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
+        }
+    }
+
+    if (!mHasPresenceProps) {
+        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
+            introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
+        } else {
+            debug() << "Full functionality requires CM support for the Protocol.Presence interface";
+        }
+    }
+
+    if (!mHasAddressingProps) {
+        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING)) {
+            introspectQueue.enqueue(&ProtocolWrapper::introspectAddressing);
+        } else {
+            debug() << "Full functionality requires CM support for the Protocol.Addressing interface";
+        }
+    }
 }
 
 void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
@@ -278,6 +283,8 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         QVariantMap unqualifiedProps = pvm->result();
 
         extractMainProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL, unqualifiedProps));
+
+        introspectInterfaces();
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol) failed: " <<
