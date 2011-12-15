@@ -43,8 +43,8 @@ find_path(DBUS_GLIB_LOWLEVEL_INCLUDE_DIR
 )
 
 # HACK! Workaround appending "/dbus-1.0" to the HINTS above not working for some reason.
-set (DBUS_GLIB_INCLUDE_DIR
-     "${DBUS_GLIB_INCLUDE_DIR}/dbus-1.0"
+set(DBUS_GLIB_INCLUDE_DIRS
+    "${DBUS_GLIB_INCLUDE_DIR}/dbus-1.0" "${DBUS_GLIB_LOWLEVEL_INCLUDE_DIR}"
 )
 
 find_library(DBUS_GLIB_LIBRARIES

@@ -2,8 +2,7 @@ if(ENABLE_TP_GLIB_TESTS)
     include_directories(
         ${CMAKE_SOURCE_DIR}/tests/lib/glib
         ${CMAKE_SOURCE_DIR}/tests/lib/glib/future
-        ${DBUS_GLIB_INCLUDE_DIR}
-        ${DBUS_GLIB_LOWLEVEL_INCLUDE_DIR})
+        ${DBUS_GLIB_INCLUDE_DIRS})
 
     set(future_example_conn_addressing_SRCS
         conn.c
