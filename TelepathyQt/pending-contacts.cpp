@@ -222,7 +222,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         PendingAddressingGetContacts *pa = new PendingAddressingGetContacts(conn, list);
         connect(pa,
                 SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onGetContactsByURIFinished(Tp::PendingOperation*)));
+                SLOT(onAddressingGetContactsFinished(Tp::PendingOperation*)));
     }
 }
 
@@ -252,7 +252,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
             vcardField, vcardAddresses);
     connect(pa,
             SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onGetContactsByVCardFieldFinished(Tp::PendingOperation*)));
+            SLOT(onAddressingGetContactsFinished(Tp::PendingOperation*)));
 }
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
@@ -552,30 +552,11 @@ void PendingContacts::onRequestHandlesFinished(PendingOperation *operation)
             SLOT(onNestedFinished(Tp::PendingOperation*)));
 }
 
-void PendingContacts::onGetContactsByURIFinished(PendingOperation *operation)
+void PendingContacts::onAddressingGetContactsFinished(PendingOperation *operation)
 {
     PendingAddressingGetContacts *pa = qobject_cast<PendingAddressingGetContacts *>(operation);
 
-    Q_ASSERT(pa->isForUris());
-    mPriv->validAddresses = pa->validAddresses();
-    mPriv->invalidAddresses = pa->invalidAddresses();
-
-    if (pa->isError()) {
-        setFinishedWithError(operation->errorName(), operation->errorMessage());
-        return;
-    }
-
-    mPriv->nested = manager()->contactsForHandles(pa->validHandles(), features());
-    connect(mPriv->nested,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onNestedFinished(Tp::PendingOperation*)));
-}
-
-void PendingContacts::onGetContactsByVCardFieldFinished(PendingOperation *operation)
-{
-    PendingAddressingGetContacts *pa = qobject_cast<PendingAddressingGetContacts *>(operation);
-
-    Q_ASSERT(pa->isForVCardAddresses());
+    Q_ASSERT(pa->isForUris() || pa->isForVCardAddresses());
     mPriv->validAddresses = pa->validAddresses();
     mPriv->invalidAddresses = pa->invalidAddresses();
 

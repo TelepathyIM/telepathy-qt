@@ -82,8 +82,7 @@ public:
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onAttributesFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onRequestHandlesFinished(Tp::PendingOperation *);
-    TP_QT_NO_EXPORT void onGetContactsByURIFinished(Tp::PendingOperation *);
-    TP_QT_NO_EXPORT void onGetContactsByVCardFieldFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onAddressingGetContactsFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onReferenceHandlesFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onNestedFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onInspectHandlesFinished(QDBusPendingCallWatcher *);
