@@ -105,8 +105,8 @@ public:
     // TODO filter: exact, prefix, substring match
     QString alias() const;
 
-    QMap<QString, QString> addressableVCardAddresses() const;
-    QStringList addressableUris() const;
+    QMap<QString, QString> vcardAddresses() const;
+    QStringList uris() const;
 
     bool isAvatarTokenKnown() const;
     QString avatarToken() const;

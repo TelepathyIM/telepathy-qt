@@ -166,12 +166,12 @@ void TestConnAddressing::commonTestRequest(bool withFeatures)
         QVERIFY(!mContacts[0]->actualFeatures().contains(Contact::FeatureLocation));
         QVERIFY(mContacts[0]->actualFeatures().contains(Contact::FeatureInfo));
         QVERIFY(mContacts[0]->actualFeatures().contains(Contact::FeatureAddresses));
-        QMap<QString, QString> addressableVCardAddresses;
-        addressableVCardAddresses.insert(QLatin1String("x-addr"), QLatin1String("foo"));
-        QStringList addressableUris;
-        addressableUris.append(QLatin1String("addr:foo"));
-        QCOMPARE(mContacts[0]->addressableVCardAddresses(), addressableVCardAddresses);
-        QCOMPARE(mContacts[0]->addressableUris(), addressableUris);
+        QMap<QString, QString> vcardAddresses;
+        vcardAddresses.insert(QLatin1String("x-addr"), QLatin1String("foo"));
+        QStringList uris;
+        uris.append(QLatin1String("addr:foo"));
+        QCOMPARE(mContacts[0]->vcardAddresses(), vcardAddresses);
+        QCOMPARE(mContacts[0]->uris(), uris);
     } else {
         QVERIFY(!mContacts[0]->actualFeatures().contains(Contact::FeatureLocation));
         QVERIFY(!mContacts[0]->actualFeatures().contains(Contact::FeatureInfo));

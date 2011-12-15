@@ -71,8 +71,8 @@ struct TP_QT_NO_EXPORT Contact::Private
     Features actualFeatures;
 
     QString alias;
-    QMap<QString, QString> addressableVCardAddresses;
-    QStringList addressableUris;
+    QMap<QString, QString> vcardAddresses;
+    QStringList uris;
     Presence presence;
     ContactCapabilities caps;
     LocationInfo location;
@@ -312,7 +312,7 @@ const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::stat
  *
  * See addressesable addresses specific methods' documentation for more details.
  *
- * \sa addressableVCardAddresses(), addressableUris()
+ * \sa vcardAddresses(), uris()
  */
 const Feature Contact::FeatureAddresses = Feature(QLatin1String(Contact::staticMetaObject.className()), 8, false);
 
@@ -423,11 +423,11 @@ QString Contact::alias() const
  * This method requires Contact::FeatureAddresses to be ready.
  *
  * \return The vCard addresses identifying this contact.
- * \sa ContactManager::contactsForVCardAddresses(), addressableUris()
+ * \sa ContactManager::contactsForVCardAddresses(), uris()
  */
-QMap<QString, QString> Contact::addressableVCardAddresses() const
+QMap<QString, QString> Contact::vcardAddresses() const
 {
-    return mPriv->addressableVCardAddresses;
+    return mPriv->vcardAddresses;
 }
 
 /**
@@ -440,11 +440,11 @@ QMap<QString, QString> Contact::addressableVCardAddresses() const
  * This method requires Contact::FeatureAddresses to be ready.
  *
  * \return The URI addresses identifying this contact.
- * \sa ContactManager::contactsForUris(), addressableVCardAddresses()
+ * \sa ContactManager::contactsForUris(), vcardAddresses()
  */
-QStringList Contact::addressableUris() const
+QStringList Contact::uris() const
 {
-    return mPriv->addressableUris;
+    return mPriv->uris;
 }
 
 /**
@@ -1186,8 +1186,8 @@ void Contact::receiveAddresses(const QMap<QString, QString> &addresses,
     }
 
     mPriv->actualFeatures.insert(FeatureAddresses);
-    mPriv->addressableVCardAddresses = addresses;
-    mPriv->addressableUris = uris;
+    mPriv->vcardAddresses = addresses;
+    mPriv->uris = uris;
 }
 
 Contact::PresenceState Contact::subscriptionStateToPresenceState(uint subscriptionState)
