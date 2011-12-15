@@ -1069,6 +1069,20 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
     return contacts;
 }
 
+/**
+ * Request contacts and enable their \a features using a given field in their vCards.
+ *
+ * This method requires Connection::FeatureCore to be ready.
+ *
+ * \param vcardField The vCard field of the addresses we are requesting.
+ *                   Supported fields can be found in ProtocolInfo::addressableVCardFields().
+ * \param vcardAddresses The addresses to get contacts for. The address types must match
+ *                       the given vCard field.
+ * \param features The Contact features to enable.
+ * \return A PendingContacts, which will emit PendingContacts::finished
+ *         when the contacts are retrieved or an error occurred.
+ * \sa contactsForHandles(), contactsForIdentifiers(), contactsForUris()
+ */
 PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardField,
         const QStringList &vcardAddresses, const Features &features)
 {
@@ -1108,6 +1122,18 @@ PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardF
     return contacts;
 }
 
+/**
+ * Request contacts and enable their \a features using the given URI addresses.
+ *
+ * This method requires Connection::FeatureCore to be ready.
+ *
+ * \param uris The URI addresses to get contacts for.
+ *             Supported schemes can be found in ProtocolInfo::addressableUriSchemes().
+ * \param features The Contact features to enable.
+ * \return A PendingContacts, which will emit PendingContacts::finished
+ *         when the contacts are retrieved or an error occurred.
+ * \sa contactsForHandles(), contactsForIdentifiers(), contactsForVCardAddresses()
+ */
 PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
         const Features &features)
 {
