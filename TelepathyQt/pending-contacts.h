@@ -111,11 +111,13 @@ private:
     TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QStringList &list,
             RequestType requestType,
             const Features &features,
+            const QStringList &interfaces,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
     TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QString &vcardField,
             const QStringList &vcardAddresses,
             const Features &features,
+            const QStringList &interfaces,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
     TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QList<ContactPtr> &contacts,

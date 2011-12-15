@@ -36,9 +36,11 @@ class TP_QT_NO_EXPORT PendingAddressingGetContacts : public PendingOperation
 
 public:
     PendingAddressingGetContacts(const ConnectionPtr &connection,
-            const QString &vcardField, const QStringList &vcardAddresses);
+            const QString &vcardField, const QStringList &vcardAddresses,
+            const QStringList &interfaces);
     PendingAddressingGetContacts(const ConnectionPtr &connection,
-            const QStringList &uris);
+            const QStringList &uris,
+            const QStringList &interfaces);
     ~PendingAddressingGetContacts();
 
     UIntList validHandles() const { return mValidHandles; }
@@ -52,6 +54,8 @@ public:
 
     QStringList validAddresses() const { return mValidAddresses; }
     QStringList invalidAddresses() const { return mInvalidAddresses; }
+
+    ContactAttributesMap attributes() const { return mAttributes; }
 
 private Q_SLOTS:
     void onGetContactsFinished(QDBusPendingCallWatcher* watcher);
@@ -74,6 +78,8 @@ private:
 
     QStringList mValidAddresses;
     QStringList mInvalidAddresses;
+
+    ContactAttributesMap mAttributes;
 };
 
 } // Tp

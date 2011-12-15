@@ -1052,12 +1052,12 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
 {
     if (!connection()->isValid()) {
         return new PendingContacts(ContactManagerPtr(this), identifiers,
-                PendingContacts::ForIdentifiers, features,
+                PendingContacts::ForIdentifiers, features, QStringList(),
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
         return new PendingContacts(ContactManagerPtr(this), identifiers,
-                PendingContacts::ForIdentifiers, features,
+                PendingContacts::ForIdentifiers, features, QStringList(),
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
@@ -1065,7 +1065,7 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
     Features realFeatures(features);
     realFeatures.unite(connection()->contactFactory()->features());
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), identifiers,
-            PendingContacts::ForIdentifiers, realFeatures);
+            PendingContacts::ForIdentifiers, realFeatures, QStringList());
     return contacts;
 }
 
@@ -1073,19 +1073,38 @@ PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardF
         const QStringList &vcardAddresses, const Features &features)
 {
     if (!connection()->isValid()) {
-        return new PendingContacts(ContactManagerPtr(this), vcardField, vcardAddresses, features,
+        return new PendingContacts(ContactManagerPtr(this), vcardField, vcardAddresses,
+                features, QStringList(),
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
-        return new PendingContacts(ContactManagerPtr(this), vcardField, vcardAddresses, features,
+        return new PendingContacts(ContactManagerPtr(this), vcardField, vcardAddresses,
+                features, QStringList(),
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
     Features realFeatures(features);
     realFeatures.unite(connection()->contactFactory()->features());
+    // FeatureAvatarData depends on FeatureAvatarToken
+    if (realFeatures.contains(Contact::FeatureAvatarData) &&
+        !realFeatures.contains(Contact::FeatureAvatarToken)) {
+        realFeatures.insert(Contact::FeatureAvatarToken);
+    }
+
+    Features supported = supportedFeatures();
+    QSet<QString> interfaces;
+    foreach (const Feature &feature, realFeatures) {
+        ensureTracking(feature);
+
+        if (supported.contains(feature)) {
+            // Only query interfaces which are reported as supported to not get an error
+            interfaces.insert(featureToInterface(feature));
+        }
+    }
+
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), vcardField,
-            vcardAddresses, realFeatures);
+            vcardAddresses, realFeatures, interfaces.toList());
     return contacts;
 }
 
@@ -1094,20 +1113,37 @@ PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
 {
     if (!connection()->isValid()) {
         return new PendingContacts(ContactManagerPtr(this), uris,
-                PendingContacts::ForUris, features,
+                PendingContacts::ForUris, features, QStringList(),
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
         return new PendingContacts(ContactManagerPtr(this), uris,
-                PendingContacts::ForUris, features,
+                PendingContacts::ForUris, features, QStringList(),
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
     Features realFeatures(features);
     realFeatures.unite(connection()->contactFactory()->features());
+    // FeatureAvatarData depends on FeatureAvatarToken
+    if (realFeatures.contains(Contact::FeatureAvatarData) &&
+        !realFeatures.contains(Contact::FeatureAvatarToken)) {
+        realFeatures.insert(Contact::FeatureAvatarToken);
+    }
+
+    Features supported = supportedFeatures();
+    QSet<QString> interfaces;
+    foreach (const Feature &feature, realFeatures) {
+        ensureTracking(feature);
+
+        if (supported.contains(feature)) {
+            // Only query interfaces which are reported as supported to not get an error
+            interfaces.insert(featureToInterface(feature));
+        }
+    }
+
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), uris,
-            PendingContacts::ForUris, realFeatures);
+            PendingContacts::ForUris, realFeatures, interfaces.toList());
     return contacts;
 }
 

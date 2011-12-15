@@ -61,6 +61,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
         : parent(parent),
           manager(manager),
           features(features),
+          missingFeatures(features),
           requestType(type),
           addresses(list),
           nested(0)
@@ -76,6 +77,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
         : parent(parent),
           manager(manager),
           features(features),
+          missingFeatures(features),
           requestType(PendingContacts::ForVCardAddresses),
           addresses(vcardAddresses),
           vcardField(vcardField),
@@ -192,7 +194,8 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 }
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const QStringList &list, RequestType type, const Features &features,
+        const QStringList &list, RequestType type,
+        const Features &features, const QStringList &interfaces,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager->connection()),
       mPriv(new Private(this, manager, list, type, features))
@@ -205,6 +208,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
     ConnectionPtr conn = manager->connection();
 
     if (type == ForIdentifiers) {
+        Q_ASSERT(interfaces.isEmpty());
         PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, list);
         connect(handles,
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -219,7 +223,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
             return;
         }
 
-        PendingAddressingGetContacts *pa = new PendingAddressingGetContacts(conn, list);
+        PendingAddressingGetContacts *pa = new PendingAddressingGetContacts(conn, list, interfaces);
         connect(pa,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onAddressingGetContactsFinished(Tp::PendingOperation*)));
@@ -227,7 +231,8 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 }
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const QString &vcardField, const QStringList &vcardAddresses, const Features &features,
+        const QString &vcardField, const QStringList &vcardAddresses,
+        const Features &features, const QStringList &interfaces,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager->connection()),
       mPriv(new Private(this, manager, vcardField, vcardAddresses, features))
@@ -249,7 +254,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
     }
 
     PendingAddressingGetContacts *pa = new PendingAddressingGetContacts(conn,
-            vcardField, vcardAddresses);
+            vcardField, vcardAddresses, interfaces);
     connect(pa,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onAddressingGetContactsFinished(Tp::PendingOperation*)));
@@ -565,10 +570,22 @@ void PendingContacts::onAddressingGetContactsFinished(PendingOperation *operatio
         return;
     }
 
-    mPriv->nested = manager()->contactsForHandles(pa->validHandles(), features());
-    connect(mPriv->nested,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onNestedFinished(Tp::PendingOperation*)));
+    ConnectionPtr conn = mPriv->manager->connection();
+    ContactAttributesMap attributes = pa->attributes();
+    UIntList handles = attributes.keys();
+    ReferencedHandles referencedHandles(conn, HandleTypeContact, handles);
+
+    foreach (uint handle, handles) {
+        int indexInValid = referencedHandles.indexOf(handle);
+        Q_ASSERT(indexInValid >= 0);
+        ReferencedHandles referencedHandle = referencedHandles.mid(indexInValid, 1);
+        QVariantMap handleAttributes = attributes[handle];
+        ContactPtr contact = mPriv->manager->ensureContact(referencedHandle,
+                    mPriv->missingFeatures, handleAttributes);
+        mPriv->contacts.push_back(contact);
+    }
+
+    setFinished();
 }
 
 void PendingContacts::onReferenceHandlesFinished(PendingOperation *operation)
@@ -665,7 +682,8 @@ void PendingContacts::allAttributesFetched()
 }
 
 PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &connection,
-        const QString &vcardField, const QStringList &vcardAddresses)
+        const QString &vcardField, const QStringList &vcardAddresses,
+        const QStringList &interfaces)
     : PendingOperation(connection),
       mConnection(connection),
       mRequestType(ForVCardAddresses),
@@ -678,14 +696,14 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
         connection->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
                 OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            connAddressingIface->GetContactsByVCardField(vcardField, vcardAddresses, QStringList()));
+            connAddressingIface->GetContactsByVCardField(vcardField, vcardAddresses, interfaces));
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onGetContactsFinished(QDBusPendingCallWatcher*)));
 }
 
 PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &connection,
-        const QStringList &uris)
+        const QStringList &uris, const QStringList &interfaces)
     : PendingOperation(connection),
       mConnection(connection),
       mRequestType(ForUris),
@@ -697,7 +715,7 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
         connection->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
                 OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            connAddressingIface->GetContactsByURI(uris, QStringList()));
+            connAddressingIface->GetContactsByURI(uris, interfaces));
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onGetContactsFinished(QDBusPendingCallWatcher*)));
@@ -717,6 +735,7 @@ void PendingAddressingGetContacts::onGetContactsFinished(QDBusPendingCallWatcher
         mValidHandles = requested.values();
         mValidAddresses = requested.keys();
         mInvalidAddresses = mAddresses.toSet().subtract(mValidAddresses.toSet()).toList();
+        mAttributes = reply.argumentAt<1>();
         setFinished();
     } else {
         debug().nospace() << "GetContactsBy* failed: " <<
