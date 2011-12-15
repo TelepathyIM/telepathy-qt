@@ -9,8 +9,8 @@
  * notice and this notice are preserved.
  */
 
-#ifndef __EXAMPLE_ADDRESSING_CONN_H__
-#define __EXAMPLE_ADDRESSING_CONN_H__
+#ifndef __TP_TESTS_ADDRESSING_CONN_H__
+#define __TP_TESTS_ADDRESSING_CONN_H__
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection.h>
@@ -19,38 +19,38 @@
 
 G_BEGIN_DECLS
 
-typedef struct _ExampleAddressingConnection ExampleAddressingConnection;
-typedef struct _ExampleAddressingConnectionClass ExampleAddressingConnectionClass;
-typedef struct _ExampleAddressingConnectionPrivate ExampleAddressingConnectionPrivate;
+typedef struct _TpTestsAddressingConnection TpTestsAddressingConnection;
+typedef struct _TpTestsAddressingConnectionClass TpTestsAddressingConnectionClass;
+typedef struct _TpTestsAddressingConnectionPrivate TpTestsAddressingConnectionPrivate;
 
-struct _ExampleAddressingConnectionClass {
+struct _TpTestsAddressingConnectionClass {
     TpTestsContactsConnectionClass parent_class;
 };
 
-struct _ExampleAddressingConnection {
+struct _TpTestsAddressingConnection {
     TpTestsContactsConnection parent;
 
-    ExampleAddressingConnectionPrivate *priv;
+    TpTestsAddressingConnectionPrivate *priv;
 };
 
-GType example_addressing_connection_get_type (void);
+GType tp_tests_addressing_connection_get_type (void);
 
 /* TYPE MACROS */
-#define EXAMPLE_TYPE_ADDRESSING_CONNECTION \
-  (example_addressing_connection_get_type ())
-#define EXAMPLE_ADDRESSING_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), EXAMPLE_TYPE_ADDRESSING_CONNECTION, \
-                              ExampleAddressingConnection))
-#define EXAMPLE_ADDRESSING_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass), EXAMPLE_TYPE_ADDRESSING_CONNECTION, \
-                           ExampleAddressingConnectionClass))
-#define EXAMPLE_ADDRESSING_IS_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj), EXAMPLE_TYPE_ADDRESSING_CONNECTION))
-#define EXAMPLE_ADDRESSING_IS_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass), EXAMPLE_TYPE_ADDRESSING_CONNECTION))
-#define EXAMPLE_ADDRESSING_CONNECTION_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), EXAMPLE_TYPE_ADDRESSING_CONNECTION, \
-                              ExampleAddressingConnectionClass))
+#define TP_TESTS_TYPE_ADDRESSING_CONNECTION \
+  (tp_tests_addressing_connection_get_type ())
+#define TP_TESTS_ADDRESSING_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), TP_TESTS_TYPE_ADDRESSING_CONNECTION, \
+                              TpTestsAddressingConnection))
+#define TP_TESTS_ADDRESSING_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass), TP_TESTS_TYPE_ADDRESSING_CONNECTION, \
+                           TpTestsAddressingConnectionClass))
+#define TP_TESTS_ADDRESSING_IS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), TP_TESTS_TYPE_ADDRESSING_CONNECTION))
+#define TP_TESTS_ADDRESSING_IS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass), TP_TESTS_TYPE_ADDRESSING_CONNECTION))
+#define TP_TESTS_ADDRESSING_CONNECTION_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), TP_TESTS_TYPE_ADDRESSING_CONNECTION, \
+                              TpTestsAddressingConnectionClass))
 
 G_END_DECLS
 

@@ -28,14 +28,14 @@ static void addressing_fill_contact_attributes (GObject *obj,
     GHashTable *attributes_hash);
 static void addressing_iface_init (gpointer, gpointer);
 
-G_DEFINE_TYPE_WITH_CODE (ExampleAddressingConnection,
-    example_addressing_connection,
+G_DEFINE_TYPE_WITH_CODE (TpTestsAddressingConnection,
+    tp_tests_addressing_connection,
     TP_TESTS_TYPE_CONTACTS_CONNECTION,
     G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CONNECTION_INTERFACE_ADDRESSING,
       addressing_iface_init);
     );
 
-struct _ExampleAddressingConnectionPrivate
+struct _TpTestsAddressingConnectionPrivate
 {
 };
 
@@ -51,9 +51,9 @@ static const char *assumed_interfaces[] = {
 static void
 constructed (GObject *object)
 {
-  ExampleAddressingConnection *self = EXAMPLE_ADDRESSING_CONNECTION (object);
+  TpTestsAddressingConnection *self = TP_TESTS_ADDRESSING_CONNECTION (object);
   void (*parent_impl) (GObject *) =
-      G_OBJECT_CLASS (example_addressing_connection_parent_class)->constructed;
+      G_OBJECT_CLASS (tp_tests_addressing_connection_parent_class)->constructed;
 
   if (parent_impl != NULL)
     parent_impl (object);
@@ -64,20 +64,20 @@ constructed (GObject *object)
 }
 
 static void
-example_addressing_connection_init (ExampleAddressingConnection *self)
+tp_tests_addressing_connection_init (TpTestsAddressingConnection *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      EXAMPLE_TYPE_ADDRESSING_CONNECTION, ExampleAddressingConnectionPrivate);
+      TP_TESTS_TYPE_ADDRESSING_CONNECTION, TpTestsAddressingConnectionPrivate);
 }
 
 static void
 finalize (GObject *object)
 {
-  G_OBJECT_CLASS (example_addressing_connection_parent_class)->finalize (object);
+  G_OBJECT_CLASS (tp_tests_addressing_connection_parent_class)->finalize (object);
 }
 
 static void
-example_addressing_connection_class_init (ExampleAddressingConnectionClass *klass)
+tp_tests_addressing_connection_class_init (TpTestsAddressingConnectionClass *klass)
 {
   TpBaseConnectionClass *base_class =
       (TpBaseConnectionClass *) klass;
@@ -99,7 +99,7 @@ example_addressing_connection_class_init (ExampleAddressingConnectionClass *klas
 
   object_class->constructed = constructed;
   object_class->finalize = finalize;
-  g_type_class_add_private (klass, sizeof (ExampleAddressingConnectionPrivate));
+  g_type_class_add_private (klass, sizeof (TpTestsAddressingConnectionPrivate));
 
   base_class->interfaces_always_present = interfaces_always_present;
 }

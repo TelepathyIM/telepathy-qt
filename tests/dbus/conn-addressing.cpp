@@ -83,7 +83,7 @@ void TestConnAddressing::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     mConn = new TestConnHelper(this,
-            EXAMPLE_TYPE_ADDRESSING_CONNECTION,
+            TP_TESTS_TYPE_ADDRESSING_CONNECTION,
             "account", "me@example.com",
             "protocol", "addressing",
             NULL);
