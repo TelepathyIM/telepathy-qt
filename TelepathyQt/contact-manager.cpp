@@ -54,6 +54,8 @@ struct TP_QT_NO_EXPORT ContactManager::Private
     // avatar specific methods
     bool buildAvatarFileName(QString token, bool createDir,
         QString &avatarFileName, QString &mimeTypeFileName);
+    Features realFeatures(const Features &features);
+    QSet<QString> interfacesForFeatures(const Features &features);
 
     ContactManager *parent;
     WeakPtr<Connection> connection;
@@ -107,6 +109,33 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
     mimeTypeFileName = QString(QLatin1String("%1.mime")).arg(avatarFileName);
 
     return true;
+}
+
+Features ContactManager::Private::realFeatures(const Features &features)
+{
+    Features ret(features);
+    ret.unite(parent->connection()->contactFactory()->features());
+    // FeatureAvatarData depends on FeatureAvatarToken
+    if (ret.contains(Contact::FeatureAvatarData) &&
+        !ret.contains(Contact::FeatureAvatarToken)) {
+        ret.insert(Contact::FeatureAvatarToken);
+    }
+    return ret;
+}
+
+QSet<QString> ContactManager::Private::interfacesForFeatures(const Features &features)
+{
+    Features supported = parent->supportedFeatures();
+    QSet<QString> ret;
+    foreach (const Feature &feature, features) {
+        parent->ensureTracking(feature);
+
+        if (supported.contains(feature)) {
+            // Only query interfaces which are reported as supported to not get an error
+            ret.insert(parent->featureToInterface(feature));
+        }
+    }
+    return ret;
 }
 
 ContactManager::PendingRefreshContactInfo::PendingRefreshContactInfo(const ConnectionPtr &conn)
@@ -965,14 +994,6 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<uint> otherContacts;
     Features missingFeatures;
 
-    Features realFeatures(features);
-    realFeatures.unite(connection()->contactFactory()->features());
-    // FeatureAvatarData depends on FeatureAvatarToken
-    if (realFeatures.contains(Contact::FeatureAvatarData) &&
-        !realFeatures.contains(Contact::FeatureAvatarToken)) {
-        realFeatures.insert(Contact::FeatureAvatarToken);
-    }
-
     if (!connection()->isValid()) {
         return new PendingContacts(ContactManagerPtr(this), handles, features, Features(),
                 QStringList(), satisfyingContacts, otherContacts,
@@ -984,6 +1005,8 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
+
+    Features realFeatures = mPriv->realFeatures(features);
 
     ConnectionLowlevelPtr connLowlevel = connection()->lowlevel();
 
@@ -1016,16 +1039,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         }
     }
 
-    Features supported = supportedFeatures();
-    QSet<QString> interfaces;
-    foreach (const Feature &feature, missingFeatures) {
-        ensureTracking(feature);
-
-        if (supported.contains(feature)) {
-            // Only query interfaces which are reported as supported to not get an error
-            interfaces.insert(featureToInterface(feature));
-        }
-    }
+    QSet<QString> interfaces = mPriv->interfacesForFeatures(missingFeatures);
 
     PendingContacts *contacts =
         new PendingContacts(ContactManagerPtr(this), handles, features, missingFeatures,
@@ -1062,8 +1076,8 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
-    Features realFeatures(features);
-    realFeatures.unite(connection()->contactFactory()->features());
+    Features realFeatures = mPriv->realFeatures(features);
+
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), identifiers,
             PendingContacts::ForIdentifiers, realFeatures, QStringList());
     return contacts;
@@ -1099,24 +1113,8 @@ PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardF
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
-    Features realFeatures(features);
-    realFeatures.unite(connection()->contactFactory()->features());
-    // FeatureAvatarData depends on FeatureAvatarToken
-    if (realFeatures.contains(Contact::FeatureAvatarData) &&
-        !realFeatures.contains(Contact::FeatureAvatarToken)) {
-        realFeatures.insert(Contact::FeatureAvatarToken);
-    }
-
-    Features supported = supportedFeatures();
-    QSet<QString> interfaces;
-    foreach (const Feature &feature, realFeatures) {
-        ensureTracking(feature);
-
-        if (supported.contains(feature)) {
-            // Only query interfaces which are reported as supported to not get an error
-            interfaces.insert(featureToInterface(feature));
-        }
-    }
+    Features realFeatures = mPriv->realFeatures(features);
+    QSet<QString> interfaces = mPriv->interfacesForFeatures(realFeatures);
 
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), vcardField,
             vcardAddresses, realFeatures, interfaces.toList());
@@ -1151,24 +1149,8 @@ PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
-    Features realFeatures(features);
-    realFeatures.unite(connection()->contactFactory()->features());
-    // FeatureAvatarData depends on FeatureAvatarToken
-    if (realFeatures.contains(Contact::FeatureAvatarData) &&
-        !realFeatures.contains(Contact::FeatureAvatarToken)) {
-        realFeatures.insert(Contact::FeatureAvatarToken);
-    }
-
-    Features supported = supportedFeatures();
-    QSet<QString> interfaces;
-    foreach (const Feature &feature, realFeatures) {
-        ensureTracking(feature);
-
-        if (supported.contains(feature)) {
-            // Only query interfaces which are reported as supported to not get an error
-            interfaces.insert(featureToInterface(feature));
-        }
-    }
+    Features realFeatures = mPriv->realFeatures(features);
+    QSet<QString> interfaces = mPriv->interfacesForFeatures(realFeatures);
 
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), uris,
             PendingContacts::ForUris, realFeatures, interfaces.toList());
