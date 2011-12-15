@@ -1081,7 +1081,8 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
  * \param features The Contact features to enable.
  * \return A PendingContacts, which will emit PendingContacts::finished
  *         when the contacts are retrieved or an error occurred.
- * \sa contactsForHandles(), contactsForIdentifiers(), contactsForUris()
+ * \sa contactsForHandles(), contactsForIdentifiers(), contactsForUris(),
+ *     ProtocolInfo::normalizeVCardAddress()
  */
 PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardField,
         const QStringList &vcardAddresses, const Features &features)
@@ -1132,7 +1133,8 @@ PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardF
  * \param features The Contact features to enable.
  * \return A PendingContacts, which will emit PendingContacts::finished
  *         when the contacts are retrieved or an error occurred.
- * \sa contactsForHandles(), contactsForIdentifiers(), contactsForVCardAddresses()
+ * \sa contactsForHandles(), contactsForIdentifiers(), contactsForVCardAddresses(),
+ *     ProtocolInfo::normalizeContactUri()
  */
 PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
         const Features &features)
