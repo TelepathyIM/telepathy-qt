@@ -307,6 +307,13 @@ const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::st
  */
 const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::staticMetaObject.className()), 7, false);
 
+/**
+ * Feature used in order to access contact addressable addresses info.
+ *
+ * See addressesable addresses specific methods' documentation for more details.
+ *
+ * \sa addressableVCardAddresses(), addressableUris()
+ */
 const Feature Contact::FeatureAddresses = Feature(QLatin1String(Contact::staticMetaObject.className()), 8, false);
 
 /**
@@ -406,11 +413,35 @@ QString Contact::alias() const
     return mPriv->alias;
 }
 
+/**
+ * Return the various vCard addresses that identify this contact.
+ *
+ * Requesting contacts using ContactManager::contactsForVCardAddresses()
+ * by passing one of the various vCard addresses returned here
+ * will succeed and include this contact in the returned PendingContacts.
+ *
+ * This method requires Contact::FeatureAddresses to be ready.
+ *
+ * \return The vCard addresses identifying this contact.
+ * \sa ContactManager::contactsForVCardAddresses(), addressableUris()
+ */
 QMap<QString, QString> Contact::addressableVCardAddresses() const
 {
     return mPriv->addressableVCardAddresses;
 }
 
+/**
+ * Return the various URI addresses that identify this contact.
+ *
+ * Requesting contacts using ContactManager::contactsForUris()
+ * by passing one of the various URI addresses returned here
+ * will succeed and include this contact in the returned PendingContacts.
+ *
+ * This method requires Contact::FeatureAddresses to be ready.
+ *
+ * \return The URI addresses identifying this contact.
+ * \sa ContactManager::contactsForUris(), addressableVCardAddresses()
+ */
 QStringList Contact::addressableUris() const
 {
     return mPriv->addressableUris;
