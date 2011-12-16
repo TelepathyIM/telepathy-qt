@@ -416,10 +416,6 @@ QString Contact::alias() const
 /**
  * Return the various vCard addresses that identify this contact.
  *
- * Requesting contacts using ContactManager::contactsForVCardAddresses()
- * by passing one of the various vCard addresses returned here
- * will succeed and include this contact in the returned PendingContacts.
- *
  * This method requires Contact::FeatureAddresses to be ready.
  *
  * \return The vCard addresses identifying this contact.
@@ -432,10 +428,6 @@ QMap<QString, QString> Contact::vcardAddresses() const
 
 /**
  * Return the various URI addresses that identify this contact.
- *
- * Requesting contacts using ContactManager::contactsForUris()
- * by passing one of the various URI addresses returned here
- * will succeed and include this contact in the returned PendingContacts.
  *
  * This method requires Contact::FeatureAddresses to be ready.
  *
