@@ -366,7 +366,7 @@ QStringList ProtocolInfo::addressableUriSchemes() const
  * If a vCard address X would be normalized to Y, a successful ContactManager
  * contact request using ContactManager::contactsForVCardAddresses() for
  * vCard address X would result in a contact with Y reported as an
- * address in Contact::vcardAddresses() that can identify it.
+ * address that can identify it in Contact::vcardAddresses().
  *
  * \param vcardField The vCard field the \a vcardAddress belongs to.
  * \param vcardAddress The address to normalize.
@@ -405,7 +405,7 @@ PendingString *ProtocolInfo::normalizeVCardAddress(const QString &vcardField,
  * If a URI address X would be normalized to Y, a successful ContactManager
  * contact request using ContactManager::contactsForUris() for
  * URI address X would result in a contact with Y reported as an
- * address in Contact::uris() that can identify it.
+ * address that can identify it in Contact::uris().
  *
  * \param uri The URI to normalize.
  * \return A PendingString which will emit PendingString::finished
