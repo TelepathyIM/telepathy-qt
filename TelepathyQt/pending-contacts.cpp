@@ -99,6 +99,8 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
 
     void setFinished();
 
+    bool checkRequestTypeAndState(const char *methodName, const char *debug, RequestType type);
+
     // Public object
     PendingContacts *parent;
 
@@ -140,6 +142,25 @@ void PendingContacts::Private::setFinished()
     }
 
     parent->setFinished();
+}
+
+bool PendingContacts::Private::checkRequestTypeAndState(const char *methodName,
+        const char *debug,
+        RequestType type)
+{
+    if (!parent->isFinished()) {
+        warning().nospace() << "PendingContacts::" << methodName << "() called before finished";
+        return false;
+    } else if (parent->isError()) {
+        warning().nospace() << "PendingContacts::" << methodName << "() called when errored";
+        return false;
+    } else if (requestType != type) {
+        warning().nospace() << "PendingContacts::" << methodName << "() called for" <<
+            this << "which is not for " << debug;
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -395,14 +416,7 @@ QList<ContactPtr> PendingContacts::contacts() const
 
 UIntList PendingContacts::invalidHandles() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::invalidHandles() called before finished";
-        return UIntList();
-    } else if (isError()) {
-        warning() << "PendingContacts::invalidHandles() called when errored";
-        return UIntList();
-    } else if (!isForHandles()) {
-        warning() << "PendingContacts::invalidHandles() called for" << this << "which is not for handles!";
+    if (!mPriv->checkRequestTypeAndState("invalidHandles", "handles", ForHandles)) {
         return UIntList();
     }
 
@@ -411,14 +425,7 @@ UIntList PendingContacts::invalidHandles() const
 
 QStringList PendingContacts::validIdentifiers() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::validIdentifiers() called before finished";
-        return QStringList();
-    } else if (isError()) {
-        warning() << "PendingContacts::validIdentifiers() called when errored";
-        return QStringList();
-    } else if (!isForIdentifiers()) {
-        warning() << "PendingContacts::validIdentifiers() called for" << this << "which is not for IDs!";
+    if (!mPriv->checkRequestTypeAndState("validIdentifiers", "IDs", ForIdentifiers)) {
         return QStringList();
     }
 
@@ -427,14 +434,7 @@ QStringList PendingContacts::validIdentifiers() const
 
 QHash<QString, QPair<QString, QString> > PendingContacts::invalidIdentifiers() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::invalidIdentifiers() called before finished";
-        return QHash<QString, QPair<QString, QString> >();
-    } else if (isError()) {
-        warning() << "PendingContacts::invalidIdentifiers() called when errored";
-        return QHash<QString, QPair<QString, QString> >();
-    } else if (!isForIdentifiers()) {
-        warning() << "PendingContacts::invalidIdentifiers() called for" << this << "which is not for IDs!";
+    if (!mPriv->checkRequestTypeAndState("invalidIdentifiers", "IDs", ForIdentifiers)) {
         return QHash<QString, QPair<QString, QString> >();
     }
 
@@ -443,14 +443,7 @@ QHash<QString, QPair<QString, QString> > PendingContacts::invalidIdentifiers() c
 
 QStringList PendingContacts::validVCardAddresses() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::validVCardAddresses() called before finished";
-        return QStringList();
-    } else if (isError()) {
-        warning() << "PendingContacts::validVCardAddresses() called when errored";
-        return QStringList();
-    } else if (!isForVCardAddresses()) {
-        warning() << "PendingContacts::validVCardAddresses() called for" << this << "which is not for vcard addresses!";
+    if (!mPriv->checkRequestTypeAndState("validVCardAddresses", "vcard addresses", ForVCardAddresses)) {
         return QStringList();
     }
 
@@ -459,14 +452,7 @@ QStringList PendingContacts::validVCardAddresses() const
 
 QStringList PendingContacts::invalidVCardAddresses() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::invalidVCardAddresses() called before finished";
-        return QStringList();
-    } else if (isError()) {
-        warning() << "PendingContacts::invalidVCardAddresses() called when errored";
-        return QStringList();
-    } else if (!isForVCardAddresses()) {
-        warning() << "PendingContacts::invalidVCardAddresses() called for" << this << "which is not for vcard addresses!";
+    if (!mPriv->checkRequestTypeAndState("invalidVCardAddresses", "vcard addresses", ForVCardAddresses)) {
         return QStringList();
     }
 
@@ -475,14 +461,7 @@ QStringList PendingContacts::invalidVCardAddresses() const
 
 QStringList PendingContacts::validUris() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::validUris() called before finished";
-        return QStringList();
-    } else if (isError()) {
-        warning() << "PendingContacts::validUris() called when errored";
-        return QStringList();
-    } else if (!isForUris()) {
-        warning() << "PendingContacts::validUris() called for" << this << "which is not for URIs!";
+    if (!mPriv->checkRequestTypeAndState("validUris", "URIS", ForUris)) {
         return QStringList();
     }
 
@@ -491,14 +470,7 @@ QStringList PendingContacts::validUris() const
 
 QStringList PendingContacts::invalidUris() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::invalidUris() called before finished";
-        return QStringList();
-    } else if (isError()) {
-        warning() << "PendingContacts::invalidUris() called when errored";
-        return QStringList();
-    } else if (!isForUris()) {
-        warning() << "PendingContacts::invalidUris() called for" << this << "which is not for URIs!";
+    if (!mPriv->checkRequestTypeAndState("invalidUris", "URIS", ForUris)) {
         return QStringList();
     }
 
