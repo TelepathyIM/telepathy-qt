@@ -1,8 +1,8 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * @copyright Copyright (C) 2008 Nokia Corporation
+ * @copyright Copyright (C) 2008-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2011 Nokia Corporation
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,13 @@
  */
 
 #include <TelepathyQt/PendingContacts>
+#include "TelepathyQt/pending-contacts-internal.h"
+
 #include "TelepathyQt/_gen/pending-contacts.moc.hpp"
+#include "TelepathyQt/_gen/pending-contacts-internal.moc.hpp"
+
+#include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/future-internal.h"
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ConnectionLowlevel>
@@ -31,20 +37,14 @@
 #include <TelepathyQt/PendingHandles>
 #include <TelepathyQt/ReferencedHandles>
 
-#include "TelepathyQt/debug-internal.h"
+// FIXME: Refactor PendingContacts code to make it more readable/maintainable and reuse common code
+//        when appropriate.
 
 namespace Tp
 {
 
 struct TP_QT_NO_EXPORT PendingContacts::Private
 {
-    enum RequestType
-    {
-        ForHandles,
-        ForIdentifiers,
-        Upgrade
-    };
-
     Private(PendingContacts *parent, const ContactManagerPtr &manager, const UIntList &handles,
             const Features &features, const Features &missingFeatures,
             const QMap<uint, ContactPtr> &satisfyingContacts)
@@ -53,19 +53,37 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
           features(features),
           missingFeatures(missingFeatures),
           satisfyingContacts(satisfyingContacts),
-          requestType(ForHandles),
+          requestType(PendingContacts::ForHandles),
           handles(handles),
           nested(0)
     {
     }
 
-    Private(PendingContacts *parent, const ContactManagerPtr &manager, const QStringList &identifiers,
-            const Features &features)
+    Private(PendingContacts *parent, const ContactManagerPtr &manager, const QStringList &list,
+            PendingContacts::RequestType type, const Features &features)
         : parent(parent),
           manager(manager),
           features(features),
-          requestType(ForIdentifiers),
-          identifiers(identifiers),
+          missingFeatures(features),
+          requestType(type),
+          addresses(list),
+          nested(0)
+    {
+        if (type != PendingContacts::ForIdentifiers &&
+            type != PendingContacts::ForUris) {
+            Q_ASSERT(false);
+        }
+    }
+
+    Private(PendingContacts *parent, const ContactManagerPtr &manager, const QString &vcardField,
+            const QStringList &vcardAddresses, const Features &features)
+        : parent(parent),
+          manager(manager),
+          features(features),
+          missingFeatures(features),
+          requestType(PendingContacts::ForVCardAddresses),
+          addresses(vcardAddresses),
+          vcardField(vcardField),
           nested(0)
     {
     }
@@ -76,13 +94,15 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
         : parent(parent),
           manager(manager),
           features(features),
-          requestType(Upgrade),
+          requestType(PendingContacts::Upgrade),
           contactsToUpgrade(contactsToUpgrade),
           nested(0)
     {
     }
 
     void setFinished();
+
+    bool checkRequestTypeAndState(const char *methodName, const char *debug, RequestType type);
 
     // Public object
     PendingContacts *parent;
@@ -96,7 +116,8 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
     // Request type specific parameters
     RequestType requestType;
     UIntList handles;
-    QStringList identifiers;
+    QStringList addresses;
+    QString vcardField;
     QList<ContactPtr> contactsToUpgrade;
     PendingContacts *nested;
 
@@ -105,6 +126,8 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
     UIntList invalidHandles;
     QStringList validIds;
     QHash<QString, QPair<QString, QString> > invalidIds;
+    QStringList validAddresses;
+    QStringList invalidAddresses;
 
     ReferencedHandles handlesToInspect;
 };
@@ -122,6 +145,25 @@ void PendingContacts::Private::setFinished()
     }
 
     parent->setFinished();
+}
+
+bool PendingContacts::Private::checkRequestTypeAndState(const char *methodName,
+        const char *debug,
+        RequestType type)
+{
+    if (!parent->isFinished()) {
+        warning().nospace() << "PendingContacts::" << methodName << "() called before finished";
+        return false;
+    } else if (parent->isError()) {
+        warning().nospace() << "PendingContacts::" << methodName << "() called when errored";
+        return false;
+    } else if (requestType != type) {
+        warning().nospace() << "PendingContacts::" << methodName << "() called for" <<
+            this << "which is not for " << debug;
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -176,10 +218,11 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 }
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const QStringList &identifiers, const Features &features,
+        const QStringList &list, RequestType type,
+        const Features &features, const QStringList &interfaces,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager->connection()),
-      mPriv(new Private(this, manager, identifiers, features))
+      mPriv(new Private(this, manager, list, type, features))
 {
     if (!errorName.isEmpty()) {
         setFinishedWithError(errorName, errorMessage);
@@ -187,11 +230,58 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
     }
 
     ConnectionPtr conn = manager->connection();
-    PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, identifiers);
 
-    connect(handles,
+    if (type == ForIdentifiers) {
+        Q_ASSERT(interfaces.isEmpty());
+        PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, list);
+        connect(handles,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
+    } else if (type == ForUris) {
+        TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+            conn->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+                    OptionalInterfaceFactory<Connection>::CheckInterfaceSupported);
+        if (!connAddressingIface) {
+            setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
+                    QLatin1String("Connection does not support Addressing interface"));
+            return;
+        }
+
+        PendingAddressingGetContacts *pa = new PendingAddressingGetContacts(conn, list, interfaces);
+        connect(pa,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onAddressingGetContactsFinished(Tp::PendingOperation*)));
+    }
+}
+
+PendingContacts::PendingContacts(const ContactManagerPtr &manager,
+        const QString &vcardField, const QStringList &vcardAddresses,
+        const Features &features, const QStringList &interfaces,
+        const QString &errorName, const QString &errorMessage)
+    : PendingOperation(manager->connection()),
+      mPriv(new Private(this, manager, vcardField, vcardAddresses, features))
+{
+    if (!errorName.isEmpty()) {
+        setFinishedWithError(errorName, errorMessage);
+        return;
+    }
+
+    ConnectionPtr conn = manager->connection();
+
+    TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+        conn->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+                OptionalInterfaceFactory<Connection>::CheckInterfaceSupported);
+    if (!connAddressingIface) {
+        setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("Connection does not support Addressing interface"));
+        return;
+    }
+
+    PendingAddressingGetContacts *pa = new PendingAddressingGetContacts(conn,
+            vcardField, vcardAddresses, interfaces);
+    connect(pa,
             SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
+            SLOT(onAddressingGetContactsFinished(Tp::PendingOperation*)));
 }
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
@@ -236,7 +326,7 @@ Features PendingContacts::features() const
 
 bool PendingContacts::isForHandles() const
 {
-    return mPriv->requestType == Private::ForHandles;
+    return mPriv->requestType == ForHandles;
 }
 
 UIntList PendingContacts::handles() const
@@ -250,21 +340,61 @@ UIntList PendingContacts::handles() const
 
 bool PendingContacts::isForIdentifiers() const
 {
-    return mPriv->requestType == Private::ForIdentifiers;
+    return mPriv->requestType == ForIdentifiers;
 }
 
 QStringList PendingContacts::identifiers() const
 {
     if (!isForIdentifiers()) {
         warning() << "Tried to get identifiers from" << this << "which is not for identifiers!";
+        return QStringList();
     }
 
-    return mPriv->identifiers;
+    return mPriv->addresses;
+}
+
+bool PendingContacts::isForVCardAddresses() const
+{
+    return mPriv->requestType == ForVCardAddresses;
+}
+
+QString PendingContacts::vcardField() const
+{
+    if (!isForVCardAddresses()) {
+        warning() << "Tried to get vcard field from" << this << "which is not for vcard addresses!";
+    }
+
+    return mPriv->vcardField;
+}
+
+QStringList PendingContacts::vcardAddresses() const
+{
+    if (!isForVCardAddresses()) {
+        warning() << "Tried to get vcard addresses from" << this << "which is not for vcard addresses!";
+        return QStringList();
+    }
+
+    return mPriv->addresses;
+}
+
+bool PendingContacts::isForUris() const
+{
+    return mPriv->requestType == ForUris;
+}
+
+QStringList PendingContacts::uris() const
+{
+    if (!isForUris()) {
+        warning() << "Tried to get uris from" << this << "which is not for uris!";
+        return QStringList();
+    }
+
+    return mPriv->addresses;
 }
 
 bool PendingContacts::isUpgrade() const
 {
-    return mPriv->requestType == Private::Upgrade;
+    return mPriv->requestType == Upgrade;
 }
 
 QList<ContactPtr> PendingContacts::contactsToUpgrade() const
@@ -289,12 +419,8 @@ QList<ContactPtr> PendingContacts::contacts() const
 
 UIntList PendingContacts::invalidHandles() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::invalidHandles() called before finished";
-    } else if (isError()) {
-        warning() << "PendingContacts::invalidHandles() called when errored";
-    } else if (!isForHandles()) {
-        warning() << "PendingContacts::invalidHandles() called for" << this << "which is for IDs!";
+    if (!mPriv->checkRequestTypeAndState("invalidHandles", "handles", ForHandles)) {
+        return UIntList();
     }
 
     return mPriv->invalidHandles;
@@ -302,10 +428,8 @@ UIntList PendingContacts::invalidHandles() const
 
 QStringList PendingContacts::validIdentifiers() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::validIdentifiers called before finished";
-    } else if (!isValid()) {
-        warning() << "PendingContacts::validIdentifiers called when not valid";
+    if (!mPriv->checkRequestTypeAndState("validIdentifiers", "IDs", ForIdentifiers)) {
+        return QStringList();
     }
 
     return mPriv->validIds;
@@ -313,11 +437,47 @@ QStringList PendingContacts::validIdentifiers() const
 
 QHash<QString, QPair<QString, QString> > PendingContacts::invalidIdentifiers() const
 {
-    if (!isFinished()) {
-        warning() << "PendingContacts::invalidIdentifiers called before finished";
+    if (!mPriv->checkRequestTypeAndState("invalidIdentifiers", "IDs", ForIdentifiers)) {
+        return QHash<QString, QPair<QString, QString> >();
     }
 
     return mPriv->invalidIds;
+}
+
+QStringList PendingContacts::validVCardAddresses() const
+{
+    if (!mPriv->checkRequestTypeAndState("validVCardAddresses", "vcard addresses", ForVCardAddresses)) {
+        return QStringList();
+    }
+
+    return mPriv->validAddresses;
+}
+
+QStringList PendingContacts::invalidVCardAddresses() const
+{
+    if (!mPriv->checkRequestTypeAndState("invalidVCardAddresses", "vcard addresses", ForVCardAddresses)) {
+        return QStringList();
+    }
+
+    return mPriv->invalidAddresses;
+}
+
+QStringList PendingContacts::validUris() const
+{
+    if (!mPriv->checkRequestTypeAndState("validUris", "URIS", ForUris)) {
+        return QStringList();
+    }
+
+    return mPriv->validAddresses;
+}
+
+QStringList PendingContacts::invalidUris() const
+{
+    if (!mPriv->checkRequestTypeAndState("invalidUris", "URIS", ForUris)) {
+        return QStringList();
+    }
+
+    return mPriv->invalidAddresses;
 }
 
 void PendingContacts::onAttributesFinished(PendingOperation *operation)
@@ -370,6 +530,37 @@ void PendingContacts::onRequestHandlesFinished(PendingOperation *operation)
     connect(mPriv->nested,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onNestedFinished(Tp::PendingOperation*)));
+}
+
+void PendingContacts::onAddressingGetContactsFinished(PendingOperation *operation)
+{
+    PendingAddressingGetContacts *pa = qobject_cast<PendingAddressingGetContacts *>(operation);
+
+    Q_ASSERT(pa->isForUris() || pa->isForVCardAddresses());
+    mPriv->validAddresses = pa->validAddresses();
+    mPriv->invalidAddresses = pa->invalidAddresses();
+
+    if (pa->isError()) {
+        setFinishedWithError(operation->errorName(), operation->errorMessage());
+        return;
+    }
+
+    ConnectionPtr conn = mPriv->manager->connection();
+    ContactAttributesMap attributes = pa->attributes();
+    UIntList handles = attributes.keys();
+    ReferencedHandles referencedHandles(conn, HandleTypeContact, handles);
+
+    foreach (uint handle, handles) {
+        int indexInValid = referencedHandles.indexOf(handle);
+        Q_ASSERT(indexInValid >= 0);
+        ReferencedHandles referencedHandle = referencedHandles.mid(indexInValid, 1);
+        QVariantMap handleAttributes = attributes[handle];
+        ContactPtr contact = mPriv->manager->ensureContact(referencedHandle,
+                    mPriv->missingFeatures, handleAttributes);
+        mPriv->contacts.push_back(contact);
+    }
+
+    setFinished();
 }
 
 void PendingContacts::onReferenceHandlesFinished(PendingOperation *operation)
@@ -463,6 +654,71 @@ void PendingContacts::allAttributesFetched()
     }
 
     mPriv->setFinished();
+}
+
+PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &connection,
+        const QString &vcardField, const QStringList &vcardAddresses,
+        const QStringList &interfaces)
+    : PendingOperation(connection),
+      mConnection(connection),
+      mRequestType(ForVCardAddresses),
+      mVCardField(vcardField),
+      mAddresses(vcardAddresses)
+{
+    // no check for the interface here again, we expect this interface to be used only when
+    // Conn.I.Addressing is available
+    TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+        connection->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            connAddressingIface->GetContactsByVCardField(vcardField, vcardAddresses, interfaces));
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onGetContactsFinished(QDBusPendingCallWatcher*)));
+}
+
+PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &connection,
+        const QStringList &uris, const QStringList &interfaces)
+    : PendingOperation(connection),
+      mConnection(connection),
+      mRequestType(ForUris),
+      mAddresses(uris)
+{
+    // no check for the interface here again, we expect this interface to be used only when
+    // Conn.I.Addressing is available
+    TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+        connection->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+                OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            connAddressingIface->GetContactsByURI(uris, interfaces));
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onGetContactsFinished(QDBusPendingCallWatcher*)));
+}
+
+PendingAddressingGetContacts::~PendingAddressingGetContacts()
+{
+}
+
+void PendingAddressingGetContacts::onGetContactsFinished(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<TpFuture::AddressingNormalizationMap, Tp::ContactAttributesMap> reply = *watcher;
+
+    if (!reply.isError()) {
+        TpFuture::AddressingNormalizationMap requested = reply.argumentAt<0>();
+
+        mValidHandles = requested.values();
+        mValidAddresses = requested.keys();
+        mInvalidAddresses = mAddresses.toSet().subtract(mValidAddresses.toSet()).toList();
+        mAttributes = reply.argumentAt<1>();
+        setFinished();
+    } else {
+        debug().nospace() << "GetContactsBy* failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+    }
+
+    watcher->deleteLater();
 }
 
 } // Tp

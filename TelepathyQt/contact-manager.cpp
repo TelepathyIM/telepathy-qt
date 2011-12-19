@@ -26,6 +26,7 @@
 #include "TelepathyQt/_gen/contact-manager.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/future-internal.h"
 
 #include <TelepathyQt/AvatarData>
 #include <TelepathyQt/Connection>
@@ -53,6 +54,8 @@ struct TP_QT_NO_EXPORT ContactManager::Private
     // avatar specific methods
     bool buildAvatarFileName(QString token, bool createDir,
         QString &avatarFileName, QString &mimeTypeFileName);
+    Features realFeatures(const Features &features);
+    QSet<QString> interfacesForFeatures(const Features &features);
 
     ContactManager *parent;
     WeakPtr<Connection> connection;
@@ -106,6 +109,33 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
     mimeTypeFileName = QString(QLatin1String("%1.mime")).arg(avatarFileName);
 
     return true;
+}
+
+Features ContactManager::Private::realFeatures(const Features &features)
+{
+    Features ret(features);
+    ret.unite(parent->connection()->contactFactory()->features());
+    // FeatureAvatarData depends on FeatureAvatarToken
+    if (ret.contains(Contact::FeatureAvatarData) &&
+        !ret.contains(Contact::FeatureAvatarToken)) {
+        ret.insert(Contact::FeatureAvatarToken);
+    }
+    return ret;
+}
+
+QSet<QString> ContactManager::Private::interfacesForFeatures(const Features &features)
+{
+    Features supported = parent->supportedFeatures();
+    QSet<QString> ret;
+    foreach (const Feature &feature, features) {
+        parent->ensureTracking(feature);
+
+        if (supported.contains(feature)) {
+            // Only query interfaces which are reported as supported to not get an error
+            ret.insert(parent->featureToInterface(feature));
+        }
+    }
+    return ret;
 }
 
 ContactManager::PendingRefreshContactInfo::PendingRefreshContactInfo(const ConnectionPtr &conn)
@@ -221,7 +251,8 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureCapabilities
             << Contact::FeatureLocation
             << Contact::FeatureInfo
-            << Contact::FeatureRosterGroups;
+            << Contact::FeatureRosterGroups
+            << Contact::FeatureAddresses;
         QStringList interfaces = connection()->lowlevel()->contactAttributeInterfaces();
         foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
@@ -963,14 +994,6 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<uint> otherContacts;
     Features missingFeatures;
 
-    Features realFeatures(features);
-    realFeatures.unite(connection()->contactFactory()->features());
-    // FeatureAvatarData depends on FeatureAvatarToken
-    if (realFeatures.contains(Contact::FeatureAvatarData) &&
-        !realFeatures.contains(Contact::FeatureAvatarToken)) {
-        realFeatures.insert(Contact::FeatureAvatarToken);
-    }
-
     if (!connection()->isValid()) {
         return new PendingContacts(ContactManagerPtr(this), handles, features, Features(),
                 QStringList(), satisfyingContacts, otherContacts,
@@ -982,6 +1005,8 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
+
+    Features realFeatures = mPriv->realFeatures(features);
 
     ConnectionLowlevelPtr connLowlevel = connection()->lowlevel();
 
@@ -1014,16 +1039,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         }
     }
 
-    Features supported = supportedFeatures();
-    QSet<QString> interfaces;
-    foreach (const Feature &feature, missingFeatures) {
-        ensureTracking(feature);
-
-        if (supported.contains(feature)) {
-            // Only query interfaces which are reported as supported to not get an error
-            interfaces.insert(featureToInterface(feature));
-        }
-    }
+    QSet<QString> interfaces = mPriv->interfacesForFeatures(missingFeatures);
 
     PendingContacts *contacts =
         new PendingContacts(ContactManagerPtr(this), handles, features, missingFeatures,
@@ -1049,19 +1065,95 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
         const Features &features)
 {
     if (!connection()->isValid()) {
-        return new PendingContacts(ContactManagerPtr(this), identifiers, features,
+        return new PendingContacts(ContactManagerPtr(this), identifiers,
+                PendingContacts::ForIdentifiers, features, QStringList(),
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
-        return new PendingContacts(ContactManagerPtr(this), identifiers, features,
+        return new PendingContacts(ContactManagerPtr(this), identifiers,
+                PendingContacts::ForIdentifiers, features, QStringList(),
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
-    Features realFeatures(features);
-    realFeatures.unite(connection()->contactFactory()->features());
+    Features realFeatures = mPriv->realFeatures(features);
+
     PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), identifiers,
-            realFeatures);
+            PendingContacts::ForIdentifiers, realFeatures, QStringList());
+    return contacts;
+}
+
+/**
+ * Request contacts and enable their \a features using a given field in their vCards.
+ *
+ * This method requires Connection::FeatureCore to be ready.
+ *
+ * \param vcardField The vCard field of the addresses we are requesting.
+ *                   Supported fields can be found in ProtocolInfo::addressableVCardFields().
+ * \param vcardAddresses The addresses to get contacts for. The address types must match
+ *                       the given vCard field.
+ * \param features The Contact features to enable.
+ * \return A PendingContacts, which will emit PendingContacts::finished
+ *         when the contacts are retrieved or an error occurred.
+ * \sa contactsForHandles(), contactsForIdentifiers(), contactsForUris(),
+ *     ProtocolInfo::normalizeVCardAddress()
+ */
+PendingContacts *ContactManager::contactsForVCardAddresses(const QString &vcardField,
+        const QStringList &vcardAddresses, const Features &features)
+{
+    if (!connection()->isValid()) {
+        return new PendingContacts(ContactManagerPtr(this), vcardField, vcardAddresses,
+                features, QStringList(),
+                TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection is invalid"));
+    } else if (!connection()->isReady(Connection::FeatureCore)) {
+        return new PendingContacts(ContactManagerPtr(this), vcardField, vcardAddresses,
+                features, QStringList(),
+                TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection::FeatureCore is not ready"));
+    }
+
+    Features realFeatures = mPriv->realFeatures(features);
+    QSet<QString> interfaces = mPriv->interfacesForFeatures(realFeatures);
+
+    PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), vcardField,
+            vcardAddresses, realFeatures, interfaces.toList());
+    return contacts;
+}
+
+/**
+ * Request contacts and enable their \a features using the given URI addresses.
+ *
+ * This method requires Connection::FeatureCore to be ready.
+ *
+ * \param uris The URI addresses to get contacts for.
+ *             Supported schemes can be found in ProtocolInfo::addressableUriSchemes().
+ * \param features The Contact features to enable.
+ * \return A PendingContacts, which will emit PendingContacts::finished
+ *         when the contacts are retrieved or an error occurred.
+ * \sa contactsForHandles(), contactsForIdentifiers(), contactsForVCardAddresses(),
+ *     ProtocolInfo::normalizeContactUri()
+ */
+PendingContacts *ContactManager::contactsForUris(const QStringList &uris,
+        const Features &features)
+{
+    if (!connection()->isValid()) {
+        return new PendingContacts(ContactManagerPtr(this), uris,
+                PendingContacts::ForUris, features, QStringList(),
+                TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection is invalid"));
+    } else if (!connection()->isReady(Connection::FeatureCore)) {
+        return new PendingContacts(ContactManagerPtr(this), uris,
+                PendingContacts::ForUris, features, QStringList(),
+                TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Connection::FeatureCore is not ready"));
+    }
+
+    Features realFeatures = mPriv->realFeatures(features);
+    QSet<QString> interfaces = mPriv->interfacesForFeatures(realFeatures);
+
+    PendingContacts *contacts = new PendingContacts(ContactManagerPtr(this), uris,
+            PendingContacts::ForUris, realFeatures, interfaces.toList());
     return contacts;
 }
 
@@ -1378,6 +1470,8 @@ QString ContactManager::featureToInterface(const Feature &feature)
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO;
     } else if (feature == Contact::FeatureRosterGroups) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
+    } else if (feature == Contact::FeatureAddresses) {
+        return TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING;
     } else {
         warning() << "ContactManager doesn't know which interface corresponds to feature"
             << feature;
@@ -1442,7 +1536,7 @@ void ContactManager::ensureTracking(const Feature &feature)
         connect(simplePresenceInterface,
                 SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
                 SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
-    } else if (feature == Contact::FeatureRosterGroups) {
+    } else if (feature == Contact::FeatureRosterGroups || feature == Contact::FeatureAddresses) {
         // nothing to do here, but we don't want to warn
         ;
     } else {

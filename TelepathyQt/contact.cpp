@@ -25,6 +25,7 @@
 #include "TelepathyQt/_gen/contact.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
+#include "TelepathyQt/future-internal.h"
 
 #include <TelepathyQt/AvatarData>
 #include <TelepathyQt/Connection>
@@ -70,6 +71,8 @@ struct TP_QT_NO_EXPORT Contact::Private
     Features actualFeatures;
 
     QString alias;
+    QMap<QString, QString> vcardAddresses;
+    QStringList uris;
     Presence presence;
     ContactCapabilities caps;
     LocationInfo location;
@@ -233,8 +236,6 @@ ContactInfoFieldList Contact::InfoFields::allFields() const
 /**
  * Feature used in order to access contact alias info.
  *
- * See alias specific methods' documentation for more details.
- *
  * \sa alias(), aliasChanged()
  */
 const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaObject.className()), 0, false);
@@ -244,16 +245,12 @@ const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaO
  *
  * Enabling this feature will also enable FeatureAvatarToken.
  *
- * See avatar data specific methods' documentation for more details.
- *
  * \sa avatarData(), avatarDataChanged()
  */
 const Feature Contact::FeatureAvatarData = Feature(QLatin1String(Contact::staticMetaObject.className()), 1, false);
 
 /**
  * Feature used in order to access contact avatar token info.
- *
- * See avatar token specific methods' documentation for more details.
  *
  * \sa isAvatarTokenKnown(), avatarToken(), avatarTokenChanged()
  */
@@ -262,16 +259,12 @@ const Feature Contact::FeatureAvatarToken = Feature(QLatin1String(Contact::stati
 /**
  * Feature used in order to access contact capabilities info.
  *
- * See capabilities specific methods' documentation for more details.
- *
  * \sa capabilities(), capabilitiesChanged()
  */
 const Feature Contact::FeatureCapabilities = Feature(QLatin1String(Contact::staticMetaObject.className()), 3, false);
 
 /**
  * Feature used in order to access contact info fields.
- *
- * See info fields specific methods' documentation for more details.
  *
  * \sa infoFields(), infoFieldsChanged()
  */
@@ -280,16 +273,12 @@ const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaOb
 /**
  * Feature used in order to access contact location info.
  *
- * See location specific methods' documentation for more details.
- *
  * \sa location(), locationUpdated()
  */
 const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMetaObject.className()), 5, false);
 
 /**
  * Feature used in order to access contact presence info.
- *
- * See presence specific methods' documentation for more details.
  *
  * \sa presence(), presenceChanged()
  */
@@ -298,11 +287,16 @@ const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::st
 /**
  * Feature used in order to access contact roster groups.
  *
- * See roster groups specific methods' documentation for more details.
- *
  * \sa groups(), addedToGroup(), removedFromGroup()
  */
 const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::staticMetaObject.className()), 7, false);
+
+/**
+ * Feature used in order to access contact addressable addresses info.
+ *
+ * \sa vcardAddresses(), uris()
+ */
+const Feature Contact::FeatureAddresses = Feature(QLatin1String(Contact::staticMetaObject.className()), 8, false);
 
 /**
  * Construct a new Contact object.
@@ -399,6 +393,32 @@ QString Contact::alias() const
     }
 
     return mPriv->alias;
+}
+
+/**
+ * Return the various vCard addresses that identify this contact.
+ *
+ * This method requires Contact::FeatureAddresses to be ready.
+ *
+ * \return The vCard addresses identifying this contact.
+ * \sa ContactManager::contactsForVCardAddresses(), uris()
+ */
+QMap<QString, QString> Contact::vcardAddresses() const
+{
+    return mPriv->vcardAddresses;
+}
+
+/**
+ * Return the various URI addresses that identify this contact.
+ *
+ * This method requires Contact::FeatureAddresses to be ready.
+ *
+ * \return The URI addresses identifying this contact.
+ * \sa ContactManager::contactsForUris(), vcardAddresses()
+ */
+QStringList Contact::uris() const
+{
+    return mPriv->uris;
 }
 
 /**
@@ -1016,6 +1036,12 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             QStringList groups = qdbus_cast<QStringList>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
             mPriv->groups = groups.toSet();
+        } else if (feature == FeatureAddresses) {
+            TpFuture::VCardFieldAddressMap addresses = qdbus_cast<TpFuture::VCardFieldAddressMap>(attributes.value(
+                        TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/addresses")));
+            QStringList uris = qdbus_cast<QStringList>(attributes.value(
+                        TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/uris")));
+            receiveAddresses(addresses, uris);
         } else {
             warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
         }
@@ -1124,6 +1150,18 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
         mPriv->info = InfoFields(info);
         emit infoFieldsChanged(mPriv->info);
     }
+}
+
+void Contact::receiveAddresses(const QMap<QString, QString> &addresses,
+        const QStringList &uris)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAddresses)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureAddresses);
+    mPriv->vcardAddresses = addresses;
+    mPriv->uris = uris;
 }
 
 Contact::PresenceState Contact::subscriptionStateToPresenceState(uint subscriptionState)

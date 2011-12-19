@@ -1,8 +1,8 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * @copyright Copyright (C) 2008 Nokia Corporation
+ * @copyright Copyright (C) 2008-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2011 Nokia Corporation
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -60,6 +60,13 @@ public:
     bool isForIdentifiers() const;
     QStringList identifiers() const;
 
+    bool isForVCardAddresses() const;
+    QString vcardField() const;
+    QStringList vcardAddresses() const;
+
+    bool isForUris() const;
+    QStringList uris() const;
+
     bool isUpgrade() const;
     QList<ContactPtr> contactsToUpgrade() const;
 
@@ -67,16 +74,30 @@ public:
     UIntList invalidHandles() const;
     QStringList validIdentifiers() const;
     QHash<QString, QPair<QString, QString> > invalidIdentifiers() const;
+    QStringList validVCardAddresses() const;
+    QStringList invalidVCardAddresses() const;
+    QStringList validUris() const;
+    QStringList invalidUris() const;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onAttributesFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onRequestHandlesFinished(Tp::PendingOperation *);
+    TP_QT_NO_EXPORT void onAddressingGetContactsFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onReferenceHandlesFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onNestedFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onInspectHandlesFinished(QDBusPendingCallWatcher *);
 
 private:
     friend class ContactManager;
+
+    enum RequestType
+    {
+        ForHandles,
+        ForIdentifiers,
+        ForVCardAddresses,
+        ForUris,
+        Upgrade
+    };
 
     // If errorName is non-empty, these will fail instantly
     TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const UIntList &handles,
@@ -87,8 +108,16 @@ private:
             const QSet<uint> &otherContacts,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
-    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QStringList &identifiers,
+    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QStringList &list,
+            RequestType requestType,
             const Features &features,
+            const QStringList &interfaces,
+            const QString &errorName = QString(),
+            const QString &errorMessage = QString());
+    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QString &vcardField,
+            const QStringList &vcardAddresses,
+            const Features &features,
+            const QStringList &interfaces,
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
     TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const QList<ContactPtr> &contacts,

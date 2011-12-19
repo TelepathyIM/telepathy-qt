@@ -363,6 +363,11 @@ QStringList ProtocolInfo::addressableUriSchemes() const
  * For example, a vCard TEL field formatted as +1 (206) 555 1234,
  * could be normalized to +12065551234.
  *
+ * If a vCard address X would be normalized to Y, a successful ContactManager
+ * contact request using ContactManager::contactsForVCardAddresses() for
+ * vCard address X would result in a contact with Y reported as an
+ * address that can identify it in Contact::vcardAddresses().
+ *
  * \param vcardField The vCard field the \a vcardAddress belongs to.
  * \param vcardAddress The address to normalize.
  * \return A PendingString which will emit PendingString::finished
@@ -396,6 +401,11 @@ PendingString *ProtocolInfo::normalizeVCardAddress(const QString &vcardField,
  *
  * An example would be xmpp:romeo@Example.Com/Empathy?message;body=Hello, which would be normalized
  * to xmpp:romeo@example.com.
+ *
+ * If a URI address X would be normalized to Y, a successful ContactManager
+ * contact request using ContactManager::contactsForUris() for
+ * URI address X would result in a contact with Y reported as an
+ * address that can identify it in Contact::uris().
  *
  * \param uri The URI to normalize.
  * \return A PendingString which will emit PendingString::finished

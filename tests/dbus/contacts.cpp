@@ -188,12 +188,15 @@ void TestContacts::testSupport()
                 TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
+    QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().contains(
+                QLatin1String("org.freedesktop.Telepathy.Connection.Interface.Addressing.DRAFT")));
 
     Features supportedFeatures = mConn->contactManager()->supportedFeatures();
     QVERIFY(!supportedFeatures.isEmpty());
     QVERIFY(supportedFeatures.contains(Contact::FeatureAlias));
     QVERIFY(supportedFeatures.contains(Contact::FeatureAvatarToken));
     QVERIFY(supportedFeatures.contains(Contact::FeatureSimplePresence));
+    QVERIFY(!supportedFeatures.contains(Contact::FeatureAddresses));
 }
 
 void TestContacts::testSelfContact()

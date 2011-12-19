@@ -7,7 +7,8 @@ if(HAVE_TEST_PYTHON)
 endif(HAVE_TEST_PYTHON)
 
 if(ENABLE_TP_GLIB_TESTS)
-    include_directories(${TELEPATHY_GLIB_INCLUDE_DIR}
+    include_directories(${CMAKE_SOURCE_DIR}/tests/lib/glib
+                        ${TELEPATHY_GLIB_INCLUDE_DIR}
                         ${GLIB2_INCLUDE_DIR}
                         ${DBUS_INCLUDE_DIR})
 
@@ -26,6 +27,7 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt_add_dbus_unit_test(ChannelConference chan-conference tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ChannelGroup chan-group tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ConnectionManagerBasics cm-basics tp-glib-tests)
+    tpqt_add_dbus_unit_test(ConnectionAddressing conn-addressing tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ConnectionBasics conn-basics tp-glib-tests)
     tpqt_add_dbus_unit_test(ConnectionCapabilities conn-capabilities tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ConnectionIntrospectCornercases conn-introspect-cornercases tp-glib-tests)

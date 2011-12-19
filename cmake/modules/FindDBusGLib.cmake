@@ -18,9 +18,13 @@ endif(DBUS_GLIB_INCLUDE_DIR AND DBUS_GLIB_LIBRARIES)
 find_package(PkgConfig)
 if(PKG_CONFIG_FOUND)
     if (DBusGLib_FIND_VERSION_EXACT)
-        pkg_check_modules(PC_DBUS_GLIB QUIET dbus-glib=${DBusGLib_FIND_VERSION})
+        pkg_check_modules(PC_DBUS_GLIB QUIET dbus-glib-1=${DBusGLib_FIND_VERSION})
     else (DBusGLib_FIND_VERSION_EXACT)
-        pkg_check_modules(PC_DBUS_GLIB QUIET dbus-glib>=${DBusGLib_FIND_VERSION})
+        if (DBusGLib_FIND_VERSION)
+            pkg_check_modules(PC_DBUS_GLIB REQUIRED dbus-glib-1>=${DBusGLib_FIND_VERSION})
+        else (DBusGLib_FIND_VERSION)
+            pkg_check_modules(PC_DBUS_GLIB REQUIRED dbus-glib-1)
+        endif (DBusGLib_FIND_VERSION)
     endif (DBusGLib_FIND_VERSION_EXACT)
 endif(PKG_CONFIG_FOUND)
 
@@ -31,9 +35,16 @@ find_path(DBUS_GLIB_INCLUDE_DIR
           ${PC_DBUS_GLIB_INCLUDE_DIRS}
 )
 
+find_path(DBUS_GLIB_LOWLEVEL_INCLUDE_DIR
+          NAMES dbus/dbus-arch-deps.h
+          HINTS
+          ${PC_DBUS_GLIB_INCLUDEDIR}
+          ${PC_DBUS_GLIB_INCLUDE_DIRS}
+)
+
 # HACK! Workaround appending "/dbus-1.0" to the HINTS above not working for some reason.
-set (DBUS_GLIB_INCLUDE_DIR
-     "${DBUS_GLIB_INCLUDE_DIR}/dbus-1.0"
+set(DBUS_GLIB_INCLUDE_DIRS
+    "${DBUS_GLIB_INCLUDE_DIR}/dbus-1.0" "${DBUS_GLIB_LOWLEVEL_INCLUDE_DIR}"
 )
 
 find_library(DBUS_GLIB_LIBRARIES

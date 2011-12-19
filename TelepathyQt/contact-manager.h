@@ -116,6 +116,12 @@ public:
     PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
             const Features &features = Features());
 
+    PendingContacts *contactsForVCardAddresses(const QString &vcardField,
+            const QStringList &vcardAddresses,
+            const Features &features = Features());
+    PendingContacts *contactsForUris(const QStringList &uris,
+            const Features &features = Features());
+
     PendingContacts *upgradeContacts(const QList<ContactPtr> &contacts,
             const Features &features);
 

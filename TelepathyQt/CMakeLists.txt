@@ -491,6 +491,7 @@ set(telepathy_qt_MOC_SRCS
     pending-contact-attributes.h
     pending-contact-info.h
     pending-contacts.h
+    pending-contacts-internal.h
     pending-handles.h
     pending-operation.h
     pending-ready.h
@@ -594,6 +595,7 @@ endforeach(spec ${SPECS})
 set(FUTURE_SPECS
     channel
     channel-dispatcher
+    connection
     misc)
 foreach(spec ${FUTURE_SPECS})
     tpqt_xincludator(${spec}-future-xincludator  ${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
@@ -632,6 +634,7 @@ tpqt_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPEND
 
 tpqt_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
 tpqt_future_client_generator(channel-dispatcher TpFuture::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-future-xincludator)
+tpqt_future_client_generator(connection TpFuture::Client --mainiface=Tp::Client::ConnectionInterface DEPENDS connection-future-xincludator)
 tpqt_future_client_generator(misc TpFuture::Client DEPENDS misc-future-xincludator)
 
 if (TARGET doxygen-doc)
