@@ -236,8 +236,6 @@ ContactInfoFieldList Contact::InfoFields::allFields() const
 /**
  * Feature used in order to access contact alias info.
  *
- * See alias specific methods' documentation for more details.
- *
  * \sa alias(), aliasChanged()
  */
 const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaObject.className()), 0, false);
@@ -247,16 +245,12 @@ const Feature Contact::FeatureAlias = Feature(QLatin1String(Contact::staticMetaO
  *
  * Enabling this feature will also enable FeatureAvatarToken.
  *
- * See avatar data specific methods' documentation for more details.
- *
  * \sa avatarData(), avatarDataChanged()
  */
 const Feature Contact::FeatureAvatarData = Feature(QLatin1String(Contact::staticMetaObject.className()), 1, false);
 
 /**
  * Feature used in order to access contact avatar token info.
- *
- * See avatar token specific methods' documentation for more details.
  *
  * \sa isAvatarTokenKnown(), avatarToken(), avatarTokenChanged()
  */
@@ -265,16 +259,12 @@ const Feature Contact::FeatureAvatarToken = Feature(QLatin1String(Contact::stati
 /**
  * Feature used in order to access contact capabilities info.
  *
- * See capabilities specific methods' documentation for more details.
- *
  * \sa capabilities(), capabilitiesChanged()
  */
 const Feature Contact::FeatureCapabilities = Feature(QLatin1String(Contact::staticMetaObject.className()), 3, false);
 
 /**
  * Feature used in order to access contact info fields.
- *
- * See info fields specific methods' documentation for more details.
  *
  * \sa infoFields(), infoFieldsChanged()
  */
@@ -283,16 +273,12 @@ const Feature Contact::FeatureInfo = Feature(QLatin1String(Contact::staticMetaOb
 /**
  * Feature used in order to access contact location info.
  *
- * See location specific methods' documentation for more details.
- *
  * \sa location(), locationUpdated()
  */
 const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMetaObject.className()), 5, false);
 
 /**
  * Feature used in order to access contact presence info.
- *
- * See presence specific methods' documentation for more details.
  *
  * \sa presence(), presenceChanged()
  */
@@ -301,16 +287,12 @@ const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::st
 /**
  * Feature used in order to access contact roster groups.
  *
- * See roster groups specific methods' documentation for more details.
- *
  * \sa groups(), addedToGroup(), removedFromGroup()
  */
 const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::staticMetaObject.className()), 7, false);
 
 /**
  * Feature used in order to access contact addressable addresses info.
- *
- * See addressesable addresses specific methods' documentation for more details.
  *
  * \sa vcardAddresses(), uris()
  */
