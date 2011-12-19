@@ -37,6 +37,9 @@
 #include <TelepathyQt/PendingHandles>
 #include <TelepathyQt/ReferencedHandles>
 
+// FIXME: Refactor PendingContacts code to make it more readable/maintainable and reuse common code
+//        when appropriate.
+
 namespace Tp
 {
 
