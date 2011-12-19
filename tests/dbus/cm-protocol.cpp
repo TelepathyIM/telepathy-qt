@@ -100,7 +100,8 @@ class ProtocolAdaptor : public QDBusAbstractAdaptor
 
 public:
     ProtocolAdaptor(QObject *parent)
-        : QDBusAbstractAdaptor(parent)
+        : QDBusAbstractAdaptor(parent),
+          introspectionCalled(0)
     {
         mInterfaces << TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING <<
                        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS <<
@@ -178,7 +179,7 @@ public: // Properties
         return mIcon;
     }
 
-    static int introspectionCalled;
+    mutable int introspectionCalled;
 
 private:
     QStringList mInterfaces;
@@ -189,8 +190,6 @@ private:
     QString mEnglishName;
     QString mIcon;
 };
-
-int ProtocolAdaptor::introspectionCalled = 0;
 
 class ProtocolAddressingAdaptor : public QDBusAbstractAdaptor
 {
@@ -208,7 +207,8 @@ class ProtocolAddressingAdaptor : public QDBusAbstractAdaptor
 
 public:
     ProtocolAddressingAdaptor(QObject *parent)
-        : QDBusAbstractAdaptor(parent)
+        : QDBusAbstractAdaptor(parent),
+          introspectionCalled(0)
     {
         mVCardFields << QLatin1String("x-adaptor");
         mUris << QLatin1String("adaptor");
@@ -243,14 +243,12 @@ public: // Properties
         return mUris;
     }
 
-    static int introspectionCalled;
+    mutable int introspectionCalled;
 
 private:
     QStringList mVCardFields;
     QStringList mUris;
 };
-
-int ProtocolAddressingAdaptor::introspectionCalled = 0;
 
 class ProtocolAvatarsAdaptor : public QDBusAbstractAdaptor
 {
@@ -280,7 +278,8 @@ class ProtocolAvatarsAdaptor : public QDBusAbstractAdaptor
 
 public:
     ProtocolAvatarsAdaptor(QObject *parent)
-        : QDBusAbstractAdaptor(parent)
+        : QDBusAbstractAdaptor(parent),
+          introspectionCalled(0)
     {
         mMimeTypes << QLatin1String("image/png");
         mMinimumAvatarHeight = 16;
@@ -362,7 +361,7 @@ public: // Properties
         return mMaximumAvatarBytes;
     }
 
-    static int introspectionCalled;
+    mutable int introspectionCalled;
 
 private:
     QStringList mMimeTypes;
@@ -374,8 +373,6 @@ private:
     uint mMaximumAvatarWidth;
     uint mMaximumAvatarBytes;
 };
-
-int ProtocolAvatarsAdaptor::introspectionCalled = 0;
 
 class ProtocolPresenceAdaptor : public QDBusAbstractAdaptor
 {
@@ -393,7 +390,8 @@ class ProtocolPresenceAdaptor : public QDBusAbstractAdaptor
 
 public:
     ProtocolPresenceAdaptor(QObject *parent)
-        : QDBusAbstractAdaptor(parent)
+        : QDBusAbstractAdaptor(parent),
+          introspectionCalled(0)
     {
         SimpleStatusSpec spec;
         spec.type = ConnectionPresenceTypeAvailable;
@@ -423,13 +421,11 @@ public: // Properties
         return mStatuses;
     }
 
-    static int introspectionCalled;
+    mutable int introspectionCalled;
 
 private:
     SimpleStatusSpecMap mStatuses;
 };
-
-int ProtocolPresenceAdaptor::introspectionCalled = 0;
 
 struct CMHelper
 {
@@ -500,10 +496,7 @@ class TestCmProtocol : public Test
 public:
     TestCmProtocol(QObject *parent = 0)
         : Test(parent),
-          mCM(0),
-          mCMWithManager(0),
-          mCMWithProperties(0),
-          mCMWithSomeProperties(0)
+          mCM(0)
     {
     }
 
@@ -521,35 +514,24 @@ private Q_SLOTS:
 
 private:
     void testIntrospectionWithAdaptorCommon(const ConnectionManagerPtr &cm);
-    void resetAdaptorIntrospectionCounters();
 
     CMHelper *mCM;
-    CMHelper *mCMWithManager;
-    CMHelper *mCMWithProperties;
-    CMHelper *mCMWithSomeProperties;
 };
 
 void TestCmProtocol::initTestCase()
 {
     initTestCaseImpl();
-
-    mCM = new CMHelper(QLatin1String("protocolnomanager"), false);
-    mCMWithManager = new CMHelper(QLatin1String("protocol"), false);
-    mCMWithProperties = new CMHelper(QLatin1String("protocolwithprops"),
-            true, true, true, true);
-    mCMWithSomeProperties = new CMHelper(QLatin1String("protocolwithsomeprops"),
-            false, false, true, true);
 }
 
 void TestCmProtocol::init()
 {
     initImpl();
-
-    resetAdaptorIntrospectionCounters();
 }
 
 void TestCmProtocol::testIntrospection()
 {
+    mCM = new CMHelper(QLatin1String("protocolnomanager"), false);
+
     ConnectionManagerPtr cm = mCM->cm;
 
     QVERIFY(connect(cm->becomeReady(),
@@ -568,7 +550,9 @@ void TestCmProtocol::testIntrospection()
 
 void TestCmProtocol::testIntrospectionWithManager()
 {
-    ConnectionManagerPtr cm = mCMWithManager->cm;
+    mCM = new CMHelper(QLatin1String("protocol"), false);
+
+    ConnectionManagerPtr cm = mCM->cm;
 
     QVERIFY(connect(cm->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -641,7 +625,10 @@ void TestCmProtocol::testIntrospectionWithManager()
 
 void TestCmProtocol::testIntrospectionWithProperties()
 {
-    ConnectionManagerPtr cm = mCMWithProperties->cm;
+    mCM = new CMHelper(QLatin1String("protocolwithprops"),
+            true, true, true, true);
+
+    ConnectionManagerPtr cm = mCM->cm;
 
     QVERIFY(connect(cm->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -659,7 +646,10 @@ void TestCmProtocol::testIntrospectionWithProperties()
 
 void TestCmProtocol::testIntrospectionWithSomeProperties()
 {
-    ConnectionManagerPtr cm = mCMWithSomeProperties->cm;
+    mCM = new CMHelper(QLatin1String("protocolwithsomeprops"),
+            false, false, true, true);
+
+    ConnectionManagerPtr cm = mCM->cm;
 
     QVERIFY(connect(cm->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -725,14 +715,6 @@ void TestCmProtocol::testIntrospectionWithAdaptorCommon(const ConnectionManagerP
     QVERIFY(!spec.isValid());
 }
 
-void TestCmProtocol::resetAdaptorIntrospectionCounters()
-{
-    ProtocolAdaptor::introspectionCalled = 0;
-    ProtocolAddressingAdaptor::introspectionCalled = 0;
-    ProtocolAvatarsAdaptor::introspectionCalled = 0;
-    ProtocolPresenceAdaptor::introspectionCalled = 0;
-}
-
 void TestCmProtocol::cleanup()
 {
     cleanupImpl();
@@ -741,9 +723,6 @@ void TestCmProtocol::cleanup()
 void TestCmProtocol::cleanupTestCase()
 {
     delete mCM;
-    delete mCMWithManager;
-    delete mCMWithProperties;
-    delete mCMWithSomeProperties;
 
     cleanupTestCaseImpl();
 }
