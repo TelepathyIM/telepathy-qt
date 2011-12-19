@@ -44,6 +44,8 @@ Enhancements:
    TextChannel.
  * fd.o #43631: Add CMake config files. Now CMake projects can find Tp-Qt
    straight away without the need of Find* files.
+ * fd.o #43598 - Add high-level API for Proto.I.Addressing interface
+ * fd.o #43599 - Add high-level API for Conn.I.Addressing interface
 
 Fixes:
  * Our TODO process being completely out of date. Trying to use doxygen \todo
