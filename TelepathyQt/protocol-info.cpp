@@ -23,6 +23,9 @@
 #include <TelepathyQt/ProtocolInfo>
 
 #include <TelepathyQt/ConnectionCapabilities>
+#include <TelepathyQt/ConnectionManager>
+#include <TelepathyQt/PendingFailure>
+#include <TelepathyQt/PendingString>
 
 namespace Tp
 {
@@ -30,16 +33,42 @@ namespace Tp
 struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
 {
     Private()
+        : dbusConnection(QDBusConnection::sessionBus()), // make the compiler happy
+          addressingIface(0)
     {
     }
 
-    Private(const QString &cmName, const QString &name)
-        : cmName(cmName),
+    Private(const ConnectionManagerPtr &cm, const QString &name)
+        : dbusConnection(cm->dbusConnection()),
+          busName(cm->busName()),
+          cmName(cm->name()),
           name(name),
-          iconName(QString(QLatin1String("im-%1")).arg(name))
+          iconName(QString(QLatin1String("im-%1")).arg(name)),
+          addressingIface(0)
     {
+        QString escapedProtocolName = name;
+        escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
+        objectPath = QString(QLatin1String("%1/%2")).arg(cm->objectPath()).arg(escapedProtocolName);
     }
 
+    ~Private()
+    {
+        delete addressingIface;
+    }
+
+    Client::ProtocolInterfaceAddressingInterface *addressingInterface()
+    {
+        if (!addressingIface) {
+            addressingIface = new Client::ProtocolInterfaceAddressingInterface(
+                    dbusConnection, busName, objectPath);
+        }
+
+        return addressingIface;
+    }
+
+    QDBusConnection dbusConnection;
+    QString busName;
+    QString objectPath;
     QString cmName;
     QString name;
     ProtocolParameterList params;
@@ -49,6 +78,10 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
     QString iconName;
     PresenceSpecList statuses;
     AvatarSpec avatarRequirements;
+    QStringList addressableVCardFields;
+    QStringList addressableUriSchemes;
+
+    Client::ProtocolInterfaceAddressingInterface *addressingIface;
 };
 
 /**
@@ -67,11 +100,11 @@ ProtocolInfo::ProtocolInfo()
 /**
  * Construct a new ProtocolInfo object.
  *
- * \param cmName Connection manager name.
+ * \param cm Connection manager owning this ProtocolInfo.
  * \param name Protocol name.
  */
-ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
-    : mPriv(new Private(cmName, name))
+ProtocolInfo::ProtocolInfo(const ConnectionManagerPtr &cm, const QString &name)
+    : mPriv(new Private(cm, name))
 {
 }
 
@@ -293,6 +326,100 @@ AvatarSpec ProtocolInfo::avatarRequirements() const
     return mPriv->avatarRequirements;
 }
 
+/**
+ * Return the vCard fields that can be used to request a contact with on this protocol,
+ * normalized to lower case.
+ *
+ * \return The vCard fields normalized to lower case.
+ * \sa addressableUriSchemes()
+ */
+QStringList ProtocolInfo::addressableVCardFields() const
+{
+    if (!isValid()) {
+        return QStringList();
+    }
+
+    return mPriv->addressableVCardFields;
+}
+
+/**
+ * Return the URI schemes that are supported by this protocol.
+ *
+ * \return The URI schemes.
+ * \sa addressableVCardFields()
+ */
+QStringList ProtocolInfo::addressableUriSchemes() const
+{
+    if (!isValid()) {
+        return QStringList();
+    }
+
+    return mPriv->addressableUriSchemes;
+}
+
+/**
+ * Attempt to normalize the given \a vcardAddress.
+ *
+ * For example, a vCard TEL field formatted as +1 (206) 555 1234,
+ * could be normalized to +12065551234.
+ *
+ * \param vcardField The vCard field the \a vcardAddress belongs to.
+ * \param vcardAddress The address to normalize.
+ * \return A PendingString which will emit PendingString::finished
+ *         when the address has been normalized or an error occurred.
+ * \sa normalizeContactUri()
+ */
+PendingString *ProtocolInfo::normalizeVCardAddress(const QString &vcardField,
+        const QString &vcardAddress)
+{
+    if (!isValid()) {
+        return new PendingString(TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Protocol object is invalid"));
+    }
+
+    Client::ProtocolInterfaceAddressingInterface *iface = mPriv->addressingInterface();
+    if (!iface->isValid()) {
+        // cm is still valid but no Protocol object found
+        return new PendingString(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("ConnectionManager does not support Protocol.I.Addressing"));
+    }
+
+    return new PendingString(iface->NormalizeVCardAddress(vcardField, vcardAddress),
+            SharedPtr<RefCounted>());
+}
+
+/**
+ * Attempt to normalize the given contact \a uri.
+ *
+ * If the URI has extra information beyond what's necessary to identify a particular contact, such
+ * as an XMPP resource or an action to carry out, this extra information wil be removed.
+ *
+ * An example would be xmpp:romeo@Example.Com/Empathy?message;body=Hello, which would be normalized
+ * to xmpp:romeo@example.com.
+ *
+ * \param uri The URI to normalize.
+ * \return A PendingString which will emit PendingString::finished
+ *         when the \a uri has been normalized or an error occurred.
+ * \sa normalizeVCardAddress()
+ */
+PendingString *ProtocolInfo::normalizeContactUri(const QString &uri)
+{
+    if (!isValid()) {
+        return new PendingString(TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Protocol object is invalid"));
+    }
+
+    Client::ProtocolInterfaceAddressingInterface *iface = mPriv->addressingInterface();
+    if (!iface->isValid()) {
+        // cm is still valid but no Protocol object found
+        return new PendingString(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("ConnectionManager does not support Protocol.I.Addressing"));
+    }
+
+    return new PendingString(iface->NormalizeContactURI(uri),
+            SharedPtr<RefCounted>());
+}
+
 void ProtocolInfo::addParameter(const ParamSpec &spec)
 {
     if (!isValid()) {
@@ -369,6 +496,24 @@ void ProtocolInfo::setAvatarRequirements(const AvatarSpec &avatarRequirements)
     }
 
     mPriv->avatarRequirements = avatarRequirements;
+}
+
+void ProtocolInfo::setAddressableVCardFields(const QStringList &vcardFields)
+{
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
+    mPriv->addressableVCardFields = vcardFields;
+}
+
+void ProtocolInfo::setAddressableUriSchemes(const QStringList &uriSchemes)
+{
+    if (!isValid()) {
+        mPriv = new Private;
+    }
+
+    mPriv->addressableUriSchemes = uriSchemes;
 }
 
 } // Tp

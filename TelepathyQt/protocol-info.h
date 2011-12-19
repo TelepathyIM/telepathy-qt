@@ -41,6 +41,7 @@ namespace Tp
 {
 
 class ConnectionCapabilities;
+class PendingString;
 
 class TP_QT_EXPORT ProtocolInfo
 {
@@ -74,10 +75,16 @@ public:
 
     AvatarSpec avatarRequirements() const;
 
+    QStringList addressableVCardFields() const;
+    QStringList addressableUriSchemes() const;
+
+    PendingString *normalizeVCardAddress(const QString &vcardField, const QString &vcardAddress);
+    PendingString *normalizeContactUri(const QString &uri);
+
 private:
     friend class ConnectionManager;
 
-    TP_QT_NO_EXPORT ProtocolInfo(const QString &cmName, const QString &name);
+    TP_QT_NO_EXPORT ProtocolInfo(const ConnectionManagerPtr &cm, const QString &name);
 
     TP_QT_NO_EXPORT void addParameter(const ParamSpec &spec);
     TP_QT_NO_EXPORT void setVCardField(const QString &vcardField);
@@ -86,6 +93,8 @@ private:
     TP_QT_NO_EXPORT void setRequestableChannelClasses(const RequestableChannelClassList &caps);
     TP_QT_NO_EXPORT void setAllowedPresenceStatuses(const PresenceSpecList &statuses);
     TP_QT_NO_EXPORT void setAvatarRequirements(const AvatarSpec &avatarRequirements);
+    TP_QT_NO_EXPORT void setAddressableVCardFields(const QStringList &vcardFields);
+    TP_QT_NO_EXPORT void setAddressableUriSchemes(const QStringList &uriSchemes);
 
     struct Private;
     friend struct Private;

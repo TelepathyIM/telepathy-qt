@@ -1,0 +1,35 @@
+[ConnectionManager]
+Interfaces=
+
+[Protocol protocol]
+Interfaces=org.freedesktop.Telepathy.Protocol.Interface.Addressing;org.freedesktop.Telepathy.Protocol.Interface.Avatars;org.freedesktop.Telepathy.Protocol.Interface.Presence;
+
+param-account=s required register
+
+ConnectionInterfaces=org.freedesktop.Telepathy.Connection.Interface.Contacts;
+
+RequestableChannelClasses=1-1-text;
+
+VCardField=x-telepathy-protocol
+EnglishName=Telepathy Protocol
+Icon=im-protocol
+
+status-offline=1
+status-available=2 settable message
+
+SupportedAvatarMIMETypes=image/jpeg;
+MinimumAvatarHeight=32
+RecommendedAvatarHeight=64
+MaximumAvatarHeight=96
+MinimumAvatarWidth=32
+RecommendedAvatarWidth=64
+MaximumAvatarWidth=96
+MaximumAvatarBytes=37748736
+
+AddressableVCardFields=x-protocol;
+AddressableURISchemes=protocol;
+
+[1-1-text]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
+org.freedesktop.Telepathy.Channel.TargetHandleType u=1
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;

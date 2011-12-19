@@ -17,11 +17,15 @@
 
 #include <string.h>
 
-G_DEFINE_TYPE (ExampleEcho2Protocol,
-    example_echo_2_protocol,
-    TP_TYPE_BASE_PROTOCOL)
+static void addressing_iface_init (TpProtocolAddressingInterface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (ExampleEcho2Protocol, example_echo_2_protocol,
+  TP_TYPE_BASE_PROTOCOL,
+  G_IMPLEMENT_INTERFACE (TP_TYPE_PROTOCOL_ADDRESSING, addressing_iface_init);
+  )
 
 const gchar * const protocol_interfaces[] = {
+  TP_IFACE_PROTOCOL_INTERFACE_ADDRESSING,
   TP_IFACE_PROTOCOL_INTERFACE_AVATARS,
   TP_IFACE_PROTOCOL_INTERFACE_PRESENCE,
   NULL };
@@ -31,6 +35,9 @@ const gchar * const supported_avatar_mime_types[] = {
   "image/jpeg",
   "image/gif",
   NULL };
+
+const gchar * const addressable_vcard_fields[] = { "x-echo2", NULL };
+const gchar * const addressable_uri_schemes[] = { "echo2", NULL };
 
 struct _ExampleEcho2ProtocolPrivate
 {
@@ -290,4 +297,84 @@ example_echo_2_protocol_class_init (
   base_class->get_connection_details = get_connection_details;
   base_class->get_avatar_details = get_avatar_details;
   base_class->get_statuses = get_statuses;
+}
+
+static GStrv
+dup_supported_uri_schemes (TpBaseProtocol *self)
+{
+  return g_strdupv ((gchar **) addressable_uri_schemes);
+}
+
+static GStrv
+dup_supported_vcard_fields (TpBaseProtocol *self)
+{
+  return g_strdupv ((gchar **) addressable_vcard_fields);
+}
+
+static gchar *
+normalize_vcard_address (TpBaseProtocol *self,
+    const gchar *vcard_field,
+    const gchar *vcard_address,
+    GError **error)
+{
+  gchar *normalized_address = NULL;
+
+  if (g_ascii_strcasecmp (vcard_field, "x-echo2") == 0)
+    {
+      normalized_address = g_ascii_strdown (vcard_address, -1);
+    }
+  else
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+          "'%s' vCard field is not supported by this protocol", vcard_field);
+    }
+
+  return normalized_address;
+}
+
+static gchar *
+normalize_contact_uri (TpBaseProtocol *self,
+    const gchar *uri,
+    GError **error)
+{
+  gchar *normalized_uri = NULL;
+  gchar *scheme = g_uri_parse_scheme (uri);
+
+  if (scheme == NULL)
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "'%s' is not a valid URI", uri);
+      goto OUT;
+    }
+  else if (g_ascii_strcasecmp (scheme, "echo2") == 0)
+    {
+      gchar *scheme_down = g_ascii_strdown (scheme, -1);
+      gchar *tmp = g_ascii_strdown (uri + strlen (scheme) + 1, -1);
+
+      normalized_uri = g_strdup_printf ("%s:%s", scheme_down, tmp);
+
+      g_free (scheme_down);
+      g_free (tmp);
+    }
+  else
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+          "'%s' URI scheme is not supported by this protocol",
+          scheme);
+      goto OUT;
+    }
+
+OUT:
+  g_free (scheme);
+
+  return normalized_uri;
+}
+
+static void
+addressing_iface_init (TpProtocolAddressingInterface *iface)
+{
+  iface->dup_supported_vcard_fields = dup_supported_vcard_fields;
+  iface->dup_supported_uri_schemes = dup_supported_uri_schemes;
+  iface->normalize_vcard_address = normalize_vcard_address;
+  iface->normalize_contact_uri = normalize_contact_uri;
 }

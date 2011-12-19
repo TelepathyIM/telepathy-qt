@@ -27,6 +27,9 @@ EnglishName=Foo
 Icon=im-foo
 RequestableChannelClasses=ft;foo text;
 
+AddressableVCardFields=x-foo;
+AddressableURISchemes=foo;
+
 [ft]
 org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.FileTransfer
 org.freedesktop.Telepathy.Channel.TargetHandleType u=1

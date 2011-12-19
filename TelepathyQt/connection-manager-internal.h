@@ -120,36 +120,65 @@ class TP_QT_NO_EXPORT ConnectionManager::Private::ProtocolWrapper :
 public:
     static const Feature FeatureCore;
 
-    ProtocolWrapper(const QDBusConnection &bus, const QString &busName,
+    ProtocolWrapper(const ConnectionManagerPtr &cm,
             const QString &objectPath,
-            const QString &cmName, const QString &name, const QVariantMap &props);
+            const QString &name, const QVariantMap &props);
     ~ProtocolWrapper();
 
     ProtocolInfo info() const { return mInfo; }
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    inline Client::ProtocolInterface *baseInterface() const
     {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
+        return interface<Client::ProtocolInterface>();
+    }
+
+    inline Client::ProtocolInterfaceAvatarsInterface *avatarsInterface() const
+    {
+        return interface<Client::ProtocolInterfaceAvatarsInterface>();
+    }
+
+    inline Client::ProtocolInterfacePresenceInterface *presenceInterface() const
+    {
+        return interface<Client::ProtocolInterfacePresenceInterface>();
+    }
+
+    inline Client::ProtocolInterfaceAddressingInterface *addressingInterface() const
+    {
+        return interface<Client::ProtocolInterfaceAddressingInterface>();
     }
 
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void gotAvatarsProperties(QDBusPendingCallWatcher *watcher);
-    void gotPresenceProperties(QDBusPendingCallWatcher *watcher);
+    void gotMainProperties(Tp::PendingOperation *op);
+    void gotAvatarsProperties(Tp::PendingOperation *op);
+    void gotPresenceProperties(Tp::PendingOperation *op);
+    void gotAddressingProperties(Tp::PendingOperation *op);
 
 private:
     static void introspectMain(ProtocolWrapper *self);
+    void introspectMainProperties();
+    void introspectInterfaces();
     void introspectAvatars();
     void introspectPresence();
+    void introspectAddressing();
 
     void continueIntrospection();
 
+    QVariantMap qualifyProperties(const QString &ifaceName,
+            const QVariantMap &unqualifiedProps);
     void fillRCCs();
-    bool receiveProperties(const QVariantMap &props);
+    bool extractImmutableProperties();
+    void extractMainProperties(const QVariantMap &props);
+    void extractAvatarsProperties(const QVariantMap &props);
+    void extractPresenceProperties(const QVariantMap &props);
+    void extractAddressingProperties(const QVariantMap &props);
 
     ReadinessHelper *mReadinessHelper;
     ProtocolInfo mInfo;
     QVariantMap mImmutableProps;
+    bool mHasMainProps;
+    bool mHasAvatarsProps;
+    bool mHasPresenceProps;
+    bool mHasAddressingProps;
     QQueue<void (ProtocolWrapper::*)()> introspectQueue;
 };
 

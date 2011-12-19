@@ -68,6 +68,7 @@ endif(${QT_VERSION_MAJOR} EQUAL 4)
     endif(ENABLE_TP_GLIB_GIO_TESTS)
 endif(ENABLE_TP_GLIB_TESTS)
 
+tpqt_add_dbus_unit_test(CmProtocol cm-protocol)
 tpqt_add_dbus_unit_test(ProfileManager profile-manager)
 tpqt_add_dbus_unit_test(Types types)
 
