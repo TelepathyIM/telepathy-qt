@@ -53,6 +53,10 @@ Fixes:
    annotations from now on
  * FeatureRoster is set on Tp::Connection even for roster-less accounts.
 
+Known issues:
+ * Some tests are failing for some Qt 4.7 configurations, reports on fd.o bug
+   #43551 please.
+
 telepathy-qt4 0.7.3 (2011-10-07)
 ================================
 
