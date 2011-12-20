@@ -39,9 +39,9 @@ endif(POLICY CMP0011)
 #   make the release, tag it
 #   set nano_version to 1
 set(TP_QT_MAJOR_VERSION 0)
-set(TP_QT_MINOR_VERSION 8)
-set(TP_QT_MICRO_VERSION 9999)
-set(TP_QT_NANO_VERSION  1)
+set(TP_QT_MINOR_VERSION 9)
+set(TP_QT_MICRO_VERSION 0)
+set(TP_QT_NANO_VERSION  0)
 
 set(PACKAGE_NAME telepathy-qt)
 
