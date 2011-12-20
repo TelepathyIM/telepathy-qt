@@ -125,8 +125,6 @@ public:
     PendingContacts *upgradeContacts(const QList<ContactPtr> &contacts,
             const Features &features);
 
-    ContactPtr lookupContactByHandle(uint handle);
-
     void requestContactAvatars(const QList<ContactPtr> &contacts);
 
     PendingOperation *refreshContactInfo(const QList<ContactPtr> &contact);
@@ -163,12 +161,15 @@ private Q_SLOTS:
 private:
     class PendingRefreshContactInfo;
     class Roster;
+    friend class Channel;
     friend class Connection;
     friend class PendingContacts;
     friend class PendingRefreshContactInfo;
     friend class Roster;
 
     TP_QT_NO_EXPORT ContactManager(Connection *parent);
+
+    TP_QT_NO_EXPORT ContactPtr lookupContactByHandle(uint handle);
 
     TP_QT_NO_EXPORT ContactPtr ensureContact(const ReferencedHandles &handle,
             const Features &features,
