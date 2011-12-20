@@ -14,6 +14,23 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_definitions(-DQT_NO_KEYWORDS)
 
+    if (${QT_VERSION_MAJOR} EQUAL 4)
+        if (NOT ${QT_VERSION_MINOR} EQUAL 6)
+            # >= qt 4.7
+            # FIXME - Re-enable racy tests once https://bugs.freedesktop.org/show_bug.cgi?id=43356 is
+            #         fixed
+            SET(ENABLE_TESTS_WITH_RACES_IN_QT_4_6 TRUE)
+            SET(ENABLE_TESTS_WITH_ISSUES_IN_QT_5 TRUE)
+        endif (NOT ${QT_VERSION_MINOR} EQUAL 6)
+    else (${QT_VERSION_MAJOR} EQUAL 4)
+        # qt 5
+        # FIXME - Re-enable tube tests once Qt5 QHostAddress bugs are fixed
+        #         See https://bugreports.qt.nokia.com/browse/QTBUG-22898 and
+        #         https://bugreports.qt.nokia.com/browse/QTBUG-22899
+        SET(ENABLE_TESTS_WITH_ISSUES_IN_QT_5 FALSE)
+        SET(ENABLE_TESTS_WITH_RACES_IN_QT_4_6 TRUE)
+    endif (${QT_VERSION_MAJOR} EQUAL 4)
+
     if(HAVE_TEST_PYTHON)
         tpqt_add_dbus_unit_test(AccountBasics account-basics tp-glib-tests tp-qt-tests-glib-helpers)
         tpqt_add_dbus_unit_test(AccountSet account-set tp-glib-tests tp-qt-tests-glib-helpers)
@@ -25,7 +42,6 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt_add_dbus_unit_test(AccountConnectionFactory account-connection-factory tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ChannelBasics chan-basics tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ChannelConference chan-conference tp-glib-tests tp-qt-tests-glib-helpers)
-    tpqt_add_dbus_unit_test(ChannelGroup chan-group tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ConnectionManagerBasics cm-basics tp-glib-tests)
     tpqt_add_dbus_unit_test(ConnectionAddressing conn-addressing tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ConnectionBasics conn-basics tp-glib-tests)
@@ -51,23 +67,18 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt_add_dbus_unit_test(SimpleObserver simple-observer tp-glib-tests)
     tpqt_add_dbus_unit_test(StatefulProxy stateful-proxy tp-glib-tests)
     tpqt_add_dbus_unit_test(StreamedMediaChannel streamed-media-chan tp-glib-tests tp-qt-tests-glib-helpers)
-    # FIXME - Re-enable tube tests once Qt5 QHostAddress bugs are fixed
-    #         See https://bugreports.qt.nokia.com/browse/QTBUG-22898 and
-    #         https://bugreports.qt.nokia.com/browse/QTBUG-22899
-if(${QT_VERSION_MAJOR} EQUAL 4)
-    tpqt_add_dbus_unit_test(StreamTubeHandlers stream-tube-handlers tp-glib-tests tp-qt-tests-glib-helpers)
-endif(${QT_VERSION_MAJOR} EQUAL 4)
 
-    tpqt_add_dbus_unit_test(TextChannel text-chan tp-glib-tests tp-qt-tests-glib-helpers)
+    if (ENABLE_TESTS_WITH_RACES_IN_QT_4_6)
+        tpqt_add_dbus_unit_test(ChannelGroup chan-group tp-glib-tests tp-qt-tests-glib-helpers)
+        tpqt_add_dbus_unit_test(TextChannel text-chan tp-glib-tests tp-qt-tests-glib-helpers)
+        if (ENABLE_TESTS_WITH_ISSUES_IN_QT_5)
+            tpqt_add_dbus_unit_test(StreamTubeHandlers stream-tube-handlers tp-glib-tests tp-qt-tests-glib-helpers)
+            if(ENABLE_TP_GLIB_GIO_TESTS)
+                tpqt_add_dbus_unit_test(StreamTubeChannel stream-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
+            endif(ENABLE_TP_GLIB_GIO_TESTS)
+        endif (ENABLE_TESTS_WITH_ISSUES_IN_QT_5)
+    endif (ENABLE_TESTS_WITH_RACES_IN_QT_4_6)
 
-    if(ENABLE_TP_GLIB_GIO_TESTS)
-        # FIXME - Re-enable tube tests once Qt5 QHostAddress bugs are fixed
-        #         See https://bugreports.qt.nokia.com/browse/QTBUG-22898 and
-        #         https://bugreports.qt.nokia.com/browse/QTBUG-22899
-        if(${QT_VERSION_MAJOR} EQUAL 4)
-            tpqt_add_dbus_unit_test(StreamTubeChannel stream-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
-        endif(${QT_VERSION_MAJOR} EQUAL 4)
-    endif(ENABLE_TP_GLIB_GIO_TESTS)
 endif(ENABLE_TP_GLIB_TESTS)
 
 tpqt_add_dbus_unit_test(CmProtocol cm-protocol)
