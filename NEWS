@@ -34,6 +34,7 @@ API changes:
    SharedPtr.
  * TelepathyQt-Farsight does not include telepathy-farsight/channel.h
    directly anymore.
+ * ContactManager::lookupContactByHandle() is removed from public API.
 
 Enhancements:
  * fd.o #35084: The StreamTubeClient and StreamTubeServer classes have been
