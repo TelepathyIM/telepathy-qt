@@ -167,6 +167,7 @@ QString Presence::statusMessage() const
     return mPriv->sp.statusMessage;
 }
 
+// Sets all fields
 void Presence::setStatus(const SimplePresence &value)
 {
     if (!isValid()) {
@@ -177,6 +178,11 @@ void Presence::setStatus(const SimplePresence &value)
     mPriv->sp = value;
 }
 
+// TODO: explain in proper docs that we don't have setStatusType and setStatus(QString status)
+// separately, because:
+// 1) type and status are tightly related with each other
+// 2) all statuses can't have status message so changing the status alone might make the presence
+// illegal if a message was left around
 void Presence::setStatus(ConnectionPresenceType type, const QString &status,
         const QString &statusMessage)
 {
