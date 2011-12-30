@@ -4,7 +4,8 @@ telepathy-qt 0.9.1 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * fd.o #43025: Tp::Presence now has a setStatusMessage() method which keeps the
+   old status id and status type
 
 Fixes:
  * ...
