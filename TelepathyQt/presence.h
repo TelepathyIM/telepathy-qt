@@ -62,6 +62,7 @@ public:
     void setStatus(const SimplePresence &value);
     void setStatus(ConnectionPresenceType type, const QString &status,
             const QString &statusMessage);
+    void setStatusMessage(const QString &statusMessage);
 
     SimplePresence barePresence() const;
 
