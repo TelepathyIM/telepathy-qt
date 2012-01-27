@@ -10,5 +10,6 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_library(future-example-conn-addressing STATIC ${future_example_conn_addressing_SRCS})
     target_link_libraries(future-example-conn-addressing ${TPGLIB_LIBRARIES}
+                          tp-glib-tests
                           tp-glib-tests-future-extensions)
 endif(ENABLE_TP_GLIB_TESTS)

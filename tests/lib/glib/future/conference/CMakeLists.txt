@@ -8,5 +8,6 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_library(future-example-cm-conference STATIC ${future_example_cm_conference_SRCS})
     target_link_libraries(future-example-cm-conference ${TPGLIB_LIBRARIES}
+                          tp-glib-tests
                           tp-glib-tests-future-extensions)
 endif(ENABLE_TP_GLIB_TESTS)

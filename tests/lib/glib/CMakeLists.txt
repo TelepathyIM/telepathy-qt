@@ -63,8 +63,6 @@ if(ENABLE_TP_GLIB_TESTS)
         example-cm-csh
         example-cm-echo
         example-cm-echo2
-        tp-glib-tests-future-extensions
-        future-example-cm-conference
-        future-example-conn-addressing)
+        tp-glib-tests-future-extensions)
 
 endif(ENABLE_TP_GLIB_TESTS)
