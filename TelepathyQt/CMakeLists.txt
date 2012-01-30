@@ -814,3 +814,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVe
 
 add_subdirectory(Farsight)
 add_subdirectory(Farstream)
+add_subdirectory(Service)
