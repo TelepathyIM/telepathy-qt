@@ -99,6 +99,13 @@ else (${TP_QT_NANO_VERSION} EQUAL 0)
     set(TP_QT_LIBRARY_VERSION ${TP_QT_ABI_VERSION}.${TP_QT_MAJOR_VERSION}.${TP_QT_MINOR_VERSION}.${TP_QT_MICRO_VERSION}.${TP_QT_NANO_VERSION})
 endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
+# Add an option for compiling tp-qt-service
+option(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT "Enable compilation of experimental and unstable service side bindings for Telepathy-Qt" FALSE)
+
+if (ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+    message(STATUS "You have enabled experimental service support for Telepathy-Qt. Be aware there are no guarantees of API stability yet for service-side classes.")
+endif (ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+
 # The doxygen macro requires Qt to have been looked up to enable crosslinking
 include(Doxygen)
 
