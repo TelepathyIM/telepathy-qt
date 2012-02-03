@@ -13,11 +13,14 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         global.h)
 
     # Create the library
-    if (ENABLE_COMPILER_COVERAGE)
-        add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
-    else (ENABLE_COMPILER_COVERAGE)
-        add_library(telepathy-qt${QT_VERSION_MAJOR}-service SHARED ${telepathy_qt_service_SRCS})
-    endif (ENABLE_COMPILER_COVERAGE)
+    #if (ENABLE_COMPILER_COVERAGE)
+    #    add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
+    #else (ENABLE_COMPILER_COVERAGE)
+    #    add_library(telepathy-qt${QT_VERSION_MAJOR}-service SHARED ${telepathy_qt_service_SRCS})
+    #endif (ENABLE_COMPILER_COVERAGE)
+    # lets build a static only library until we have a stable API/ABI
+    add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
+
     # Link
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-service
         ${QT_QTDBUS_LIBRARY}
