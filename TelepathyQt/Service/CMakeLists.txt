@@ -1,16 +1,23 @@
 if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
-    
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
+
     # It gets inherited from the previous directory, hence it has to be removed explicitely
     remove_definitions(-DBUILDING_TP_QT)
     # We are building Telepathy-Qt-Service
     add_definitions(-DBUILDING_TP_QT_SERVICE -DQT_NO_KEYWORDS)
 
     set(telepathy_qt_service_SRCS
-        stub.cpp)
+        abstract-adaptor.cpp)
 
     set(telepathy_qt_service_HEADERS
+        AbstractAdaptor
+        abstract-adaptor.h
         Global
         global.h)
+
+    # Headers file moc will be run on
+    set(telepathy_qt_service_MOC_SRCS
+        abstract-adaptor.h)
 
     # Create the library
     #if (ENABLE_COMPILER_COVERAGE)
@@ -20,6 +27,18 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     #endif (ENABLE_COMPILER_COVERAGE)
     # lets build a static only library until we have a stable API/ABI
     add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
+
+    # generate client moc files
+    foreach(moc_src ${telepathy_qt_service_MOC_SRCS})
+        set(generated_file _gen/${moc_src})
+        string(REPLACE ".h" ".moc.hpp" generated_file ${generated_file})
+        tpqt_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
+        list(APPEND telepathy_qt_service_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
+        string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
+        get_filename_component(_moc_outfile_name "${CMAKE_CURRENT_BINARY_DIR}/${generated_file}" NAME)
+        add_custom_target(moc-${_moc_outfile_name} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
+        add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service "moc-${moc_src}")
+    endforeach(moc_src ${telepathy_qt_service_MOC_SRCS})
 
     # Link
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-service
