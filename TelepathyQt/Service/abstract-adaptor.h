@@ -32,6 +32,8 @@
 #include <QObject>
 #include <QDBusAbstractAdaptor>
 
+class QDBusConnection;
+
 namespace Tp
 {
 namespace Service
@@ -42,8 +44,10 @@ class TP_QT_SVC_EXPORT AbstractAdaptor : public QDBusAbstractAdaptor
     Q_OBJECT
 
 public:
-    AbstractAdaptor(QObject *adaptee, QObject *parent);
+    AbstractAdaptor(const QDBusConnection &connection, QObject *adaptee, QObject *parent);
     ~AbstractAdaptor();
+
+    QDBusConnection dbusConnection() const;
 
     void setAdaptee(QObject *adaptee);
     QObject *adaptee() const;

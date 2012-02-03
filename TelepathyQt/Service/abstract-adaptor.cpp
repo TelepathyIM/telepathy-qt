@@ -26,6 +26,8 @@
 
 #include "TelepathyQt/debug-internal.h"
 
+#include <QDBusConnection>
+
 namespace Tp
 {
 namespace Service
@@ -33,17 +35,20 @@ namespace Service
 
 struct TP_QT_SVC_NO_EXPORT AbstractAdaptor::Private
 {
-    Private(QObject *adaptee)
-        : adaptee(adaptee)
+    Private(const QDBusConnection &dbusConnection, QObject *adaptee)
+        : dbusConnection(dbusConnection),
+          adaptee(adaptee)
     {
     }
 
+    QDBusConnection dbusConnection;
     QObject *adaptee;
 };
 
-AbstractAdaptor::AbstractAdaptor(QObject *adaptee, QObject *parent)
+AbstractAdaptor::AbstractAdaptor(const QDBusConnection &dbusConnection,
+        QObject *adaptee, QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mPriv(new Private(adaptee))
+      mPriv(new Private(dbusConnection, adaptee))
 {
     setAutoRelaySignals(false);
 }
@@ -51,6 +56,11 @@ AbstractAdaptor::AbstractAdaptor(QObject *adaptee, QObject *parent)
 AbstractAdaptor::~AbstractAdaptor()
 {
     delete mPriv;
+}
+
+QDBusConnection AbstractAdaptor::dbusConnection() const
+{
+    return mPriv->dbusConnection;
 }
 
 void AbstractAdaptor::setAdaptee(QObject *adaptee)
