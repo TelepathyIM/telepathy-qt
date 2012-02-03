@@ -25,6 +25,8 @@
 
 #include <QDebug>
 
+#include <TelepathyQt/Global>
+
 namespace Tp
 {
 
