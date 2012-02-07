@@ -88,6 +88,7 @@ private Q_SLOTS:
 
 private:
     friend class ChannelFuture;
+    friend class PendingCaptcha;
 
     struct Private;
     friend struct Private;
