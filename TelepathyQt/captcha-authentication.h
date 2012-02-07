@@ -39,8 +39,9 @@ namespace Tp
 {
 
 class PendingCaptcha;
+class ChannelFuture;
 
-class CaptchaAuthentication : public Tp::Channel
+class CaptchaAuthentication : public Tp::Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(CaptchaAuthentication)
@@ -61,9 +62,7 @@ public:
 
     static const Feature FeatureCore;
 
-    static CaptchaAuthenticationPtr create(const ConnectionPtr &connection,
-            const QString &objectPath, const QVariantMap &immutableProperties);
-
+    explicit CaptchaAuthentication(const ChannelPtr &parent);
     virtual ~CaptchaAuthentication();
 
     bool canRetry() const;
@@ -83,15 +82,13 @@ Q_SIGNALS:
     void statusChanged(Tp::CaptchaStatus status);
 
 protected:
-    CaptchaAuthentication(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties,
-            const Feature &coreFeature = CaptchaAuthentication::FeatureCore);
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onStatusChanged(uint newstate);
-    TP_QT_NO_EXPORT void gotCaptchaAuthenticationProperties(Tp::PendingOperation *op);
 
 private:
+    friend class ChannelFuture;
+
     struct Private;
     friend struct Private;
     Private *mPriv;

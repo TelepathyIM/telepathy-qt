@@ -60,6 +60,26 @@ struct TP_QT_NO_EXPORT PendingCaptchaAnswer::Private
     CaptchaAuthenticationPtr captcha;
 };
 
+struct CaptchaAuthentication::Private
+{
+    Private(CaptchaAuthentication *parent);
+
+    void extractCaptchaAuthenticationProperties(const QVariantMap &props);
+
+    // Public object
+    CaptchaAuthentication *parent;
+    ChannelPtr channel;
+
+    ReadinessHelper *readinessHelper;
+
+    ChallengeType type;
+    QStringList mimeTypes;
+
+    // Introspection
+    bool canRetry;
+    CaptchaStatus status;
+};
+
 }
 
 #endif

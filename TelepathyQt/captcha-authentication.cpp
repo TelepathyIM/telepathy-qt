@@ -27,30 +27,10 @@
 
 #include "cli-channel.h"
 #include "pending-captcha.h"
+#include "channel-future.h"
 
 namespace Tp
 {
-
-struct CaptchaAuthentication::Private
-{
-    Private(CaptchaAuthentication *parent);
-
-    static void introspectCaptchaAuthentication(CaptchaAuthentication::Private *self);
-
-    void extractCaptchaAuthenticationProperties(const QVariantMap &props);
-
-    // Public object
-    CaptchaAuthentication *parent;
-
-    ReadinessHelper *readinessHelper;
-
-    ChallengeType type;
-    QStringList mimeTypes;
-
-    // Introspection
-    bool canRetry;
-    CaptchaStatus status;
-};
 
 // ---
 PendingCaptchaAnswer::PendingCaptchaAnswer(PendingVoid *answerOperation,
@@ -113,39 +93,8 @@ void PendingCaptchaAnswer::onCaptchaStatusChanged(Tp::CaptchaStatus status)
 // --
 
 CaptchaAuthentication::Private::Private(CaptchaAuthentication *parent)
-    : parent(parent),
-      readinessHelper(parent->readinessHelper()),
-      type(All)
+    : parent(parent)
 {
-    ReadinessHelper::Introspectables introspectables;
-
-    ReadinessHelper::Introspectable introspectableCaptchaAuthentication(
-            QSet<uint>() << 0,                                                          // makesSenseForStatuses
-            Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
-            QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION, // dependsOnInterfaces
-            (ReadinessHelper::IntrospectFunc) &CaptchaAuthentication::Private::introspectCaptchaAuthentication,
-            this);
-    introspectables[CaptchaAuthentication::FeatureCore] = introspectableCaptchaAuthentication;
-
-    readinessHelper->addIntrospectables(introspectables);
-}
-
-void CaptchaAuthentication::Private::introspectCaptchaAuthentication(CaptchaAuthentication::Private *self)
-{
-    CaptchaAuthentication *parent = self->parent;
-
-    qDebug() << "Introspecting CaptchaAuthentication properties";
-    Client::ChannelInterfaceCaptchaAuthenticationInterface *captchaAuthenticationInterface =
-            parent->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>();
-
-    parent->connect(captchaAuthenticationInterface,
-            SIGNAL(StatusChanged(uint)),
-            SLOT(onStatusChanged(uint)));
-
-    PendingVariantMap *pvm = captchaAuthenticationInterface->requestAllProperties();
-    parent->connect(pvm,
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(gotCaptchaAuthenticationProperties(Tp::PendingOperation *)));
 }
 
 void CaptchaAuthentication::Private::extractCaptchaAuthenticationProperties(const QVariantMap &props)
@@ -172,33 +121,6 @@ void CaptchaAuthentication::Private::extractCaptchaAuthenticationProperties(cons
  */
 
 /**
- * Feature representing the core that needs to become ready to make the
- * CaptchaAuthenticationChannel object usable.
- *
- * Note that this feature must be enabled in order to use most
- * CaptchaAuthenticationChannel methods.
- * See specific methods documentation for more details.
- */
-const Feature CaptchaAuthentication::FeatureCore = Feature(QLatin1String(CaptchaAuthentication::staticMetaObject.className()), 0);
-
-/**
- * Create a new CaptchaAuthenticationChannel channel.
- *
- * \param connection Connection owning this channel, and specifying the
- *                   service.
- * \param objectPath The channel object path.
- * \param immutableProperties The channel immutable properties.
- * \return A CaptchaAuthenticationPtr object pointing to the newly created
- *         CaptchaAuthenticationChannel object.
- */
-CaptchaAuthenticationPtr CaptchaAuthentication::create(const ConnectionPtr &connection,
-        const QString &objectPath, const QVariantMap &immutableProperties)
-{
-    return CaptchaAuthenticationPtr(new CaptchaAuthentication(connection, objectPath,
-            immutableProperties));
-}
-
-/**
  * Construct a new CaptchaAuthenticationChannel object.
  *
  * \param connection Connection owning this channel, and specifying the
@@ -208,13 +130,11 @@ CaptchaAuthenticationPtr CaptchaAuthentication::create(const ConnectionPtr &conn
  * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
  *                    depend on CaptchaAuthenticationChannel::FeatureCore.
  */
-CaptchaAuthentication::CaptchaAuthentication(const ConnectionPtr &connection,
-        const QString &objectPath,
-        const QVariantMap &immutableProperties,
-        const Feature &coreFeature)
-    : Channel(connection, objectPath, immutableProperties, coreFeature),
+CaptchaAuthentication::CaptchaAuthentication(const ChannelPtr &channel)
+    : Object(),
       mPriv(new Private(this))
 {
+    mPriv->channel = channel;
 }
 
 /**
@@ -238,7 +158,7 @@ CaptchaAuthentication::~CaptchaAuthentication()
  */
 bool CaptchaAuthentication::canRetry() const
 {
-    if (!isReady(FeatureCore)) {
+    if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::canRetry() used with FeatureCore not ready";
         return false;
     }
@@ -248,7 +168,7 @@ bool CaptchaAuthentication::canRetry() const
 
 Tp::CaptchaStatus CaptchaAuthentication::status() const
 {
-    if (!isReady(FeatureCore)) {
+    if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::canRetry() used with FeatureCore not ready";
         return CaptchaStatusLocalPending;
     }
@@ -260,23 +180,6 @@ void CaptchaAuthentication::onStatusChanged(uint newstate)
 {
     mPriv->status = (Tp::CaptchaStatus)newstate;
     Q_EMIT statusChanged(mPriv->status);
-}
-
-void CaptchaAuthentication::gotCaptchaAuthenticationProperties(Tp::PendingOperation *op)
-{
-    if (!op->isError()) {
-        PendingVariantMap *pvm = qobject_cast<PendingVariantMap *>(op);
-
-        mPriv->extractCaptchaAuthenticationProperties(pvm->result());
-
-        qDebug() << "Got reply to Properties::GetAll(CaptchaAuthenticationChannel)";
-        mPriv->readinessHelper->setIntrospectCompleted(CaptchaAuthentication::FeatureCore, true);
-    } else {
-        qWarning().nospace() << "Properties::GetAll(CaptchaAuthenticationChannel) failed "
-            "with " << op->errorName() << ": " << op->errorMessage();
-        mPriv->readinessHelper->setIntrospectCompleted(CaptchaAuthentication::FeatureCore, false,
-                op->errorName(), op->errorMessage());
-    }
 }
 
 void CaptchaAuthentication::setPreferredChallengeType(ChallengeType preferredType)
@@ -301,7 +204,7 @@ QStringList CaptchaAuthentication::preferredMimeTypes() const
 
 PendingCaptcha *CaptchaAuthentication::request()
 {
-    if (!isReady(CaptchaAuthentication::FeatureCore)) {
+    if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
                 "calling request";
         return new PendingCaptcha(TP_QT_ERROR_NOT_AVAILABLE,
@@ -317,7 +220,7 @@ PendingCaptcha *CaptchaAuthentication::request()
     }
 
     return new PendingCaptcha(
-            interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchas(),
+            mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchas(),
             CaptchaAuthenticationPtr(this));
 }
 
@@ -330,7 +233,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(uint id, const QString &resp
 
 Tp::PendingOperation *CaptchaAuthentication::answer(const QMap<uint, QString> &response)
 {
-    if (!isReady(CaptchaAuthentication::FeatureCore)) {
+    if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
                 "calling answer";
         return new PendingCaptcha(TP_QT_ERROR_NOT_AVAILABLE,
@@ -348,7 +251,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const QMap<uint, QString> &r
     Tp::CaptchaAnswers answers(response);
 
     PendingVoid *pv = new PendingVoid(
-                interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(answers),
+                mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(answers),
                 CaptchaAuthenticationPtr(this));
 
     return new PendingCaptchaAnswer(pv, CaptchaAuthenticationPtr(this));
