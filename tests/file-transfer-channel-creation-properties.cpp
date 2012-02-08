@@ -97,7 +97,7 @@ void TestFileTransferCreationProperties::testFileTransferCreationPropertiesDefau
 void TestFileTransferCreationProperties::testFileTransferCreationPropertiesDefaultByPath()
 {
     // Test constructor by local file path with existing file
-    QString filePath = QDir::currentPath() + QLatin1String("/test-file-transfer-channel-creation-properties");
+    QString filePath = QCoreApplication::applicationFilePath();
     QFileInfo fileInfo(filePath);
     QUrl fileUri = QUrl::fromLocalFile(filePath);
 

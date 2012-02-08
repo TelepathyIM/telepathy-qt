@@ -554,7 +554,7 @@ void TestAccountChannelDispatcher::init()
 
     mChanPath.clear();
     mChanProps.clear();
-    mFilePath = QDir::currentPath() + QLatin1String("/test-account-channel-dispatcher");
+    mFilePath = QCoreApplication::applicationFilePath();
 }
 
 void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
