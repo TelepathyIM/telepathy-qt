@@ -26,7 +26,7 @@
 #include <TelepathyQt/PendingVariantMap>
 
 #include "cli-channel.h"
-#include "pending-captcha.h"
+#include "pending-captchas.h"
 #include "channel-future.h"
 
 namespace Tp
@@ -210,12 +210,12 @@ QStringList CaptchaAuthentication::preferredMimeTypes() const
     return mPriv->mimeTypes;
 }
 
-PendingCaptcha *CaptchaAuthentication::request()
+PendingCaptchas *CaptchaAuthentication::requestCaptchas()
 {
     if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
                 "calling request";
-        return new PendingCaptcha(TP_QT_ERROR_NOT_AVAILABLE,
+        return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 CaptchaAuthenticationPtr(this));
     }
@@ -223,11 +223,11 @@ PendingCaptcha *CaptchaAuthentication::request()
     // The captcha should be either LocalPending or TryAgain
     if (status() != CaptchaStatusLocalPending && status() != CaptchaStatusTryAgain) {
         qWarning() << "Status must be local pending or try again";
-        return new PendingCaptcha(TP_QT_ERROR_NOT_AVAILABLE,
+        return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel busy"), CaptchaAuthenticationPtr(this));
     }
 
-    return new PendingCaptcha(
+    return new PendingCaptchas(
             mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchas(),
             CaptchaAuthenticationPtr(this));
 }
@@ -244,7 +244,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const QMap<uint, QString> &r
     if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
                 "calling answer";
-        return new PendingCaptcha(TP_QT_ERROR_NOT_AVAILABLE,
+        return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel not ready"),
                 CaptchaAuthenticationPtr(this));
     }
@@ -252,7 +252,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const QMap<uint, QString> &r
     // The captcha should be LocalPending or TryAgain
     if (status() != CaptchaStatusLocalPending) {
         qWarning() << "Status must be local pending";
-        return new PendingCaptcha(TP_QT_ERROR_NOT_AVAILABLE,
+        return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel busy"), CaptchaAuthenticationPtr(this));
     }
 

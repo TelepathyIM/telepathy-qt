@@ -38,7 +38,7 @@
 namespace Tp
 {
 
-class PendingCaptcha;
+class PendingCaptchas;
 class ChannelFuture;
 
 class CaptchaAuthentication : public Tp::Object
@@ -74,7 +74,7 @@ public:
     ChallengeType preferredChallengeType() const;
     QStringList preferredMimeTypes() const;
 
-    Tp::PendingCaptcha *request();
+    Tp::PendingCaptchas *requestCaptchas();
     Tp::PendingOperation *answer(uint id, const QString &answer);
     Tp::PendingOperation *answer(const QMap<uint, QString> &response);
 
@@ -90,7 +90,7 @@ private Q_SLOTS:
 
 private:
     friend class ChannelFuture;
-    friend class PendingCaptcha;
+    friend class PendingCaptchas;
 
     struct Private;
     friend struct Private;
