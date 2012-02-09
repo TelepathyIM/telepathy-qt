@@ -41,9 +41,16 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT AbstractInterface::Private
 {
+    Private();
     QString mError;
     QString mMessage;
+    bool monitorProperties;
 };
+
+AbstractInterface::Private::Private()
+    : monitorProperties(false)
+{
+}
 
 /**
  * \class AbstractInterface
@@ -132,5 +139,75 @@ PendingVariantMap *AbstractInterface::internalRequestAllProperties() const
     DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
     return new PendingVariantMap(pendingCall, DBusProxyPtr(proxy));
 }
+
+/**
+ * Sets whether this abstract interface will be monitoring properties or not. If it's set to monitor,
+ * the signal propertiesChanged will be emitted whenever a property on this interface will
+ * change.
+ *
+ * By default, AbstractInterface does not monitor properties: you need to call this method
+ * for this to happen.
+ *
+ * \param monitorProperties Whether this interface should monitor property changes or not.
+ * \sa isMonitoringProperties
+ *     propertiesChanged()
+ */
+void AbstractInterface::setMonitorProperties(bool monitorProperties)
+{
+    if (monitorProperties == mPriv->monitorProperties) {
+        return;
+    }
+
+    QStringList argumentMatch;
+    argumentMatch << interface();
+
+    if (monitorProperties) {
+        connection().connect(service(), path(), TP_QT_IFACE_PROPERTIES,
+                QLatin1String("PropertiesChanged"), argumentMatch,
+                QString(), this,
+                SLOT(onPropertiesChanged(QString,QVariantMap,QStringList)));
+    } else {
+        connection().connect(service(), path(), TP_QT_IFACE_PROPERTIES,
+                QLatin1String("PropertiesChanged"), argumentMatch,
+                QString(), this,
+                SLOT(onPropertiesChanged(QString,QVariantMap,QStringList)));
+    }
+}
+
+/**
+ * Return whether this abstract interface is monitoring properties or not. If it's monitoring,
+ * the signal propertiesChanged will be emitted whenever a property on this interface will
+ * change.
+ *
+ * By default, AbstractInterface does not monitor properties: you need to call setMonitorProperties
+ * for this to happen.
+ *
+ * \return \c true if the interface is monitoring for property changes, \c false otherwise.
+ * \sa setMonitorProperties
+ *     propertiesChanged()
+ */
+bool AbstractInterface::isMonitoringProperties() const
+{
+    return mPriv->monitorProperties;
+}
+
+void AbstractInterface::onPropertiesChanged(const QString &interface,
+            const QVariantMap &changedProperties,
+            const QStringList &invalidatedProperties)
+{
+    Q_EMIT propertiesChanged(changedProperties, invalidatedProperties);
+}
+
+/**
+ * \fn void AbstractInterface::propertiesChanged(const QVariantMap &changedProperties,
+ *             const QStringList &invalidatedProperties)
+ *
+ * Emitted when one or more properties on this interface change or become invalidated.
+ * This signal will be emitted only if the interface is monitoring properties.
+ *
+ * \param changedProperties A map of the changed properties with their new value, if any.
+ * \param invalidatedProperties A list of the invalidated properties, if any.
+ * \sa isMonitoringProperties()
+ */
 
 } // Tp
