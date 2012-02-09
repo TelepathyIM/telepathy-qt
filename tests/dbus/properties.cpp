@@ -1,5 +1,4 @@
 #include <QtCore/QDebug>
-#include <QtCore/QTimer>
 
 #include <QtDBus/QtDBus>
 
@@ -7,12 +6,7 @@
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
-#include <TelepathyQt/ChannelFactory>
 #include <TelepathyQt/Connection>
-#include <TelepathyQt/ConnectionLowlevel>
-#include <TelepathyQt/ContactFactory>
-#include <TelepathyQt/PendingChannel>
-#include <TelepathyQt/PendingReady>
 #include <TelepathyQt/Debug>
 
 #include <telepathy-glib/dbus.h>
@@ -134,6 +128,14 @@ void TestProperties::testPropertiesMonitoring()
 
 void TestProperties::cleanup()
 {
+    if (mConn) {
+        mConn->deleteLater();
+        mConn = 0;
+    }
+    if (mConnService != 0) {
+        g_object_unref(mConnService);
+        mConnService = 0;
+    }
     cleanupImpl();
 }
 
