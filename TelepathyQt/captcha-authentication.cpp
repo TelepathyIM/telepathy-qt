@@ -219,7 +219,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(uint id, const QString &resp
     return answer(answers);
 }
 
-Tp::PendingOperation *CaptchaAuthentication::answer(const QMap<uint, QString> &response)
+Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &response)
 {
     if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
@@ -236,10 +236,8 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const QMap<uint, QString> &r
                 QLatin1String("Channel busy"), CaptchaAuthenticationPtr(this));
     }
 
-    Tp::CaptchaAnswers answers(response);
-
     PendingVoid *pv = new PendingVoid(
-                mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(answers),
+                mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(response),
                 CaptchaAuthenticationPtr(this));
 
     return new PendingCaptchaAnswer(pv, CaptchaAuthenticationPtr(this));

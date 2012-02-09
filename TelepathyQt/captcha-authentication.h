@@ -61,8 +61,6 @@ public:
     };
     typedef QFlags<ChallengeType> ChallengeTypes;
 
-    static const Feature FeatureCore;
-
     explicit CaptchaAuthentication(const ChannelPtr &parent);
     virtual ~CaptchaAuthentication();
 
@@ -72,7 +70,7 @@ public:
     Tp::PendingCaptchas *requestCaptchas(const QStringList &preferredMimeTypes = QStringList(),
             ChallengeTypes preferredTypes = ~ChallengeTypes(UnknownChallenge));
     Tp::PendingOperation *answer(uint id, const QString &answer);
-    Tp::PendingOperation *answer(const QMap<uint, QString> &response);
+    Tp::PendingOperation *answer(const Tp::CaptchaAnswers &response);
 
 Q_SIGNALS:
     void statusChanged(Tp::CaptchaStatus status);
