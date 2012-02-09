@@ -41,10 +41,16 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT AbstractInterface::Private
 {
+    Private();
     QString mError;
     QString mMessage;
     bool monitorProperties;
 };
+
+AbstractInterface::Private::Private()
+    : monitorProperties(false)
+{
+}
 
 /**
  * \class AbstractInterface
@@ -61,7 +67,6 @@ AbstractInterface::AbstractInterface(const QString &busName,
     : QDBusAbstractInterface(busName, path, interface.latin1(), dbusConnection, parent),
       mPriv(new Private)
 {
-    mPriv->monitorProperties = false;
 }
 
 AbstractInterface::AbstractInterface(DBusProxy *parent, const QLatin1String &interface)
@@ -69,7 +74,6 @@ AbstractInterface::AbstractInterface(DBusProxy *parent, const QLatin1String &int
             interface.latin1(), parent->dbusConnection(), parent),
       mPriv(new Private)
 {
-    mPriv->monitorProperties = false;
     connect(parent, SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             this, SLOT(invalidate(Tp::DBusProxy*,QString,QString)));
 }
