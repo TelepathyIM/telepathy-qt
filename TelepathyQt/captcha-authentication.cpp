@@ -176,10 +176,18 @@ Tp::CaptchaStatus CaptchaAuthentication::status() const
     return mPriv->status;
 }
 
-void CaptchaAuthentication::onStatusChanged(uint newstate)
+void CaptchaAuthentication::onPropertiesChanged(const QString &interface,
+        const QMap<QString, QVariant> &changedProperties,
+        const QStringList &invalidatedProperties)
 {
-    mPriv->status = (Tp::CaptchaStatus)newstate;
-    Q_EMIT statusChanged(mPriv->status);
+    Q_UNUSED(invalidatedProperties);
+
+    if (interface == TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION) {
+        if (changedProperties.contains(QLatin1String("Status"))) {
+            mPriv->status = (Tp::CaptchaStatus)changedProperties.value(QLatin1String("Status")).value<uint>();
+            Q_EMIT statusChanged(mPriv->status);
+        }
+    }
 }
 
 void CaptchaAuthentication::setPreferredChallengeType(ChallengeType preferredType)

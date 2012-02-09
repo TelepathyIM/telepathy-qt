@@ -84,7 +84,9 @@ Q_SIGNALS:
 protected:
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void onStatusChanged(uint newstate);
+    TP_QT_NO_EXPORT void onPropertiesChanged(const QString &interface,
+            const QMap<QString,QVariant> &changedProperties,
+            const QStringList &invalidatedProperties);
 
 private:
     friend class ChannelFuture;
