@@ -80,8 +80,7 @@ Q_SIGNALS:
 protected:
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void onPropertiesChanged(const QString &interface,
-            const QMap<QString,QVariant> &changedProperties,
+    TP_QT_NO_EXPORT void onPropertiesChanged(const QVariantMap &changedProperties,
             const QStringList &invalidatedProperties);
 
 private:
