@@ -38,7 +38,6 @@ private Q_SLOTS:
     void init();
 
     void testPropertiesMonitoring();
-    void testPropertiesMonitoringFailure();
 
     void cleanup();
     void cleanupTestCase();
@@ -127,26 +126,6 @@ void TestProperties::testPropertiesMonitoring()
     QCOMPARE(resultMap.size(), 2);
     QCOMPARE(resultMap[QLatin1String("test-prop")].toString(), QLatin1String("I am actually different than I used to be."));
     QCOMPARE(resultMap[QLatin1String("test-again")].toUInt(), 0xff0000ffU);
-
-    QCOMPARE(spy.count(), 0);
-
-    g_hash_table_destroy (changed);
-}
-
-void TestProperties::testPropertiesMonitoringFailure()
-{
-    QCOMPARE(mConn->isMonitoringProperties(), false);
-
-    QSignalSpy spy(mConn, SIGNAL(propertiesChanged(QMap<QString,QVariant>,QStringList)));
-
-    GHashTable *changed = tp_asv_new(
-                "test-prop", G_TYPE_STRING, "I am actually different than I used to be.",
-                "test-again", G_TYPE_UINT, 0xff0000ffU,
-                NULL
-                );
-
-    tp_svc_dbus_properties_emit_properties_changed (mConnService,
-            mConn->interface().toAscii().data(), changed, NULL);
 
     QCOMPARE(spy.count(), 0);
 
