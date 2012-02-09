@@ -51,6 +51,13 @@ public:
     QString invalidationReason() const;
     QString invalidationMessage() const;
 
+    void setMonitorProperties(bool monitorProperties);
+    bool isMonitoringProperties() const;
+
+Q_SIGNALS:
+    void propertiesChanged(const QMap<QString,QVariant> &changedProperties,
+            const QStringList &invalidatedProperties);
+
 protected Q_SLOTS:
     virtual void invalidate(Tp::DBusProxy *proxy,
             const QString &error, const QString &message);
@@ -64,6 +71,11 @@ protected:
     PendingVariant *internalRequestProperty(const QString &name) const;
     PendingOperation *internalSetProperty(const QString &name, const QVariant &newValue);
     PendingVariantMap *internalRequestAllProperties() const;
+
+private Q_SLOTS:
+    TP_QT_NO_EXPORT void onPropertiesChanged(const QString &interface,
+            const QMap<QString,QVariant> &changedProperties,
+            const QStringList &invalidatedProperties);
 
 private:
     struct Private;

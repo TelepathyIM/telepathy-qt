@@ -43,6 +43,7 @@ struct TP_QT_NO_EXPORT AbstractInterface::Private
 {
     QString mError;
     QString mMessage;
+    bool monitorProperties;
 };
 
 /**
@@ -60,6 +61,7 @@ AbstractInterface::AbstractInterface(const QString &busName,
     : QDBusAbstractInterface(busName, path, interface.latin1(), dbusConnection, parent),
       mPriv(new Private)
 {
+    mPriv->monitorProperties = false;
 }
 
 AbstractInterface::AbstractInterface(DBusProxy *parent, const QLatin1String &interface)
@@ -67,6 +69,7 @@ AbstractInterface::AbstractInterface(DBusProxy *parent, const QLatin1String &int
             interface.latin1(), parent->dbusConnection(), parent),
       mPriv(new Private)
 {
+    mPriv->monitorProperties = false;
     connect(parent, SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             this, SLOT(invalidate(Tp::DBusProxy*,QString,QString)));
 }
@@ -131,6 +134,40 @@ PendingVariantMap *AbstractInterface::internalRequestAllProperties() const
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
     DBusProxy *proxy = qobject_cast<DBusProxy*>(parent());
     return new PendingVariantMap(pendingCall, DBusProxyPtr(proxy));
+}
+
+void AbstractInterface::setMonitorProperties(bool monitorProperties)
+{
+    if (monitorProperties == mPriv->monitorProperties) {
+        return;
+    }
+
+    QStringList argumentMatch;
+    argumentMatch << interface();
+
+    if (monitorProperties) {
+        connection().connect(service(), path(), TP_QT_IFACE_PROPERTIES,
+                QLatin1String("PropertiesChanged"), argumentMatch,
+                QString(), this,
+                SLOT(onPropertiesChanged(QString,QVariantMap,QStringList)));
+    } else {
+        connection().connect(service(), path(), TP_QT_IFACE_PROPERTIES,
+                QLatin1String("PropertiesChanged"), argumentMatch,
+                QString(), this,
+                SLOT(onPropertiesChanged(QString,QVariantMap,QStringList)));
+    }
+}
+
+bool AbstractInterface::isMonitoringProperties() const
+{
+    return mPriv->monitorProperties;
+}
+
+void AbstractInterface::onPropertiesChanged(const QString &interface,
+            const QMap<QString,QVariant> &changedProperties,
+            const QStringList &invalidatedProperties)
+{
+    Q_EMIT propertiesChanged(changedProperties, invalidatedProperties);
 }
 
 } // Tp
