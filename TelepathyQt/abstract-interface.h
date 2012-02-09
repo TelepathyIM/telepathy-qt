@@ -55,7 +55,7 @@ public:
     bool isMonitoringProperties() const;
 
 Q_SIGNALS:
-    void propertiesChanged(const QMap<QString,QVariant> &changedProperties,
+    void propertiesChanged(const QVariantMap &changedProperties,
             const QStringList &invalidatedProperties);
 
 protected Q_SLOTS:
@@ -74,7 +74,7 @@ protected:
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onPropertiesChanged(const QString &interface,
-            const QMap<QString,QVariant> &changedProperties,
+            const QVariantMap &changedProperties,
             const QStringList &invalidatedProperties);
 
 private:

@@ -164,7 +164,7 @@ bool AbstractInterface::isMonitoringProperties() const
 }
 
 void AbstractInterface::onPropertiesChanged(const QString &interface,
-            const QMap<QString,QVariant> &changedProperties,
+            const QVariantMap &changedProperties,
             const QStringList &invalidatedProperties)
 {
     Q_EMIT propertiesChanged(changedProperties, invalidatedProperties);

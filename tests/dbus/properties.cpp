@@ -97,8 +97,8 @@ void TestProperties::testPropertiesMonitoring()
     QCOMPARE(mConn->isMonitoringProperties(), false);
     mConn->setMonitorProperties(true);
 
-    QSignalSpy spy(mConn, SIGNAL(propertiesChanged(QMap<QString,QVariant>,QStringList)));
-    connect(mConn, SIGNAL(propertiesChanged(QMap<QString,QVariant>,QStringList)),
+    QSignalSpy spy(mConn, SIGNAL(propertiesChanged(QVariantMap,QStringList)));
+    connect(mConn, SIGNAL(propertiesChanged(QVariantMap,QStringList)),
             mLoop, SLOT(quit()));
 
     GHashTable *changed = tp_asv_new(
