@@ -33,10 +33,12 @@ struct TP_QT_NO_EXPORT PendingCaptchas::Private
     Private(PendingCaptchas *parent);
     ~Private();
 
+    CaptchaAuthentication::ChallengeType stringToChallengeType(const QString &string) const;
+
     // Public object
     PendingCaptchas *parent;
 
-    CaptchaAuthentication::ChallengeType preferredType;
+    CaptchaAuthentication::ChallengeTypes preferredTypes;
     QStringList preferredMimeTypes;
 
     bool multipleRequired;
@@ -56,6 +58,32 @@ PendingCaptchas::Private::~Private()
 {
 }
 
+CaptchaAuthentication::ChallengeType PendingCaptchas::Private::stringToChallengeType(const QString &string) const
+{
+    if (string == "audio_recog") {
+        return CaptchaAuthentication::AudioRecognitionChallenge;
+    } else if (string == "ocr") {
+        return CaptchaAuthentication::OCRChallenge;
+    } else if (string == "picture_q") {
+        return CaptchaAuthentication::PictureQuestionChallenge;
+    } else if (string == "picture_recog") {
+        return CaptchaAuthentication::PictureRecognitionChallenge;
+    } else if (string == "qa") {
+        return CaptchaAuthentication::TextQuestionChallenge;
+    } else if (string == "speech_q") {
+        return CaptchaAuthentication::SpeechQuestionChallenge;
+    } else if (string == "speech_recog") {
+        return CaptchaAuthentication::SpeechRecognitionChallenge;
+    } else if (string == "video_q") {
+        return CaptchaAuthentication::VideoQuestionChallenge;
+    } else if (string == "video_recog") {
+        return CaptchaAuthentication::VideoRecognitionChallenge;
+    }
+
+    // Not really making sense...
+    return CaptchaAuthentication::UnknownChallenge;
+}
+
 /**
  * \class PendingCaptcha
  * \ingroup clientchannel
@@ -70,14 +98,14 @@ PendingCaptchas::Private::~Private()
 PendingCaptchas::PendingCaptchas(
         const QDBusPendingCall &call,
         const QStringList &preferredMimeTypes,
-        CaptchaAuthentication::ChallengeType preferredType,
+        CaptchaAuthentication::ChallengeTypes preferredTypes,
         const CaptchaAuthenticationPtr &channel)
     : PendingOperation(channel),
       mPriv(new Private(this))
 {
     mPriv->channel = channel;
     mPriv->preferredMimeTypes = preferredMimeTypes;
-    mPriv->preferredType = preferredType;
+    mPriv->preferredTypes = preferredTypes;
 
     /* keep track of channel invalidation */
     connect(channel.data(),
@@ -149,22 +177,8 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
         }
 
         // Otherwise, let's see if the mimetype matches
-        switch (mPriv->preferredType) {
-        case CaptchaAuthentication::All:
+        if (mPriv->preferredTypes & mPriv->stringToChallengeType(info.type)) {
             finalList.append(info);
-            break;
-        case CaptchaAuthentication::OCR:
-            if (info.type == "ocr") {
-                finalList.append(info);
-            }
-            break;
-        case CaptchaAuthentication::Audio:
-            if (info.type == "audio") {
-                finalList.append(info);
-            }
-            break;
-        default:
-            break;
         }
 
         if (finalList.size() == howManyRequired) {
@@ -189,6 +203,8 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);
         dataWatcher->setProperty("__Tp_Qt_CaptchaID", info.ID);
+        dataWatcher->setProperty("__Tp_Qt_CaptchaType",
+                mPriv->stringToChallengeType(info.type));
         connect(dataWatcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 this,
@@ -215,6 +231,8 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
     // Add to the list
     CaptchaAuthentication::Captcha captcha;
     captcha.ID = watcher->property("__Tp_Qt_CaptchaID").toInt();
+    captcha.type = (CaptchaAuthentication::ChallengeType)
+            watcher->property("__Tp_Qt_CaptchaType").toUInt();
     captcha.mimeType = reply.argumentAt(0).toString();
     captcha.data = reply.argumentAt(1).toByteArray();
     --mPriv->captchasLeft;

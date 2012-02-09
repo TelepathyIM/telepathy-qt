@@ -191,7 +191,7 @@ void CaptchaAuthentication::onPropertiesChanged(const QString &interface,
 }
 
 PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &preferredMimeTypes,
-        ChallengeType preferredType)
+        ChallengeTypes preferredTypes)
 {
     if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
@@ -211,7 +211,7 @@ PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &prefe
     return new PendingCaptchas(
             mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchas(),
             preferredMimeTypes,
-            preferredType,
+            preferredTypes,
             CaptchaAuthenticationPtr(this));
 }
 

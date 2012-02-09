@@ -49,14 +49,22 @@ class CaptchaAuthentication : public Tp::Object
 public:
     enum ChallengeType {
         UnknownChallenge = 0,
-        OCR,
-        Audio,
-        All = 256
+        OCRChallenge = 1,
+        AudioRecognitionChallenge = 2,
+        PictureQuestionChallenge = 4,
+        PictureRecognitionChallenge = 8,
+        TextQuestionChallenge = 16,
+        SpeechQuestionChallenge = 32,
+        SpeechRecognitionChallenge = 64,
+        VideoQuestionChallenge = 128,
+        VideoRecognitionChallenge = 256
     };
+    typedef QFlags<ChallengeType> ChallengeTypes;
 
     struct Captcha {
         QString mimeType;
         QByteArray data;
+        ChallengeType type;
         int ID;
     };
 
@@ -69,7 +77,7 @@ public:
     Tp::CaptchaStatus status() const;
 
     Tp::PendingCaptchas *requestCaptchas(const QStringList &preferredMimeTypes = QStringList(),
-            ChallengeType preferredType = All);
+            ChallengeTypes preferredTypes = ~ChallengeTypes(UnknownChallenge));
     Tp::PendingOperation *answer(uint id, const QString &answer);
     Tp::PendingOperation *answer(const QMap<uint, QString> &response);
 
@@ -93,5 +101,7 @@ private:
 };
 
 } // namespace Tp
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Tp::CaptchaAuthentication::ChallengeTypes)
 
 #endif
