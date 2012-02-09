@@ -28,6 +28,76 @@
 
 namespace Tp {
 
+class TP_QT_NO_EXPORT CaptchaData : public QSharedData
+{
+public:
+    CaptchaData();
+    CaptchaData(const CaptchaData &other);
+    ~CaptchaData();
+
+    QString mimeType;
+    QByteArray captchaData;
+    CaptchaAuthentication::ChallengeType type;
+    int id;
+};
+
+CaptchaData::CaptchaData()
+{
+}
+
+CaptchaData::CaptchaData(const CaptchaData &other)
+    : QSharedData(other),
+      mimeType(other.mimeType),
+      captchaData(other.captchaData),
+      type(other.type),
+      id(other.id)
+{
+}
+
+CaptchaData::~CaptchaData()
+{
+}
+
+Captcha::Captcha()
+    : mPriv(new CaptchaData)
+{
+}
+
+Captcha::Captcha(const Captcha &other)
+    : mPriv(other.mPriv)
+{
+}
+
+Captcha::Captcha(const QString &mimeType, const QByteArray &data,
+        CaptchaAuthentication::ChallengeType type, int id)
+    : mPriv(new CaptchaData)
+{
+    mPriv->mimeType = mimeType;
+    mPriv->captchaData = data;
+    mPriv->type = type;
+    mPriv->id = id;
+}
+
+QString Captcha::mimeType() const
+{
+    return mPriv->mimeType;
+}
+
+QByteArray Captcha::data() const
+{
+    return mPriv->captchaData;
+}
+
+CaptchaAuthentication::ChallengeType Captcha::type() const
+{
+    return mPriv->type;
+}
+
+int Captcha::id() const
+{
+    return mPriv->id;
+}
+
 struct TP_QT_NO_EXPORT PendingCaptchas::Private
 {
     Private(PendingCaptchas *parent);
@@ -42,7 +112,7 @@ struct TP_QT_NO_EXPORT PendingCaptchas::Private
     QStringList preferredMimeTypes;
 
     bool multipleRequired;
-    QList<CaptchaAuthentication::Captcha> captchas;
+    QList<Captcha> captchas;
     int captchasLeft;
 
     CaptchaAuthenticationPtr channel;
@@ -229,12 +299,13 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
     qDebug() << "Got reply to PendingDBusCall";
 
     // Add to the list
-    CaptchaAuthentication::Captcha captcha;
-    captcha.ID = watcher->property("__Tp_Qt_CaptchaID").toInt();
-    captcha.type = (CaptchaAuthentication::ChallengeType)
-            watcher->property("__Tp_Qt_CaptchaType").toUInt();
-    captcha.mimeType = reply.argumentAt(0).toString();
-    captcha.data = reply.argumentAt(1).toByteArray();
+    Captcha captchaItem(reply.argumentAt(0).toString(),
+            reply.argumentAt(1).toByteArray(), (CaptchaAuthentication::ChallengeType)
+            watcher->property("__Tp_Qt_CaptchaType").toUInt(),
+            watcher->property("__Tp_Qt_CaptchaID").toInt());
+
+    mPriv->captchas.append(captchaItem);
+
     --mPriv->captchasLeft;
 
     if (!mPriv->captchasLeft) {
@@ -244,19 +315,19 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
     watcher->deleteLater();
 }
 
-CaptchaAuthentication::Captcha PendingCaptchas::captcha() const
+Captcha PendingCaptchas::captcha() const
 {
     if (!isFinished()) {
-        return CaptchaAuthentication::Captcha();
+        return Captcha();
     }
 
     return mPriv->captchas.first();
 }
 
-QList<CaptchaAuthentication::Captcha> PendingCaptchas::captchaList() const
+QList<Captcha> PendingCaptchas::captchaList() const
 {
     if (!isFinished()) {
-        return QList<CaptchaAuthentication::Captcha>();
+        return QList<Captcha>();
     }
 
     return mPriv->captchas;

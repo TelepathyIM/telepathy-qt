@@ -61,13 +61,6 @@ public:
     };
     typedef QFlags<ChallengeType> ChallengeTypes;
 
-    struct Captcha {
-        QString mimeType;
-        QByteArray data;
-        ChallengeType type;
-        int ID;
-    };
-
     static const Feature FeatureCore;
 
     explicit CaptchaAuthentication(const ChannelPtr &parent);

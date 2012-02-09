@@ -38,6 +38,26 @@
 namespace Tp
 {
 
+class CaptchaData;
+class TP_QT_EXPORT Captcha {
+public:
+    Captcha();
+    Captcha(const Captcha &other);
+
+    QString mimeType() const;
+    QByteArray data() const;
+    CaptchaAuthentication::ChallengeType type() const;
+    int id() const;
+
+private:
+    friend class PendingCaptchas;
+
+    Captcha(const QString &mimeType, const QByteArray &data,
+            CaptchaAuthentication::ChallengeType type, int id);
+
+    QSharedDataPointer<CaptchaData> mPriv;
+};
+
 class TP_QT_EXPORT PendingCaptchas : public PendingOperation
 {
     Q_OBJECT
@@ -46,8 +66,8 @@ class TP_QT_EXPORT PendingCaptchas : public PendingOperation
 public:
     virtual ~PendingCaptchas();
 
-    CaptchaAuthentication::Captcha captcha() const;
-    QList<CaptchaAuthentication::Captcha> captchaList() const;
+    Captcha captcha() const;
+    QList<Captcha> captchaList() const;
     bool requiresMultipleCaptchas() const;
 
 private Q_SLOTS:
