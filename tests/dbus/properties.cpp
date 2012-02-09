@@ -108,7 +108,12 @@ void TestProperties::testPropertiesMonitoring()
                 );
 
     tp_svc_dbus_properties_emit_properties_changed (mConnService,
+            "a.random.interface", changed, NULL);
+
+    tp_svc_dbus_properties_emit_properties_changed (mConnService,
             mConn->interface().toAscii().data(), changed, NULL);
+
+    QCOMPARE(spy.count(), 0);
 
     mLoop->exec();
 
@@ -122,9 +127,6 @@ void TestProperties::testPropertiesMonitoring()
     QCOMPARE(resultMap.size(), 2);
     QCOMPARE(resultMap[QLatin1String("test-prop")].toString(), QLatin1String("I am actually different than I used to be."));
     QCOMPARE(resultMap[QLatin1String("test-again")].toUInt(), 0xff0000ffU);
-
-    tp_svc_dbus_properties_emit_properties_changed (mConnService,
-            "a.random.interface", changed, NULL);
 
     QCOMPARE(spy.count(), 0);
 
