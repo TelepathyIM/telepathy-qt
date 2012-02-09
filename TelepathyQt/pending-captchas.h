@@ -58,6 +58,8 @@ private Q_SLOTS:
 
 private:
     TP_QT_NO_EXPORT PendingCaptchas(const QDBusPendingCall &call,
+            const QStringList &preferredMimeTypes,
+            CaptchaAuthentication::ChallengeType preferredType,
             const CaptchaAuthenticationPtr &channel);
     TP_QT_NO_EXPORT PendingCaptchas(
             const QString &errorName, const QString &errorMessage,

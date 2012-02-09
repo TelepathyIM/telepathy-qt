@@ -36,6 +36,9 @@ struct TP_QT_NO_EXPORT PendingCaptchas::Private
     // Public object
     PendingCaptchas *parent;
 
+    CaptchaAuthentication::ChallengeType preferredType;
+    QStringList preferredMimeTypes;
+
     bool multipleRequired;
     QList<CaptchaAuthentication::Captcha> captchas;
     int captchasLeft;
@@ -66,11 +69,15 @@ PendingCaptchas::Private::~Private()
 
 PendingCaptchas::PendingCaptchas(
         const QDBusPendingCall &call,
+        const QStringList &preferredMimeTypes,
+        CaptchaAuthentication::ChallengeType preferredType,
         const CaptchaAuthenticationPtr &channel)
     : PendingOperation(channel),
       mPriv(new Private(this))
 {
     mPriv->channel = channel;
+    mPriv->preferredMimeTypes = preferredMimeTypes;
+    mPriv->preferredType = preferredType;
 
     /* keep track of channel invalidation */
     connect(channel.data(),
@@ -142,7 +149,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
         }
 
         // Otherwise, let's see if the mimetype matches
-        switch (mPriv->channel->preferredChallengeType()) {
+        switch (mPriv->preferredType) {
         case CaptchaAuthentication::All:
             finalList.append(info);
             break;
@@ -178,7 +185,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     Q_FOREACH (const Tp::CaptchaInfo &info, finalList) {
         QDBusPendingCall call =
         mPriv->channel->mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
-                    info.ID, mPriv->channel->preferredMimeTypes());
+                    info.ID, mPriv->preferredMimeTypes);
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);
         dataWatcher->setProperty("__Tp_Qt_CaptchaID", info.ID);

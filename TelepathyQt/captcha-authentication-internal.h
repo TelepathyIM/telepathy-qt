@@ -72,9 +72,6 @@ struct CaptchaAuthentication::Private
 
     ReadinessHelper *readinessHelper;
 
-    ChallengeType type;
-    QStringList mimeTypes;
-
     // Introspection
     bool canRetry;
     CaptchaStatus status;

@@ -68,13 +68,8 @@ public:
     bool canRetry() const;
     Tp::CaptchaStatus status() const;
 
-    void setPreferredChallengeType(ChallengeType preferredType);
-    void setPreferredMimeTypes(const QStringList &preferredMimeTypes);
-
-    ChallengeType preferredChallengeType() const;
-    QStringList preferredMimeTypes() const;
-
-    Tp::PendingCaptchas *requestCaptchas();
+    Tp::PendingCaptchas *requestCaptchas(const QStringList &preferredMimeTypes = QStringList(),
+            ChallengeType preferredType = All);
     Tp::PendingOperation *answer(uint id, const QString &answer);
     Tp::PendingOperation *answer(const QMap<uint, QString> &response);
 

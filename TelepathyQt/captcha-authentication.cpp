@@ -190,27 +190,8 @@ void CaptchaAuthentication::onPropertiesChanged(const QString &interface,
     }
 }
 
-void CaptchaAuthentication::setPreferredChallengeType(ChallengeType preferredType)
-{
-    mPriv->type = preferredType;
-}
-
-void CaptchaAuthentication::setPreferredMimeTypes(const QStringList &preferredMimeTypes)
-{
-    mPriv->mimeTypes = preferredMimeTypes;
-}
-
-CaptchaAuthentication::ChallengeType CaptchaAuthentication::preferredChallengeType() const
-{
-    return mPriv->type;
-}
-
-QStringList CaptchaAuthentication::preferredMimeTypes() const
-{
-    return mPriv->mimeTypes;
-}
-
-PendingCaptchas *CaptchaAuthentication::requestCaptchas()
+PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &preferredMimeTypes,
+        ChallengeType preferredType)
 {
     if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
@@ -229,6 +210,8 @@ PendingCaptchas *CaptchaAuthentication::requestCaptchas()
 
     return new PendingCaptchas(
             mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchas(),
+            preferredMimeTypes,
+            preferredType,
             CaptchaAuthenticationPtr(this));
 }
 
