@@ -49,13 +49,13 @@ public:
     QString label() const;
     QByteArray data() const;
     CaptchaAuthentication::ChallengeType type() const;
-    int id() const;
+    uint id() const;
 
 private:
     friend class PendingCaptchas;
 
     Captcha(const QString &mimeType, const QString &label, const QByteArray &data,
-            CaptchaAuthentication::ChallengeType type, int id);
+            CaptchaAuthentication::ChallengeType type, uint id);
 
     QSharedDataPointer<CaptchaData> mPriv;
 };

@@ -39,7 +39,7 @@ public:
     QString label;
     QByteArray captchaData;
     CaptchaAuthentication::ChallengeType type;
-    int id;
+    uint id;
 };
 
 CaptchaData::CaptchaData()
@@ -92,7 +92,7 @@ Captcha::Captcha(const Captcha &other)
 }
 
 Captcha::Captcha(const QString &mimeType, const QString &label,
-        const QByteArray &data, CaptchaAuthentication::ChallengeType type, int id)
+        const QByteArray &data, CaptchaAuthentication::ChallengeType type, uint id)
     : mPriv(new CaptchaData)
 {
     mPriv->mimeType = mimeType;
@@ -164,7 +164,7 @@ CaptchaAuthentication::ChallengeType Captcha::type() const
  * \return The captcha's id.
  * \sa CaptchaAuthentication::answer()
  */
-int Captcha::id() const
+uint Captcha::id() const
 {
     return mPriv->id;
 }
@@ -176,7 +176,7 @@ struct TP_QT_NO_EXPORT PendingCaptchas::Private
 
     CaptchaAuthentication::ChallengeType stringToChallengeType(const QString &string) const;
     void appendCaptchaResult(const QString &mimeType, const QString &label,
-            const QByteArray &data, CaptchaAuthentication::ChallengeType type, int id);
+            const QByteArray &data, CaptchaAuthentication::ChallengeType type, uint id);
 
     // Public object
     PendingCaptchas *parent;
@@ -228,7 +228,7 @@ CaptchaAuthentication::ChallengeType PendingCaptchas::Private::stringToChallenge
 }
 
 void PendingCaptchas::Private::appendCaptchaResult(const QString &mimeType, const QString &label,
-        const QByteArray &data, CaptchaAuthentication::ChallengeType type, int id)
+        const QByteArray &data, CaptchaAuthentication::ChallengeType type, uint id)
 {
     // Add to the list
     Captcha captchaItem(mimeType, label, data, type, id);
@@ -435,7 +435,7 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
             watcher->property("__Tp_Qt_CaptchaLabel").toString(),
             reply.argumentAt(1).toByteArray(), (CaptchaAuthentication::ChallengeType)
             watcher->property("__Tp_Qt_CaptchaType").toUInt(),
-            watcher->property("__Tp_Qt_CaptchaID").toInt());
+            watcher->property("__Tp_Qt_CaptchaID").toUInt());
 
     watcher->deleteLater();
 }
