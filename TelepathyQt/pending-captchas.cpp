@@ -36,6 +36,7 @@ public:
     ~CaptchaData();
 
     QString mimeType;
+    QString label;
     QByteArray captchaData;
     CaptchaAuthentication::ChallengeType type;
     int id;
@@ -48,6 +49,7 @@ CaptchaData::CaptchaData()
 CaptchaData::CaptchaData(const CaptchaData &other)
     : QSharedData(other),
       mimeType(other.mimeType),
+      label(other.label),
       captchaData(other.captchaData),
       type(other.type),
       id(other.id)
@@ -89,11 +91,12 @@ Captcha::Captcha(const Captcha &other)
 {
 }
 
-Captcha::Captcha(const QString &mimeType, const QByteArray &data,
-        CaptchaAuthentication::ChallengeType type, int id)
+Captcha::Captcha(const QString &mimeType, const QString &label,
+        const QByteArray &data, CaptchaAuthentication::ChallengeType type, int id)
     : mPriv(new CaptchaData)
 {
     mPriv->mimeType = mimeType;
+    mPriv->label = label;
     mPriv->captchaData = data;
     mPriv->type = type;
     mPriv->id = id;
@@ -115,6 +118,20 @@ Captcha::~Captcha()
 QString Captcha::mimeType() const
 {
     return mPriv->mimeType;
+}
+
+/**
+ * Return the label of the captcha. For some captcha types, such as
+ * CaptchaAuthentication::TextQuestionChallenge, the label is also
+ * the challenge the user has to answer
+ *
+ * \return The captcha's label.
+ * \sa data()
+ *     type()
+ */
+QString Captcha::label() const
+{
+    return mPriv->label;
 }
 
 /**
@@ -345,6 +362,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);
         dataWatcher->setProperty("__Tp_Qt_CaptchaID", (*i).first.ID);
+        dataWatcher->setProperty("__Tp_Qt_CaptchaLabel", (*i).first.label);
         dataWatcher->setProperty("__Tp_Qt_CaptchaType",
                 mPriv->stringToChallengeType((*i).first.type));
 
@@ -373,6 +391,7 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
 
     // Add to the list
     Captcha captchaItem(reply.argumentAt(0).toString(),
+            watcher->property("__Tp_Qt_CaptchaLabel").toString(),
             reply.argumentAt(1).toByteArray(), (CaptchaAuthentication::ChallengeType)
             watcher->property("__Tp_Qt_CaptchaType").toUInt(),
             watcher->property("__Tp_Qt_CaptchaID").toInt());
