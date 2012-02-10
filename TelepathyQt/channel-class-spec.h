@@ -176,6 +176,9 @@ public:
     static ChannelClassSpec unnamedStreamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
             QVariantMap());
 
+    static ChannelClassSpec saslServerAuthentication(const QVariantMap &additionalProperties =
+            QVariantMap());
+
     // TODO: add Call when it's undrafted
     static ChannelClassSpec roomList(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec outgoingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
