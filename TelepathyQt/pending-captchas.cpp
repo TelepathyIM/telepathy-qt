@@ -58,11 +58,32 @@ CaptchaData::~CaptchaData()
 {
 }
 
+/**
+ * \class Captcha
+ * \ingroup client
+ * \headerfile TelepathyQt/pending-captchas.h <TelepathyQt/PendingCaptchas>
+ *
+ * \brief The Captcha class represents a Captcha ready to be answered.
+ *
+ * It exposes all the parameters needed for a handler to present the user with a captcha.
+ *
+ * Please note this class is meant to be read-only. It is usually created by PendingCaptchas
+ * once a Captcha request operation succeeds.
+ *
+ * Note: this class is implicitly shared
+ */
+
+/**
+ * Default constructor.
+ */
 Captcha::Captcha()
     : mPriv(new CaptchaData)
 {
 }
 
+/**
+ * Copy constructor.
+ */
 Captcha::Captcha(const Captcha &other)
     : mPriv(other.mPriv)
 {
@@ -78,21 +99,54 @@ Captcha::Captcha(const QString &mimeType, const QByteArray &data,
     mPriv->id = id;
 }
 
+/**
+ * Class destructor.
+ */
+Captcha::~Captcha()
+{
+}
+
+/**
+ * Return the mimetype of the captcha.
+ *
+ * \return The captcha's mimetype.
+ * \sa data()
+ */
 QString Captcha::mimeType() const
 {
     return mPriv->mimeType;
 }
 
+/**
+ * Return the raw data of the captcha. The handler can check its type and
+ * metatype to know how to parse the blob.
+ *
+ * \return The captcha's data.
+ * \sa mimeType(), type()
+ */
 QByteArray Captcha::data() const
 {
     return mPriv->captchaData;
 }
 
+/**
+ * Return the type of the captcha.
+ *
+ * \return The captcha's type.
+ * \sa data()
+ */
 CaptchaAuthentication::ChallengeType Captcha::type() const
 {
     return mPriv->type;
 }
 
+/**
+ * Return the id of the captcha. This parameter should be used to identify
+ * the captcha when answering its challenge.
+ *
+ * \return The captcha's id.
+ * \sa CaptchaAuthentication::answer()
+ */
 int Captcha::id() const
 {
     return mPriv->id;
@@ -155,12 +209,12 @@ CaptchaAuthentication::ChallengeType PendingCaptchas::Private::stringToChallenge
 }
 
 /**
- * \class PendingCaptcha
- * \ingroup clientchannel
- * \headerfile TelepathyQt/incoming-stream-tube-channel.h <TelepathyQt/PendingCaptcha>
+ * \class PendingCaptchas
+ * \ingroup client
+ * \headerfile TelepathyQt/pending-captchas.h <TelepathyQt/PendingCaptchas>
  *
- * \brief The PendingCaptcha class represents an asynchronous
- * operation for accepting an incoming stream tube.
+ * \brief The PendingCaptchas class represents an asynchronous
+ * operation for retrieving a captcha challenge from a connection manager.
  *
  * See \ref async_model
  */
@@ -315,6 +369,26 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
     watcher->deleteLater();
 }
 
+/**
+ * Return the main captcha of the request. This captcha is guaranteed to be compatible
+ * with any constraint specified in CaptchaAuthentication::requestCaptchas().
+ *
+ * This is a convenience method which should be used when requiresMultipleCaptchas()
+ * is false - otherwise, you should use captchaList.
+ *
+ * The returned Captcha can be answered through CaptchaAuthentication::answer() by
+ * using its id.
+ *
+ * This method will return a meaningful value only if the operation was completed
+ * successfully.
+ *
+ * \return The main captcha for the pending request.
+ *
+ * \sa captchaList()
+ *     CaptchaAuthentication::requestCaptchas()
+ *     requiresMultipleCaptchas()
+ *     CaptchaAuthentication::answer()
+ */
 Captcha PendingCaptchas::captcha() const
 {
     if (!isFinished()) {
@@ -324,6 +398,26 @@ Captcha PendingCaptchas::captcha() const
     return mPriv->captchas.first();
 }
 
+/**
+ * Return all the captchas of the request. These captchas are guaranteed to be compatible
+ * with any constraint specified in CaptchaAuthentication::requestCaptchas().
+ *
+ * If requiresMultipleCaptchas() is false, you probably want to use the convenience method
+ * captcha() instead.
+ *
+ * The returned Captchas can be answered through CaptchaAuthentication::answer() by
+ * using their ids.
+ *
+ * This method will return a meaningful value only if the operation was completed
+ * successfully.
+ *
+ * \return All the captchas for the pending request.
+ *
+ * \sa captcha()
+ *     CaptchaAuthentication::requestCaptchas()
+ *     requiresMultipleCaptchas()
+ *     CaptchaAuthentication::answer()
+ */
 QList<Captcha> PendingCaptchas::captchaList() const
 {
     if (!isFinished()) {
@@ -333,6 +427,21 @@ QList<Captcha> PendingCaptchas::captchaList() const
     return mPriv->captchas;
 }
 
+/**
+ * Return whether this request requires more than one captcha to be answered or not.
+ *
+ * This method should always be checked before answering to find out what the
+ * connection manager expects. Depending on the result, you might want to use the
+ * result from captcha() if just a single answer is required, or from captchaList()
+ * otherwise.
+ *
+ * This method will return a meaningful value only if the operation was completed
+ * successfully.
+ *
+ * \return The main captcha for the pending request.
+ * \sa captcha()
+ *     captchaList()
+ */
 bool PendingCaptchas::requiresMultipleCaptchas() const
 {
     return mPriv->multipleRequired;
