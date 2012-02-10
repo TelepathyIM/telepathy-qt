@@ -28,6 +28,7 @@
 //#endif
 
 #include <TelepathyQt/Channel>
+#include <TelepathyQt/Connection>
 
 #include <TelepathyQt/Global>
 #include <TelepathyQt/SharedPtr>
@@ -68,7 +69,7 @@ public:
     Tp::CaptchaStatus status() const;
 
     QString lastError() const;
-    QVariantMap lastErrorDetails() const;
+    Connection::ErrorDetails lastErrorDetails() const;
 
     Tp::PendingCaptchas *requestCaptchas(const QStringList &preferredMimeTypes = QStringList(),
             ChallengeTypes preferredTypes = ~ChallengeTypes(UnknownChallenge));

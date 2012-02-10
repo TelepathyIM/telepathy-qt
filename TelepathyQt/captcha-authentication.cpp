@@ -180,9 +180,9 @@ QString CaptchaAuthentication::lastError() const
     return mPriv->error;
 }
 
-QVariantMap CaptchaAuthentication::lastErrorDetails() const
+Connection::ErrorDetails CaptchaAuthentication::lastErrorDetails() const
 {
-    return mPriv->errorDetails;
+    return Connection::ErrorDetails(mPriv->errorDetails);
 }
 
 void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProperties,
