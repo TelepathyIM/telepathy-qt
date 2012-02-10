@@ -75,6 +75,8 @@ struct CaptchaAuthentication::Private
     // Introspection
     bool canRetry;
     CaptchaStatus status;
+    QString error;
+    QVariantMap errorDetails;
 };
 
 }

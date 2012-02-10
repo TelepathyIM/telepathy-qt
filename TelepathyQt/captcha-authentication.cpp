@@ -85,7 +85,6 @@ void PendingCaptchaAnswer::onCaptchaStatusChanged(Tp::CaptchaStatus status)
         // yeah
         setFinished();
     } else if (status == CaptchaStatusFailed || status == CaptchaStatusTryAgain) {
-        // TODO: Fetch error details
         setFinishedWithError(QDBusError());
     }
 }
@@ -176,6 +175,16 @@ Tp::CaptchaStatus CaptchaAuthentication::status() const
     return mPriv->status;
 }
 
+QString CaptchaAuthentication::lastError() const
+{
+    return mPriv->error;
+}
+
+QVariantMap CaptchaAuthentication::lastErrorDetails() const
+{
+    return mPriv->errorDetails;
+}
+
 void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProperties,
         const QStringList &invalidatedProperties)
 {
@@ -184,6 +193,12 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
     if (changedProperties.contains(QLatin1String("Status"))) {
         mPriv->status = (Tp::CaptchaStatus)changedProperties.value(QLatin1String("Status")).value<uint>();
         Q_EMIT statusChanged(mPriv->status);
+    }
+    if (changedProperties.contains(QLatin1String("CaptchaErrorDetails"))) {
+        mPriv->errorDetails = changedProperties.value(QLatin1String("CaptchaErrorDetails")).toMap();
+    }
+    if (changedProperties.contains(QLatin1String("CaptchaError"))) {
+        mPriv->error = changedProperties.value(QLatin1String("CaptchaError")).toString();
     }
 }
 

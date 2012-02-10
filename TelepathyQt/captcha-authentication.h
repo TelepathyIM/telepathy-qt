@@ -67,6 +67,9 @@ public:
     bool canRetry() const;
     Tp::CaptchaStatus status() const;
 
+    QString lastError() const;
+    QVariantMap lastErrorDetails() const;
+
     Tp::PendingCaptchas *requestCaptchas(const QStringList &preferredMimeTypes = QStringList(),
             ChallengeTypes preferredTypes = ~ChallengeTypes(UnknownChallenge));
     Tp::PendingOperation *answer(uint id, const QString &answer);
