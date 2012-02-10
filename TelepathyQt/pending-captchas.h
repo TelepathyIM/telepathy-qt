@@ -43,6 +43,7 @@ class TP_QT_EXPORT Captcha {
 public:
     Captcha();
     Captcha(const Captcha &other);
+    ~Captcha();
 
     QString mimeType() const;
     QByteArray data() const;
