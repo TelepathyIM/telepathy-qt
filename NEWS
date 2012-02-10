@@ -8,6 +8,7 @@ Enhancements:
    old status id and status type
  * Added methods in Tp::AbstractInterface to support PropertiesChanged. This way it is
    possible for internal classes to monitor any property belonging to their interface.
+ * Added saslServerAuthentication to ChannelClassSpec
 
 Fixes:
  * ...
