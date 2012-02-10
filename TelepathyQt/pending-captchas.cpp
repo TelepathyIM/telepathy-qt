@@ -292,17 +292,34 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     int howManyRequired = reply.argumentAt(1).toUInt();
 
     // Compute which captchas are required
-    Tp::CaptchaInfoList finalList;
+    QList<QPair<Tp::CaptchaInfo,QString> > finalList;
     Q_FOREACH (const Tp::CaptchaInfo &info, list) {
+        // First of all, mimetype check
+        QString mimeType;
+        if (mPriv->preferredMimeTypes.isEmpty()) {
+            // No preference, let's take the first of the list
+            mimeType = info.availableMIMETypes.first();
+        } else {
+            QSet<QString> supportedMimeTypes = info.availableMIMETypes.toSet().intersect(
+                    mPriv->preferredMimeTypes.toSet());
+            if (supportedMimeTypes.isEmpty()) {
+                // Apparently our handler does not support any of this captcha's mimetypes, skip
+                continue;
+            }
+
+            // Ok, use the first one
+            mimeType = *supportedMimeTypes.constBegin();
+        }
+
         // If it's required, easy
         if (info.flags & CaptchaFlagRequired) {
-            finalList.append(info);
+            finalList.append(qMakePair(info, mimeType));
             continue;
         }
 
         // Otherwise, let's see if the mimetype matches
         if (mPriv->preferredTypes & mPriv->stringToChallengeType(info.type)) {
-            finalList.append(info);
+            finalList.append(qMakePair(info, mimeType));
         }
 
         if (finalList.size() == howManyRequired) {
@@ -320,15 +337,17 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     // Now, get the infos for all the required captchas in our final list.
     mPriv->captchasLeft = finalList.size();
     mPriv->multipleRequired = howManyRequired > 1 ? true : false;
-    Q_FOREACH (const Tp::CaptchaInfo &info, finalList) {
+    for (QList<QPair<Tp::CaptchaInfo,QString> >::const_iterator i = finalList.constBegin();
+            i != finalList.constEnd(); ++i) {
         QDBusPendingCall call =
         mPriv->channel->mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
-                    info.ID, mPriv->preferredMimeTypes);
+                    (*i).first.ID, (*i).second);
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);
-        dataWatcher->setProperty("__Tp_Qt_CaptchaID", info.ID);
+        dataWatcher->setProperty("__Tp_Qt_CaptchaID", (*i).first.ID);
         dataWatcher->setProperty("__Tp_Qt_CaptchaType",
-                mPriv->stringToChallengeType(info.type));
+                mPriv->stringToChallengeType((*i).first.type));
+
         connect(dataWatcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 this,

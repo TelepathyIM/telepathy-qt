@@ -99,7 +99,7 @@ CaptchaAuthentication::Private::Private(CaptchaAuthentication *parent)
 
 void CaptchaAuthentication::Private::extractCaptchaAuthenticationProperties(const QVariantMap &props)
 {
-    canRetry = qdbus_cast<bool>(props[QLatin1String("CanRetry")]);
+    canRetry = qdbus_cast<bool>(props[QLatin1String("CanRetryCaptcha")]);
     status = (CaptchaStatus)qdbus_cast<uint>(props[QLatin1String("Status")]);
 }
 
