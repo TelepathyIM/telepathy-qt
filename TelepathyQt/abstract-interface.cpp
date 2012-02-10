@@ -161,16 +161,23 @@ void AbstractInterface::setMonitorProperties(bool monitorProperties)
     QStringList argumentMatch;
     argumentMatch << interface();
 
+    bool success;
+
     if (monitorProperties) {
-        connection().connect(service(), path(), TP_QT_IFACE_PROPERTIES,
+        success = connection().connect(service(), path(), TP_QT_IFACE_PROPERTIES,
                 QLatin1String("PropertiesChanged"), argumentMatch,
                 QString(), this,
                 SLOT(onPropertiesChanged(QString,QVariantMap,QStringList)));
     } else {
-        connection().connect(service(), path(), TP_QT_IFACE_PROPERTIES,
+        success = connection().disconnect(service(), path(), TP_QT_IFACE_PROPERTIES,
                 QLatin1String("PropertiesChanged"), argumentMatch,
                 QString(), this,
                 SLOT(onPropertiesChanged(QString,QVariantMap,QStringList)));
+    }
+
+    if (!success) {
+        warning() << "Connection or disconnection to " << TP_QT_IFACE_PROPERTIES <<
+                ".PropertiesChanged failed.";
     }
 }
 
