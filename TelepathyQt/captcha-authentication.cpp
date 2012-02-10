@@ -243,4 +243,13 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
     return new PendingCaptchaAnswer(pv, CaptchaAuthenticationPtr(this));
 }
 
+Tp::PendingOperation *CaptchaAuthentication::cancel(CaptchaCancelReason reason,
+        const QString &message)
+{
+    return new PendingVoid(
+            mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->CancelCaptcha(
+                    reason, message),
+            CaptchaAuthenticationPtr(this));
+}
+
 } // Tp

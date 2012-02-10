@@ -75,6 +75,10 @@ public:
 Q_SIGNALS:
     void statusChanged(Tp::CaptchaStatus status);
 
+public Q_SLOTS:
+    Tp::PendingOperation *cancel(Tp::CaptchaCancelReason reason,
+            const QString &message = QString());
+
 protected:
 
 private Q_SLOTS:
