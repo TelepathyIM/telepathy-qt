@@ -175,6 +175,8 @@ struct TP_QT_NO_EXPORT PendingCaptchas::Private
     ~Private();
 
     CaptchaAuthentication::ChallengeType stringToChallengeType(const QString &string) const;
+    void appendCaptchaResult(const QString &mimeType, const QString &label,
+            const QByteArray &data, CaptchaAuthentication::ChallengeType type, int id);
 
     // Public object
     PendingCaptchas *parent;
@@ -223,6 +225,21 @@ CaptchaAuthentication::ChallengeType PendingCaptchas::Private::stringToChallenge
 
     // Not really making sense...
     return CaptchaAuthentication::UnknownChallenge;
+}
+
+void PendingCaptchas::Private::appendCaptchaResult(const QString &mimeType, const QString &label,
+        const QByteArray &data, CaptchaAuthentication::ChallengeType type, int id)
+{
+    // Add to the list
+    Captcha captchaItem(mimeType, label, data, type, id);
+
+    captchas.append(captchaItem);
+
+    --captchasLeft;
+
+    if (!captchasLeft) {
+        parent->setFinished();
+    }
 }
 
 /**
@@ -313,7 +330,21 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     Q_FOREACH (const Tp::CaptchaInfo &info, list) {
         // First of all, mimetype check
         QString mimeType;
-        if (mPriv->preferredMimeTypes.isEmpty()) {
+        if (info.availableMIMETypes.isEmpty()) {
+            // If it's one of the types which might not have a payload, go for it
+            CaptchaAuthentication::ChallengeTypes noPayloadChallenges =
+                    CaptchaAuthentication::TextQuestionChallenge &
+                    CaptchaAuthentication::UnknownChallenge;
+            if (mPriv->stringToChallengeType(info.type) & noPayloadChallenges) {
+                // Ok, move on
+            } else {
+                // In this case, there's something wrong
+                qWarning() << "Got a captcha with type " << info.type << " which does not "
+                        "expose any available mimetype for its payload. Something might be "
+                        "wrong with the connection manager.";
+                continue;
+            }
+        } else if (mPriv->preferredMimeTypes.isEmpty()) {
             // No preference, let's take the first of the list
             mimeType = info.availableMIMETypes.first();
         } else {
@@ -356,12 +387,22 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     mPriv->multipleRequired = howManyRequired > 1 ? true : false;
     for (QList<QPair<Tp::CaptchaInfo,QString> >::const_iterator i = finalList.constBegin();
             i != finalList.constEnd(); ++i) {
+
+        // If the captcha does not have a mimetype, we can add it straight
+        if ((*i).second.isEmpty()) {
+            mPriv->appendCaptchaResult((*i).second, (*i).first.label, QByteArray(),
+                    mPriv->stringToChallengeType((*i).first.type), (*i).first.ID);
+
+            continue;
+        }
+
         QDBusPendingCall call =
         mPriv->channel->mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
                     (*i).first.ID, (*i).second);
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);
         dataWatcher->setProperty("__Tp_Qt_CaptchaID", (*i).first.ID);
+        dataWatcher->setProperty("__Tp_Qt_CaptchaMimeType", (*i).second);
         dataWatcher->setProperty("__Tp_Qt_CaptchaLabel", (*i).first.label);
         dataWatcher->setProperty("__Tp_Qt_CaptchaType",
                 mPriv->stringToChallengeType((*i).first.type));
@@ -390,19 +431,11 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
     qDebug() << "Got reply to PendingDBusCall";
 
     // Add to the list
-    Captcha captchaItem(reply.argumentAt(0).toString(),
+    mPriv->appendCaptchaResult(watcher->property("__Tp_Qt_CaptchaMimeType").toString(),
             watcher->property("__Tp_Qt_CaptchaLabel").toString(),
             reply.argumentAt(1).toByteArray(), (CaptchaAuthentication::ChallengeType)
             watcher->property("__Tp_Qt_CaptchaType").toUInt(),
             watcher->property("__Tp_Qt_CaptchaID").toInt());
-
-    mPriv->captchas.append(captchaItem);
-
-    --mPriv->captchasLeft;
-
-    if (!mPriv->captchasLeft) {
-        setFinished();
-    }
 
     watcher->deleteLater();
 }
