@@ -278,7 +278,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
 
 void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<QString, QByteArray> reply = *watcher;
+    QDBusPendingReply<QByteArray> reply = *watcher;
 
     if (reply.isError()) {
         qDebug().nospace() << "PendingDBusCall failed: " <<
@@ -293,7 +293,7 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
     // Add to the list
     mPriv->appendCaptchaResult(watcher->property("__Tp_Qt_CaptchaMimeType").toString(),
             watcher->property("__Tp_Qt_CaptchaLabel").toString(),
-            reply.argumentAt(1).toByteArray(), (CaptchaAuthentication::ChallengeType)
+            reply.value(), (CaptchaAuthentication::ChallengeType)
             watcher->property("__Tp_Qt_CaptchaType").toUInt(),
             watcher->property("__Tp_Qt_CaptchaID").toUInt());
 
