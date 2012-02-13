@@ -182,6 +182,10 @@ set(telepathy_qt_HEADERS
     call-stream-endpoint.h
     CapabilitiesBase
     capabilities-base.h
+    Captcha
+    captcha.h
+    CaptchaAuthentication
+    captcha-authentication.h
     Channel
     channel.h
     ChannelClassFeatures
@@ -354,6 +358,8 @@ set(telepathy_qt_HEADERS
     PeerInterface
     PendingAccount
     pending-account.h
+    PendingCaptchas
+    pending-captchas.h
     PendingChannel
     pending-channel.h
     PendingChannelRequest
