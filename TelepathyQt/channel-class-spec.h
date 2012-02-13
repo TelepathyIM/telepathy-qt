@@ -176,6 +176,8 @@ public:
     static ChannelClassSpec unnamedStreamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
             QVariantMap());
 
+    static ChannelClassSpec captchaServerAuthentication(const QVariantMap &additionalProperties =
+            QVariantMap());
     static ChannelClassSpec saslServerAuthentication(const QVariantMap &additionalProperties =
             QVariantMap());
 
