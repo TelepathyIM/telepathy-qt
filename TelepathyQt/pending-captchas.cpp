@@ -126,7 +126,7 @@ PendingCaptchas::PendingCaptchas(
     mPriv->preferredTypes = preferredTypes;
 
     /* keep track of channel invalidation */
-    connect(channel.data(),
+    connect(channel.data()->mPriv->channel.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
 
