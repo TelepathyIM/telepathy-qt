@@ -200,6 +200,9 @@ find_program(GLIB_GENMARSHAL glib-genmarshal)
 
 # Enable glib-based tests only if Qt has GLib support and Telepathy-glib was found
 if(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+    # Disable GLib deprecation warnings for now; GValueArray is deprecated but we
+    # need it for telepathy-glib.
+    add_definitions(-DGLIB_DISABLE_DEPRECATION_WARNINGS)
     set(ENABLE_TP_GLIB_TESTS 1)
     if(GIO_FOUND AND GIOUNIX_FOUND)
         set(ENABLE_TP_GLIB_GIO_TESTS 1)
