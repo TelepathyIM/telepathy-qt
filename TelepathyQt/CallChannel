@@ -1,0 +1,13 @@
+#ifndef _TelepathyQt4Yell_CallChannel_HEADER_GUARD_
+#define _TelepathyQt4Yell_CallChannel_HEADER_GUARD_
+
+#ifndef IN_TELEPATHY_QT4_YELL_HEADER
+#define IN_TELEPATHY_QT4_YELL_HEADER
+#endif
+
+#include <TelepathyQt4Yell/call-channel.h>
+
+#undef IN_TELEPATHY_QT4_YELL_HEADER
+
+#endif
+// vim:set ft=cpp:
