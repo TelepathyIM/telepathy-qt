@@ -167,6 +167,12 @@ void ChannelFactory::setConstructorForTextChatrooms(const ConstructorConstPtr &c
     setConstructorFor(ChannelClassSpec::textChatroom(additionalProps), ctor);
 }
 
+void ChannelFactory::setConstructorForMediaCalls(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::mediaCall(additionalProps), ctor);
+}
+
 Features ChannelFactory::featuresForStreamedMediaCalls(const QVariantMap &additionalProps) const
 {
     return featuresFor(ChannelClassSpec::streamedMediaCall(additionalProps));

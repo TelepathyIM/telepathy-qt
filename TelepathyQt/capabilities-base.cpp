@@ -197,6 +197,62 @@ bool CapabilitiesBase::textChats() const
     return false;
 }
 
+bool CapabilitiesBase::mediaCalls() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::mediaCall())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CapabilitiesBase::audioCalls() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::audioCallAllowed()) ||
+            rccSpec.supports(RequestableChannelClassSpec::audioCallFixed()) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CapabilitiesBase::videoCalls() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::videoCallAllowed()) ||
+            rccSpec.supports(RequestableChannelClassSpec::videoCallFixed())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CapabilitiesBase::videoCallsWithAudio() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::videoCallAllowedWithAudioAllowed()) ||
+            rccSpec.supports(RequestableChannelClassSpec::videoCallAllowedWithAudioFixed()) ||
+            rccSpec.supports(RequestableChannelClassSpec::videoCallFixedWithAudioAllowed()) ||
+            rccSpec.supports(RequestableChannelClassSpec::videoCallFixedWithAudioFixed())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CapabilitiesBase::upgradingCalls() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL &&
+            rccSpec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".MutableContents"))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  * Return whether private audio and/or video calls can be established by
  * providing a contact identifier.
