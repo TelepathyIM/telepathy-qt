@@ -97,7 +97,9 @@ public:
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object supporting the interface
-        QString name(QLatin1String(Interface::staticInterfaceName()));
+        // Note that extra whitespace on "name" declaration is significant to avoid
+        // vexing-parse
+        QString name( (QLatin1String(Interface::staticInterfaceName())) );
         if (check == CheckInterfaceSupported && !mInterfaces.contains(name)) {
             return 0;
         }
@@ -113,7 +115,9 @@ public:
         Q_UNUSED(interfaceMustBeASubclassOfAbstractInterface);
 
         // If there is a interface cached already, return it
-        QString name(QLatin1String(Interface::staticInterfaceName()));
+        // Note that extra whitespace on "name" declaration is significant to avoid
+        // vexing-parse
+        QString name( (QLatin1String(Interface::staticInterfaceName())) );
         AbstractInterface *cached = getCached(name);
         if (cached)
             return static_cast<Interface *>(cached);
