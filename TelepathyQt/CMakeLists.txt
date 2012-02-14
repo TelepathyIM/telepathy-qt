@@ -18,6 +18,8 @@ set(telepathy_qt_SRCS
     account-set.cpp
     account-set-internal.h
     avatar.cpp
+    call-channel.cpp
+    call-channel-internal.h
     capabilities-base.cpp
     call-content.cpp
     call-content-media-description.cpp
@@ -163,6 +165,8 @@ set(telepathy_qt_HEADERS
     AvatarData
     AvatarSpec
     avatar.h
+    CallChannel
+    call-channel.h
     CallContent
     CallContentInterface
     CallContentInterfaceAudioControlInterface
@@ -499,6 +503,8 @@ set(telepathy_qt_MOC_SRCS
     account-manager.h
     account-set.h
     account-set-internal.h
+    call-channel.h
+    call-channel-internal.h
     captcha-authentication.h
     captcha-authentication-internal.h
     channel.h
