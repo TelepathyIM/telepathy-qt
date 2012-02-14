@@ -1,7 +1,7 @@
 /*
- * This file is part of TelepathyQt4Yell
+ * This file is part of TelepathyQt
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2010-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,16 +18,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4Yell_call_channel_h_HEADER_GUARD_
-#define _TelepathyQt4Yell_call_channel_h_HEADER_GUARD_
+#ifndef _TelepathyQt_call_channel_h_HEADER_GUARD_
+#define _TelepathyQt_call_channel_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_YELL_HEADER
-#error IN_TELEPATHY_QT4_YELL_HEADER
+#ifndef IN_TP_QT_HEADER
+#error IN_TP_QT_HEADER
 #endif
-
-#include <TelepathyQt4Yell/Channel>
-#include <TelepathyQt4Yell/Constants>
-#include <TelepathyQt4Yell/Types>
 
 #include <TelepathyQt/Channel>
 #include <TelepathyQt/ChannelClassSpec>
@@ -36,7 +32,7 @@
 #include <TelepathyQt/Types>
 #include <TelepathyQt/SharedPtr>
 
-namespace Tpy
+namespace Tp
 {
 
 class CallChannel;
@@ -44,8 +40,8 @@ class CallChannel;
 typedef QList<CallContentPtr> CallContents;
 typedef QList<CallStreamPtr> CallStreams;
 
-class TELEPATHY_QT4_YELL_EXPORT CallStream : public Tp::StatefulDBusProxy,
-                    public Tp::OptionalInterfaceFactory<CallStream>
+class TP_QT_EXPORT CallStream : public StatefulDBusProxy,
+                    public OptionalInterfaceFactory<CallStream>
 {
     Q_OBJECT
     Q_DISABLE_COPY(CallStream)
@@ -55,33 +51,33 @@ public:
 
     CallContentPtr content() const;
 
-    Tp::Contacts members() const;
+    Contacts members() const;
 
     SendingState localSendingState() const;
-    SendingState remoteSendingState(const Tp::ContactPtr &contact) const;
+    SendingState remoteSendingState(const ContactPtr &contact) const;
 
-    Tp::PendingOperation *requestSending(bool send);
-    Tp::PendingOperation *requestReceiving(const Tp::ContactPtr &contact, bool receive);
+    PendingOperation *requestSending(bool send);
+    PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
 
 Q_SIGNALS:
-    void localSendingStateChanged(Tpy::SendingState localSendingState);
+    void localSendingStateChanged(Tp::SendingState localSendingState);
     void remoteSendingStateChanged(
-            const QHash<Tp::ContactPtr, Tpy::SendingState> &remoteSendingStates);
+            const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates);
     void remoteMembersRemoved(const Tp::Contacts &remoteMembers);
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void gotRemoteMembersContacts(Tp::PendingOperation *op);
 
-    void onRemoteMembersChanged(const Tpy::ContactSendingStateMap &updates,
-            const Tpy::UIntList &removed);
+    void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,
+            const Tp::UIntList &removed);
     void onLocalSendingStateChanged(uint);
 
 private:
     friend class CallChannel;
     friend class CallContent;
 
-    static const Tp::Feature FeatureCore;
+    static const Feature FeatureCore;
 
     CallStream(const CallContentPtr &content, const QDBusObjectPath &streamPath);
 
@@ -90,7 +86,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_YELL_EXPORT PendingCallContent : public Tp::PendingOperation
+class TP_QT_EXPORT PendingCallContent : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingCallContent)
@@ -104,21 +100,21 @@ private Q_SLOTS:
     void gotContent(QDBusPendingCallWatcher *watcher);
 
     void onContentReady(Tp::PendingOperation *op);
-    void onContentRemoved(const Tpy::CallContentPtr &content);
+    void onContentRemoved(const Tp::CallContentPtr &content);
 
 private:
     friend class CallChannel;
 
     PendingCallContent(const CallChannelPtr &channel,
-            const QString &contentName, Tp::MediaStreamType type);
+            const QString &contentName, MediaStreamType type);
 
     struct Private;
     friend struct Private;
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_YELL_EXPORT CallContent : public Tp::StatefulDBusProxy,
-                    public Tp::OptionalInterfaceFactory<CallContent>
+class TP_QT_EXPORT CallContent : public StatefulDBusProxy,
+                    public OptionalInterfaceFactory<CallContent>
 {
     Q_OBJECT
     Q_DISABLE_COPY(CallContent)
@@ -129,27 +125,27 @@ public:
     CallChannelPtr channel() const;
 
     QString name() const;
-    Tp::MediaStreamType type() const;
+    MediaStreamType type() const;
 
     CallContentDisposition disposition() const;
 
     CallStreams streams() const;
 
 Q_SIGNALS:
-    void streamAdded(const Tpy::CallStreamPtr &stream);
-    void streamRemoved(const Tpy::CallStreamPtr &stream);
+    void streamAdded(const Tp::CallStreamPtr &stream);
+    void streamRemoved(const Tp::CallStreamPtr &stream);
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void onStreamsAdded(const Tpy::ObjectPathList &streamPath);
-    void onStreamsRemoved(const Tpy::ObjectPathList &streamPath);
+    void onStreamsAdded(const Tp::ObjectPathList &streamPath);
+    void onStreamsRemoved(const Tp::ObjectPathList &streamPath);
     void onStreamReady(Tp::PendingOperation *op);
 
 private:
     friend class CallChannel;
     friend class PendingCallContent;
 
-    static const Tp::Feature FeatureCore;
+    static const Feature FeatureCore;
 
     CallContent(const CallChannelPtr &channel,
             const QDBusObjectPath &contentPath);
@@ -159,18 +155,18 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_YELL_EXPORT CallChannel : public Tp::Channel
+class TP_QT_EXPORT CallChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(CallChannel)
 
 public:
-    static const Tp::Feature FeatureContents;
-    static const Tp::Feature FeatureLocalHoldState;
+    static const Feature FeatureContents;
+    static const Feature FeatureLocalHoldState;
 
     // TODO: add helpers to ensure/create call channel using Account
 
-    static CallChannelPtr create(const Tp::ConnectionPtr &connection,
+    static CallChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
     virtual ~CallChannel();
@@ -188,31 +184,31 @@ public:
     QString initialVideoName() const;
     bool hasMutableContents() const;
 
-    Tp::PendingOperation *accept();
-    Tp::PendingOperation *hangup(CallStateChangeReason reason,
+    PendingOperation *accept();
+    PendingOperation *hangup(CallStateChangeReason reason,
             const QString &detailedReason, const QString &message);
 
     CallContents contents() const;
-    CallContents contentsForType(Tp::MediaStreamType type) const;
-    PendingCallContent *requestContent(const QString &name, Tp::MediaStreamType type);
-    Tp::PendingOperation *removeContent(const CallContentPtr &content,
+    CallContents contentsForType(MediaStreamType type) const;
+    PendingCallContent *requestContent(const QString &name, MediaStreamType type);
+    PendingOperation *removeContent(const CallContentPtr &content,
             ContentRemovalReason reason, const QString &detailedReason, const QString &message);
 
-    Tp::LocalHoldState localHoldState() const;
-    Tp::LocalHoldStateReason localHoldStateReason() const;
-    Tp::PendingOperation *requestHold(bool hold);
+    LocalHoldState localHoldState() const;
+    LocalHoldStateReason localHoldStateReason() const;
+    PendingOperation *requestHold(bool hold);
 
 Q_SIGNALS:
-    void contentAdded(const Tpy::CallContentPtr &content);
-    void contentRemoved(const Tpy::CallContentPtr &content);
-    void stateChanged(Tpy::CallState state);
+    void contentAdded(const Tp::CallContentPtr &content);
+    void contentRemoved(const Tp::CallContentPtr &content);
+    void stateChanged(Tp::CallState state);
 
     void localHoldStateChanged(Tp::LocalHoldState state, Tp::LocalHoldStateReason reason);
 
 protected:
-    CallChannel(const Tp::ConnectionPtr &connection,
+    CallChannel(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties,
-            const Tp::Feature &coreFeature = Tp::Channel::FeatureCore);
+            const Feature &coreFeature = Channel::FeatureCore);
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
@@ -220,7 +216,7 @@ private Q_SLOTS:
     void onContentRemoved(const QDBusObjectPath &contentPath);
     void onContentReady(Tp::PendingOperation *op);
     void onCallStateChanged(uint state, uint flags,
-            const Tpy::CallStateReason &stateReason, const QVariantMap &stateDetails);
+            const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);
 
     void gotLocalHoldState(QDBusPendingCallWatcher *);
     void onLocalHoldStateChanged(uint, uint);

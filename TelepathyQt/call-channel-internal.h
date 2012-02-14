@@ -1,7 +1,7 @@
 /*
- * This file is part of TelepathyQt4Yell
+ * This file is part of TelepathyQt
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2010-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-namespace Tpy
+namespace Tp
 {
 
 /* ====== CallStream ====== */
-struct TELEPATHY_QT4_YELL_NO_EXPORT CallStream::Private
+struct TP_QT_NO_EXPORT CallStream::Private
 {
     Private(CallStream *parent, const CallContentPtr &content);
 
@@ -35,26 +35,26 @@ struct TELEPATHY_QT4_YELL_NO_EXPORT CallStream::Private
     // Public object
     CallStream *parent;
 
-    Tp::WeakPtr<CallContent> content;
+    WeakPtr<CallContent> content;
 
     // Mandatory proxies
     Client::CallStreamInterface *streamInterface;
-    Tp::Client::DBus::PropertiesInterface *properties;
+    Client::DBus::PropertiesInterface *properties;
 
-    Tp::ReadinessHelper *readinessHelper;
+    ReadinessHelper *readinessHelper;
 
     // Introspection
     uint localSendingState;
     ContactSendingStateMap remoteMembers;
-    QHash<uint, Tp::ContactPtr> remoteMembersContacts;
+    QHash<uint, ContactPtr> remoteMembersContacts;
     bool buildingRemoteMembers;
     QQueue<RemoteMembersChangedInfo *> remoteMembersChangedQueue;
     RemoteMembersChangedInfo *currentRemoteMembersChangedInfo;
 };
 
-struct TELEPATHY_QT4_YELL_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
+struct TP_QT_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
 {
-    RemoteMembersChangedInfo(const ContactSendingStateMap &updates, const Tp::UIntList &removed)
+    RemoteMembersChangedInfo(const ContactSendingStateMap &updates, const UIntList &removed)
         : updates(updates),
           removed(removed)
     {
@@ -65,7 +65,7 @@ struct TELEPATHY_QT4_YELL_NO_EXPORT CallStream::Private::RemoteMembersChangedInf
 };
 
 /* ====== PendingCallContent ====== */
-struct TELEPATHY_QT4_YELL_NO_EXPORT PendingCallContent::Private
+struct TP_QT_NO_EXPORT PendingCallContent::Private
 {
     Private(PendingCallContent *parent, const CallChannelPtr &channel)
         : parent(parent),
@@ -79,7 +79,7 @@ struct TELEPATHY_QT4_YELL_NO_EXPORT PendingCallContent::Private
 };
 
 /* ====== CallContent ====== */
-struct TELEPATHY_QT4_YELL_NO_EXPORT CallContent::Private
+struct TP_QT_NO_EXPORT CallContent::Private
 {
     Private(CallContent *parent, const CallChannelPtr &channel);
 
@@ -92,13 +92,13 @@ struct TELEPATHY_QT4_YELL_NO_EXPORT CallContent::Private
     // Public object
     CallContent *parent;
 
-    Tp::WeakPtr<CallChannel> channel;
+    WeakPtr<CallChannel> channel;
 
     // Mandatory proxies
     Client::CallContentInterface *contentInterface;
-    Tp::Client::DBus::PropertiesInterface *properties;
+    Client::DBus::PropertiesInterface *properties;
 
-    Tp::ReadinessHelper *readinessHelper;
+    ReadinessHelper *readinessHelper;
 
     // Introspection
     QString name;
@@ -109,7 +109,7 @@ struct TELEPATHY_QT4_YELL_NO_EXPORT CallContent::Private
 };
 
 /* ====== CallChannel ====== */
-struct TELEPATHY_QT4_YELL_NO_EXPORT CallChannel::Private
+struct TP_QT_NO_EXPORT CallChannel::Private
 {
     Private(CallChannel *parent);
     ~Private();
@@ -127,9 +127,9 @@ struct TELEPATHY_QT4_YELL_NO_EXPORT CallChannel::Private
 
     // Mandatory proxies
     Client::ChannelTypeCallInterface *callInterface;
-    Tp::Client::DBus::PropertiesInterface *properties;
+    Client::DBus::PropertiesInterface *properties;
 
-    Tp::ReadinessHelper *readinessHelper;
+    ReadinessHelper *readinessHelper;
 
     // Introspection
     uint state;
@@ -150,8 +150,8 @@ struct TELEPATHY_QT4_YELL_NO_EXPORT CallChannel::Private
     uint localHoldStateReason;
 };
 
-class TELEPATHY_QT4_YELL_NO_EXPORT CallChannel::Private::PendingRemoveContent :
-                    public Tp::PendingOperation
+class TP_QT_NO_EXPORT CallChannel::Private::PendingRemoveContent :
+                    public PendingOperation
 {
     Q_OBJECT
 
@@ -161,7 +161,7 @@ public:
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
-    void onContentRemoved(const Tpy::CallContentPtr &content);
+    void onContentRemoved(const Tp::CallContentPtr &content);
 
 private:
     CallChannelPtr channel;

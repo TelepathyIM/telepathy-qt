@@ -1,7 +1,7 @@
 /*
- * This file is part of TelepathyQt4Yell
+ * This file is part of TelepathyQt
  *
- * Copyright (C) 2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2010-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4Yell/CallChannel>
-#include "TelepathyQt4Yell/call-channel-internal.h"
+#include <TelepathyQt/CallChannel>
+#include "TelepathyQt/call-channel-internal.h"
 
-#include "TelepathyQt4Yell/_gen/call-channel.moc.hpp"
-#include "TelepathyQt4Yell/_gen/call-channel-internal.moc.hpp"
+#include "TelepathyQt/_gen/call-channel.moc.hpp"
+#include "TelepathyQt/_gen/call-channel-internal.moc.hpp"
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
@@ -33,7 +33,7 @@
 
 #include <QHash>
 
-namespace Tpy
+namespace Tp
 {
 
 /* ====== CallStream ====== */
@@ -41,19 +41,19 @@ CallStream::Private::Private(CallStream *parent, const CallContentPtr &content)
     : parent(parent),
       content(content.data()),
       streamInterface(parent->interface<Client::CallStreamInterface>()),
-      properties(parent->interface<Tp::Client::DBus::PropertiesInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       localSendingState(SendingStateNone),
       buildingRemoteMembers(false),
       currentRemoteMembersChangedInfo(0)
 {
-    Tp::ReadinessHelper::Introspectables introspectables;
+    ReadinessHelper::Introspectables introspectables;
 
-    Tp::ReadinessHelper::Introspectable introspectableCore(
+    ReadinessHelper::Introspectable introspectableCore(
         QSet<uint>() << 0,                                                        // makesSenseForStatuses
-        Tp::Features(),                                                           // dependsOnFeatures
+        Features(),                                                           // dependsOnFeatures
         QStringList(),                                                            // dependsOnInterfaces
-        (Tp::ReadinessHelper::IntrospectFunc) &Private::introspectMainProperties,
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMainProperties,
         this);
     introspectables[FeatureCore] = introspectableCore;
 
@@ -69,12 +69,12 @@ void CallStream::Private::introspectMainProperties(CallStream::Private *self)
             SIGNAL(LocalSendingStateChanged(uint)),
             SLOT(onLocalSendingStateChanged(uint)));
     parent->connect(self->streamInterface,
-            SIGNAL(RemoteMembersChanged(Tpy::ContactSendingStateMap,Tpy::UIntList)),
-            SLOT(onRemoteMembersChanged(Tpy::ContactSendingStateMap,Tpy::UIntList)));
+            SIGNAL(RemoteMembersChanged(Tp::ContactSendingStateMap,Tp::UIntList)),
+            SLOT(onRemoteMembersChanged(Tp::ContactSendingStateMap,Tp::UIntList)));
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(TP_QT_YELL_IFACE_CALL_STREAM),
+                self->properties->GetAll(TP_QT_IFACE_CALL_STREAM),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -105,9 +105,9 @@ void CallStream::Private::processRemoteMembersChanged()
     if (!pendingRemoteMembers.isEmpty()) {
         buildingRemoteMembers = true;
 
-        Tp::ContactManagerPtr contactManager =
+        ContactManagerPtr contactManager =
             parent->content()->channel()->connection()->contactManager();
-        Tp::PendingContacts *contacts = contactManager->contactsForHandles(
+        PendingContacts *contacts = contactManager->contactsForHandles(
                 pendingRemoteMembers.toList());
         parent->connect(contacts,
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -120,7 +120,7 @@ void CallStream::Private::processRemoteMembersChanged()
 /**
  * \class CallStream
  * \ingroup clientchannel
- * \headerfile TelepathyQt4Yell/call-channel.h <TelepathyQt4Yell/CallStream>
+ * \headerfile TelepathyQt/call-channel.h <TelepathyQt/CallStream>
  *
  * \brief The CallStream class provides an object representing a Telepathy
  * Call.Stream.
@@ -141,7 +141,7 @@ void CallStream::Private::processRemoteMembersChanged()
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Tp::Feature CallStream::FeatureCore = Tp::Feature(QLatin1String(CallStream::staticMetaObject.className()), 0);
+const Feature CallStream::FeatureCore = Feature(QLatin1String(CallStream::staticMetaObject.className()), 0);
 
 /**
  * Construct a new CallStream object.
@@ -150,9 +150,9 @@ const Tp::Feature CallStream::FeatureCore = Tp::Feature(QLatin1String(CallStream
  * \param objectPath The object path of this media stream.
  */
 CallStream::CallStream(const CallContentPtr &content, const QDBusObjectPath &objectPath)
-    : Tp::StatefulDBusProxy(content->dbusConnection(), content->busName(),
+    : StatefulDBusProxy(content->dbusConnection(), content->busName(),
             objectPath.path(), FeatureCore),
-      Tp::OptionalInterfaceFactory<CallStream>(this),
+      OptionalInterfaceFactory<CallStream>(this),
       mPriv(new Private(this, content))
 {
 }
@@ -183,7 +183,7 @@ CallContentPtr CallStream::content() const
  * \return The contacts whose the media stream is with.
  * \sa membersRemoved()
  */
-Tp::Contacts CallStream::members() const
+Contacts CallStream::members() const
 {
     return mPriv->remoteMembersContacts.values().toSet();
 }
@@ -207,7 +207,7 @@ SendingState CallStream::localSendingState() const
  * \return The media stream remote sending state for a contact.
  * \sa remoteSendingStateChanged()
  */
-SendingState CallStream::remoteSendingState(const Tp::ContactPtr &contact) const
+SendingState CallStream::remoteSendingState(const ContactPtr &contact) const
 {
     if (!contact) {
         return SendingStateNone;
@@ -233,9 +233,9 @@ SendingState CallStream::remoteSendingState(const Tp::ContactPtr &contact) const
  *         when the call has finished.
  * \sa localSendingStateChanged()
  */
-Tp::PendingOperation *CallStream::requestSending(bool send)
+PendingOperation *CallStream::requestSending(bool send)
 {
-    return new Tp::PendingVoid(mPriv->streamInterface->SetSending(send), CallStreamPtr(this));
+    return new PendingVoid(mPriv->streamInterface->SetSending(send), CallStreamPtr(this));
 }
 
 /**
@@ -247,14 +247,14 @@ Tp::PendingOperation *CallStream::requestSending(bool send)
  *         when the call has finished.
  * \sa remoteSendingStateChanged()
  */
-Tp::PendingOperation *CallStream::requestReceiving(const Tp::ContactPtr &contact, bool receive)
+PendingOperation *CallStream::requestReceiving(const ContactPtr &contact, bool receive)
 {
     if (!contact) {
-        return new Tp::PendingFailure(TP_QT_YELL_ERROR_INVALID_ARGUMENT,
+        return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Invalid contact"), CallStreamPtr(this));
     }
 
-    return new Tp::PendingVoid(mPriv->streamInterface->RequestReceiving(contact->handle()[0], receive),
+    return new PendingVoid(mPriv->streamInterface->RequestReceiving(contact->handle()[0], receive),
             CallStreamPtr(this));
 }
 
@@ -286,9 +286,9 @@ void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-void CallStream::gotRemoteMembersContacts(Tp::PendingOperation *op)
+void CallStream::gotRemoteMembersContacts(PendingOperation *op)
 {
-    Tp::PendingContacts *pc = qobject_cast<Tp::PendingContacts *>(op);
+    PendingContacts *pc = qobject_cast<PendingContacts *>(op);
 
     mPriv->buildingRemoteMembers = false;
 
@@ -299,7 +299,7 @@ void CallStream::gotRemoteMembersContacts(Tp::PendingOperation *op)
         return;
     }
 
-    QMap<uint, Tp::ContactPtr> removed;
+    QMap<uint, ContactPtr> removed;
 
     for (ContactSendingStateMap::const_iterator i =
                 mPriv->currentRemoteMembersChangedInfo->updates.constBegin();
@@ -307,7 +307,7 @@ void CallStream::gotRemoteMembersContacts(Tp::PendingOperation *op)
         mPriv->remoteMembers.insert(i.key(), i.value());
     }
 
-    foreach (const Tp::ContactPtr &contact, pc->contacts()) {
+    foreach (const ContactPtr &contact, pc->contacts()) {
         mPriv->remoteMembersContacts.insert(contact->handle()[0], contact);
     }
 
@@ -335,7 +335,7 @@ void CallStream::gotRemoteMembersContacts(Tp::PendingOperation *op)
 
     if (isReady(FeatureCore)) {
         CallChannelPtr channel(content()->channel());
-        QHash<Tp::ContactPtr, SendingState> remoteSendingStates;
+        QHash<ContactPtr, SendingState> remoteSendingStates;
         for (ContactSendingStateMap::const_iterator i =
                     mPriv->currentRemoteMembersChangedInfo->updates.constBegin();
                 i != mPriv->currentRemoteMembersChangedInfo->updates.constEnd(); ++i) {
@@ -381,7 +381,7 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates, c
 }
 
 /**
- * \fn void CallStream::localSendingStateChanged(Tpy::SendingState localSendingState);
+ * \fn void CallStream::localSendingStateChanged(Tp::SendingState localSendingState);
  *
  * This signal is emitted when the local sending state of this media stream
  * changes.
@@ -391,7 +391,7 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates, c
  */
 
 /**
- * \fn void CallStream::remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tpy::SendingState> &remoteSendingStates);
+ * \fn void CallStream::remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates);
  *
  * This signal is emitted when any remote sending state of this media stream
  * changes.
@@ -411,8 +411,8 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates, c
 
 /* ====== PendingCallContent ====== */
 PendingCallContent::PendingCallContent(const CallChannelPtr &channel,
-        const QString &name, Tp::MediaStreamType type)
-    : Tp::PendingOperation(channel),
+        const QString &name, MediaStreamType type)
+    : PendingOperation(channel),
       mPriv(new Private(this, channel))
 {
     Client::ChannelTypeCallInterface *callInterface =
@@ -461,8 +461,8 @@ void PendingCallContent::gotContent(QDBusPendingCallWatcher *watcher)
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onContentReady(Tp::PendingOperation*)));
     connect(channel.data(),
-            SIGNAL(contentRemoved(Tpy::CallContentPtr)),
-            SLOT(onContentRemoved(Tpy::CallContentPtr)));
+            SIGNAL(contentRemoved(Tp::CallContentPtr)),
+            SLOT(onContentRemoved(Tp::CallContentPtr)));
 
     mPriv->content = content;
 
@@ -487,7 +487,7 @@ void PendingCallContent::onContentRemoved(const CallContentPtr &content)
 
     if (mPriv->content == content) {
         // the content was removed before becoming ready
-        setFinishedWithError(TP_QT_YELL_ERROR_CANCELLED,
+        setFinishedWithError(TP_QT_ERROR_CANCELLED,
                 QLatin1String("Content removed before ready"));
     }
 }
@@ -497,16 +497,16 @@ CallContent::Private::Private(CallContent *parent, const CallChannelPtr &channel
     : parent(parent),
       channel(channel.data()),
       contentInterface(parent->interface<Client::CallContentInterface>()),
-      properties(parent->interface<Tp::Client::DBus::PropertiesInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper())
 {
-    Tp::ReadinessHelper::Introspectables introspectables;
+    ReadinessHelper::Introspectables introspectables;
 
-    Tp::ReadinessHelper::Introspectable introspectableCore(
+    ReadinessHelper::Introspectable introspectableCore(
         QSet<uint>() << 0,                                                         // makesSenseForStatuses
-        Tp::Features(),                                                            // dependsOnFeatures
+        Features(),                                                            // dependsOnFeatures
         QStringList(),                                                             // dependsOnInterfaces
-        (Tp::ReadinessHelper::IntrospectFunc) &Private::introspectMainProperties,
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMainProperties,
         this);
     introspectables[FeatureCore] = introspectableCore;
 
@@ -520,16 +520,16 @@ void CallContent::Private::introspectMainProperties(CallContent::Private *self)
     CallChannelPtr channel = parent->channel();
 
     parent->connect(self->contentInterface,
-            SIGNAL(StreamsAdded(Tpy::ObjectPathList)),
-            SLOT(onStreamsAdded(Tpy::ObjectPathList)));
+            SIGNAL(StreamsAdded(Tp::ObjectPathList)),
+            SLOT(onStreamsAdded(Tp::ObjectPathList)));
     parent->connect(self->contentInterface,
-            SIGNAL(StreamsRemoved(Tpy::ObjectPathList)),
-            SLOT(onStreamsRemoved(Tpy::ObjectPathList)));
+            SIGNAL(StreamsRemoved(Tp::ObjectPathList)),
+            SLOT(onStreamsRemoved(Tp::ObjectPathList)));
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 self->properties->GetAll(
-                    QLatin1String(TP_QT_YELL_IFACE_CALL_CONTENT)),
+                    QLatin1String(TP_QT_IFACE_CALL_CONTENT)),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -572,7 +572,7 @@ CallStreamPtr CallContent::Private::lookupStream(const QDBusObjectPath &streamPa
 /**
  * \class CallContent
  * \ingroup clientchannel
- * \headerfile TelepathyQt4Yell/call-channel.h <TelepathyQt4Yell/CallContent>
+ * \headerfile TelepathyQt/call-channel.h <TelepathyQt/CallContent>
  *
  * \brief The CallContent class provides an object representing a Telepathy
  * Call.Content.
@@ -593,7 +593,7 @@ CallStreamPtr CallContent::Private::lookupStream(const QDBusObjectPath &streamPa
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Tp::Feature CallContent::FeatureCore = Tp::Feature(QLatin1String(CallContent::staticMetaObject.className()), 0);
+const Feature CallContent::FeatureCore = Feature(QLatin1String(CallContent::staticMetaObject.className()), 0);
 
 /**
  * Construct a new CallContent object.
@@ -602,9 +602,9 @@ const Tp::Feature CallContent::FeatureCore = Tp::Feature(QLatin1String(CallConte
  * \param name The object path of this media content.
  */
 CallContent::CallContent(const CallChannelPtr &channel, const QDBusObjectPath &objectPath)
-    : Tp::StatefulDBusProxy(channel->dbusConnection(), channel->busName(),
+    : StatefulDBusProxy(channel->dbusConnection(), channel->busName(),
             objectPath.path(), FeatureCore),
-      Tp::OptionalInterfaceFactory<CallContent>(this),
+      OptionalInterfaceFactory<CallContent>(this),
       mPriv(new Private(this, channel))
 {
 }
@@ -642,9 +642,9 @@ QString CallContent::name() const
  *
  * \return The type of this media content.
  */
-Tp::MediaStreamType CallContent::type() const
+MediaStreamType CallContent::type() const
 {
-    return (Tp::MediaStreamType) mPriv->type;
+    return (MediaStreamType) mPriv->type;
 }
 
 /**
@@ -742,9 +742,9 @@ void CallContent::onStreamsRemoved(const ObjectPathList &streamsPaths)
     }
 }
 
-void CallContent::onStreamReady(Tp::PendingOperation *op)
+void CallContent::onStreamReady(PendingOperation *op)
 {
-    Tp::PendingReady *pr = qobject_cast<Tp::PendingReady*>(op);
+    PendingReady *pr = qobject_cast<PendingReady*>(op);
     CallStreamPtr stream = CallStreamPtr::qObjectCast(pr->proxy());
 
     if (op->isError() || !mPriv->incompleteStreams.contains(stream)) {
@@ -764,7 +764,7 @@ void CallContent::onStreamReady(Tp::PendingOperation *op)
 }
 
 /**
- * \fn void CallContent::streamAdded(const Tpy::CallStreamPtr &stream);
+ * \fn void CallContent::streamAdded(const Tp::CallStreamPtr &stream);
  *
  * This signal is emitted when a new media stream is added to this media
  * content.
@@ -774,7 +774,7 @@ void CallContent::onStreamReady(Tp::PendingOperation *op)
  */
 
 /**
- * \fn void CallContent::streamRemoved(const Tpy::CallStreamPtr &stream);
+ * \fn void CallContent::streamRemoved(const Tp::CallStreamPtr &stream);
  *
  * This signal is emitted when a new media stream is removed from this media
  * content.
@@ -787,7 +787,7 @@ void CallContent::onStreamReady(Tp::PendingOperation *op)
 CallChannel::Private::Private(CallChannel *parent)
     : parent(parent),
       callInterface(parent->interface<Client::ChannelTypeCallInterface>()),
-      properties(parent->interface<Tp::Client::DBus::PropertiesInterface>()),
+      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       state(CallStateUnknown),
       flags((uint) -1),
@@ -796,24 +796,24 @@ CallChannel::Private::Private(CallChannel *parent)
       initialAudio(false),
       initialVideo(false),
       mutableContents(false),
-      localHoldState(Tp::LocalHoldStateUnheld),
-      localHoldStateReason(Tp::LocalHoldStateReasonNone)
+      localHoldState(LocalHoldStateUnheld),
+      localHoldStateReason(LocalHoldStateReasonNone)
 {
-    Tp::ReadinessHelper::Introspectables introspectables;
+    ReadinessHelper::Introspectables introspectables;
 
-    Tp::ReadinessHelper::Introspectable introspectableContents(
+    ReadinessHelper::Introspectable introspectableContents(
         QSet<uint>() << 0,                                                         // makesSenseForStatuses
-        Tp::Features() << Channel::FeatureCore,                                    // dependsOnFeatures (core)
+        Features() << Channel::FeatureCore,                                    // dependsOnFeatures (core)
         QStringList(),                                                             // dependsOnInterfaces
-        (Tp::ReadinessHelper::IntrospectFunc) &Private::introspectContents,
+        (ReadinessHelper::IntrospectFunc) &Private::introspectContents,
         this);
     introspectables[FeatureContents] = introspectableContents;
 
-    Tp::ReadinessHelper::Introspectable introspectableLocalHoldState(
+    ReadinessHelper::Introspectable introspectableLocalHoldState(
         QSet<uint>() << 0,                                                         // makesSenseForStatuses
-        Tp::Features() << Channel::FeatureCore,                                    // dependsOnFeatures (core)
+        Features() << Channel::FeatureCore,                                    // dependsOnFeatures (core)
         QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_HOLD,                      // dependsOnInterfaces
-        (Tp::ReadinessHelper::IntrospectFunc) &Private::introspectLocalHoldState,
+        (ReadinessHelper::IntrospectFunc) &Private::introspectLocalHoldState,
         this);
     introspectables[FeatureLocalHoldState] = introspectableLocalHoldState;
 
@@ -835,14 +835,14 @@ void CallChannel::Private::introspectContents(CallChannel::Private *self)
             SIGNAL(ContentRemoved(QDBusObjectPath)),
             SLOT(onContentRemoved(QDBusObjectPath)));
     parent->connect(self->callInterface,
-            SIGNAL(CallStateChanged(uint,uint,Tpy::CallStateReason,QVariantMap)),
-            SLOT(onCallStateChanged(uint,uint,Tpy::CallStateReason,QVariantMap)));
+            SIGNAL(CallStateChanged(uint,uint,Tp::CallStateReason,QVariantMap)),
+            SLOT(onCallStateChanged(uint,uint,Tp::CallStateReason,QVariantMap)));
     // TODO handle CallMembersChanged
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 self->properties->GetAll(
-                    QLatin1String(TP_QT_YELL_IFACE_CHANNEL_TYPE_CALL)),
+                    QLatin1String(TP_QT_IFACE_CHANNEL_TYPE_CALL)),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -852,8 +852,8 @@ void CallChannel::Private::introspectContents(CallChannel::Private *self)
 void CallChannel::Private::introspectLocalHoldState(CallChannel::Private *self)
 {
     CallChannel *parent = self->parent;
-    Tp::Client::ChannelInterfaceHoldInterface *holdInterface =
-        parent->interface<Tp::Client::ChannelInterfaceHoldInterface>();
+    Client::ChannelInterfaceHoldInterface *holdInterface =
+        parent->interface<Client::ChannelInterfaceHoldInterface>();
 
     parent->connect(holdInterface,
             SIGNAL(HoldStateChanged(uint,uint)),
@@ -874,8 +874,8 @@ CallChannel::Private::PendingRemoveContent::PendingRemoveContent(const CallChann
       content(content)
 {
     connect(channel.data(),
-            SIGNAL(contentRemoved(Tpy::CallContentPtr)),
-            SLOT(onContentRemoved(Tpy::CallContentPtr)));
+            SIGNAL(contentRemoved(Tp::CallContentPtr)),
+            SLOT(onContentRemoved(Tp::CallContentPtr)));
 
     Client::CallContentInterface *contentInterface =
         content->interface<Client::CallContentInterface>();
@@ -914,7 +914,7 @@ void CallChannel::Private::PendingRemoveContent::onContentRemoved(const CallCont
 /**
  * \class CallChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4Yell/call-channel.h <TelepathyQt4Yell/CallChannel>
+ * \headerfile TelepathyQt/call-channel.h <TelepathyQt/CallChannel>
  *
  * \brief The CallChannel class provides an object representing a
  * Telepathy channel of type Call.
@@ -925,14 +925,14 @@ void CallChannel::Private::PendingRemoveContent::onContentRemoved(const CallCont
  *
  * See media content specific methods' documentation for more details.
  */
-const Tp::Feature CallChannel::FeatureContents = Tp::Feature(QLatin1String(CallChannel::staticMetaObject.className()), 0);
+const Feature CallChannel::FeatureContents = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 0);
 
 /**
  * Feature used in order to access local hold state info.
  *
  * See local hold state specific methods' documentation for more details.
  */
-const Tp::Feature CallChannel::FeatureLocalHoldState = Tp::Feature(QLatin1String(CallChannel::staticMetaObject.className()), 1);
+const Feature CallChannel::FeatureLocalHoldState = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 1);
 
 /**
  * Create a new CallChannel object.
@@ -944,7 +944,7 @@ const Tp::Feature CallChannel::FeatureLocalHoldState = Tp::Feature(QLatin1String
  * \return A CallChannelPtr object pointing to the newly created
  *         CallChannel object.
  */
-CallChannelPtr CallChannel::create(const Tp::ConnectionPtr &connection,
+CallChannelPtr CallChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
     return CallChannelPtr(new CallChannel(connection, objectPath, immutableProperties));
@@ -961,10 +961,10 @@ CallChannelPtr CallChannel::create(const Tp::ConnectionPtr &connection,
  * \param coreFeature The core feature of the channel type. The corresponding introspectable
  *                     should depend on Channel::FeatureCore.
  */
-CallChannel::CallChannel(const Tp::ConnectionPtr &connection,
+CallChannel::CallChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties,
-        const Tp::Feature &coreFeature)
+        const Feature &coreFeature)
     : Channel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
@@ -1107,9 +1107,9 @@ bool CallChannel::hasMutableContents() const
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
-Tp::PendingOperation *CallChannel::accept()
+PendingOperation *CallChannel::accept()
 {
-    return new Tp::PendingVoid(mPriv->callInterface->Accept(), CallChannelPtr(this));
+    return new PendingVoid(mPriv->callInterface->Accept(), CallChannelPtr(this));
 }
 
 /**
@@ -1124,10 +1124,10 @@ Tp::PendingOperation *CallChannel::accept()
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
-Tp::PendingOperation *CallChannel::hangup(CallStateChangeReason reason,
+PendingOperation *CallChannel::hangup(CallStateChangeReason reason,
         const QString &detailedReason, const QString &message)
 {
-    return new Tp::PendingVoid(mPriv->callInterface->Hangup(reason, detailedReason, message),
+    return new PendingVoid(mPriv->callInterface->Hangup(reason, detailedReason, message),
             CallChannelPtr(this));
 }
 
@@ -1153,7 +1153,7 @@ CallContents CallChannel::contents() const
  * \return A list of media contents in this channel for the given type \a type.
  * \sa contentAdded(), contentRemoved(), contents(), requestContent()
  */
-CallContents CallChannel::contentsForType(Tp::MediaStreamType type) const
+CallContents CallChannel::contentsForType(MediaStreamType type) const
 {
     CallContents contents;
     foreach (const CallContentPtr &content, mPriv->contents) {
@@ -1174,7 +1174,7 @@ CallContents CallChannel::contentsForType(Tp::MediaStreamType type) const
  *         when the call has finished.
  * \sa contentAdded(), contents(), contentsForType()
  */
-PendingCallContent *CallChannel::requestContent(const QString &name, Tp::MediaStreamType type)
+PendingCallContent *CallChannel::requestContent(const QString &name, MediaStreamType type)
 {
     return new PendingCallContent(CallChannelPtr(this), name, type);
 }
@@ -1190,7 +1190,7 @@ PendingCallContent *CallChannel::requestContent(const QString &name, Tp::MediaSt
  *                streaming failure" or "no codec intersection". This property can be left empty if
  *                no reason is to be given.
  */
-Tp::PendingOperation *CallChannel::removeContent(const CallContentPtr &content,
+PendingOperation *CallChannel::removeContent(const CallContentPtr &content,
         ContentRemovalReason reason, const QString &detailedReason, const QString &message)
 {
     return new Private::PendingRemoveContent(CallChannelPtr(this),
@@ -1205,7 +1205,7 @@ Tp::PendingOperation *CallChannel::removeContent(const CallContentPtr &content,
  * \return The channel local hold state.
  * \sa requestHold(), localHoldStateChanged()
  */
-Tp::LocalHoldState CallChannel::localHoldState() const
+LocalHoldState CallChannel::localHoldState() const
 {
     if (!isReady(FeatureLocalHoldState)) {
         qWarning() << "CallChannel::localHoldState() used with FeatureLocalHoldState not ready";
@@ -1213,7 +1213,7 @@ Tp::LocalHoldState CallChannel::localHoldState() const
         qWarning() << "CallChannel::localHoldStateReason() used with no hold interface";
     }
 
-    return (Tp::LocalHoldState) mPriv->localHoldState;
+    return (LocalHoldState) mPriv->localHoldState;
 }
 
 /**
@@ -1224,7 +1224,7 @@ Tp::LocalHoldState CallChannel::localHoldState() const
  * \return The channel local hold state reason.
  * \sa requestHold(), localHoldStateChanged()
  */
-Tp::LocalHoldStateReason CallChannel::localHoldStateReason() const
+LocalHoldStateReason CallChannel::localHoldStateReason() const
 {
     if (!isReady(FeatureLocalHoldState)) {
         qWarning() << "CallChannel::localHoldStateReason() used with FeatureLocalHoldState not ready";
@@ -1232,7 +1232,7 @@ Tp::LocalHoldStateReason CallChannel::localHoldStateReason() const
         qWarning() << "CallChannel::localHoldStateReason() used with no hold interface";
     }
 
-    return (Tp::LocalHoldStateReason) mPriv->localHoldStateReason;
+    return (LocalHoldStateReason) mPriv->localHoldStateReason;
 }
 
 /**
@@ -1241,7 +1241,7 @@ Tp::LocalHoldStateReason CallChannel::localHoldStateReason() const
  *
  * If the connection manager can immediately tell that the requested state
  * change could not possibly succeed, the resulting PendingOperation will fail
- * with error code #TP_QT_YELL_ERROR_NOT_AVAILABLE.
+ * with error code #TP_QT_ERROR_NOT_AVAILABLE.
  * If the requested state is the same as the current state, the resulting
  * PendingOperation will finish successfully.
  *
@@ -1260,25 +1260,25 @@ Tp::LocalHoldStateReason CallChannel::localHoldStateReason() const
  *
  * If the channel does not support the #TP_QT_IFACE_CHANNEL_INTERFACE_HOLD
  * interface, the PendingOperation will fail with error code
- * #TP_QT_YELL_ERROR_NOT_IMPLEMENTED.
+ * #TP_QT_ERROR_NOT_IMPLEMENTED.
  *
  * \param hold A boolean indicating whether or not the channel should be on hold
  * \return A %PendingOperation, which will emit PendingOperation::finished
  *         when the request finishes.
  * \sa localHoldState(), localHoldStateReason(), localHoldStateChanged()
  */
-Tp::PendingOperation *CallChannel::requestHold(bool hold)
+PendingOperation *CallChannel::requestHold(bool hold)
 {
     if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
         qWarning() << "CallChannel::requestHold() used with no hold interface";
-        return new Tp::PendingFailure(TP_QT_YELL_ERROR_NOT_IMPLEMENTED,
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("CallChannel does not support hold interface"),
                 CallChannelPtr(this));
     }
 
-    Tp::Client::ChannelInterfaceHoldInterface *holdInterface =
-        interface<Tp::Client::ChannelInterfaceHoldInterface>();
-    return new Tp::PendingVoid(holdInterface->RequestHold(hold), CallChannelPtr(this));
+    Client::ChannelInterfaceHoldInterface *holdInterface =
+        interface<Client::ChannelInterfaceHoldInterface>();
+    return new PendingVoid(holdInterface->RequestHold(hold), CallChannelPtr(this));
 }
 
 void CallChannel::gotMainProperties(QDBusPendingCallWatcher *watcher)
@@ -1367,9 +1367,9 @@ void CallChannel::onContentRemoved(const QDBusObjectPath &contentPath)
     }
 }
 
-void CallChannel::onContentReady(Tp::PendingOperation *op)
+void CallChannel::onContentReady(PendingOperation *op)
 {
-    Tp::PendingReady *pr = qobject_cast<Tp::PendingReady*>(op);
+    PendingReady *pr = qobject_cast<PendingReady*>(op);
     CallContentPtr content = CallContentPtr::qObjectCast(pr->proxy());
 
     if (op->isError()) {
@@ -1403,7 +1403,7 @@ void CallChannel::onContentReady(Tp::PendingOperation *op)
 }
 
 void CallChannel::onCallStateChanged(uint state, uint flags,
-        const Tpy::CallStateReason &stateReason, const QVariantMap &stateDetails)
+        const CallStateReason &stateReason, const QVariantMap &stateDetails)
 {
     if (mPriv->state == state && mPriv->flags == flags && mPriv->stateReason == stateReason &&
         mPriv->stateDetails == stateDetails) {
@@ -1450,8 +1450,8 @@ void CallChannel::onLocalHoldStateChanged(uint localHoldState, uint localHoldSta
         mPriv->readinessHelper->setIntrospectCompleted(FeatureLocalHoldState, true);
     } else {
         if (changed) {
-            emit localHoldStateChanged((Tp::LocalHoldState) mPriv->localHoldState,
-                    (Tp::LocalHoldStateReason) mPriv->localHoldStateReason);
+            emit localHoldStateChanged((LocalHoldState) mPriv->localHoldState,
+                    (LocalHoldStateReason) mPriv->localHoldStateReason);
         }
     }
 }
@@ -1483,7 +1483,7 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
 }
 
 /**
- * \fn void CallChannel::contentAdded(const Tpy::CallContentPtr &content);
+ * \fn void CallChannel::contentAdded(const Tp::CallContentPtr &content);
  *
  * This signal is emitted when a media content is added to this channel.
  *
@@ -1492,7 +1492,7 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
  */
 
 /**
- * \fn void CallChannel::contentRemoved(const Tpy::CallContentPtr &content);
+ * \fn void CallChannel::contentRemoved(const Tp::CallContentPtr &content);
  *
  * This signal is emitted when a media content is removed from this channel.
  *
@@ -1501,7 +1501,7 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
  */
 
 /**
- * \fn void CallChannel::stateChanged(Tpy::CallState &state);
+ * \fn void CallChannel::stateChanged(Tp::CallState &state);
  *
  * This signal is emitted when the value of state(), flags(), stateReason() or stateDetails()
  * changes.
