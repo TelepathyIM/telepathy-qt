@@ -91,8 +91,8 @@ public:
     PendingOperation *setRinging();
     PendingOperation *setQueued();
     PendingOperation *accept();
-    PendingOperation *hangup(CallStateChangeReason reason,
-            const QString &detailedReason, const QString &message);
+    PendingOperation *hangup(CallStateChangeReason reason = CallStateChangeReasonUserRequested,
+            const QString &detailedReason = QString(), const QString &message = QString());
 
     CallContents contents() const;
     CallContents contentsForType(MediaStreamType type) const;
