@@ -88,6 +88,8 @@ public:
     QString initialVideoName() const;
     bool hasMutableContents() const;
 
+    PendingOperation *setRinging();
+    PendingOperation *setQueued();
     PendingOperation *accept();
     PendingOperation *hangup(CallStateChangeReason reason,
             const QString &detailedReason, const QString &message);

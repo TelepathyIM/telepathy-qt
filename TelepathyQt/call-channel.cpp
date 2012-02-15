@@ -440,6 +440,23 @@ bool CallChannel::hasMutableContents() const
 }
 
 /**
+ * Indicate that the local user has been alerted about the incoming call.
+ */
+PendingOperation* CallChannel::setRinging()
+{
+    return new PendingVoid(mPriv->callInterface->SetRinging(), CallChannelPtr(this));
+}
+
+/**
+ * Notifies the CM that the local user is already in a call, so this
+ * call has been put in a call-waiting style queue.
+ */
+PendingOperation* CallChannel::setQueued()
+{
+    return new PendingVoid(mPriv->callInterface->SetQueued(), CallChannelPtr(this));
+}
+
+/**
  * Accept an incoming call.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
