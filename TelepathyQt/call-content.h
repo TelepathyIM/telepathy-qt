@@ -61,7 +61,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void onStreamsAdded(const Tp::ObjectPathList &streamPath);
-    void onStreamsRemoved(const Tp::ObjectPathList &streamPath);
+    void onStreamsRemoved(const Tp::ObjectPathList &streamPath, const Tp::CallStateReason &reason);
     void onStreamReady(Tp::PendingOperation *op);
 
 private:

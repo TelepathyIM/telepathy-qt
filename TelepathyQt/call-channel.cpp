@@ -45,7 +45,7 @@ struct TP_QT_NO_EXPORT PendingCallContent::Private
 };
 
 PendingCallContent::PendingCallContent(const CallChannelPtr &channel,
-        const QString &name, MediaStreamType type)
+        const QString &name, MediaStreamType type, MediaStreamDirection direction)
     : PendingOperation(channel),
       mPriv(new Private(this, channel))
 {
@@ -53,7 +53,7 @@ PendingCallContent::PendingCallContent(const CallChannelPtr &channel,
         channel->interface<Client::ChannelTypeCallInterface>();
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                callInterface->AddContent(name, type), this);
+                callInterface->AddContent(name, type, direction), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotContent(QDBusPendingCallWatcher*)));
@@ -215,8 +215,8 @@ void CallChannel::Private::introspectContents(CallChannel::Private *self)
             SIGNAL(ContentAdded(QDBusObjectPath)),
             SLOT(onContentAdded(QDBusObjectPath)));
     parent->connect(self->callInterface,
-            SIGNAL(ContentRemoved(QDBusObjectPath)),
-            SLOT(onContentRemoved(QDBusObjectPath)));
+            SIGNAL(ContentRemoved(QDBusObjectPath,Tp::CallStateReason)),
+            SLOT(onContentRemoved(QDBusObjectPath,Tp::CallStateReason)));
     parent->connect(self->callInterface,
             SIGNAL(CallStateChanged(uint,uint,Tp::CallStateReason,QVariantMap)),
             SLOT(onCallStateChanged(uint,uint,Tp::CallStateReason,QVariantMap)));
@@ -512,9 +512,10 @@ CallContents CallChannel::contentsForType(MediaStreamType type) const
  *         when the call has finished.
  * \sa contentAdded(), contents(), contentsForType()
  */
-PendingCallContent *CallChannel::requestContent(const QString &name, MediaStreamType type)
+PendingCallContent *CallChannel::requestContent(const QString &name,
+        MediaStreamType type, MediaStreamDirection direction)
 {
-    return new PendingCallContent(CallChannelPtr(this), name, type);
+    return new PendingCallContent(CallChannelPtr(this), name, type, direction);
 }
 
 /**
@@ -625,10 +626,10 @@ void CallChannel::gotMainProperties(QDBusPendingCallWatcher *watcher)
     mPriv->stateDetails = qdbus_cast<QVariantMap>(props[QLatin1String("CallStateDetails")]);
     mPriv->hardwareStreaming = qdbus_cast<bool>(props[QLatin1String("HardwareStreaming")]);
     mPriv->initialTransportType = qdbus_cast<uint>(props[QLatin1String("InitialTransport")]);
-    mPriv->initialAudio = qdbus_cast<bool>(props[QLatin1String("Audio")]);
-    mPriv->initialVideo = qdbus_cast<bool>(props[QLatin1String("Video")]);
-    mPriv->initialAudioName = qdbus_cast<QString>(props[QLatin1String("AudioName")]);
-    mPriv->initialVideoName = qdbus_cast<QString>(props[QLatin1String("VideoName")]);
+    mPriv->initialAudio = qdbus_cast<bool>(props[QLatin1String("InitialAudio")]);
+    mPriv->initialVideo = qdbus_cast<bool>(props[QLatin1String("InitialVideo")]);
+    mPriv->initialAudioName = qdbus_cast<QString>(props[QLatin1String("InitialAudioName")]);
+    mPriv->initialVideoName = qdbus_cast<QString>(props[QLatin1String("InitialVideoName")]);
     mPriv->mutableContents = qdbus_cast<bool>(props[QLatin1String("MutableContents")]);
 
     ObjectPathList contentsPaths = qdbus_cast<ObjectPathList>(props[QLatin1String("Contents")]);
@@ -658,7 +659,8 @@ void CallChannel::onContentAdded(const QDBusObjectPath &contentPath)
     addContent(contentPath);
 }
 
-void CallChannel::onContentRemoved(const QDBusObjectPath &contentPath)
+void CallChannel::onContentRemoved(const QDBusObjectPath &contentPath,
+        const CallStateReason &reason)
 {
     qDebug() << "Received Call::ContentRemoved for content" << contentPath.path();
 

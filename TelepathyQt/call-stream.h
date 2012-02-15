@@ -71,8 +71,10 @@ private Q_SLOTS:
     void gotRemoteMembersContacts(Tp::PendingOperation *op);
 
     void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,
-            const Tp::UIntList &removed);
-    void onLocalSendingStateChanged(uint);
+            const Tp::HandleIdentifierMap &identifiers,
+            const Tp::UIntList &removed,
+            const Tp::CallStateReason &reason);
+    void onLocalSendingStateChanged(uint, const Tp::CallStateReason &reason);
 
 private:
     friend class CallChannel;

@@ -52,7 +52,7 @@ private:
     friend class CallChannel;
 
     PendingCallContent(const CallChannelPtr &channel,
-            const QString &contentName, MediaStreamType type);
+            const QString &contentName, MediaStreamType type, MediaStreamDirection direction);
 
     struct Private;
     friend struct Private;
@@ -94,7 +94,8 @@ public:
 
     CallContents contents() const;
     CallContents contentsForType(MediaStreamType type) const;
-    PendingCallContent *requestContent(const QString &name, MediaStreamType type);
+    PendingCallContent *requestContent(const QString &name,
+            MediaStreamType type, MediaStreamDirection direction);
 
     LocalHoldState localHoldState() const;
     LocalHoldStateReason localHoldStateReason() const;
@@ -115,7 +116,7 @@ protected:
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void onContentAdded(const QDBusObjectPath &contentPath);
-    void onContentRemoved(const QDBusObjectPath &contentPath);
+    void onContentRemoved(const QDBusObjectPath &contentPath, const Tp::CallStateReason &reason);
     void onContentReady(Tp::PendingOperation *op);
     void onCallStateChanged(uint state, uint flags,
             const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);

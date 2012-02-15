@@ -109,11 +109,11 @@ void CallStream::Private::introspectMainProperties(CallStream::Private *self)
     CallStream *parent = self->parent;
 
     parent->connect(self->streamInterface,
-            SIGNAL(LocalSendingStateChanged(uint)),
-            SLOT(onLocalSendingStateChanged(uint)));
+            SIGNAL(LocalSendingStateChanged(uint,Tp::CallStateReason)),
+            SLOT(onLocalSendingStateChanged(uint,Tp::CallStateReason)));
     parent->connect(self->streamInterface,
-            SIGNAL(RemoteMembersChanged(Tp::ContactSendingStateMap,Tp::UIntList)),
-            SLOT(onRemoteMembersChanged(Tp::ContactSendingStateMap,Tp::UIntList)));
+            SIGNAL(RemoteMembersChanged(Tp::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
+            SLOT(onRemoteMembersChanged(Tp::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
@@ -403,13 +403,16 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
     mPriv->processRemoteMembersChanged();
 }
 
-void CallStream::onLocalSendingStateChanged(uint state)
+void CallStream::onLocalSendingStateChanged(uint state, const CallStateReason &reason)
 {
     mPriv->localSendingState = state;
     emit localSendingStateChanged((SendingState) state);
 }
 
-void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates, const UIntList &removed)
+void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
+        const HandleIdentifierMap &identifiers,
+        const UIntList &removed,
+        const CallStateReason &reason)
 {
     if (updates.isEmpty() && removed.isEmpty()) {
         qDebug() << "Received Call::Content::RemoteMembersChanged with 0 changes and "

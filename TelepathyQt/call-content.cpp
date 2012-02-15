@@ -94,8 +94,8 @@ void CallContent::Private::introspectMainProperties(CallContent::Private *self)
             SIGNAL(StreamsAdded(Tp::ObjectPathList)),
             SLOT(onStreamsAdded(Tp::ObjectPathList)));
     parent->connect(self->contentInterface,
-            SIGNAL(StreamsRemoved(Tp::ObjectPathList)),
-            SLOT(onStreamsRemoved(Tp::ObjectPathList)));
+            SIGNAL(StreamsRemoved(Tp::ObjectPathList,Tp::CallStateReason)),
+            SLOT(onStreamsRemoved(Tp::ObjectPathList,Tp::CallStateReason)));
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
@@ -287,7 +287,8 @@ void CallContent::onStreamsAdded(const ObjectPathList &streamsPaths)
     }
 }
 
-void CallContent::onStreamsRemoved(const ObjectPathList &streamsPaths)
+void CallContent::onStreamsRemoved(const ObjectPathList &streamsPaths,
+        const CallStateReason &reason)
 {
     foreach (const QDBusObjectPath &streamPath, streamsPaths) {
         qDebug() << "Received Call::Content::StreamRemoved for stream" << streamPath.path();
