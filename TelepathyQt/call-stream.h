@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2012 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2012 Nokia Corporation
  * @license LGPL 2.1
  *
@@ -28,5 +28,65 @@
 #endif
 
 #include <TelepathyQt/_gen/cli-call-stream.h>
+
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/DBusProxy>
+#include <TelepathyQt/OptionalInterfaceFactory>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/SharedPtr>
+
+namespace Tp
+{
+
+typedef QList<CallStreamPtr> CallStreams;
+
+class TP_QT_EXPORT CallStream : public StatefulDBusProxy,
+                    public OptionalInterfaceFactory<CallStream>
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(CallStream)
+
+public:
+    ~CallStream();
+
+    CallContentPtr content() const;
+
+    Contacts members() const;
+
+    SendingState localSendingState() const;
+    SendingState remoteSendingState(const ContactPtr &contact) const;
+
+    PendingOperation *requestSending(bool send);
+    PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
+
+Q_SIGNALS:
+    void localSendingStateChanged(Tp::SendingState localSendingState);
+    void remoteSendingStateChanged(
+            const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates);
+    void remoteMembersRemoved(const Tp::Contacts &remoteMembers);
+
+private Q_SLOTS:
+    void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    void gotRemoteMembersContacts(Tp::PendingOperation *op);
+
+    void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,
+            const Tp::UIntList &removed);
+    void onLocalSendingStateChanged(uint);
+
+private:
+    friend class CallChannel;
+    friend class CallContent;
+
+    static const Feature FeatureCore;
+
+    CallStream(const CallContentPtr &content, const QDBusObjectPath &streamPath);
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+} // Tp
 
 #endif

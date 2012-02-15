@@ -1,7 +1,8 @@
-/*
+/**
  * This file is part of TelepathyQt
  *
- * Copyright (C) 2010-2012 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2012 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,65 +27,10 @@
 #endif
 
 #include <TelepathyQt/Channel>
-#include <TelepathyQt/ChannelClassSpec>
-#include <TelepathyQt/ChannelFactory>
-#include <TelepathyQt/PendingOperation>
-#include <TelepathyQt/Types>
-#include <TelepathyQt/SharedPtr>
+#include <TelepathyQt/CallContent>
 
 namespace Tp
 {
-
-class CallChannel;
-
-typedef QList<CallContentPtr> CallContents;
-typedef QList<CallStreamPtr> CallStreams;
-
-class TP_QT_EXPORT CallStream : public StatefulDBusProxy,
-                    public OptionalInterfaceFactory<CallStream>
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(CallStream)
-
-public:
-    ~CallStream();
-
-    CallContentPtr content() const;
-
-    Contacts members() const;
-
-    SendingState localSendingState() const;
-    SendingState remoteSendingState(const ContactPtr &contact) const;
-
-    PendingOperation *requestSending(bool send);
-    PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
-
-Q_SIGNALS:
-    void localSendingStateChanged(Tp::SendingState localSendingState);
-    void remoteSendingStateChanged(
-            const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates);
-    void remoteMembersRemoved(const Tp::Contacts &remoteMembers);
-
-private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void gotRemoteMembersContacts(Tp::PendingOperation *op);
-
-    void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,
-            const Tp::UIntList &removed);
-    void onLocalSendingStateChanged(uint);
-
-private:
-    friend class CallChannel;
-    friend class CallContent;
-
-    static const Feature FeatureCore;
-
-    CallStream(const CallContentPtr &content, const QDBusObjectPath &streamPath);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
 
 class TP_QT_EXPORT PendingCallContent : public PendingOperation
 {
@@ -107,48 +53,6 @@ private:
 
     PendingCallContent(const CallChannelPtr &channel,
             const QString &contentName, MediaStreamType type);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-class TP_QT_EXPORT CallContent : public StatefulDBusProxy,
-                    public OptionalInterfaceFactory<CallContent>
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(CallContent)
-
-public:
-    ~CallContent();
-
-    CallChannelPtr channel() const;
-
-    QString name() const;
-    MediaStreamType type() const;
-
-    CallContentDisposition disposition() const;
-
-    CallStreams streams() const;
-
-Q_SIGNALS:
-    void streamAdded(const Tp::CallStreamPtr &stream);
-    void streamRemoved(const Tp::CallStreamPtr &stream);
-
-private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void onStreamsAdded(const Tp::ObjectPathList &streamPath);
-    void onStreamsRemoved(const Tp::ObjectPathList &streamPath);
-    void onStreamReady(Tp::PendingOperation *op);
-
-private:
-    friend class CallChannel;
-    friend class PendingCallContent;
-
-    static const Feature FeatureCore;
-
-    CallContent(const CallChannelPtr &channel,
-            const QDBusObjectPath &contentPath);
 
     struct Private;
     friend struct Private;
@@ -191,8 +95,6 @@ public:
     CallContents contents() const;
     CallContents contentsForType(MediaStreamType type) const;
     PendingCallContent *requestContent(const QString &name, MediaStreamType type);
-    PendingOperation *removeContent(const CallContentPtr &content,
-            ContentRemovalReason reason, const QString &detailedReason, const QString &message);
 
     LocalHoldState localHoldState() const;
     LocalHoldStateReason localHoldStateReason() const;

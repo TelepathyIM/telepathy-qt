@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2012 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2012 Nokia Corporation
  * @license LGPL 2.1
  *
@@ -28,5 +28,56 @@
 #endif
 
 #include <TelepathyQt/_gen/cli-call-content.h>
+
+#include <TelepathyQt/CallStream>
+
+namespace Tp
+{
+
+typedef QList<CallContentPtr> CallContents;
+
+class TP_QT_EXPORT CallContent : public StatefulDBusProxy,
+                    public OptionalInterfaceFactory<CallContent>
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(CallContent)
+
+public:
+    ~CallContent();
+
+    CallChannelPtr channel() const;
+
+    QString name() const;
+    MediaStreamType type() const;
+
+    CallContentDisposition disposition() const;
+
+    CallStreams streams() const;
+
+Q_SIGNALS:
+    void streamAdded(const Tp::CallStreamPtr &stream);
+    void streamRemoved(const Tp::CallStreamPtr &stream);
+
+private Q_SLOTS:
+    void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    void onStreamsAdded(const Tp::ObjectPathList &streamPath);
+    void onStreamsRemoved(const Tp::ObjectPathList &streamPath);
+    void onStreamReady(Tp::PendingOperation *op);
+
+private:
+    friend class CallChannel;
+    friend class PendingCallContent;
+
+    static const Feature FeatureCore;
+
+    CallContent(const CallChannelPtr &channel,
+            const QDBusObjectPath &contentPath);
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+} // Tp
 
 #endif

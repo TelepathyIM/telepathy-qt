@@ -19,7 +19,8 @@ set(telepathy_qt_SRCS
     account-set-internal.h
     avatar.cpp
     call-channel.cpp
-    call-channel-internal.h
+    call-content.cpp
+    call-stream.cpp
     capabilities-base.cpp
     call-content.cpp
     call-content-media-description.cpp
@@ -504,7 +505,8 @@ set(telepathy_qt_MOC_SRCS
     account-set.h
     account-set-internal.h
     call-channel.h
-    call-channel-internal.h
+    call-content.h
+    call-stream.h
     captcha-authentication.h
     captcha-authentication-internal.h
     channel.h
