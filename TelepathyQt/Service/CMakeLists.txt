@@ -4,7 +4,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     # It gets inherited from the previous directory, hence it has to be removed explicitely
     remove_definitions(-DBUILDING_TP_QT)
     # We are building Telepathy-Qt-Service
-    add_definitions(-DBUILDING_TP_QT_SERVICE -DQT_NO_KEYWORDS)
+    add_definitions(-DBUILDING_TP_QT_SERVICE)
 
     set(telepathy_qt_service_SRCS
         abstract-adaptor.cpp)
