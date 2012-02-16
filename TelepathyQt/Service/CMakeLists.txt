@@ -39,6 +39,10 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
 
     tpqt_service_generator(connection-manager servicecm ConnectionManager Tp::Service)
 
+    if (TARGET doxygen-doc)
+        add_dependencies(doxygen-doc all-generated-service-sources)
+    endif (TARGET doxygen-doc)
+
     # Create the library
     #if (ENABLE_COMPILER_COVERAGE)
     #    add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
