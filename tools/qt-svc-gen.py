@@ -103,6 +103,7 @@ class Generator(object):
 """ % self.mocinclude)
 
             self.b("""\
+#include <TelepathyQt/Constants>
 #include <TelepathyQt/MethodInvocationContext>
 
 """)
@@ -497,6 +498,10 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
             outargtypes = ''
         invokemethodargs = ', '.join(['Q_ARG(' + argbindings[i].val + ', ' + argnames[i] + ')' for i in inargs])
 
+        inparams = [argbindings[i].val for i in inargs]
+        inparams.append("%s::%sContextPtr" % (ifacename, name))
+        normalizedinparams = ','.join(inparams)
+
         self.h("""\
     %(rettype)s %(name)s(%(params)s);
 """ % {'rettype': rettype,
@@ -506,13 +511,31 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
         self.b("""
 %(rettype)s %(ifacename)s::%(name)s(%(params)s)
 {
-    // TODO if !hasMethod raise NotImplemented
-    %(name)sContextPtr ctx = %(name)sContextPtr(
-            new MethodInvocationContext< %(outargtypes)s >(dbusConnection(), dbusMessage));
+    if (!adaptee()->metaObject()->indexOfMethod("%(lname)s(%(normalizedinparams)s)") == -1) {
+        dbusConnection().send(dbusMessage.createErrorReply(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented")));
 """ % {'rettype': rettype,
        'ifacename': ifacename,
        'name': name,
+       'lname': (name[0].lower() + name[1:]),
+       'normalizedinparams': normalizedinparams,
        'params': params,
+       })
+
+        if rettype != 'void':
+            self.b("""\
+        return %(rettype)s();
+""" % {'rettype': rettype})
+        else:
+            self.b("""\
+        return;
+""")
+
+        self.b("""\
+    }
+
+    %(name)sContextPtr ctx = %(name)sContextPtr(
+            new MethodInvocationContext< %(outargtypes)s >(dbusConnection(), dbusMessage));
+""" % {'name': name,
        'outargtypes': outargtypes,
        })
 
