@@ -220,7 +220,7 @@ public Q_SLOTS: // METHODS
 
         # Signals
         if signals:
-            self.h("""\
+            self.h("""
 Q_SIGNALS: // SIGNALS
 """)
 
@@ -499,7 +499,6 @@ Q_SIGNALS: // SIGNALS
 
         self.h("""\
     %(rettype)s %(name)s(%(params)s);
-
 """ % {'rettype': rettype,
        'name': name,
        'params': params})
@@ -522,26 +521,26 @@ Q_SIGNALS: // SIGNALS
     QMetaObject::invokeMethod(adaptee(), "%(lname)s",
         %(invokemethodargs)s,
         Q_ARG(%(ifacename)s::%(name)sContextPtr, ctx));
-    return %(rettype)s();
-}
-""" % {'rettype': rettype,
-       'ifacename': ifacename,
+""" % {'ifacename': ifacename,
        'name': name,
        'lname': (name[0].lower() + name[1:]),
        'invokemethodargs': invokemethodargs,
        })
-
         else:
             self.b("""\
     QMetaObject::invokeMethod(adaptee(), "%(lname)s",
         Q_ARG(%(ifacename)s::%(name)sContextPtr, ctx));
-    return %(rettype)s();
-}
-""" % {'rettype': rettype,
-       'ifacename': ifacename,
+""" % {'ifacename': ifacename,
        'name': name,
        'lname': (name[0].lower() + name[1:]),
        })
+
+        if rettype != 'void':
+            self.b("""\
+    return %(rettype)s();
+""" % {'rettype': rettype})
+
+        self.b("}\n")
 
     def do_signal(self, signal):
         name = signal.getAttribute('name')
