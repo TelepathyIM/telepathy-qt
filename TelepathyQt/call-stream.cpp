@@ -197,8 +197,8 @@ const Feature CallStream::FeatureCore = Feature(QLatin1String(CallStream::static
 /**
  * Construct a new CallStream object.
  *
- * \param content The content owning this media stream.
- * \param objectPath The object path of this media stream.
+ * \param content The content owning this call stream.
+ * \param objectPath The object path of this call stream.
  */
 CallStream::CallStream(const CallContentPtr &content, const QDBusObjectPath &objectPath)
     : StatefulDBusProxy(content->dbusConnection(), content->busName(),
@@ -217,9 +217,9 @@ CallStream::~CallStream()
 }
 
 /**
- * Return the channel owning this media stream.
+ * Return the content owning this call stream.
  *
- * \return The channel owning this media stream.
+ * \return The content owning this call stream.
  */
 CallContentPtr CallStream::content() const
 {
@@ -227,12 +227,10 @@ CallContentPtr CallStream::content() const
 }
 
 /**
- * Return the contacts whose the media stream is with.
+ * Return the contacts whose the call stream is with.
  *
- * \deprecated Use contact() instead.
- *
- * \return The contacts whose the media stream is with.
- * \sa membersRemoved()
+ * \return The contacts whose the call stream is with.
+ * \sa remoteMembersRemoved()
  */
 Contacts CallStream::remoteMembers() const
 {
@@ -240,9 +238,9 @@ Contacts CallStream::remoteMembers() const
 }
 
 /**
- * Return the media stream local sending state.
+ * Return the call stream local sending state.
  *
- * \return The media stream local sending state.
+ * \return The call stream local sending state.
  * \sa localSendingStateChanged()
  */
 SendingState CallStream::localSendingState() const
@@ -251,11 +249,9 @@ SendingState CallStream::localSendingState() const
 }
 
 /**
- * Return the media stream remote sending state for a given \a contact.
+ * Return the call stream remote sending state for a given \a contact.
  *
- * \deprecated Use remoteSendingState() instead.
- *
- * \return The media stream remote sending state for a contact.
+ * \return The call stream remote sending state for a contact.
  * \sa remoteSendingStateChanged()
  */
 SendingState CallStream::remoteSendingState(const ContactPtr &contact) const
@@ -278,7 +274,7 @@ SendingState CallStream::remoteSendingState(const ContactPtr &contact) const
 }
 
 /**
- * Request that media starts or stops being sent on this media stream.
+ * Request that media starts or stops being sent on this call stream.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -290,9 +286,7 @@ PendingOperation *CallStream::requestSending(bool send)
 }
 
 /**
- * Request that a remote \a contact stops or starts sending on this media stream.
- *
- * \deprecated Use requestReceiving(bool receive) instead.
+ * Request that a remote \a contact stops or starts sending on this call stream.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -444,32 +438,35 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
 }
 
 /**
- * \fn void CallStream::localSendingStateChanged(Tp::SendingState localSendingState);
+ * \fn void CallStream::localSendingStateChanged(Tp::SendingState localSendingState, const Tp::CallStateReason &reason);
  *
- * This signal is emitted when the local sending state of this media stream
+ * This signal is emitted when the local sending state of this call stream
  * changes.
  *
- * \param localSendingState The new local sending state of this media stream.
+ * \param localSendingState The new local sending state of this call stream.
+ * \param reason The reason that caused this change
  * \sa localSendingState()
  */
 
 /**
- * \fn void CallStream::remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates);
+ * \fn void CallStream::remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates, const Tp::CallStateReason &reason);
  *
- * This signal is emitted when any remote sending state of this media stream
+ * This signal is emitted when any remote sending state of this call stream
  * changes.
  *
- * \param remoteSendingStates The new remote sending states of this media stream.
+ * \param remoteSendingStates The new remote sending states of this call stream.
+ * \param reason The reason that caused these changes
  * \sa remoteSendingState()
  */
 
 /**
- * \fn void CallStream::remoteMembersRemoved(const Tp::Contacts &members);
+ * \fn void CallStream::remoteMembersRemoved(const Tp::Contacts &members, const Tp::CallStateReason &reason);
  *
  * This signal is emitted when one or more members of this stream are removed.
  *
- * \param members The members that were removed from this media stream.
- * \sa members()
+ * \param members The members that were removed from this call stream.
+ * \param reason The reason for that caused these removals
+ * \sa remoteMembers()
  */
 
 } // Tp
