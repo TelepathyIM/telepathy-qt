@@ -487,7 +487,7 @@ Q_SIGNALS: // SIGNALS
             rettype = 'void'
 
         params = [argbindings[i].inarg + ' ' + argnames[i] for i in inargs]
-        params.append('const QDBusMessage& message')
+        params.append('const QDBusMessage& dbusMessage')
         params += [argbindings[i].outarg + ' ' + argnames[i] for i in outargs[1:]]
         params = ', '.join(params)
 
@@ -509,7 +509,7 @@ Q_SIGNALS: // SIGNALS
 {
     // TODO if !hasMethod raise NotImplemented
     %(name)sContextPtr ctx = %(name)sContextPtr(
-            new MethodInvocationContext< %(outargtypes)s >(dbusConnection(), message));
+            new MethodInvocationContext< %(outargtypes)s >(dbusConnection(), dbusMessage));
 """ % {'rettype': rettype,
        'ifacename': ifacename,
        'name': name,
