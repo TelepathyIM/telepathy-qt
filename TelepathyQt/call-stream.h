@@ -52,7 +52,7 @@ public:
 
     CallContentPtr content() const;
 
-    Contacts members() const;
+    Contacts remoteMembers() const;
 
     SendingState localSendingState() const;
     SendingState remoteSendingState(const ContactPtr &contact) const;

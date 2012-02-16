@@ -234,7 +234,7 @@ CallContentPtr CallStream::content() const
  * \return The contacts whose the media stream is with.
  * \sa membersRemoved()
  */
-Contacts CallStream::members() const
+Contacts CallStream::remoteMembers() const
 {
     return mPriv->remoteMembersContacts.values().toSet();
 }
