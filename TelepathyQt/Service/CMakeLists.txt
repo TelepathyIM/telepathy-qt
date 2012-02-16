@@ -7,9 +7,12 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     add_definitions(-DBUILDING_TP_QT_SERVICE)
 
     set(telepathy_qt_service_SRCS
+        base-connection-manager.cpp
         abstract-adaptor.cpp)
 
     set(telepathy_qt_service_HEADERS
+        BaseConnectionManager
+        base-connection-manager.h
         AbstractAdaptor
         abstract-adaptor.h
         Global
@@ -21,7 +24,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
 
     # Headers file moc will be run on
     set(telepathy_qt_service_MOC_SRCS
-        abstract-adaptor.h)
+        abstract-adaptor.h
+        base-connection-manager-internal.h)
 
     add_custom_target(all-generated-service-sources)
 
