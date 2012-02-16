@@ -142,6 +142,7 @@ void CallStream::Private::processRemoteMembersChanged()
         return;
     }
 
+    Q_ASSERT(currentRemoteMembersChangedInfo == 0);
     currentRemoteMembersChangedInfo = remoteMembersChangedQueue.dequeue();
 
     QSet<uint> pendingRemoteMembers;
@@ -161,6 +162,8 @@ void CallStream::Private::processRemoteMembersChanged()
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(gotRemoteMembersContacts(Tp::PendingOperation*)));
     } else {
+        delete currentRemoteMembersChangedInfo;
+        currentRemoteMembersChangedInfo = 0;
         processRemoteMembersChanged();
     }
 }
@@ -343,6 +346,8 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
     if (!pc->isValid()) {
         warning().nospace() << "Getting contacts failed with " <<
             pc->errorName() << ":" << pc->errorMessage() << ", ignoring";
+        delete mPriv->currentRemoteMembersChangedInfo;
+        mPriv->currentRemoteMembersChangedInfo = 0;
         mPriv->processRemoteMembersChanged();
         return;
     }
@@ -407,6 +412,8 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
         }
     }
 
+    delete mPriv->currentRemoteMembersChangedInfo;
+    mPriv->currentRemoteMembersChangedInfo = 0;
     mPriv->processRemoteMembersChanged();
 }
 
