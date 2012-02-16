@@ -53,6 +53,7 @@ public:
     CallContentPtr content() const;
 
     Contacts remoteMembers() const;
+    bool canRequestReceiving() const;
 
     SendingState localSendingState() const;
     SendingState remoteSendingState(const ContactPtr &contact) const;

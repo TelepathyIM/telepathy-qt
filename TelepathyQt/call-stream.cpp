@@ -66,6 +66,7 @@ struct TP_QT_NO_EXPORT CallStream::Private
     uint localSendingState;
     ContactSendingStateMap remoteMembers;
     QHash<uint, ContactPtr> remoteMembersContacts;
+    bool canRequestReceiving;
     bool buildingRemoteMembers;
     QQueue<RemoteMembersChangedInfo *> remoteMembersChangedQueue;
     RemoteMembersChangedInfo *currentRemoteMembersChangedInfo;
@@ -97,6 +98,7 @@ CallStream::Private::Private(CallStream *parent, const CallContentPtr &content)
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       localSendingState(SendingStateNone),
+      canRequestReceiving(true),
       buildingRemoteMembers(false),
       currentRemoteMembersChangedInfo(0)
 {
@@ -234,6 +236,20 @@ CallContentPtr CallStream::content() const
 }
 
 /**
+ * Returns whether the user can request that a remote contact starts
+ * sending on this stream. Not all protocols allow the user to ask
+ * the other side to start sending media.
+ *
+ * \return true if the user can request that a remote contact starts
+ * sending on this stream, or false otherwise.
+ * \sa requestReceiving()
+ */
+bool CallStream::canRequestReceiving() const
+{
+    return mPriv->canRequestReceiving;
+}
+
+/**
  * Return the contacts whose the call stream is with.
  *
  * \return The contacts whose the call stream is with.
@@ -304,6 +320,11 @@ PendingOperation *CallStream::requestReceiving(const ContactPtr &contact, bool r
     if (!contact) {
         return new PendingFailure(TP_QT_ERROR_INVALID_ARGUMENT,
                 QLatin1String("Invalid contact"), CallStreamPtr(this));
+    } else if (!mPriv->canRequestReceiving && receive) {
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("Requesting the other side to start sending media "
+                              "is not allowed by this protocol"),
+                CallStreamPtr(this));
     }
 
     return new PendingVoid(mPriv->streamInterface->RequestReceiving(contact->handle()[0], receive),
@@ -326,6 +347,7 @@ void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
 
     QVariantMap props = reply.value();
 
+    mPriv->canRequestReceiving = qdbus_cast<bool>(props[QLatin1String("CanRequestReceiving")]);
     mPriv->localSendingState = qdbus_cast<uint>(props[QLatin1String("LocalSendingState")]);
 
     ContactSendingStateMap remoteMembers =
