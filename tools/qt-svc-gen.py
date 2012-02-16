@@ -455,10 +455,10 @@ Q_SIGNALS: // SIGNALS
        })
 
             self.b("""
-    void %(ifacename)s::%(settername)s(%(type)s newValue)
-    {
-        adaptee()->setProperty("%(name)s", qVariantFromValue(newValue));
-    }
+void %(ifacename)s::%(settername)s(%(type)s newValue)
+{
+    adaptee()->setProperty("%(name)s", qVariantFromValue(newValue));
+}
 """ % {'ifacename': ifacename,
        'settername': settername,
        'type': binding.val,
