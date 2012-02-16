@@ -225,7 +225,6 @@ function(tpqt_client_generator spec group pretty_include namespace)
     tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp
                        "generate_cli-${spec}-body")
-    list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
 endfunction(tpqt_client_generator spec group pretty_include namespace)
 
 function(tpqt_future_client_generator spec namespace)
