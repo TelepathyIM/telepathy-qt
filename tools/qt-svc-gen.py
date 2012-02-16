@@ -381,7 +381,7 @@ Q_SIGNALS: // SIGNALS
             if outargs:
                 outargtypes = ', '.join([argbindings[i].val for i in outargs])
             else:
-                outargtypes = None
+                outargtypes = ''
 
             self.h("""\
     typedef MethodInvocationContextPtr< %(outargtypes)s > %(name)sContextPtr;
@@ -494,7 +494,7 @@ Q_SIGNALS: // SIGNALS
         if outargs:
             outargtypes = ', '.join([argbindings[i].val for i in outargs])
         else:
-            outargtypes = None
+            outargtypes = ''
         invokemethodargs = ', '.join(['Q_ARG(' + argbindings[i].val + ', ' + argnames[i] + ')' for i in inargs])
 
         self.h("""\
