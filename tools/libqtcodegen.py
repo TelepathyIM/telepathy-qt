@@ -370,7 +370,10 @@ def gather_custom_lists(spec, typesns):
 def get_headerfile_cmd(realinclude, prettyinclude, indent=' * '):
     prettyinclude = prettyinclude or realinclude
     if realinclude:
-        return indent + ('\\headerfile %s <%s>\n' % (realinclude, prettyinclude))
+        if prettyinclude:
+            return indent + ('\\headerfile %s <%s>\n' % (realinclude, prettyinclude))
+        else:
+            return indent + ('\\headerfile %s <%s>\n' % (realinclude))
     else:
         return ''
 
