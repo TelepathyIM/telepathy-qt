@@ -30,6 +30,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     add_custom_target(all-generated-service-sources)
 
     set(SPECS
+        channel
+        connection
         connection-manager)
     foreach(spec ${SPECS})
         set(NEW_FILES
@@ -41,6 +43,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
     endforeach(spec ${SPECS})
 
+    tpqt_service_generator(channel servicechannel Channel Tp::Service)
+    tpqt_service_generator(connection serviceconn Connection Tp::Service)
     tpqt_service_generator(connection-manager servicecm ConnectionManager Tp::Service)
 
     if (TARGET doxygen-doc)
