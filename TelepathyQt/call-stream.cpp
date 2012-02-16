@@ -72,14 +72,17 @@ struct TP_QT_NO_EXPORT CallStream::Private
 
 struct TP_QT_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
 {
-    RemoteMembersChangedInfo(const ContactSendingStateMap &updates, const UIntList &removed)
+    RemoteMembersChangedInfo(const ContactSendingStateMap &updates,
+            const UIntList &removed, const CallStateReason &reason)
         : updates(updates),
-          removed(removed)
+          removed(removed),
+          reason(reason)
     {
     }
 
     ContactSendingStateMap updates;
     UIntList removed;
+    CallStateReason reason;
 };
 
 CallStream::Private::Private(CallStream *parent, const CallContentPtr &content)
@@ -325,7 +328,7 @@ void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
         qdbus_cast<ContactSendingStateMap>(props[QLatin1String("RemoteMembers")]);
 
     mPriv->remoteMembersChangedQueue.enqueue(new Private::RemoteMembersChangedInfo(
-                remoteMembers, UIntList()));
+                remoteMembers, UIntList(), CallStateReason()));
     mPriv->processRemoteMembersChanged();
 
     watcher->deleteLater();
@@ -394,11 +397,13 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
         }
 
         if (!remoteSendingStates.isEmpty()) {
-            emit remoteSendingStateChanged(remoteSendingStates);
+            emit remoteSendingStateChanged(remoteSendingStates,
+                    mPriv->currentRemoteMembersChangedInfo->reason);
         }
 
         if (!removed.isEmpty()) {
-            emit remoteMembersRemoved(removed.values().toSet());
+            emit remoteMembersRemoved(removed.values().toSet(),
+                    mPriv->currentRemoteMembersChangedInfo->reason);
         }
     }
 
@@ -408,7 +413,7 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
 void CallStream::onLocalSendingStateChanged(uint state, const CallStateReason &reason)
 {
     mPriv->localSendingState = state;
-    emit localSendingStateChanged((SendingState) state);
+    emit localSendingStateChanged((SendingState) state, reason);
 }
 
 void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
@@ -416,6 +421,8 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
         const UIntList &removed,
         const CallStateReason &reason)
 {
+    Q_UNUSED(identifiers); //### possibly make use of that in the future
+
     if (updates.isEmpty() && removed.isEmpty()) {
         debug() << "Received Call::Stream::RemoteMembersChanged with 0 changes and "
             "updates, skipping it";
@@ -424,7 +431,8 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
 
     debug() << "Received Call::Stream::RemoteMembersChanged with" << updates.size() <<
         "and " << removed.size() << "removed";
-    mPriv->remoteMembersChangedQueue.enqueue(new Private::RemoteMembersChangedInfo(updates, removed));
+    mPriv->remoteMembersChangedQueue.enqueue(
+            new Private::RemoteMembersChangedInfo(updates, removed, reason));
     mPriv->processRemoteMembersChanged();
 }
 

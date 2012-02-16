@@ -61,10 +61,13 @@ public:
     PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
 
 Q_SIGNALS:
-    void localSendingStateChanged(Tp::SendingState localSendingState);
+    void localSendingStateChanged(Tp::SendingState localSendingState,
+            const Tp::CallStateReason &reason);
     void remoteSendingStateChanged(
-            const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates);
-    void remoteMembersRemoved(const Tp::Contacts &remoteMembers);
+            const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates,
+            const Tp::CallStateReason &reason);
+    void remoteMembersRemoved(const Tp::Contacts &remoteMembers,
+            const Tp::CallStateReason &reason);
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
