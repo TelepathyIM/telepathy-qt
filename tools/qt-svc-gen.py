@@ -449,7 +449,7 @@ Q_SIGNALS: // SIGNALS
 
         if 'write' in access:
             self.h("""\
-    void %(settername)s(%(type)s newValue)
+    void %(settername)s(%(type)s newValue);
 """ % {'settername': settername,
        'type': binding.val,
        })
