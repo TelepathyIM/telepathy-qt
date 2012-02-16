@@ -31,6 +31,7 @@
 
 #include <TelepathyQt/CallChannel>
 #include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/DBus>
 #include <TelepathyQt/PendingContacts>
@@ -73,14 +74,18 @@ struct TP_QT_NO_EXPORT CallStream::Private
 struct TP_QT_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
 {
     RemoteMembersChangedInfo(const ContactSendingStateMap &updates,
-            const UIntList &removed, const CallStateReason &reason)
+            const HandleIdentifierMap &identifiers,
+            const UIntList &removed,
+            const CallStateReason &reason)
         : updates(updates),
+          identifiers(identifiers),
           removed(removed),
           reason(reason)
     {
     }
 
     ContactSendingStateMap updates;
+    HandleIdentifierMap identifiers;
     UIntList removed;
     CallStateReason reason;
 };
@@ -154,8 +159,10 @@ void CallStream::Private::processRemoteMembersChanged()
     if (!pendingRemoteMembers.isEmpty()) {
         buildingRemoteMembers = true;
 
-        ContactManagerPtr contactManager =
-            parent->content()->channel()->connection()->contactManager();
+        ConnectionPtr connection = parent->content()->channel()->connection();
+        connection->lowlevel()->injectContactIds(currentRemoteMembersChangedInfo->identifiers);
+
+        ContactManagerPtr contactManager = connection->contactManager();
         PendingContacts *contacts = contactManager->contactsForHandles(
                 pendingRemoteMembers.toList());
         parent->connect(contacts,
@@ -323,9 +330,11 @@ void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
 
     ContactSendingStateMap remoteMembers =
         qdbus_cast<ContactSendingStateMap>(props[QLatin1String("RemoteMembers")]);
+    HandleIdentifierMap remoteMemberIdentifiers =
+        qdbus_cast<HandleIdentifierMap>(props[QLatin1String("RemoteMemberIdentifiers")]);
 
     mPriv->remoteMembersChangedQueue.enqueue(new Private::RemoteMembersChangedInfo(
-                remoteMembers, UIntList(), CallStateReason()));
+                remoteMembers, remoteMemberIdentifiers, UIntList(), CallStateReason()));
     mPriv->processRemoteMembersChanged();
 
     watcher->deleteLater();
@@ -422,8 +431,6 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
         const UIntList &removed,
         const CallStateReason &reason)
 {
-    Q_UNUSED(identifiers); //### possibly make use of that in the future
-
     if (updates.isEmpty() && removed.isEmpty()) {
         debug() << "Received Call::Stream::RemoteMembersChanged with 0 changes and "
             "updates, skipping it";
@@ -433,7 +440,7 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
     debug() << "Received Call::Stream::RemoteMembersChanged with" << updates.size() <<
         "and " << removed.size() << "removed";
     mPriv->remoteMembersChangedQueue.enqueue(
-            new Private::RemoteMembersChangedInfo(updates, removed, reason));
+            new Private::RemoteMembersChangedInfo(updates, identifiers, removed, reason));
     mPriv->processRemoteMembersChanged();
 }
 
