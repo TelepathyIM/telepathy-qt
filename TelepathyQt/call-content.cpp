@@ -27,6 +27,8 @@
 #include "TelepathyQt/_gen/cli-call-content-body.hpp"
 #include "TelepathyQt/_gen/cli-call-content.moc.hpp"
 
+#include <TelepathyQt/debug-internal.h>
+
 #include <TelepathyQt/CallChannel>
 #include <TelepathyQt/DBus>
 #include <TelepathyQt/PendingReady>
@@ -243,14 +245,14 @@ void CallContent::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
     if (reply.isError()) {
-        qWarning().nospace() << "Properties::GetAll(Call.Content) failed with" <<
+        warning().nospace() << "Properties::GetAll(Call.Content) failed with" <<
             reply.error().name() << ": " << reply.error().message();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
         watcher->deleteLater();
         return;
     }
 
-    qDebug() << "Got reply to Properties::GetAll(Call.Content)";
+    debug() << "Got reply to Properties::GetAll(Call.Content)";
 
     QVariantMap props = reply.value();
 
@@ -276,10 +278,10 @@ void CallContent::gotMainProperties(QDBusPendingCallWatcher *watcher)
 void CallContent::onStreamsAdded(const ObjectPathList &streamsPaths)
 {
     foreach (const QDBusObjectPath &streamPath, streamsPaths) {
-        qDebug() << "Received Call::Content::StreamAdded for stream" << streamPath.path();
+        debug() << "Received Call::Content::StreamAdded for stream" << streamPath.path();
 
         if (mPriv->lookupStream(streamPath)) {
-            qDebug() << "Stream already exists, ignoring";
+            debug() << "Stream already exists, ignoring";
             return;
         }
 
@@ -291,11 +293,11 @@ void CallContent::onStreamsRemoved(const ObjectPathList &streamsPaths,
         const CallStateReason &reason)
 {
     foreach (const QDBusObjectPath &streamPath, streamsPaths) {
-        qDebug() << "Received Call::Content::StreamRemoved for stream" << streamPath.path();
+        debug() << "Received Call::Content::StreamRemoved for stream" << streamPath.path();
 
         CallStreamPtr stream = mPriv->lookupStream(streamPath);
         if (!stream) {
-            qDebug() << "Stream does not exist, ignoring";
+            debug() << "Stream does not exist, ignoring";
             return;
         }
 

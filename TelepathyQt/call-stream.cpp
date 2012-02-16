@@ -27,6 +27,8 @@
 #include "TelepathyQt/_gen/cli-call-stream-body.hpp"
 #include "TelepathyQt/_gen/cli-call-stream.moc.hpp"
 
+#include <TelepathyQt/debug-internal.h>
+
 #include <TelepathyQt/CallChannel>
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ContactManager>
@@ -305,7 +307,7 @@ void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
     if (reply.isError()) {
-        qWarning().nospace() << "Properties::GetAll(Call.Stream) failed with " <<
+        warning().nospace() << "Properties::GetAll(Call.Stream) failed with " <<
             reply.error().name() << ": " << reply.error().message();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
                 false, reply.error());
@@ -313,7 +315,7 @@ void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
         return;
     }
 
-    qDebug() << "Got reply to Properties::GetAll(Call.Stream)";
+    debug() << "Got reply to Properties::GetAll(Call.Stream)";
 
     QVariantMap props = reply.value();
 
@@ -336,7 +338,7 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
     mPriv->buildingRemoteMembers = false;
 
     if (!pc->isValid()) {
-        qWarning().nospace() << "Getting contacts failed with " <<
+        warning().nospace() << "Getting contacts failed with " <<
             pc->errorName() << ":" << pc->errorMessage() << ", ignoring";
         mPriv->processRemoteMembersChanged();
         return;
@@ -415,12 +417,12 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
         const CallStateReason &reason)
 {
     if (updates.isEmpty() && removed.isEmpty()) {
-        qDebug() << "Received Call::Content::RemoteMembersChanged with 0 changes and "
+        debug() << "Received Call::Stream::RemoteMembersChanged with 0 changes and "
             "updates, skipping it";
         return;
     }
 
-    qDebug() << "Received Call::Content::RemoteMembersChanged with" << updates.size() <<
+    debug() << "Received Call::Stream::RemoteMembersChanged with" << updates.size() <<
         "and " << removed.size() << "removed";
     mPriv->remoteMembersChangedQueue.enqueue(new Private::RemoteMembersChangedInfo(updates, removed));
     mPriv->processRemoteMembersChanged();

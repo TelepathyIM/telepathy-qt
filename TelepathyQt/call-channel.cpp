@@ -23,6 +23,8 @@
 
 #include "TelepathyQt/_gen/call-channel.moc.hpp"
 
+#include <TelepathyQt/debug-internal.h>
+
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingVoid>
@@ -77,7 +79,7 @@ void PendingCallContent::gotContent(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
     if (reply.isError()) {
-        qWarning().nospace() << "Call::AddContent failed with " <<
+        warning().nospace() << "Call::AddContent failed with " <<
             reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
         watcher->deleteLater();
@@ -546,9 +548,9 @@ PendingCallContent *CallChannel::requestContent(const QString &name,
 LocalHoldState CallChannel::localHoldState() const
 {
     if (!isReady(FeatureLocalHoldState)) {
-        qWarning() << "CallChannel::localHoldState() used with FeatureLocalHoldState not ready";
+        warning() << "CallChannel::localHoldState() used with FeatureLocalHoldState not ready";
     } else if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
-        qWarning() << "CallChannel::localHoldStateReason() used with no hold interface";
+        warning() << "CallChannel::localHoldStateReason() used with no hold interface";
     }
 
     return (LocalHoldState) mPriv->localHoldState;
@@ -565,9 +567,9 @@ LocalHoldState CallChannel::localHoldState() const
 LocalHoldStateReason CallChannel::localHoldStateReason() const
 {
     if (!isReady(FeatureLocalHoldState)) {
-        qWarning() << "CallChannel::localHoldStateReason() used with FeatureLocalHoldState not ready";
+        warning() << "CallChannel::localHoldStateReason() used with FeatureLocalHoldState not ready";
     } else if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
-        qWarning() << "CallChannel::localHoldStateReason() used with no hold interface";
+        warning() << "CallChannel::localHoldStateReason() used with no hold interface";
     }
 
     return (LocalHoldStateReason) mPriv->localHoldStateReason;
@@ -608,7 +610,7 @@ LocalHoldStateReason CallChannel::localHoldStateReason() const
 PendingOperation *CallChannel::requestHold(bool hold)
 {
     if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
-        qWarning() << "CallChannel::requestHold() used with no hold interface";
+        warning() << "CallChannel::requestHold() used with no hold interface";
         return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("CallChannel does not support hold interface"),
                 CallChannelPtr(this));
@@ -623,7 +625,7 @@ void CallChannel::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
     if (reply.isError()) {
-        qWarning().nospace() << "Properties::GetAll(Call) failed with " <<
+        warning().nospace() << "Properties::GetAll(Call) failed with " <<
             reply.error().name() << ": " << reply.error().message();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureContents,
                 false, reply.error());
@@ -631,7 +633,7 @@ void CallChannel::gotMainProperties(QDBusPendingCallWatcher *watcher)
         return;
     }
 
-    qDebug() << "Got reply to Properties::GetAll(Call)";
+    debug() << "Got reply to Properties::GetAll(Call)";
 
     QVariantMap props = reply.value();
 
@@ -666,10 +668,10 @@ void CallChannel::gotMainProperties(QDBusPendingCallWatcher *watcher)
 
 void CallChannel::onContentAdded(const QDBusObjectPath &contentPath)
 {
-    qDebug() << "Received Call::ContentAdded for content" << contentPath.path();
+    debug() << "Received Call::ContentAdded for content" << contentPath.path();
 
     if (lookupContent(contentPath)) {
-        qDebug() << "Content already exists, ignoring";
+        debug() << "Content already exists, ignoring";
         return;
     }
 
@@ -679,11 +681,11 @@ void CallChannel::onContentAdded(const QDBusObjectPath &contentPath)
 void CallChannel::onContentRemoved(const QDBusObjectPath &contentPath,
         const CallStateReason &reason)
 {
-    qDebug() << "Received Call::ContentRemoved for content" << contentPath.path();
+    debug() << "Received Call::ContentRemoved for content" << contentPath.path();
 
     CallContentPtr content = lookupContent(contentPath);
     if (!content) {
-        qDebug() << "Content does not exist, ignoring";
+        debug() << "Content does not exist, ignoring";
         return;
     }
 
@@ -761,15 +763,15 @@ void CallChannel::gotLocalHoldState(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint, uint> reply = *watcher;
     if (reply.isError()) {
-        qWarning().nospace() << "Call::Hold::GetHoldState() failed with " <<
+        warning().nospace() << "Call::Hold::GetHoldState() failed with " <<
             reply.error().name() << ": " << reply.error().message();
-        qDebug() << "Ignoring error getting hold state and assuming we're not on hold";
+        debug() << "Ignoring error getting hold state and assuming we're not on hold";
         onLocalHoldStateChanged(mPriv->localHoldState, mPriv->localHoldStateReason);
         watcher->deleteLater();
         return;
     }
 
-    qDebug() << "Got reply to Call::Hold::GetHoldState()";
+    debug() << "Got reply to Call::Hold::GetHoldState()";
     onLocalHoldStateChanged(reply.argumentAt<0>(), reply.argumentAt<1>());
     watcher->deleteLater();
 }
