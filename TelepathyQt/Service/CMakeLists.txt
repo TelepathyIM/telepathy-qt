@@ -15,9 +15,29 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         Global
         global.h)
 
+    # Generated headers which will be installed and exported
+    set(telepathy_qt_service_gen_HEADERS
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection-manager.h)
+
     # Headers file moc will be run on
     set(telepathy_qt_service_MOC_SRCS
         abstract-adaptor.h)
+
+    add_custom_target(all-generated-service-sources)
+
+    set(SPECS
+        connection-manager)
+    foreach(spec ${SPECS})
+        set(NEW_FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.moc.hpp)
+        list(APPEND telepathy_qt_service_SRCS ${NEW_FILES})
+        list(APPEND telepathy_qt_service_generated_specs_mocs "moc-svc-${spec}.moc.hpp")
+        set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
+    endforeach(spec ${SPECS})
+
+    tpqt_service_generator(connection-manager servicecm ConnectionManager Tp::Service)
 
     # Create the library
     #if (ENABLE_COMPILER_COVERAGE)
@@ -28,16 +48,17 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     # lets build a static only library until we have a stable API/ABI
     add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
 
-    # generate client moc files
+    # generate service moc files
     foreach(moc_src ${telepathy_qt_service_MOC_SRCS})
-        set(generated_file _gen/${moc_src})
+        get_filename_component(_moc_outfile_name "${moc_src}" NAME)
+        set(generated_file _gen/${_moc_outfile_name})
         string(REPLACE ".h" ".moc.hpp" generated_file ${generated_file})
-        tpqt_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
+
+        tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
+                                        ${telepathy_qt_service_generated_specs_mocs})
         list(APPEND telepathy_qt_service_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
-        string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
-        get_filename_component(_moc_outfile_name "${CMAKE_CURRENT_BINARY_DIR}/${generated_file}" NAME)
         add_custom_target(moc-${_moc_outfile_name} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
-        add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service "moc-${moc_src}")
+        add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service "moc-${_moc_outfile_name}")
     endforeach(moc_src ${telepathy_qt_service_MOC_SRCS})
 
     # Link
@@ -66,6 +87,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
 
     # Install headers
     install(FILES ${telepathy_qt_service_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt/Service
+            COMPONENT service_headers)
+    install(FILES ${telepathy_qt_service_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt/Service/_gen
             COMPONENT service_headers)
 
     # pkg-config files, only if not on windows
