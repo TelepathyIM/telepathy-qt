@@ -65,20 +65,18 @@ class TP_QT_EXPORT CallChannel : public Channel
     Q_DISABLE_COPY(CallChannel)
 
 public:
+    static const Feature FeatureCore;
+    static const Feature FeatureCallState;
     static const Feature FeatureContents;
     static const Feature FeatureLocalHoldState;
 
+    // TODO: FeatureCallMembers
     // TODO: add helpers to ensure/create call channel using Account
 
     static CallChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
     virtual ~CallChannel();
-
-    CallState state() const;
-    CallFlags flags() const;
-    CallStateReason stateReason() const;
-    QVariantMap stateDetails() const;
 
     bool handlerStreamingRequired() const;
     StreamTransportType initialTransportType() const;
@@ -94,21 +92,33 @@ public:
     PendingOperation *hangup(CallStateChangeReason reason = CallStateChangeReasonUserRequested,
             const QString &detailedReason = QString(), const QString &message = QString());
 
+    // FeatureCallState
+    CallState state() const;
+    CallFlags flags() const;
+    CallStateReason stateReason() const;
+    QVariantMap stateDetails() const;
+
+    // FeatureContents
     CallContents contents() const;
     CallContents contentsForType(MediaStreamType type) const;
     PendingCallContent *requestContent(const QString &name,
             MediaStreamType type, MediaStreamDirection direction);
 
+    // FeatureLocalHoldState
     LocalHoldState localHoldState() const;
     LocalHoldStateReason localHoldStateReason() const;
     PendingOperation *requestHold(bool hold);
 
 Q_SIGNALS:
-    void contentAdded(const Tp::CallContentPtr &content);
-    void contentRemoved(const Tp::CallContentPtr &content, const Tp::CallStateReason &reason);
+    // FeatureCallState
     void stateChanged(Tp::CallState state);
     void flagsChanged(Tp::CallFlags flags);
 
+    // FeatureContents
+    void contentAdded(const Tp::CallContentPtr &content);
+    void contentRemoved(const Tp::CallContentPtr &content, const Tp::CallStateReason &reason);
+
+    // FeatureLocalHoldState
     void localHoldStateChanged(Tp::LocalHoldState state, Tp::LocalHoldStateReason reason);
 
 protected:
@@ -118,11 +128,15 @@ protected:
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
+
+    void gotCallState(QDBusPendingCallWatcher *watcher);
+    void onCallStateChanged(uint state, uint flags,
+            const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);
+
+    void gotContents(QDBusPendingCallWatcher *watcher);
     void onContentAdded(const QDBusObjectPath &contentPath);
     void onContentRemoved(const QDBusObjectPath &contentPath, const Tp::CallStateReason &reason);
     void onContentReady(Tp::PendingOperation *op);
-    void onCallStateChanged(uint state, uint flags,
-            const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);
 
     void gotLocalHoldState(QDBusPendingCallWatcher *);
     void onLocalHoldStateChanged(uint, uint);
