@@ -41,6 +41,8 @@ public:
     Captcha(const Captcha &other);
     ~Captcha();
 
+    Captcha &operator=(const Captcha &rhs);
+
     QString mimeType() const;
     QString label() const;
     QByteArray data() const;

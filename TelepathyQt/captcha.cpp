@@ -108,6 +108,17 @@ Captcha::~Captcha()
 {
 }
 
+Captcha &Captcha::operator=(const Captcha &rhs)
+{
+    if (this==&rhs) {
+        //Protect against self-assignment
+        return *this;
+    }
+
+    mPriv = rhs.mPriv;
+    return *this;
+}
+
 /**
  * Return the mimetype of the captcha.
  *
