@@ -197,21 +197,10 @@ bool CapabilitiesBase::textChats() const
     return false;
 }
 
-bool CapabilitiesBase::mediaCalls() const
-{
-    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.supports(RequestableChannelClassSpec::mediaCall())) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool CapabilitiesBase::audioCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.supports(RequestableChannelClassSpec::audioCallAllowed()) ||
-            rccSpec.supports(RequestableChannelClassSpec::audioCallFixed()) ) {
+        if (rccSpec.supports(RequestableChannelClassSpec::audioCall())) {
             return true;
         }
     }
@@ -221,8 +210,7 @@ bool CapabilitiesBase::audioCalls() const
 bool CapabilitiesBase::videoCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.supports(RequestableChannelClassSpec::videoCallAllowed()) ||
-            rccSpec.supports(RequestableChannelClassSpec::videoCallFixed())) {
+        if (rccSpec.supports(RequestableChannelClassSpec::videoCall())) {
             return true;
         }
     }
@@ -232,10 +220,8 @@ bool CapabilitiesBase::videoCalls() const
 bool CapabilitiesBase::videoCallsWithAudio() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.supports(RequestableChannelClassSpec::videoCallAllowedWithAudioAllowed()) ||
-            rccSpec.supports(RequestableChannelClassSpec::videoCallAllowedWithAudioFixed()) ||
-            rccSpec.supports(RequestableChannelClassSpec::videoCallFixedWithAudioAllowed()) ||
-            rccSpec.supports(RequestableChannelClassSpec::videoCallFixedWithAudioFixed())) {
+        if (rccSpec.supports(RequestableChannelClassSpec::videoCallWithAudioAllowed()) ||
+            rccSpec.supports(RequestableChannelClassSpec::audioCallWithVideoAllowed())) {
             return true;
         }
     }

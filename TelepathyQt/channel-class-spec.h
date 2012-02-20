@@ -193,7 +193,6 @@ public:
     static ChannelClassSpec textChatroom(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec unnamedTextChat(const QVariantMap &additionalProperties = QVariantMap());
 
-    static ChannelClassSpec mediaCall(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec audioCall(const QVariantMap &additionalProperties =
             QVariantMap());
     static ChannelClassSpec videoCall(const QVariantMap &additionalProperties =

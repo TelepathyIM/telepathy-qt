@@ -44,15 +44,10 @@ public:
     static RequestableChannelClassSpec textChat();
     static RequestableChannelClassSpec textChatroom();
 
-    static RequestableChannelClassSpec mediaCall();
-    static RequestableChannelClassSpec audioCallAllowed();
-    static RequestableChannelClassSpec audioCallFixed();
-    static RequestableChannelClassSpec videoCallAllowed();
-    static RequestableChannelClassSpec videoCallFixed();
-    static RequestableChannelClassSpec videoCallAllowedWithAudioAllowed();
-    static RequestableChannelClassSpec videoCallAllowedWithAudioFixed();
-    static RequestableChannelClassSpec videoCallFixedWithAudioAllowed();
-    static RequestableChannelClassSpec videoCallFixedWithAudioFixed();
+    static RequestableChannelClassSpec audioCall();
+    static RequestableChannelClassSpec audioCallWithVideoAllowed();
+    static RequestableChannelClassSpec videoCall();
+    static RequestableChannelClassSpec videoCallWithAudioAllowed();
 
     static RequestableChannelClassSpec streamedMediaCall();
     static RequestableChannelClassSpec streamedMediaAudioCall();

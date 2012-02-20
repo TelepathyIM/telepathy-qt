@@ -92,40 +92,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::textChatroom()
     return spec;
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::mediaCall()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CALL);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::audioCallAllowed()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CALL);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::audioCallFixed()
+RequestableChannelClassSpec RequestableChannelClassSpec::audioCall()
 {
     static RequestableChannelClassSpec spec;
 
@@ -137,66 +104,14 @@ RequestableChannelClassSpec RequestableChannelClassSpec::audioCallFixed()
                 (uint) HandleTypeContact);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
                 true);
+        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName"));
         spec = RequestableChannelClassSpec(rcc);
     }
 
     return spec;
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::videoCallFixed()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CALL);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
-                true);
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::videoCallAllowed()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CALL);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::videoCallAllowedWithAudioAllowed()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CALL);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"));
-        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::videoCallAllowedWithAudioFixed()
+RequestableChannelClassSpec RequestableChannelClassSpec::audioCallWithVideoAllowed()
 {
     static RequestableChannelClassSpec spec;
 
@@ -208,14 +123,16 @@ RequestableChannelClassSpec RequestableChannelClassSpec::videoCallAllowedWithAud
                 (uint) HandleTypeContact);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
                 true);
+        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName"));
         rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"));
+        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName"));
         spec = RequestableChannelClassSpec(rcc);
     }
 
     return spec;
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::videoCallFixedWithAudioAllowed()
+RequestableChannelClassSpec RequestableChannelClassSpec::videoCall()
 {
     static RequestableChannelClassSpec spec;
 
@@ -227,27 +144,28 @@ RequestableChannelClassSpec RequestableChannelClassSpec::videoCallFixedWithAudio
                 (uint) HandleTypeContact);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
                 true);
+        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName"));
+        spec = RequestableChannelClassSpec(rcc);
+    }
+
+    return spec;
+}
+
+RequestableChannelClassSpec RequestableChannelClassSpec::videoCallWithAudioAllowed()
+{
+    static RequestableChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        RequestableChannelClass rcc;
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                TP_QT_IFACE_CHANNEL_TYPE_CALL);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
+                true);
+        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName"));
         rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::videoCallFixedWithAudioFixed()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CALL);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
-                true);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
-                true);
+        rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName"));
         spec = RequestableChannelClassSpec(rcc);
     }
 
