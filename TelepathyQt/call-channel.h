@@ -107,6 +107,7 @@ Q_SIGNALS:
     void contentAdded(const Tp::CallContentPtr &content);
     void contentRemoved(const Tp::CallContentPtr &content, const Tp::CallStateReason &reason);
     void stateChanged(Tp::CallState state);
+    void flagsChanged(Tp::CallFlags flags);
 
     void localHoldStateChanged(Tp::LocalHoldState state, Tp::LocalHoldStateReason reason);
 

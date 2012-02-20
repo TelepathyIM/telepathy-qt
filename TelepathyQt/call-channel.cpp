@@ -752,11 +752,21 @@ void CallChannel::onCallStateChanged(uint state, uint flags,
         return;
     }
 
+    uint oldState = mPriv->state;
+    uint oldFlags = mPriv->flags;
+
     mPriv->state = state;
     mPriv->flags = flags;
     mPriv->stateReason = stateReason;
     mPriv->stateDetails = stateDetails;
-    emit stateChanged((CallState) state);
+
+    if (oldState != state) {
+        emit stateChanged((CallState) state);
+    }
+
+    if (oldFlags != flags) {
+        emit flagsChanged((CallFlags) flags);
+    }
 }
 
 void CallChannel::gotLocalHoldState(QDBusPendingCallWatcher *watcher)
