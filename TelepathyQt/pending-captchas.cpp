@@ -182,7 +182,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     }
 
     qDebug() << "Got reply to PendingDBusCall";
-    Tp::CaptchaInfoList list = reply.argumentAt(0).value<Tp::CaptchaInfoList>();
+    Tp::CaptchaInfoList list = qdbus_cast<Tp::CaptchaInfoList>(reply.argumentAt(0));
     int howManyRequired = reply.argumentAt(1).toUInt();
 
     // Compute which captchas are required
