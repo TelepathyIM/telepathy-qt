@@ -22,10 +22,9 @@
 #ifndef _TelepathyQt_captcha_authentication_h_HEADER_GUARD_
 #define _TelepathyQt_captcha_authentication_h_HEADER_GUARD_
 
-// FIXME: Uncomment once in tp-qt
-//#ifndef IN_TP_QT_HEADER
-//#error IN_TP_QT_HEADER
-//#endif
+#ifndef IN_TP_QT_HEADER
+#error IN_TP_QT_HEADER
+#endif
 
 #include <TelepathyQt/Channel>
 #include <TelepathyQt/Connection>
@@ -33,16 +32,13 @@
 #include <TelepathyQt/Global>
 #include <TelepathyQt/SharedPtr>
 
-#include "constants.h"
-#include "types.h"
-
 namespace Tp
 {
 
 class PendingCaptchas;
 class ChannelFuture;
 
-class CaptchaAuthentication : public Tp::Object
+class TP_QT_EXPORT CaptchaAuthentication : public Tp::Object
 {
     Q_OBJECT
     Q_DISABLE_COPY(CaptchaAuthentication)
@@ -90,7 +86,7 @@ private Q_SLOTS:
             const QStringList &invalidatedProperties);
 
 private:
-    friend class ChannelFuture;
+    friend class Channel;
     friend class PendingCaptchas;
 
     struct Private;

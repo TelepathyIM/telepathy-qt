@@ -23,6 +23,8 @@ set(telepathy_qt_SRCS
     call-content-media-description.cpp
     call-stream.cpp
     call-stream-endpoint.cpp
+    captcha.cpp
+    captcha-authentication.cpp
     channel.cpp
     channel-class-spec.cpp
     channel-dispatcher.cpp
@@ -77,6 +79,7 @@ set(telepathy_qt_SRCS
     outgoing-file-transfer-channel.cpp
     outgoing-stream-tube-channel.cpp
     pending-account.cpp
+    pending-captchas.cpp
     pending-channel.cpp
     pending-channel-request.cpp
     pending-channel-request-internal.h
@@ -491,6 +494,8 @@ set(telepathy_qt_MOC_SRCS
     account-manager.h
     account-set.h
     account-set-internal.h
+    captcha-authentication.h
+    captcha-authentication-internal.h
     channel.h
     channel-dispatch-operation.h
     channel-dispatch-operation-internal.h
@@ -525,6 +530,7 @@ set(telepathy_qt_MOC_SRCS
     outgoing-stream-tube-channel.h
     outgoing-stream-tube-channel-internal.h
     pending-account.h
+    pending-captchas.h
     pending-channel.h
     pending-channel-request.h
     pending-channel-request-internal.h

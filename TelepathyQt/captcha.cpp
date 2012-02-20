@@ -19,11 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "captcha.h"
-
-#include "captcha-authentication.h"
-
-#include "cli-channel.h"
+#include <TelepathyQt/Captcha>
 
 namespace Tp {
 

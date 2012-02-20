@@ -22,12 +22,11 @@
 #ifndef _TelepathyQt_captcha_h_HEADER_GUARD_
 #define _TelepathyQt_captcha_h_HEADER_GUARD_
 
-//#ifndef IN_TELEPATHY_QT4_HEADER
-//#error IN_TELEPATHY_QT4_HEADER
-//#endif
+#ifndef IN_TP_QT_HEADER
+#error IN_TP_QT_HEADER
+#endif
 
-#include <TelepathyQt4/Constants>
-#include "captcha-authentication.h"
+#include <TelepathyQt/CaptchaAuthentication>
 
 namespace Tp
 {
@@ -35,7 +34,7 @@ namespace Tp
 class PendingCaptchas;
 
 class CaptchaData;
-class TP_QT_NO_EXPORT Captcha {
+class TP_QT_EXPORT Captcha {
 public:
     Captcha();
     Captcha(const Captcha &other);

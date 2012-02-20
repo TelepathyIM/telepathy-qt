@@ -19,13 +19,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "pending-captchas.h"
+#include <TelepathyQt/PendingCaptchas>
 
-#include "captcha.h"
-#include "captcha-authentication.h"
-#include "captcha-authentication-internal.h"
+#include "TelepathyQt/_gen/pending-captchas.moc.hpp"
 
-#include "cli-channel.h"
+#include <TelepathyQt/Captcha>
+#include <TelepathyQt/captcha-authentication-internal.h>
 
 namespace Tp {
 
@@ -63,23 +62,23 @@ PendingCaptchas::Private::~Private()
 
 CaptchaAuthentication::ChallengeType PendingCaptchas::Private::stringToChallengeType(const QString &string) const
 {
-    if (string == "audio_recog") {
+    if (string == QLatin1String("audio_recog")) {
         return CaptchaAuthentication::AudioRecognitionChallenge;
-    } else if (string == "ocr") {
+    } else if (string == QLatin1String("ocr")) {
         return CaptchaAuthentication::OCRChallenge;
-    } else if (string == "picture_q") {
+    } else if (string == QLatin1String("picture_q")) {
         return CaptchaAuthentication::PictureQuestionChallenge;
-    } else if (string == "picture_recog") {
+    } else if (string == QLatin1String("picture_recog")) {
         return CaptchaAuthentication::PictureRecognitionChallenge;
-    } else if (string == "qa") {
+    } else if (string == QLatin1String("qa")) {
         return CaptchaAuthentication::TextQuestionChallenge;
-    } else if (string == "speech_q") {
+    } else if (string == QLatin1String("speech_q")) {
         return CaptchaAuthentication::SpeechQuestionChallenge;
-    } else if (string == "speech_recog") {
+    } else if (string == QLatin1String("speech_recog")) {
         return CaptchaAuthentication::SpeechRecognitionChallenge;
-    } else if (string == "video_q") {
+    } else if (string == QLatin1String("video_q")) {
         return CaptchaAuthentication::VideoQuestionChallenge;
-    } else if (string == "video_recog") {
+    } else if (string == QLatin1String("video_recog")) {
         return CaptchaAuthentication::VideoRecognitionChallenge;
     }
 
@@ -238,7 +237,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     if (finalList.size() != howManyRequired) {
         // No captchas available with our preferences
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
-                "No captchas matching the handler's request");
+                QLatin1String("No captchas matching the handler's request"));
         return;
     }
 

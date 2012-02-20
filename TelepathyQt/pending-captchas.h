@@ -22,16 +22,13 @@
 #ifndef _TelepathyQt_pending_captcha_h_HEADER_GUARD_
 #define _TelepathyQt_pending_captcha_h_HEADER_GUARD_
 
-//#ifndef IN_TP_QT_HEADER
-//#error IN_TP_QT_HEADER
-//#endif
+#ifndef IN_TP_QT_HEADER
+#error IN_TP_QT_HEADER
+#endif
 
-#include <TelepathyQt/Constants>
 #include <TelepathyQt/PendingOperation>
-#include <TelepathyQt/Types>
-#include "types.h"
-#include "constants.h"
-#include "captcha-authentication.h"
+
+#include <TelepathyQt/CaptchaAuthentication>
 
 #include <QPair>
 

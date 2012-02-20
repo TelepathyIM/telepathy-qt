@@ -22,7 +22,7 @@
 #ifndef _TelepathyQt_captcha_authentication_internal_h_HEADER_GUARD_
 #define _TelepathyQt_captcha_authentication_internal_h_HEADER_GUARD_
 
-#include "captcha-authentication.h"
+#include <TelepathyQt/CaptchaAuthentication>
 #include <TelepathyQt/PendingOperation>
 
 namespace Tp
@@ -60,7 +60,7 @@ struct TP_QT_NO_EXPORT PendingCaptchaAnswer::Private
     CaptchaAuthenticationPtr captcha;
 };
 
-struct CaptchaAuthentication::Private
+struct TP_QT_NO_EXPORT CaptchaAuthentication::Private
 {
     Private(CaptchaAuthentication *parent);
 

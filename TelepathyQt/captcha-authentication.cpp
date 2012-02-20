@@ -19,15 +19,17 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "captcha-authentication-internal.h"
+#include <TelepathyQt/CaptchaAuthentication>
+#include <TelepathyQt/captcha-authentication-internal.h>
 
+#include "TelepathyQt/_gen/captcha-authentication.moc.hpp"
+#include "TelepathyQt/_gen/captcha-authentication-internal.moc.hpp"
+
+#include <TelepathyQt/Captcha>
 #include <TelepathyQt/Debug>
+#include <TelepathyQt/PendingCaptchas>
 #include <TelepathyQt/PendingFailure>
 #include <TelepathyQt/PendingVariantMap>
-
-#include "cli-channel.h"
-#include "pending-captchas.h"
-#include "channel-future.h"
 
 namespace Tp
 {
@@ -157,7 +159,7 @@ CaptchaAuthentication::~CaptchaAuthentication()
  */
 bool CaptchaAuthentication::canRetry() const
 {
-    if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
+    if (!mPriv->channel->isReady(Tp::Channel::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::canRetry() used with FeatureCore not ready";
         return false;
     }
@@ -167,7 +169,7 @@ bool CaptchaAuthentication::canRetry() const
 
 Tp::CaptchaStatus CaptchaAuthentication::status() const
 {
-    if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
+    if (!mPriv->channel->isReady(Tp::Channel::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::canRetry() used with FeatureCore not ready";
         return CaptchaStatusLocalPending;
     }
@@ -205,7 +207,7 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
 PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &preferredMimeTypes,
         ChallengeTypes preferredTypes)
 {
-    if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
+    if (!mPriv->channel->isReady(Tp::Channel::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
                 "calling request";
         return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
@@ -236,7 +238,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(uint id, const QString &resp
 
 Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &response)
 {
-    if (!mPriv->channel->isReady(Tp::ChannelFuture::FeatureCaptcha)) {
+    if (!mPriv->channel->isReady(Tp::Channel::FeatureCaptcha)) {
         qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
                 "calling answer";
         return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
