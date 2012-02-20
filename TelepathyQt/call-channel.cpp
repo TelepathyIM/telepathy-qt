@@ -97,7 +97,7 @@ void PendingCallContent::gotContent(QDBusPendingCallWatcher *watcher)
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onContentReady(Tp::PendingOperation*)));
     connect(channel.data(),
-            SIGNAL(contentRemoved(Tp::CallContentPtr)),
+            SIGNAL(contentRemoved(Tp::CallContentPtr,Tp::CallStateReason)),
             SLOT(onContentRemoved(Tp::CallContentPtr)));
 
     mPriv->content = content;
@@ -697,7 +697,7 @@ void CallChannel::onContentRemoved(const QDBusObjectPath &contentPath,
     }
 
     if (isReady(FeatureContents) && !incomplete) {
-        emit contentRemoved(content);
+        emit contentRemoved(content, reason);
     }
 
     // the content was added/removed before become ready
@@ -833,11 +833,12 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
  */
 
 /**
- * \fn void CallChannel::contentRemoved(const Tp::CallContentPtr &content);
+ * \fn void CallChannel::contentRemoved(const Tp::CallContentPtr &content, const Tp::CallStateReason &reason);
  *
  * This signal is emitted when a media content is removed from this channel.
  *
  * \param content The media content that was removed.
+ * \param reason The reason for this removal.
  * \sa contents(), contentsForType()
  */
 
