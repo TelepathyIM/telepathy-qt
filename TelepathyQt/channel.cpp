@@ -32,6 +32,8 @@
 
 #include "TelepathyQt/future-internal.h"
 
+#include <TelepathyQt/CaptchaAuthentication>
+#include <TelepathyQt/captcha-authentication-internal.h>
 #include <TelepathyQt/ChannelFactory>
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ConnectionCapabilities>
@@ -42,6 +44,7 @@
 #include <TelepathyQt/PendingOperation>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingSuccess>
+#include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/StreamTubeChannel>
 #include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/Constants>
@@ -76,6 +79,7 @@ struct TP_QT_NO_EXPORT Channel::Private
     void introspectConference();
 
     static void introspectConferenceInitialInviteeContacts(Private *self);
+    static void introspectCaptcha(Private *self);
 
     void continueIntrospection();
 
@@ -207,6 +211,9 @@ struct TP_QT_NO_EXPORT Channel::Private
     QQueue<ConferenceChannelRemovedInfo *> conferenceChannelRemovedQueue;
     bool buildingConferenceChannelRemovedActorContact;
 
+    // Captcha
+    CaptchaAuthenticationPtr captchaAuthentication;
+
     static const QString keyActor;
 };
 
@@ -325,6 +332,15 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         this);
     introspectables[FeatureConferenceInitialInviteeContacts] =
         introspectableConferenceInitialInviteeContacts;
+
+    // As Channel does not have predefined statuses let's simulate one (0)
+    ReadinessHelper::Introspectable introspectableCaptcha(
+        QSet<uint>() << 0,                                                     // makesSenseForStatuses
+        Features() << FeatureCore,                                             // dependsOnFeatures (core)
+        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION, // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectCaptcha,
+        this);
+    introspectables[FeatureCaptcha] = introspectableCaptcha;
 
     readinessHelper->addIntrospectables(introspectables);
 }
@@ -580,6 +596,31 @@ void Channel::Private::introspectConferenceInitialInviteeContacts(Private *self)
         self->readinessHelper->setIntrospectCompleted(
                 FeatureConferenceInitialInviteeContacts, true);
     }
+}
+
+void Channel::Private::introspectCaptcha(Private *self)
+{
+    Channel *parent = self->parent;
+
+    debug() << "Introspecting CaptchaAuthentication properties";
+
+    parent->mPriv->captchaAuthentication =
+            CaptchaAuthenticationPtr(new CaptchaAuthentication(ChannelPtr(parent)));
+
+    Client::ChannelInterfaceCaptchaAuthenticationInterface *captchaAuthenticationInterface =
+            parent->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>();
+
+    captchaAuthenticationInterface->setMonitorProperties(true);
+
+    QObject::connect(captchaAuthenticationInterface,
+            SIGNAL(propertiesChanged(QVariantMap,QStringList)),
+            parent->mPriv->captchaAuthentication.data(),
+            SLOT(onPropertiesChanged(QVariantMap,QStringList)));
+
+    PendingVariantMap *pvm = captchaAuthenticationInterface->requestAllProperties();
+    parent->connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotCaptchaAuthenticationProperties(Tp::PendingOperation*)));
 }
 
 void Channel::Private::continueIntrospection()
@@ -1546,6 +1587,13 @@ const Feature Channel::FeatureCore = Feature(QLatin1String(Channel::staticMetaOb
  * \sa conferenceInitialInviteeContacts()
  */
 const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(QLatin1String(Channel::staticMetaObject.className()), 1, true);
+
+/**
+ * Feature used in order to access the CaptchaAuthentication interface on this channel, if present
+ *
+ * \sa captchaAuthentication()
+ */
+const Feature Channel::FeatureCaptcha = Feature(QLatin1String(Channel::staticMetaObject.className()), 2, true);
 
 /**
  * Create a new Channel object.
@@ -2860,6 +2908,24 @@ Client::ChannelInterface *Channel::baseInterface() const
     return mPriv->baseInterface;
 }
 
+/**
+ * Return the CaptchaAuthentication object for this channel, if the channel implements
+ * the CaptchaAuthentication interface and is a ServerAuthentication Channel.
+ * Note that FeatureCaptcha must be ready for this method to return a meaningful value.
+ *
+ * \return A shared pointer to the object representing the CaptchaAuthentication interface,
+ *         or a null shared pointer if the feature is not ready yet.
+ */
+CaptchaAuthenticationPtr Channel::captchaAuthentication() const
+{
+    if (!isReady(FeatureCaptcha)) {
+        qWarning() << "Channel::captchaAuthentication() used with FeatureCaptcha not ready";
+        return CaptchaAuthenticationPtr();
+    }
+
+    return mPriv->captchaAuthentication;
+}
+
 void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -3521,6 +3587,23 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
 
     mPriv->buildingConferenceChannelRemovedActorContact = false;
     mPriv->processConferenceChannelRemoved();
+}
+
+void Channel::gotCaptchaAuthenticationProperties(Tp::PendingOperation *op)
+{
+    if (!op->isError()) {
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap *>(op);
+
+        mPriv->captchaAuthentication->mPriv->extractCaptchaAuthenticationProperties(pvm->result());
+
+        debug() << "Got reply to Properties::GetAll(CaptchaAuthentication)";
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCaptcha, true);
+    } else {
+        warning().nospace() << "Properties::GetAll(CaptchaAuthentication) failed "
+            "with " << op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCaptcha, false,
+                op->errorName(), op->errorMessage());
+    }
 }
 
 /**

@@ -57,6 +57,7 @@ class TP_QT_EXPORT Channel : public StatefulDBusProxy,
 public:
     static const Feature FeatureCore;
     static const Feature FeatureConferenceInitialInviteeContacts;
+    static const Feature FeatureCaptcha;
 
     static ChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -163,6 +164,8 @@ public:
     bool supportsConferenceSplitting() const;
     PendingOperation *conferenceSplitChannel();
 
+    CaptchaAuthenticationPtr captchaAuthentication() const;
+
 Q_SIGNALS:
     void groupFlagsChanged(Tp::ChannelGroupFlags flags,
             Tp::ChannelGroupFlags added, Tp::ChannelGroupFlags removed);
@@ -235,6 +238,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onConferenceChannelRemoved(const QDBusObjectPath &channel, const QVariantMap &details);
     TP_QT_NO_EXPORT void onConferenceChannelRemoved(const QDBusObjectPath &channel);
     TP_QT_NO_EXPORT void gotConferenceChannelRemovedActorContact(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotCaptchaAuthenticationProperties(Tp::PendingOperation *op);
 
 private:
     class PendingLeave;
