@@ -388,7 +388,7 @@ CallChannel::~CallChannel()
  * \return The current state of this call.
  * \sa stateChanged()
  */
-CallState CallChannel::state() const
+CallState CallChannel::callState() const
 {
     return (CallState) mPriv->state;
 }
@@ -400,7 +400,7 @@ CallState CallChannel::state() const
  * \return The flags representing the status of this call.
  * \sa stateChanged()
  */
-CallFlags CallChannel::flags() const
+CallFlags CallChannel::callFlags() const
 {
     return (CallFlags) mPriv->flags;
 }
@@ -411,7 +411,7 @@ CallFlags CallChannel::flags() const
  * \return The reason for the last change to the state() and/or flags().
  * \sa stateChanged()
  */
-CallStateReason CallChannel::stateReason() const
+CallStateReason CallChannel::callStateReason() const
 {
     return mPriv->stateReason;
 }
@@ -422,7 +422,7 @@ CallStateReason CallChannel::stateReason() const
  * \return The optional extensible details for the state(), flags() and/or stateReason().
  * \sa stateChanged()
  */
-QVariantMap CallChannel::stateDetails() const
+QVariantMap CallChannel::callStateDetails() const
 {
     return mPriv->stateDetails;
 }
@@ -758,11 +758,11 @@ void CallChannel::onCallStateChanged(uint state, uint flags,
     mPriv->stateDetails = stateDetails;
 
     if (oldState != state) {
-        emit stateChanged((CallState) state);
+        emit callStateChanged((CallState) state);
     }
 
     if (oldFlags != flags) {
-        emit flagsChanged((CallFlags) flags);
+        emit callFlagsChanged((CallFlags) flags);
     }
 }
 

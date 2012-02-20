@@ -93,10 +93,10 @@ public:
             const QString &detailedReason = QString(), const QString &message = QString());
 
     // FeatureCallState
-    CallState state() const;
-    CallFlags flags() const;
-    CallStateReason stateReason() const;
-    QVariantMap stateDetails() const;
+    CallState callState() const;
+    CallFlags callFlags() const;
+    CallStateReason callStateReason() const;
+    QVariantMap callStateDetails() const;
 
     // FeatureContents
     CallContents contents() const;
@@ -111,8 +111,8 @@ public:
 
 Q_SIGNALS:
     // FeatureCallState
-    void stateChanged(Tp::CallState state);
-    void flagsChanged(Tp::CallFlags flags);
+    void callStateChanged(Tp::CallState state);
+    void callFlagsChanged(Tp::CallFlags flags);
 
     // FeatureContents
     void contentAdded(const Tp::CallContentPtr &content);
