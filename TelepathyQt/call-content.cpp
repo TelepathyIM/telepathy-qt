@@ -145,7 +145,7 @@ CallStreamPtr CallContent::Private::lookupStream(const QDBusObjectPath &streamPa
 /**
  * \class CallContent
  * \ingroup clientchannel
- * \headerfile TelepathyQt/call-channel.h <TelepathyQt/CallContent>
+ * \headerfile TelepathyQt/call-content.h <TelepathyQt/CallContent>
  *
  * \brief The CallContent class provides an object representing a Telepathy
  * Call.Content.
