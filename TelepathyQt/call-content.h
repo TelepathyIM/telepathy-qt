@@ -59,18 +59,19 @@ Q_SIGNALS:
     void streamRemoved(const Tp::CallStreamPtr &stream, const Tp::CallStateReason &reason);
 
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void onStreamsAdded(const Tp::ObjectPathList &streamPath);
-    void onStreamsRemoved(const Tp::ObjectPathList &streamPath, const Tp::CallStateReason &reason);
-    void onStreamReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onStreamsAdded(const Tp::ObjectPathList &streamPath);
+    TP_QT_NO_EXPORT void onStreamsRemoved(const Tp::ObjectPathList &streamPath,
+            const Tp::CallStateReason &reason);
+    TP_QT_NO_EXPORT void onStreamReady(Tp::PendingOperation *op);
 
 private:
     friend class CallChannel;
     friend class PendingCallContent;
 
-    static const Feature FeatureCore;
+    TP_QT_NO_EXPORT static const Feature FeatureCore;
 
-    CallContent(const CallChannelPtr &channel,
+    TP_QT_NO_EXPORT CallContent(const CallChannelPtr &channel,
             const QDBusObjectPath &contentPath);
 
     struct Private;

@@ -71,22 +71,22 @@ Q_SIGNALS:
             const Tp::CallStateReason &reason);
 
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void gotRemoteMembersContacts(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotRemoteMembersContacts(Tp::PendingOperation *op);
 
-    void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,
+    TP_QT_NO_EXPORT void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,
             const Tp::HandleIdentifierMap &identifiers,
             const Tp::UIntList &removed,
             const Tp::CallStateReason &reason);
-    void onLocalSendingStateChanged(uint, const Tp::CallStateReason &reason);
+    TP_QT_NO_EXPORT void onLocalSendingStateChanged(uint, const Tp::CallStateReason &reason);
 
 private:
     friend class CallChannel;
     friend class CallContent;
 
-    static const Feature FeatureCore;
+    TP_QT_NO_EXPORT static const Feature FeatureCore;
 
-    CallStream(const CallContentPtr &content, const QDBusObjectPath &streamPath);
+    TP_QT_NO_EXPORT CallStream(const CallContentPtr &content, const QDBusObjectPath &streamPath);
 
     struct Private;
     friend struct Private;

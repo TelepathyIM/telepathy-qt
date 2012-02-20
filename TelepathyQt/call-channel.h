@@ -43,15 +43,15 @@ public:
     CallContentPtr content() const;
 
 private Q_SLOTS:
-    void gotContent(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotContent(QDBusPendingCallWatcher *watcher);
 
-    void onContentReady(Tp::PendingOperation *op);
-    void onContentRemoved(const Tp::CallContentPtr &content);
+    TP_QT_NO_EXPORT void onContentReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onContentRemoved(const Tp::CallContentPtr &content);
 
 private:
     friend class CallChannel;
 
-    PendingCallContent(const CallChannelPtr &channel,
+    TP_QT_NO_EXPORT PendingCallContent(const CallChannelPtr &channel,
             const QString &contentName, MediaStreamType type, MediaStreamDirection direction);
 
     struct Private;
@@ -127,25 +127,26 @@ protected:
             const Feature &coreFeature = Channel::FeatureCore);
 
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
 
-    void gotCallState(QDBusPendingCallWatcher *watcher);
-    void onCallStateChanged(uint state, uint flags,
+    TP_QT_NO_EXPORT void gotCallState(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onCallStateChanged(uint state, uint flags,
             const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);
 
-    void gotContents(QDBusPendingCallWatcher *watcher);
-    void onContentAdded(const QDBusObjectPath &contentPath);
-    void onContentRemoved(const QDBusObjectPath &contentPath, const Tp::CallStateReason &reason);
-    void onContentReady(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotContents(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void onContentAdded(const QDBusObjectPath &contentPath);
+    TP_QT_NO_EXPORT void onContentRemoved(const QDBusObjectPath &contentPath,
+            const Tp::CallStateReason &reason);
+    TP_QT_NO_EXPORT void onContentReady(Tp::PendingOperation *op);
 
-    void gotLocalHoldState(QDBusPendingCallWatcher *);
-    void onLocalHoldStateChanged(uint, uint);
+    TP_QT_NO_EXPORT void gotLocalHoldState(QDBusPendingCallWatcher *);
+    TP_QT_NO_EXPORT void onLocalHoldStateChanged(uint, uint);
 
 private:
     friend class PendingCallContent;
 
-    CallContentPtr addContent(const QDBusObjectPath &contentPath);
-    CallContentPtr lookupContent(const QDBusObjectPath &contentPath) const;
+    TP_QT_NO_EXPORT CallContentPtr addContent(const QDBusObjectPath &contentPath);
+    TP_QT_NO_EXPORT CallContentPtr lookupContent(const QDBusObjectPath &contentPath) const;
 
     struct Private;
     friend struct Private;
