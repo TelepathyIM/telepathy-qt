@@ -309,7 +309,7 @@ void CallContent::onStreamsRemoved(const ObjectPathList &streamsPaths,
         }
 
         if (isReady(FeatureCore) && !incomplete) {
-            emit streamRemoved(stream);
+            emit streamRemoved(stream, reason);
         }
 
         mPriv->checkIntrospectionCompleted();
@@ -348,12 +348,13 @@ void CallContent::onStreamReady(PendingOperation *op)
  */
 
 /**
- * \fn void CallContent::streamRemoved(const Tp::CallStreamPtr &stream);
+ * \fn void CallContent::streamRemoved(const Tp::CallStreamPtr &stream, const Tp::CallStateReason &reason);
  *
  * This signal is emitted when a new media stream is removed from this media
  * content.
  *
  * \param stream The media stream that was removed.
+ * \param reason The reason for this removal.
  * \sa streams()
  */
 

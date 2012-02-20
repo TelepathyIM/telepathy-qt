@@ -56,7 +56,7 @@ public:
 
 Q_SIGNALS:
     void streamAdded(const Tp::CallStreamPtr &stream);
-    void streamRemoved(const Tp::CallStreamPtr &stream);
+    void streamRemoved(const Tp::CallStreamPtr &stream, const Tp::CallStateReason &reason);
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
