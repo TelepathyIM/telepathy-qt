@@ -101,7 +101,7 @@ CaptchaAuthentication::Private::Private(CaptchaAuthentication *parent)
 void CaptchaAuthentication::Private::extractCaptchaAuthenticationProperties(const QVariantMap &props)
 {
     canRetry = qdbus_cast<bool>(props[QLatin1String("CanRetryCaptcha")]);
-    status = (CaptchaStatus)qdbus_cast<uint>(props[QLatin1String("Status")]);
+    status = static_cast<Tp::CaptchaStatus>(qdbus_cast<uint>(props[QLatin1String("Status")]));
 }
 
 /**
@@ -193,7 +193,7 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
     Q_UNUSED(invalidatedProperties);
 
     if (changedProperties.contains(QLatin1String("CaptchaStatus"))) {
-        mPriv->status = (Tp::CaptchaStatus)changedProperties.value(QLatin1String("CaptchaStatus")).value<uint>();
+        mPriv->status = static_cast<Tp::CaptchaStatus>(changedProperties.value(QLatin1String("CaptchaStatus")).value<uint>());
         Q_EMIT statusChanged(mPriv->status);
     }
     if (changedProperties.contains(QLatin1String("CaptchaErrorDetails"))) {

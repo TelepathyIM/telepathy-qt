@@ -292,8 +292,8 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
     // Add to the list
     mPriv->appendCaptchaResult(watcher->property("__Tp_Qt_CaptchaMimeType").toString(),
             watcher->property("__Tp_Qt_CaptchaLabel").toString(),
-            reply.value(), (CaptchaAuthentication::ChallengeType)
-            watcher->property("__Tp_Qt_CaptchaType").toUInt(),
+            reply.value(), static_cast<CaptchaAuthentication::ChallengeType>(
+                watcher->property("__Tp_Qt_CaptchaType").toUInt()),
             watcher->property("__Tp_Qt_CaptchaID").toUInt());
 
     watcher->deleteLater();
