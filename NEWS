@@ -9,6 +9,8 @@ Enhancements:
  * Added methods in Tp::AbstractInterface to support PropertiesChanged. This way it is
    possible for internal classes to monitor any property belonging to their interface.
  * Added saslServerAuthentication to ChannelClassSpec
+ * fd.o #46403: Update spec files to spec 0.25.2 and generate low-level bindings
+   for all non-draft interfaces
 
 Fixes:
  * fd.o #45850: Telepathy Qt4 cannot compile against glib 2.31.0 and above
