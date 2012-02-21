@@ -20,6 +20,11 @@
 <xi:include href="client.xml"/>
 <xi:include href="tls-certificate.xml"/>
 
+<xi:include href="call-content.xml"/>
+<xi:include href="call-content-media-description.xml"/>
+<xi:include href="call-stream.xml"/>
+<xi:include href="call-stream-endpoint.xml"/>
+
 <xi:include href="../spec/generic-types.xml"/>
 <xi:include href="../spec/errors.xml"/>
 

@@ -113,7 +113,7 @@ void TestConnAddressing::testSupport()
     QVERIFY(conn->lowlevel()->contactAttributeInterfaces().contains(
                 TP_QT_IFACE_CONNECTION));
     QVERIFY(conn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String("org.freedesktop.Telepathy.Connection.Interface.Addressing.DRAFT")));
+                TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING));
 
     Features supportedFeatures = conn->contactManager()->supportedFeatures();
     QVERIFY(!supportedFeatures.isEmpty());

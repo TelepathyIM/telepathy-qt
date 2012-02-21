@@ -3,9 +3,9 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.25.1</tp:version>
+<tp:version>0.25.2</tp:version>
 
-<tp:copyright>Copyright © 2005-2011 Collabora Limited</tp:copyright>
+<tp:copyright>Copyright © 2005-2012 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2011 Nokia Corporation</tp:copyright>
 <tp:copyright>Copyright © 2006 INdT</tp:copyright>
 
@@ -168,6 +168,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_Room.xml"/>
    <xi:include href="Channel_Interface_Room_Config.xml"/>
    <xi:include href="Channel_Interface_SASL_Authentication.xml"/>
+   <xi:include href="Channel_Interface_Captcha_Authentication.xml"/>
    <xi:include href="Channel_Interface_Credentials_Storage.xml"/>
    <xi:include href="Channel_Interface_Securable.xml"/>
    <xi:include href="Channel_Interface_Service_Point.xml"/>
@@ -241,6 +242,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Call_Content.xml"/>
    <xi:include href="Call_Content_Interface_Media.xml"/>
    <xi:include href="Call_Interface_Mute.xml"/>
+   <xi:include href="Call_Content_Interface_DTMF.xml"/>
    <xi:include href="Call_Content_Interface_Video_Control.xml"/>
    <xi:include href="Call_Content_Interface_Audio_Control.xml"/>
    <xi:include href="Call_Content_Media_Description.xml"/>

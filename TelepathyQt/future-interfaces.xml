@@ -6,7 +6,6 @@
 
 <xi:include href="future-channel.xml"/>
 <xi:include href="future-channel-dispatcher.xml"/>
-<xi:include href="future-connection.xml"/>
 <xi:include href="future-misc.xml"/>
 
 <xi:include href="../spec/generic-types.xml"/>

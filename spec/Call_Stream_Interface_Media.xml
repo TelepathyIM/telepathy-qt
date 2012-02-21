@@ -20,9 +20,8 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Call1.Stream.Interface.Media"
-      tp:causes-havoc="experimental">
-    <tp:added version="0.19.0">(draft 1)</tp:added>
+  <interface name="org.freedesktop.Telepathy.Call1.Stream.Interface.Media">
+    <tp:added version="0.25.2">(as stable API)</tp:added>
     <tp:requires interface="org.freedesktop.Telepathy.Call1.Stream"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -80,19 +79,6 @@
           data, and everything is going swimmingly.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="Pending_Pause" value="4">
-        <tp:docstring>
-          The streaming implementation has been told to pause sending or
-          displaying data, but it has not yet indicated that it has done so.
-        </tp:docstring>
-      </tp:enumvalue>
-      <tp:enumvalue suffix="Paused" value="5">
-        <tp:docstring>
-          The streaming implementation has successfully paused either sending or
-          displaying data, and the local user's privacy or peace-and-quiet is
-          protected.
-        </tp:docstring>
-      </tp:enumvalue>
     </tp:enum>
 
     <property name="SendingState" tp:name-for-bindings="Sending_State"
@@ -103,7 +89,7 @@
         rely on reading this value and listening to
         <tp:member-ref>SendingStateChanged</tp:member-ref> to
         determine whether it should be sending media or not. It should not
-        need to listen to the Mute/Hold interfaces on the Call/Content.
+        need to listen to the Hold interfaces on the Call/Content.
         Feedback on success should be given via
         <tp:member-ref>CompleteSendingStateChange</tp:member-ref>. Failures
         should be reported via <tp:member-ref>ReportSendingFailure</tp:member-ref>.
@@ -215,7 +201,7 @@
     <method name="ReportReceivingFailure"
         tp:name-for-bindings="Report_Receiving_Failure">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        Can be called at any point to indicate a failure in the outgoing
+        Can be called at any point to indicate a failure in the incoming
         portion of the stream.
       </tp:docstring>
       <arg name="Reason" type="u" tp:type="Call_State_Change_Reason"
@@ -420,6 +406,16 @@
           and then set the lowest priority candidate as the Raw UDP candidate.
         </tp:rationale>
       </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The minimal required candidates have not been set. For
+            example, for an RTP protocol, at least one candidate on the
+            component 1 (RTP) must have been set.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
     </method>
 
     <tp:enum type="u" name="Stream_Transport_Type">

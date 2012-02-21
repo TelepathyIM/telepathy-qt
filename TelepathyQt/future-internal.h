@@ -32,7 +32,6 @@
 
 #include "TelepathyQt/_gen/future-channel.h"
 #include "TelepathyQt/_gen/future-channel-dispatcher.h"
-#include "TelepathyQt/_gen/future-connection.h"
 #include "TelepathyQt/_gen/future-misc.h"
 
 #endif

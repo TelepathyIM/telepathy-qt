@@ -21,9 +21,8 @@
   </tp:license>
 
   <interface
-      name="org.freedesktop.Telepathy.Call1.Content.Interface.Media"
-      tp:causes-havoc="experimental">
-    <tp:added version="0.23.4">(draft 2)</tp:added>
+      name="org.freedesktop.Telepathy.Call1.Content.Interface.Media">
+    <tp:added version="0.25.2">(as stable API)</tp:added>
     <tp:requires interface="org.freedesktop.Telepathy.Call1.Content"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -225,11 +224,6 @@
           >MediaDescription</tp:dbus-ref>
         </tp:docstring>
       </tp:member>
-      <tp:member name="Remote_Contact" type="u" tp:type="Contact_Handle">
-        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          The contact handle that this description applies to.
-        </tp:docstring>
-      </tp:member>
       <tp:member name="Properties" type="a{sv}"
            tp:type="Media_Description_Properties">
         <tp:docstring>
@@ -256,15 +250,6 @@
         Otherwise, only parameters which strictly describe the media being sent
         can be changed.
       </tp:docstring>
-      <arg name="Remote_Contact" type="u" tp:type="Handle" direction="in">
-        <tp:docstring>
-          The remote contact that this description should be negotiated with
-          (or 0 to mean "negotiate this with everyone"). Note that encoding
-          the same video multiple times is often needlessly expensive, so
-          differences in MediaDescriptions negotiated with different parties
-          in the call should be limited to payloading parameters if possible.
-        </tp:docstring>
-      </arg>
       <arg name="MediaDescription" direction="in" type="a{sv}"
            tp:type="Media_Description_Properties">
         <tp:docstring>
@@ -341,11 +326,6 @@
           previous media description.
         </tp:docstring>
       </arg>
-      <arg name="Contact" type="u">
-        <tp:docstring>
-          The remote contact the media description belongs to.
-        </tp:docstring>
-      </arg>
       <arg name="Properties" type="a{sv}"
            tp:type="Media_Description_Properties">
         <tp:docstring>
@@ -382,13 +362,6 @@
               >LocalMediaDescriptions</tp:dbus-ref>
         </p>
       </tp:docstring>
-
-      <arg name="Remote_Contact" type="u" tp:type="Handle">
-        <tp:docstring>
-          The remote contact that this description was negotiated with
-          (or 0 to mean "negotiated with everyone").
-        </tp:docstring>
-      </arg>
 
       <arg name="Updated_Media_Description" type="a{sv}"
         tp:type="Media_Description_Properties">
@@ -440,7 +413,7 @@
 
     <property name="MediaDescriptionOffer"
         tp:name-for-bindings="Media_Description_Offer"
-      type="(oua{sv})" tp:type="Media_Description_Offer" access="read">
+      type="(oa{sv})" tp:type="Media_Description_Offer" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The object path to the current
           <tp:dbus-ref namespace="ofdT.Call1.Content"

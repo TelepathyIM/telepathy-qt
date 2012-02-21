@@ -1037,10 +1037,10 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                         TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
             mPriv->groups = groups.toSet();
         } else if (feature == FeatureAddresses) {
-            TpFuture::VCardFieldAddressMap addresses = qdbus_cast<TpFuture::VCardFieldAddressMap>(attributes.value(
-                        TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/addresses")));
+            VCardFieldAddressMap addresses = qdbus_cast<VCardFieldAddressMap>(attributes.value(
+                        TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/addresses")));
             QStringList uris = qdbus_cast<QStringList>(attributes.value(
-                        TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/uris")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/uris")));
             receiveAddresses(addresses, uris);
         } else {
             warning() << "Unknown feature" << feature << "encountered when augmenting Contact";

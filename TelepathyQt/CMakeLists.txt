@@ -19,6 +19,10 @@ set(telepathy_qt_SRCS
     account-set-internal.h
     avatar.cpp
     capabilities-base.cpp
+    call-content.cpp
+    call-content-media-description.cpp
+    call-stream.cpp
+    call-stream-endpoint.cpp
     channel.cpp
     channel-class-spec.cpp
     channel-dispatcher.cpp
@@ -141,6 +145,7 @@ set(telepathy_qt_HEADERS
     AccountInterface
     AccountInterfaceAddressingInterface
     AccountInterfaceAvatarInterface
+    AccountInterfaceStorageInterface
     AccountManager
     account-manager.h
     AccountManagerInterface
@@ -154,6 +159,27 @@ set(telepathy_qt_HEADERS
     AvatarData
     AvatarSpec
     avatar.h
+    CallContent
+    CallContentInterface
+    CallContentInterfaceAudioControlInterface
+    CallContentInterfaceDTMFInterface
+    CallContentInterfaceMediaInterface
+    CallContentInterfaceVideoControlInterface
+    call-content.h
+    CallContentMediaDescription
+    CallContentMediaDescriptionInterface
+    CallContentMediaDescriptionInterfaceRTCPExtendedReportsInterface
+    CallContentMediaDescriptionInterfaceRTCPFeedbackInterface
+    CallContentMediaDescriptionInterfaceRTPHeaderExtensionsInterface
+    call-content-media-description.h
+    CallStream
+    CallStreamInterface
+    CallStreamInterfaceMediaInterface
+    call-stream.h
+    CallStreamEndpoint
+    CallStreamEndpoint
+    CallStreamEndpointInterface
+    call-stream-endpoint.h
     CapabilitiesBase
     capabilities-base.h
     Channel
@@ -173,9 +199,11 @@ set(telepathy_qt_HEADERS
     channel-factory.h
     ChannelInterface
     ChannelInterfaceAnonymityInterface
+    ChannelInterfaceCaptchaAuthenticationInterface
     ChannelInterfaceCallStateInterface
     ChannelInterfaceChatStateInterface
     ChannelInterfaceConferenceInterface
+    ChannelInterfaceDestroyableInterface
     ChannelInterfaceDTMFInterface
     ChannelInterfaceFileTransferMetadataInterface
     ChannelInterfaceGroupInterface
@@ -192,8 +220,10 @@ set(telepathy_qt_HEADERS
     ChannelRequestHints
     channel-request.h
     ChannelRequestInterface
+    ChannelTypeCallInterface
     ChannelTypeContactListInterface
     ChannelTypeContactSearchInterface
+    ChannelTypeDBusTubeInterface
     ChannelTypeFileTransferInterface
     ChannelTypeRoomListInterface
     ChannelTypeServerAuthenticationInterface
@@ -220,6 +250,7 @@ set(telepathy_qt_HEADERS
     connection-factory.h
     connection-lowlevel.h
     ConnectionInterface
+    ConnectionInterfaceAddressingInterface
     ConnectionInterfaceAliasingInterface
     ConnectionInterfaceAnonymityInterface
     ConnectionInterfaceAvatarsInterface
@@ -370,14 +401,14 @@ set(telepathy_qt_HEADERS
     properties.h
     PropertiesInterface
     PropertiesInterfaceInterface
-    ProtocolAddressingInterface
-    ProtocolAvatarsInterface
     ProtocolInfo
     protocol-info.h
     ProtocolInterface
+    ProtocolInterfaceAddressingInterface
+    ProtocolInterfaceAvatarsInterface
+    ProtocolInterfacePresenceInterface
     ProtocolParameter
     protocol-parameter.h
-    ProtocolPresenceInterface
     ReadinessHelper
     readiness-helper.h
     ReadyObject
@@ -427,6 +458,10 @@ set(telepathy_qt_HEADERS
 set(telepathy_qt_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account-manager.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-content.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-content-media-description.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-stream.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-call-stream-endpoint.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-dispatcher.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-dispatch-operation.h
@@ -569,6 +604,10 @@ list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body
 set(SPECS
     account
     account-manager
+    call-content
+    call-content-media-description
+    call-stream
+    call-stream-endpoint
     channel
     channel-dispatcher
     channel-dispatch-operation
@@ -595,7 +634,6 @@ endforeach(spec ${SPECS})
 set(FUTURE_SPECS
     channel
     channel-dispatcher
-    connection
     misc)
 foreach(spec ${FUTURE_SPECS})
     tpqt_xincludator(${spec}-future-xincludator  ${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
@@ -619,6 +657,10 @@ endif(MSVC)
 # Use the client generator for generating headers out of specs
 tpqt_client_generator(account clientaccount AccountManager Tp::Client --mainiface=Tp::Client::AccountInterface DEPENDS account-spec-xincludator)
 tpqt_client_generator(account-manager clientam AccountManager Tp::Client --mainiface=Tp::Client::AccountManagerInterface DEPENDS account-manager-spec-xincludator)
+tpqt_client_generator(call-content clientcall CallContent Tp::Client --mainiface=Tp::Client::CallContentInterface DEPENDS call-content-spec-xincludator)
+tpqt_client_generator(call-content-media-description clientcall CallContentMediaDescriptionInterface Tp::Client --mainiface=Tp::Client::CallContentMediaDescriptionInterface DEPENDS call-content-media-description-spec-xincludator)
+tpqt_client_generator(call-stream clientcall CallStream Tp::Client --mainiface=Tp::Client::CallStreamInterface DEPENDS call-stream-spec-xincludator)
+tpqt_client_generator(call-stream-endpoint clientcall CallStreamEndpoint Tp::Client --mainiface=Tp::Client::CallStreamEndpointInterface DEPENDS call-stream-endpoint-spec-xincludator)
 tpqt_client_generator(channel clientchannel Channel Tp::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-spec-xincludator)
 tpqt_client_generator(channel-dispatcher clientchanneldispatcher ChannelDispatcher Tp::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-spec-xincludator)
 tpqt_client_generator(channel-dispatch-operation clientchanneldispatchoperation ChannelDispatchOperation Tp::Client --mainiface=Tp::Client::ChannelDispatchOperationInterface DEPENDS channel-dispatch-operation-spec-xincludator)
@@ -634,7 +676,6 @@ tpqt_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPEND
 
 tpqt_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-future-xincludator)
 tpqt_future_client_generator(channel-dispatcher TpFuture::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-future-xincludator)
-tpqt_future_client_generator(connection TpFuture::Client --mainiface=Tp::Client::ConnectionInterface DEPENDS connection-future-xincludator)
 tpqt_future_client_generator(misc TpFuture::Client DEPENDS misc-future-xincludator)
 
 if (TARGET doxygen-doc)

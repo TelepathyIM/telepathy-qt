@@ -235,7 +235,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
           both be represented by any single vCard field. Arbitrary
           handles/identifiers as vCard fields are represented
           through the Connection's
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface">Addressing.DRAFT</tp:dbus-ref>
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface">Addressing1</tp:dbus-ref>
           contact attributes.</p>
 
         <tp:rationale>

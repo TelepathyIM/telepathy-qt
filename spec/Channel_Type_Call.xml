@@ -17,9 +17,8 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Channel.Type.Call1"
-      tp:causes-havoc="experimental">
-    <tp:added version="0.19.0">(draft 1)</tp:added>
+  <interface name="org.freedesktop.Telepathy.Channel.Type.Call1">
+    <tp:added version="0.25.2">(as stable API)</tp:added>
 
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
     <tp:requires
@@ -111,7 +110,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         something. When the CM has information indicating that the remote contact has been
         notified about the call (or immediately if the network is known not to convey such
         information) it should also change to
-        <tp:value-ref type="Call_State">Ringing</tp:value-ref>. All changes to
+        <tp:value-ref type="Call_State">Initialised</tp:value-ref>. All changes to
         the <tp:member-ref>CallState</tp:member-ref> property are signalled using
         the <tp:member-ref>CallStateChanged</tp:member-ref> signal.</p>
 
@@ -324,7 +323,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           channel's <tp:dbus-ref namespace="ofdT.Channel">Requested</tp:dbus-ref>
           property is False, and
           the <tp:member-ref>CallState</tp:member-ref> is
-          <tp:value-ref type="Call_State">Ringing</tp:value-ref> (an incoming
+          <tp:value-ref type="Call_State">Initialised</tp:value-ref> (an incoming
           call is ready and waiting for the user to be notified). Calling this method
           SHOULD set <tp:member-ref>CallFlags</tp:member-ref>' bit
           <tp:value-ref type="Call_Flags">Locally_Ringing</tp:value-ref>, and notify the
@@ -346,7 +345,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
             The call is no longer in state
-            <tp:value-ref type="Call_State">Ringing</tp:value-ref>.
+            <tp:value-ref type="Call_State">Initialised</tp:value-ref>.
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>
@@ -363,7 +362,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           property is False, and
           the <tp:member-ref>CallState</tp:member-ref> is
           <tp:value-ref type="Call_State">Initialising</tp:value-ref> or
-          <tp:value-ref type="Call_State">Ringing</tp:value-ref>. Calling this method
+          <tp:value-ref type="Call_State">Initialised</tp:value-ref>. Calling this method
           SHOULD set <tp:member-ref>CallFlags</tp:member-ref>' bit
           <tp:value-ref type="Call_Flags">Locally_Queued</tp:value-ref>, and notify the
           remote contact that the call is in a queue (if the
@@ -380,13 +379,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
           <tp:docstring>
             The call was <tp:dbus-ref namespace="ofdT.Channel"
-            >Requested</tp:dbus-ref>, so ringing does not make sense.
+            >Requested</tp:dbus-ref>, so queueing does not make sense.
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
             The call is no longer in state
-            <tp:value-ref type="Call_State">Initialising</tp:value-ref> or _Ringing.
+            <tp:value-ref type="Call_State">Initialising</tp:value-ref> or
+            <tp:value-ref type="Call_State">Initialised</tp:value-ref>.
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>
@@ -395,7 +395,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <method name="Accept" tp:name-for-bindings="Accept">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>For incoming calls in state
-          <tp:value-ref type="Call_State">Ringing</tp:value-ref>, accept the incoming call.
+          <tp:value-ref type="Call_State">Initialised</tp:value-ref>, accept the incoming call.
           This changes the <tp:member-ref>CallState</tp:member-ref> to
           <tp:value-ref type="Call_State">Accepted</tp:value-ref>.</p>
 
@@ -512,6 +512,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           call.
         </tp:docstring>
       </arg>
+      <arg direction="in" name="InitialDirection" type="u"
+          tp:type="Media_Stream_Direction">
+        <tp:docstring>
+          The requested initial direction of the new content.
+        </tp:docstring>
+      </arg>
       <arg direction="out" name="Content" type="o">
         <tp:docstring>
           Path to the newly-created <tp:dbus-ref
@@ -603,18 +609,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <ul>
           <li>Pending_Initiator → Initialising (for outgoing calls,
             when <tp:member-ref>Accept</tp:member-ref> is called)</li>
-          <li>Initialising → Ringing (for outgoing calls, when
+          <li>Initialising → Initialised (for outgoing calls, when
             the remote client indicates that the user has been notified about
             the call. If the network is known not to provide feedback about whether
             the remote side is ringing, then the call should immediately be
             set to Ringing.</li>
-          <li>Initialising → Ringing (for incoming calls, when e.g. the
+          <li>Initialising → Initialised (for incoming calls, when e.g. the
             implementation has been initialised far enough that it is sensible
             to notify the user about the call (to reduce the probability that
             the user will pick up the call and have it immediately fail).
             The UI should then alert the user about the call, and call
             <tp:member-ref>SetRinging</tp:member-ref>)</li>
-          <li>Ringing → Accepted (for outgoing calls to a contact,
+          <li>Initialised → Accepted (for outgoing calls to a contact,
             when the remote contact accepts the call; for incoming calls, when
             <tp:member-ref>Accept</tp:member-ref> is called.)</li>
           <li>Accepted → Active (when the local user successfully
@@ -664,7 +670,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           this state.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="Ringing" value="3">
+      <tp:enumvalue suffix="Initialised" value="3">
         <tp:docstring>
           In the outgoing case: at least one called user has been alerted
           about the call (a SIP 180 (Ringing) packet or equivalent has been
@@ -731,45 +737,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:docstring>
       </tp:flag>
 
-      <tp:flag suffix="Locally_Muted" value="2">
-        <tp:docstring>
-          The call has been muted by the local user, e.g. using the
-          <tp:dbus-ref namespace="ofdT.Call1.Interface"
-          >Mute</tp:dbus-ref> interface. This flag SHOULD only
-          be set if there is at least one Content, and all Contents
-          are locally muted (for the same reason as Locally_Held).
-
-          <tp:rationale>
-            This flag exists to provide a simplified verson of <tp:dbus-ref
-            namespace="ofdT.Call1.Interface.Mute"
-              >MuteStateChanged</tp:dbus-ref>,
-            to reduce the number of signals that need to be
-            listened to by a simple UI.
-          </tp:rationale>
-        </tp:docstring>
-      </tp:flag>
-
-      <tp:flag suffix="Locally_Ringing" value="4">
+      <tp:flag suffix="Locally_Ringing" value="2">
         <tp:docstring>
           This flag exists for observability of the
           <tp:member-ref>SetRinging</tp:member-ref> method (e.g. so that
           loggers can tell whether the call got as far as alerting the user,
           or whether something went wrong before then). It should be set when
           the SetRinging is called, and unset when the call leaves
-          <tp:value-ref type="Call_State">Ringing</tp:value-ref>.
+          <tp:value-ref type="Call_State">Initialised</tp:value-ref>.
         </tp:docstring>
       </tp:flag>
 
-      <tp:flag suffix="Locally_Queued" value="8">
+      <tp:flag suffix="Locally_Queued" value="4">
         <tp:docstring>
           This flag exists for observability of the
           <tp:member-ref>SetQueued</tp:member-ref> method. It should be set
           when the SetQueued is called, and unset when the call leaves
-          <tp:value-ref type="Call_State">Ringing</tp:value-ref>.
+          <tp:value-ref type="Call_State">Initialising</tp:value-ref> or
+          <tp:value-ref type="Call_State">Initialised</tp:value-ref>.
         </tp:docstring>
       </tp:flag>
 
-      <tp:flag suffix="Forwarded" value="16">
+      <tp:flag suffix="Forwarded" value="8">
         <tp:docstring>
           The initiator of the call originally called a contact other than the
           current recipient of the call, but the call was then forwarded or
@@ -779,7 +768,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:docstring>
       </tp:flag>
 
-      <tp:flag suffix="Clearing" value="32">
+      <tp:flag suffix="Clearing" value="16">
         <tp:docstring>
           This flag only occurs when the CallState is Ended. The call with
           this flag set has ended, but not all resources corresponding to the
@@ -842,6 +831,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             The value of this key has the same units and scale as
             <tp:dbus-ref namespace="ofdT.Connection.Interface.Balance">AccountBalance</tp:dbus-ref>.
             </dd>
+
+          <dt>forwarded-to - u</dt>
+          <dd>Optionally included when the
+            <tp:member-ref>CallStateReason</tp:member-ref> is
+            Forwarded. It indicates the handle to whom the Call was
+            forwarded.</dd>
+
+          <dt>forwarded-to-id - s</dt>
+          <dd>The string that would result from inspecting the
+            <code>forwarded-to</code> key
+            (i.e. the contact's identifier in the IM protocol).</dd>
         </dl>
       </tp:docstring>
     </property>
@@ -920,9 +920,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <tp:enumvalue suffix="Forwarded" value="3">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The call was forwarded. If known, the handle of the contact
-            the call was forwarded to will be indicated by the Actor member
-            of a <tp:type>Call_State_Reason</tp:type> struct.</p>
+          <p>The call was forwarded. If known, the handle of the
+          contact the call was forwarded to will be indicated by the
+          "forwarded-to" member of a
+          <tp:member-ref>CallStateDetails</tp:member-ref> dictionnary
+          in the <tp:member-ref>CallStateChanged</tp:member-ref>
+          signal.</p>
         </tp:docstring>
       </tp:enumvalue>
 
@@ -930,7 +933,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:added version="0.21.2"/>
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The <tp:member-ref>CallState</tp:member-ref> changed from
-            <tp:value-ref type="Call_State">Ringing</tp:value-ref> or
+            <tp:value-ref type="Call_State">Initialised</tp:value-ref> or
             <tp:value-ref type="Call_State">Ended</tp:value-ref> (or a content's direction
             changed) because it was rejected by the remote user.</p>
           <p>Corresponds to <tp:error-ref>Rejected</tp:error-ref></p>
@@ -941,7 +944,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:added version="0.21.2"/>
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The <tp:member-ref>CallState</tp:member-ref> changed from
-            <tp:value-ref type="Call_State">Ringing</tp:value-ref> or
+            <tp:value-ref type="Call_State">Initialised</tp:value-ref> or
             <tp:value-ref type="Call_State">Ended</tp:value-ref> because the initiator
             ended the call before the receiver accepted it. With an
             incoming call this state change reason signifies a missed
@@ -976,7 +979,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:added version="0.21.2"/>
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The <tp:member-ref>CallState</tp:member-ref> changed from
-            <tp:value-ref type="Call_State">Ringing</tp:value-ref>
+            <tp:value-ref type="Call_State">Initialised</tp:value-ref>
             <tp:value-ref type="Call_State">Ended</tp:value-ref> because the receiver is busy
             (e.g. is already engaged in another call, and has not placed the
             initiator in a call-waiting queue).</p>
@@ -1214,21 +1217,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:docstring>
       </tp:flag>
 
-      <tp:flag suffix="Muted" value="4">
-        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The call member has muted their participation in this call. Note
-            that many protocols will not signal this flag, so clients should
-            not rely on it being set.</p>
-
-          <tp:rationale>
-            <p>This is a flag per member, not a flag for the call as a whole,
-              because in conference calls, any member could mute their own
-              streams.</p>
-          </tp:rationale>
-        </tp:docstring>
-      </tp:flag>
-
-      <tp:flag suffix="Conference_Host" value="8">
+      <tp:flag suffix="Conference_Host" value="4">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           This contact has merged this call into a conference. Note that GSM
           provides a notification when the remote party merges a call into a

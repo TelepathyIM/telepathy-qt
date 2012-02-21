@@ -637,6 +637,16 @@
     </tp:docstring>
   </tp:error>
 
+  <tp:error name="Captcha Not Supported">
+    <tp:added version="0.25.2"/>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Raised if the <tp:dbus-ref 
+        namespace="ofdT.Channel.Interface">CaptchaAuthentication1</tp:dbus-ref> 
+        Handler either has no UI to present captchas, or it does, but wasn't 
+        able to answer any of the captchas given.</p>
+    </tp:docstring>
+  </tp:error>
+
   <tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
   <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">

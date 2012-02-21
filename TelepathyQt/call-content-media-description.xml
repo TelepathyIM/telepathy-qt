@@ -1,0 +1,12 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Call misc interfaces, version 1</tp:title>
+
+<xi:include href="../spec/Call_Content_Media_Description_Interface_RTCP_Extended_Reports.xml" />
+<xi:include href="../spec/Call_Content_Media_Description_Interface_RTCP_Feedback.xml" />
+<xi:include href="../spec/Call_Content_Media_Description_Interface_RTP_Header_Extensions.xml" />
+<xi:include href="../spec/Call_Content_Media_Description.xml" />
+
+</tp:spec>

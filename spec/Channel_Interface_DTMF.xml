@@ -23,11 +23,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
       <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Call1"/>
     </tp:xor-requires>
+
+    <tp:changed version="0.25.2">The only part of this spec that should
+    be used with a Call1 channel is the "InitialTones" property.
+    </tp:changed>
+
     <tp:changed version="0.19.6">The <tp:type>Stream_ID</tp:type>s in this
-      interface should now be ignored by CMs. This is primarily to allow this
-      interface to be used with <tp:dbus-ref
-      namespace='ofdT.Channel.Type'>Call1</tp:dbus-ref>
-      channels.</tp:changed>
+      interface can now be ignored by CMs.
+    </tp:changed>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       An interface that gives a Channel the ability to send DTMF events over
@@ -207,13 +210,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </property>
 
     <property name="InitialTones" tp:name-for-bindings="Initial_Tones"
-        type="s" access="read">
+        type="s" access="read" tp:immutable="yes" tp:requestable="yes">
       <tp:added version="0.19.6" />
       <tp:docstring>
         <p>If non-empty in a channel request that will create a new channel,
           the connection manager should send the tones immediately after
           at least one eligible audio stream has been created in the
           channel.</p>
+
+        <p>This should only be used with InitialAudio=true.</p>
 
         <p>This property is immutable (cannot change).</p>
       </tp:docstring>
