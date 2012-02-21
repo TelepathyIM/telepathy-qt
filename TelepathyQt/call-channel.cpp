@@ -383,6 +383,10 @@ CallChannel::~CallChannel()
  */
 CallState CallChannel::callState() const
 {
+    if (!isReady(FeatureCallState)) {
+        warning() << "CallChannel::callState() used with FeatureCallState not ready";
+    }
+
     return (CallState) mPriv->state;
 }
 
@@ -395,6 +399,10 @@ CallState CallChannel::callState() const
  */
 CallFlags CallChannel::callFlags() const
 {
+    if (!isReady(FeatureCallState)) {
+        warning() << "CallChannel::callFlags() used with FeatureCallState not ready";
+    }
+
     return (CallFlags) mPriv->flags;
 }
 
@@ -406,6 +414,10 @@ CallFlags CallChannel::callFlags() const
  */
 CallStateReason CallChannel::callStateReason() const
 {
+    if (!isReady(FeatureCallState)) {
+        warning() << "CallChannel::callStateReason() used with FeatureCallState not ready";
+    }
+
     return mPriv->stateReason;
 }
 
@@ -417,6 +429,10 @@ CallStateReason CallChannel::callStateReason() const
  */
 QVariantMap CallChannel::callStateDetails() const
 {
+    if (!isReady(FeatureCallState)) {
+        warning() << "CallChannel::callStateDetails() used with FeatureCallState not ready";
+    }
+
     return mPriv->stateDetails;
 }
 
@@ -555,6 +571,11 @@ PendingOperation *CallChannel::hangup(CallStateChangeReason reason,
  */
 CallContents CallChannel::contents() const
 {
+    if (!isReady(FeatureContents)) {
+        warning() << "CallChannel::contents() used with FeatureContents not ready";
+        return CallContents();
+    }
+
     return mPriv->contents;
 }
 
@@ -569,6 +590,11 @@ CallContents CallChannel::contents() const
  */
 CallContents CallChannel::contentsForType(MediaStreamType type) const
 {
+    if (!isReady(FeatureContents)) {
+        warning() << "CallChannel::contents() used with FeatureContents not ready";
+        return CallContents();
+    }
+
     CallContents contents;
     foreach (const CallContentPtr &content, mPriv->contents) {
         if (content->type() == type) {
