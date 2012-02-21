@@ -49,10 +49,10 @@ public:
 
     QString name() const;
     MediaStreamType type() const;
-
     CallContentDisposition disposition() const;
-
     CallStreams streams() const;
+
+    PendingOperation *remove();
 
 Q_SIGNALS:
     void streamAdded(const Tp::CallStreamPtr &stream);

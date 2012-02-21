@@ -32,6 +32,7 @@
 #include <TelepathyQt/CallChannel>
 #include <TelepathyQt/DBus>
 #include <TelepathyQt/PendingReady>
+#include <TelepathyQt/PendingVoid>
 #include <TelepathyQt/ReadinessHelper>
 
 namespace Tp
@@ -239,6 +240,17 @@ CallContentDisposition CallContent::disposition() const
 CallStreams CallContent::streams() const
 {
     return mPriv->streams;
+}
+
+/**
+ * Removes this media content from the call.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *CallContent::remove()
+{
+    return new PendingVoid(mPriv->contentInterface->Remove(), CallContentPtr(this));
 }
 
 void CallContent::gotMainProperties(QDBusPendingCallWatcher *watcher)
