@@ -1471,7 +1471,7 @@ QString ContactManager::featureToInterface(const Feature &feature)
     } else if (feature == Contact::FeatureRosterGroups) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
     } else if (feature == Contact::FeatureAddresses) {
-        return TP_QT_FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING;
     } else {
         warning() << "ContactManager doesn't know which interface corresponds to feature"
             << feature;

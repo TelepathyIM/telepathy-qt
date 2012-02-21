@@ -145,9 +145,9 @@ AddressableURISchemes=tel;sip;
           <dt><code>msnim</code></dt>
           <dd>For the purposes of
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing</tp:dbus-ref>,
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing1</tp:dbus-ref>,
             and
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing1</tp:dbus-ref>,
             the verb part is ignored, and SHOULD be <code>add</code>; the
             <code>contact</code> field in the query string is used to
             identify the contact.
@@ -155,9 +155,9 @@ AddressableURISchemes=tel;sip;
           <dt><code>aim</code></dt>
           <dd>For the purposes of
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing</tp:dbus-ref>,
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing1</tp:dbus-ref>,
             and
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing1</tp:dbus-ref>,
             the verb part is ignored, and SHOULD be <code>addbuddy</code>; the
             <code>screenname</code> field in the query string is used to
             identify the contact.
@@ -168,9 +168,9 @@ AddressableURISchemes=tel;sip;
           <dt><code>ymsgr</code></dt>
           <dd>For the purposes of
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Protocol.Interface.Addressing</tp:dbus-ref>,
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Addressing1</tp:dbus-ref>,
             and
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing.DRAFT</tp:dbus-ref>,
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Interface.Addressing1</tp:dbus-ref>,
             the verb part is ignored, and SHOULD be <code>addfriend</code>; the
             query string is used to identify the contact.
             For example: <code>ymsgr:addfriend?julien</code>.</dd>
@@ -186,7 +186,7 @@ AddressableURISchemes=tel;sip;
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Attempt to normalize the given vCard address. Where possible, this
           SHOULD return an address that would appear in the
-          <code>org.freedesktop.Telepathy.Connection.Interface.Addressing.DRAFT/addresses</code>
+          <code>org.freedesktop.Telepathy.Connection.Interface.Addressing1/addresses</code>
           attribute for a contact on a connected
           <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>.
         </p>
@@ -247,7 +247,7 @@ AddressableURISchemes=tel;sip;
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Attempt to normalize the given contact URI. Where possible, this
           SHOULD return an address that would appear in the
-          <code>org.freedesktop.Telepathy.Connection.Interface.Addressing.DRAFT/uris</code>
+          <code>org.freedesktop.Telepathy.Connection.Interface.Addressing1/uris</code>
           attribute for a contact on a connected
           <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>.
         </p>

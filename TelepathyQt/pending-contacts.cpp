@@ -27,7 +27,6 @@
 #include "TelepathyQt/_gen/pending-contacts-internal.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
-#include "TelepathyQt/future-internal.h"
 
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/ConnectionLowlevel>
@@ -238,8 +237,8 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
     } else if (type == ForUris) {
-        TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
-            conn->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+        Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+            conn->optionalInterface<Client::ConnectionInterfaceAddressingInterface>(
                     OptionalInterfaceFactory<Connection>::CheckInterfaceSupported);
         if (!connAddressingIface) {
             setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
@@ -268,8 +267,8 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 
     ConnectionPtr conn = manager->connection();
 
-    TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
-        conn->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+    Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+        conn->optionalInterface<Client::ConnectionInterfaceAddressingInterface>(
                 OptionalInterfaceFactory<Connection>::CheckInterfaceSupported);
     if (!connAddressingIface) {
         setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
@@ -667,8 +666,8 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
 {
     // no check for the interface here again, we expect this interface to be used only when
     // Conn.I.Addressing is available
-    TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
-        connection->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+    Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+        connection->optionalInterface<Client::ConnectionInterfaceAddressingInterface>(
                 OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             connAddressingIface->GetContactsByVCardField(vcardField, vcardAddresses, interfaces));
@@ -686,8 +685,8 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
 {
     // no check for the interface here again, we expect this interface to be used only when
     // Conn.I.Addressing is available
-    TpFuture::Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
-        connection->optionalInterface<TpFuture::Client::ConnectionInterfaceAddressingInterface>(
+    Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
+        connection->optionalInterface<Client::ConnectionInterfaceAddressingInterface>(
                 OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             connAddressingIface->GetContactsByURI(uris, interfaces));
@@ -702,10 +701,10 @@ PendingAddressingGetContacts::~PendingAddressingGetContacts()
 
 void PendingAddressingGetContacts::onGetContactsFinished(QDBusPendingCallWatcher* watcher)
 {
-    QDBusPendingReply<TpFuture::AddressingNormalizationMap, Tp::ContactAttributesMap> reply = *watcher;
+    QDBusPendingReply<AddressingNormalizationMap, ContactAttributesMap> reply = *watcher;
 
     if (!reply.isError()) {
-        TpFuture::AddressingNormalizationMap requested = reply.argumentAt<0>();
+        AddressingNormalizationMap requested = reply.argumentAt<0>();
 
         mValidHandles = requested.values();
         mValidAddresses = requested.keys();

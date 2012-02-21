@@ -1,0 +1,10 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Call Stream interfaces, version 1</tp:title>
+
+<xi:include href="../spec/Call_Stream_Interface_Media.xml" />
+<xi:include href="../spec/Call_Stream.xml" />
+
+</tp:spec>

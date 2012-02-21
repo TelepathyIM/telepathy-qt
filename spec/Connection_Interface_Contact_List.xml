@@ -841,6 +841,35 @@
       </tp:docstring>
     </property>
 
+    <property name="DownloadAtConnection" type="b" access="read"
+      tp:name-for-bindings="Download_At_Connection"
+      tp:is-connection-parameter='yes'>
+      <tp:added version="0.25.2"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If true, the contact list is automatically downloaded at
+          connection. If false, the contact list is only downloaded
+          when requested explicitely with
+          <tp:member-ref>Download</tp:member-ref>.</p>
+
+        <tp:rationale>
+          <p>Downloading the contact list uses bandwidth and is not always
+            necessary or desired. For example, a client could cache the
+            contact list from previous connections and accept less regular
+            updates, it could get the contact list from an out-of-band
+            protocol-specific way, or it could not need the contact list at
+            all.</p>
+        </tp:rationale>
+
+        <p>Connection managers MUST default to true.</p>
+
+        <tp:rationale>
+          <p>If a connection manager starts supporting this property but
+            defaults to false, it would break all existing clients that don't
+            call <tp:member-ref>Download</tp:member-ref>.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
     <method name="AuthorizePublication"
       tp:name-for-bindings="Authorize_Publication">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -1077,6 +1106,21 @@
             or Waiting.
           </tp:docstring>
         </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="Download" tp:name-for-bindings="Download">
+      <tp:added version="0.UNRELEASED"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Download the contact list from the server. If
+          <tp:member-ref>DownloadAtConnection</tp:member-ref> is true,
+          Download does nothing.</p>
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented"/>
       </tp:possible-errors>
     </method>
 

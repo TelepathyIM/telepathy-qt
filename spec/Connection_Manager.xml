@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <node name="/Connection_Manager" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2005-2008 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2005-2012 Collabora Limited</tp:copyright>
   <tp:copyright>Copyright (C) 2005-2008 Nokia Corporation</tp:copyright>
   <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
@@ -603,7 +603,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <dd>ASCII decimal integer, optionally prefixed with "-"</dd>
       <dt>d (double-precision floating point)</dt>
         <dd>ASCII decimal number</dd>
-      <dt>as (array of string)</dt>
+      <dt>as (array of string), ao (array of object path)</dt>
         <dd>A sequence of UTF-8 strings each followed by a semicolon, with
           any semicolons they contain escaped with a backslash
           (the "localestrings" type from the Desktop Entry Specification)</dd>
@@ -626,6 +626,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       CMs with no .manager file was not explicitly required.</tp:changed>
     <tp:changed version="0.17.16">Prior to version 0.17.16 the serialization
       of string arrays (signature 'as') was not defined</tp:changed>
+    <tp:changed version="0.25.2">Prior to version 0.25.2 the
+      serialization of object-path arrays (signature 'ao') was not
+      defined</tp:changed>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

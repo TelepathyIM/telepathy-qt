@@ -212,4 +212,12 @@
     </tp:member>
   </tp:mapping>
 
+  <tp:simple-type name="Language_Tag" type="s">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      A language tag as defined in
+      <a href="https://www.rfc-editor.org/rfc/bcp/bcp47.txt">IETF BCP 47</a>,
+      such as "en_US".
+    </tp:docstring>
+  </tp:simple-type>
+
 </tp:generic-types>

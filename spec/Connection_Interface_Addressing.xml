@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <node name="/Connection_Interface_Addressing" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright> Copyright (C) 2010 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2010-2012 Collabora Limited </tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or modify it
       under the terms of the GNU Lesser General Public License as published by
@@ -16,12 +16,10 @@
       along with this library; if not, write to the Free Software Foundation,
       Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.Addressing.DRAFT"
-             tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.Addressing1">
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
     <tp:requires interface="org.freedesktop.Telepathy.Connection.Interface.Contacts"/>
-    <tp:added version="0.19.12">(as draft)</tp:added>
-    <tp:changed version="0.25.1">Both methods now return two dictionaries.</tp:changed>
+    <tp:added version="0.25.2">(as stable API)</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface deals with the multiple address types that can
       refer to the same contact, such as vCard fields and URIs.</p>
@@ -201,11 +199,20 @@
 
     <tp:mapping name="VCard_Field_Address_Map" array-name="">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>A mapping of vCard fields and addresses that repreent
-          the given contact.</p>
+        <p>A mapping of vCard fields and addresses equivalent to a
+          particular contact's protocol identifier. For instance,
+          on XMPP this would contain <code>x-jabber</code> for all
+          contacts, and <code>x-facebook-id</code> for contacts on
+          Facebook's server.</p>
       </tp:docstring>
-      <tp:member type="s" name="VCard_Field"/>
-      <tp:member type="s" name="Address"/>
+      <tp:member type="s" name="VCard_Field">
+        <tp:docstring>A vCard field, such as
+          <code>x-jabber</code>.</tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Address">
+        <tp:docstring>The value of that vCard field for the
+          contact.</tp:docstring>
+      </tp:member>
     </tp:mapping>
 
     <tp:contact-attribute name="addresses" type="a{ss}"

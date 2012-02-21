@@ -145,6 +145,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.Account">ConnectAutomatically</tp:dbus-ref>,
             <tp:dbus-ref
+              namespace="ofdT.Account">Supersedes</tp:dbus-ref>,
+            <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.Account">RequestedPresence</tp:dbus-ref>
             and
             <tp:dbus-ref

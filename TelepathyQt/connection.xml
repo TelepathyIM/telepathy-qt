@@ -6,6 +6,7 @@
 
 <xi:include href="../spec/Connection.xml"/>
 
+<xi:include href="../spec/Connection_Interface_Addressing.xml"/>
 <xi:include href="../spec/Connection_Interface_Aliasing.xml"/>
 <xi:include href="../spec/Connection_Interface_Anonymity.xml"/>
 <xi:include href="../spec/Connection_Interface_Avatars.xml"/>
