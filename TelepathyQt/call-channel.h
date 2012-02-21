@@ -127,8 +127,6 @@ protected:
             const Feature &coreFeature = Channel::FeatureCore);
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
-
     TP_QT_NO_EXPORT void gotCallState(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void onCallStateChanged(uint state, uint flags,
             const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);

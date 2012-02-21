@@ -135,7 +135,6 @@ struct TP_QT_NO_EXPORT CallChannel::Private
     Private(CallChannel *parent);
     ~Private();
 
-    static void introspectCore(Private *self);
     static void introspectCallState(Private *self);
     static void introspectContents(Private *self);
     static void introspectLocalHoldState(Private *self);
@@ -189,17 +188,9 @@ CallChannel::Private::Private(CallChannel *parent)
 {
     ReadinessHelper::Introspectables introspectables;
 
-    ReadinessHelper::Introspectable introspectableCore(
-        QSet<uint>() << 0,                                                         // makesSenseForStatuses
-        Features() << Channel::FeatureCore,                                        // dependsOnFeatures (core)
-        QStringList(),                                                             // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &Private::introspectCore,
-        this);
-    introspectables[FeatureCore] = introspectableCore;
-
     ReadinessHelper::Introspectable introspectableCallState(
         QSet<uint>() << 0,                                                         // makesSenseForStatuses
-        Features() << CallChannel::FeatureCore,                                    // dependsOnFeatures (core)
+        Features() << Channel::FeatureCore,                                        // dependsOnFeatures (core)
         QStringList(),                                                             // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectCallState,
         this);
@@ -207,7 +198,7 @@ CallChannel::Private::Private(CallChannel *parent)
 
     ReadinessHelper::Introspectable introspectableContents(
         QSet<uint>() << 0,                                                         // makesSenseForStatuses
-        Features() << CallChannel::FeatureCore,                                    // dependsOnFeatures (core)
+        Features() << Channel::FeatureCore,                                        // dependsOnFeatures (core)
         QStringList(),                                                             // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectContents,
         this);
@@ -215,7 +206,7 @@ CallChannel::Private::Private(CallChannel *parent)
 
     ReadinessHelper::Introspectable introspectableLocalHoldState(
         QSet<uint>() << 0,                                                         // makesSenseForStatuses
-        Features() << CallChannel::FeatureCore,                                    // dependsOnFeatures (core)
+        Features() << Channel::FeatureCore,                                        // dependsOnFeatures (core)
         QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_HOLD,                      // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectLocalHoldState,
         this);
@@ -226,20 +217,6 @@ CallChannel::Private::Private(CallChannel *parent)
 
 CallChannel::Private::~Private()
 {
-}
-
-void CallChannel::Private::introspectCore(CallChannel::Private *self)
-{
-    CallChannel *parent = self->parent;
-
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                self->properties->GetAll(
-                    QLatin1String(TP_QT_IFACE_CHANNEL_TYPE_CALL)),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void CallChannel::Private::introspectCallState(CallChannel::Private *self)
@@ -312,31 +289,33 @@ void CallChannel::Private::introspectLocalHoldState(CallChannel::Private *self)
  * Feature representing the core that needs to become ready to make the
  * CallChannel object usable.
  *
+ * This is currently the same as Channel::FeatureCore, but may change to include more.
+ *
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Feature CallChannel::FeatureCore = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 0, true);
+const Feature CallChannel::FeatureCore = Feature(QLatin1String(Channel::staticMetaObject.className()), 0, true);
 
 /**
  * Feature used in order to access call state specific methods.
  *
  * See call state specific methods' documentation for more details.
  */
-const Feature CallChannel::FeatureCallState = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 1);
+const Feature CallChannel::FeatureCallState = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 0);
 
 /**
  * Feature used in order to access content specific methods.
  *
  * See media content specific methods' documentation for more details.
  */
-const Feature CallChannel::FeatureContents = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 2);
+const Feature CallChannel::FeatureContents = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 1);
 
 /**
  * Feature used in order to access local hold state info.
  *
  * See local hold state specific methods' documentation for more details.
  */
-const Feature CallChannel::FeatureLocalHoldState = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 3);
+const Feature CallChannel::FeatureLocalHoldState = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 2);
 
 /**
  * Create a new CallChannel object.
@@ -372,6 +351,20 @@ CallChannel::CallChannel(const ConnectionPtr &connection,
     : Channel(connection, objectPath, immutableProperties, coreFeature),
       mPriv(new Private(this))
 {
+    mPriv->hardwareStreaming = qdbus_cast<bool>(immutableProperties[
+            TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".HardwareStreaming")]);
+    mPriv->initialTransportType = qdbus_cast<uint>(immutableProperties[
+            TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialTransport")]);
+    mPriv->initialAudio = qdbus_cast<bool>(immutableProperties[
+            TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")]);
+    mPriv->initialVideo = qdbus_cast<bool>(immutableProperties[
+            TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")]);
+    mPriv->initialAudioName = qdbus_cast<QString>(immutableProperties[
+            TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName")]);
+    mPriv->initialVideoName = qdbus_cast<QString>(immutableProperties[
+            TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName")]);
+    mPriv->mutableContents = qdbus_cast<bool>(immutableProperties[
+            TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".MutableContents")]);
 }
 
 /**
@@ -683,35 +676,6 @@ PendingOperation *CallChannel::requestHold(bool hold)
     Client::ChannelInterfaceHoldInterface *holdInterface =
         interface<Client::ChannelInterfaceHoldInterface>();
     return new PendingVoid(holdInterface->RequestHold(hold), CallChannelPtr(this));
-}
-
-void CallChannel::gotMainProperties(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    if (reply.isError()) {
-        warning().nospace() << "Properties::GetAll(Call) failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
-                false, reply.error());
-        watcher->deleteLater();
-        return;
-    }
-
-    debug() << "Got reply to Properties::GetAll(Call)";
-
-    QVariantMap props = reply.value();
-
-    mPriv->hardwareStreaming = qdbus_cast<bool>(props[QLatin1String("HardwareStreaming")]);
-    mPriv->initialTransportType = qdbus_cast<uint>(props[QLatin1String("InitialTransport")]);
-    mPriv->initialAudio = qdbus_cast<bool>(props[QLatin1String("InitialAudio")]);
-    mPriv->initialVideo = qdbus_cast<bool>(props[QLatin1String("InitialVideo")]);
-    mPriv->initialAudioName = qdbus_cast<QString>(props[QLatin1String("InitialAudioName")]);
-    mPriv->initialVideoName = qdbus_cast<QString>(props[QLatin1String("InitialVideoName")]);
-    mPriv->mutableContents = qdbus_cast<bool>(props[QLatin1String("MutableContents")]);
-
-    mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-
-    watcher->deleteLater();
 }
 
 void CallChannel::gotCallState(QDBusPendingCallWatcher *watcher)
