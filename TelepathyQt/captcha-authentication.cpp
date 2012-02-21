@@ -192,8 +192,8 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
 {
     Q_UNUSED(invalidatedProperties);
 
-    if (changedProperties.contains(QLatin1String("Status"))) {
-        mPriv->status = (Tp::CaptchaStatus)changedProperties.value(QLatin1String("Status")).value<uint>();
+    if (changedProperties.contains(QLatin1String("CaptchaStatus"))) {
+        mPriv->status = (Tp::CaptchaStatus)changedProperties.value(QLatin1String("CaptchaStatus")).value<uint>();
         Q_EMIT statusChanged(mPriv->status);
     }
     if (changedProperties.contains(QLatin1String("CaptchaErrorDetails"))) {
