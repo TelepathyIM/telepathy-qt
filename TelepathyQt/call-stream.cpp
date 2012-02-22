@@ -67,9 +67,8 @@ struct TP_QT_NO_EXPORT CallStream::Private
     ContactSendingStateMap remoteMembers;
     QHash<uint, ContactPtr> remoteMembersContacts;
     bool canRequestReceiving;
-    bool buildingRemoteMembers;
-    QQueue<RemoteMembersChangedInfo *> remoteMembersChangedQueue;
-    RemoteMembersChangedInfo *currentRemoteMembersChangedInfo;
+    QQueue< QSharedPointer<RemoteMembersChangedInfo> > remoteMembersChangedQueue;
+    QSharedPointer<RemoteMembersChangedInfo> currentRemoteMembersChangedInfo;
 };
 
 struct TP_QT_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
@@ -85,6 +84,17 @@ struct TP_QT_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
     {
     }
 
+    static QSharedPointer<RemoteMembersChangedInfo> create(
+            const ContactSendingStateMap &updates,
+            const HandleIdentifierMap &identifiers,
+            const UIntList &removed,
+            const CallStateReason &reason)
+    {
+        RemoteMembersChangedInfo *info = new RemoteMembersChangedInfo(
+                updates, identifiers, removed, reason);
+        return QSharedPointer<RemoteMembersChangedInfo>(info);
+    }
+
     ContactSendingStateMap updates;
     HandleIdentifierMap identifiers;
     UIntList removed;
@@ -98,9 +108,7 @@ CallStream::Private::Private(CallStream *parent, const CallContentPtr &content)
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       localSendingState(SendingStateNone),
-      canRequestReceiving(true),
-      buildingRemoteMembers(false),
-      currentRemoteMembersChangedInfo(0)
+      canRequestReceiving(true)
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -138,7 +146,7 @@ void CallStream::Private::introspectMainProperties(CallStream::Private *self)
 
 void CallStream::Private::processRemoteMembersChanged()
 {
-    if (buildingRemoteMembers) {
+    if (currentRemoteMembersChangedInfo) { // currently building contacts
         return;
     }
 
@@ -149,7 +157,6 @@ void CallStream::Private::processRemoteMembersChanged()
         return;
     }
 
-    Q_ASSERT(currentRemoteMembersChangedInfo == 0);
     currentRemoteMembersChangedInfo = remoteMembersChangedQueue.dequeue();
 
     QSet<uint> pendingRemoteMembers;
@@ -158,9 +165,11 @@ void CallStream::Private::processRemoteMembersChanged()
         pendingRemoteMembers.insert(i.key());
     }
 
-    if (!pendingRemoteMembers.isEmpty()) {
-        buildingRemoteMembers = true;
+    foreach(uint i, currentRemoteMembersChangedInfo->removed) {
+        pendingRemoteMembers.insert(i);
+    }
 
+    if (!pendingRemoteMembers.isEmpty()) {
         ConnectionPtr connection = parent->content()->channel()->connection();
         connection->lowlevel()->injectContactIds(currentRemoteMembersChangedInfo->identifiers);
 
@@ -171,8 +180,7 @@ void CallStream::Private::processRemoteMembersChanged()
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(gotRemoteMembersContacts(Tp::PendingOperation*)));
     } else {
-        delete currentRemoteMembersChangedInfo;
-        currentRemoteMembersChangedInfo = 0;
+        currentRemoteMembersChangedInfo.clear();
         processRemoteMembersChanged();
     }
 }
@@ -355,7 +363,7 @@ void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
     HandleIdentifierMap remoteMemberIdentifiers =
         qdbus_cast<HandleIdentifierMap>(props[QLatin1String("RemoteMemberIdentifiers")]);
 
-    mPriv->remoteMembersChangedQueue.enqueue(new Private::RemoteMembersChangedInfo(
+    mPriv->remoteMembersChangedQueue.enqueue(Private::RemoteMembersChangedInfo::create(
                 remoteMembers, remoteMemberIdentifiers, UIntList(), CallStateReason()));
     mPriv->processRemoteMembersChanged();
 
@@ -366,13 +374,10 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
 {
     PendingContacts *pc = qobject_cast<PendingContacts *>(op);
 
-    mPriv->buildingRemoteMembers = false;
-
     if (!pc->isValid()) {
         warning().nospace() << "Getting contacts failed with " <<
             pc->errorName() << ":" << pc->errorMessage() << ", ignoring";
-        delete mPriv->currentRemoteMembersChangedInfo;
-        mPriv->currentRemoteMembersChangedInfo = 0;
+        mPriv->currentRemoteMembersChangedInfo.clear();
         mPriv->processRemoteMembersChanged();
         return;
     }
@@ -437,8 +442,7 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
         }
     }
 
-    delete mPriv->currentRemoteMembersChangedInfo;
-    mPriv->currentRemoteMembersChangedInfo = 0;
+    mPriv->currentRemoteMembersChangedInfo.clear();
     mPriv->processRemoteMembersChanged();
 }
 
@@ -454,15 +458,15 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
         const CallStateReason &reason)
 {
     if (updates.isEmpty() && removed.isEmpty()) {
-        debug() << "Received Call::Stream::RemoteMembersChanged with 0 changes and "
+        debug() << "Received Call::Stream::RemoteMembersChanged with 0 removals and "
             "updates, skipping it";
         return;
     }
 
     debug() << "Received Call::Stream::RemoteMembersChanged with" << updates.size() <<
-        "and " << removed.size() << "removed";
+        "updated and" << removed.size() << "removed";
     mPriv->remoteMembersChangedQueue.enqueue(
-            new Private::RemoteMembersChangedInfo(updates, identifiers, removed, reason));
+            Private::RemoteMembersChangedInfo::create(updates, identifiers, removed, reason));
     mPriv->processRemoteMembersChanged();
 }
 
