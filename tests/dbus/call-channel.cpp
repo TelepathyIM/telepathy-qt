@@ -59,6 +59,7 @@ private Q_SLOTS:
     void testHold();
     void testHangup();
     void testCallMembers();
+    void testDTMF();
 
     void cleanup();
     void cleanupTestCase();
@@ -817,6 +818,82 @@ void TestCallChannel::testCallMembers()
     QCOMPARE((*mRemoteMembersRemoved.constBegin())->id(), QString::fromLatin1("john"));
     QCOMPARE(mChan->remoteMembers().size(), 0);
     QCOMPARE(mChan->contents().size(), 0);
+}
+
+void TestCallChannel::testDTMF()
+{
+    mConn->client()->lowlevel()->setSelfPresence(QLatin1String("away"), QLatin1String("preparing for a test"));
+
+    Tp::Client::ConnectionInterfaceRequestsInterface *connRequestsInterface =
+        mConn->client()->optionalInterface<Tp::Client::ConnectionInterfaceRequestsInterface>();
+    QVERIFY(connect(connRequestsInterface,
+                    SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
+                    SLOT(onNewChannels(const Tp::ChannelDetailsList&))));
+
+    mConn->client()->lowlevel()->setSelfPresence(QLatin1String("available"), QLatin1String("call me?"));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan);
+
+    qDebug() << "making the channel ready";
+
+    QVERIFY(connect(mChan->becomeReady(CallChannel::FeatureContents),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(Tp::CallChannel::FeatureContents));
+
+    QVERIFY(connect(mChan->accept(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mChan->contents().size(), 1);
+    Tp::CallContentPtr content = mChan->contents().first();
+    QCOMPARE(content->channel(), mChan);
+    QCOMPARE(content->type(), Tp::MediaStreamTypeAudio);
+
+/*  TODO enable when/if the example call CM actually supports DTMF
+    QVERIFY(content->supportsDTMF());
+    QVERIFY(connect(content->startDTMFTone(DTMFEventDigit0),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(content->stopDTMFTone(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(content->startDTMFTone((DTMFEvent) 1234),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, QString(TP_QT_ERROR_INVALID_ARGUMENT));
+*/
+
+    qDebug() << "requesting video content";
+
+    QVERIFY(connect(mChan->requestContent(QLatin1String("video_content"),
+                                          Tp::MediaStreamTypeVideo,
+                                          Tp::MediaStreamDirectionBidirectional),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContentFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    content = mRequestContentReturn;
+    QCOMPARE(content->type(), Tp::MediaStreamTypeVideo);
+
+    QVERIFY(!content->supportsDTMF());
+    QVERIFY(connect(content->startDTMFTone(DTMFEventDigit0),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, QString(TP_QT_ERROR_NOT_IMPLEMENTED));
+
+    QVERIFY(connect(content->stopDTMFTone(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectFailure(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLastError, QString(TP_QT_ERROR_NOT_IMPLEMENTED));
 }
 
 void TestCallChannel::cleanup()
