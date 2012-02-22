@@ -253,6 +253,78 @@ PendingOperation *CallContent::remove()
     return new PendingVoid(mPriv->contentInterface->Remove(), CallContentPtr(this));
 }
 
+/**
+ * Return whether sending DTMF events is supported on this content.
+ * DTMF is only supported on audio contents that implement the
+ * #TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF interface.
+ *
+ * \returns \c true if DTMF is supported, or \c false otherwise.
+ */
+bool CallContent::supportsDTMF() const
+{
+    return interfaces().contains(TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF);
+}
+
+/**
+ * Start sending a DTMF tone on this media stream.
+ *
+ * Where possible, the tone will continue until stopDTMFTone() is called.
+ * On certain protocols, it may only be possible to send events with a predetermined
+ * length. In this case, the implementation may emit a fixed-length tone,
+ * and the stopDTMFTone() method call should return #TP_QT_ERROR_NOT_AVAILABLE.
+ *
+ * If this content does not support the #TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF
+ * interface, the resulting PendingOperation will fail with error code
+ * #TP_QT_ERROR_NOT_IMPLEMENTED.
+ *
+ * \param event A numeric event code from the #DTMFEvent enum.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the request finishes.
+ * \sa stopDTMFTone(), supportsDTMF()
+ */
+PendingOperation *CallContent::startDTMFTone(DTMFEvent event)
+{
+    if (!supportsDTMF()) {
+        warning() << "CallContent::startDTMFTone() used with no dtmf interface";
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("This CallContent does not support the dtmf interface"),
+                CallContentPtr(this));
+    }
+
+    Client::CallContentInterfaceDTMFInterface *dtmfInterface =
+        interface<Client::CallContentInterfaceDTMFInterface>();
+    return new PendingVoid(dtmfInterface->StartTone(event), CallContentPtr(this));
+}
+
+/**
+ * Stop sending any DTMF tone which has been started using the startDTMFTone()
+ * method.
+ *
+ * If there is no current tone, the resulting PendingOperation will
+ * finish successfully.
+ *
+ * If this content does not support the #TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF
+ * interface, the resulting PendingOperation will fail with error code
+ * #TP_QT_ERROR_NOT_IMPLEMENTED.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the request finishes.
+ * \sa startDTMFTone(), supportsDTMF()
+ */
+PendingOperation *CallContent::stopDTMFTone()
+{
+    if (!supportsDTMF()) {
+        warning() << "CallContent::stopDTMFTone() used with no dtmf interface";
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("This CallContent does not support the dtmf interface"),
+                CallContentPtr(this));
+    }
+
+    Client::CallContentInterfaceDTMFInterface *dtmfInterface =
+        interface<Client::CallContentInterfaceDTMFInterface>();
+    return new PendingVoid(dtmfInterface->StopTone(), CallContentPtr(this));
+}
+
 void CallContent::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;

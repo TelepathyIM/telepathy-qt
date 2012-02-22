@@ -54,6 +54,10 @@ public:
 
     PendingOperation *remove();
 
+    bool supportsDTMF() const;
+    PendingOperation *startDTMFTone(DTMFEvent event);
+    PendingOperation *stopDTMFTone();
+
 Q_SIGNALS:
     void streamAdded(const Tp::CallStreamPtr &stream);
     void streamRemoved(const Tp::CallStreamPtr &stream, const Tp::CallStateReason &reason);
