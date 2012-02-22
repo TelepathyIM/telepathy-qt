@@ -67,10 +67,9 @@ class TP_QT_EXPORT CallChannel : public Channel
 public:
     static const Feature FeatureCore;
     static const Feature FeatureCallState;
+    static const Feature FeatureCallMembers;
     static const Feature FeatureContents;
     static const Feature FeatureLocalHoldState;
-
-    // TODO: FeatureCallMembers
 
     static CallChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -97,6 +96,10 @@ public:
     CallStateReason callStateReason() const;
     QVariantMap callStateDetails() const;
 
+    // FeatureCallMembers
+    Contacts remoteMembers() const;
+    CallMemberFlags remoteMemberFlags(const ContactPtr &member) const;
+
     // FeatureContents
     CallContents contents() const;
     CallContents contentsForType(MediaStreamType type) const;
@@ -112,6 +115,13 @@ Q_SIGNALS:
     // FeatureCallState
     void callStateChanged(Tp::CallState state);
     void callFlagsChanged(Tp::CallFlags flags);
+
+    // FeatureCallMembers
+    void remoteMemberFlagsChanged(
+            const QHash<Tp::ContactPtr, Tp::CallMemberFlags> &remoteMemberFlags,
+            const Tp::CallStateReason &reason);
+    void remoteMembersRemoved(const Tp::Contacts &remoteMembers,
+            const Tp::CallStateReason &reason);
 
     // FeatureContents
     void contentAdded(const Tp::CallContentPtr &content);
@@ -129,6 +139,13 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void gotCallState(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void onCallStateChanged(uint state, uint flags,
             const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);
+
+    TP_QT_NO_EXPORT void gotCallMembers(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotCallMembersContacts(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void onCallMembersChanged(const Tp::CallMemberMap &updates,
+            const Tp::HandleIdentifierMap &identifiers,
+            const Tp::UIntList &removed,
+            const Tp::CallStateReason &reason);
 
     TP_QT_NO_EXPORT void gotContents(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void onContentAdded(const QDBusObjectPath &contentPath);

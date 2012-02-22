@@ -26,6 +26,9 @@
 #include <TelepathyQt/debug-internal.h>
 
 #include <TelepathyQt/Connection>
+#include <TelepathyQt/ConnectionLowlevel>
+#include <TelepathyQt/ContactManager>
+#include <TelepathyQt/PendingContacts>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingVoid>
 
@@ -136,11 +139,13 @@ struct TP_QT_NO_EXPORT CallChannel::Private
     ~Private();
 
     static void introspectCallState(Private *self);
+    static void introspectCallMembers(Private *self);
     static void introspectContents(Private *self);
     static void introspectLocalHoldState(Private *self);
 
-    CallContentPtr addContent(const QDBusObjectPath &contentPath);
-    CallContentPtr lookupContent(const QDBusObjectPath &contentPath) const;
+    void processCallMembersChanged();
+
+    struct CallMembersChangedInfo;
 
     // Public object
     CallChannel *parent;
@@ -157,18 +162,54 @@ struct TP_QT_NO_EXPORT CallChannel::Private
     CallStateReason stateReason;
     QVariantMap stateDetails;
 
+    CallMemberMap callMembers;
+    QHash<uint, ContactPtr> callMembersContacts;
+    QQueue< QSharedPointer<CallMembersChangedInfo> > callMembersChangedQueue;
+    QSharedPointer<CallMembersChangedInfo> currentCallMembersChangedInfo;
+
     bool hardwareStreaming;
     uint initialTransportType;
     bool initialAudio;
     bool initialVideo;
     QString initialAudioName;
     QString initialVideoName;
+
     bool mutableContents;
     CallContents contents;
     CallContents incompleteContents;
 
     uint localHoldState;
     uint localHoldStateReason;
+};
+
+struct TP_QT_NO_EXPORT CallChannel::Private::CallMembersChangedInfo
+{
+    CallMembersChangedInfo(const CallMemberMap &updates,
+            const HandleIdentifierMap &identifiers,
+            const UIntList &removed,
+            const CallStateReason &reason)
+        : updates(updates),
+          identifiers(identifiers),
+          removed(removed),
+          reason(reason)
+    {
+    }
+
+    static QSharedPointer<CallMembersChangedInfo> create(
+            const CallMemberMap &updates,
+            const HandleIdentifierMap &identifiers,
+            const UIntList &removed,
+            const CallStateReason &reason)
+    {
+        CallMembersChangedInfo *info = new CallMembersChangedInfo(
+                updates, identifiers, removed, reason);
+        return QSharedPointer<CallMembersChangedInfo>(info);
+    }
+
+    CallMemberMap updates;
+    HandleIdentifierMap identifiers;
+    UIntList removed;
+    CallStateReason reason;
 };
 
 CallChannel::Private::Private(CallChannel *parent)
@@ -195,6 +236,14 @@ CallChannel::Private::Private(CallChannel *parent)
         (ReadinessHelper::IntrospectFunc) &Private::introspectCallState,
         this);
     introspectables[FeatureCallState] = introspectableCallState;
+
+    ReadinessHelper::Introspectable introspectableCallMembers(
+        QSet<uint>() << 0,                                                         // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                        // dependsOnFeatures (core)
+        QStringList(),                                                             // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectCallMembers,
+        this);
+    introspectables[FeatureCallMembers] = introspectableCallMembers;
 
     ReadinessHelper::Introspectable introspectableContents(
         QSet<uint>() << 0,                                                         // makesSenseForStatuses
@@ -237,6 +286,24 @@ void CallChannel::Private::introspectCallState(CallChannel::Private *self)
             SLOT(gotCallState(QDBusPendingCallWatcher*)));
 }
 
+void CallChannel::Private::introspectCallMembers(CallChannel::Private *self)
+{
+    CallChannel *parent = self->parent;
+
+    parent->connect(self->callInterface,
+            SIGNAL(CallMembersChanged(Tp::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
+            SLOT(onCallMembersChanged(Tp::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
+
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                self->properties->GetAll(
+                    QLatin1String(TP_QT_IFACE_CHANNEL_TYPE_CALL)),
+                parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotCallMembers(QDBusPendingCallWatcher*)));
+}
+
 void CallChannel::Private::introspectContents(CallChannel::Private *self)
 {
     CallChannel *parent = self->parent;
@@ -276,6 +343,47 @@ void CallChannel::Private::introspectLocalHoldState(CallChannel::Private *self)
             SLOT(gotLocalHoldState(QDBusPendingCallWatcher*)));
 }
 
+void CallChannel::Private::processCallMembersChanged()
+{
+    if (currentCallMembersChangedInfo) { // currently building contacts
+        return;
+    }
+
+    if (callMembersChangedQueue.isEmpty()) {
+        if (!parent->isReady(FeatureCallMembers)) {
+            readinessHelper->setIntrospectCompleted(FeatureCallMembers, true);
+        }
+        return;
+    }
+
+    currentCallMembersChangedInfo = callMembersChangedQueue.dequeue();
+
+    QSet<uint> pendingCallMembers;
+    for (ContactSendingStateMap::const_iterator i = currentCallMembersChangedInfo->updates.constBegin();
+            i != currentCallMembersChangedInfo->updates.constEnd(); ++i) {
+        pendingCallMembers.insert(i.key());
+    }
+
+    foreach(uint i, currentCallMembersChangedInfo->removed) {
+        pendingCallMembers.insert(i);
+    }
+
+    if (!pendingCallMembers.isEmpty()) {
+        ConnectionPtr connection = parent->connection();
+        connection->lowlevel()->injectContactIds(currentCallMembersChangedInfo->identifiers);
+
+        ContactManagerPtr contactManager = connection->contactManager();
+        PendingContacts *contacts = contactManager->contactsForHandles(
+                pendingCallMembers.toList());
+        parent->connect(contacts,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(gotCallMembersContacts(Tp::PendingOperation*)));
+    } else {
+        currentCallMembersChangedInfo.clear();
+        processCallMembersChanged();
+    }
+}
+
 /**
  * \class CallChannel
  * \ingroup clientchannel
@@ -304,18 +412,25 @@ const Feature CallChannel::FeatureCore = Feature(QLatin1String(Channel::staticMe
 const Feature CallChannel::FeatureCallState = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 0);
 
 /**
+ * Feature used in order to access members specific methods.
+ *
+ * See local members specific methods' documentation for more details.
+ */
+const Feature CallChannel::FeatureCallMembers = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 1);
+
+/**
  * Feature used in order to access content specific methods.
  *
  * See media content specific methods' documentation for more details.
  */
-const Feature CallChannel::FeatureContents = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 1);
+const Feature CallChannel::FeatureContents = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 2);
 
 /**
  * Feature used in order to access local hold state info.
  *
  * See local hold state specific methods' documentation for more details.
  */
-const Feature CallChannel::FeatureLocalHoldState = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 2);
+const Feature CallChannel::FeatureLocalHoldState = Feature(QLatin1String(CallChannel::staticMetaObject.className()), 3);
 
 /**
  * Create a new CallChannel object.
@@ -434,6 +549,40 @@ QVariantMap CallChannel::callStateDetails() const
     }
 
     return mPriv->stateDetails;
+}
+
+Contacts CallChannel::remoteMembers() const
+{
+    if (!isReady(FeatureCallMembers)) {
+        warning() << "CallChannel::remoteMembers() used with FeatureCallMembers not ready";
+        return Contacts();
+    }
+
+    return mPriv->callMembersContacts.values().toSet();
+}
+
+CallMemberFlags CallChannel::remoteMemberFlags(const ContactPtr &member) const
+{
+    if (!isReady(FeatureCallMembers)) {
+        warning() << "CallChannel::remoteMemberFlags() used with FeatureCallMembers not ready";
+        return (CallMemberFlags) 0;
+    }
+
+    if (!member) {
+        return (CallMemberFlags) 0;
+    }
+
+    for (CallMemberMap::const_iterator i = mPriv->callMembers.constBegin();
+            i != mPriv->callMembers.constEnd(); ++i) {
+        uint handle = i.key();
+        CallMemberFlags sendingState = (CallMemberFlags) i.value();
+
+        if (handle == member->handle()[0]) {
+            return sendingState;
+        }
+    }
+
+    return (CallMemberFlags) 0;
 }
 
 /**
@@ -754,6 +903,124 @@ void CallChannel::onCallStateChanged(uint state, uint flags,
     if (oldFlags != flags) {
         emit callFlagsChanged((CallFlags) flags);
     }
+}
+
+void CallChannel::gotCallMembers(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "Properties::GetAll(Call) failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCallMembers,
+                false, reply.error());
+        watcher->deleteLater();
+        return;
+    }
+
+    debug() << "Got reply to Properties::GetAll(Call)";
+
+    QVariantMap props = reply.value();
+
+    HandleIdentifierMap ids = qdbus_cast<HandleIdentifierMap>(props[QLatin1String("MemberIdentifiers")]);
+    CallMemberMap callMembers = qdbus_cast<CallMemberMap>(props[QLatin1String("CallMembers")]);
+
+    mPriv->callMembersChangedQueue.enqueue(Private::CallMembersChangedInfo::create(
+                callMembers, ids, UIntList(), CallStateReason()));
+    mPriv->processCallMembersChanged();
+
+    watcher->deleteLater();
+}
+
+void CallChannel::gotCallMembersContacts(PendingOperation *op)
+{
+    PendingContacts *pc = qobject_cast<PendingContacts *>(op);
+
+    if (!pc->isValid()) {
+        warning().nospace() << "Getting contacts failed with " <<
+            pc->errorName() << ":" << pc->errorMessage() << ", ignoring";
+        mPriv->currentCallMembersChangedInfo.clear();
+        mPriv->processCallMembersChanged();
+        return;
+    }
+
+    QMap<uint, ContactPtr> removed;
+
+    for (ContactSendingStateMap::const_iterator i =
+                mPriv->currentCallMembersChangedInfo->updates.constBegin();
+            i != mPriv->currentCallMembersChangedInfo->updates.constEnd(); ++i) {
+        mPriv->callMembers.insert(i.key(), i.value());
+    }
+
+    foreach (const ContactPtr &contact, pc->contacts()) {
+        mPriv->callMembersContacts.insert(contact->handle()[0], contact);
+    }
+
+    foreach (uint handle, mPriv->currentCallMembersChangedInfo->removed) {
+        mPriv->callMembers.remove(handle);
+        if (isReady(FeatureCallMembers) && mPriv->callMembersContacts.contains(handle)) {
+            removed.insert(handle, mPriv->callMembersContacts[handle]);
+
+            // make sure we don't have updates for removed contacts
+            mPriv->currentCallMembersChangedInfo->updates.remove(handle);
+        }
+        mPriv->callMembersContacts.remove(handle);
+    }
+
+    foreach (uint handle, pc->invalidHandles()) {
+        mPriv->callMembers.remove(handle);
+        if (isReady(FeatureCallMembers) && mPriv->callMembersContacts.contains(handle)) {
+            removed.insert(handle, mPriv->callMembersContacts[handle]);
+
+            // make sure we don't have updates for invalid handles
+            mPriv->currentCallMembersChangedInfo->updates.remove(handle);
+        }
+        mPriv->callMembersContacts.remove(handle);
+    }
+
+    if (isReady(FeatureCallMembers)) {
+        QHash<ContactPtr, CallMemberFlags> remoteMemberFlags;
+        for (CallMemberMap::const_iterator i =
+                    mPriv->currentCallMembersChangedInfo->updates.constBegin();
+                i != mPriv->currentCallMembersChangedInfo->updates.constEnd(); ++i) {
+            uint handle = i.key();
+            CallMemberFlags flags = (CallMemberFlags) i.value();
+
+            Q_ASSERT(mPriv->callMembersContacts.contains(handle));
+            remoteMemberFlags.insert(mPriv->callMembersContacts[handle], flags);
+
+            mPriv->callMembers.insert(i.key(), i.value());
+        }
+
+        if (!remoteMemberFlags.isEmpty()) {
+            emit remoteMemberFlagsChanged(remoteMemberFlags,
+                    mPriv->currentCallMembersChangedInfo->reason);
+        }
+
+        if (!removed.isEmpty()) {
+            emit remoteMembersRemoved(removed.values().toSet(),
+                    mPriv->currentCallMembersChangedInfo->reason);
+        }
+    }
+
+    mPriv->currentCallMembersChangedInfo.clear();
+    mPriv->processCallMembersChanged();
+}
+
+void CallChannel::onCallMembersChanged(const CallMemberMap &updates,
+        const HandleIdentifierMap &identifiers,
+        const UIntList &removed,
+        const CallStateReason &reason)
+{
+    if (updates.isEmpty() && removed.isEmpty()) {
+        debug() << "Received Call::CallMembersChanged with 0 removals and updates, skipping it";
+        return;
+    }
+
+    debug() << "Received Call::CallMembersChanged with" << updates.size() <<
+        "updated and" << removed.size() << "removed";
+    mPriv->callMembersChangedQueue.enqueue(
+            Private::CallMembersChangedInfo::create(updates, identifiers, removed, reason));
+    mPriv->processCallMembersChanged();
 }
 
 void CallChannel::gotContents(QDBusPendingCallWatcher *watcher)
