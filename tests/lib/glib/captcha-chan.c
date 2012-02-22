@@ -37,6 +37,7 @@ struct _TpTestsCaptchaChannelPrivate {
     GHashTable *error_details;
 
     gboolean can_retry;
+    gboolean is_retrying;
 };
 
 static void
@@ -81,10 +82,13 @@ tp_tests_captcha_channel_set_property (GObject *object,
     const GValue *value,
     GParamSpec *pspec)
 {
-//  TpTestsCaptchaChannel *self = (TpTestsCaptchaChannel *) object;
+  TpTestsCaptchaChannel *self = (TpTestsCaptchaChannel *) object;
 
   switch (property_id)
     {
+      case PROP_RETRY:
+        self->priv->can_retry = g_value_get_boolean(value);
+        break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
         break;
@@ -127,7 +131,7 @@ constructor (GType type,
   TpTestsCaptchaChannel *self = TP_TESTS_CAPTCHA_CHANNEL (object);
 
   self->priv->status = TP_CAPTCHA_STATUS_LOCAL_PENDING;
-  self->priv->can_retry = FALSE;
+  self->priv->is_retrying = FALSE;
   self->priv->error_string = NULL;
   self->priv->error_details = tp_asv_new (NULL, NULL);
 
@@ -210,7 +214,7 @@ tp_tests_captcha_channel_class_init (TpTestsCaptchaChannelClass *klass)
       "can-retry-captcha", "CanRetryCaptcha",
       "Whether Captcha can be retried or not.",
       FALSE,
-      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_RETRY,
       param_spec);
 
@@ -409,6 +413,7 @@ captcha_auth_get_captchas (TpSvcChannelInterfaceCaptchaAuthentication *iface,
         /* Handler started trying again, change status back */
         set_status (self,
             TP_CAPTCHA_STATUS_LOCAL_PENDING, NULL, NULL);
+        self->priv->is_retrying = TRUE;
     }
 
     tp_svc_channel_interface_captcha_authentication_return_from_get_captchas (context,
@@ -458,8 +463,16 @@ captcha_auth_get_captcha_data (TpSvcChannelInterfaceCaptchaAuthentication *iface
 
     captcha = g_array_new (TRUE, FALSE, sizeof (guchar));
 
-    g_array_append_vals (captcha,
-        "This is a fake payload", 22);
+    if (self->priv->is_retrying)
+    {
+        g_array_append_vals (captcha,
+            "This is a reloaded payload", 26);
+    }
+    else
+    {
+        g_array_append_vals (captcha,
+            "This is a fake payload", 22);
+    }
 
     tp_svc_channel_interface_captcha_authentication_return_from_get_captcha_data (context,
         captcha);

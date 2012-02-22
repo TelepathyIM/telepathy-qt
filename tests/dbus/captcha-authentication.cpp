@@ -44,7 +44,7 @@ private Q_SLOTS:
 private:
     void testCheckRemoteConnectionsCommon();
 
-    void createCaptchaChannel();
+    void createCaptchaChannel(bool canRetry = false);
 
     TestConnHelper *mConn;
     TpTestsCaptchaChannel *mChanService;
@@ -56,7 +56,7 @@ void TestCaptchaAuthentication::onStatusChanged(Tp::CaptchaStatus status)
     mLoop->exit(0);
 }
 
-void TestCaptchaAuthentication::createCaptchaChannel()
+void TestCaptchaAuthentication::createCaptchaChannel(bool canRetry)
 {
     mChan.reset();
     mLoop->processEvents();
@@ -70,6 +70,7 @@ void TestCaptchaAuthentication::createCaptchaChannel()
             "connection", mConn->service(),
             "requested", FALSE,
             "object-path", chanPath.toLatin1().constData(),
+            "can-retry-captcha", canRetry,
             NULL));
 
     /* Create client-side tube channel object */
