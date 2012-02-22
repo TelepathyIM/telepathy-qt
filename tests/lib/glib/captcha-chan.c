@@ -487,8 +487,6 @@ captcha_auth_cancel_captcha (TpSvcChannelInterfaceCaptchaAuthentication *iface,
                              DBusGMethodInvocation *context)
 {
     TpTestsCaptchaChannel *self = (TpTestsCaptchaChannel *) iface;
-    TpConnectionStatusReason status_reason =
-        TP_CONNECTION_STATUS_REASON_NONE_SPECIFIED;
     const gchar *error = NULL;
     GError *gerror = NULL;
     GHashTable *error_details = NULL;
@@ -517,19 +515,12 @@ captcha_auth_cancel_captcha (TpSvcChannelInterfaceCaptchaAuthentication *iface,
         g_warning ("Unknown cancel reason");
     }
 
-    if (reason == TP_CAPTCHA_CANCEL_REASON_USER_CANCELLED)
-        status_reason = TP_CONNECTION_STATUS_REASON_REQUESTED;
-
     error_details = tp_asv_new (
         "debug-message", G_TYPE_STRING, debug_message,
         NULL);
 
     set_status (self, TP_CAPTCHA_STATUS_FAILED,
         error, error_details);
-
-    tp_base_connection_disconnect_with_dbus_error (
-        tp_base_channel_get_connection (TP_BASE_CHANNEL (iface)),
-        error, error_details, status_reason);
 
     g_hash_table_unref (error_details);
 
