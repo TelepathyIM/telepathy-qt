@@ -71,7 +71,6 @@ public:
     static const Feature FeatureLocalHoldState;
 
     // TODO: FeatureCallMembers
-    // TODO: add helpers to ensure/create call channel using Account
 
     static CallChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);

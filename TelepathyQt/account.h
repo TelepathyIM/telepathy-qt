@@ -220,6 +220,45 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
+    PendingChannelRequest *ensureAudioCall(
+            const QString &contactIdentifier,
+            const QString &initialAudioContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *ensureAudioCall(
+            const ContactPtr &contact,
+            const QString &initialAudioContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *ensureVideoCall(
+            const QString &contactIdentifier,
+            const QString &initialVideoContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *ensureVideoCall(
+            const ContactPtr &contact,
+            const QString &initialVideoContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *ensureAudioVideoCall(
+            const QString &contactIdentifier,
+            const QString &initialAudioContentName = QString(),
+            const QString &initialVideoContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *ensureAudioVideoCall(
+            const ContactPtr &contact,
+            const QString &initialAudioContentName = QString(),
+            const QString &initialVideoContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+
     PendingChannelRequest *ensureStreamedMediaCall(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
@@ -336,6 +375,33 @@ public:
 
     PendingChannel *ensureAndHandleTextChatroom(
             const QString &roomName,
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+
+    PendingChannel *ensureAndHandleAudioCall(
+            const QString &contactIdentifier,
+            const QString &initialAudioContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+    PendingChannel *ensureAndHandleAudioCall(
+            const ContactPtr &contact,
+            const QString &initialAudioContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+    PendingChannel *ensureAndHandleVideoCall(
+            const QString &contactIdentifier,
+            const QString &initialVideoContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+    PendingChannel *ensureAndHandleVideoCall(
+            const ContactPtr &contact,
+            const QString &initialVideoContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+    PendingChannel *ensureAndHandleAudioVideoCall(
+            const QString &contactIdentifier,
+            const QString &initialAudioContentName = QString(),
+            const QString &initialVideoContentName = QString(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime());
+    PendingChannel *ensureAndHandleAudioVideoCall(
+            const ContactPtr &contact,
+            const QString &initialAudioContentName = QString(),
+            const QString &initialVideoContentName = QString(),
             const QDateTime &userActionTime = QDateTime::currentDateTime());
 
     PendingChannel *ensureAndHandleStreamedMediaCall(
