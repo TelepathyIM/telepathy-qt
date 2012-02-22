@@ -58,7 +58,6 @@ public:
     };
     typedef QFlags<ChallengeType> ChallengeTypes;
 
-    explicit CaptchaAuthentication(const ChannelPtr &parent);
     virtual ~CaptchaAuthentication();
 
     bool canRetry() const;
@@ -86,6 +85,8 @@ private Q_SLOTS:
             const QStringList &invalidatedProperties);
 
 private:
+    explicit CaptchaAuthentication(const ChannelPtr &parent);
+
     friend class Channel;
     friend class PendingCaptchas;
 

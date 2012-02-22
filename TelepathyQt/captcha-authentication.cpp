@@ -159,21 +159,11 @@ CaptchaAuthentication::~CaptchaAuthentication()
  */
 bool CaptchaAuthentication::canRetry() const
 {
-    if (!mPriv->channel->isReady(Tp::Channel::FeatureCaptcha)) {
-        qWarning() << "CaptchaAuthenticationChannel::canRetry() used with FeatureCore not ready";
-        return false;
-    }
-
     return mPriv->canRetry;
 }
 
 Tp::CaptchaStatus CaptchaAuthentication::status() const
 {
-    if (!mPriv->channel->isReady(Tp::Channel::FeatureCaptcha)) {
-        qWarning() << "CaptchaAuthenticationChannel::canRetry() used with FeatureCore not ready";
-        return CaptchaStatusLocalPending;
-    }
-
     return mPriv->status;
 }
 
@@ -207,13 +197,6 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
 PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &preferredMimeTypes,
         ChallengeTypes preferredTypes)
 {
-    if (!mPriv->channel->isReady(Tp::Channel::FeatureCaptcha)) {
-        qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
-                "calling request";
-        return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
-                QLatin1String("Channel not ready"),
-                CaptchaAuthenticationPtr(this));
-    }
 
     // The captcha should be either LocalPending or TryAgain
     if (status() != CaptchaStatusLocalPending && status() != CaptchaStatusTryAgain) {
@@ -238,14 +221,6 @@ Tp::PendingOperation *CaptchaAuthentication::answer(uint id, const QString &resp
 
 Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &response)
 {
-    if (!mPriv->channel->isReady(Tp::Channel::FeatureCaptcha)) {
-        qWarning() << "CaptchaAuthenticationChannel::FeatureCore must be ready before "
-                "calling answer";
-        return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
-                QLatin1String("Channel not ready"),
-                CaptchaAuthenticationPtr(this));
-    }
-
     // The captcha should be LocalPending or TryAgain
     if (status() != CaptchaStatusLocalPending) {
         qWarning() << "Status must be local pending";
