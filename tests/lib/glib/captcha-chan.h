@@ -50,12 +50,11 @@ GType tp_tests_captcha_channel_get_type (void);
 
 struct _TpTestsCaptchaChannelClass {
     TpBaseChannelClass parent_class;
-    TpDBusPropertiesMixinClass properties_class;
 };
 
 struct _TpTestsCaptchaChannel {
     TpBaseChannel parent;
-    TpMessageMixin text;
+
     TpTestsCaptchaChannelPrivate *priv;
 };
 

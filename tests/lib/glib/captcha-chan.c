@@ -97,9 +97,9 @@ G_DEFINE_TYPE_WITH_CODE (TpTestsCaptchaChannel,
     tp_tests_captcha_channel,
     TP_TYPE_BASE_CHANNEL,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_TYPE_SERVER_AUTHENTICATION,
-      captcha_iface_init);
-    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION,
       NULL);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION,
+      captcha_iface_init);
     )
 
 /* type definition stuff */
@@ -128,6 +128,8 @@ constructor (GType type,
 
   self->priv->status = TP_CAPTCHA_STATUS_LOCAL_PENDING;
   self->priv->can_retry = FALSE;
+  self->priv->error_string = NULL;
+  self->priv->error_details = tp_asv_new (NULL, NULL);
 
   tp_base_channel_register (TP_BASE_CHANNEL (self));
 
@@ -175,29 +177,15 @@ tp_tests_captcha_channel_class_init (TpTestsCaptchaChannelClass *klass)
   GParamSpec *param_spec;
 
   static TpDBusPropertiesMixinPropImpl server_authentication_props[] = {
-      { "AuthenticationMethod", (gpointer) "authentication-method", NULL },
+      { "AuthenticationMethod", "authentication-method", NULL },
       { NULL, NULL, NULL }
   };
 
   static TpDBusPropertiesMixinPropImpl captcha_authentication_props[] = {
-      { "CanRetryCaptcha", (gpointer) "can-retry-captcha", NULL },
-      { "CaptchaStatus", (gpointer) "captcha-status", NULL },
-      { "CaptchaError", (gpointer) "captcha-error", NULL },
-      { "CaptchaErrorDetails", (gpointer) "captcha-error-details", NULL },
-      { NULL }
-  };
-
-  static TpDBusPropertiesMixinIfaceImpl prop_interfaces[] = {
-      { TP_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION,
-        tp_dbus_properties_mixin_getter_gobject_properties,
-        NULL,
-        server_authentication_props,
-      },
-      { TP_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION,
-        tp_dbus_properties_mixin_getter_gobject_properties,
-        NULL,
-        captcha_authentication_props,
-      },
+      { "CanRetryCaptcha", "can-retry-captcha", NULL },
+      { "CaptchaStatus", "captcha-status", NULL },
+      { "CaptchaError",  "captcha-error", NULL },
+      { "CaptchaErrorDetails", "captcha-error-details", NULL },
       { NULL }
   };
 
@@ -221,7 +209,7 @@ tp_tests_captcha_channel_class_init (TpTestsCaptchaChannelClass *klass)
   param_spec = g_param_spec_boolean (
       "can-retry-captcha", "CanRetryCaptcha",
       "Whether Captcha can be retried or not.",
-      TP_HASH_TYPE_SUPPORTED_SOCKET_MAP,
+      FALSE,
       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_RETRY,
       param_spec);
@@ -250,12 +238,18 @@ tp_tests_captcha_channel_class_init (TpTestsCaptchaChannelClass *klass)
   g_object_class_install_property (object_class, PROP_STATUS,
       param_spec);
 
+  tp_dbus_properties_mixin_implement_interface (object_class,
+      TP_IFACE_QUARK_CHANNEL_TYPE_SERVER_AUTHENTICATION,
+      tp_dbus_properties_mixin_getter_gobject_properties, NULL,
+      server_authentication_props);
+
+  tp_dbus_properties_mixin_implement_interface (object_class,
+      TP_IFACE_QUARK_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION,
+      tp_dbus_properties_mixin_getter_gobject_properties, NULL,
+      captcha_authentication_props);
+
   g_type_class_add_private (object_class,
       sizeof (TpTestsCaptchaChannelPrivate));
-
-  klass->properties_class.interfaces = prop_interfaces;
-  tp_dbus_properties_mixin_class_init (object_class,
-      G_STRUCT_OFFSET (TpTestsCaptchaChannelClass, properties_class));
 }
 
 static void
@@ -265,6 +259,7 @@ set_status (TpTestsCaptchaChannel *self,
                                  GHashTable *error_details)
 {
     GPtrArray *changed = g_ptr_array_new ();
+    GHashTable *realerrors = error_details == NULL ? tp_asv_new (NULL, NULL) : error_details;
 
     if (self->priv->status != status)
     {
@@ -279,11 +274,11 @@ set_status (TpTestsCaptchaChannel *self,
         g_ptr_array_add (changed, (gpointer) "CaptchaError");
     }
 
-    if (self->priv->error_details != error_details)
+    if (self->priv->error_details != realerrors)
     {
         if (self->priv->error_details != NULL)
             g_hash_table_unref (self->priv->error_details);
-        self->priv->error_details = error_details;
+        self->priv->error_details = realerrors;
         if (self->priv->error_details != NULL)
             g_hash_table_ref (self->priv->error_details);
         g_ptr_array_add (changed, (gpointer) "CaptchaErrorDetails");
