@@ -37,18 +37,20 @@ private Q_SLOTS:
 
     void testCreation();
     void testCaptchaSuccessful();
+    void testCaptchaRetry();
+    void testCaptchaCancel();
+    void testNoCaptcha();
 
     void cleanup();
     void cleanupTestCase();
 
 private:
-    void testCheckRemoteConnectionsCommon();
-
     void createCaptchaChannel(bool canRetry = false);
 
     TestConnHelper *mConn;
     TpTestsCaptchaChannel *mChanService;
     ChannelPtr mChan;
+    CaptchaAuthenticationPtr mCaptcha;
 };
 
 void TestCaptchaAuthentication::onStatusChanged(Tp::CaptchaStatus status)
@@ -75,6 +77,17 @@ void TestCaptchaAuthentication::createCaptchaChannel(bool canRetry)
 
     /* Create client-side tube channel object */
     mChan = Channel::create(mConn->client(), chanPath, QVariantMap());
+
+    QVERIFY(connect(mChan->becomeReady(Channel::FeatureCaptcha),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mChan->isReady(Channel::FeatureCaptcha), true);
+
+    mCaptcha = mChan->captchaAuthentication();
+
+    QCOMPARE(mCaptcha.isNull(), false);
 }
 
 void TestCaptchaAuthentication::initTestCase()
@@ -102,37 +115,18 @@ void TestCaptchaAuthentication::init()
 void TestCaptchaAuthentication::testCreation()
 {
     createCaptchaChannel();
-    QVERIFY(connect(mChan->becomeReady(Channel::FeatureCaptcha),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mChan->isReady(Channel::FeatureCaptcha), true);
-
-    CaptchaAuthenticationPtr captcha = mChan->captchaAuthentication();
-
-    QCOMPARE(captcha.isNull(), false);
-    QCOMPARE(captcha->status(), Tp::CaptchaStatusLocalPending);
-    QCOMPARE(captcha->canRetry(), false);
-    QVERIFY(captcha->lastError().isEmpty());
-    QVERIFY(captcha->lastErrorDetails().allDetails().isEmpty());
+    QCOMPARE(mCaptcha->status(), Tp::CaptchaStatusLocalPending);
+    QCOMPARE(mCaptcha->canRetry(), false);
+    QVERIFY(mCaptcha->lastError().isEmpty());
+    QVERIFY(mCaptcha->lastErrorDetails().allDetails().isEmpty());
 }
 
 void TestCaptchaAuthentication::testCaptchaSuccessful()
 {
     createCaptchaChannel();
-    QVERIFY(connect(mChan->becomeReady(Channel::FeatureCaptcha),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mChan->isReady(Channel::FeatureCaptcha), true);
-
-    CaptchaAuthenticationPtr captcha = mChan->captchaAuthentication();
-
-    QCOMPARE(captcha.isNull(), false);
-
-    PendingCaptchas *pendingCaptchas = captcha->requestCaptchas(QStringList() << QLatin1String("image/png"));
+    PendingCaptchas *pendingCaptchas = mCaptcha->requestCaptchas(QStringList() << QLatin1String("image/png"));
     QVERIFY(connect(pendingCaptchas,
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -149,12 +143,130 @@ void TestCaptchaAuthentication::testCaptchaSuccessful()
     QCOMPARE(captchaData.type(), CaptchaAuthentication::OCRChallenge);
     QCOMPARE((int)captchaData.id(), 42);
 
-    QVERIFY(connect(captcha->answer(42, QLatin1String("This is the right answer")),
+    QVERIFY(connect(mCaptcha->answer(42, QLatin1String("This is the right answer")),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(captcha->status(), CaptchaStatusSucceeded);
+    QCOMPARE(mCaptcha->status(), CaptchaStatusSucceeded);
+}
+
+void TestCaptchaAuthentication::testCaptchaRetry()
+{
+    createCaptchaChannel(true);
+
+    PendingCaptchas *pendingCaptchas = mCaptcha->requestCaptchas(QStringList() << QLatin1String("image/png"));
+    QVERIFY(connect(pendingCaptchas,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mCaptcha->answer(42, QLatin1String("What is this I don't even")),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mCaptcha->status(), CaptchaStatusTryAgain);
+
+    pendingCaptchas = mCaptcha->requestCaptchas(QStringList() << QLatin1String("image/png"));
+    QVERIFY(connect(pendingCaptchas,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(pendingCaptchas->requiresMultipleCaptchas(), false);
+    QCOMPARE(pendingCaptchas->captchaList().size(), 1);
+
+    Captcha captchaData = pendingCaptchas->captcha();
+
+    QCOMPARE(captchaData.mimeType(), QLatin1String("image/png"));
+    QCOMPARE(captchaData.label(), QLatin1String("Enter the text displayed"));
+    QCOMPARE(captchaData.data(), QByteArray("This is a reloaded payload"));
+    QCOMPARE(captchaData.type(), CaptchaAuthentication::OCRChallenge);
+    QCOMPARE((int)captchaData.id(), 42);
+
+    QVERIFY(connect(mCaptcha->answer(42, QLatin1String("This is the right answer")),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mCaptcha->status(), CaptchaStatusSucceeded);
+}
+
+void TestCaptchaAuthentication::testCaptchaCancel()
+{
+    createCaptchaChannel();
+
+    PendingCaptchas *pendingCaptchas = mCaptcha->requestCaptchas(QStringList() << QLatin1String("image/png"));
+    QVERIFY(connect(pendingCaptchas,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    // Check that the result is not still available
+    QCOMPARE(pendingCaptchas->captchaList().size(), 0);
+    QCOMPARE((int)pendingCaptchas->captcha().id(), 0);
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Cancel now
+    QVERIFY(connect(mCaptcha->cancel(CaptchaCancelReasonUserCancelled),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mCaptcha->status(), CaptchaStatusFailed);
+
+    // Now try performing random actions which should fail
+    QVERIFY(connect(mCaptcha->answer(42, QLatin1String("This is the right answer")),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mCaptcha->answer(CaptchaAnswers()),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mCaptcha->requestCaptchas(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+}
+
+void TestCaptchaAuthentication::testNoCaptcha()
+{
+    createCaptchaChannel();
+
+    PendingCaptchas *pendingCaptchas = mCaptcha->requestCaptchas(QStringList(), CaptchaAuthentication::AudioRecognitionChallenge);
+    QVERIFY(connect(pendingCaptchas,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    pendingCaptchas = mCaptcha->requestCaptchas(QStringList() << QLatin1String("nosuchtype"),
+        CaptchaAuthentication::SpeechRecognitionChallenge | CaptchaAuthentication::SpeechQuestionChallenge);
+    QVERIFY(connect(pendingCaptchas,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Get the qa one
+    pendingCaptchas = mCaptcha->requestCaptchas(QStringList(), CaptchaAuthentication::TextQuestionChallenge);
+    QVERIFY(connect(pendingCaptchas,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    Captcha data = pendingCaptchas->captcha();
+    Captcha data2(pendingCaptchas->captcha());
+
+    QCOMPARE(data.id(), pendingCaptchas->captcha().id());
+    QCOMPARE(data.id(), data2.id());
+
+    // Get the video one to fail utterly
+    pendingCaptchas = mCaptcha->requestCaptchas(QStringList(), CaptchaAuthentication::VideoRecognitionChallenge);
+    QVERIFY(connect(pendingCaptchas,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectFailure(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
 }
 
 void TestCaptchaAuthentication::cleanup()

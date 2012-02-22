@@ -375,6 +375,7 @@ captcha_auth_get_captchas (TpSvcChannelInterfaceCaptchaAuthentication *iface,
     GValueArray *info;
     static const gchar *mime_types_1[] = { "image/png", NULL };
     static const gchar *mime_types_2[] = { "lol/wut", NULL };
+    static const gchar *no_mime_types[] = { NULL };
 
     if (self->priv->status != TP_CAPTCHA_STATUS_LOCAL_PENDING &&
         self->priv->status != TP_CAPTCHA_STATUS_TRY_AGAIN)
@@ -389,7 +390,7 @@ captcha_auth_get_captchas (TpSvcChannelInterfaceCaptchaAuthentication *iface,
 
     /* Yes, g_ptr_array_new_full() could be used here, but use
      * these functions instead to support older GLibs */
-    infos = g_ptr_array_sized_new (2);
+    infos = g_ptr_array_sized_new (5);
     g_ptr_array_set_free_func (infos, (GDestroyNotify) g_value_array_free);
     info = tp_value_array_build (5,
         G_TYPE_UINT, 42,
@@ -403,6 +404,30 @@ captcha_auth_get_captchas (TpSvcChannelInterfaceCaptchaAuthentication *iface,
         G_TYPE_UINT, 76,
         G_TYPE_STRING, "picture_q",
         G_TYPE_STRING, "What in this picture?",
+        G_TYPE_UINT, 0,
+        G_TYPE_STRV, mime_types_2,
+        G_TYPE_INVALID);
+    g_ptr_array_add (infos, info);
+    info = tp_value_array_build (5,
+        G_TYPE_UINT, 15,
+        G_TYPE_STRING, "qa",
+        G_TYPE_STRING, "What is the answer?",
+        G_TYPE_UINT, 0,
+        G_TYPE_STRV, no_mime_types,
+        G_TYPE_INVALID);
+    g_ptr_array_add (infos, info);
+    info = tp_value_array_build (5,
+        G_TYPE_UINT, 51,
+        G_TYPE_STRING, "video_q",
+        G_TYPE_STRING, "Totallyfake",
+        G_TYPE_UINT, 0,
+        G_TYPE_STRV, no_mime_types,
+        G_TYPE_INVALID);
+    g_ptr_array_add (infos, info);
+    info = tp_value_array_build (5,
+        G_TYPE_UINT, 17,
+        G_TYPE_STRING, "video_recog",
+        G_TYPE_STRING, "Totallyfakeurgonnadie",
         G_TYPE_UINT, 0,
         G_TYPE_STRV, mime_types_2,
         G_TYPE_INVALID);
