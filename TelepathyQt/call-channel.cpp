@@ -491,10 +491,12 @@ CallChannel::~CallChannel()
 }
 
 /**
- * Return the current state of this call.
+ * Return the current high-level state of this call.
  *
- * \return The current state of this call.
- * \sa stateChanged()
+ * This function requires CallChannel::FeatureCallState to be enabled.
+ *
+ * \return The current high-level state of this call.
+ * \sa callStateChanged()
  */
 CallState CallChannel::callState() const
 {
@@ -507,10 +509,12 @@ CallState CallChannel::callState() const
 
 /**
  * Return the flags representing the status of this call as a whole, providing more specific
- * information than state().
+ * information than callState().
+ *
+ * This function requires CallChannel::FeatureCallState to be enabled.
  *
  * \return The flags representing the status of this call.
- * \sa stateChanged()
+ * \sa callFlagsChanged()
  */
 CallFlags CallChannel::callFlags() const
 {
@@ -522,10 +526,12 @@ CallFlags CallChannel::callFlags() const
 }
 
 /**
- * Return the reason for the last change to the state() and/or flags().
+ * Return the reason for the last change to the callState() and/or callFlags().
  *
- * \return The reason for the last change to the state() and/or flags().
- * \sa stateChanged()
+ * This function requires CallChannel::FeatureCallState to be enabled.
+ *
+ * \return The reason for the last change to the callState() and/or callFlags().
+ * \sa callStateChanged(), callFlagsChanged()
  */
 CallStateReason CallChannel::callStateReason() const
 {
@@ -537,10 +543,14 @@ CallStateReason CallChannel::callStateReason() const
 }
 
 /**
- * Return optional extensible details for the state(), flags() and/or stateReason().
+ * Return optional extensible details for the callState(),
+ * callFlags() and/or callStateReason().
  *
- * \return The optional extensible details for the state(), flags() and/or stateReason().
- * \sa stateChanged()
+ * This function requires CallChannel::FeatureCallState to be enabled.
+ *
+ * \return The optional extensible details for the callState(),
+ * callFlags() and/or callStateReason().
+ * \sa callStateChanged(), callFlagsChanged()
  */
 QVariantMap CallChannel::callStateDetails() const
 {
@@ -551,6 +561,14 @@ QVariantMap CallChannel::callStateDetails() const
     return mPriv->stateDetails;
 }
 
+/**
+ * Return the remote members of this call.
+ *
+ * This function requires CallChannel::FeatureCallMembers to be enabled.
+ *
+ * \return The remote members of this call.
+ * \sa remoteMemberFlags(), remoteMemberFlagsChanged(), remoteMembersRemoved()
+ */
 Contacts CallChannel::remoteMembers() const
 {
     if (!isReady(FeatureCallMembers)) {
@@ -561,6 +579,15 @@ Contacts CallChannel::remoteMembers() const
     return mPriv->callMembersContacts.values().toSet();
 }
 
+/**
+ * Return the flags that describe the status of a given \a member of this call.
+ *
+ * This function requires CallChannel::FeatureCallMembers to be enabled.
+ *
+ * \param member The member of interest.
+ * \return The flags that describe the status of the requested member.
+ * \sa remoteMemberFlagsChanged(), remoteMembers(), remoteMembersRemoved()
+ */
 CallMemberFlags CallChannel::remoteMemberFlags(const ContactPtr &member) const
 {
     if (!isReady(FeatureCallMembers)) {
@@ -612,9 +639,9 @@ StreamTransportType CallChannel::initialTransportType() const
 }
 
 /**
- * Return whether an audio content has already been requested.
+ * Return whether an audio content was requested at the channel's creation time.
  *
- * \return \c true if an audio content has already been requested, \c false otherwise.
+ * \return \c true if an audio content was requested, \c false otherwise.
  */
 bool CallChannel::hasInitialAudio() const
 {
@@ -622,9 +649,9 @@ bool CallChannel::hasInitialAudio() const
 }
 
 /**
- * Return whether a video content has already been requested.
+ * Return whether a video content was requested at the channel's creation time.
  *
- * \return \c true if an video content has already been requested, \c false otherwise.
+ * \return \c true if an video content was requested, \c false otherwise.
  */
 bool CallChannel::hasInitialVideo() const
 {
@@ -652,11 +679,12 @@ QString CallChannel::initialVideoName() const
 }
 
 /**
- * Return whether a stream of a different content type can be added after the Channel has
+ * Return whether new contents can be added on the call after the Channel has
  * been requested.
  *
- * \return \c true if a stream of different content type can be added after the Channel has been
+ * \return \c true if a new content can be added after the Channel has been
  *         requested, \c false otherwise.
+ * \sa requestContent()
  */
 bool CallChannel::hasMutableContents() const
 {
@@ -665,23 +693,29 @@ bool CallChannel::hasMutableContents() const
 
 /**
  * Indicate that the local user has been alerted about the incoming call.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
  */
-PendingOperation* CallChannel::setRinging()
+PendingOperation *CallChannel::setRinging()
 {
     return new PendingVoid(mPriv->callInterface->SetRinging(), CallChannelPtr(this));
 }
 
 /**
- * Notifies the CM that the local user is already in a call, so this
+ * Notify the CM that the local user is already in a call, so this
  * call has been put in a call-waiting style queue.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
  */
-PendingOperation* CallChannel::setQueued()
+PendingOperation *CallChannel::setQueued()
 {
     return new PendingVoid(mPriv->callInterface->SetQueued(), CallChannelPtr(this));
 }
 
 /**
- * Accept an incoming call.
+ * Accept an incoming call, or begin calling the remote contact on an outgoing call.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
@@ -693,8 +727,6 @@ PendingOperation *CallChannel::accept()
 
 /**
  * Request that the call is ended.
- *
- * \deprecated Use hangupCall() instead.
  *
  * \param reason A generic hangup reason.
  * \param detailedReason A more specific reason for the call hangup, if one is
@@ -716,7 +748,7 @@ PendingOperation *CallChannel::hangup(CallStateChangeReason reason,
  * This methods requires CallChannel::FeatureContents to be enabled.
  *
  * \return The contents in this channel.
- * \sa contentAdded(), contentRemoved(), contentsForType(), requestContent()
+ * \sa contentAdded(), contentRemoved(), contentsForType(), contentByName(), requestContent()
  */
 CallContents CallChannel::contents() const
 {
@@ -735,7 +767,7 @@ CallContents CallChannel::contents() const
  *
  * \param type The interested type.
  * \return A list of media contents in this channel for the given type \a type.
- * \sa contentAdded(), contentRemoved(), contents(), requestContent()
+ * \sa contentAdded(), contentRemoved(), contents(), contentByName(), requestContent()
  */
 CallContents CallChannel::contentsForType(MediaStreamType type) const
 {
@@ -778,14 +810,14 @@ CallContentPtr CallChannel::contentByName(const QString &contentName) const
 }
 
 /**
- * Request that media content be established to exchange the given type \a type
+ * Request a new media content to be created to exchange the given type \a type
  * of media.
  *
  * This methods requires CallChannel::FeatureContents to be enabled.
  *
  * \return A PendingCallContent which will emit PendingCallContent::finished
  *         when the call has finished.
- * \sa contentAdded(), contents(), contentsForType()
+ * \sa contentAdded(), contents(), contentsForType(), contentByName()
  */
 PendingCallContent *CallChannel::requestContent(const QString &name,
         MediaStreamType type, MediaStreamDirection direction)
@@ -798,7 +830,7 @@ PendingCallContent *CallChannel::requestContent(const QString &name,
  *
  * This method requires CallChannel::FeatureHoldState to be enabled.
  *
- * \return The channel local hold state.
+ * \return The channel's local hold state.
  * \sa requestHold(), localHoldStateChanged()
  */
 LocalHoldState CallChannel::localHoldState() const
@@ -859,7 +891,7 @@ LocalHoldStateReason CallChannel::localHoldStateReason() const
  * #TP_QT_ERROR_NOT_IMPLEMENTED.
  *
  * \param hold A boolean indicating whether or not the channel should be on hold
- * \return A %PendingOperation, which will emit PendingOperation::finished
+ * \return A PendingOperation, which will emit PendingOperation::finished
  *         when the request finishes.
  * \sa localHoldState(), localHoldStateReason(), localHoldStateChanged()
  */
@@ -1218,6 +1250,42 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
 }
 
 /**
+ * \fn void CallChannel::callStateChanged(Tp::CallState state);
+ *
+ * This signal is emitted when the value of callState() changes.
+ *
+ * \param state The new state.
+ */
+
+/**
+ * \fn void CallChannel::callFlagsChanged(Tp::CallFlags flags);
+ *
+ * This signal is emitted when the value of callFlags() changes.
+ *
+ * \param flags The new flags.
+ */
+
+/**
+ * \fn void CallChannel::remoteMemberFlagsChanged(const QHash<Tp::ContactPtr, Tp::CallMemberFlags> &remoteMemberFlags, const Tp::CallStateReason &reason);
+ *
+ * This signal is emitted when the flags of members of the call change,
+ * or when new members are added in the call.
+ *
+ * \param remoteMemberFlags A maping of all the call members whose flags were
+ * changed to their new flags, and of all the new members of the call to their initial flags.
+ * \param reason The reason for this change.
+ */
+
+/**
+ * \fn void CallChannel::remoteMembersRemoved(const Tp::Contacts &remoteMembers, const Tp::CallStateReason &reason);
+ *
+ * This signal is emitted when remote members are removed from the call.
+ *
+ * \param remoteMembers The members that were removed.
+ * \param reason The reason for this removal.
+ */
+
+/**
  * \fn void CallChannel::contentAdded(const Tp::CallContentPtr &content);
  *
  * This signal is emitted when a media content is added to this channel.
@@ -1234,15 +1302,6 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
  * \param content The media content that was removed.
  * \param reason The reason for this removal.
  * \sa contents(), contentsForType()
- */
-
-/**
- * \fn void CallChannel::stateChanged(Tp::CallState &state);
- *
- * This signal is emitted when the value of state(), flags(), stateReason() or stateDetails()
- * changes.
- *
- * \param state The new state.
  */
 
 /**
