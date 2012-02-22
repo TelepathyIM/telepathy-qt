@@ -103,6 +103,7 @@ public:
     // FeatureContents
     CallContents contents() const;
     CallContents contentsForType(MediaStreamType type) const;
+    CallContentPtr contentByName(const QString &contentName) const;
     PendingCallContent *requestContent(const QString &name,
             MediaStreamType type, MediaStreamDirection direction);
 

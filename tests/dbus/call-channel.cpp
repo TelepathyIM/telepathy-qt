@@ -346,6 +346,7 @@ void TestCallChannel::testOutgoingCall()
     QCOMPARE(content->name(), QString::fromLatin1("audio"));
     QCOMPARE(content->type(), Tp::MediaStreamTypeAudio);
     QCOMPARE(content->disposition(), Tp::CallContentDispositionInitial);
+    QVERIFY(mChan->contentByName(QLatin1String("audio")));
 
 /*
     QCOMPARE(mChan->groupContacts().size(), 2);

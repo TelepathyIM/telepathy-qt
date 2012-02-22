@@ -754,6 +754,30 @@ CallContents CallChannel::contentsForType(MediaStreamType type) const
 }
 
 /**
+ * Return the media content in this channel that has the specified \a name.
+ *
+ * This methods requires CallChannel::FeatureContents to be enabled.
+ *
+ * \param name The interested name.
+ * \return The media content in this channel that has the specified \a name.
+ * \sa contentAdded(), contentRemoved(), contents(), contentsForType(), requestContent()
+ */
+CallContentPtr CallChannel::contentByName(const QString &contentName) const
+{
+    if (!isReady(FeatureContents)) {
+        warning() << "CallChannel::contentByName() used with FeatureContents not ready";
+        return CallContentPtr();
+    }
+
+    foreach (const CallContentPtr &content, mPriv->contents) {
+        if (content->name() == contentName) {
+            return content;
+        }
+    }
+    return CallContentPtr();
+}
+
+/**
  * Request that media content be established to exchange the given type \a type
  * of media.
  *
