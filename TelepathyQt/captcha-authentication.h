@@ -45,7 +45,7 @@ class TP_QT_EXPORT CaptchaAuthentication : public Tp::Object
 
 public:
     enum ChallengeType {
-        UnknownChallenge = 0,
+        NoChallenge = 0,
         OCRChallenge = 1,
         AudioRecognitionChallenge = 2,
         PictureQuestionChallenge = 4,
@@ -54,7 +54,8 @@ public:
         SpeechQuestionChallenge = 32,
         SpeechRecognitionChallenge = 64,
         VideoQuestionChallenge = 128,
-        VideoRecognitionChallenge = 256
+        VideoRecognitionChallenge = 256,
+        UnknownChallenge = 32768
     };
     Q_DECLARE_FLAGS(ChallengeTypes, ChallengeType)
 
@@ -67,7 +68,7 @@ public:
     Connection::ErrorDetails lastErrorDetails() const;
 
     Tp::PendingCaptchas *requestCaptchas(const QStringList &preferredMimeTypes = QStringList(),
-            ChallengeTypes preferredTypes = ~ChallengeTypes(UnknownChallenge));
+            ChallengeTypes preferredTypes = ~ChallengeTypes(NoChallenge));
     Tp::PendingOperation *answer(uint id, const QString &answer);
     Tp::PendingOperation *answer(const Tp::CaptchaAnswers &response);
 
