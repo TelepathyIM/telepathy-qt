@@ -19,6 +19,8 @@ if(ENABLE_TP_GLIB_TESTS)
     set(tp_glib_tests_SRCS
         bug16307-conn.c
         bug16307-conn.h
+        captcha-chan.c
+        captcha-chan.h
         contacts-conn.c
         contacts-conn.h
         contacts-noroster-conn.c
