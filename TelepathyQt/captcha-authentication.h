@@ -56,7 +56,7 @@ public:
         VideoQuestionChallenge = 128,
         VideoRecognitionChallenge = 256
     };
-    typedef QFlags<ChallengeType> ChallengeTypes;
+    Q_DECLARE_FLAGS(ChallengeTypes, ChallengeType)
 
     virtual ~CaptchaAuthentication();
 

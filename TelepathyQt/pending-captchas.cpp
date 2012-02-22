@@ -191,9 +191,9 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
         QString mimeType;
         if (info.availableMIMETypes.isEmpty()) {
             // If it's one of the types which might not have a payload, go for it
-            CaptchaAuthentication::ChallengeTypes noPayloadChallenges =
-                    CaptchaAuthentication::TextQuestionChallenge &
-                    CaptchaAuthentication::UnknownChallenge;
+            CaptchaAuthentication::ChallengeTypes noPayloadChallenges(
+                    CaptchaAuthentication::TextQuestionChallenge |
+                    CaptchaAuthentication::UnknownChallenge);
             if (mPriv->stringToChallengeType(info.type) & noPayloadChallenges) {
                 // Ok, move on
             } else {
