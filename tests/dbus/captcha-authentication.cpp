@@ -126,6 +126,8 @@ void TestCaptchaAuthentication::testCaptchaSuccessful()
 {
     createCaptchaChannel();
 
+    QSignalSpy spy(mCaptcha.data(), SIGNAL(statusChanged(Tp::CaptchaStatus)));
+
     PendingCaptchas *pendingCaptchas = mCaptcha->requestCaptchas(QStringList() << QLatin1String("image/png"));
     QVERIFY(connect(pendingCaptchas,
                 SIGNAL(finished(Tp::PendingOperation *)),
@@ -148,12 +150,14 @@ void TestCaptchaAuthentication::testCaptchaSuccessful()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
+    QCOMPARE(spy.size(), 2);
     QCOMPARE(mCaptcha->status(), CaptchaStatusSucceeded);
 }
 
 void TestCaptchaAuthentication::testCaptchaRetry()
 {
     createCaptchaChannel(true);
+    QSignalSpy spy(mCaptcha.data(), SIGNAL(statusChanged(Tp::CaptchaStatus)));
 
     PendingCaptchas *pendingCaptchas = mCaptcha->requestCaptchas(QStringList() << QLatin1String("image/png"));
     QVERIFY(connect(pendingCaptchas,
@@ -191,6 +195,9 @@ void TestCaptchaAuthentication::testCaptchaRetry()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mCaptcha->status(), CaptchaStatusSucceeded);
+
+    // Check signals now
+    QCOMPARE(spy.size(), 5);
 }
 
 void TestCaptchaAuthentication::testCaptchaCancel()
