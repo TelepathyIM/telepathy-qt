@@ -28,9 +28,6 @@ public:
           mConn(0), mChanService(0)
     { }
 
-protected Q_SLOTS:
-    void onStatusChanged(Tp::CaptchaStatus status);
-
 private Q_SLOTS:
     void initTestCase();
     void init();
@@ -52,11 +49,6 @@ private:
     ChannelPtr mChan;
     CaptchaAuthenticationPtr mCaptcha;
 };
-
-void TestCaptchaAuthentication::onStatusChanged(Tp::CaptchaStatus status)
-{
-    mLoop->exit(0);
-}
 
 void TestCaptchaAuthentication::createCaptchaChannel(bool canRetry)
 {
@@ -143,7 +135,7 @@ void TestCaptchaAuthentication::testCaptchaSuccessful()
     QCOMPARE(captchaData.label(), QLatin1String("Enter the text displayed"));
     QCOMPARE(captchaData.data(), QByteArray("This is a fake payload"));
     QCOMPARE(captchaData.type(), CaptchaAuthentication::OCRChallenge);
-    QCOMPARE((int)captchaData.id(), 42);
+    QCOMPARE(captchaData.id(), (uint)42);
 
     QVERIFY(connect(mCaptcha->answer(42, QLatin1String("This is the right answer")),
                 SIGNAL(finished(Tp::PendingOperation *)),
@@ -187,7 +179,7 @@ void TestCaptchaAuthentication::testCaptchaRetry()
     QCOMPARE(captchaData.label(), QLatin1String("Enter the text displayed"));
     QCOMPARE(captchaData.data(), QByteArray("This is a reloaded payload"));
     QCOMPARE(captchaData.type(), CaptchaAuthentication::OCRChallenge);
-    QCOMPARE((int)captchaData.id(), 42);
+    QCOMPARE(captchaData.id(), (uint)42);
 
     QVERIFY(connect(mCaptcha->answer(42, QLatin1String("This is the right answer")),
                 SIGNAL(finished(Tp::PendingOperation *)),
@@ -210,7 +202,7 @@ void TestCaptchaAuthentication::testCaptchaCancel()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     // Check that the result is not still available
     QCOMPARE(pendingCaptchas->captchaList().size(), 0);
-    QCOMPARE((int)pendingCaptchas->captcha().id(), 0);
+    QCOMPARE(pendingCaptchas->captcha().id(), (uint)0);
     QCOMPARE(mLoop->exec(), 0);
 
     // Cancel now
