@@ -167,32 +167,26 @@ void CaptchaAuthentication::Private::extractCaptchaAuthenticationProperties(cons
 }
 
 /**
- * \class CaptchaAuthenticationChannel
+ * \class CaptchaAuthentication
  * \ingroup clientchannel
- * \headerfile TelepathyQt/CaptchaAuthentication-channel.h <TelepathyQt/CaptchaAuthenticationChannel>
+ * \headerfile TelepathyQt/captcha-authentication.h <TelepathyQt/CaptchaAuthenticationChannel>
  *
- * \brief The CaptchaAuthenticationChannel class is a base class for all CaptchaAuthentication types.
+ * \brief The CaptchaAuthentication class exposes CaptchaAuthentication's features for channels implementing it.
  *
- * A CaptchaAuthentication is a mechanism for arbitrary data transfer between two or more IM users,
- * used to allow applications on the users' systems to communicate without having
- * to establish network connections themselves.
+ * A ServerAuthentication channel can implement a CaptchaAuthentication interface: this class exposes all the features
+ * this interface provides in a high-level fashion. It is a mechanism for retrieving a captcha challenge from
+ * a connection manager and answering it.
  *
- * Note that CaptchaAuthenticationChannel should never be instantiated directly, instead one of its
- * subclasses (e.g. IncomingStreamCaptchaAuthenticationChannel or OutgoingStreamCaptchaAuthenticationChannel) should be used.
+ * This class is meant to be used just during authentication phase. It is useful just for platform-level handlers
+ * which are meant to handle authentication - if you are implementing a client which is meant to live in a
+ * Telepathy-aware platform, you probably won't need to handle this unless you have very special needs.
+ *
+ * Note that CaptchaAuthentication should never be instantiated directly, instead the accessor method from Channel
+ * (Channel::captchaAuthentication) should be used.
  *
  * See \ref async_model, \ref shared_ptr
  */
 
-/**
- * Construct a new CaptchaAuthenticationChannel object.
- *
- * \param connection Connection owning this channel, and specifying the
- *                   service.
- * \param objectPath The channel object path.
- * \param immutableProperties The channel immutable properties.
- * \param coreFeature The core feature of the channel type, if any. The corresponding introspectable should
- *                    depend on CaptchaAuthenticationChannel::FeatureCore.
- */
 CaptchaAuthentication::CaptchaAuthentication(const ChannelPtr &channel)
     : Object(),
       mPriv(new Private(this))
@@ -209,31 +203,49 @@ CaptchaAuthentication::~CaptchaAuthentication()
 }
 
 /**
- * Return the parameters associated with this CaptchaAuthentication, if any.
+ * Return whether this channel supports updating its captchas or not.
  *
- * The parameters are populated when an outgoing CaptchaAuthentication is offered, but they are most useful in the
- * receiving end, where the parameters passed to the offer can be extracted for the CaptchaAuthentication's entire
- * lifetime to bootstrap legacy protocols. All parameters are passed unchanged.
+ * Some protocols allow their captchas to be reloaded providing new data to the user; for example, in case
+ * the image provided is not easily readable. This function checks if this instance supports such a feature.
  *
- * This method requires CaptchaAuthenticationChannel::FeatureCore to be ready.
+ * Note: In case this function returns \c true, requestCaptchas can be called safely after a failed answer attempt.
  *
- * \return The parameters as QVariantMap.
+ * \return Whether a new captcha can be fetched from this channel or not
  */
 bool CaptchaAuthentication::canRetry() const
 {
     return mPriv->canRetry;
 }
 
+/**
+ * Return the current status of the captcha
+ *
+ * \return The current status of the captcha
+ */
 Tp::CaptchaStatus CaptchaAuthentication::status() const
 {
     return mPriv->status;
 }
 
+/**
+ * Return the code of the last error happened on the interface.
+ *
+ * \return An error code describing the last error occurred.
+ *
+ * \sa lastErrorDetails
+ */
 QString CaptchaAuthentication::lastError() const
 {
     return mPriv->error;
 }
 
+/**
+ * Return the details of the last error happened on the interface.
+ *
+ * \return Further details describing the last error occurred.
+ *
+ * \sa lastError
+ */
 Connection::ErrorDetails CaptchaAuthentication::lastErrorDetails() const
 {
     return Connection::ErrorDetails(mPriv->errorDetails);
@@ -256,6 +268,36 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
     }
 }
 
+/**
+ * Request captcha challenges from the connection manager.
+ *
+ * Even if most protocols usually provide a single captcha challenge (OCR), for a variety
+ * of reasons some of them could provide a number of different challenge types, requiring
+ * one or more of them to be answered.
+ *
+ * This method initiates a request to the connection manager for obtaining the most compatible captcha
+ * challenges available. It allows to supply a number of supported mimetypes and types, so that the
+ * request will fail if the CM is unable to provide a challenge compatible with what the handler supports,
+ * or will provide the best one available otherwise.
+ *
+ * \note All the challenges returned by this request \b MUST be answered in order for the authentication
+ *       to succeed.
+ *
+ * \note If the CM supports retrying the captcha, this function can also be used to load a new set of captchas.
+ *       In general, if canRetry returns true, one can expect this function to always return a different set
+ *       of challenges which invalidates any other obtained previously.
+ *
+ * \param preferredMimeTypes A list of mimetypes supported by the handler, or an empty list if every
+ *                           mimetype can be supported.
+ * \param preferredTypes A list of challenge types supported by the handler.
+ *
+ * \return A PendingCaptchas operation returning when the request has been completed and all the payloads
+           have been downloaded.
+ *
+ * \sa canRetry
+ * \sa cancel
+ * \sa answer
+ */
 PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &preferredMimeTypes,
         ChallengeTypes preferredTypes)
 {
@@ -274,6 +316,23 @@ PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &prefe
             CaptchaAuthenticationPtr(this));
 }
 
+/**
+ * Overloaded function. Convenience method when just a single captcha requires to be answered
+ *
+ * \note You need to answer only the last set of challenges returned, in case requestCaptchas
+ *       was invoked multiple times.
+ *
+ * \note If this operation succeeds, the channel will be closed right after.
+ *
+ * \param id The id of the challenge being answered.
+ * \param response The answer of this challenge.
+ *
+ * \return A PendingOperation returning the outcome of the answer procedure.
+ *         Upon success, the operation will complete once the channel is closed.
+ *
+ * \sa requestCaptchas
+ * \sa answer
+ */
 Tp::PendingOperation *CaptchaAuthentication::answer(uint id, const QString &response)
 {
     QMap<uint, QString> answers;
@@ -281,6 +340,29 @@ Tp::PendingOperation *CaptchaAuthentication::answer(uint id, const QString &resp
     return answer(answers);
 }
 
+/**
+ * Answer a set of challenges.
+ *
+ * Challenges obtained with requestCaptchas should be answered using this method. Note that
+ * \b EVERY challenge returned by the last invocation of requestCaptchas \b MUST be answered
+ * in order for the operation to succeed.
+ *
+ * Usually, most protocols will require just a single challenge to be answered: if that is the
+ * case, you can use the convenience overload.
+ *
+ * \note You need to answer only the last set of challenges returned, in case requestCaptchas
+ *       was invoked multiple times.
+ *
+ * \note If this operation succeeds, the channel will be closed right after.
+ *
+ * \param response A set of answers mapped by their id to the challenges obtained previously
+ *
+ * \return A PendingOperation returning the outcome of the answer procedure.
+ *         Upon success, the operation will complete once the channel is closed.
+ *
+ * \sa requestCaptchas
+ * \sa answer
+ */
 Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &response)
 {
     // The captcha should be LocalPending or TryAgain
@@ -297,6 +379,24 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
     return new PendingCaptchaAnswer(pv, CaptchaAuthenticationPtr(this));
 }
 
+/**
+ * Cancel the current challenge.
+ *
+ * \note If this operation succeeds, the channel will be closed right after.
+ *
+ * \note This function has \b NOT the same semantics as retry. The status of the CaptchaAuthentication
+ *       will change to Failed even if the channel supports retrying. This function should be called
+ *       only if the user refuses to answer any challenge. Instead, if the user wishes to retry,
+ *       you should just call requestCaptchas one more time.
+ *
+ * \param reason The reason why the challenge has been cancelled.
+ * \param message A message detailing the cancel reason.
+ *
+ * \return A PendingOperation returning the outcome of the answer procedure.
+ *         Upon success, the operation will complete once the channel is closed.
+ *
+ * \sa requestCaptchas
+ */
 Tp::PendingOperation *CaptchaAuthentication::cancel(CaptchaCancelReason reason,
         const QString &message)
 {
