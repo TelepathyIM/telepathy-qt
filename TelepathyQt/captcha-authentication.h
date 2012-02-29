@@ -35,6 +35,7 @@
 namespace Tp
 {
 
+class PendingCaptchaAnswer;
 class PendingCaptchas;
 class ChannelFuture;
 
@@ -89,6 +90,7 @@ private:
     explicit CaptchaAuthentication(const ChannelPtr &parent);
 
     friend class Channel;
+    friend class PendingCaptchaAnswer;
     friend class PendingCaptchas;
 
     struct Private;

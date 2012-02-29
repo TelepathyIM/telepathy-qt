@@ -22,11 +22,12 @@
 #include <TelepathyQt/CaptchaAuthentication>
 #include <TelepathyQt/captcha-authentication-internal.h>
 
+#include "TelepathyQt/debug-internal.h"
+
 #include "TelepathyQt/_gen/captcha-authentication.moc.hpp"
 #include "TelepathyQt/_gen/captcha-authentication-internal.moc.hpp"
 
 #include <TelepathyQt/Captcha>
-#include <TelepathyQt/Debug>
 #include <TelepathyQt/PendingCaptchas>
 #include <TelepathyQt/PendingFailure>
 #include <TelepathyQt/PendingVariantMap>
@@ -84,11 +85,23 @@ void PendingCaptchaAnswer::onAnswerFinished(Tp::PendingOperation *op)
 void PendingCaptchaAnswer::onCaptchaStatusChanged(Tp::CaptchaStatus status)
 {
     if (status == CaptchaStatusSucceeded) {
-        // yeah
-        setFinished();
+        // Perfect. Close the channel now.
+        connect(mPriv->captcha->mPriv->channel->requestClose(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
     } else if (status == CaptchaStatusFailed || status == CaptchaStatusTryAgain) {
         setFinishedWithError(QDBusError());
     }
+}
+
+void PendingCaptchaAnswer::onRequestCloseFinished(Tp::PendingOperation *operation)
+{
+    if (operation->isError()) {
+        // We cannot really fail just because the channel didn't close. Throw a warning instead.
+        warning() << "Could not close the channel after a successful captcha answer!!" << operation->errorMessage();
+    }
+
+    setFinished();
 }
 
 // --

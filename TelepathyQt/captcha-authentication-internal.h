@@ -43,6 +43,7 @@ public:
 private Q_SLOTS:
     void onCaptchaStatusChanged(Tp::CaptchaStatus status);
     void onAnswerFinished(Tp::PendingOperation *operation);
+    void onRequestCloseFinished(Tp::PendingOperation *operation);
 
 private:
     struct Private;
