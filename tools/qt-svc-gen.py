@@ -81,9 +81,9 @@ class Generator(object):
                 self.h('#include %s\n' % include)
 
         self.h("""\
+#include <TelepathyQt/AbstractAdaptor>
+#include <TelepathyQt/Global>
 #include <TelepathyQt/Types>
-#include <TelepathyQt/Service/AbstractAdaptor>
-#include <TelepathyQt/Service/Global>
 
 #include <QObject>
 #include <QtDBus>
@@ -150,7 +150,7 @@ namespace %s
  *
  * Adaptor class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s".
  */
-class %(visibility)s %(name)s : public Tp::Service::AbstractAdaptor
+class %(visibility)s %(name)s : public Tp::AbstractAdaptor
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "%(dbusname)s")
@@ -183,7 +183,7 @@ public:
 
         self.b("""
 %(name)s::%(name)s(const QDBusConnection& bus, QObject* adaptee, QObject* parent)
-    : Tp::Service::AbstractAdaptor(bus, adaptee, parent)
+    : Tp::AbstractAdaptor(bus, adaptee, parent)
 {
 """ % {'name': name})
 
@@ -385,7 +385,7 @@ Q_SIGNALS: // SIGNALS
                 outargtypes = ''
 
             self.h("""\
-    typedef MethodInvocationContextPtr< %(outargtypes)s > %(name)sContextPtr;
+    typedef Tp::MethodInvocationContextPtr< %(outargtypes)s > %(name)sContextPtr;
 """ % {'name': name,
        'outargtypes': outargtypes,
        })
@@ -499,7 +499,7 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
         invokemethodargs = ', '.join(['Q_ARG(' + argbindings[i].val + ', ' + argnames[i] + ')' for i in inargs])
 
         inparams = [argbindings[i].val for i in inargs]
-        inparams.append("%s::%sContextPtr" % (ifacename, name))
+        inparams.append("%s::%s::%sContextPtr" % (self.namespace, ifacename, name))
         normalizedinparams = ','.join(inparams)
 
         self.h("""\
@@ -534,7 +534,7 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
     }
 
     %(name)sContextPtr ctx = %(name)sContextPtr(
-            new MethodInvocationContext< %(outargtypes)s >(dbusConnection(), dbusMessage));
+            new Tp::MethodInvocationContext< %(outargtypes)s >(dbusConnection(), dbusMessage));
 """ % {'name': name,
        'outargtypes': outargtypes,
        })
@@ -543,8 +543,9 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
             self.b("""\
     QMetaObject::invokeMethod(adaptee(), "%(lname)s",
         %(invokemethodargs)s,
-        Q_ARG(%(ifacename)s::%(name)sContextPtr, ctx));
-""" % {'ifacename': ifacename,
+        Q_ARG(%(namespace)s::%(ifacename)s::%(name)sContextPtr, ctx));
+""" % {'namespace': self.namespace,
+       'ifacename': ifacename,
        'name': name,
        'lname': (name[0].lower() + name[1:]),
        'invokemethodargs': invokemethodargs,
@@ -552,8 +553,9 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
         else:
             self.b("""\
     QMetaObject::invokeMethod(adaptee(), "%(lname)s",
-        Q_ARG(%(ifacename)s::%(name)sContextPtr, ctx));
-""" % {'ifacename': ifacename,
+        Q_ARG(%(namespace)s::%(ifacename)s::%(name)sContextPtr, ctx));
+""" % {'namespace': self.namespace,
+       'ifacename': ifacename,
        'name': name,
        'lname': (name[0].lower() + name[1:]),
        })

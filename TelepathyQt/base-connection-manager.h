@@ -20,45 +20,35 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt_Service_abstract_adaptor_h_HEADER_GUARD_
-#define _TelepathyQt_Service_abstract_adaptor_h_HEADER_GUARD_
+#ifndef _TelepathyQt_base_connection_manager_h_HEADER_GUARD_
+#define _TelepathyQt_base_connection_manager_h_HEADER_GUARD_
 
-#ifndef IN_TP_QT_HEADER
-#error IN_TP_QT_HEADER
-#endif
-
-#include <TelepathyQt/Service/Global>
-
-#include <QObject>
-#include <QDBusAbstractAdaptor>
+#include <TelepathyQt/Global>
 
 class QDBusConnection;
+class QString;
 
 namespace Tp
 {
-namespace Service
-{
 
-class TP_QT_SVC_EXPORT AbstractAdaptor : public QDBusAbstractAdaptor
+class TP_QT_EXPORT BaseConnectionManager
 {
-    Q_OBJECT
-
 public:
-    AbstractAdaptor(const QDBusConnection &connection, QObject *adaptee, QObject *parent);
-    ~AbstractAdaptor();
+    BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &cmName);
+    ~BaseConnectionManager();
 
     QDBusConnection dbusConnection() const;
 
-    void setAdaptee(QObject *adaptee);
-    QObject *adaptee() const;
+    bool registerObject();
 
 private:
-    struct Private;
-    friend struct Private;
+    class Adaptee;
+    friend class Adaptee;
+    class Private;
+    friend class Private;
     Private *mPriv;
 };
 
-}
 }
 
 #endif

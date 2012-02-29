@@ -20,38 +20,55 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt_Service_base_connection_manager_h_HEADER_GUARD_
-#define _TelepathyQt_Service_base_connection_manager_h_HEADER_GUARD_
+#include <TelepathyQt/AbstractAdaptor>
 
-#include <TelepathyQt/Service/Global>
+#include "TelepathyQt/_gen/abstract-adaptor.moc.hpp"
 
-class QDBusConnection;
-class QString;
+#include "TelepathyQt/debug-internal.h"
+
+#include <QDBusConnection>
 
 namespace Tp
 {
-namespace Service
+
+struct TP_QT_NO_EXPORT AbstractAdaptor::Private
 {
+    Private(const QDBusConnection &dbusConnection, QObject *adaptee)
+        : dbusConnection(dbusConnection),
+          adaptee(adaptee)
+    {
+    }
 
-class TP_QT_SVC_EXPORT BaseConnectionManager
-{
-public:
-    BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &cmName);
-    ~BaseConnectionManager();
-
-    QDBusConnection dbusConnection() const;
-
-    bool registerObject();
-
-private:
-    class Adaptee;
-    friend class Adaptee;
-    class Private;
-    friend class Private;
-    Private *mPriv;
+    QDBusConnection dbusConnection;
+    QObject *adaptee;
 };
 
-}
+AbstractAdaptor::AbstractAdaptor(const QDBusConnection &dbusConnection,
+        QObject *adaptee, QObject *parent)
+    : QDBusAbstractAdaptor(parent),
+      mPriv(new Private(dbusConnection, adaptee))
+{
+    setAutoRelaySignals(false);
 }
 
-#endif
+AbstractAdaptor::~AbstractAdaptor()
+{
+    delete mPriv;
+}
+
+QDBusConnection AbstractAdaptor::dbusConnection() const
+{
+    return mPriv->dbusConnection;
+}
+
+void AbstractAdaptor::setAdaptee(QObject *adaptee)
+{
+    mPriv->adaptee = adaptee;
+}
+
+QObject *AbstractAdaptor::adaptee() const
+{
+    return mPriv->adaptee;
+}
+
+}

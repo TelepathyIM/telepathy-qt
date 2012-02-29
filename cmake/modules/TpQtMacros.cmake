@@ -281,11 +281,11 @@ function(tpqt_service_generator spec group pretty_include namespace)
             --typesnamespace=Tp
             --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
             --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
-            --realinclude=TelepathyQt/Service/_gen/svc-${spec}.h
-            --mocinclude=TelepathyQt/Service/_gen/svc-${spec}.moc.hpp
-            --specxml=${CMAKE_CURRENT_BINARY_DIR}/../_gen/stable-spec.xml
-            --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/../_gen/spec-${spec}.xml
-            --visibility=TP_QT_SVC_EXPORT
+            --realinclude=TelepathyQt/_gen/svc-${spec}.h
+            --mocinclude=TelepathyQt/_gen/svc-${spec}.moc.hpp
+            --specxml=${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
+            --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
+            --visibility=TP_QT_EXPORT
             ${service_generator_args})
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
         COMMAND ${PYTHON_EXECUTABLE}

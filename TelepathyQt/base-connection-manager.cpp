@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt/Service/BaseConnectionManager>
-#include "TelepathyQt/Service/base-connection-manager-internal.h"
+#include <TelepathyQt/BaseConnectionManager>
+#include "TelepathyQt/base-connection-manager-internal.h"
 
-#include "TelepathyQt/Service/_gen/base-connection-manager-internal.moc.hpp"
+#include "TelepathyQt/_gen/base-connection-manager-internal.moc.hpp"
 
 #include "TelepathyQt/debug-internal.h"
 
@@ -35,10 +35,8 @@
 
 namespace Tp
 {
-namespace Service
-{
 
-struct TP_QT_SVC_NO_EXPORT BaseConnectionManager::Private
+struct TP_QT_NO_EXPORT BaseConnectionManager::Private
 {
     Private(BaseConnectionManager *parent, const QDBusConnection &dbusConnection,
             const QString &cmName)
@@ -63,7 +61,7 @@ BaseConnectionManager::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
     : QObject(),
       mBaseCM(baseCM)
 {
-    mAdaptor = new ConnectionManagerAdaptor(dbusConnection, this, this);
+    mAdaptor = new Service::ConnectionManagerAdaptor(dbusConnection, this, this);
 }
 
 BaseConnectionManager::Adaptee::~Adaptee()
@@ -81,14 +79,14 @@ ProtocolPropertiesMap BaseConnectionManager::Adaptee::protocols() const
 }
 
 void BaseConnectionManager::Adaptee::getParameters(const QString &protocol,
-        const ConnectionManagerAdaptor::GetParametersContextPtr &context)
+        const Tp::Service::ConnectionManagerAdaptor::GetParametersContextPtr &context)
 {
     qDebug() << __FUNCTION__ << "called";
     context->setFinished(ParamSpecList());
 }
 
 void BaseConnectionManager::Adaptee::listProtocols(
-        const ConnectionManagerAdaptor::ListProtocolsContextPtr &context)
+        const Tp::Service::ConnectionManagerAdaptor::ListProtocolsContextPtr &context)
 {
     qDebug() << __FUNCTION__ << "called";
     context->setFinished(QStringList());
@@ -96,7 +94,7 @@ void BaseConnectionManager::Adaptee::listProtocols(
 
 void BaseConnectionManager::Adaptee::requestConnection(const QString &protocol,
         const QVariantMap &params,
-        const ConnectionManagerAdaptor::RequestConnectionContextPtr &context)
+        const Tp::Service::ConnectionManagerAdaptor::RequestConnectionContextPtr &context)
 {
     // emit newConnection()
     qDebug() << __FUNCTION__ << "called";
@@ -149,5 +147,4 @@ bool BaseConnectionManager::registerObject()
     return true;
 }
 
-}
 }

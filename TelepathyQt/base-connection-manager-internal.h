@@ -20,12 +20,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "TelepathyQt/Service/_gen/svc-connection-manager.h"
+#include "TelepathyQt/_gen/svc-connection-manager.h"
 
+#include <TelepathyQt/Global>
 #include <TelepathyQt/MethodInvocationContext>
 #include <TelepathyQt/Types>
-
-#include <TelepathyQt/Service/Global>
 
 #include <QDBusObjectPath>
 #include <QObject>
@@ -34,10 +33,8 @@
 
 namespace Tp
 {
-namespace Service
-{
 
-class TP_QT_SVC_NO_EXPORT BaseConnectionManager::Adaptee : public QObject
+class TP_QT_NO_EXPORT BaseConnectionManager::Adaptee : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QStringList interfaces READ interfaces)
@@ -55,16 +52,15 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void getParameters(const QString &protocol,
-            const ConnectionManagerAdaptor::GetParametersContextPtr &context);
+            const Tp::Service::ConnectionManagerAdaptor::GetParametersContextPtr &context);
     void listProtocols(
-            const ConnectionManagerAdaptor::ListProtocolsContextPtr &context);
+            const Tp::Service::ConnectionManagerAdaptor::ListProtocolsContextPtr &context);
     void requestConnection(const QString &protocol, const QVariantMap &params,
-            const ConnectionManagerAdaptor::RequestConnectionContextPtr &context);
+            const Tp::Service::ConnectionManagerAdaptor::RequestConnectionContextPtr &context);
 
 public:
     BaseConnectionManager *mBaseCM;
-    ConnectionManagerAdaptor *mAdaptor;
+    Service::ConnectionManagerAdaptor *mAdaptor;
 };
 
-}
 }

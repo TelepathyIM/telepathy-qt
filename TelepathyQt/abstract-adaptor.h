@@ -20,27 +20,42 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt_Service_global_h_HEADER_GUARD_
-#define _TelepathyQt_Service_global_h_HEADER_GUARD_
+#ifndef _TelepathyQt_abstract_adaptor_h_HEADER_GUARD_
+#define _TelepathyQt_abstract_adaptor_h_HEADER_GUARD_
 
 #ifndef IN_TP_QT_HEADER
 #error IN_TP_QT_HEADER
 #endif
 
-#include <QtGlobal>
+#include <TelepathyQt/Global>
 
-#ifdef BUILDING_TP_QT_SERVICE
-#  define TP_QT_SVC_EXPORT Q_DECL_EXPORT
-#else
-#  define TP_QT_SVC_EXPORT Q_DECL_IMPORT
-#endif
+#include <QObject>
+#include <QDBusAbstractAdaptor>
 
-#if !defined(Q_OS_WIN) && defined(QT_VISIBILITY_AVAILABLE)
-#  define TP_QT_SVC_NO_EXPORT __attribute__((visibility("hidden")))
-#endif
+class QDBusConnection;
 
-#ifndef TP_QT_SVC_NO_EXPORT
-#  define TP_QT_SVC_NO_EXPORT
-#endif
+namespace Tp
+{
+
+class TP_QT_EXPORT AbstractAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+
+public:
+    AbstractAdaptor(const QDBusConnection &connection, QObject *adaptee, QObject *parent);
+    ~AbstractAdaptor();
+
+    QDBusConnection dbusConnection() const;
+
+    void setAdaptee(QObject *adaptee);
+    QObject *adaptee() const;
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+}
 
 #endif

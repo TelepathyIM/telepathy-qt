@@ -2,13 +2,12 @@
 #include <TelepathyQt/Debug>
 #include <TelepathyQt/Types>
 
-#include <TelepathyQt/Service/BaseConnectionManager>
+#include <TelepathyQt/BaseConnectionManager>
 
 #include <QDebug>
 #include <QtCore>
 
 using namespace Tp;
-using namespace Tp::Service;
 
 int main(int argc, char **argv)
 {
