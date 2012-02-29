@@ -104,6 +104,55 @@ void PendingCaptchaAnswer::onRequestCloseFinished(Tp::PendingOperation *operatio
     setFinished();
 }
 
+PendingCaptchaCancel::PendingCaptchaCancel(PendingVoid *cancelOperation,
+        const CaptchaAuthenticationPtr &object)
+    : PendingOperation(object),
+      mPriv(new Private(this))
+{
+    mPriv->captcha = object;
+
+    debug() << "Calling Captcha.Cancel";
+    if (cancelOperation->isFinished()) {
+        onCancelFinished(cancelOperation);
+    } else {
+        // Connect the pending void
+        connect(cancelOperation, SIGNAL(finished(Tp::PendingOperation*)),
+                this, SLOT(onCancelFinished(Tp::PendingOperation*)));
+    }
+}
+
+PendingCaptchaCancel::~PendingCaptchaCancel()
+{
+    delete mPriv;
+}
+
+void PendingCaptchaCancel::onCancelFinished(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        warning().nospace() << "Captcha.Cancel failed with " <<
+            op->errorName() << ": " << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    debug() << "Captcha.Cancel returned successfully";
+
+    // Perfect. Close the channel now.
+    connect(mPriv->captcha->mPriv->channel->requestClose(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
+}
+
+void PendingCaptchaCancel::onRequestCloseFinished(Tp::PendingOperation *operation)
+{
+    if (operation->isError()) {
+        // We cannot really fail just because the channel didn't close. Throw a warning instead.
+        warning() << "Could not close the channel after a successful captcha cancel!!" << operation->errorMessage();
+    }
+
+    setFinished();
+}
+
 // --
 
 CaptchaAuthentication::Private::Private(CaptchaAuthentication *parent)
@@ -251,10 +300,12 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
 Tp::PendingOperation *CaptchaAuthentication::cancel(CaptchaCancelReason reason,
         const QString &message)
 {
-    return new PendingVoid(
+    PendingVoid *pv = new PendingVoid(
             mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->CancelCaptcha(
                     reason, message),
             CaptchaAuthenticationPtr(this));
+
+    return new PendingCaptchaCancel(pv, CaptchaAuthenticationPtr(this));
 }
 
 } // Tp

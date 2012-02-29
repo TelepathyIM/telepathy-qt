@@ -36,6 +36,7 @@ namespace Tp
 {
 
 class PendingCaptchaAnswer;
+class PendingCaptchaCancel;
 class PendingCaptchas;
 class ChannelFuture;
 
@@ -91,6 +92,7 @@ private:
 
     friend class Channel;
     friend class PendingCaptchaAnswer;
+    friend class PendingCaptchaCancel;
     friend class PendingCaptchas;
 
     struct Private;

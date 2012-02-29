@@ -61,6 +61,36 @@ struct TP_QT_NO_EXPORT PendingCaptchaAnswer::Private
     CaptchaAuthenticationPtr captcha;
 };
 
+class TP_QT_NO_EXPORT PendingCaptchaCancel : public PendingOperation
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(PendingCaptchaCancel)
+
+public:
+    PendingCaptchaCancel(PendingVoid *cancelOperation,
+            const CaptchaAuthenticationPtr &object);
+    ~PendingCaptchaCancel();
+
+private Q_SLOTS:
+    void onCancelFinished(Tp::PendingOperation *operation);
+    void onRequestCloseFinished(Tp::PendingOperation *operation);
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+struct TP_QT_NO_EXPORT PendingCaptchaCancel::Private
+{
+    Private(PendingCaptchaCancel *parent) : parent(parent) {}
+
+    // Public object
+    PendingCaptchaCancel *parent;
+
+    CaptchaAuthenticationPtr captcha;
+};
+
 struct TP_QT_NO_EXPORT CaptchaAuthentication::Private
 {
     Private(CaptchaAuthentication *parent);
