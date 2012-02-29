@@ -117,4 +117,26 @@ QString escapeAsIdentifier(const QString &string)
     return QString::fromLatin1(op.constData());
 }
 
+bool checkValidProtocolName(const QString &protocolName)
+{
+    if (!protocolName[0].isLetter()) {
+        return false;
+    }
+
+    int length = protocolName.length();
+    if (length <= 1) {
+        return true;
+    }
+
+    QChar ch;
+    for (int i = 1; i < length; ++i) {
+        ch = protocolName[i];
+        if (!ch.isLetterOrNumber() && ch != QLatin1Char('-')) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 } // Tp

@@ -36,6 +36,8 @@ namespace Tp
 
 TP_QT_EXPORT QString escapeAsIdentifier(const QString &string);
 
+TP_QT_EXPORT bool checkValidProtocolName(const QString &protocolName);
+
 } // Tp
 
 #endif
