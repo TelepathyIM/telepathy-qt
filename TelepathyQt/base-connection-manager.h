@@ -34,11 +34,13 @@ namespace Tp
 class TP_QT_EXPORT BaseConnectionManager
 {
 public:
-    BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &cmName);
+    BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &name);
     ~BaseConnectionManager();
 
     QDBusConnection dbusConnection() const;
+    QString name() const;
 
+    bool isRegistered() const;
     bool registerObject();
 
 private:

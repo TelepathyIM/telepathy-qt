@@ -28,6 +28,7 @@
 #include "TelepathyQt/debug-internal.h"
 
 #include <TelepathyQt/Constants>
+#include <TelepathyQt/Utils>
 
 #include <QDBusObjectPath>
 #include <QString>
@@ -39,10 +40,10 @@ namespace Tp
 struct TP_QT_NO_EXPORT BaseConnectionManager::Private
 {
     Private(BaseConnectionManager *parent, const QDBusConnection &dbusConnection,
-            const QString &cmName)
+            const QString &name)
         : parent(parent),
           dbusConnection(dbusConnection),
-          cmName(cmName),
+          name(name),
           adaptee(new BaseConnectionManager::Adaptee(dbusConnection, parent)),
           registered(false)
     {
@@ -50,7 +51,7 @@ struct TP_QT_NO_EXPORT BaseConnectionManager::Private
 
     BaseConnectionManager *parent;
     QDBusConnection dbusConnection;
-    QString cmName;
+    QString name;
 
     BaseConnectionManager::Adaptee *adaptee;
     bool registered;
@@ -101,8 +102,8 @@ void BaseConnectionManager::Adaptee::requestConnection(const QString &protocol,
     context->setFinished(QString(), QDBusObjectPath(QLatin1String("/")));
 }
 
-BaseConnectionManager::BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &cmName)
-    : mPriv(new Private(this, dbusConnection, cmName))
+BaseConnectionManager::BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &name)
+    : mPriv(new Private(this, dbusConnection, name))
 {
 }
 
@@ -116,6 +117,16 @@ QDBusConnection BaseConnectionManager::dbusConnection() const
     return mPriv->dbusConnection;
 }
 
+QString BaseConnectionManager::name() const
+{
+    return mPriv->name;
+}
+
+bool BaseConnectionManager::isRegistered() const
+{
+    return mPriv->registered;
+}
+
 bool BaseConnectionManager::registerObject()
 {
     if (mPriv->registered) {
@@ -124,7 +135,7 @@ bool BaseConnectionManager::registerObject()
     }
 
     QString busName = TP_QT_CONNECTION_MANAGER_BUS_NAME_BASE;
-    busName.append(mPriv->cmName);
+    busName.append(mPriv->name);
     if (!mPriv->dbusConnection.registerService(busName)) {
         warning() << "Unable to register connection manager: busName" <<
             busName << "already registered";
@@ -132,7 +143,7 @@ bool BaseConnectionManager::registerObject()
     }
 
     QString objectPath = TP_QT_CONNECTION_MANAGER_OBJECT_PATH_BASE;
-    objectPath.append(mPriv->cmName);
+    objectPath.append(mPriv->name);
     if (!mPriv->dbusConnection.registerObject(objectPath, mPriv->adaptee)) {
         // this shouldn't happen, but let's make sure
         warning() << "Unable to register connection manager: objectPath" <<
