@@ -832,6 +832,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
 
     # Generated headers which will be installed and exported
     set(telepathy_qt_service_gen_HEADERS
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.h
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection-manager.h)
 
     # Headers file moc will be run on
