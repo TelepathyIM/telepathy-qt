@@ -2919,7 +2919,7 @@ Client::ChannelInterface *Channel::baseInterface() const
 CaptchaAuthenticationPtr Channel::captchaAuthentication() const
 {
     if (!isReady(FeatureCaptcha)) {
-        qWarning() << "Channel::captchaAuthentication() used with FeatureCaptcha not ready";
+        warning() << "Channel::captchaAuthentication() used with FeatureCaptcha not ready";
         return CaptchaAuthenticationPtr();
     }
 

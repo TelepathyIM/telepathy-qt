@@ -43,7 +43,7 @@ PendingCaptchaAnswer::PendingCaptchaAnswer(PendingVoid *answerOperation,
 {
     mPriv->captcha = object;
 
-    qDebug() << "Calling Captcha.Answer";
+    debug() << "Calling Captcha.Answer";
     if (answerOperation->isFinished()) {
         onAnswerFinished(answerOperation);
     } else {
@@ -61,18 +61,18 @@ PendingCaptchaAnswer::~PendingCaptchaAnswer()
 void PendingCaptchaAnswer::onAnswerFinished(Tp::PendingOperation *op)
 {
     if (op->isError()) {
-        qWarning().nospace() << "Captcha.Answer failed with " <<
+        warning().nospace() << "Captcha.Answer failed with " <<
             op->errorName() << ": " << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
         return;
     }
 
-    qDebug() << "Captcha.Answer returned successfully";
+    debug() << "Captcha.Answer returned successfully";
 
     // It might have been already opened - check
     if (mPriv->captcha->status() == CaptchaStatusLocalPending ||
             mPriv->captcha->status() == CaptchaStatusRemotePending) {
-        qDebug() << "Awaiting captcha to be answered from server";
+        debug() << "Awaiting captcha to be answered from server";
         // Wait until status becomes relevant
         connect(mPriv->captcha.data(),
                 SIGNAL(statusChanged(Tp::CaptchaStatus)),
@@ -262,7 +262,7 @@ PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &prefe
 
     // The captcha should be either LocalPending or TryAgain
     if (status() != CaptchaStatusLocalPending && status() != CaptchaStatusTryAgain) {
-        qWarning() << "Status must be local pending or try again";
+        warning() << "Status must be local pending or try again";
         return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel busy"), CaptchaAuthenticationPtr(this));
     }
@@ -285,7 +285,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
 {
     // The captcha should be LocalPending or TryAgain
     if (status() != CaptchaStatusLocalPending) {
-        qWarning() << "Status must be local pending";
+        warning() << "Status must be local pending";
         return new PendingCaptchas(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Channel busy"), CaptchaAuthenticationPtr(this));
     }

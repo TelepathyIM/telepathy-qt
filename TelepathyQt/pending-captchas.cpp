@@ -21,6 +21,8 @@
 
 #include <TelepathyQt/PendingCaptchas>
 
+#include "TelepathyQt/debug-internal.h"
+
 #include "TelepathyQt/_gen/pending-captchas.moc.hpp"
 
 #include <TelepathyQt/Captcha>
@@ -162,7 +164,7 @@ void PendingCaptchas::onChannelInvalidated(Tp::DBusProxy *proxy,
         return;
     }
 
-    qWarning().nospace() << "StreamTube.Accept failed because channel was invalidated with " <<
+    warning().nospace() << "StreamTube.Accept failed because channel was invalidated with " <<
         errorName << ": " << errorMessage;
 
     setFinishedWithError(errorName, errorMessage);
@@ -173,14 +175,14 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     QDBusPendingReply<Tp::CaptchaInfoList, uint, QString> reply = *watcher;
 
     if (reply.isError()) {
-        qDebug().nospace() << "PendingDBusCall failed: " <<
+        debug().nospace() << "PendingDBusCall failed: " <<
             reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
         watcher->deleteLater();
         return;
     }
 
-    qDebug() << "Got reply to PendingDBusCall";
+    debug() << "Got reply to PendingDBusCall";
     Tp::CaptchaInfoList list = qdbus_cast<Tp::CaptchaInfoList>(reply.argumentAt(0));
     int howManyRequired = reply.argumentAt(1).toUInt();
 
@@ -198,7 +200,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
                 // Ok, move on
             } else {
                 // In this case, there's something wrong
-                qWarning() << "Got a captcha with type " << info.type << " which does not "
+                warning() << "Got a captcha with type " << info.type << " which does not "
                         "expose any available mimetype for its payload. Something might be "
                         "wrong with the connection manager.";
                 continue;
@@ -280,14 +282,14 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
     QDBusPendingReply<QByteArray> reply = *watcher;
 
     if (reply.isError()) {
-        qDebug().nospace() << "PendingDBusCall failed: " <<
+        debug().nospace() << "PendingDBusCall failed: " <<
             reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
         watcher->deleteLater();
         return;
     }
 
-    qDebug() << "Got reply to PendingDBusCall";
+    debug() << "Got reply to PendingDBusCall";
 
     // Add to the list
     mPriv->appendCaptchaResult(watcher->property("__Tp_Qt_CaptchaMimeType").toString(),
