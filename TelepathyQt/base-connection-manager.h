@@ -23,6 +23,10 @@
 #ifndef _TelepathyQt_base_connection_manager_h_HEADER_GUARD_
 #define _TelepathyQt_base_connection_manager_h_HEADER_GUARD_
 
+#ifndef IN_TP_QT_HEADER
+#error IN_TP_QT_HEADER
+#endif
+
 #include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
 
