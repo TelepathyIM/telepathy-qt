@@ -28,6 +28,7 @@
 
 #include "TelepathyQt/debug-internal.h"
 
+#include <TelepathyQt/BaseConnection>
 #include <TelepathyQt/BaseProtocol>
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Utils>
@@ -54,6 +55,7 @@ struct TP_QT_NO_EXPORT BaseConnectionManager::Private
 
     BaseConnectionManager::Adaptee *adaptee;
     QHash<QString, BaseProtocolPtr> protocols;
+    QSet<BaseConnectionPtr> connections;
 };
 
 BaseConnectionManager::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
@@ -118,13 +120,46 @@ void BaseConnectionManager::Adaptee::listProtocols(
     context->setFinished(ret);
 }
 
-void BaseConnectionManager::Adaptee::requestConnection(const QString &protocol,
-        const QVariantMap &params,
+void BaseConnectionManager::Adaptee::requestConnection(const QString &protocolName,
+        const QVariantMap &parameters,
         const Tp::Service::ConnectionManagerAdaptor::RequestConnectionContextPtr &context)
 {
-    // emit newConnection()
-    qDebug() << __FUNCTION__ << "called";
-    context->setFinished(QString(), QDBusObjectPath(QLatin1String("/")));
+    if (!checkValidProtocolName(protocolName)) {
+        context->setFinishedWithError(TP_QT_ERROR_INVALID_ARGUMENT,
+                protocolName + QLatin1String("is not a valid protocol name"));
+        return;
+    }
+
+    if (!mCM->hasProtocol(protocolName)) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("unknown protocol") + protocolName);
+        return;
+    }
+
+    BaseProtocolPtr protocol = mCM->protocol(protocolName);
+
+    DBusError error;
+    BaseConnectionPtr connection;
+    // connection = protocol->createConnection(parameters, &error);
+    QMetaObject::invokeMethod(protocol.data(), "createConnection",
+        Q_RETURN_ARG(Tp::BaseConnectionPtr, connection),
+        Q_ARG(QVariantMap, parameters),
+        Q_ARG(Tp::DBusError*, &error));
+    if (!connection) {
+        context->setFinishedWithError(error);
+        return;
+    }
+
+    if (!connection->registerObject(&error)) {
+        context->setFinishedWithError(error);
+        return;
+    }
+
+    mCM->addConnection(connection);
+
+    emit newConnection(connection->busName(), QDBusObjectPath(connection->objectPath()),
+            protocol->name());
+    context->setFinished(connection->busName(), QDBusObjectPath(connection->objectPath()));
 }
 
 BaseConnectionManager::BaseConnectionManager(const QDBusConnection &dbusConnection,
@@ -221,6 +256,30 @@ bool BaseConnectionManager::registerObject(const QString &busName, const QString
     }
 
     return true;
+}
+
+QList<BaseConnectionPtr> BaseConnectionManager::connections() const
+{
+    return mPriv->connections.toList();
+}
+
+void BaseConnectionManager::addConnection(const BaseConnectionPtr &connection)
+{
+    Q_ASSERT(!mPriv->connections.contains(connection));
+    mPriv->connections.insert(connection);
+    connect(connection.data(),
+            SIGNAL(disconnected()),
+            SLOT(removeConnection()));
+    emit newConnection(connection);
+}
+
+void BaseConnectionManager::removeConnection()
+{
+    BaseConnectionPtr connection = BaseConnectionPtr(
+            qobject_cast<BaseConnection*>(sender()));
+    Q_ASSERT(connection);
+    Q_ASSERT(mPriv->connections.contains(connection));
+    mPriv->connections.remove(connection);
 }
 
 }

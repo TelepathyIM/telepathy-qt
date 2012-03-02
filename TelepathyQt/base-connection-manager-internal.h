@@ -55,7 +55,7 @@ private Q_SLOTS:
             const Tp::Service::ConnectionManagerAdaptor::GetParametersContextPtr &context);
     void listProtocols(
             const Tp::Service::ConnectionManagerAdaptor::ListProtocolsContextPtr &context);
-    void requestConnection(const QString &protocol, const QVariantMap &params,
+    void requestConnection(const QString &protocolName, const QVariantMap &parameters,
             const Tp::Service::ConnectionManagerAdaptor::RequestConnectionContextPtr &context);
 
 public:

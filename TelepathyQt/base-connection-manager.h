@@ -78,13 +78,23 @@ public:
 
     bool registerObject(DBusError *error = NULL);
 
+    QList<BaseConnectionPtr> connections() const;
+
+Q_SIGNALS:
+    void newConnection(const BaseConnectionPtr &connection);
+
 protected:
     BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &name);
 
     virtual bool registerObject(const QString &busName, const QString &objectPath,
             DBusError *error);
 
+private Q_SLOTS:
+    void removeConnection();
+
 private:
+    void addConnection(const BaseConnectionPtr &connection);
+
     class Adaptee;
     friend class Adaptee;
     class Private;
