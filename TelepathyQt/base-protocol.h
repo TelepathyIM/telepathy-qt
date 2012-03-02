@@ -62,6 +62,8 @@ public:
 
     QString name() const;
 
+    QVariantMap immutableProperties() const;
+
     // Proto
     QStringList connectionInterfaces() const;
     void setConnectionInterfaces(const QStringList &connInterfaces);

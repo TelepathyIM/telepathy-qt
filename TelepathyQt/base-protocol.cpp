@@ -72,6 +72,13 @@ BaseProtocol::Adaptee::~Adaptee()
 {
 }
 
+QVariantMap BaseProtocol::immutableProperties() const
+{
+    // FIXME
+    // Ps.: also include optional interfaces immutable properties
+    return QVariantMap();
+}
+
 QStringList BaseProtocol::Adaptee::interfaces() const
 {
     // FIXME
