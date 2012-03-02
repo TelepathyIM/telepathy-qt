@@ -129,9 +129,18 @@ QStringList BaseProtocol::Adaptee::authenticationTypes() const
 void BaseProtocol::Adaptee::identifyAccount(const QVariantMap &parameters,
         const Tp::Service::ProtocolAdaptor::IdentifyAccountContextPtr &context)
 {
-    // FIXME
-    qDebug() << __FUNCTION__ << "called";
-    context->setFinished(QString());
+    DBusError error;
+    QString accountId;
+    // accountId = protocol->identifyAccount(parameters, &error);
+    QMetaObject::invokeMethod(mProtocol, "identifyAccount",
+        Q_RETURN_ARG(QString, accountId),
+        Q_ARG(QVariantMap, parameters),
+        Q_ARG(Tp::DBusError*, &error));
+    if (accountId.isEmpty()) {
+        context->setFinishedWithError(error);
+        return;
+    }
+    context->setFinished(accountId);
 }
 
 void BaseProtocol::Adaptee::normalizeContact(const QString &contactID,
@@ -240,6 +249,15 @@ BaseConnectionPtr BaseProtocol::createConnection(const QVariantMap &parameters, 
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
     }
     return BaseConnectionPtr();
+}
+
+QString BaseProtocol::identifyAccount(const QVariantMap &parameters, Tp::DBusError *error)
+{
+    Q_UNUSED(parameters);
+    if (error) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+    }
+    return QString();
 }
 
 }

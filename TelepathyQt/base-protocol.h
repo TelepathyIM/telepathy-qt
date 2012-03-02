@@ -94,7 +94,7 @@ protected:
 
 protected Q_SLOTS:
     Tp::BaseConnectionPtr createConnection(const QVariantMap &parameters, Tp::DBusError *error);
-    // identifyAccount
+    QString identifyAccount(const QVariantMap &parameters, Tp::DBusError *error);
     // normalizeContact
 
 private:
