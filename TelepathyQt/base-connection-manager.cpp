@@ -127,6 +127,16 @@ QList<BaseProtocolPtr> BaseConnectionManager::protocols() const
     return mPriv->protocols.values();
 }
 
+BaseProtocolPtr BaseConnectionManager::protocol(const QString &protocolName) const
+{
+    return mPriv->protocols.value(protocolName);
+}
+
+bool BaseConnectionManager::hasProtocol(const QString &protocolName) const
+{
+    return mPriv->protocols.contains(protocolName);
+}
+
 bool BaseConnectionManager::addProtocol(const BaseProtocolPtr &protocol)
 {
     if (isRegistered()) {
