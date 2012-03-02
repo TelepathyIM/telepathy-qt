@@ -26,6 +26,8 @@
 
 #include "TelepathyQt/debug-internal.h"
 
+#include <TelepathyQt/Constants>
+
 #include <QDBusConnection>
 #include <QString>
 
@@ -85,21 +87,32 @@ bool DBusService::isRegistered() const
     return mPriv->registered;
 }
 
-bool DBusService::registerObject(const QString &busName, const QString &objectPath)
+bool DBusService::registerObject(const QString &busName, const QString &objectPath,
+        DBusError *error)
 {
     if (mPriv->registered) {
         return true;
     }
 
     if (!mPriv->dbusConnection.registerService(busName)) {
-        warning() << "Unable to register service for object" << objectPath << "at bus name" <<
-            busName << "- bus name already taken";
+        if (error) {
+            error->set(TP_QT_ERROR_INVALID_ARGUMENT,
+                    QString(QLatin1String("Name %s already in use by another process"))
+                        .arg(busName));
+        }
+        warning() << "Unable to register service" << busName <<
+            "- name already registered by another process";
         return false;
     }
 
     if (!mPriv->dbusConnection.registerObject(objectPath, mPriv->dbusObject)) {
-        warning() << "Unable to register object" << objectPath << "at bus name" <<
-            busName << "- object path already registered";
+        if (error) {
+            error->set(TP_QT_ERROR_INVALID_ARGUMENT,
+                    QString(QLatin1String("Object at path %s already registered"))
+                        .arg(objectPath));
+        }
+        warning() << "Unable to register object" << objectPath <<
+            "- path already registered";
         return false;
     }
 

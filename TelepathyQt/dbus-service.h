@@ -27,6 +27,7 @@
 #error IN_TP_QT_HEADER
 #endif
 
+#include <TelepathyQt/DBusError>
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Object>
 
@@ -54,7 +55,8 @@ public:
     bool isRegistered() const;
 
 protected:
-    virtual bool registerObject(const QString &busName, const QString &objectPath);
+    virtual bool registerObject(const QString &busName, const QString &objectPath,
+            DBusError *error);
 
 private:
     class Private;

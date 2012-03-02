@@ -178,17 +178,17 @@ bool BaseConnectionManager::addProtocol(const BaseProtocolPtr &protocol)
     return true;
 }
 
-bool BaseConnectionManager::registerObject()
+bool BaseConnectionManager::registerObject(DBusError *error)
 {
     QString busName = TP_QT_CONNECTION_MANAGER_BUS_NAME_BASE;
     busName.append(mPriv->name);
     QString objectPath = TP_QT_CONNECTION_MANAGER_OBJECT_PATH_BASE;
     objectPath.append(mPriv->name);
-    return registerObject(busName, objectPath);
+    return registerObject(busName, objectPath, error);
 }
 
-bool BaseConnectionManager::registerObject(const QString &busName,
-        const QString &objectPath)
+bool BaseConnectionManager::registerObject(const QString &busName, const QString &objectPath,
+        DBusError *error)
 {
     if (isRegistered()) {
         return true;
@@ -202,7 +202,7 @@ bool BaseConnectionManager::registerObject(const QString &busName,
                 QLatin1String("%1/%2")).arg(objectPath).arg(escapedProtocolName);
         debug() << "Registering protocol" << protocol->name() << "at path" << protoObjectPath <<
             "for CM" << objectPath << "at bus name" << busName;
-        if (!protocol->registerObject(busName, protoObjectPath)) {
+        if (!protocol->registerObject(busName, protoObjectPath, error)) {
             return false;
         }
     }
@@ -210,7 +210,7 @@ bool BaseConnectionManager::registerObject(const QString &busName,
     debug() << "Registering CM" << objectPath << "at bus name" << busName;
     // Only call DBusService::registerObject after registering the protocols as we don't want to
     // advertise isRegistered if some protocol cannot be registered
-    if (!DBusService::registerObject(busName, objectPath)) {
+    if (!DBusService::registerObject(busName, objectPath, error)) {
         return false;
     }
 

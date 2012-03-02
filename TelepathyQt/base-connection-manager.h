@@ -76,12 +76,13 @@ public:
     bool hasProtocol(const QString &protocolName) const;
     bool addProtocol(const BaseProtocolPtr &protocol);
 
-    bool registerObject();
+    bool registerObject(DBusError *error = NULL);
 
 protected:
     BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &name);
 
-    virtual bool registerObject(const QString &busName, const QString &objectPath);
+    virtual bool registerObject(const QString &busName, const QString &objectPath,
+            DBusError *error);
 
 private:
     class Adaptee;
