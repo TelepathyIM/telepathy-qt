@@ -821,6 +821,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     set(telepathy_qt_service_SRCS
         base-connection-manager.cpp
         base-protocol.cpp
+        dbus-error.cpp
         dbus-service.cpp
         abstract-adaptor.cpp)
 
@@ -831,6 +832,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         base-connection-manager.h
         BaseProtocol
         base-protocol.h
+        DBusError
+        dbus-error.h
         DBusService
         dbus-service.h
         Global
