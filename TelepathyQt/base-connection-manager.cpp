@@ -84,11 +84,21 @@ ProtocolPropertiesMap BaseConnectionManager::Adaptee::protocols() const
     return ret;
 }
 
-void BaseConnectionManager::Adaptee::getParameters(const QString &protocol,
+void BaseConnectionManager::Adaptee::getParameters(const QString &protocolName,
         const Tp::Service::ConnectionManagerAdaptor::GetParametersContextPtr &context)
 {
-    qDebug() << __FUNCTION__ << "called";
-    context->setFinished(ParamSpecList());
+    if (!mCM->hasProtocol(protocolName)) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("unknown protocol") + protocolName);
+        return;
+    }
+
+    BaseProtocolPtr protocol = mCM->protocol(protocolName);
+    ParamSpecList ret;
+    foreach (const ProtocolParameter &param, protocol->parameters()) {
+        ret << param.bareParameter();
+    }
+    context->setFinished(ret);
 }
 
 void BaseConnectionManager::Adaptee::listProtocols(

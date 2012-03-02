@@ -51,7 +51,7 @@ Q_SIGNALS:
     void newConnection(const QString &busName, const QDBusObjectPath &objectPath, const QString &protocolName);
 
 private Q_SLOTS:
-    void getParameters(const QString &protocol,
+    void getParameters(const QString &protocolName,
             const Tp::Service::ConnectionManagerAdaptor::GetParametersContextPtr &context);
     void listProtocols(
             const Tp::Service::ConnectionManagerAdaptor::ListProtocolsContextPtr &context);
