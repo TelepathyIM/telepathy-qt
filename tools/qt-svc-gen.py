@@ -445,7 +445,7 @@ Q_SIGNALS: // SIGNALS
 """ % {'type': binding.val,
        'ifacename': ifacename,
        'gettername': gettername,
-       'name': (name[0].lower() + name[1:]),
+       'name': (name),
        })
 
         if 'write' in access:
@@ -463,7 +463,7 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
 """ % {'ifacename': ifacename,
        'settername': settername,
        'type': binding.val,
-       'name': (name[0].lower() + name[1:]),
+       'name': (name),
        })
 
     def do_method(self, ifacename, method):
