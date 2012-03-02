@@ -104,8 +104,12 @@ void BaseConnectionManager::Adaptee::getParameters(const QString &protocolName,
 void BaseConnectionManager::Adaptee::listProtocols(
         const Tp::Service::ConnectionManagerAdaptor::ListProtocolsContextPtr &context)
 {
-    qDebug() << __FUNCTION__ << "called";
-    context->setFinished(QStringList());
+    QStringList ret;
+    QList<BaseProtocolPtr> protocols = mCM->protocols();
+    foreach (const BaseProtocolPtr &protocol, protocols) {
+        ret << protocol->name();
+    }
+    context->setFinished(ret);
 }
 
 void BaseConnectionManager::Adaptee::requestConnection(const QString &protocol,
