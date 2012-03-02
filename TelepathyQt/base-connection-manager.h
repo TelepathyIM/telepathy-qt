@@ -29,8 +29,10 @@
 
 #include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
+#include <TelepathyQt/Types>
 
-class QDBusConnection;
+#include <QDBusConnection>
+
 class QString;
 
 namespace Tp
@@ -42,7 +44,29 @@ class TP_QT_EXPORT BaseConnectionManager : public DBusService
     Q_DISABLE_COPY(BaseConnectionManager)
 
 public:
-    BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &name);
+    static BaseConnectionManagerPtr create(const QString &name)
+    {
+        return BaseConnectionManagerPtr(new BaseConnectionManager(
+                    QDBusConnection::sessionBus(), name));
+    }
+    template<typename BaseConnectionManagerSubclass>
+    static BaseConnectionManagerPtr create(const QString &name)
+    {
+        return BaseConnectionManagerPtr(new BaseConnectionManagerSubclass(
+                    QDBusConnection::sessionBus(), name));
+    }
+    static BaseConnectionManagerPtr create(const QDBusConnection &dbusConnection,
+            const QString &name)
+    {
+        return BaseConnectionManagerPtr(new BaseConnectionManager(dbusConnection, name));
+    }
+    template<typename BaseConnectionManagerSubclass>
+    static BaseConnectionManagerPtr create(const QDBusConnection &dbusConnection,
+            const QString &name)
+    {
+        return BaseConnectionManagerPtr(new BaseConnectionManagerSubclass(dbusConnection, name));
+    }
+
     virtual ~BaseConnectionManager();
 
     QString name() const;
@@ -50,6 +74,8 @@ public:
     bool registerObject();
 
 protected:
+    BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &name);
+
     virtual bool registerObject(const QString &busName, const QString &objectPath);
 
 private:

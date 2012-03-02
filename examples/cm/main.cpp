@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     Tp::enableDebug(true);
     Tp::enableWarnings(true);
 
-    BaseConnectionManager *cm = new BaseConnectionManager(
+    BaseConnectionManagerPtr cm = BaseConnectionManager::create(
             QDBusConnection::sessionBus(), QLatin1String("TpQtExampleCM"));
     cm->registerObject();
 
