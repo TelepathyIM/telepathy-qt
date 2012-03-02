@@ -27,6 +27,8 @@
 #error IN_TP_QT_HEADER
 #endif
 
+#include <TelepathyQt/DBusError>
+
 #include <QtDBus>
 #include <QtCore>
 
@@ -156,6 +158,11 @@ public:
         onFinished();
     }
 
+    void setFinishedWithError(const DBusError &error)
+    {
+        setFinishedWithError(error.name(), error.message());
+    }
+
     template<int Index> inline
     typename Select<Index>::Type argumentAt() const
     {
@@ -180,7 +187,7 @@ private:
     QDBusConnection mBus;
     QDBusMessage mMessage;
     bool mFinished;
-    QList<QVariant> mReply;
+    QVariantList mReply;
     QString mErrorName;
     QString mErrorMessage;
 };
