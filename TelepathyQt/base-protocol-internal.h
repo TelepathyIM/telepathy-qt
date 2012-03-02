@@ -62,7 +62,7 @@ public:
 private Q_SLOTS:
     void identifyAccount(const QVariantMap &parameters,
             const Tp::Service::ProtocolAdaptor::IdentifyAccountContextPtr &context);
-    void normalizeContact(const QString &contactID,
+    void normalizeContact(const QString &contactId,
             const Tp::Service::ProtocolAdaptor::NormalizeContactContextPtr &context);
 
 public:

@@ -143,12 +143,21 @@ void BaseProtocol::Adaptee::identifyAccount(const QVariantMap &parameters,
     context->setFinished(accountId);
 }
 
-void BaseProtocol::Adaptee::normalizeContact(const QString &contactID,
+void BaseProtocol::Adaptee::normalizeContact(const QString &contactId,
         const Tp::Service::ProtocolAdaptor::NormalizeContactContextPtr &context)
 {
-    // FIXME
-    qDebug() << __FUNCTION__ << "called";
-    context->setFinished(QString());
+    DBusError error;
+    QString normalizedContactId;
+    // normalizedContactId = protocol->normalizeContact(contactId, &error);
+    QMetaObject::invokeMethod(mProtocol, "normalizeContact",
+        Q_RETURN_ARG(QString, normalizedContactId),
+        Q_ARG(QString, contactId),
+        Q_ARG(Tp::DBusError*, &error));
+    if (normalizedContactId.isEmpty()) {
+        context->setFinishedWithError(error);
+        return;
+    }
+    context->setFinished(normalizedContactId);
 }
 
 BaseProtocol::BaseProtocol(const QDBusConnection &dbusConnection, const QString &name)
@@ -254,6 +263,15 @@ BaseConnectionPtr BaseProtocol::createConnection(const QVariantMap &parameters, 
 QString BaseProtocol::identifyAccount(const QVariantMap &parameters, Tp::DBusError *error)
 {
     Q_UNUSED(parameters);
+    if (error) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+    }
+    return QString();
+}
+
+QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *error)
+{
+    Q_UNUSED(contactId);
     if (error) {
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
     }
