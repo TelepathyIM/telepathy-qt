@@ -87,6 +87,12 @@ ProtocolPropertiesMap BaseConnectionManager::Adaptee::protocols() const
 void BaseConnectionManager::Adaptee::getParameters(const QString &protocolName,
         const Tp::Service::ConnectionManagerAdaptor::GetParametersContextPtr &context)
 {
+    if (!checkValidProtocolName(protocolName)) {
+        context->setFinishedWithError(TP_QT_ERROR_INVALID_ARGUMENT,
+                protocolName + QLatin1String("is not a valid protocol name"));
+        return;
+    }
+
     if (!mCM->hasProtocol(protocolName)) {
         context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("unknown protocol") + protocolName);
