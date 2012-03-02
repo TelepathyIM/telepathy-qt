@@ -28,6 +28,7 @@
 
 #include "TelepathyQt/debug-internal.h"
 
+#include <TelepathyQt/BaseConnection>
 #include <TelepathyQt/Constants>
 
 #include <QDBusObjectPath>
@@ -231,6 +232,14 @@ bool BaseProtocol::registerObject(const QString &busName, const QString &objectP
         DBusError *error)
 {
     return DBusService::registerObject(busName, objectPath, error);
+}
+
+BaseConnectionPtr BaseProtocol::createConnection(const QVariantMap &parameters, Tp::DBusError *error)
+{
+    if (error) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+    }
+    return BaseConnectionPtr();
 }
 
 }

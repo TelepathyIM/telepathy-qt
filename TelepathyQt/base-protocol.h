@@ -93,6 +93,7 @@ protected:
             DBusError *error);
 
 protected Q_SLOTS:
+    Tp::BaseConnectionPtr createConnection(const QVariantMap &parameters, Tp::DBusError *error);
     // identifyAccount
     // normalizeContact
 
