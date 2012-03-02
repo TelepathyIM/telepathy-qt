@@ -58,3 +58,19 @@ BaseConnectionPtr Protocol::createConnection(const QVariantMap &parameters, Tp::
     }
     return BaseConnectionPtr();
 }
+
+QString Protocol::identifyAccount(const QVariantMap &parameters, Tp::DBusError *error)
+{
+    if (error) {
+        error->set(QLatin1String("IdentifyAccount.Error.Test"), QLatin1String(""));
+    }
+    return QString();
+}
+
+QString Protocol::normalizeContact(const QString &contactId, Tp::DBusError *error)
+{
+    if (error) {
+        error->set(QLatin1String("NormalizeContact.Error.Test"), QLatin1String(""));
+    }
+    return QString();
+}

@@ -121,6 +121,10 @@ QString escapeAsIdentifier(const QString &string)
 
 bool checkValidProtocolName(const QString &protocolName)
 {
+    if (protocolName.isEmpty()) {
+        return false;
+    }
+
     if (!protocolName[0].isLetter()) {
         return false;
     }
