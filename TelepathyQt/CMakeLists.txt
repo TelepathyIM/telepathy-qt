@@ -842,6 +842,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     # Headers file moc will be run on
     set(telepathy_qt_service_MOC_SRCS
         abstract-adaptor.h
+        base-connection-manager.h
         base-connection-manager-internal.h
         dbus-service.h)
 

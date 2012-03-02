@@ -23,6 +23,7 @@
 #ifndef _TelepathyQt_base_connection_manager_h_HEADER_GUARD_
 #define _TelepathyQt_base_connection_manager_h_HEADER_GUARD_
 
+#include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
 
 class QDBusConnection;
@@ -31,17 +32,21 @@ class QString;
 namespace Tp
 {
 
-class TP_QT_EXPORT BaseConnectionManager
+class TP_QT_EXPORT BaseConnectionManager : public DBusService
 {
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionManager)
+
 public:
     BaseConnectionManager(const QDBusConnection &dbusConnection, const QString &name);
-    ~BaseConnectionManager();
+    virtual ~BaseConnectionManager();
 
-    QDBusConnection dbusConnection() const;
     QString name() const;
 
-    bool isRegistered() const;
     bool registerObject();
+
+protected:
+    virtual bool registerObject(const QString &busName, const QString &objectPath);
 
 private:
     class Adaptee;

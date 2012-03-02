@@ -41,7 +41,7 @@ class TP_QT_NO_EXPORT BaseConnectionManager::Adaptee : public QObject
     Q_PROPERTY(Tp::ProtocolPropertiesMap protocols READ protocols)
 
 public:
-    Adaptee(const QDBusConnection &dbusConnection, BaseConnectionManager *baseCM);
+    Adaptee(const QDBusConnection &dbusConnection, BaseConnectionManager *cm);
     ~Adaptee();
 
     QStringList interfaces() const;
@@ -59,7 +59,7 @@ private Q_SLOTS:
             const Tp::Service::ConnectionManagerAdaptor::RequestConnectionContextPtr &context);
 
 public:
-    BaseConnectionManager *mBaseCM;
+    BaseConnectionManager *mCM;
     Service::ConnectionManagerAdaptor *mAdaptor;
 };
 
