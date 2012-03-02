@@ -70,7 +70,9 @@ BaseConnectionManager::Adaptee::~Adaptee()
 
 QStringList BaseConnectionManager::Adaptee::interfaces() const
 {
-    return QStringList() << QString(QLatin1String("ofdT.Test"));
+    // No interfaces suitable for listing in this property are currently defined;
+    // it's provided as a hook for possible future functionality.
+    return QStringList();
 }
 
 ProtocolPropertiesMap BaseConnectionManager::Adaptee::protocols() const
