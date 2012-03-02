@@ -75,7 +75,11 @@ QStringList BaseConnectionManager::Adaptee::interfaces() const
 
 ProtocolPropertiesMap BaseConnectionManager::Adaptee::protocols() const
 {
-    return ProtocolPropertiesMap();
+    ProtocolPropertiesMap ret;
+    foreach (const BaseProtocolPtr &protocol, mCM->protocols()) {
+        ret.insert(protocol->name(), protocol->immutableProperties());
+    }
+    return ret;
 }
 
 void BaseConnectionManager::Adaptee::getParameters(const QString &protocol,
