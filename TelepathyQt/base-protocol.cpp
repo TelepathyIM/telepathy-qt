@@ -227,4 +227,10 @@ void BaseProtocol::setAuthenticationTypes(const QStringList &authenticationTypes
     mPriv->authTypes = authenticationTypes;
 }
 
+bool BaseProtocol::registerObject(const QString &busName, const QString &objectPath,
+        DBusError *error)
+{
+    return DBusService::registerObject(busName, objectPath, error);
+}
+
 }

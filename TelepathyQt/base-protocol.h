@@ -89,6 +89,9 @@ public:
 protected:
     BaseProtocol(const QDBusConnection &dbusConnection, const QString &name);
 
+    virtual bool registerObject(const QString &busName, const QString &objectPath,
+            DBusError *error);
+
 protected Q_SLOTS:
     // identifyAccount
     // normalizeContact
