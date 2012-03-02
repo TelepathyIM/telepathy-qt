@@ -71,6 +71,9 @@ public:
 
     QString name() const;
 
+    QList<BaseProtocolPtr> protocols() const;
+    bool addProtocol(const BaseProtocolPtr &protocol);
+
     bool registerObject();
 
 protected:

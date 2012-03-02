@@ -28,6 +28,7 @@
 
 #include "TelepathyQt/debug-internal.h"
 
+#include <TelepathyQt/BaseProtocol>
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Utils>
 
@@ -52,6 +53,7 @@ struct TP_QT_NO_EXPORT BaseConnectionManager::Private
     QString name;
 
     BaseConnectionManager::Adaptee *adaptee;
+    QHash<QString, BaseProtocolPtr> protocols;
 };
 
 BaseConnectionManager::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
@@ -116,6 +118,36 @@ QString BaseConnectionManager::name() const
     return mPriv->name;
 }
 
+QList<BaseProtocolPtr> BaseConnectionManager::protocols() const
+{
+    return mPriv->protocols.values();
+}
+
+bool BaseConnectionManager::addProtocol(const BaseProtocolPtr &protocol)
+{
+    if (isRegistered()) {
+        warning() << "Unable to add protocol" << protocol->name() <<
+            "- CM already registered";
+        return false;
+    }
+
+    if (protocol->dbusConnection().name() != dbusConnection().name()) {
+        warning() << "Unable to add protocol" << protocol->name() <<
+            "- protocol must have the same D-Bus connection as the owning CM";
+        return false;
+    }
+
+    if (mPriv->protocols.contains(protocol->name())) {
+        warning() << "Unable to add protocol" << protocol->name() <<
+            "- another protocol with same name already added";
+        return false;
+    }
+
+    debug() << "Protocol" << protocol->name() << "added to CM";
+    mPriv->protocols.insert(protocol->name(), protocol);
+    return true;
+}
+
 bool BaseConnectionManager::registerObject()
 {
     QString busName = TP_QT_CONNECTION_MANAGER_BUS_NAME_BASE;
@@ -133,7 +165,19 @@ bool BaseConnectionManager::registerObject(const QString &busName,
     }
 
     // register protocols
+    foreach (const BaseProtocolPtr &protocol, protocols()) {
+        QString escapedProtocolName = protocol->name();
+        escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
+        QString protoObjectPath = QString(
+                QLatin1String("%1/%2")).arg(objectPath).arg(escapedProtocolName);
+        debug() << "Registering protocol" << protocol->name() << "at path" << protoObjectPath <<
+            "for CM" << objectPath << "at bus name" << busName;
+        if (!protocol->registerObject(busName, protoObjectPath)) {
+            return false;
+        }
+    }
 
+    debug() << "Registering CM" << objectPath << "at bus name" << busName;
     // Only call DBusService::registerObject after registering the protocols as we don't want to
     // advertise isRegistered if some protocol cannot be registered
     if (!DBusService::registerObject(busName, objectPath)) {

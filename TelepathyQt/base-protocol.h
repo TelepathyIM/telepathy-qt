@@ -92,6 +92,7 @@ protected Q_SLOTS:
     // normalizeContact
 
 private:
+    friend class BaseConnectionManager;
     class Adaptee;
     friend class Adaptee;
     class Private;
