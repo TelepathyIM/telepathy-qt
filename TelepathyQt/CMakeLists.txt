@@ -820,6 +820,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     # stability
     set(telepathy_qt_service_SRCS
         base-connection-manager.cpp
+        base-connection.cpp
         base-protocol.cpp
         dbus-error.cpp
         dbus-service.cpp
@@ -830,6 +831,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         abstract-adaptor.h
         BaseConnectionManager
         base-connection-manager.h
+        BaseConnection
+        base-connection.h
         BaseProtocol
         base-protocol.h
         DBusError
@@ -850,6 +853,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         abstract-adaptor.h
         base-connection-manager.h
         base-connection-manager-internal.h
+        base-connection.h
+        base-connection-internal.h
         base-protocol.h
         base-protocol-internal.h
         dbus-service.h)
