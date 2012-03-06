@@ -40,6 +40,7 @@
 #include <TelepathyQt/OutgoingFileTransferChannel>
 #include <TelepathyQt/OutgoingStreamTubeChannel>
 #include <TelepathyQt/RoomListChannel>
+#include <TelepathyQt/ServerAuthenticationChannel>
 #include <TelepathyQt/StreamTubeChannel>
 #include <TelepathyQt/StreamedMediaChannel>
 #include <TelepathyQt/TextChannel>
@@ -106,6 +107,7 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
     setSubclassForIncomingRoomStreamTubes<IncomingStreamTubeChannel>();
     setSubclassForOutgoingRoomStreamTubes<OutgoingStreamTubeChannel>();
     setSubclassForContactSearches<ContactSearchChannel>();
+    setSubclassForServerAuthentication<ServerAuthenticationChannel>();
     setFallbackSubclass<Channel>();
 }
 
@@ -378,6 +380,29 @@ void ChannelFactory::setConstructorForContactSearches(const ConstructorConstPtr 
         const QVariantMap &additionalProps)
 {
     setConstructorFor(ChannelClassSpec::contactSearch(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForServerAuthentication(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::serverAuthentication(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForServerAuthentication(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::serverAuthentication(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForServerAuthentication(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::serverAuthentication(additionalProps));
+}
+
+void ChannelFactory::setConstructorForServerAuthentication(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::serverAuthentication(additionalProps), ctor);
 }
 
 Features ChannelFactory::commonFeatures() const

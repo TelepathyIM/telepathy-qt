@@ -241,6 +241,22 @@ public:
     void setConstructorForContactSearches(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
+    Features featuresForServerAuthentication(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForServerAuthentication(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForServerAuthentication(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForServerAuthentication(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForServerAuthentication(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForServerAuthentication(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
     Features commonFeatures() const;
     void addCommonFeatures(const Features &features);
 

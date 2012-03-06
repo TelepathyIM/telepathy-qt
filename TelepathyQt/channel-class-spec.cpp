@@ -388,35 +388,13 @@ ChannelClassSpec ChannelClassSpec::unnamedStreamedMediaVideoCallWithAudio(const 
     }
 }
 
-Tp::ChannelClassSpec ChannelClassSpec::captchaServerAuthentication(const QVariantMap &additionalProperties)
+Tp::ChannelClassSpec ChannelClassSpec::serverAuthentication(const QVariantMap &additionalProperties)
 {
     static Tp::ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION,
                 HandleTypeNone);
-        spec.setProperty(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION +
-                        QLatin1String(".AuthenticationMethod"),
-                TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION);
-    }
-
-    if (additionalProperties.isEmpty()) {
-        return spec;
-    } else {
-        return ChannelClassSpec(spec, additionalProperties);
-    }
-}
-
-Tp::ChannelClassSpec ChannelClassSpec::saslServerAuthentication(const QVariantMap &additionalProperties)
-{
-    static Tp::ChannelClassSpec spec;
-
-    if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION,
-                HandleTypeNone);
-        spec.setProperty(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION +
-                        QLatin1String(".AuthenticationMethod"),
-                TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION);
     }
 
     if (additionalProperties.isEmpty()) {
