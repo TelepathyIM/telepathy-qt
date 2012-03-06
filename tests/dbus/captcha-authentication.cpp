@@ -11,6 +11,7 @@
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingCaptchas>
 #include <TelepathyQt/ReferencedHandles>
+#include <TelepathyQt/ServerAuthenticationChannel>
 
 #include <telepathy-glib/telepathy-glib.h>
 
@@ -46,7 +47,7 @@ private:
 
     TestConnHelper *mConn;
     TpTestsCaptchaChannel *mChanService;
-    ChannelPtr mChan;
+    ServerAuthenticationChannelPtr mChan;
     CaptchaAuthenticationPtr mCaptcha;
 };
 
@@ -68,14 +69,15 @@ void TestCaptchaAuthentication::createCaptchaChannel(bool canRetry)
             NULL));
 
     /* Create client-side tube channel object */
-    mChan = Channel::create(mConn->client(), chanPath, QVariantMap());
+    mChan = ServerAuthenticationChannel::create(mConn->client(), chanPath, QVariantMap());
 
-    QVERIFY(connect(mChan->becomeReady(Channel::FeatureCaptcha),
+    QVERIFY(connect(mChan->becomeReady(ServerAuthenticationChannel::FeatureCore),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mChan->isReady(Channel::FeatureCaptcha), true);
+    QCOMPARE(mChan->isReady(ServerAuthenticationChannel::FeatureCore), true);
+    QCOMPARE(mChan->type(), ServerAuthenticationChannel::CaptchaType);
 
     mCaptcha = mChan->captchaAuthentication();
 

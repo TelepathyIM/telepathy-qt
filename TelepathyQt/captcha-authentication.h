@@ -90,7 +90,7 @@ private Q_SLOTS:
 private:
     explicit CaptchaAuthentication(const ChannelPtr &parent);
 
-    friend class Channel;
+    friend class ServerAuthenticationChannel;
     friend class PendingCaptchaAnswer;
     friend class PendingCaptchaCancel;
     friend class PendingCaptchas;
