@@ -71,6 +71,10 @@ void TestCaptchaAuthentication::createCaptchaChannel(bool canRetry)
     /* Create client-side tube channel object */
     mChan = ServerAuthenticationChannel::create(mConn->client(), chanPath, QVariantMap());
 
+    // Verify features shouldn't be Ready
+    QCOMPARE(mChan->type(), ServerAuthenticationChannel::UnknownType);
+    QVERIFY(mChan->captchaAuthentication().isNull());
+
     QVERIFY(connect(mChan->becomeReady(ServerAuthenticationChannel::FeatureCore),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
