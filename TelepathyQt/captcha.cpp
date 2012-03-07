@@ -39,6 +39,8 @@ public:
 };
 
 CaptchaData::CaptchaData()
+    : type(CaptchaAuthentication::NoChallenge),
+      id(0)
 {
 }
 

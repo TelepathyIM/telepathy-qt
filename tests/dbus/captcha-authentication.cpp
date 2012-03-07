@@ -81,7 +81,7 @@ void TestCaptchaAuthentication::createCaptchaChannel(bool canRetry)
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mChan->isReady(ServerAuthenticationChannel::FeatureCore), true);
+    QVERIFY(mChan->isReady(ServerAuthenticationChannel::FeatureCore));
     QVERIFY(mChan->hasCaptchaInterface());
     QVERIFY(!mChan->hasSaslInterface());
 
