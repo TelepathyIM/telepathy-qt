@@ -72,8 +72,9 @@ void TestCaptchaAuthentication::createCaptchaChannel(bool canRetry)
     mChan = ServerAuthenticationChannel::create(mConn->client(), chanPath, QVariantMap());
 
     // Verify features shouldn't be Ready
-    QCOMPARE(mChan->type(), ServerAuthenticationChannel::UnknownType);
     QVERIFY(mChan->captchaAuthentication().isNull());
+    QVERIFY(!mChan->hasCaptchaInterface());
+    QVERIFY(!mChan->hasSaslInterface());
 
     QVERIFY(connect(mChan->becomeReady(ServerAuthenticationChannel::FeatureCore),
                 SIGNAL(finished(Tp::PendingOperation *)),
@@ -81,7 +82,8 @@ void TestCaptchaAuthentication::createCaptchaChannel(bool canRetry)
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mChan->isReady(ServerAuthenticationChannel::FeatureCore), true);
-    QCOMPARE(mChan->type(), ServerAuthenticationChannel::CaptchaType);
+    QVERIFY(mChan->hasCaptchaInterface());
+    QVERIFY(!mChan->hasSaslInterface());
 
     mCaptcha = mChan->captchaAuthentication();
 

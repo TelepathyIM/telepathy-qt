@@ -46,7 +46,6 @@ struct TP_QT_NO_EXPORT ServerAuthenticationChannel::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    Type type;
     CaptchaAuthenticationPtr captchaAuthentication;
 };
 
@@ -72,8 +71,6 @@ void ServerAuthenticationChannel::Private::introspectServerAuthentication(Server
     ServerAuthenticationChannel *parent = self->parent;
 
     if (parent->hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION)) {
-        self->type = ServerAuthenticationChannel::CaptchaType;
-
         self->captchaAuthentication =
                 CaptchaAuthenticationPtr(new CaptchaAuthentication(ChannelPtr(parent)));
 
@@ -92,7 +89,6 @@ void ServerAuthenticationChannel::Private::introspectServerAuthentication(Server
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(gotCaptchaAuthenticationProperties(Tp::PendingOperation*)));
     } else if (parent->hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION)) {
-        self->type = ServerAuthenticationChannel::SaslType;
         // TODO: Stuff for SASL should go here
     } else {
         // This should never happen, but still
@@ -173,14 +169,24 @@ ServerAuthenticationChannel::~ServerAuthenticationChannel()
     delete mPriv;
 }
 
-ServerAuthenticationChannel::Type ServerAuthenticationChannel::type() const
+bool ServerAuthenticationChannel::hasCaptchaInterface() const
 {
     if (!isReady(ServerAuthenticationChannel::FeatureCore)) {
-        warning() << "ServerAuthenticationChannel::type() used with FeatureCore not ready";
-        return UnknownType;
+        warning() << "ServerAuthenticationChannel::hasCaptchaInterface() used with FeatureCore not ready";
+        return false;
     }
 
-    return mPriv->type;
+    return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION);
+}
+
+bool ServerAuthenticationChannel::hasSaslInterface() const
+{
+    if (!isReady(ServerAuthenticationChannel::FeatureCore)) {
+        warning() << "ServerAuthenticationChannel::hasSaslInterface() used with FeatureCore not ready";
+        return false;
+    }
+
+    return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION);
 }
 
 /**

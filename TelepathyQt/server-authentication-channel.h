@@ -37,12 +37,6 @@ class TP_QT_EXPORT ServerAuthenticationChannel : public Channel
     Q_DISABLE_COPY(ServerAuthenticationChannel)
 
 public:
-    enum Type {
-        UnknownType = 0,
-        CaptchaType,
-        SaslType
-    };
-
     static const Feature FeatureCore;
 
     static ServerAuthenticationChannelPtr create(const ConnectionPtr &connection,
@@ -54,7 +48,8 @@ public:
 
     // TODO: Add something for SASL here as well
 
-    Type type() const;
+    bool hasCaptchaInterface() const;
+    bool hasSaslInterface() const;
 
 protected:
     ServerAuthenticationChannel(const ConnectionPtr &connection, const QString &objectPath,
