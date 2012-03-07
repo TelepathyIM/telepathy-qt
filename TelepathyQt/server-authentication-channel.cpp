@@ -101,16 +101,17 @@ void ServerAuthenticationChannel::Private::introspectServerAuthentication(Server
 /**
  * \class ServerAuthenticationChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt/ServerAuthentication-channel.h <TelepathyQt/ServerAuthenticationChannel>
+ * \headerfile TelepathyQt/server-authentication-channel.h <TelepathyQt/ServerAuthenticationChannel>
  *
  * \brief The ServerAuthenticationChannel class is a base class for all ServerAuthentication types.
  *
- * A ServerAuthentication is a mechanism for arbitrary data transfer between two or more IM users,
- * used to allow applications on the users' systems to communicate without having
- * to establish network connections themselves.
+ * A ServerAuthentication is a mechanism for a connection to perform an authentication operation.
+ * Such an authentication can happen in several way (at the moment, Captcha and Sasl are supported) - this
+ * channel will expose a high-level object representing the requested method, allowing a handler to carry on
+ * the authentication procedure.
  *
- * Note that ServerAuthenticationChannel should never be instantiated directly, instead one of its
- * subclasses (e.g. IncomingStreamServerAuthenticationChannel or OutgoingStreamServerAuthenticationChannel) should be used.
+ * Note that when an authentication procedure succeeds, you can expect this channel to be closed automatically.
+ * Please refer to the methods' implementation docs for more details about this.
  *
  * See \ref async_model, \ref shared_ptr
  */
@@ -169,6 +170,16 @@ ServerAuthenticationChannel::~ServerAuthenticationChannel()
     delete mPriv;
 }
 
+/**
+ * Return whether this ServerAuthenticationChannel implements Captcha as its authentication mechanism.
+ * Should this be true, captchaAuthentication() can be safely accessed.
+ *
+ * This method requires FeatureCore to be ready.
+ *
+ * \return \c true if this channel implements the Captcha interface, \c false otherwise.
+ *
+ * \sa captchaAuthentication
+ */
 bool ServerAuthenticationChannel::hasCaptchaInterface() const
 {
     if (!isReady(ServerAuthenticationChannel::FeatureCore)) {
@@ -179,6 +190,13 @@ bool ServerAuthenticationChannel::hasCaptchaInterface() const
     return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION);
 }
 
+/**
+ * Return whether this ServerAuthenticationChannel implements Sasl as its authentication mechanism.
+ *
+ * This method requires FeatureCore to be ready.
+ *
+ * \return \c true if this channel implements the Sasl interface, \c false otherwise.
+ */
 bool ServerAuthenticationChannel::hasSaslInterface() const
 {
     if (!isReady(ServerAuthenticationChannel::FeatureCore)) {
@@ -192,10 +210,17 @@ bool ServerAuthenticationChannel::hasSaslInterface() const
 /**
  * Return the CaptchaAuthentication object for this channel, if the channel implements
  * the CaptchaAuthentication interface and is a ServerAuthentication Channel.
- * Note that FeatureCore must be ready for this method to return a meaningful value.
+ *
+ * Note that this method will return a meaningful value only if hasCaptchaInterface()
+ * returns \c true.
+ *
+ * This method requires FeatureCore to be ready.
  *
  * \return A shared pointer to the object representing the CaptchaAuthentication interface,
- *         or a null shared pointer if the feature is not ready yet.
+ *         or a null shared pointer if the feature is not ready yet or the channel does not
+ *         implement Captcha interface.
+ *
+ * \sa hasCaptchaInterface
  */
 CaptchaAuthenticationPtr ServerAuthenticationChannel::captchaAuthentication() const
 {

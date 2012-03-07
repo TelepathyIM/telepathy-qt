@@ -181,8 +181,8 @@ void CaptchaAuthentication::Private::extractCaptchaAuthenticationProperties(cons
  * which are meant to handle authentication - if you are implementing a client which is meant to live in a
  * Telepathy-aware platform, you probably won't need to handle this unless you have very special needs.
  *
- * Note that CaptchaAuthentication should never be instantiated directly, instead the accessor method from Channel
- * (Channel::captchaAuthentication) should be used.
+ * Note that CaptchaAuthentication should never be instantiated directly, instead the accessor method from
+ * ServerAuthenticationChannel (ServerAuthenticationChannel::captchaAuthentication) should be used.
  *
  * See \ref async_model, \ref shared_ptr
  */
@@ -210,7 +210,7 @@ CaptchaAuthentication::~CaptchaAuthentication()
  *
  * Note: In case this function returns \c true, requestCaptchas can be called safely after a failed answer attempt.
  *
- * \return Whether a new captcha can be fetched from this channel or not
+ * \return \c true if a new captcha can be fetched from this channel, \c false if not.
  */
 bool CaptchaAuthentication::canRetry() const
 {
@@ -218,9 +218,9 @@ bool CaptchaAuthentication::canRetry() const
 }
 
 /**
- * Return the current status of the captcha
+ * Return the current status of the captcha.
  *
- * \return The current status of the captcha
+ * \return The current status of the captcha.
  */
 Tp::CaptchaStatus CaptchaAuthentication::status() const
 {
@@ -291,7 +291,7 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
  *                           mimetype can be supported.
  * \param preferredTypes A list of challenge types supported by the handler.
  *
- * \return A PendingCaptchas operation returning when the request has been completed and all the payloads
+ * \return A PendingCaptchas which will emit PendingCaptchas::finished when the request has been completed and all the payloads
            have been downloaded.
  *
  * \sa canRetry
@@ -317,7 +317,7 @@ PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &prefe
 }
 
 /**
- * Overloaded function. Convenience method when just a single captcha requires to be answered
+ * Overloaded function. Convenience method when just a single captcha requires to be answered.
  *
  * \note You need to answer only the last set of challenges returned, in case requestCaptchas
  *       was invoked multiple times.
@@ -327,7 +327,7 @@ PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &prefe
  * \param id The id of the challenge being answered.
  * \param response The answer of this challenge.
  *
- * \return A PendingOperation returning the outcome of the answer procedure.
+ * \return A PendingOperation which will emit PendingOperation::finished upon the outcome of the answer procedure.
  *         Upon success, the operation will complete once the channel is closed.
  *
  * \sa requestCaptchas
@@ -357,7 +357,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(uint id, const QString &resp
  *
  * \param response A set of answers mapped by their id to the challenges obtained previously
  *
- * \return A PendingOperation returning the outcome of the answer procedure.
+ * \return A PendingOperation which will emit PendingOperation::finished upon the outcome of the answer procedure.
  *         Upon success, the operation will complete once the channel is closed.
  *
  * \sa requestCaptchas
@@ -392,7 +392,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
  * \param reason The reason why the challenge has been cancelled.
  * \param message A message detailing the cancel reason.
  *
- * \return A PendingOperation returning the outcome of the answer procedure.
+ * \return A PendingOperation which will emit PendingOperation::finished upon the outcome of the cancel procedure.
  *         Upon success, the operation will complete once the channel is closed.
  *
  * \sa requestCaptchas

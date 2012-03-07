@@ -371,6 +371,7 @@ QList<Captcha> PendingCaptchas::captchaList() const
  * successfully.
  *
  * \return The main captcha for the pending request.
+ *
  * \sa captcha()
  *     captchaList()
  */
