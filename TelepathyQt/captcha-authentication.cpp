@@ -227,9 +227,9 @@ Tp::CaptchaStatus CaptchaAuthentication::status() const
  *
  * \return An error code describing the last error occurred.
  *
- * \sa lastErrorDetails
+ * \sa errorDetails
  */
-QString CaptchaAuthentication::lastError() const
+QString CaptchaAuthentication::error() const
 {
     return mPriv->error;
 }
@@ -239,9 +239,9 @@ QString CaptchaAuthentication::lastError() const
  *
  * \return Further details describing the last error occurred.
  *
- * \sa lastError
+ * \sa error
  */
-Connection::ErrorDetails CaptchaAuthentication::lastErrorDetails() const
+Connection::ErrorDetails CaptchaAuthentication::errorDetails() const
 {
     return Connection::ErrorDetails(mPriv->errorDetails);
 }

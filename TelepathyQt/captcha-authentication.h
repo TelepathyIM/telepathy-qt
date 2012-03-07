@@ -67,8 +67,8 @@ public:
     bool canRetry() const;
     Tp::CaptchaStatus status() const;
 
-    QString lastError() const;
-    Connection::ErrorDetails lastErrorDetails() const;
+    QString error() const;
+    Connection::ErrorDetails errorDetails() const;
 
     Tp::PendingCaptchas *requestCaptchas(const QStringList &preferredMimeTypes = QStringList(),
             ChallengeTypes preferredTypes = ~ChallengeTypes(NoChallenge));

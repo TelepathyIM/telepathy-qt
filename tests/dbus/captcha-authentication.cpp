@@ -118,8 +118,8 @@ void TestCaptchaAuthentication::testCreation()
 
     QCOMPARE(mCaptcha->status(), Tp::CaptchaStatusLocalPending);
     QCOMPARE(mCaptcha->canRetry(), false);
-    QVERIFY(mCaptcha->lastError().isEmpty());
-    QVERIFY(mCaptcha->lastErrorDetails().allDetails().isEmpty());
+    QVERIFY(mCaptcha->error().isEmpty());
+    QVERIFY(mCaptcha->errorDetails().allDetails().isEmpty());
 }
 
 void TestCaptchaAuthentication::testCaptchaSuccessful()
