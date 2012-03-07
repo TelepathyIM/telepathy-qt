@@ -60,4 +60,4 @@ private:
 
 }
 
-#endif // TP_CAPTCHA_H
+#endif

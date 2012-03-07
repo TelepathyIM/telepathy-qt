@@ -39,7 +39,6 @@ namespace Tp
 class PendingCaptchaAnswer;
 class PendingCaptchaCancel;
 class PendingCaptchas;
-class ChannelFuture;
 
 class TP_QT_EXPORT CaptchaAuthentication : public Tp::Object
 {
