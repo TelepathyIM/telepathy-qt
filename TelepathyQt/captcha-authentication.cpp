@@ -40,10 +40,8 @@ namespace Tp
 PendingCaptchaAnswer::PendingCaptchaAnswer(PendingVoid *answerOperation,
         const CaptchaAuthenticationPtr &object)
     : PendingOperation(object),
-      mPriv(new Private(this))
+      mCaptcha(object)
 {
-    mPriv->captcha = object;
-
     debug() << "Calling Captcha.Answer";
     if (answerOperation->isFinished()) {
         onAnswerFinished(answerOperation);
@@ -56,7 +54,6 @@ PendingCaptchaAnswer::PendingCaptchaAnswer(PendingVoid *answerOperation,
 
 PendingCaptchaAnswer::~PendingCaptchaAnswer()
 {
-    delete mPriv;
 }
 
 void PendingCaptchaAnswer::onAnswerFinished(Tp::PendingOperation *op)
@@ -71,15 +68,15 @@ void PendingCaptchaAnswer::onAnswerFinished(Tp::PendingOperation *op)
     debug() << "Captcha.Answer returned successfully";
 
     // It might have been already opened - check
-    if (mPriv->captcha->status() == CaptchaStatusLocalPending ||
-            mPriv->captcha->status() == CaptchaStatusRemotePending) {
+    if (mCaptcha->status() == CaptchaStatusLocalPending ||
+            mCaptcha->status() == CaptchaStatusRemotePending) {
         debug() << "Awaiting captcha to be answered from server";
         // Wait until status becomes relevant
-        connect(mPriv->captcha.data(),
+        connect(mCaptcha.data(),
                 SIGNAL(statusChanged(Tp::CaptchaStatus)),
                 SLOT(onCaptchaStatusChanged(Tp::CaptchaStatus)));
     } else {
-        onCaptchaStatusChanged(mPriv->captcha->status());
+        onCaptchaStatusChanged(mCaptcha->status());
     }
 }
 
@@ -87,7 +84,7 @@ void PendingCaptchaAnswer::onCaptchaStatusChanged(Tp::CaptchaStatus status)
 {
     if (status == CaptchaStatusSucceeded) {
         // Perfect. Close the channel now.
-        connect(mPriv->captcha->mPriv->channel->requestClose(),
+        connect(mCaptcha->mPriv->channel->requestClose(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
     } else if (status == CaptchaStatusFailed || status == CaptchaStatusTryAgain) {
@@ -108,10 +105,8 @@ void PendingCaptchaAnswer::onRequestCloseFinished(Tp::PendingOperation *operatio
 PendingCaptchaCancel::PendingCaptchaCancel(PendingVoid *cancelOperation,
         const CaptchaAuthenticationPtr &object)
     : PendingOperation(object),
-      mPriv(new Private(this))
+      mCaptcha(object)
 {
-    mPriv->captcha = object;
-
     debug() << "Calling Captcha.Cancel";
     if (cancelOperation->isFinished()) {
         onCancelFinished(cancelOperation);
@@ -124,7 +119,6 @@ PendingCaptchaCancel::PendingCaptchaCancel(PendingVoid *cancelOperation,
 
 PendingCaptchaCancel::~PendingCaptchaCancel()
 {
-    delete mPriv;
 }
 
 void PendingCaptchaCancel::onCancelFinished(Tp::PendingOperation *op)
@@ -139,7 +133,7 @@ void PendingCaptchaCancel::onCancelFinished(Tp::PendingOperation *op)
     debug() << "Captcha.Cancel returned successfully";
 
     // Perfect. Close the channel now.
-    connect(mPriv->captcha->mPriv->channel->requestClose(),
+    connect(mCaptcha->mPriv->channel->requestClose(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
 }

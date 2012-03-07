@@ -47,19 +47,10 @@ private Q_SLOTS:
     void onRequestCloseFinished(Tp::PendingOperation *operation);
 
 private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-struct TP_QT_NO_EXPORT PendingCaptchaAnswer::Private
-{
-    Private(PendingCaptchaAnswer *parent) : parent(parent) {}
-
     // Public object
-    PendingCaptchaAnswer *parent;
+    PendingCaptchaAnswer *mParent;
 
-    CaptchaAuthenticationPtr captcha;
+    CaptchaAuthenticationPtr mCaptcha;
 };
 
 class TP_QT_NO_EXPORT PendingCaptchaCancel : public PendingOperation
@@ -77,19 +68,10 @@ private Q_SLOTS:
     void onRequestCloseFinished(Tp::PendingOperation *operation);
 
 private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-struct TP_QT_NO_EXPORT PendingCaptchaCancel::Private
-{
-    Private(PendingCaptchaCancel *parent) : parent(parent) {}
-
     // Public object
-    PendingCaptchaCancel *parent;
+    PendingCaptchaCancel *mParent;
 
-    CaptchaAuthenticationPtr captcha;
+    CaptchaAuthenticationPtr mCaptcha;
 };
 
 struct TP_QT_NO_EXPORT CaptchaAuthentication::Private
