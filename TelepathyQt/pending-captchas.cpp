@@ -127,8 +127,10 @@ PendingCaptchas::PendingCaptchas(
     mPriv->preferredMimeTypes = preferredMimeTypes;
     mPriv->preferredTypes = preferredTypes;
 
+    ChannelPtr serverAuthChannel = ChannelPtr(channel.data()->mPriv->channel);
+
     /* keep track of channel invalidation */
-    connect(channel.data()->mPriv->channel.data(),
+    connect(serverAuthChannel.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
 
@@ -258,8 +260,10 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
             continue;
         }
 
+        ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel->mPriv->channel);
+
         QDBusPendingCall call =
-        mPriv->channel->mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
+        serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
                     (*i).first.ID, (*i).second);
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);

@@ -82,7 +82,7 @@ struct TP_QT_NO_EXPORT CaptchaAuthentication::Private
 
     // Public object
     CaptchaAuthentication *parent;
-    ChannelPtr channel;
+    WeakPtr<Channel> channel;
 
     ReadinessHelper *readinessHelper;
 

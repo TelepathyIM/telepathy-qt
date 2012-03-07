@@ -32,6 +32,7 @@
 #include <TelepathyQt/PendingCaptchas>
 #include <TelepathyQt/PendingFailure>
 #include <TelepathyQt/PendingVariantMap>
+#include <TelepathyQt/WeakPtr>
 
 namespace Tp
 {
@@ -84,7 +85,9 @@ void PendingCaptchaAnswer::onCaptchaStatusChanged(Tp::CaptchaStatus status)
 {
     if (status == CaptchaStatusSucceeded) {
         // Perfect. Close the channel now.
-        connect(mCaptcha->mPriv->channel->requestClose(),
+        ChannelPtr serverAuthChannel = ChannelPtr(mCaptcha->mPriv->channel);
+
+        connect(serverAuthChannel->requestClose(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
     } else if (status == CaptchaStatusFailed || status == CaptchaStatusTryAgain) {
@@ -133,7 +136,8 @@ void PendingCaptchaCancel::onCancelFinished(Tp::PendingOperation *op)
     debug() << "Captcha.Cancel returned successfully";
 
     // Perfect. Close the channel now.
-    connect(mCaptcha->mPriv->channel->requestClose(),
+    ChannelPtr serverAuthChannel = ChannelPtr(mCaptcha->mPriv->channel);
+    connect(serverAuthChannel->requestClose(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
 }
@@ -304,8 +308,10 @@ PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &prefe
                 QLatin1String("Channel busy"), CaptchaAuthenticationPtr(this));
     }
 
+    ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel);
+
     return new PendingCaptchas(
-            mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchas(),
+            serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchas(),
             preferredMimeTypes,
             preferredTypes,
             CaptchaAuthenticationPtr(this));
@@ -367,8 +373,10 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
                 QLatin1String("Channel busy"), CaptchaAuthenticationPtr(this));
     }
 
+    ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel);
+
     PendingVoid *pv = new PendingVoid(
-                mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(response),
+                serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(response),
                 CaptchaAuthenticationPtr(this));
 
     return new PendingCaptchaAnswer(pv, CaptchaAuthenticationPtr(this));
@@ -395,8 +403,10 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
 Tp::PendingOperation *CaptchaAuthentication::cancel(CaptchaCancelReason reason,
         const QString &message)
 {
+    ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel);
+
     PendingVoid *pv = new PendingVoid(
-            mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->CancelCaptcha(
+            serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->CancelCaptcha(
                     reason, message),
             CaptchaAuthenticationPtr(this));
 
