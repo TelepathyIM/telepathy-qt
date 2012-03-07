@@ -91,7 +91,9 @@ void PendingCaptchaAnswer::onCaptchaStatusChanged(Tp::CaptchaStatus status)
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
     } else if (status == CaptchaStatusFailed || status == CaptchaStatusTryAgain) {
-        setFinishedWithError(QDBusError());
+        warning() << "Captcha status changed to" << status << ", failing";
+        setFinishedWithError(TP_QT_ERROR_RESOURCE_UNAVAILABLE,
+                QLatin1String("Captcha status changed to Failed - see error() for more details"));
     }
 }
 

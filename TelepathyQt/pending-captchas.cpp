@@ -147,6 +147,7 @@ PendingCaptchas::PendingCaptchas(
     : PendingOperation(channel),
       mPriv(new PendingCaptchas::Private(this))
 {
+    warning() << "PendingCaptchas created with instant failure";
     setFinishedWithError(errorName, errorMessage);
 }
 
@@ -167,7 +168,7 @@ void PendingCaptchas::onChannelInvalidated(Tp::DBusProxy *proxy,
         return;
     }
 
-    warning().nospace() << "StreamTube.Accept failed because channel was invalidated with " <<
+    warning().nospace() << "PendingCaptchas failed because channel was invalidated with " <<
         errorName << ": " << errorMessage;
 
     setFinishedWithError(errorName, errorMessage);
@@ -240,7 +241,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     }
 
     if (finalList.size() != howManyRequired) {
-        // No captchas available with our preferences
+        warning() << "No captchas available matching the specified preferences";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("No captchas matching the handler's request"));
         return;
