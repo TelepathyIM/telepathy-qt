@@ -2,6 +2,7 @@
  * This file is part of TelepathyQt
  *
  * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2012 Nokia Corporation
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
