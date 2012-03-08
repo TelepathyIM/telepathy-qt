@@ -34,12 +34,13 @@ namespace Tp
 
 class PendingCaptchas;
 
-class CaptchaData;
 class TP_QT_EXPORT Captcha {
 public:
     Captcha();
     Captcha(const Captcha &other);
     ~Captcha();
+
+    bool isValid() const { return mPriv.constData() != 0; }
 
     Captcha &operator=(const Captcha &rhs);
 
@@ -50,12 +51,14 @@ public:
     uint id() const;
 
 private:
+    struct Private;
+    friend struct Private;
     friend class PendingCaptchas;
 
     Captcha(const QString &mimeType, const QString &label, const QByteArray &data,
             CaptchaAuthentication::ChallengeType type, uint id);
 
-    QSharedDataPointer<CaptchaData> mPriv;
+    QSharedDataPointer<Captcha::Private> mPriv;
 };
 
 }

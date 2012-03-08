@@ -24,12 +24,11 @@
 
 namespace Tp {
 
-class TP_QT_NO_EXPORT CaptchaData : public QSharedData
+struct TP_QT_NO_EXPORT Captcha::Private : public QSharedData
 {
-public:
-    CaptchaData();
-    CaptchaData(const CaptchaData &other);
-    ~CaptchaData();
+    Private();
+    Private(const Captcha::Private &other);
+    ~Private();
 
     QString mimeType;
     QString label;
@@ -38,13 +37,13 @@ public:
     uint id;
 };
 
-CaptchaData::CaptchaData()
+Captcha::Private::Private()
     : type(CaptchaAuthentication::NoChallenge),
       id(0)
 {
 }
 
-CaptchaData::CaptchaData(const CaptchaData &other)
+Captcha::Private::Private(const Private &other)
     : QSharedData(other),
       mimeType(other.mimeType),
       label(other.label),
@@ -54,7 +53,7 @@ CaptchaData::CaptchaData(const CaptchaData &other)
 {
 }
 
-CaptchaData::~CaptchaData()
+Captcha::Private::~Private()
 {
 }
 
@@ -77,7 +76,6 @@ CaptchaData::~CaptchaData()
  * Default constructor.
  */
 Captcha::Captcha()
-    : mPriv(new CaptchaData)
 {
 }
 
@@ -91,7 +89,7 @@ Captcha::Captcha(const Captcha &other)
 
 Captcha::Captcha(const QString &mimeType, const QString &label,
         const QByteArray &data, CaptchaAuthentication::ChallengeType type, uint id)
-    : mPriv(new CaptchaData)
+    : mPriv(new Captcha::Private)
 {
     mPriv->mimeType = mimeType;
     mPriv->label = label;
@@ -126,6 +124,10 @@ Captcha &Captcha::operator=(const Captcha &rhs)
  */
 QString Captcha::mimeType() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->mimeType;
 }
 
@@ -140,6 +142,10 @@ QString Captcha::mimeType() const
  */
 QString Captcha::label() const
 {
+    if (!isValid()) {
+        return QString();
+    }
+
     return mPriv->label;
 }
 
@@ -152,6 +158,10 @@ QString Captcha::label() const
  */
 QByteArray Captcha::data() const
 {
+    if (!isValid()) {
+        return QByteArray();
+    }
+
     return mPriv->captchaData;
 }
 
@@ -163,6 +173,10 @@ QByteArray Captcha::data() const
  */
 CaptchaAuthentication::ChallengeType Captcha::type() const
 {
+    if (!isValid()) {
+        return CaptchaAuthentication::NoChallenge;
+    }
+
     return mPriv->type;
 }
 
@@ -175,6 +189,10 @@ CaptchaAuthentication::ChallengeType Captcha::type() const
  */
 uint Captcha::id() const
 {
+    if (!isValid()) {
+        return 0;
+    }
+
     return mPriv->id;
 }
 
