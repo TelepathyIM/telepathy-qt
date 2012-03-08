@@ -41,7 +41,8 @@ namespace Tp
 PendingCaptchaAnswer::PendingCaptchaAnswer(PendingVoid *answerOperation,
         const CaptchaAuthenticationPtr &object)
     : PendingOperation(object),
-      mCaptcha(object)
+      mCaptcha(object),
+      mChannel(mCaptcha->channel())
 {
     debug() << "Calling Captcha.Answer";
     if (answerOperation->isFinished()) {
@@ -85,9 +86,7 @@ void PendingCaptchaAnswer::onCaptchaStatusChanged(Tp::CaptchaStatus status)
 {
     if (status == CaptchaStatusSucceeded) {
         // Perfect. Close the channel now.
-        ChannelPtr serverAuthChannel = ChannelPtr(mCaptcha->mPriv->channel);
-
-        connect(serverAuthChannel->requestClose(),
+        connect(mChannel->requestClose(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
     } else if (status == CaptchaStatusFailed || status == CaptchaStatusTryAgain) {
@@ -110,7 +109,8 @@ void PendingCaptchaAnswer::onRequestCloseFinished(Tp::PendingOperation *operatio
 PendingCaptchaCancel::PendingCaptchaCancel(PendingVoid *cancelOperation,
         const CaptchaAuthenticationPtr &object)
     : PendingOperation(object),
-      mCaptcha(object)
+      mCaptcha(object),
+      mChannel(mCaptcha->channel())
 {
     debug() << "Calling Captcha.Cancel";
     if (cancelOperation->isFinished()) {
@@ -138,8 +138,7 @@ void PendingCaptchaCancel::onCancelFinished(Tp::PendingOperation *op)
     debug() << "Captcha.Cancel returned successfully";
 
     // Perfect. Close the channel now.
-    ChannelPtr serverAuthChannel = ChannelPtr(mCaptcha->mPriv->channel);
-    connect(serverAuthChannel->requestClose(),
+    connect(mChannel->requestClose(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onRequestCloseFinished(Tp::PendingOperation*)));
 }
@@ -226,6 +225,22 @@ bool CaptchaAuthentication::canRetry() const
 Tp::CaptchaStatus CaptchaAuthentication::status() const
 {
     return mPriv->status;
+}
+
+/**
+ * Return the channel associated with this captcha.
+ *
+ * CaptchaAuthentication is just a representation of an interface which can be implemented by
+ * a ServerAuthentication channel. This function will return the channel implementing the interface
+ * represented by this instance.
+ *
+ * \note It is currently guaranteed the ChannelPtr returned by this function will be a ServerAuthenticationChannel.
+ *
+ * \return The channel implementing the CaptchaAuthentication interface represented by this instance.
+ */
+Tp::ChannelPtr CaptchaAuthentication::channel() const
+{
+    return ChannelPtr(mPriv->channel);
 }
 
 /**

@@ -50,7 +50,8 @@ struct TP_QT_NO_EXPORT PendingCaptchas::Private
     QList<Captcha> captchas;
     int captchasLeft;
 
-    CaptchaAuthenticationPtr channel;
+    CaptchaAuthenticationPtr captchaAuthentication;
+    ChannelPtr channel;
 };
 
 PendingCaptchas::Private::Private(PendingCaptchas *parent)
@@ -119,18 +120,17 @@ PendingCaptchas::PendingCaptchas(
         const QDBusPendingCall &call,
         const QStringList &preferredMimeTypes,
         CaptchaAuthentication::ChallengeTypes preferredTypes,
-        const CaptchaAuthenticationPtr &channel)
-    : PendingOperation(channel),
+        const CaptchaAuthenticationPtr &captchaAuthentication)
+    : PendingOperation(captchaAuthentication),
       mPriv(new Private(this))
 {
-    mPriv->channel = channel;
+    mPriv->captchaAuthentication = captchaAuthentication;
+    mPriv->channel = captchaAuthentication->channel();
     mPriv->preferredMimeTypes = preferredMimeTypes;
     mPriv->preferredTypes = preferredTypes;
 
-    ChannelPtr serverAuthChannel = ChannelPtr(channel.data()->mPriv->channel);
-
     /* keep track of channel invalidation */
-    connect(serverAuthChannel.data(),
+    connect(mPriv->channel.data(),
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onChannelInvalidated(Tp::DBusProxy*,QString,QString)));
 
@@ -143,8 +143,8 @@ PendingCaptchas::PendingCaptchas(
 PendingCaptchas::PendingCaptchas(
         const QString& errorName,
         const QString& errorMessage,
-        const CaptchaAuthenticationPtr &channel)
-    : PendingOperation(channel),
+        const CaptchaAuthenticationPtr &captchaAuthentication)
+    : PendingOperation(captchaAuthentication),
       mPriv(new PendingCaptchas::Private(this))
 {
     warning() << "PendingCaptchas created with instant failure";
@@ -261,10 +261,8 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
             continue;
         }
 
-        ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel->mPriv->channel);
-
         QDBusPendingCall call =
-        serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
+        mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
                     (*i).first.ID, (*i).second);
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);

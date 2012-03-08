@@ -51,6 +51,7 @@ private:
     PendingCaptchaAnswer *mParent;
 
     CaptchaAuthenticationPtr mCaptcha;
+    ChannelPtr mChannel;
 };
 
 class TP_QT_NO_EXPORT PendingCaptchaCancel : public PendingOperation
@@ -72,6 +73,7 @@ private:
     PendingCaptchaCancel *mParent;
 
     CaptchaAuthenticationPtr mCaptcha;
+    ChannelPtr mChannel;
 };
 
 struct TP_QT_NO_EXPORT CaptchaAuthentication::Private

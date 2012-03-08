@@ -66,6 +66,8 @@ public:
     bool canRetry() const;
     Tp::CaptchaStatus status() const;
 
+    ChannelPtr channel() const;
+
     QString error() const;
     Connection::ErrorDetails errorDetails() const;
 
@@ -91,9 +93,6 @@ private:
     explicit CaptchaAuthentication(const ChannelPtr &parent);
 
     friend class ServerAuthenticationChannel;
-    friend class PendingCaptchaAnswer;
-    friend class PendingCaptchaCancel;
-    friend class PendingCaptchas;
 
     struct Private;
     friend struct Private;
