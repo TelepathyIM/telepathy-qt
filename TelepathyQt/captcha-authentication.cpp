@@ -170,7 +170,7 @@ void CaptchaAuthentication::Private::extractCaptchaAuthenticationProperties(cons
 /**
  * \class CaptchaAuthentication
  * \ingroup clientchannel
- * \headerfile TelepathyQt/captcha-authentication.h <TelepathyQt/CaptchaAuthenticationChannel>
+ * \headerfile TelepathyQt/captcha-authentication.h <TelepathyQt/CaptchaAuthentication>
  *
  * \brief The CaptchaAuthentication class exposes CaptchaAuthentication's features for channels implementing it.
  *
@@ -182,7 +182,7 @@ void CaptchaAuthentication::Private::extractCaptchaAuthenticationProperties(cons
  * which are meant to handle authentication - if you are implementing a client which is meant to live in a
  * Telepathy-aware platform, you probably won't need to handle this unless you have very special needs.
  *
- * Note that CaptchaAuthentication should never be instantiated directly, instead the accessor method from
+ * Note that CaptchaAuthentication cannot be instantiated directly, instead the accessor method from
  * ServerAuthenticationChannel (ServerAuthenticationChannel::captchaAuthentication) should be used.
  *
  * See \ref async_model, \ref shared_ptr
