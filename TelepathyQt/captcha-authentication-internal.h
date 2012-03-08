@@ -37,19 +37,20 @@ class TP_QT_NO_EXPORT PendingCaptchaAnswer : public PendingOperation
     Q_DISABLE_COPY(PendingCaptchaAnswer)
 
 public:
-    PendingCaptchaAnswer(PendingVoid *offerOperation,
+    PendingCaptchaAnswer(const QDBusPendingCall &call,
             const CaptchaAuthenticationPtr &object);
     ~PendingCaptchaAnswer();
 
 private Q_SLOTS:
     void onCaptchaStatusChanged(Tp::CaptchaStatus status);
-    void onAnswerFinished(Tp::PendingOperation *operation);
+    void onAnswerFinished();
     void onRequestCloseFinished(Tp::PendingOperation *operation);
 
 private:
     // Public object
     PendingCaptchaAnswer *mParent;
 
+    QDBusPendingCallWatcher *mWatcher;
     CaptchaAuthenticationPtr mCaptcha;
     ChannelPtr mChannel;
 };
@@ -60,18 +61,19 @@ class TP_QT_NO_EXPORT PendingCaptchaCancel : public PendingOperation
     Q_DISABLE_COPY(PendingCaptchaCancel)
 
 public:
-    PendingCaptchaCancel(PendingVoid *cancelOperation,
+    PendingCaptchaCancel(const QDBusPendingCall &call,
             const CaptchaAuthenticationPtr &object);
     ~PendingCaptchaCancel();
 
 private Q_SLOTS:
-    void onCancelFinished(Tp::PendingOperation *operation);
+    void onCancelFinished();
     void onRequestCloseFinished(Tp::PendingOperation *operation);
 
 private:
     // Public object
     PendingCaptchaCancel *mParent;
 
+    QDBusPendingCallWatcher *mWatcher;
     CaptchaAuthenticationPtr mCaptcha;
     ChannelPtr mChannel;
 };

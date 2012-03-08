@@ -38,19 +38,20 @@ namespace Tp
 {
 
 // ---
-PendingCaptchaAnswer::PendingCaptchaAnswer(PendingVoid *answerOperation,
+PendingCaptchaAnswer::PendingCaptchaAnswer(const QDBusPendingCall &call,
         const CaptchaAuthenticationPtr &object)
     : PendingOperation(object),
+      mWatcher(new QDBusPendingCallWatcher(call, this)),
       mCaptcha(object),
       mChannel(mCaptcha->channel())
 {
     debug() << "Calling Captcha.Answer";
-    if (answerOperation->isFinished()) {
-        onAnswerFinished(answerOperation);
+    if (mWatcher->isFinished()) {
+        onAnswerFinished();
     } else {
         // Connect the pending void
-        connect(answerOperation, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onAnswerFinished(Tp::PendingOperation*)));
+        connect(mWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                this, SLOT(onAnswerFinished()));
     }
 }
 
@@ -58,12 +59,13 @@ PendingCaptchaAnswer::~PendingCaptchaAnswer()
 {
 }
 
-void PendingCaptchaAnswer::onAnswerFinished(Tp::PendingOperation *op)
+void PendingCaptchaAnswer::onAnswerFinished()
 {
-    if (op->isError()) {
+    QDBusReply<void> reply = mWatcher->reply();
+    if (!reply.isValid()) {
         warning().nospace() << "Captcha.Answer failed with " <<
-            op->errorName() << ": " << op->errorMessage();
-        setFinishedWithError(op->errorName(), op->errorMessage());
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
         return;
     }
 
@@ -106,19 +108,20 @@ void PendingCaptchaAnswer::onRequestCloseFinished(Tp::PendingOperation *operatio
     setFinished();
 }
 
-PendingCaptchaCancel::PendingCaptchaCancel(PendingVoid *cancelOperation,
+PendingCaptchaCancel::PendingCaptchaCancel(const QDBusPendingCall &call,
         const CaptchaAuthenticationPtr &object)
     : PendingOperation(object),
+      mWatcher(new QDBusPendingCallWatcher(call, this)),
       mCaptcha(object),
       mChannel(mCaptcha->channel())
 {
     debug() << "Calling Captcha.Cancel";
-    if (cancelOperation->isFinished()) {
-        onCancelFinished(cancelOperation);
+    if (mWatcher->isFinished()) {
+        onCancelFinished();
     } else {
         // Connect the pending void
-        connect(cancelOperation, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onCancelFinished(Tp::PendingOperation*)));
+        connect(mWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                this, SLOT(onCancelFinished()));
     }
 }
 
@@ -126,12 +129,13 @@ PendingCaptchaCancel::~PendingCaptchaCancel()
 {
 }
 
-void PendingCaptchaCancel::onCancelFinished(Tp::PendingOperation *op)
+void PendingCaptchaCancel::onCancelFinished()
 {
-    if (op->isError()) {
-        warning().nospace() << "Captcha.Cancel failed with " <<
-            op->errorName() << ": " << op->errorMessage();
-        setFinishedWithError(op->errorName(), op->errorMessage());
+    QDBusReply<void> reply = mWatcher->reply();
+    if (!reply.isValid()) {
+        warning().nospace() << "Captcha.Answer failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
         return;
     }
 
@@ -392,11 +396,8 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
 
     ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel);
 
-    PendingVoid *pv = new PendingVoid(
-                serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(response),
-                CaptchaAuthenticationPtr(this));
-
-    return new PendingCaptchaAnswer(pv, CaptchaAuthenticationPtr(this));
+    return new PendingCaptchaAnswer(serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(response),
+            CaptchaAuthenticationPtr(this));
 }
 
 /**
@@ -422,12 +423,9 @@ Tp::PendingOperation *CaptchaAuthentication::cancel(CaptchaCancelReason reason,
 {
     ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel);
 
-    PendingVoid *pv = new PendingVoid(
-            serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->CancelCaptcha(
+    return new PendingCaptchaCancel(serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->CancelCaptcha(
                     reason, message),
             CaptchaAuthenticationPtr(this));
-
-    return new PendingCaptchaCancel(pv, CaptchaAuthenticationPtr(this));
 }
 
 } // Tp
