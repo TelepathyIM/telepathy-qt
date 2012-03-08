@@ -278,7 +278,7 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
 
     if (changedProperties.contains(QLatin1String("CaptchaStatus"))) {
         mPriv->status = static_cast<Tp::CaptchaStatus>(changedProperties.value(QLatin1String("CaptchaStatus")).value<uint>());
-        Q_EMIT statusChanged(mPriv->status);
+        emit statusChanged(mPriv->status);
     }
     if (changedProperties.contains(QLatin1String("CaptchaErrorDetails"))) {
         mPriv->errorDetails = changedProperties.value(QLatin1String("CaptchaErrorDetails")).toMap();
@@ -321,7 +321,6 @@ void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProper
 PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &preferredMimeTypes,
         ChallengeTypes preferredTypes)
 {
-
     // The captcha should be either LocalPending or TryAgain
     if (status() != CaptchaStatusLocalPending && status() != CaptchaStatusTryAgain) {
         warning() << "Status must be local pending or try again";

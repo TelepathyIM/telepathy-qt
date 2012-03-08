@@ -83,8 +83,6 @@ public Q_SLOTS:
     Tp::PendingOperation *cancel(Tp::CaptchaCancelReason reason,
             const QString &message = QString());
 
-protected:
-
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onPropertiesChanged(const QVariantMap &changedProperties,
             const QStringList &invalidatedProperties);
