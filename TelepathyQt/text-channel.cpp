@@ -367,8 +367,9 @@ void TextChannel::Private::processMessageQueue()
             int i = 0;
             while (i < messages.size()) {
                 if (messages.at(i).pendingId() == e->removed) {
-                    emit parent->pendingMessageRemoved(messages.at(i));
+                    ReceivedMessage removedMessage = messages.at(i);
                     messages.removeAt(i);
+                    emit parent->pendingMessageRemoved(removedMessage);
                 } else {
                     i++;
                 }
