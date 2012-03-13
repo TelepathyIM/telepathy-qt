@@ -60,6 +60,7 @@ protected:
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void gotCaptchaAuthenticationProperties(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotServerAuthenticationProperties(Tp::PendingOperation *op);
 
 private:
     struct Private;

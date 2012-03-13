@@ -47,6 +47,7 @@ struct TP_QT_NO_EXPORT ServerAuthenticationChannel::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
+    QString authMethod;
     CaptchaAuthenticationPtr captchaAuthentication;
 };
 
@@ -71,33 +72,13 @@ void ServerAuthenticationChannel::Private::introspectMain(ServerAuthenticationCh
 {
     ServerAuthenticationChannel *parent = self->parent;
 
-    if (parent->hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION)) {
-        self->captchaAuthentication =
-                CaptchaAuthenticationPtr(new CaptchaAuthentication(ChannelPtr(parent)));
+    Client::ChannelTypeServerAuthenticationInterface *serverAuthenticationInterface =
+                parent->interface<Client::ChannelTypeServerAuthenticationInterface>();
 
-        Client::ChannelInterfaceCaptchaAuthenticationInterface *captchaAuthenticationInterface =
-                parent->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>();
-
-        captchaAuthenticationInterface->setMonitorProperties(true);
-
-        QObject::connect(captchaAuthenticationInterface,
-                SIGNAL(propertiesChanged(QVariantMap,QStringList)),
-                parent->mPriv->captchaAuthentication.data(),
-                SLOT(onPropertiesChanged(QVariantMap,QStringList)));
-
-        PendingVariantMap *pvm = captchaAuthenticationInterface->requestAllProperties();
-        parent->connect(pvm,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(gotCaptchaAuthenticationProperties(Tp::PendingOperation*)));
-    } else if (parent->hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION)) {
-        // TODO: Stuff for SASL should go here
-        self->readinessHelper->setIntrospectCompleted(ServerAuthenticationChannel::FeatureCore, true);
-    } else {
-        // This should never happen, but still
-        self->readinessHelper->setIntrospectCompleted(ServerAuthenticationChannel::FeatureCore, false,
-                TP_QT_ERROR_NOT_AVAILABLE,
-                QLatin1String("No known interfaces are advertised by this ServerAuthenticationChannel"));
-    }
+    PendingVariantMap *pvm = serverAuthenticationInterface->requestAllProperties();
+    parent->connect(pvm,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotServerAuthenticationProperties(Tp::PendingOperation*)));
 }
 
 /**
@@ -189,7 +170,7 @@ bool ServerAuthenticationChannel::hasCaptchaInterface() const
         return false;
     }
 
-    return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION);
+    return mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION;
 }
 
 /*
@@ -207,7 +188,7 @@ bool ServerAuthenticationChannel::hasSaslInterface() const
         return false;
     }
 
-    return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION);
+    return mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION;
 }*/
 
 /**
@@ -252,4 +233,43 @@ void ServerAuthenticationChannel::gotCaptchaAuthenticationProperties(Tp::Pending
     }
 }
 
+void ServerAuthenticationChannel::gotServerAuthenticationProperties(Tp::PendingOperation *op)
+{
+    if (!op->isError()) {
+        PendingVariantMap *pvm = qobject_cast<PendingVariantMap *>(op);
+
+        debug() << "Got reply to Properties::GetAll(ServerAuthentication)";
+        mPriv->authMethod = qdbus_cast<QString>(pvm->result()[QLatin1String("AuthenticationMethod")]);
+
+        if (mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION) {
+            mPriv->captchaAuthentication =
+                    CaptchaAuthenticationPtr(new CaptchaAuthentication(ChannelPtr(this)));
+
+            Client::ChannelInterfaceCaptchaAuthenticationInterface *captchaAuthenticationInterface =
+                    interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>();
+
+            captchaAuthenticationInterface->setMonitorProperties(true);
+
+            QObject::connect(captchaAuthenticationInterface,
+                    SIGNAL(propertiesChanged(QVariantMap,QStringList)),
+                    mPriv->captchaAuthentication.data(),
+                    SLOT(onPropertiesChanged(QVariantMap,QStringList)));
+
+            PendingVariantMap *pvm = captchaAuthenticationInterface->requestAllProperties();
+            connect(pvm,
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(gotCaptchaAuthenticationProperties(Tp::PendingOperation*)));
+        } else {
+            // We have nothing else to do here at the moment
+            mPriv->readinessHelper->setIntrospectCompleted(ServerAuthenticationChannel::FeatureCore, true);
+        }
+    } else {
+        warning().nospace() << "Properties::GetAll(ServerAuthentication) failed "
+            "with " << op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(ServerAuthenticationChannel::FeatureCore, false,
+                op->errorName(), op->errorMessage());
+    }
+}
+
 } // Tp
+
