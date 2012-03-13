@@ -192,7 +192,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
 
     // Compute which captchas are required
     QList<QPair<Tp::CaptchaInfo,QString> > finalList;
-    Q_FOREACH (const Tp::CaptchaInfo &info, list) {
+    foreach (const Tp::CaptchaInfo &info, list) {
         // First of all, mimetype check
         QString mimeType;
         if (info.availableMIMETypes.isEmpty()) {
