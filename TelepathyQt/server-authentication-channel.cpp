@@ -37,7 +37,7 @@ struct TP_QT_NO_EXPORT ServerAuthenticationChannel::Private
 {
     Private(ServerAuthenticationChannel *parent);
 
-    static void introspectServerAuthentication(ServerAuthenticationChannel::Private *self);
+    static void introspectMain(ServerAuthenticationChannel::Private *self);
 
     void extractServerAuthenticationProperties(const QVariantMap &props);
 
@@ -60,14 +60,14 @@ ServerAuthenticationChannel::Private::Private(ServerAuthenticationChannel *paren
             QSet<uint>() << 0,                                                          // makesSenseForStatuses
             Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
             QStringList(),                                                              // dependsOnInterfaces
-            (ReadinessHelper::IntrospectFunc) &ServerAuthenticationChannel::Private::introspectServerAuthentication,
+            (ReadinessHelper::IntrospectFunc) &ServerAuthenticationChannel::Private::introspectMain,
             this);
     introspectables[ServerAuthenticationChannel::FeatureCore] = introspectableServerAuthentication;
 
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void ServerAuthenticationChannel::Private::introspectServerAuthentication(ServerAuthenticationChannel::Private *self)
+void ServerAuthenticationChannel::Private::introspectMain(ServerAuthenticationChannel::Private *self)
 {
     ServerAuthenticationChannel *parent = self->parent;
 
