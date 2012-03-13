@@ -91,6 +91,7 @@ void ServerAuthenticationChannel::Private::introspectServerAuthentication(Server
                 SLOT(gotCaptchaAuthenticationProperties(Tp::PendingOperation*)));
     } else if (parent->hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION)) {
         // TODO: Stuff for SASL should go here
+        self->readinessHelper->setIntrospectCompleted(ServerAuthenticationChannel::FeatureCore, true);
     } else {
         // This should never happen, but still
         self->readinessHelper->setIntrospectCompleted(ServerAuthenticationChannel::FeatureCore, false,
@@ -191,13 +192,14 @@ bool ServerAuthenticationChannel::hasCaptchaInterface() const
     return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION);
 }
 
-/**
+/*
  * Return whether this ServerAuthenticationChannel implements Sasl as its authentication mechanism.
  *
  * This method requires FeatureCore to be ready.
  *
  * \return \c true if this channel implements the Sasl interface, \c false otherwise.
- */
+ *
+ * TODO: Enable when high-level SASL Support will be in place
 bool ServerAuthenticationChannel::hasSaslInterface() const
 {
     if (!isReady(ServerAuthenticationChannel::FeatureCore)) {
@@ -206,7 +208,7 @@ bool ServerAuthenticationChannel::hasSaslInterface() const
     }
 
     return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION);
-}
+}*/
 
 /**
  * Return the CaptchaAuthentication object for this channel, if the channel implements

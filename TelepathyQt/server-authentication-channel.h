@@ -50,7 +50,8 @@ public:
     // TODO: Add something for SASL here as well
 
     bool hasCaptchaInterface() const;
-    bool hasSaslInterface() const;
+    // TODO: Enable when SASL high-level support is in
+    // bool hasSaslInterface() const;
 
 protected:
     ServerAuthenticationChannel(const ConnectionPtr &connection, const QString &objectPath,
