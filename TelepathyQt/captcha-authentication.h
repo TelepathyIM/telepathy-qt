@@ -88,7 +88,7 @@ private Q_SLOTS:
             const QStringList &invalidatedProperties);
 
 private:
-    explicit CaptchaAuthentication(const ChannelPtr &parent);
+    TP_QT_NO_EXPORT CaptchaAuthentication(const ChannelPtr &parent);
 
     friend class ServerAuthenticationChannel;
 

@@ -88,8 +88,6 @@ struct TP_QT_NO_EXPORT CaptchaAuthentication::Private
     CaptchaAuthentication *parent;
     WeakPtr<Channel> channel;
 
-    ReadinessHelper *readinessHelper;
-
     // Introspection
     bool canRetry;
     CaptchaStatus status;
