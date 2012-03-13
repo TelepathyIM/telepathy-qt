@@ -63,10 +63,10 @@ public:
 
     virtual ~CaptchaAuthentication();
 
+    ChannelPtr channel() const;
+
     bool canRetry() const;
     Tp::CaptchaStatus status() const;
-
-    ChannelPtr channel() const;
 
     QString error() const;
     Connection::ErrorDetails errorDetails() const;

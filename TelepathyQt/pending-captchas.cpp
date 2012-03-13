@@ -29,7 +29,8 @@
 #include <TelepathyQt/Captcha>
 #include <TelepathyQt/captcha-authentication-internal.h>
 
-namespace Tp {
+namespace Tp
+{
 
 struct TP_QT_NO_EXPORT PendingCaptchas::Private
 {

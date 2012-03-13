@@ -22,7 +22,8 @@
 
 #include <TelepathyQt/Captcha>
 
-namespace Tp {
+namespace Tp
+{
 
 struct TP_QT_NO_EXPORT Captcha::Private : public QSharedData
 {

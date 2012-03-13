@@ -206,6 +206,22 @@ CaptchaAuthentication::~CaptchaAuthentication()
 }
 
 /**
+ * Return the channel associated with this captcha.
+ *
+ * CaptchaAuthentication is just a representation of an interface which can be implemented by
+ * a ServerAuthentication channel. This function will return the channel implementing the interface
+ * represented by this instance.
+ *
+ * \note It is currently guaranteed the ChannelPtr returned by this function will be a ServerAuthenticationChannel.
+ *
+ * \return The channel implementing the CaptchaAuthentication interface represented by this instance.
+ */
+Tp::ChannelPtr CaptchaAuthentication::channel() const
+{
+    return ChannelPtr(mPriv->channel);
+}
+
+/**
  * Return whether this channel supports updating its captchas or not.
  *
  * Some protocols allow their captchas to be reloaded providing new data to the user; for example, in case
@@ -231,22 +247,6 @@ Tp::CaptchaStatus CaptchaAuthentication::status() const
 }
 
 /**
- * Return the channel associated with this captcha.
- *
- * CaptchaAuthentication is just a representation of an interface which can be implemented by
- * a ServerAuthentication channel. This function will return the channel implementing the interface
- * represented by this instance.
- *
- * \note It is currently guaranteed the ChannelPtr returned by this function will be a ServerAuthenticationChannel.
- *
- * \return The channel implementing the CaptchaAuthentication interface represented by this instance.
- */
-Tp::ChannelPtr CaptchaAuthentication::channel() const
-{
-    return ChannelPtr(mPriv->channel);
-}
-
-/**
  * Return the code of the last error happened on the interface.
  *
  * \return An error code describing the last error occurred.
@@ -268,23 +268,6 @@ QString CaptchaAuthentication::error() const
 Connection::ErrorDetails CaptchaAuthentication::errorDetails() const
 {
     return Connection::ErrorDetails(mPriv->errorDetails);
-}
-
-void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProperties,
-        const QStringList &invalidatedProperties)
-{
-    Q_UNUSED(invalidatedProperties);
-
-    if (changedProperties.contains(QLatin1String("CaptchaStatus"))) {
-        mPriv->status = static_cast<Tp::CaptchaStatus>(changedProperties.value(QLatin1String("CaptchaStatus")).value<uint>());
-        emit statusChanged(mPriv->status);
-    }
-    if (changedProperties.contains(QLatin1String("CaptchaErrorDetails"))) {
-        mPriv->errorDetails = changedProperties.value(QLatin1String("CaptchaErrorDetails")).toMap();
-    }
-    if (changedProperties.contains(QLatin1String("CaptchaError"))) {
-        mPriv->error = changedProperties.value(QLatin1String("CaptchaError")).toString();
-    }
 }
 
 /**
@@ -424,6 +407,23 @@ Tp::PendingOperation *CaptchaAuthentication::cancel(CaptchaCancelReason reason,
     return new PendingCaptchaCancel(serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->CancelCaptcha(
                     reason, message),
             CaptchaAuthenticationPtr(this));
+}
+
+void CaptchaAuthentication::onPropertiesChanged(const QVariantMap &changedProperties,
+        const QStringList &invalidatedProperties)
+{
+    Q_UNUSED(invalidatedProperties);
+
+    if (changedProperties.contains(QLatin1String("CaptchaStatus"))) {
+        mPriv->status = static_cast<Tp::CaptchaStatus>(changedProperties.value(QLatin1String("CaptchaStatus")).value<uint>());
+        emit statusChanged(mPriv->status);
+    }
+    if (changedProperties.contains(QLatin1String("CaptchaErrorDetails"))) {
+        mPriv->errorDetails = changedProperties.value(QLatin1String("CaptchaErrorDetails")).toMap();
+    }
+    if (changedProperties.contains(QLatin1String("CaptchaError"))) {
+        mPriv->error = changedProperties.value(QLatin1String("CaptchaError")).toString();
+    }
 }
 
 } // Tp
