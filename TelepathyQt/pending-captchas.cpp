@@ -322,7 +322,6 @@ void PendingCaptchas::onGetCaptchaDataWatcherFinished(QDBusPendingCallWatcher *w
  * successfully.
  *
  * \return The main captcha for the pending request.
- *
  * \sa captchaList()
  *     CaptchaAuthentication::requestCaptchas()
  *     requiresMultipleCaptchas()
@@ -351,7 +350,6 @@ Captcha PendingCaptchas::captcha() const
  * successfully.
  *
  * \return All the captchas for the pending request.
- *
  * \sa captcha()
  *     CaptchaAuthentication::requestCaptchas()
  *     requiresMultipleCaptchas()
@@ -378,7 +376,6 @@ QList<Captcha> PendingCaptchas::captchaList() const
  * successfully.
  *
  * \return The main captcha for the pending request.
- *
  * \sa captcha()
  *     captchaList()
  */

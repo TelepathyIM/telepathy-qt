@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2010-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2012 Nokia Corporation
  * @license LGPL 2.1
  *
@@ -89,7 +89,7 @@ void ServerAuthenticationChannel::Private::introspectMain(ServerAuthenticationCh
  * \brief The ServerAuthenticationChannel class is a base class for all ServerAuthentication types.
  *
  * A ServerAuthentication is a mechanism for a connection to perform an authentication operation.
- * Such an authentication can happen in several way (at the moment, Captcha and Sasl are supported) - this
+ * Such an authentication can happen in several ways (at the moment, only Captcha is supported) - this
  * channel will expose a high-level object representing the requested method, allowing a handler to carry on
  * the authentication procedure.
  *
@@ -157,10 +157,9 @@ ServerAuthenticationChannel::~ServerAuthenticationChannel()
  * Return whether this ServerAuthenticationChannel implements Captcha as its authentication mechanism.
  * Should this be true, captchaAuthentication() can be safely accessed.
  *
- * This method requires FeatureCore to be ready.
+ * This method requires ServerAuthenticationChannel::FeatureCore to be ready.
  *
  * \return \c true if this channel implements the Captcha interface, \c false otherwise.
- *
  * \sa captchaAuthentication
  */
 bool ServerAuthenticationChannel::hasCaptchaInterface() const
@@ -176,7 +175,7 @@ bool ServerAuthenticationChannel::hasCaptchaInterface() const
 /*
  * Return whether this ServerAuthenticationChannel implements Sasl as its authentication mechanism.
  *
- * This method requires FeatureCore to be ready.
+ * This method requires ServerAuthenticationChannel::FeatureCore to be ready.
  *
  * \return \c true if this channel implements the Sasl interface, \c false otherwise.
  *
@@ -198,12 +197,11 @@ bool ServerAuthenticationChannel::hasSaslInterface() const
  * Note that this method will return a meaningful value only if hasCaptchaInterface()
  * returns \c true.
  *
- * This method requires FeatureCore to be ready.
+ * This method requires ServerAuthenticationChannel::FeatureCore to be ready.
  *
  * \return A shared pointer to the object representing the CaptchaAuthentication interface,
  *         or a null shared pointer if the feature is not ready yet or the channel does not
  *         implement Captcha interface.
- *
  * \sa hasCaptchaInterface
  */
 CaptchaAuthenticationPtr ServerAuthenticationChannel::captchaAuthentication() const
@@ -272,4 +270,3 @@ void ServerAuthenticationChannel::gotServerAuthenticationProperties(Tp::PendingO
 }
 
 } // Tp
-

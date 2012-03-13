@@ -70,7 +70,7 @@ Captcha::Private::~Private()
  * Please note this class is meant to be read-only. It is usually created by PendingCaptchas
  * once a Captcha request operation succeeds.
  *
- * Note: this class is implicitly shared
+ * Please note that this class is implicitly shared.
  */
 
 /**
