@@ -37,6 +37,7 @@ if(ENABLE_TP_GLIB_TESTS)
     endif(HAVE_TEST_PYTHON)
 
     tpqt_add_dbus_unit_test(AccountConnectionFactory account-connection-factory tp-glib-tests tp-qt-tests-glib-helpers)
+    tpqt_add_dbus_unit_test(CaptchaAuthentication captcha-authentication tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ChannelBasics chan-basics tp-glib-tests tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ChannelConference chan-conference tp-glib-tests future-example-cm-conference tp-qt-tests-glib-helpers)
     tpqt_add_dbus_unit_test(ConnectionManagerBasics cm-basics tp-glib-tests)

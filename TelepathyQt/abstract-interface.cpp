@@ -202,7 +202,7 @@ void AbstractInterface::onPropertiesChanged(const QString &interface,
             const QVariantMap &changedProperties,
             const QStringList &invalidatedProperties)
 {
-    Q_EMIT propertiesChanged(changedProperties, invalidatedProperties);
+    emit propertiesChanged(changedProperties, invalidatedProperties);
 }
 
 /**
