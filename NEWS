@@ -15,6 +15,7 @@ Enhancements:
 Fixes:
  * fd.o #45850: Telepathy Qt4 cannot compile against glib 2.31.0 and above
  * fd.o #39346: telepathy-qt fails to build with clang
+ * fd.o #45755: Inconsistent ordering of pendingMessageRemoved
 
 telepathy-qt 0.9.0 (2011-12-20)
 ================================
