@@ -252,25 +252,27 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     mPriv->multipleRequired = howManyRequired > 1 ? true : false;
     for (QList<QPair<Tp::CaptchaInfo,QString> >::const_iterator i = finalList.constBegin();
             i != finalList.constEnd(); ++i) {
+        QString mimeType = (*i).second;
+        Tp::CaptchaInfo captchaInfo = (*i).first;
 
         // If the captcha does not have a mimetype, we can add it straight
-        if ((*i).second.isEmpty()) {
-            mPriv->appendCaptchaResult((*i).second, (*i).first.label, QByteArray(),
-                    mPriv->stringToChallengeType((*i).first.type), (*i).first.ID);
+        if (mimeType.isEmpty()) {
+            mPriv->appendCaptchaResult(mimeType, captchaInfo.label, QByteArray(),
+                    mPriv->stringToChallengeType(captchaInfo.type), captchaInfo.ID);
 
             continue;
         }
 
         QDBusPendingCall call =
         mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
-                    (*i).first.ID, (*i).second);
+                    captchaInfo.ID, mimeType);
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);
-        dataWatcher->setProperty("__Tp_Qt_CaptchaID", (*i).first.ID);
-        dataWatcher->setProperty("__Tp_Qt_CaptchaMimeType", (*i).second);
-        dataWatcher->setProperty("__Tp_Qt_CaptchaLabel", (*i).first.label);
+        dataWatcher->setProperty("__Tp_Qt_CaptchaID", captchaInfo.ID);
+        dataWatcher->setProperty("__Tp_Qt_CaptchaMimeType", mimeType);
+        dataWatcher->setProperty("__Tp_Qt_CaptchaLabel", captchaInfo.label);
         dataWatcher->setProperty("__Tp_Qt_CaptchaType",
-                mPriv->stringToChallengeType((*i).first.type));
+                mPriv->stringToChallengeType(captchaInfo.type));
 
         connect(dataWatcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
