@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2008 Nokia Corporation
  * @license LGPL 2.1
  *
