@@ -367,6 +367,7 @@ set(telepathy_qt_HEADERS
     PeerInterface
     PendingAccount
     pending-account.h
+    PendingCallContent
     PendingCaptchas
     pending-captchas.h
     PendingChannel
