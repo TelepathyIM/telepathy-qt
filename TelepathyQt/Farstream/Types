@@ -1,0 +1,13 @@
+#ifndef _TelepathyQt4Yell_Farstream_Types_HEADER_GUARD_
+#define _TelepathyQt4Yell_Farstream_Types_HEADER_GUARD_
+
+#ifndef IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
+#define IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
+#endif
+
+#include <TelepathyQt4Yell/Farstream/types.h>
+
+#undef IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
+
+#endif
+// vim:set ft=cpp:

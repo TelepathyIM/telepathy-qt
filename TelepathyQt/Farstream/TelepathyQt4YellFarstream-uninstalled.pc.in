@@ -1,0 +1,11 @@
+prefix=/nonexistent
+exec_prefix=/nonexistent
+abs_top_builddir=${CMAKE_BINARY_DIR}
+abs_top_srcdir=${CMAKE_SOURCE_DIR}
+
+Name: Telepathy-Qt4-Yell-Farstream (uninstalled copy)
+Description: Qt4 Telepathy Yell Farstream utility library for the Telepathy Yell framework
+Version: ${PACKAGE_VERSION}
+Requires.private: QtCore >= 4.5, QtDBus >= 4.5, telepathy-glib >= 0.7.28, telepathy-farstream >= 0.0.1, TelepathyQt4Yell = ${PACKAGE_VERSION}
+Libs: ${CMAKE_BINARY_DIR}/TelepathyQt4Yell/Farstream/libtelepathy-qt4-yell-farstream.so
+Cflags: -I${CMAKE_SOURCE_DIR} -I${CMAKE_BINARY_DIR}
