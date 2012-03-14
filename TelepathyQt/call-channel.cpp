@@ -180,8 +180,7 @@ void CallChannel::Private::introspectCallState(CallChannel::Private *self)
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(
-                    QLatin1String(TP_QT_IFACE_CHANNEL_TYPE_CALL)),
+                self->properties->GetAll(TP_QT_IFACE_CHANNEL_TYPE_CALL),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -198,8 +197,7 @@ void CallChannel::Private::introspectCallMembers(CallChannel::Private *self)
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(
-                    QLatin1String(TP_QT_IFACE_CHANNEL_TYPE_CALL)),
+                self->properties->GetAll(TP_QT_IFACE_CHANNEL_TYPE_CALL),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -220,7 +218,7 @@ void CallChannel::Private::introspectContents(CallChannel::Private *self)
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 self->properties->Get(
-                    QLatin1String(TP_QT_IFACE_CHANNEL_TYPE_CALL),
+                    TP_QT_IFACE_CHANNEL_TYPE_CALL,
                     QLatin1String("Contents")),
                 parent);
     parent->connect(watcher,

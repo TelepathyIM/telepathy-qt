@@ -103,8 +103,7 @@ void CallContent::Private::introspectMainProperties(CallContent::Private *self)
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(
-                    QLatin1String(TP_QT_IFACE_CALL_CONTENT)),
+                self->properties->GetAll(TP_QT_IFACE_CALL_CONTENT),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
