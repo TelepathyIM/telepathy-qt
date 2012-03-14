@@ -1,7 +1,7 @@
-/*
- * This file is part of TelepathyQt4Yell
+/**
+ * This file is part of TelepathyQt
  *
- * Copyright © 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright © 2009-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright © 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
@@ -19,26 +19,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4Yell/Farstream/Channel>
+#include <TelepathyQt/Farstream/Channel>
 
-#include "TelepathyQt4Yell/Farstream/_gen/channel.moc.hpp"
+#include "TelepathyQt/Farstream/_gen/channel.moc.hpp"
 
-#include <TelepathyQt/Channel>
+#include <TelepathyQt/CallChannel>
 #include <TelepathyQt/Connection>
 
-#include <TelepathyQt4Yell/CallChannel>
-#include <TelepathyQt4Yell/Farstream/global.h>
-
+#include <telepathy-farstream/telepathy-farstream.h>
 #include <telepathy-glib/channel.h>
 #include <telepathy-glib/connection.h>
 #include <telepathy-glib/dbus.h>
 
-#include <gst/gst.h>
-
-namespace Tpy
+namespace Tp
 {
 
-struct TELEPATHY_QT4_YELL_FS_NO_EXPORT PendingTfChannel::Private
+struct TP_QT_FS_NO_EXPORT PendingTfChannel::Private
 {
     Private(const CallChannelPtr &channel)
         : mChannel(channel),
@@ -92,7 +88,7 @@ PendingTfChannel::PendingTfChannel(const FarstreamChannelFactoryPtr &fcf,
 
     TpChannel *gchannel = tp_channel_new(gconnection,
             channel->objectPath().toAscii(),
-            TP_QT_YELL_IFACE_CHANNEL_TYPE_CALL.latin1(),
+            TP_QT_IFACE_CHANNEL_TYPE_CALL.latin1(),
             (TpHandleType) channel->targetHandleType(),
             channel->targetHandle(),
             0);
@@ -161,4 +157,4 @@ PendingTfChannel *FarstreamChannelFactory::createTfChannel(const CallChannelPtr 
     return ptf;
 }
 
-} // Tpy
+} // Tp

@@ -1,7 +1,7 @@
-/*
- * This file is part of TelepathyQt4Yell
+/**
+ * This file is part of TelepathyQt
  *
- * Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
@@ -19,25 +19,25 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4Yell_Farstream_channel_h_HEADER_GUARD_
-#define _TelepathyQt4Yell_Farstream_channel_h_HEADER_GUARD_
+#ifndef _TelepathyQt_Farstream_channel_h_HEADER_GUARD_
+#define _TelepathyQt_Farstream_channel_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
-#error IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
+#ifndef IN_TP_QT_FARSTREAM_HEADER
+#error IN_TP_QT_FARSTREAM_HEADER
 #endif
 
-#include <TelepathyQt4Yell/Farstream/Global>
-#include <TelepathyQt4Yell/Farstream/Types>
+#include <TelepathyQt/Farstream/Global>
+#include <TelepathyQt/Farstream/Types>
 
 #include <TelepathyQt/PendingOperation>
 #include <TelepathyQt/RefCounted>
 
-#include <telepathy-farstream/channel.h>
+typedef struct _TfChannel TfChannel;
 
-namespace Tpy
+namespace Tp
 {
 
-class TELEPATHY_QT4_YELL_FS_EXPORT PendingTfChannel : public Tp::PendingOperation
+class TP_QT_FS_EXPORT PendingTfChannel : public Tp::PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingTfChannel)
@@ -57,7 +57,7 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_YELL_FS_EXPORT FarstreamChannelFactory : public Tp::RefCounted
+class TP_QT_FS_EXPORT FarstreamChannelFactory : public Tp::RefCounted
 {
     Q_DISABLE_COPY(FarstreamChannelFactory)
 
@@ -75,6 +75,6 @@ private:
     Private *mPriv;
 };
 
-} // Tpy
+} // Tp
 
 #endif

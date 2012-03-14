@@ -1,7 +1,7 @@
-/*
- * This file is part of TelepathyQt4Yell
+/**
+ * This file is part of TelepathyQt
  *
- * Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2011-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,22 +18,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4Yell_Farstream_types_h_HEADER_GUARD_
-#define _TelepathyQt4Yell_Farstream_types_h_HEADER_GUARD_
+#ifndef _TelepathyQt_Farstream_types_h_HEADER_GUARD_
+#define _TelepathyQt_Farstream_types_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
-#error IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
+#ifndef IN_TP_QT_FARSTREAM_HEADER
+#error IN_TP_QT_FARSTREAM_HEADER
 #endif
 
-#include <TelepathyQt4Yell/Types>
+#include <TelepathyQt/Types>
 
-namespace Tpy
+namespace Tp
 {
 
 class FarstreamChannelFactory;
 
 typedef Tp::SharedPtr<FarstreamChannelFactory> FarstreamChannelFactoryPtr;
 
-} // Tpy
+} // Tp
 
 #endif

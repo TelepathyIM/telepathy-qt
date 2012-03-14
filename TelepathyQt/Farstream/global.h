@@ -1,7 +1,7 @@
-/*
- * This file is part of TelepathyQt4Yell
+/**
+ * This file is part of TelepathyQt
  *
- * Copyright (C) 2009-2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
@@ -19,27 +19,27 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4Yell_Farstream_global_h_HEADER_GUARD_
-#define _TelepathyQt4Yell_Farstream_global_h_HEADER_GUARD_
+#ifndef _TelepathyQt_Farstream_global_h_HEADER_GUARD_
+#define _TelepathyQt_Farstream_global_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
-#error IN_TELEPATHY_QT4_YELL_FARSTREAM_HEADER
+#ifndef IN_TP_QT_FARSTREAM_HEADER
+#error IN_TP_QT_FARSTREAM_HEADER
 #endif
 
 #include <QtGlobal>
 
-#ifdef BUILDING_TELEPATHY_QT4_YELL_FARSTREAM
-#  define TELEPATHY_QT4_YELL_FS_EXPORT Q_DECL_EXPORT
+#ifdef BUILDING_TP_QT_FARSTREAM
+#  define TP_QT_FS_EXPORT Q_DECL_EXPORT
 #else
-#  define TELEPATHY_QT4_YELL_FS_EXPORT Q_DECL_IMPORT
+#  define TP_QT_FS_EXPORT Q_DECL_IMPORT
 #endif
 
 #if !defined(Q_OS_WIN) && defined(QT_VISIBILITY_AVAILABLE)
-#  define TELEPATHY_QT4_YELL_FS_NO_EXPORT __attribute__((visibility("hidden")))
+#  define TP_QT_FS_NO_EXPORT __attribute__((visibility("hidden")))
 #endif
 
-#ifndef TELEPATHY_QT4_YELL_FS_NO_EXPORT
-#  define TELEPATHY_QT4_YELL_FS_NO_EXPORT
+#ifndef TP_QT_FS_NO_EXPORT
+#  define TP_QT_FS_NO_EXPORT
 #endif
 
 #endif
