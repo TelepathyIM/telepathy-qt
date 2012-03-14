@@ -23,6 +23,8 @@
 
 #include "TelepathyQt/Farstream/_gen/channel.moc.hpp"
 
+#include "TelepathyQt/debug-internal.h"
+
 #include <TelepathyQt/CallChannel>
 #include <TelepathyQt/Connection>
 
@@ -112,17 +114,13 @@ PendingTfChannel::~PendingTfChannel()
 void PendingTfChannel::Private::onTfChannelNewFinish(GObject *sourceObject,
         GAsyncResult *res, gpointer userData)
 {
-    qDebug() << "PendingTfChannel::Private::onTfChannelNewFinish: ";
-    qDebug() << "    sourceObject=" << sourceObject;
-    qDebug() << "    result=" << res;
-
     PendingTfChannel *self = reinterpret_cast<PendingTfChannel *>(userData);
 
     GError *error = NULL;
     TfChannel *ret = TF_CHANNEL(g_async_initable_new_finish(
                 G_ASYNC_INITABLE(sourceObject), res, &error));
     if (error) {
-        qDebug() << "PendingTfChannel::Private::onTfChannelNewFinish: error " << error->message;
+        debug() << "PendingTfChannel::Private::onTfChannelNewFinish: error " << error->message;
         self->setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE, QLatin1String(error->message));
         g_clear_error(&error);
         return;
