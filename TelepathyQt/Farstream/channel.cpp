@@ -117,8 +117,7 @@ void PendingTfChannel::Private::onTfChannelNewFinish(GObject *sourceObject,
     PendingTfChannel *self = reinterpret_cast<PendingTfChannel *>(userData);
 
     GError *error = NULL;
-    TfChannel *ret = TF_CHANNEL(g_async_initable_new_finish(
-                G_ASYNC_INITABLE(sourceObject), res, &error));
+    TfChannel *ret = tf_channel_new_finish(sourceObject, res, &error);
     if (error) {
         debug() << "PendingTfChannel::Private::onTfChannelNewFinish: error " << error->message;
         self->setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE, QLatin1String(error->message));
