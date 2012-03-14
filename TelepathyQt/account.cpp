@@ -164,9 +164,9 @@ QVariantMap callCommonRequest(bool withAudio, const QString &audioName,
     if (withVideo) {
         request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
                        true);
-        if (!audioName.isEmpty()) {
+        if (!videoName.isEmpty()) {
             request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName"),
-                           audioName);
+                           videoName);
         }
     }
 
