@@ -262,7 +262,7 @@ PendingOperation *CallContent::remove()
  */
 bool CallContent::supportsDTMF() const
 {
-    return interfaces().contains(TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF);
+    return hasInterface(TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF);
 }
 
 /**
