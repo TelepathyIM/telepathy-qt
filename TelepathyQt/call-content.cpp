@@ -38,6 +38,7 @@
 namespace Tp
 {
 
+/* ====== CallContent ====== */
 struct TP_QT_NO_EXPORT CallContent::Private
 {
     Private(CallContent *parent, const CallChannelPtr &channel);
@@ -441,5 +442,102 @@ void CallContent::onStreamReady(PendingOperation *op)
  * \param reason The reason for this removal.
  * \sa streams()
  */
+
+
+/* ====== PendingCallContent ====== */
+struct TP_QT_NO_EXPORT PendingCallContent::Private
+{
+    Private(PendingCallContent *parent, const CallChannelPtr &channel)
+        : parent(parent),
+          channel(channel)
+    {
+    }
+
+    PendingCallContent *parent;
+    CallChannelPtr channel;
+    CallContentPtr content;
+};
+
+PendingCallContent::PendingCallContent(const CallChannelPtr &channel,
+        const QString &name, MediaStreamType type, MediaStreamDirection direction)
+    : PendingOperation(channel),
+      mPriv(new Private(this, channel))
+{
+    Client::ChannelTypeCallInterface *callInterface =
+        channel->interface<Client::ChannelTypeCallInterface>();
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                callInterface->AddContent(name, type, direction), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotContent(QDBusPendingCallWatcher*)));
+}
+
+PendingCallContent::~PendingCallContent()
+{
+    delete mPriv;
+}
+
+CallContentPtr PendingCallContent::content() const
+{
+    if (!isFinished() || !isValid()) {
+        return CallContentPtr();
+    }
+
+    return mPriv->content;
+}
+
+void PendingCallContent::gotContent(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "Call::AddContent failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+        watcher->deleteLater();
+        return;
+    }
+
+    QDBusObjectPath contentPath = reply.value();
+    CallChannelPtr channel(mPriv->channel);
+    CallContentPtr content = channel->lookupContent(contentPath);
+    if (!content) {
+        content = channel->addContent(contentPath);
+    }
+
+    connect(content->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContentReady(Tp::PendingOperation*)));
+    connect(channel.data(),
+            SIGNAL(contentRemoved(Tp::CallContentPtr,Tp::CallStateReason)),
+            SLOT(onContentRemoved(Tp::CallContentPtr)));
+
+    mPriv->content = content;
+
+    watcher->deleteLater();
+}
+
+void PendingCallContent::onContentReady(PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    setFinished();
+}
+
+void PendingCallContent::onContentRemoved(const CallContentPtr &content)
+{
+    if (isFinished()) {
+        return;
+    }
+
+    if (mPriv->content == content) {
+        // the content was removed before becoming ready
+        setFinishedWithError(TP_QT_ERROR_CANCELLED,
+                QLatin1String("Content removed before ready"));
+    }
+}
 
 } // Tp

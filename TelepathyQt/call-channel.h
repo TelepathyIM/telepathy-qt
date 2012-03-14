@@ -32,33 +32,6 @@
 namespace Tp
 {
 
-class TP_QT_EXPORT PendingCallContent : public PendingOperation
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(PendingCallContent)
-
-public:
-    ~PendingCallContent();
-
-    CallContentPtr content() const;
-
-private Q_SLOTS:
-    TP_QT_NO_EXPORT void gotContent(QDBusPendingCallWatcher *watcher);
-
-    TP_QT_NO_EXPORT void onContentReady(Tp::PendingOperation *op);
-    TP_QT_NO_EXPORT void onContentRemoved(const Tp::CallContentPtr &content);
-
-private:
-    friend class CallChannel;
-
-    TP_QT_NO_EXPORT PendingCallContent(const CallChannelPtr &channel,
-            const QString &contentName, MediaStreamType type, MediaStreamDirection direction);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
 class TP_QT_EXPORT CallChannel : public Channel
 {
     Q_OBJECT
