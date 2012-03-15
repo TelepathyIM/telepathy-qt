@@ -48,32 +48,16 @@ public:
     TfChannel *tfChannel() const;
 
 private:
-    friend class FarstreamChannelFactory;
+    TP_QT_FS_NO_EXPORT PendingTfChannel(const CallChannelPtr &channel);
 
-    PendingTfChannel(const FarstreamChannelFactoryPtr &fsc, const CallChannelPtr &channel);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-class TP_QT_FS_EXPORT FarstreamChannelFactory : public Tp::RefCounted
-{
-    Q_DISABLE_COPY(FarstreamChannelFactory)
-
-public:
-    static FarstreamChannelFactoryPtr create();
-    ~FarstreamChannelFactory();
-
-    PendingTfChannel *createTfChannel(const CallChannelPtr &channel);
-
-private:
-    FarstreamChannelFactory();
+    friend PendingTfChannel *createTfChannel(const CallChannelPtr &channel);
 
     struct Private;
     friend struct Private;
     Private *mPriv;
 };
+
+TP_QT_FS_EXPORT PendingTfChannel *createTfChannel(const CallChannelPtr &channel);
 
 } // Tp
 

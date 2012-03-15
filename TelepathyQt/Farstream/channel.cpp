@@ -38,24 +38,21 @@ namespace Tp
 
 struct TP_QT_FS_NO_EXPORT PendingTfChannel::Private
 {
-    Private(const CallChannelPtr &channel)
-        : mChannel(channel),
-          mTfChannel(0)
+    Private()
+        : mTfChannel(0)
     {
     }
 
     static void onTfChannelNewFinish(GObject *sourceObject, GAsyncResult *res, gpointer userData);
 
-    CallChannelPtr mChannel;
     TfChannel *mTfChannel;
 };
 
-PendingTfChannel::PendingTfChannel(const FarstreamChannelFactoryPtr &fcf,
-        const CallChannelPtr &channel)
-    : Tp::PendingOperation(fcf),
-      mPriv(new PendingTfChannel::Private(channel))
+PendingTfChannel::PendingTfChannel(const CallChannelPtr &channel)
+    : Tp::PendingOperation(channel),
+      mPriv(new PendingTfChannel::Private)
 {
-    if (!mPriv->mChannel->handlerStreamingRequired()) {
+    if (!channel->handlerStreamingRequired()) {
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Handler streaming not required"));
         return;
@@ -68,7 +65,7 @@ PendingTfChannel::PendingTfChannel(const FarstreamChannelFactoryPtr &fcf,
         return;
     }
 
-    Tp::ConnectionPtr connection = mPriv->mChannel->connection();
+    Tp::ConnectionPtr connection = channel->connection();
     if (connection.isNull()) {
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection not available"));
@@ -134,23 +131,9 @@ TfChannel *PendingTfChannel::tfChannel() const
     return mPriv->mTfChannel;
 }
 
-FarstreamChannelFactoryPtr FarstreamChannelFactory::create()
+PendingTfChannel *createTfChannel(const CallChannelPtr &channel)
 {
-    return FarstreamChannelFactoryPtr(new FarstreamChannelFactory());
-}
-
-FarstreamChannelFactory::FarstreamChannelFactory()
-    : mPriv(0)
-{
-}
-
-FarstreamChannelFactory::~FarstreamChannelFactory()
-{
-}
-
-PendingTfChannel *FarstreamChannelFactory::createTfChannel(const CallChannelPtr &channel)
-{
-    PendingTfChannel *ptf = new PendingTfChannel(FarstreamChannelFactoryPtr(this), channel);
+    PendingTfChannel *ptf = new PendingTfChannel(channel);
     return ptf;
 }
 
