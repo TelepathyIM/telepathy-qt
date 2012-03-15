@@ -29,23 +29,20 @@
 
 #include <TelepathyQt/Global>
 
-#include <QSharedDataPointer>
-#include <QMetaType>
-
 namespace Tp
 {
 
 class TP_QT_EXPORT DBusError
 {
+    Q_DISABLE_COPY(DBusError)
+
 public:
     DBusError();
     DBusError(const QString &name, const QString &message);
-    DBusError(const DBusError &other);
     ~DBusError();
 
-    bool isValid() const { return mPriv.constData() != 0; }
+    bool isValid() const { return mPriv != 0; }
 
-    DBusError &operator=(const DBusError &other);
     bool operator==(const DBusError &other) const;
     bool operator!=(const DBusError &other) const;
 
@@ -56,11 +53,9 @@ public:
 private:
     struct Private;
     friend struct Private;
-    QSharedDataPointer<Private> mPriv;
+    Private *mPriv;
 };
 
 } // Tp
-
-Q_DECLARE_METATYPE(Tp::DBusError);
 
 #endif

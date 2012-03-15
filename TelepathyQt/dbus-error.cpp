@@ -27,7 +27,7 @@
 namespace Tp
 {
 
-struct TP_QT_NO_EXPORT DBusError::Private : public QSharedData
+struct TP_QT_NO_EXPORT DBusError::Private
 {
     Private(const QString &name, const QString &message)
         : name(name),
@@ -40,6 +40,7 @@ struct TP_QT_NO_EXPORT DBusError::Private : public QSharedData
 };
 
 DBusError::DBusError()
+    : mPriv(0)
 {
 }
 
@@ -48,19 +49,8 @@ DBusError::DBusError(const QString &name, const QString &message)
 {
 }
 
-DBusError::DBusError(const DBusError &other)
-    : mPriv(other.mPriv)
-{
-}
-
 DBusError::~DBusError()
 {
-}
-
-DBusError &DBusError::operator=(const DBusError &other)
-{
-    this->mPriv = other.mPriv;
-    return *this;
 }
 
 bool DBusError::operator==(const DBusError &other) const
