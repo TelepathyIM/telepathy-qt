@@ -168,6 +168,8 @@ set(telepathy_qt_HEADERS
     avatar.h
     CallChannel
     call-channel.h
+    Callbacks
+    callbacks.h
     CallContent
     CallContentInterface
     CallContentInterfaceAudioControlInterface
@@ -324,6 +326,8 @@ set(telepathy_qt_HEADERS
     filter.h
     FixedFeatureFactory
     fixed-feature-factory.h
+    Functors
+    functors.h
     GenericCapabilityFilter
     generic-capability-filter.h
     GenericPropertyFilter
