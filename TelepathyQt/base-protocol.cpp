@@ -255,27 +255,21 @@ bool BaseProtocol::registerObject(const QString &busName, const QString &objectP
 BaseConnectionPtr BaseProtocol::createConnection(const QVariantMap &parameters, Tp::DBusError *error)
 {
     Q_UNUSED(parameters);
-    if (error) {
-        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-    }
+    error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
     return BaseConnectionPtr();
 }
 
 QString BaseProtocol::identifyAccount(const QVariantMap &parameters, Tp::DBusError *error)
 {
     Q_UNUSED(parameters);
-    if (error) {
-        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-    }
+    error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
     return QString();
 }
 
 QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *error)
 {
     Q_UNUSED(contactId);
-    if (error) {
-        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-    }
+    error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
     return QString();
 }
 
