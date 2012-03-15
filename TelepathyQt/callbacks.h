@@ -70,6 +70,8 @@ struct TP_QT_EXPORT BaseCallback
     BaseCallback(const BaseCallback &other) : caller(other.caller->clone()) {}
     virtual ~BaseCallback() { delete caller; }
 
+    bool isValid() const { return caller != 0; }
+
     BaseCallback &operator=(const BaseCallback &other)
     {
         if (caller == other.caller) return *this;
