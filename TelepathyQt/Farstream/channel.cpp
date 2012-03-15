@@ -33,10 +33,10 @@
 #include <telepathy-glib/connection.h>
 #include <telepathy-glib/dbus.h>
 
-namespace Tp
-{
+namespace Tp {
+namespace Farstream {
 
-struct TP_QT_FS_NO_EXPORT PendingTfChannel::Private
+struct TP_QT_FS_NO_EXPORT PendingChannel::Private
 {
     Private()
         : mTfChannel(0)
@@ -48,9 +48,9 @@ struct TP_QT_FS_NO_EXPORT PendingTfChannel::Private
     TfChannel *mTfChannel;
 };
 
-PendingTfChannel::PendingTfChannel(const CallChannelPtr &channel)
+PendingChannel::PendingChannel(const CallChannelPtr &channel)
     : Tp::PendingOperation(channel),
-      mPriv(new PendingTfChannel::Private)
+      mPriv(new PendingChannel::Private)
 {
     if (!channel->handlerStreamingRequired()) {
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
@@ -99,24 +99,24 @@ PendingTfChannel::PendingTfChannel(const CallChannelPtr &channel)
         return;
     }
 
-    tf_channel_new_async(gchannel, PendingTfChannel::Private::onTfChannelNewFinish, this);
+    tf_channel_new_async(gchannel, PendingChannel::Private::onTfChannelNewFinish, this);
     g_object_unref(gchannel);
 }
 
-PendingTfChannel::~PendingTfChannel()
+PendingChannel::~PendingChannel()
 {
     delete mPriv;
 }
 
-void PendingTfChannel::Private::onTfChannelNewFinish(GObject *sourceObject,
+void PendingChannel::Private::onTfChannelNewFinish(GObject *sourceObject,
         GAsyncResult *res, gpointer userData)
 {
-    PendingTfChannel *self = reinterpret_cast<PendingTfChannel *>(userData);
+    PendingChannel *self = reinterpret_cast<PendingChannel *>(userData);
 
     GError *error = NULL;
     TfChannel *ret = tf_channel_new_finish(sourceObject, res, &error);
     if (error) {
-        debug() << "PendingTfChannel::Private::onTfChannelNewFinish: error " << error->message;
+        debug() << "Fs::PendingChannel::Private::onTfChannelNewFinish: error " << error->message;
         self->setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE, QLatin1String(error->message));
         g_clear_error(&error);
         return;
@@ -126,20 +126,21 @@ void PendingTfChannel::Private::onTfChannelNewFinish(GObject *sourceObject,
     self->setFinished();
 }
 
-TfChannel *PendingTfChannel::tfChannel() const
+TfChannel *PendingChannel::tfChannel() const
 {
     return mPriv->mTfChannel;
 }
 
-CallChannelPtr PendingTfChannel::callChannel() const
+CallChannelPtr PendingChannel::callChannel() const
 {
     return CallChannelPtr::staticCast(object());
 }
 
-PendingTfChannel *createTfChannel(const CallChannelPtr &channel)
+PendingChannel *createChannel(const CallChannelPtr &channel)
 {
-    PendingTfChannel *ptf = new PendingTfChannel(channel);
+    PendingChannel *ptf = new PendingChannel(channel);
     return ptf;
 }
 
+} // Farstream
 } // Tp

@@ -34,32 +34,33 @@
 
 typedef struct _TfChannel TfChannel;
 
-namespace Tp
-{
+namespace Tp {
+namespace Farstream {
 
-class TP_QT_FS_EXPORT PendingTfChannel : public Tp::PendingOperation
+class TP_QT_FS_EXPORT PendingChannel : public Tp::PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(PendingTfChannel)
+    Q_DISABLE_COPY(PendingChannel)
 
 public:
-    ~PendingTfChannel();
+    ~PendingChannel();
 
     TfChannel *tfChannel() const;
     CallChannelPtr callChannel() const;
 
 private:
-    TP_QT_FS_NO_EXPORT PendingTfChannel(const CallChannelPtr &channel);
+    TP_QT_FS_NO_EXPORT PendingChannel(const CallChannelPtr &channel);
 
-    friend PendingTfChannel *createTfChannel(const CallChannelPtr &channel);
+    friend PendingChannel *createChannel(const CallChannelPtr &channel);
 
     struct Private;
     friend struct Private;
     Private *mPriv;
 };
 
-TP_QT_FS_EXPORT PendingTfChannel *createTfChannel(const CallChannelPtr &channel);
+TP_QT_FS_EXPORT PendingChannel *createChannel(const CallChannelPtr &channel);
 
+} // Farstream
 } // Tp
 
 #endif
