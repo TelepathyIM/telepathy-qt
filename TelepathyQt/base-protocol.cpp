@@ -30,6 +30,7 @@
 
 #include <TelepathyQt/BaseConnection>
 #include <TelepathyQt/Constants>
+#include <TelepathyQt/Utils>
 
 #include <QDBusObjectPath>
 #include <QString>
@@ -96,7 +97,14 @@ ParamSpecList BaseProtocol::Adaptee::parameters() const
 {
     ParamSpecList ret;
     foreach (const ProtocolParameter &param, mProtocol->parameters()) {
-        ret << param.bareParameter();
+         ParamSpec paramSpec = param.bareParameter();
+         if (!(paramSpec.flags & ConnMgrParamFlagHasDefault)) {
+             // we cannot pass QVariant::Invalid over D-Bus, lets build a dummy value
+             // that should be ignored according to the spec
+             paramSpec.defaultValue = QDBusVariant(
+                     parseValueWithDBusSignature(QString(), paramSpec.signature));
+         }
+         ret << paramSpec;
     }
     return ret;
 }
