@@ -29,6 +29,7 @@
 
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Global>
+#include <TelepathyQt/Types>
 
 #include <QDBusSignature>
 #include <QSharedDataPointer>
@@ -42,6 +43,15 @@ class TP_QT_EXPORT ProtocolParameter
 {
 public:
     ProtocolParameter();
+    ProtocolParameter(const ParamSpec &spec);
+    ProtocolParameter(const QString &name,
+                      const QDBusSignature &dbusSignature,
+                      ConnMgrParamFlag flags,
+                      QVariant defaultValue = QVariant());
+    ProtocolParameter(const QString &name,
+                      const QString &dbusSignature,
+                      ConnMgrParamFlag flags,
+                      QVariant defaultValue = QVariant());
     ProtocolParameter(const ProtocolParameter &other);
     ~ProtocolParameter();
 
@@ -61,14 +71,11 @@ public:
     bool isSecret() const;
     bool isRequiredForRegistration() const;
 
+    ParamSpec bareParameter() const;
+
 private:
     friend class ConnectionManager;
     friend class ProtocolInfo;
-
-    TP_QT_NO_EXPORT ProtocolParameter(const QString &name,
-                      const QDBusSignature &dbusSignature,
-                      QVariant defaultValue,
-                      ConnMgrParamFlag flags);
 
     struct Private;
     friend struct Private;

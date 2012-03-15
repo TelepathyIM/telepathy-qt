@@ -448,8 +448,8 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
 
     ProtocolParameter param(spec.name,
             QDBusSignature(spec.signature),
-            defaultValue,
-            (ConnMgrParamFlag) flags);
+            (ConnMgrParamFlag) flags,
+            defaultValue);
     mPriv->params.append(param);
 }
 
