@@ -66,7 +66,7 @@ public:
     QVariantMap parameters() const;
 
     virtual QString uniqueName() const;
-    bool registerObject(DBusError *error);
+    bool registerObject(DBusError *error = NULL);
 
 Q_SIGNALS:
     void disconnected();
