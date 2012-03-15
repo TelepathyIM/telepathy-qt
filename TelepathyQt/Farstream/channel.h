@@ -46,6 +46,7 @@ public:
     ~PendingTfChannel();
 
     TfChannel *tfChannel() const;
+    CallChannelPtr callChannel() const;
 
 private:
     TP_QT_FS_NO_EXPORT PendingTfChannel(const CallChannelPtr &channel);

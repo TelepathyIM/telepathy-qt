@@ -131,6 +131,11 @@ TfChannel *PendingTfChannel::tfChannel() const
     return mPriv->mTfChannel;
 }
 
+CallChannelPtr PendingTfChannel::callChannel() const
+{
+    return CallChannelPtr::staticCast(object());
+}
+
 PendingTfChannel *createTfChannel(const CallChannelPtr &channel)
 {
     PendingTfChannel *ptf = new PendingTfChannel(channel);
