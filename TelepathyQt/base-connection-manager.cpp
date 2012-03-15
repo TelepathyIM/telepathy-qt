@@ -104,7 +104,14 @@ void BaseConnectionManager::Adaptee::getParameters(const QString &protocolName,
     BaseProtocolPtr protocol = mCM->protocol(protocolName);
     ParamSpecList ret;
     foreach (const ProtocolParameter &param, protocol->parameters()) {
-        ret << param.bareParameter();
+         ParamSpec paramSpec = param.bareParameter();
+         if (!(paramSpec.flags & ConnMgrParamFlagHasDefault)) {
+             // we cannot pass QVariant::Invalid over D-Bus, lets build a dummy value
+             // that should be ignored according to the spec
+             paramSpec.defaultValue = QDBusVariant(
+                     parseValueWithDBusSignature(QString(), paramSpec.signature));
+         }
+         ret << paramSpec;
     }
     context->setFinished(ret);
 }
