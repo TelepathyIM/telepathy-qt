@@ -27,7 +27,7 @@
 #endif
 
 #include <TelepathyQt/Farstream/Global>
-#include <TelepathyQt/Farstream/Types>
+#include <TelepathyQt/Types>
 
 #include <TelepathyQt/PendingOperation>
 #include <TelepathyQt/RefCounted>

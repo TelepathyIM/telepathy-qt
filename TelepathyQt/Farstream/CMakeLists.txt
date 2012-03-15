@@ -20,9 +20,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
         channel.h
         Global
         global.h
-        PendingTfChannel
-        Types
-        types.h)
+        PendingTfChannel)
 
     set(telepathy_qt_farstream_MOC_SRCS
         channel.h)
