@@ -225,7 +225,12 @@ bool BaseConnectionManager::registerObject(DBusError *error)
     busName.append(mPriv->name);
     QString objectPath = TP_QT_CONNECTION_MANAGER_OBJECT_PATH_BASE;
     objectPath.append(mPriv->name);
-    return registerObject(busName, objectPath, error);
+    DBusError _error;
+    bool ret = registerObject(busName, objectPath, &_error);
+    if (!ret && error) {
+        error->set(_error.name(), _error.message());
+    }
+    return ret;
 }
 
 bool BaseConnectionManager::registerObject(const QString &busName, const QString &objectPath,
