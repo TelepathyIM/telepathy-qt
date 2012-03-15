@@ -27,8 +27,10 @@
 #error IN_TP_QT_HEADER
 #endif
 
+#include <TelepathyQt/AvatarSpec>
 #include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
+#include <TelepathyQt/PresenceSpecList>
 #include <TelepathyQt/ProtocolParameterList>
 #include <TelepathyQt/RequestableChannelClassSpecList>
 #include <TelepathyQt/Types>
@@ -105,6 +107,64 @@ private:
     friend class Private;
     Private *mPriv;
 };
+
+/*
+class TP_QT_EXPORT BaseProtocolAddressingInterface : public QObject
+{
+    Q_OBJECT
+
+public:
+    BaseProtocolAddressingInterface();
+    virtual ~BaseProtocolAddressingInterface();
+
+    QStringList addressableVCardFields() const;
+    void setAddressableVCardFields(const QStringList &vcardFields);
+
+    QStringList addressableUriSchemes() const;
+    void setAddressableUriSchemes(const QStringList &uriSchemes);
+
+protected Q_SLOTS:
+    // normalizeVCardAddress
+    // normalizeContactURI
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseProtocolAvatarsInterface : public QObject
+{
+    Q_OBJECT
+
+public:
+    BaseProtocolAvatarsInterface(const AvatarSpec &details);
+    virtual ~BaseProtocolAvatarsInterface();
+
+    AvatarSpec details() const;
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseProtocolPresenceInterface : public QObject
+{
+    Q_OBJECT
+
+public:
+    BaseProtocolPresenceInterface(const PresenceSpecList &statuses);
+    virtual ~BaseProtocolPresenceInterface();
+
+    PresenceSpecList statuses() const;
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+*/
 
 }
 
