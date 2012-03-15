@@ -61,6 +61,9 @@ struct TP_QT_NO_EXPORT BaseProtocol::Private
     QString englishName;
     QString iconName;
     QStringList authTypes;
+    CreateConnectionCallback createConnectionCb;
+    IdentifyAccountCallback identifyAccountCb;
+    NormalizeContactCallback normalizeContactCb;
 };
 
 BaseProtocol::Adaptee::Adaptee(const QDBusConnection &dbusConnection, BaseProtocol *protocol)
@@ -139,11 +142,7 @@ void BaseProtocol::Adaptee::identifyAccount(const QVariantMap &parameters,
 {
     DBusError error;
     QString accountId;
-    // accountId = protocol->identifyAccount(parameters, &error);
-    QMetaObject::invokeMethod(mProtocol, "identifyAccount",
-        Q_RETURN_ARG(QString, accountId),
-        Q_ARG(QVariantMap, parameters),
-        Q_ARG(Tp::DBusError*, &error));
+    accountId = mProtocol->identifyAccount(parameters, &error);
     if (accountId.isEmpty()) {
         context->setFinishedWithError(error);
         return;
@@ -156,11 +155,7 @@ void BaseProtocol::Adaptee::normalizeContact(const QString &contactId,
 {
     DBusError error;
     QString normalizedContactId;
-    // normalizedContactId = protocol->normalizeContact(contactId, &error);
-    QMetaObject::invokeMethod(mProtocol, "normalizeContact",
-        Q_RETURN_ARG(QString, normalizedContactId),
-        Q_ARG(QString, contactId),
-        Q_ARG(Tp::DBusError*, &error));
+    normalizedContactId = mProtocol->normalizeContact(contactId, &error);
     if (normalizedContactId.isEmpty()) {
         context->setFinishedWithError(error);
         return;
@@ -254,31 +249,52 @@ void BaseProtocol::setAuthenticationTypes(const QStringList &authenticationTypes
     mPriv->authTypes = authenticationTypes;
 }
 
-bool BaseProtocol::registerObject(const QString &busName, const QString &objectPath,
-        DBusError *error)
+void BaseProtocol::setCreateConnectionCallback(const CreateConnectionCallback &cb)
 {
-    return DBusService::registerObject(busName, objectPath, error);
+    mPriv->createConnectionCb = cb;
 }
 
 BaseConnectionPtr BaseProtocol::createConnection(const QVariantMap &parameters, Tp::DBusError *error)
 {
-    Q_UNUSED(parameters);
-    error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-    return BaseConnectionPtr();
+    if (!mPriv->createConnectionCb.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return BaseConnectionPtr();
+    }
+    return mPriv->createConnectionCb(parameters, error);
+}
+
+void BaseProtocol::setIdentifyAccountCallback(const IdentifyAccountCallback &cb)
+{
+    mPriv->identifyAccountCb = cb;
 }
 
 QString BaseProtocol::identifyAccount(const QVariantMap &parameters, Tp::DBusError *error)
 {
-    Q_UNUSED(parameters);
-    error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-    return QString();
+    if (!mPriv->identifyAccountCb.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return QString();
+    }
+    return mPriv->identifyAccountCb(parameters, error);
+}
+
+void BaseProtocol::setNormalizeContactCallback(const NormalizeContactCallback &cb)
+{
+    mPriv->normalizeContactCb = cb;
 }
 
 QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *error)
 {
-    Q_UNUSED(contactId);
-    error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
-    return QString();
+    if (!mPriv->normalizeContactCb.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return QString();
+    }
+    return mPriv->normalizeContactCb(contactId, error);
+}
+
+bool BaseProtocol::registerObject(const QString &busName, const QString &objectPath,
+        DBusError *error)
+{
+    return DBusService::registerObject(busName, objectPath, error);
 }
 
 }

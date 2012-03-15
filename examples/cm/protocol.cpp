@@ -45,6 +45,11 @@ Protocol::Protocol(const QDBusConnection &dbusConnection, const QString &name)
     setEnglishName(QLatin1String("ExampleProto"));
     setIconName(QLatin1String("example-icon"));
     setVCardField(QLatin1String("x-example"));
+
+    // callbacks
+    setCreateConnectionCallback(memFun(this, &Protocol::createConnection));
+    setIdentifyAccountCallback(memFun(this, &Protocol::identifyAccount));
+    setNormalizeContactCallback(memFun(this, &Protocol::normalizeContact));
 }
 
 Protocol::~Protocol()

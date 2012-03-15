@@ -147,11 +147,7 @@ void BaseConnectionManager::Adaptee::requestConnection(const QString &protocolNa
 
     DBusError error;
     BaseConnectionPtr connection;
-    // connection = protocol->createConnection(parameters, &error);
-    QMetaObject::invokeMethod(protocol.data(), "createConnection",
-        Q_RETURN_ARG(Tp::BaseConnectionPtr, connection),
-        Q_ARG(QVariantMap, parameters),
-        Q_ARG(Tp::DBusError*, &error));
+    connection = protocol->createConnection(parameters, &error);
     if (!connection) {
         context->setFinishedWithError(error);
         return;

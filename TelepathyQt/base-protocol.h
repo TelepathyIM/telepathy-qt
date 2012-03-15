@@ -28,6 +28,7 @@
 #endif
 
 #include <TelepathyQt/AvatarSpec>
+#include <TelepathyQt/Callbacks>
 #include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
 #include <TelepathyQt/PresenceSpecList>
@@ -88,16 +89,23 @@ public:
     QStringList authenticationTypes() const;
     void setAuthenticationTypes(const QStringList &authenticationTypes);
 
+    typedef Callback2<BaseConnectionPtr, const QVariantMap &, DBusError*> CreateConnectionCallback;
+    void setCreateConnectionCallback(const CreateConnectionCallback &cb);
+    Tp::BaseConnectionPtr createConnection(const QVariantMap &parameters, DBusError *error);
+
+    typedef Callback2<QString, const QVariantMap &, DBusError*> IdentifyAccountCallback;
+    void setIdentifyAccountCallback(const IdentifyAccountCallback &cb);
+    QString identifyAccount(const QVariantMap &parameters, DBusError *error);
+
+    typedef Callback2<QString, const QString &, DBusError*> NormalizeContactCallback;
+    void setNormalizeContactCallback(const NormalizeContactCallback &cb);
+    QString normalizeContact(const QString &contactId, DBusError *error);
+
 protected:
     BaseProtocol(const QDBusConnection &dbusConnection, const QString &name);
 
     virtual bool registerObject(const QString &busName, const QString &objectPath,
             DBusError *error);
-
-protected Q_SLOTS:
-    Tp::BaseConnectionPtr createConnection(const QVariantMap &parameters, Tp::DBusError *error);
-    QString identifyAccount(const QVariantMap &parameters, Tp::DBusError *error);
-    QString normalizeContact(const QString &contactId, Tp::DBusError *error);
 
 private:
     friend class BaseConnectionManager;
