@@ -26,6 +26,7 @@
 #include "TelepathyQt/key-file.h"
 
 #include <TelepathyQt/Constants>
+#include <TelepathyQt/Utils>
 
 #include <QtCore/QDir>
 #include <QtCore/QHash>
@@ -555,78 +556,6 @@ PresenceSpecList ManagerFile::allowedPresenceStatuses(const QString &protocol) c
 AvatarSpec ManagerFile::avatarRequirements(const QString &protocol) const
 {
     return mPriv->protocolsMap.value(protocol).avatarRequirements;
-}
-
-QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
-{
-    QVariant::Type type;
-    if (signature == QLatin1String("b")) {
-        type = QVariant::Bool;
-    } else if (signature == QLatin1String("n") || signature == QLatin1String("i")) {
-        type = QVariant::Int;
-    } else if (signature == QLatin1String("q") || signature == QLatin1String("u")) {
-        type = QVariant::UInt;
-    } else if (signature == QLatin1String("x")) {
-        type = QVariant::LongLong;
-    } else if (signature == QLatin1String("t")) {
-        type = QVariant::ULongLong;
-    } else if (signature == QLatin1String("d")) {
-        type = QVariant::Double;
-    } else if (signature == QLatin1String("as")) {
-        type = QVariant::StringList;
-    } else if (signature == QLatin1String("s") || signature == QLatin1String("o")) {
-        type = QVariant::String;
-    } else {
-        type = QVariant::Invalid;
-    }
-
-    return type;
-}
-
-QVariant ManagerFile::parseValueWithDBusSignature(const QString &value,
-        const QString &dbusSignature)
-{
-    QVariant::Type type = variantTypeFromDBusSignature(dbusSignature);
-
-    if (type == QVariant::Invalid) {
-        return QVariant(type);
-    }
-
-    switch (type) {
-        case QVariant::Bool:
-            {
-                if (value.toLower() == QLatin1String("true") ||
-                    value == QLatin1String("1")) {
-                    return QVariant(true);
-                } else {
-                    return QVariant(false);
-                }
-                break;
-            }
-        case QVariant::Int:
-            return QVariant(value.toInt());
-        case QVariant::UInt:
-            return QVariant(value.toUInt());
-        case QVariant::LongLong:
-            return QVariant(value.toLongLong());
-        case QVariant::ULongLong:
-            return QVariant(value.toULongLong());
-        case QVariant::Double:
-            return QVariant(value.toDouble());
-        case QVariant::StringList:
-            {
-                QStringList list;
-                QByteArray rawValue = value.toAscii();
-                if (KeyFile::unescapeStringList(rawValue, 0, rawValue.size(), list)) {
-                    return QVariant(list);
-                } else {
-                    return QVariant(QVariant::Invalid);
-                }
-            }
-        default:
-            break;
-    }
-    return QVariant(value);
 }
 
 } // Tp

@@ -30,6 +30,7 @@
 #include <TelepathyQt/Global>
 
 #include <QString>
+#include <QVariant>
 
 namespace Tp
 {
@@ -37,6 +38,10 @@ namespace Tp
 TP_QT_EXPORT QString escapeAsIdentifier(const QString &string);
 
 TP_QT_EXPORT bool checkValidProtocolName(const QString &protocolName);
+
+TP_QT_EXPORT QVariant::Type variantTypeFromDBusSignature(const QString &signature);
+TP_QT_EXPORT QVariant parseValueWithDBusSignature(const QString &value,
+        const QString &dbusSignature);
 
 } // Tp
 

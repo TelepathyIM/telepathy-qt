@@ -60,11 +60,6 @@ public:
     QStringList addressableVCardFields(const QString &protocol) const;
     QStringList addressableUriSchemes(const QString &protocol) const;
 
-    static QVariant::Type variantTypeFromDBusSignature(
-            const QString &dbusSignature);
-    static QVariant parseValueWithDBusSignature(const QString &value,
-            const QString &dbusSignature);
-
 private:
     struct Private;
     friend struct Private;
