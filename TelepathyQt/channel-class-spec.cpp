@@ -258,7 +258,7 @@ ChannelClassSpec ChannelClassSpec::audioCall(const QVariantMap &additionalProper
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL, HandleTypeContact);
-        spec.setMediaCallInitialAudioFlag();
+        spec.setCallInitialAudioFlag();
     }
 
     if (additionalProperties.isEmpty()) {
@@ -274,7 +274,7 @@ ChannelClassSpec ChannelClassSpec::videoCall(const QVariantMap &additionalProper
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL, HandleTypeContact);
-        spec.setMediaCallInitialVideoFlag();
+        spec.setCallInitialVideoFlag();
     }
 
     if (additionalProperties.isEmpty()) {
@@ -290,8 +290,8 @@ ChannelClassSpec ChannelClassSpec::videoCallWithAudio(const QVariantMap &additio
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL, HandleTypeContact);
-        spec.setMediaCallInitialAudioFlag();
-        spec.setMediaCallInitialVideoFlag();
+        spec.setCallInitialAudioFlag();
+        spec.setCallInitialVideoFlag();
     }
 
     if (additionalProperties.isEmpty()) {

@@ -112,36 +112,36 @@ public:
         unsetProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"));
     }
 
-    bool hasMediaCallInitialAudioFlag() const
+    bool hasCallInitialAudioFlag() const
     {
         return qdbus_cast<bool>(
                 property(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")));
     }
 
-    void setMediaCallInitialAudioFlag()
+    void setCallInitialAudioFlag()
     {
         setProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
                 QVariant::fromValue(true));
     }
 
-    void unsetMediaCallInitialAudioFlag()
+    void unsetCallInitialAudioFlag()
     {
         unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"));
     }
 
-    bool hasMediaCallInitialVideoFlag() const
+    bool hasCallInitialVideoFlag() const
     {
         return qdbus_cast<bool>(
                 property(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")));
     }
 
-    void setMediaCallInitialVideoFlag()
+    void setCallInitialVideoFlag()
     {
         setProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
                 QVariant::fromValue(true));
     }
 
-    void unsetMediaCallInitialVideoFlag()
+    void unsetCallInitialVideoFlag()
     {
         unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"));
     }

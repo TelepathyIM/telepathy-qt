@@ -99,7 +99,7 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
 {
     setSubclassForTextChats<TextChannel>();
     setSubclassForTextChatrooms<TextChannel>();
-    setSubclassForMediaCalls<CallChannel>();
+    setSubclassForCalls<CallChannel>();
     setSubclassForStreamedMediaCalls<StreamedMediaChannel>();
     setSubclassForRoomLists<RoomListChannel>();
     setSubclassForIncomingFileTransfers<IncomingFileTransferChannel>();
@@ -169,19 +169,19 @@ void ChannelFactory::setConstructorForTextChatrooms(const ConstructorConstPtr &c
     setConstructorFor(ChannelClassSpec::textChatroom(additionalProps), ctor);
 }
 
-Features ChannelFactory::featuresForMediaCalls(const QVariantMap &additionalProps) const
+Features ChannelFactory::featuresForCalls(const QVariantMap &additionalProps) const
 {
     return featuresFor(ChannelClassSpec::audioCall(additionalProps));
 }
 
-void ChannelFactory::addFeaturesForMediaCalls(const Features &features,
+void ChannelFactory::addFeaturesForCalls(const Features &features,
         const QVariantMap &additionalProps)
 {
     addFeaturesFor(ChannelClassSpec::audioCall(additionalProps), features);
     addFeaturesFor(ChannelClassSpec::videoCall(additionalProps), features);
 }
 
-void ChannelFactory::setConstructorForMediaCalls(const ConstructorConstPtr &ctor,
+void ChannelFactory::setConstructorForCalls(const ConstructorConstPtr &ctor,
         const QVariantMap &additionalProps)
 {
     setConstructorFor(ChannelClassSpec::audioCall(additionalProps), ctor);
