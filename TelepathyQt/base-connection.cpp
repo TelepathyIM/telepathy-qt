@@ -116,7 +116,12 @@ bool BaseConnection::registerObject(DBusError *error)
         .arg(TP_QT_CONNECTION_BUS_NAME_BASE).arg(mPriv->cmName).arg(escapedProtocolName).arg(name);
     QString objectPath = QString(QLatin1String("%s/%s/%s/%s"))
         .arg(TP_QT_CONNECTION_OBJECT_PATH_BASE).arg(mPriv->cmName).arg(escapedProtocolName).arg(name);
-    return registerObject(busName, objectPath, error);
+    DBusError _error;
+    bool ret = registerObject(busName, objectPath, &_error);
+    if (!ret && error) {
+        error->set(_error.name(), _error.message());
+    }
+    return ret;
 }
 
 bool BaseConnection::registerObject(const QString &busName,
