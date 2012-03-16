@@ -412,12 +412,14 @@ set(telepathy_qt_HEADERS
     PropertiesInterface
     PropertiesInterfaceInterface
     ProtocolInfo
+    ProtocolInfoList
     protocol-info.h
     ProtocolInterface
     ProtocolInterfaceAddressingInterface
     ProtocolInterfaceAvatarsInterface
     ProtocolInterfacePresenceInterface
     ProtocolParameter
+    ProtocolParameterList
     protocol-parameter.h
     ReadinessHelper
     readiness-helper.h
