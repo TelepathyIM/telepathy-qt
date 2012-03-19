@@ -71,7 +71,7 @@ Q_SIGNALS:
             const Tp::CallStateReason &reason);
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotMainProperties(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void gotRemoteMembersContacts(Tp::PendingOperation *op);
 
     TP_QT_NO_EXPORT void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,

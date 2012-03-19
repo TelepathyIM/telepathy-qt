@@ -110,18 +110,18 @@ protected:
             const Feature &coreFeature = Channel::FeatureCore);
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void gotCallState(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotCallState(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onCallStateChanged(uint state, uint flags,
             const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);
 
-    TP_QT_NO_EXPORT void gotCallMembers(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotCallMembers(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void gotCallMembersContacts(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onCallMembersChanged(const Tp::CallMemberMap &updates,
             const Tp::HandleIdentifierMap &identifiers,
             const Tp::UIntList &removed,
             const Tp::CallStateReason &reason);
 
-    TP_QT_NO_EXPORT void gotContents(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotContents(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onContentAdded(const QDBusObjectPath &contentPath);
     TP_QT_NO_EXPORT void onContentRemoved(const QDBusObjectPath &contentPath,
             const Tp::CallStateReason &reason);

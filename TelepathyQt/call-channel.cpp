@@ -31,6 +31,8 @@
 #include <TelepathyQt/PendingContacts>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingVoid>
+#include <TelepathyQt/PendingVariantMap>
+#include <TelepathyQt/PendingVariant>
 
 namespace Tp
 {
@@ -54,7 +56,6 @@ struct TP_QT_NO_EXPORT CallChannel::Private
 
     // Mandatory proxies
     Client::ChannelTypeCallInterface *callInterface;
-    Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
 
@@ -117,7 +118,6 @@ struct TP_QT_NO_EXPORT CallChannel::Private::CallMembersChangedInfo
 CallChannel::Private::Private(CallChannel *parent)
     : parent(parent),
       callInterface(parent->interface<Client::ChannelTypeCallInterface>()),
-      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       state(CallStateUnknown),
       flags((uint) -1),
@@ -178,13 +178,9 @@ void CallChannel::Private::introspectCallState(CallChannel::Private *self)
             SIGNAL(CallStateChanged(uint,uint,Tp::CallStateReason,QVariantMap)),
             SLOT(onCallStateChanged(uint,uint,Tp::CallStateReason,QVariantMap)));
 
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                self->properties->GetAll(TP_QT_IFACE_CHANNEL_TYPE_CALL),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotCallState(QDBusPendingCallWatcher*)));
+    parent->connect(self->callInterface->requestAllProperties(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotCallState(Tp::PendingOperation*)));
 }
 
 void CallChannel::Private::introspectCallMembers(CallChannel::Private *self)
@@ -195,13 +191,9 @@ void CallChannel::Private::introspectCallMembers(CallChannel::Private *self)
             SIGNAL(CallMembersChanged(Tp::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
             SLOT(onCallMembersChanged(Tp::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
 
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                self->properties->GetAll(TP_QT_IFACE_CHANNEL_TYPE_CALL),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotCallMembers(QDBusPendingCallWatcher*)));
+    parent->connect(self->callInterface->requestAllProperties(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotCallMembers(Tp::PendingOperation*)));
 }
 
 void CallChannel::Private::introspectContents(CallChannel::Private *self)
@@ -215,15 +207,9 @@ void CallChannel::Private::introspectContents(CallChannel::Private *self)
             SIGNAL(ContentRemoved(QDBusObjectPath,Tp::CallStateReason)),
             SLOT(onContentRemoved(QDBusObjectPath,Tp::CallStateReason)));
 
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                self->properties->Get(
-                    TP_QT_IFACE_CHANNEL_TYPE_CALL,
-                    QLatin1String("Contents")),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotContents(QDBusPendingCallWatcher*)));
+    parent->connect(self->callInterface->requestPropertyContents(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotContents(Tp::PendingOperation*)));
 }
 
 void CallChannel::Private::introspectLocalHoldState(CallChannel::Private *self)
@@ -809,21 +795,22 @@ PendingOperation *CallChannel::requestHold(bool hold)
     return new PendingVoid(holdInterface->RequestHold(hold), CallChannelPtr(this));
 }
 
-void CallChannel::gotCallState(QDBusPendingCallWatcher *watcher)
+void CallChannel::gotCallState(PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    if (reply.isError()) {
-        warning().nospace() << "Properties::GetAll(Call) failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCallState,
-                false, reply.error());
-        watcher->deleteLater();
+    if (op->isError()) {
+        warning().nospace() << "CallInterface::requestAllProperties() failed with " <<
+            op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCallState, false,
+            op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Got reply to Properties::GetAll(Call)";
+    debug() << "Got reply to CallInterface::requestAllProperties()";
 
-    QVariantMap props = reply.value();
+    PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+    Q_ASSERT(pvm);
+
+    QVariantMap props = pvm->result();
 
     mPriv->state = qdbus_cast<uint>(props[QLatin1String("CallState")]);
     mPriv->flags = qdbus_cast<uint>(props[QLatin1String("CallFlags")]);
@@ -831,8 +818,6 @@ void CallChannel::gotCallState(QDBusPendingCallWatcher *watcher)
     mPriv->stateDetails = qdbus_cast<QVariantMap>(props[QLatin1String("CallStateDetails")]);
 
     mPriv->readinessHelper->setIntrospectCompleted(FeatureCallState, true);
-
-    watcher->deleteLater();
 }
 
 void CallChannel::onCallStateChanged(uint state, uint flags,
@@ -861,21 +846,22 @@ void CallChannel::onCallStateChanged(uint state, uint flags,
     }
 }
 
-void CallChannel::gotCallMembers(QDBusPendingCallWatcher *watcher)
+void CallChannel::gotCallMembers(PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    if (reply.isError()) {
-        warning().nospace() << "Properties::GetAll(Call) failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCallMembers,
-                false, reply.error());
-        watcher->deleteLater();
+    if (op->isError()) {
+        warning().nospace() << "CallInterface::requestAllProperties() failed with " <<
+            op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCallMembers, false,
+            op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Got reply to Properties::GetAll(Call)";
+    debug() << "Got reply to CallInterface::requestAllProperties()";
 
-    QVariantMap props = reply.value();
+    PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+    Q_ASSERT(pvm);
+
+    QVariantMap props = pvm->result();
 
     HandleIdentifierMap ids = qdbus_cast<HandleIdentifierMap>(props[QLatin1String("MemberIdentifiers")]);
     CallMemberMap callMembers = qdbus_cast<CallMemberMap>(props[QLatin1String("CallMembers")]);
@@ -883,8 +869,6 @@ void CallChannel::gotCallMembers(QDBusPendingCallWatcher *watcher)
     mPriv->callMembersChangedQueue.enqueue(Private::CallMembersChangedInfo::create(
                 callMembers, ids, UIntList(), CallStateReason()));
     mPriv->processCallMembersChanged();
-
-    watcher->deleteLater();
 }
 
 void CallChannel::gotCallMembersContacts(PendingOperation *op)
@@ -979,21 +963,22 @@ void CallChannel::onCallMembersChanged(const CallMemberMap &updates,
     mPriv->processCallMembersChanged();
 }
 
-void CallChannel::gotContents(QDBusPendingCallWatcher *watcher)
+void CallChannel::gotContents(PendingOperation *op)
 {
-    QDBusPendingReply<QDBusVariant> reply = *watcher;
-    if (reply.isError()) {
-        warning().nospace() << "Properties::Get(Call, Contents) failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureContents,
-                false, reply.error());
-        watcher->deleteLater();
+    if (op->isError()) {
+        warning().nospace() << "CallInterface::requestPropertyContents() failed with " <<
+            op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureContents, false,
+            op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Got reply to Properties::Get(Call, Contents)";
+    debug() << "Got reply to CallInterface::requestPropertyContents()";
 
-    ObjectPathList contentsPaths = qdbus_cast<ObjectPathList>(reply.value().variant());
+    PendingVariant *pv = qobject_cast<PendingVariant*>(op);
+    Q_ASSERT(pv);
+
+    ObjectPathList contentsPaths = qdbus_cast<ObjectPathList>(pv->result());
     if (contentsPaths.size() > 0) {
         foreach (const QDBusObjectPath &contentPath, contentsPaths) {
             CallContentPtr content = lookupContent(contentPath);
@@ -1004,8 +989,6 @@ void CallChannel::gotContents(QDBusPendingCallWatcher *watcher)
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureContents, true);
     }
-
-    watcher->deleteLater();
 }
 
 void CallChannel::onContentAdded(const QDBusObjectPath &contentPath)

@@ -33,6 +33,7 @@
 #include <TelepathyQt/DBus>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingVoid>
+#include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/ReadinessHelper>
 
 namespace Tp
@@ -56,7 +57,6 @@ struct TP_QT_NO_EXPORT CallContent::Private
 
     // Mandatory proxies
     Client::CallContentInterface *contentInterface;
-    Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
 
@@ -72,7 +72,6 @@ CallContent::Private::Private(CallContent *parent, const CallChannelPtr &channel
     : parent(parent),
       channel(channel.data()),
       contentInterface(parent->interface<Client::CallContentInterface>()),
-      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper())
 {
     ReadinessHelper::Introspectables introspectables;
@@ -101,13 +100,9 @@ void CallContent::Private::introspectMainProperties(CallContent::Private *self)
             SIGNAL(StreamsRemoved(Tp::ObjectPathList,Tp::CallStateReason)),
             SLOT(onStreamsRemoved(Tp::ObjectPathList,Tp::CallStateReason)));
 
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                self->properties->GetAll(TP_QT_IFACE_CALL_CONTENT),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    parent->connect(self->contentInterface->requestAllProperties(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotMainProperties(Tp::PendingOperation*)));
 }
 
 void CallContent::Private::checkIntrospectionCompleted()
@@ -325,20 +320,22 @@ PendingOperation *CallContent::stopDTMFTone()
     return new PendingVoid(dtmfInterface->StopTone(), CallContentPtr(this));
 }
 
-void CallContent::gotMainProperties(QDBusPendingCallWatcher *watcher)
+void CallContent::gotMainProperties(PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    if (reply.isError()) {
-        warning().nospace() << "Properties::GetAll(Call.Content) failed with" <<
-            reply.error().name() << ": " << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
-        watcher->deleteLater();
+    if (op->isError()) {
+        warning().nospace() << "CallContentInterface::requestAllProperties() failed with" <<
+            op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
+            op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Got reply to Properties::GetAll(Call.Content)";
+    debug() << "Got reply to CallContentInterface::requestAllProperties()";
 
-    QVariantMap props = reply.value();
+    PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+    Q_ASSERT(pvm);
+
+    QVariantMap props = pvm->result();
 
     mPriv->name = qdbus_cast<QString>(props[QLatin1String("Name")]);
     mPriv->type = qdbus_cast<uint>(props[QLatin1String("Type")]);
@@ -355,8 +352,6 @@ void CallContent::gotMainProperties(QDBusPendingCallWatcher *watcher)
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
-
-    watcher->deleteLater();
 }
 
 void CallContent::onStreamsAdded(const ObjectPathList &streamsPaths)

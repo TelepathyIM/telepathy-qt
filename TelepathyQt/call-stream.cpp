@@ -36,6 +36,7 @@
 #include <TelepathyQt/DBus>
 #include <TelepathyQt/PendingContacts>
 #include <TelepathyQt/PendingVoid>
+#include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/ReadinessHelper>
 
 namespace Tp
@@ -58,7 +59,6 @@ struct TP_QT_NO_EXPORT CallStream::Private
 
     // Mandatory proxies
     Client::CallStreamInterface *streamInterface;
-    Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
 
@@ -105,7 +105,6 @@ CallStream::Private::Private(CallStream *parent, const CallContentPtr &content)
     : parent(parent),
       content(content.data()),
       streamInterface(parent->interface<Client::CallStreamInterface>()),
-      properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       localSendingState(SendingStateNone),
       canRequestReceiving(true)
@@ -135,13 +134,9 @@ void CallStream::Private::introspectMainProperties(CallStream::Private *self)
             SIGNAL(RemoteMembersChanged(Tp::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
             SLOT(onRemoteMembersChanged(Tp::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
 
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                self->properties->GetAll(TP_QT_IFACE_CALL_STREAM),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    parent->connect(self->streamInterface->requestAllProperties(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotMainProperties(Tp::PendingOperation*)));
 }
 
 void CallStream::Private::processRemoteMembersChanged()
@@ -339,21 +334,22 @@ PendingOperation *CallStream::requestReceiving(const ContactPtr &contact, bool r
             CallStreamPtr(this));
 }
 
-void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
+void CallStream::gotMainProperties(PendingOperation *op)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    if (reply.isError()) {
-        warning().nospace() << "Properties::GetAll(Call.Stream) failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
-                false, reply.error());
-        watcher->deleteLater();
+    if (op->isError()) {
+        warning().nospace() << "CallStreamInterface::requestAllProperties() failed with " <<
+            op->errorName() << ": " << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
+            op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Got reply to Properties::GetAll(Call.Stream)";
+    debug() << "Got reply to CallStreamInterface::requestAllProperties()";
 
-    QVariantMap props = reply.value();
+    PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
+    Q_ASSERT(pvm);
+
+    QVariantMap props = pvm->result();
 
     mPriv->canRequestReceiving = qdbus_cast<bool>(props[QLatin1String("CanRequestReceiving")]);
     mPriv->localSendingState = qdbus_cast<uint>(props[QLatin1String("LocalSendingState")]);
@@ -366,8 +362,6 @@ void CallStream::gotMainProperties(QDBusPendingCallWatcher *watcher)
     mPriv->remoteMembersChangedQueue.enqueue(Private::RemoteMembersChangedInfo::create(
                 remoteMembers, remoteMemberIdentifiers, UIntList(), CallStateReason()));
     mPriv->processRemoteMembersChanged();
-
-    watcher->deleteLater();
 }
 
 void CallStream::gotRemoteMembersContacts(PendingOperation *op)
