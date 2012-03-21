@@ -171,7 +171,7 @@ set(TELEPATHY_FARSIGHT_MIN_VERSION "0.0.4")
 find_package(TelepathyFarsight)
 macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
                   "A Framework for dealing with audio/video conferencing protocols"
-                  "http://farsight.freedesktop.org/wiki/" FALSE "0.0.4"
+                  "http://farsight.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSIGHT_MIN_VERSION}"
                   "Needed, together with GStreamer, to build telepathy-qt-farsight and some additional examples")
 
 # Find tp-farsight
@@ -179,7 +179,7 @@ set(FARSTREAM_MIN_VERSION "0.1.0")
 find_package(Farstream)
 macro_log_feature(FARSTREAM_FOUND "Farstream"
                   "A Framework for dealing with audio/video conferencing protocols"
-                  "http://www.freedesktop.org/wiki/Software/Farstream" FALSE "0.1.0"
+                  "http://www.freedesktop.org/wiki/Software/Farstream" FALSE "${FARSTREAM_MIN_VERSION}"
                   "Needed, together with GStreamer and Telepathy-Farstream, to build telepathy-qt-farstream")
 
 # Find tp-farsight
@@ -187,7 +187,7 @@ set(TELEPATHY_FARSTREAM_MIN_VERSION "0.2.2")
 find_package(TelepathyFarstream)
 macro_log_feature(TELEPATHYFARSTREAM_FOUND "Telepathy-Farstream"
                   "A Framework for dealing with audio/video conferencing protocols"
-                  "http://telepathy.freedesktop.org/wiki/" FALSE "0.2.2"
+                  "http://telepathy.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSTREAM_MIN_VERSION}"
                   "Needed, together with GStreamer and Farstream, to build telepathy-qt-farstream")
 
 # Find GStreamer
