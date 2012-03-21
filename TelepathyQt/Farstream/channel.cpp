@@ -53,6 +53,7 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
       mPriv(new PendingChannel::Private)
 {
     if (!channel->handlerStreamingRequired()) {
+        warning() << "Handler streaming not required";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Handler streaming not required"));
         return;
@@ -60,6 +61,7 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
 
     TpDBusDaemon *dbus = tp_dbus_daemon_dup(0);
     if (!dbus) {
+        warning() << "Unable to connect to D-Bus";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Unable to connect to D-Bus"));
         return;
@@ -67,6 +69,7 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
 
     Tp::ConnectionPtr connection = channel->connection();
     if (connection.isNull()) {
+        warning() << "Connection not available";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection not available"));
         g_object_unref(dbus);
@@ -80,6 +83,7 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
     g_object_unref(dbus);
     dbus = 0;
     if (!gconnection) {
+        warning() << "Unable to construct TpConnection";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Unable to construct TpConnection"));
         return;
@@ -94,6 +98,7 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
     g_object_unref(gconnection);
     gconnection = 0;
     if (!gchannel) {
+        warning() << "Unable to construct TpChannel";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Unable to construct TpChannel"));
         return;
@@ -116,7 +121,7 @@ void PendingChannel::Private::onTfChannelNewFinish(GObject *sourceObject,
     GError *error = NULL;
     TfChannel *ret = tf_channel_new_finish(sourceObject, res, &error);
     if (error) {
-        debug() << "Fs::PendingChannel::Private::onTfChannelNewFinish: error " << error->message;
+        warning() << "Fs::PendingChannel::Private::onTfChannelNewFinish: error " << error->message;
         self->setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE, QLatin1String(error->message));
         g_clear_error(&error);
         return;
