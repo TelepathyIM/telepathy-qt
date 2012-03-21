@@ -34,8 +34,10 @@
 
 typedef struct _TfChannel TfChannel;
 
-namespace Tp {
-namespace Farstream {
+namespace Tp
+{
+namespace Farstream
+{
 
 class TP_QT_FS_EXPORT PendingChannel : public Tp::PendingOperation
 {

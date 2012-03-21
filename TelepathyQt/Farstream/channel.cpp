@@ -33,8 +33,10 @@
 #include <telepathy-glib/connection.h>
 #include <telepathy-glib/dbus.h>
 
-namespace Tp {
-namespace Farstream {
+namespace Tp
+{
+namespace Farstream
+{
 
 struct TP_QT_FS_NO_EXPORT PendingChannel::Private
 {
