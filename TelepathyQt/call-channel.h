@@ -107,9 +107,11 @@ Q_SIGNALS:
 protected:
     CallChannel(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties,
-            const Feature &coreFeature = Channel::FeatureCore);
+            const Feature &coreFeature = CallChannel::FeatureCore);
 
 private Q_SLOTS:
+    TP_QT_NO_EXPORT void gotMainProperties(Tp::PendingOperation *op);
+
     TP_QT_NO_EXPORT void gotCallState(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onCallStateChanged(uint state, uint flags,
             const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);

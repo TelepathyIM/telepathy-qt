@@ -60,6 +60,7 @@ private Q_SLOTS:
     void testHangup();
     void testCallMembers();
     void testDTMF();
+    void testFeatureCore();
 
     void cleanup();
     void cleanupTestCase();
@@ -302,13 +303,6 @@ void TestCallChannel::testOutgoingCall()
                    true);
     mChan = CallChannelPtr::qObjectCast(mConn->createChannel(request));
     QVERIFY(mChan);
-
-    QVERIFY(mChan->hasInitialAudio());
-    QCOMPARE(mChan->initialAudioName(), QString::fromLatin1("audio"));
-    QVERIFY(!mChan->hasInitialVideo());
-    QCOMPARE(mChan->initialVideoName(), QString::fromLatin1("video"));
-    QVERIFY(mChan->hasMutableContents());
-    QVERIFY(mChan->handlerStreamingRequired());
 
     qDebug() << "making the channel ready";
 
@@ -894,6 +888,63 @@ void TestCallChannel::testDTMF()
                     SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mLastError, QString(TP_QT_ERROR_NOT_IMPLEMENTED));
+}
+
+void TestCallChannel::testFeatureCore()
+{
+    qDebug() << "requesting contact for alice";
+
+    QList<ContactPtr> contacts = mConn->contacts(QStringList() << QLatin1String("alice"));
+    QCOMPARE(contacts.size(), 1);
+
+    ContactPtr otherContact = contacts.at(0);
+    QVERIFY(otherContact);
+
+    qDebug() << "creating the channel";
+
+    QVariantMap request;
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                   TP_QT_IFACE_CHANNEL_TYPE_CALL);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
+                   otherContact->handle()[0]);
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
+                   true);
+    mChan = CallChannelPtr::qObjectCast(mConn->createChannel(request));
+    QVERIFY(mChan);
+
+    QVERIFY(connect(mChan->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(Tp::CallChannel::FeatureCore));
+
+    QVERIFY(mChan->hasInitialAudio());
+    QCOMPARE(mChan->initialAudioName(), QString::fromLatin1("audio"));
+    QVERIFY(!mChan->hasInitialVideo());
+    QCOMPARE(mChan->initialVideoName(), QString::fromLatin1("video"));
+    QVERIFY(mChan->hasMutableContents());
+    QVERIFY(mChan->handlerStreamingRequired());
+
+    qDebug() << "creating second CallChannel object";
+
+    //this object is not passed immutable properties on
+    //the constructor, so it will have to introspect them.
+    CallChannelPtr chan2 = CallChannel::create(mConn->client(), mChan->objectPath(), QVariantMap());
+
+    QVERIFY(connect(chan2->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(chan2->isReady(Tp::CallChannel::FeatureCore));
+
+    QVERIFY(chan2->hasInitialAudio());
+    QCOMPARE(chan2->initialAudioName(), QString::fromLatin1("audio"));
+    QVERIFY(!chan2->hasInitialVideo());
+    QCOMPARE(chan2->initialVideoName(), QString::fromLatin1("video"));
+    QVERIFY(chan2->hasMutableContents());
+    QVERIFY(chan2->handlerStreamingRequired());
 }
 
 void TestCallChannel::cleanup()
