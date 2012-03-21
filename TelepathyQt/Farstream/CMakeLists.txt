@@ -9,7 +9,7 @@ if(FARSTREAM_COMPONENTS_FOUND)
 
     # It gets inherited from the previous directory, hence it has to be removed explicitely
     remove_definitions(-DBUILDING_TP_QT)
-    # We are building Telepathy-Qt4-Yell-Farstream
+    # We are building Telepathy-Qt-Farstream
     add_definitions(-DBUILDING_TP_QT_FARSTREAM -DQT_NO_KEYWORDS)
 
     set(telepathy_qt_farstream_SRCS
