@@ -7,10 +7,13 @@ Enhancements:
  * fd.o #43025: Tp::Presence now has a setStatusMessage() method which keeps the
    old status id and status type
  * Added methods in Tp::AbstractInterface to support PropertiesChanged. This way it is
-   possible for internal classes to monitor any property belonging to their interface.
+   possible for internal classes to monitor any property belonging to their interface
  * fd.o #46403: Update spec files to spec 0.25.2 and generate low-level bindings
    for all non-draft interfaces
  * fd.o #46347: Added high-level bindings for new CaptchaAuthentication interface
+ * fd.o #46484: Add high-level Call bindings
+ * Introducing new Telepathy-Qt-Farstream, a new mini-library with glue code to
+   connect telepathy-farstream to Telepathy-Qt
 
 Fixes:
  * fd.o #45850: Telepathy Qt4 cannot compile against glib 2.31.0 and above
