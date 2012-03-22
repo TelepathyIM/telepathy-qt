@@ -29,7 +29,7 @@
 #include <TelepathyQt/Connection>
 
 #include <telepathy-farstream/telepathy-farstream.h>
-#include <telepathy-glib/channel.h>
+#include <telepathy-glib/call-channel.h>
 #include <telepathy-glib/connection.h>
 #include <telepathy-glib/dbus.h>
 
@@ -82,21 +82,22 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
             connection->busName().toAscii(),
             connection->objectPath().toAscii(),
             0);
-    g_object_unref(dbus);
-    dbus = 0;
     if (!gconnection) {
         warning() << "Unable to construct TpConnection";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Unable to construct TpConnection"));
+        g_object_unref(dbus);
         return;
     }
 
-    TpChannel *gchannel = tp_channel_new(gconnection,
-            channel->objectPath().toAscii(),
-            TP_QT_IFACE_CHANNEL_TYPE_CALL.latin1(),
-            (TpHandleType) channel->targetHandleType(),
-            channel->targetHandle(),
-            0);
+    TpChannel *gchannel = (TpChannel*) g_object_new(TP_TYPE_CALL_CHANNEL,
+            "bus-name", connection->busName().toAscii().constData(),
+            "connection", gconnection,
+            "dbus-daemon", dbus,
+            "object-path", channel->objectPath().toAscii().constData(),
+            NULL);
+    g_object_unref(dbus);
+    dbus = 0;
     g_object_unref(gconnection);
     gconnection = 0;
     if (!gchannel) {
