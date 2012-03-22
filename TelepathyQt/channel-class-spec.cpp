@@ -252,6 +252,55 @@ ChannelClassSpec ChannelClassSpec::unnamedTextChat(const QVariantMap &additional
     }
 }
 
+ChannelClassSpec ChannelClassSpec::audioCall(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL, HandleTypeContact);
+        spec.setCallInitialAudioFlag();
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::videoCall(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL, HandleTypeContact);
+        spec.setCallInitialVideoFlag();
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::videoCallWithAudio(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL, HandleTypeContact);
+        spec.setCallInitialAudioFlag();
+        spec.setCallInitialVideoFlag();
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
 ChannelClassSpec ChannelClassSpec::streamedMediaCall(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;

@@ -197,6 +197,48 @@ bool CapabilitiesBase::textChats() const
     return false;
 }
 
+bool CapabilitiesBase::audioCalls() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::audioCall())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CapabilitiesBase::videoCalls() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::videoCall())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CapabilitiesBase::videoCallsWithAudio() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::videoCallWithAudioAllowed()) ||
+            rccSpec.supports(RequestableChannelClassSpec::audioCallWithVideoAllowed())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CapabilitiesBase::upgradingCalls() const
+{
+    foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
+        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL &&
+            rccSpec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".MutableContents"))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  * Return whether private audio and/or video calls can be established by
  * providing a contact identifier.

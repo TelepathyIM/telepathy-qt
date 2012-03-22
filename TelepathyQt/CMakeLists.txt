@@ -18,6 +18,9 @@ set(telepathy_qt_SRCS
     account-set.cpp
     account-set-internal.h
     avatar.cpp
+    call-channel.cpp
+    call-content.cpp
+    call-stream.cpp
     capabilities-base.cpp
     call-content.cpp
     call-content-media-description.cpp
@@ -163,6 +166,8 @@ set(telepathy_qt_HEADERS
     AvatarData
     AvatarSpec
     avatar.h
+    CallChannel
+    call-channel.h
     CallContent
     CallContentInterface
     CallContentInterfaceAudioControlInterface
@@ -362,6 +367,7 @@ set(telepathy_qt_HEADERS
     PeerInterface
     PendingAccount
     pending-account.h
+    PendingCallContent
     PendingCaptchas
     pending-captchas.h
     PendingChannel
@@ -499,6 +505,9 @@ set(telepathy_qt_MOC_SRCS
     account-manager.h
     account-set.h
     account-set-internal.h
+    call-channel.h
+    call-content.h
+    call-stream.h
     captcha-authentication.h
     captcha-authentication-internal.h
     channel.h
@@ -804,4 +813,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVe
         COMPONENT headers)
 
 add_subdirectory(Farsight)
-
+add_subdirectory(Farstream)

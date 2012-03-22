@@ -8,6 +8,7 @@ include_directories(
     ${DBUS_INCLUDE_DIR})
 
 if(ENABLE_TP_GLIB_TESTS)
+    add_subdirectory(call)
     add_subdirectory(callable)
     add_subdirectory(contactlist)
     add_subdirectory(contactlist2)
@@ -60,6 +61,7 @@ if(ENABLE_TP_GLIB_TESTS)
         ${GOBJECT_LIBRARIES}
         ${GIO_LIBRARIES}
         ${DBUS_GLIB_LIBRARIES}
+        example-cm-call
         example-cm-callable
         example-cm-contactlist
         example-cm-csh

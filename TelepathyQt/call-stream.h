@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2012 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2010-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2012 Nokia Corporation
  * @license LGPL 2.1
  *
@@ -28,5 +28,71 @@
 #endif
 
 #include <TelepathyQt/_gen/cli-call-stream.h>
+
+#include <TelepathyQt/Constants>
+#include <TelepathyQt/DBusProxy>
+#include <TelepathyQt/OptionalInterfaceFactory>
+#include <TelepathyQt/PendingOperation>
+#include <TelepathyQt/Types>
+#include <TelepathyQt/SharedPtr>
+
+namespace Tp
+{
+
+typedef QList<CallStreamPtr> CallStreams;
+
+class TP_QT_EXPORT CallStream : public StatefulDBusProxy,
+                    public OptionalInterfaceFactory<CallStream>
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(CallStream)
+
+public:
+    ~CallStream();
+
+    CallContentPtr content() const;
+
+    Contacts remoteMembers() const;
+    bool canRequestReceiving() const;
+
+    SendingState localSendingState() const;
+    SendingState remoteSendingState(const ContactPtr &contact) const;
+
+    PendingOperation *requestSending(bool send);
+    PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
+
+Q_SIGNALS:
+    void localSendingStateChanged(Tp::SendingState localSendingState,
+            const Tp::CallStateReason &reason);
+    void remoteSendingStateChanged(
+            const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates,
+            const Tp::CallStateReason &reason);
+    void remoteMembersRemoved(const Tp::Contacts &remoteMembers,
+            const Tp::CallStateReason &reason);
+
+private Q_SLOTS:
+    TP_QT_NO_EXPORT void gotMainProperties(Tp::PendingOperation *op);
+    TP_QT_NO_EXPORT void gotRemoteMembersContacts(Tp::PendingOperation *op);
+
+    TP_QT_NO_EXPORT void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,
+            const Tp::HandleIdentifierMap &identifiers,
+            const Tp::UIntList &removed,
+            const Tp::CallStateReason &reason);
+    TP_QT_NO_EXPORT void onLocalSendingStateChanged(uint, const Tp::CallStateReason &reason);
+
+private:
+    friend class CallChannel;
+    friend class CallContent;
+
+    TP_QT_NO_EXPORT static const Feature FeatureCore;
+
+    TP_QT_NO_EXPORT CallStream(const CallContentPtr &content, const QDBusObjectPath &streamPath);
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+} // Tp
 
 #endif

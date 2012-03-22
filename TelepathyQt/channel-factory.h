@@ -97,6 +97,19 @@ public:
     void setConstructorForTextChatrooms(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
+    Features featuresForCalls(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForCalls(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    template<typename Subclass>
+    void setSubclassForCalls(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForCalls(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForCalls(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
     Features featuresForStreamedMediaCalls(const QVariantMap &additionalProps = QVariantMap()) const;
     void addFeaturesForStreamedMediaCalls(const Features &features,
             const QVariantMap &additionalProps = QVariantMap());

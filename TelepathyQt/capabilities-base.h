@@ -48,6 +48,11 @@ public:
 
     bool textChats() const;
 
+    bool audioCalls() const;
+    bool videoCalls() const;
+    bool videoCallsWithAudio() const;
+    bool upgradingCalls() const;
+
     bool streamedMediaCalls() const;
     bool streamedMediaAudioCalls() const;
     bool streamedMediaVideoCalls() const;

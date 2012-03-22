@@ -112,6 +112,40 @@ public:
         unsetProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"));
     }
 
+    bool hasCallInitialAudioFlag() const
+    {
+        return qdbus_cast<bool>(
+                property(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")));
+    }
+
+    void setCallInitialAudioFlag()
+    {
+        setProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
+                QVariant::fromValue(true));
+    }
+
+    void unsetCallInitialAudioFlag()
+    {
+        unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"));
+    }
+
+    bool hasCallInitialVideoFlag() const
+    {
+        return qdbus_cast<bool>(
+                property(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")));
+    }
+
+    void setCallInitialVideoFlag()
+    {
+        setProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
+                QVariant::fromValue(true));
+    }
+
+    void unsetCallInitialVideoFlag()
+    {
+        unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"));
+    }
+
     bool hasStreamedMediaInitialAudioFlag() const
     {
         return qdbus_cast<bool>(
@@ -159,6 +193,13 @@ public:
     static ChannelClassSpec textChatroom(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec unnamedTextChat(const QVariantMap &additionalProperties = QVariantMap());
 
+    static ChannelClassSpec audioCall(const QVariantMap &additionalProperties =
+            QVariantMap());
+    static ChannelClassSpec videoCall(const QVariantMap &additionalProperties =
+            QVariantMap());
+    static ChannelClassSpec videoCallWithAudio(const QVariantMap &additionalProperties =
+            QVariantMap());
+
     static ChannelClassSpec streamedMediaCall(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec streamedMediaAudioCall(const QVariantMap &additionalProperties =
             QVariantMap());
@@ -179,7 +220,6 @@ public:
     static ChannelClassSpec serverAuthentication(const QVariantMap &additionalProperties =
             QVariantMap());
 
-    // TODO: add Call when it's undrafted
     static ChannelClassSpec roomList(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec outgoingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec incomingFileTransfer(const QVariantMap &additionalProperties = QVariantMap());

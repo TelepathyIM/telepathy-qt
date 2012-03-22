@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @copyright Copyright (C) 2008 Nokia Corporation
  * @license LGPL 2.1
  *
@@ -140,6 +140,88 @@ QVariantMap textChatroomRequest(const QString &roomName)
                    (uint) Tp::HandleTypeRoom);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                    roomName);
+    return request;
+}
+
+QVariantMap callCommonRequest(bool withAudio, const QString &audioName,
+        bool withVideo, const QString &videoName)
+{
+    QVariantMap request;
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                   TP_QT_IFACE_CHANNEL_TYPE_CALL);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+
+    if (withAudio) {
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
+                       true);
+        if (!audioName.isEmpty()) {
+            request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName"),
+                           audioName);
+        }
+    }
+
+    if (withVideo) {
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
+                       true);
+        if (!videoName.isEmpty()) {
+            request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName"),
+                           videoName);
+        }
+    }
+
+    return request;
+}
+
+QVariantMap audioCallRequest(const QString &contactIdentifier, const QString &contentName)
+{
+    QVariantMap request = callCommonRequest(true, contentName, false, QString());
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
+                   contactIdentifier);
+    return request;
+}
+
+QVariantMap audioCallRequest(const Tp::ContactPtr &contact, const QString &contentName)
+{
+    QVariantMap request = callCommonRequest(true, contentName, false, QString());
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+    return request;
+}
+
+QVariantMap videoCallRequest(const QString &contactIdentifier, const QString &contentName)
+{
+    QVariantMap request = callCommonRequest(false, QString(), true, contentName);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
+                   contactIdentifier);
+    return request;
+}
+
+QVariantMap videoCallRequest(const Tp::ContactPtr &contact, const QString &contentName)
+{
+    QVariantMap request = callCommonRequest(false, QString(), true, contentName);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+    return request;
+}
+
+QVariantMap audioVideoCallRequest(const QString &contactIdentifier,
+        const QString &audioName,
+        const QString &videoName)
+{
+    QVariantMap request = callCommonRequest(true, audioName, true, videoName);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
+                   contactIdentifier);
+    return request;
+}
+
+QVariantMap audioVideoCallRequest(const Tp::ContactPtr &contact,
+        const QString &audioName,
+        const QString &videoName)
+{
+    QVariantMap request = callCommonRequest(true, audioName, true, videoName);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
     return request;
 }
 
@@ -2148,6 +2230,224 @@ PendingChannelRequest *Account::ensureTextChatroom(
 }
 
 /**
+ * Start a request to ensure that an audio call channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param initialAudioContentName The name of the initial CallContent that will
+ *                                be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureAudioCall(
+        const QString &contactIdentifier,
+        const QString &initialAudioContentName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = audioCallRequest(contactIdentifier, initialAudioContentName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false, hints);
+}
+
+/**
+ * Start a request to ensure that an audio call channel with the given
+ * contact \a contact exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contact The contact to call.
+ * \param initialAudioContentName The name of the initial audio CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest* Account::ensureAudioCall(
+        const ContactPtr &contact,
+        const QString &initialAudioContentName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = audioCallRequest(contact, initialAudioContentName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false, hints);
+}
+
+/**
+ * Start a request to ensure that a video call channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param initialVideoContentName The name of the initial video CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureVideoCall(
+        const QString &contactIdentifier,
+        const QString &initialVideoContentName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = videoCallRequest(contactIdentifier, initialVideoContentName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false, hints);
+}
+
+/**
+ * Start a request to ensure that a video call channel with the given
+ * contact \a contact exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contact The contact to call.
+ * \param initialVideoContentName The name of the initial video CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureVideoCall(
+        const ContactPtr &contact,
+        const QString &initialVideoContentName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = videoCallRequest(contact, initialVideoContentName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false, hints);
+}
+
+/**
+ * Start a request to ensure that an audio/video call channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param initialAudioContentName The name of the initial audio CallContent that
+ *                                will be automatically added on the channel.
+ * \param initialVideoContentName The name of the initial video CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureAudioVideoCall(
+        const QString &contactIdentifier,
+        const QString &initialAudioContentName,
+        const QString &initialVideoContentName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = audioVideoCallRequest(contactIdentifier,
+            initialAudioContentName, initialVideoContentName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false, hints);
+}
+
+/**
+ * Start a request to ensure that an audio/video call channel with the given
+ * contact \a contact exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contact The contact to call.
+ * \param initialAudioContentName The name of the initial audio CallContent that
+ *                                will be automatically added on the channel.
+ * \param initialVideoContentName The name of the initial video CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param hints Arbitrary metadata which will be relayed to the handler if supported,
+ *              as indicated by supportsRequestHints().
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the request has been made.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureAudioVideoCall(
+        const ContactPtr &contact,
+        const QString &initialAudioContentName,
+        const QString &initialVideoContentName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = audioVideoCallRequest(contact,
+            initialAudioContentName, initialVideoContentName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, false, hints);
+}
+
+/**
  * Start a request to ensure that a media channel with the given
  * contact \a contactIdentifier exists, creating it if necessary.
  *
@@ -2810,6 +3110,176 @@ PendingChannel *Account::ensureAndHandleTextChatroom(
         const QDateTime &userActionTime)
 {
     QVariantMap request = textChatroomRequest(roomName);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that an audio call channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param initialAudioContentName The name of the initial audio CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleAudioCall(
+        const QString &contactIdentifier,
+        const QString &initialAudioContentName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = audioCallRequest(contactIdentifier, initialAudioContentName);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that an audio call channel with the given
+ * contact \a contact exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contact The contact to call.
+ * \param initialAudioContentName The name of the initial audio CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleAudioCall(
+        const ContactPtr &contact,
+        const QString &initialAudioContentName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = audioCallRequest(contact, initialAudioContentName);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that a video call channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param initialVideoContentName The name of the initial video CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleVideoCall(
+        const QString &contactIdentifier,
+        const QString &initialVideoContentName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = videoCallRequest(contactIdentifier, initialVideoContentName);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that a video call channel with the given
+ * contact \a contact exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contact The contact to call.
+ * \param initialVideoContentName The name of the initial video CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleVideoCall(
+        const ContactPtr &contact,
+        const QString &initialVideoContentName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = videoCallRequest(contact, initialVideoContentName);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that an audio/video call channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param initialAudioContentName The name of the initial audio CallContent that
+ *                                will be automatically added on the channel.
+ * \param initialVideoContentName The name of the initial video CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleAudioVideoCall(
+        const QString &contactIdentifier,
+        const QString &initialAudioContentName,
+        const QString &initialVideoContentName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = audioVideoCallRequest(contactIdentifier,
+            initialAudioContentName, initialVideoContentName);
+
+    return ensureAndHandleChannel(request, userActionTime);
+}
+
+/**
+ * Start a request to ensure that an audio/video call channel with the given
+ * contact \a contact exists, creating it if necessary.
+ * This initially just creates a PendingChannel object,
+ * which can be used to track the success or failure of the request.
+ *
+ * \param contact The contact to call.
+ * \param initialAudioContentName The name of the initial audio CallContent that
+ *                                will be automatically added on the channel.
+ * \param initialVideoContentName The name of the initial video CallContent that
+ *                                will be automatically added on the channel.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \return A PendingChannel which will emit PendingChannel::finished
+ *         successfully, when the Channel is available for handling using
+ *         PendingChannel::channel(), or with an error if one has been encountered.
+ * \sa ensureAndHandleChannel(), createAndHandleChannel()
+ */
+PendingChannel *Account::ensureAndHandleAudioVideoCall(
+        const ContactPtr &contact,
+        const QString &initialAudioContentName,
+        const QString &initialVideoContentName,
+        const QDateTime &userActionTime)
+{
+    QVariantMap request = audioVideoCallRequest(contact,
+            initialAudioContentName, initialVideoContentName);
 
     return ensureAndHandleChannel(request, userActionTime);
 }

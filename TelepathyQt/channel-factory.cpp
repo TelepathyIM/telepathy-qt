@@ -28,6 +28,7 @@
 
 #include "TelepathyQt/debug-internal.h"
 
+#include <TelepathyQt/CallChannel>
 #include <TelepathyQt/Channel>
 #include <TelepathyQt/ChannelClassSpec>
 #include <TelepathyQt/ChannelClassFeatures>
@@ -98,6 +99,7 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
 {
     setSubclassForTextChats<TextChannel>();
     setSubclassForTextChatrooms<TextChannel>();
+    setSubclassForCalls<CallChannel>();
     setSubclassForStreamedMediaCalls<StreamedMediaChannel>();
     setSubclassForRoomLists<RoomListChannel>();
     setSubclassForIncomingFileTransfers<IncomingFileTransferChannel>();
@@ -165,6 +167,25 @@ void ChannelFactory::setConstructorForTextChatrooms(const ConstructorConstPtr &c
         const QVariantMap &additionalProps)
 {
     setConstructorFor(ChannelClassSpec::textChatroom(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForCalls(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::audioCall(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForCalls(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::audioCall(additionalProps), features);
+    addFeaturesFor(ChannelClassSpec::videoCall(additionalProps), features);
+}
+
+void ChannelFactory::setConstructorForCalls(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::audioCall(additionalProps), ctor);
+    setConstructorFor(ChannelClassSpec::videoCall(additionalProps), ctor);
 }
 
 Features ChannelFactory::featuresForStreamedMediaCalls(const QVariantMap &additionalProps) const
