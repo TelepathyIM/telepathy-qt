@@ -158,12 +158,8 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
 
 /**
  * \class DBusTubeChannel
-<<<<<<< HEAD
- * \headerfile TelepathyQt/stream-tube-channel.h <TelepathyQt/DBusTubeChannel>
-=======
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/dbus-tube-channel.h <TelepathyQt4/DBusTubeChannel>
->>>>>>> 523c3c3... dbus-tubes: Update and improve the API documentation
+ * \headerfile TelepathyQt/stream-tube-channel.h <TelepathyQt/DBusTubeChannel>
  *
  * \brief The DBusTubeChannel class represents a Telepathy channel of type DBusTube.
  *
@@ -268,11 +264,11 @@ QString DBusTubeChannel::serviceName() const
  *
  * This method is useful only if your appliance is really security-sensitive:
  * in general, this restriction is always enabled by default on all tubes offered
- * or accepted from Telepathy-Qt4, falling back to a general connection allowance
+ * or accepted from Telepathy-Qt, falling back to a general connection allowance
  * if this feature is not available.
  *
  * If your application does not have specific needs regarding DBus credentials,
- * you can trust Telepathy-Qt4 to do the right thing - in any case, the most secure
+ * you can trust Telepathy-Qt to do the right thing - in any case, the most secure
  * method available will be used by default.
  *
  * This method requires DBusTubeChannel::FeatureCore to be enabled.

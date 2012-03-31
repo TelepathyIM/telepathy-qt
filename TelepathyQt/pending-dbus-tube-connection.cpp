@@ -60,7 +60,7 @@ PendingDBusTubeConnection::Private::~Private()
 /**
  * \class PendingDBusTubeConnection
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/pending-dbus-tube-connection.h <TelepathyQt4/PendingDBusTubeConnection>
+ * \headerfile TelepathyQt/pending-dbus-tube-connection.h <TelepathyQt/PendingDBusTubeConnection>
  *
  * A pending operation for accepting or offering a DBus tube
  *
