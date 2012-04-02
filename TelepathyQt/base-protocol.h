@@ -77,8 +77,8 @@ public:
     RequestableChannelClassSpecList requestableChannelClasses() const;
     void setRequestableChannelClasses(const RequestableChannelClassSpecList &rccSpecs);
 
-    QString vcardField() const;
-    void setVCardField(const QString &vcardField);
+    QString vCardField() const;
+    void setVCardField(const QString &vCardField);
 
     QString englishName() const;
     void setEnglishName(const QString &englishName);

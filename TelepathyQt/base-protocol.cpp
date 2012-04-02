@@ -57,7 +57,7 @@ struct TP_QT_NO_EXPORT BaseProtocol::Private
     QStringList connInterfaces;
     ProtocolParameterList parameters;
     RequestableChannelClassSpecList rccSpecs;
-    QString vcardField;
+    QString vCardField;
     QString englishName;
     QString iconName;
     QStringList authTypes;
@@ -117,9 +117,9 @@ RequestableChannelClassList BaseProtocol::Adaptee::requestableChannelClasses() c
     return mProtocol->requestableChannelClasses().bareClasses();
 }
 
-QString BaseProtocol::Adaptee::vcardField() const
+QString BaseProtocol::Adaptee::vCardField() const
 {
-    return mProtocol->vcardField();
+    return mProtocol->vCardField();
 }
 
 QString BaseProtocol::Adaptee::englishName() const
@@ -127,7 +127,7 @@ QString BaseProtocol::Adaptee::englishName() const
     return mProtocol->englishName();
 }
 
-QString BaseProtocol::Adaptee::iconName() const
+QString BaseProtocol::Adaptee::icon() const
 {
     return mProtocol->iconName();
 }
@@ -209,14 +209,14 @@ void BaseProtocol::setRequestableChannelClasses(const RequestableChannelClassSpe
     mPriv->rccSpecs = rccSpecs;
 }
 
-QString BaseProtocol::vcardField() const
+QString BaseProtocol::vCardField() const
 {
-    return mPriv->vcardField;
+    return mPriv->vCardField;
 }
 
-void BaseProtocol::setVCardField(const QString &vcardField)
+void BaseProtocol::setVCardField(const QString &vCardField)
 {
-    mPriv->vcardField = vcardField;
+    mPriv->vCardField = vCardField;
 }
 
 QString BaseProtocol::englishName() const

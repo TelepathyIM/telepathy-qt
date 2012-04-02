@@ -37,8 +37,8 @@ namespace Tp
 class TP_QT_NO_EXPORT BaseConnectionManager::Adaptee : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList Interfaces READ interfaces)
-    Q_PROPERTY(Tp::ProtocolPropertiesMap Protocols READ protocols)
+    Q_PROPERTY(QStringList interfaces READ interfaces)
+    Q_PROPERTY(Tp::ProtocolPropertiesMap protocols READ protocols)
 
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseConnectionManager *cm);

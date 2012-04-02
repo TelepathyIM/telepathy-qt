@@ -27,6 +27,25 @@ from libqtcodegen import binding_from_usage, extract_arg_or_member_info, format_
 
 # TODO generate docstrings
 
+def to_lower_camel_case(s):
+    if len(s) <= 1:
+        return s.lower()
+
+    i = 0
+    for c in s:
+        if not c.isupper():
+            break
+        i += 1
+
+    ret = s
+    if i == 1:
+        ret = s[0:i].lower() + s[i:]
+    elif i == len(s):
+        return s.lower()
+    else:
+        ret = s[0:i-1].lower() + s[i-1:]
+    return ret
+
 class Generator(object):
     def __init__(self, opts):
         try:
@@ -418,17 +437,16 @@ Q_SIGNALS: // SIGNALS
 
     def do_prop(self, ifacename, prop):
         name = prop.getAttribute('name')
+        adaptee_name = to_lower_camel_case(name)
         access = prop.getAttribute('access')
         gettername = name
         settername = None
-        docstring = format_docstring(prop, self.refs, '     * ').replace('*/', '&#42;&#47;')
+        if 'write' in access:
+            settername = 'Set' + name
 
         sig = prop.getAttribute('type')
         tptype = prop.getAttributeNS(NS_TP, 'type')
         binding = binding_from_usage(sig, tptype, self.custom_lists, (sig, tptype) in self.externals, self.typesnamespace)
-
-        if 'write' in access:
-            settername = 'Set' + name
 
         if 'read' in access:
             self.h("""\
@@ -440,34 +458,35 @@ Q_SIGNALS: // SIGNALS
             self.b("""
 %(type)s %(ifacename)s::%(gettername)s() const
 {
-    return qvariant_cast< %(type)s >(adaptee()->property("%(name)s"));
+    return qvariant_cast< %(type)s >(adaptee()->property("%(adaptee_name)s"));
 }
 """ % {'type': binding.val,
        'ifacename': ifacename,
        'gettername': gettername,
-       'name': (name),
+       'adaptee_name': adaptee_name,
        })
 
         if 'write' in access:
             self.h("""\
-    void %(settername)s(%(type)s newValue);
+    void %(settername)s(const %(type)s &newValue);
 """ % {'settername': settername,
        'type': binding.val,
        })
 
             self.b("""
-void %(ifacename)s::%(settername)s(%(type)s newValue)
+void %(ifacename)s::%(settername)s(const %(type)s &newValue)
 {
-    adaptee()->setProperty("%(name)s", qVariantFromValue(newValue));
+    adaptee()->setProperty("%(adaptee_name)s", qVariantFromValue(newValue));
 }
 """ % {'ifacename': ifacename,
        'settername': settername,
        'type': binding.val,
-       'name': (name),
+       'adaptee_name': adaptee_name,
        })
 
     def do_method(self, ifacename, method):
         name = method.getAttribute('name')
+        adaptee_name = to_lower_camel_case(name)
         args = get_by_path(method, 'arg')
         argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists,
                 self.externals, self.typesnamespace, self.refs, '     *     ')
@@ -511,12 +530,12 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
         self.b("""
 %(rettype)s %(ifacename)s::%(name)s(%(params)s)
 {
-    if (!adaptee()->metaObject()->indexOfMethod("%(lname)s(%(normalizedinparams)s)") == -1) {
+    if (!adaptee()->metaObject()->indexOfMethod("%(adaptee_name)s(%(normalizedinparams)s)") == -1) {
         dbusConnection().send(dbusMessage.createErrorReply(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented")));
 """ % {'rettype': rettype,
        'ifacename': ifacename,
        'name': name,
-       'lname': (name[0].lower() + name[1:]),
+       'adaptee_name': adaptee_name,
        'normalizedinparams': normalizedinparams,
        'params': params,
        })
@@ -541,13 +560,13 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
 
         if invokemethodargs:
             self.b("""\
-    QMetaObject::invokeMethod(adaptee(), "%(lname)s",
+    QMetaObject::invokeMethod(adaptee(), "%(adaptee_name)s",
         %(invokemethodargs)s,
         Q_ARG(%(namespace)s::%(ifacename)s::%(name)sContextPtr, ctx));
 """ % {'namespace': self.namespace,
        'ifacename': ifacename,
        'name': name,
-       'lname': (name[0].lower() + name[1:]),
+       'adaptee_name': adaptee_name,
        'invokemethodargs': invokemethodargs,
        })
         else:
@@ -582,13 +601,14 @@ void %(ifacename)s::%(settername)s(%(type)s newValue)
     def do_signals_connect(self, signals):
         for signal in signals:
             name = signal.getAttribute('name')
+            adaptee_name = to_lower_camel_case(name)
             _, _, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'),
                     self.custom_lists, self.externals, self.typesnamespace, self.refs, '     *     ')
 
             self.b("""\
-    connect(adaptee, SIGNAL(%(asigname)s(%(params)s)), SIGNAL(%(signame)s(%(params)s)));
-""" % {'asigname': name[0].lower() + name[1:],
-       'signame': name,
+    connect(adaptee, SIGNAL(%(adaptee_name)s(%(params)s)), SIGNAL(%(name)s(%(params)s)));
+""" % {'name': name,
+       'adaptee_name': adaptee_name,
        'params': ', '.join([binding.inarg for binding in argbindings])
        })
 

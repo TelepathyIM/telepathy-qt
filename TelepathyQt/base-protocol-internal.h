@@ -37,14 +37,14 @@ namespace Tp
 class TP_QT_NO_EXPORT BaseProtocol::Adaptee : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList Interfaces READ interfaces)
-    Q_PROPERTY(Tp::ParamSpecList Parameters READ parameters)
-    Q_PROPERTY(QStringList ConnectionInterfaces READ connectionInterfaces)
-    Q_PROPERTY(Tp::RequestableChannelClassList RequestableChannelClasses READ requestableChannelClasses)
-    Q_PROPERTY(QString VCardField READ vcardField)
-    Q_PROPERTY(QString EnglishName READ englishName)
-    Q_PROPERTY(QString Icon READ iconName)
-    Q_PROPERTY(QStringList AuthenticationTypes READ authenticationTypes)
+    Q_PROPERTY(QStringList interfaces READ interfaces)
+    Q_PROPERTY(Tp::ParamSpecList parameters READ parameters)
+    Q_PROPERTY(QStringList connectionInterfaces READ connectionInterfaces)
+    Q_PROPERTY(Tp::RequestableChannelClassList requestableChannelClasses READ requestableChannelClasses)
+    Q_PROPERTY(QString vCardField READ vCardField)
+    Q_PROPERTY(QString englishName READ englishName)
+    Q_PROPERTY(QString icon READ icon)
+    Q_PROPERTY(QStringList authenticationTypes READ authenticationTypes)
 
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseProtocol *protocol);
@@ -54,9 +54,9 @@ public:
     QStringList connectionInterfaces() const;
     ParamSpecList parameters() const;
     RequestableChannelClassList requestableChannelClasses() const;
-    QString vcardField() const;
+    QString vCardField() const;
     QString englishName() const;
-    QString iconName() const;
+    QString icon() const;
     QStringList authenticationTypes() const;
 
 private Q_SLOTS:
