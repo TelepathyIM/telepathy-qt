@@ -44,12 +44,25 @@ class TP_QT_EXPORT BaseConnection : public DBusService
     Q_DISABLE_COPY(BaseConnection)
 
 public:
+    static BaseConnectionPtr create(const QString &cmName, const QString &protocolName,
+            const QVariantMap &parameters)
+    {
+        return BaseConnectionPtr(new BaseConnection(
+                    QDBusConnection::sessionBus(), cmName, protocolName, parameters));
+    }
     template<typename BaseConnectionSubclass>
     static BaseConnectionPtr create(const QString &cmName, const QString &protocolName,
             const QVariantMap &parameters)
     {
         return BaseConnectionPtr(new BaseConnectionSubclass(
                     QDBusConnection::sessionBus(), cmName, protocolName, parameters));
+    }
+    static BaseConnectionPtr create(const QDBusConnection &dbusConnection,
+            const QString &cmName, const QString &protocolName,
+            const QVariantMap &parameters)
+    {
+        return BaseConnectionPtr(new BaseConnection(
+                    dbusConnection, cmName, protocolName, parameters));
     }
     template<typename BaseConnectionSubclass>
     static BaseConnectionPtr create(const QDBusConnection &dbusConnection,
