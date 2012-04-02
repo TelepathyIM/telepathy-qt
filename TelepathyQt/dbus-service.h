@@ -64,6 +64,25 @@ private:
     Private *mPriv;
 };
 
+class AbstractDBusServiceInterface : public Object
+{
+    Q_DISABLE_COPY(AbstractDBusServiceInterface)
+
+public:
+    AbstractDBusServiceInterface(const QLatin1String &interfaceName);
+    virtual ~AbstractDBusServiceInterface();
+
+    QLatin1String interfaceName() const;
+
+protected:
+    virtual void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject) = 0;
+
+private:
+    class Private;
+    friend class Private;
+    Private *mPriv;
+};
+
 }
 
 #endif

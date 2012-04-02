@@ -833,6 +833,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     set(telepathy_qt_service_HEADERS
         AbstractAdaptor
         abstract-adaptor.h
+        AbstractDBusServiceInterface
         BaseConnectionManager
         base-connection-manager.h
         BaseConnection
