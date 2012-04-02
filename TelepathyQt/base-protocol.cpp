@@ -329,4 +329,139 @@ AbstractProtocolInterface::~AbstractProtocolInterface()
 {
 }
 
+BaseProtocolAddressingInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
+        QObject *dbusObject, BaseProtocolAddressingInterface *interface)
+    : QObject(),
+      mInterface(interface)
+{
+    mAdaptor = new Service::ProtocolInterfaceAddressingAdaptor(dbusConnection, this, dbusObject);
+}
+
+BaseProtocolAddressingInterface::Adaptee::~Adaptee()
+{
+}
+
+QStringList BaseProtocolAddressingInterface::Adaptee::addressableVCardFields() const
+{
+    return mInterface->addressableVCardFields();
+}
+
+QStringList BaseProtocolAddressingInterface::Adaptee::addressableURISchemes() const
+{
+    return mInterface->addressableUriSchemes();
+}
+
+void BaseProtocolAddressingInterface::Adaptee::normalizeVCardAddress(const QString& vCardField,
+        const QString& vCardAddress,
+        const Tp::Service::ProtocolInterfaceAddressingAdaptor::NormalizeVCardAddressContextPtr &context)
+{
+    DBusError error;
+    QString normalizedAddress;
+    normalizedAddress = mInterface->normalizeVCardAddress(vCardField, vCardAddress, &error);
+    if (normalizedAddress.isEmpty()) {
+        context->setFinishedWithError(error);
+        return;
+    }
+    context->setFinished(normalizedAddress);
+}
+
+void BaseProtocolAddressingInterface::Adaptee::normalizeContactURI(const QString& uri,
+        const Tp::Service::ProtocolInterfaceAddressingAdaptor::NormalizeContactURIContextPtr &context)
+{
+    DBusError error;
+    QString normalizedUri;
+    normalizedUri = mInterface->normalizeContactUri(uri, &error);
+    if (normalizedUri.isEmpty()) {
+        context->setFinishedWithError(error);
+        return;
+    }
+    context->setFinished(normalizedUri);
+}
+
+struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
+{
+    Private()
+        : adaptee(0)
+    {
+    }
+
+    ~Private()
+    {
+        delete adaptee;
+    }
+
+    BaseProtocolAddressingInterface::Adaptee *adaptee;
+    QStringList addressableVCardFields;
+    QStringList addressableUriSchemes;
+    NormalizeVCardAddressCallback normalizeVCardAddressCb;
+    NormalizeContactUriCallback normalizeContactUriCb;
+};
+
+BaseProtocolAddressingInterface::BaseProtocolAddressingInterface()
+    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
+      mPriv(new Private)
+{
+}
+
+BaseProtocolAddressingInterface::~BaseProtocolAddressingInterface()
+{
+    delete mPriv;
+}
+
+QStringList BaseProtocolAddressingInterface::addressableVCardFields() const
+{
+    return mPriv->addressableVCardFields;
+}
+
+void BaseProtocolAddressingInterface::setAddressableVCardFields(const QStringList &vcardFields)
+{
+    mPriv->addressableVCardFields = vcardFields;
+}
+
+QStringList BaseProtocolAddressingInterface::addressableUriSchemes() const
+{
+    return mPriv->addressableUriSchemes;
+}
+
+void BaseProtocolAddressingInterface::setAddressableUriSchemes(const QStringList &uriSchemes)
+{
+    mPriv->addressableUriSchemes = uriSchemes;
+}
+
+void BaseProtocolAddressingInterface::setNormalizeVCardAddressCallback(
+        const NormalizeVCardAddressCallback &cb)
+{
+    mPriv->normalizeVCardAddressCb = cb;
+}
+
+QString BaseProtocolAddressingInterface::normalizeVCardAddress(const QString &vCardField,
+        const QString &vCardAddress, DBusError *error)
+{
+    if (!mPriv->normalizeVCardAddressCb.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return QString();
+    }
+    return mPriv->normalizeVCardAddressCb(vCardField, vCardAddress, error);
+}
+
+void BaseProtocolAddressingInterface::setNormalizeContactUriCallback(
+        const NormalizeContactUriCallback &cb)
+{
+    mPriv->normalizeContactUriCb = cb;
+}
+
+QString BaseProtocolAddressingInterface::normalizeContactUri(const QString &uri, DBusError *error)
+{
+    if (!mPriv->normalizeContactUriCb.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return QString();
+    }
+    return mPriv->normalizeContactUriCb(uri, error);
+}
+
+void BaseProtocolAddressingInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
+{
+    mPriv->adaptee = new BaseProtocolAddressingInterface::Adaptee(dbusConnection, dbusObject, this);
+}
+
 }

@@ -145,13 +145,21 @@ protected:
     Private *mPriv;
 };
 
-/*
-class TP_QT_EXPORT BaseProtocolAddressingInterface : public QObject
+class TP_QT_EXPORT BaseProtocolAddressingInterface : public AbstractProtocolInterface
 {
-    Q_OBJECT
+    Q_DISABLE_COPY(BaseProtocolAddressingInterface)
 
 public:
-    BaseProtocolAddressingInterface();
+    static BaseProtocolAddressingInterfacePtr create()
+    {
+        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterface());
+    }
+    template<typename BaseProtocolAddressingInterfaceSubclass>
+    static BaseProtocolAddressingInterfacePtr create()
+    {
+        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterfaceSubclass());
+    }
+
     virtual ~BaseProtocolAddressingInterface();
 
     QStringList addressableVCardFields() const;
@@ -160,16 +168,28 @@ public:
     QStringList addressableUriSchemes() const;
     void setAddressableUriSchemes(const QStringList &uriSchemes);
 
-protected Q_SLOTS:
-    // normalizeVCardAddress
-    // normalizeContactURI
+    typedef Callback3<QString, const QString &, const QString &, DBusError*> NormalizeVCardAddressCallback;
+    void setNormalizeVCardAddressCallback(const NormalizeVCardAddressCallback &cb);
+    QString normalizeVCardAddress(const QString &vCardField, const QString &vCardAddress, DBusError *error);
+
+    typedef Callback2<QString, const QString &, DBusError*> NormalizeContactUriCallback;
+    void setNormalizeContactUriCallback(const NormalizeContactUriCallback &cb);
+    QString normalizeContactUri(const QString &uri, DBusError *error);
+
+protected:
+    BaseProtocolAddressingInterface();
 
 private:
+    void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject);
+
+    class Adaptee;
+    friend class Adaptee;
     struct Private;
     friend struct Private;
     Private *mPriv;
 };
 
+/*
 class TP_QT_EXPORT BaseProtocolAvatarsInterface : public QObject
 {
     Q_OBJECT

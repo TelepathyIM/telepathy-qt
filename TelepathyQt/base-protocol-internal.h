@@ -70,4 +70,29 @@ public:
     Service::ProtocolAdaptor *mAdaptor;
 };
 
+class TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QStringList addressableVCardFields READ addressableVCardFields)
+    Q_PROPERTY(QStringList addressableURISchemes READ addressableURISchemes)
+
+public:
+    Adaptee(const QDBusConnection &dbusConnection, QObject *dbusObject,
+            BaseProtocolAddressingInterface *interface);
+    ~Adaptee();
+
+    QStringList addressableVCardFields() const;
+    QStringList addressableURISchemes() const;
+
+private Q_SLOTS:
+    void normalizeVCardAddress(const QString &vCardField, const QString &vCardAddress,
+            const Tp::Service::ProtocolInterfaceAddressingAdaptor::NormalizeVCardAddressContextPtr &context);
+    void normalizeContactURI(const QString &uri,
+            const Tp::Service::ProtocolInterfaceAddressingAdaptor::NormalizeContactURIContextPtr &context);
+
+public:
+    BaseProtocolAddressingInterface *mInterface;
+    Service::ProtocolInterfaceAddressingAdaptor *mAdaptor;
+};
+
 }
