@@ -54,6 +54,7 @@ struct TP_QT_NO_EXPORT BaseProtocol::Private
 
     BaseProtocol::Adaptee *adaptee;
 
+    QSet<AbstractProtocolInterfacePtr> interfaces;
     QStringList connInterfaces;
     ProtocolParameterList parameters;
     RequestableChannelClassSpecList rccSpecs;
@@ -86,9 +87,11 @@ QVariantMap BaseProtocol::immutableProperties() const
 
 QStringList BaseProtocol::Adaptee::interfaces() const
 {
-    // FIXME
-    qDebug() << __FUNCTION__ << "called";
-    return QStringList();
+    QStringList ret;
+    foreach (const AbstractProtocolInterfacePtr &iface, mProtocol->interfaces()) {
+        ret << iface->interfaceName();
+    }
+    return ret;
 }
 
 QStringList BaseProtocol::Adaptee::connectionInterfaces() const
@@ -291,9 +294,29 @@ QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *
     return mPriv->normalizeContactCb(contactId, error);
 }
 
+QSet<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
+{
+    return mPriv->interfaces;
+}
+
+bool BaseProtocol::plugInterface(const AbstractProtocolInterfacePtr &interface)
+{
+    if (isRegistered()) {
+        warning() << "Trying to plug interface on registered protocol object" << objectPath() <<
+            "- ignoring";
+        return false;
+    }
+
+    mPriv->interfaces.insert(interface);
+    return true;
+}
+
 bool BaseProtocol::registerObject(const QString &busName, const QString &objectPath,
         DBusError *error)
 {
+    foreach (const AbstractProtocolInterfacePtr &iface, mPriv->interfaces) {
+        iface->createAdaptor(dbusConnection(), dbusObject());
+    }
     return DBusService::registerObject(busName, objectPath, error);
 }
 

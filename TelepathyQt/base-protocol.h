@@ -109,6 +109,9 @@ public:
     void setNormalizeContactCallback(const NormalizeContactCallback &cb);
     QString normalizeContact(const QString &contactId, DBusError *error);
 
+    QSet<AbstractProtocolInterfacePtr> interfaces() const;
+    bool plugInterface(const AbstractProtocolInterfacePtr &interface);
+
 protected:
     BaseProtocol(const QDBusConnection &dbusConnection, const QString &name);
 
