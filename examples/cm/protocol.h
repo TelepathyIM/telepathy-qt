@@ -45,6 +45,7 @@ private:
     QString normalizeContactUri(const QString &uri, Tp::DBusError *error);
 
     Tp::BaseProtocolAddressingInterfacePtr addrIface;
+    Tp::BaseProtocolAvatarsInterfacePtr avatarsIface;
 };
 
 #endif

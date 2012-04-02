@@ -57,6 +57,11 @@ Protocol::Protocol(const QDBusConnection &dbusConnection, const QString &name)
     addrIface->setNormalizeVCardAddressCallback(memFun(this, &Protocol::normalizeVCardAddress));
     addrIface->setNormalizeContactUriCallback(memFun(this, &Protocol::normalizeContactUri));
     plugInterface(AbstractProtocolInterfacePtr::dynamicCast(addrIface));
+
+    avatarsIface = BaseProtocolAvatarsInterface::create();
+    avatarsIface->setAvatarDetails(AvatarSpec(QStringList() << QLatin1String("image/png"),
+                16, 64, 32, 16, 64, 32, 1024));
+    plugInterface(AbstractProtocolInterfacePtr::dynamicCast(avatarsIface));
 }
 
 Protocol::~Protocol()
