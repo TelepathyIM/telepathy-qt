@@ -443,6 +443,7 @@ Q_SIGNALS: // SIGNALS
         settername = None
         if 'write' in access:
             settername = 'Set' + name
+        docstring = format_docstring(prop, self.refs, '     * ').replace('*/', '&#42;&#47;')
 
         sig = prop.getAttribute('type')
         tptype = prop.getAttributeNS(NS_TP, 'type')
@@ -450,8 +451,21 @@ Q_SIGNALS: // SIGNALS
 
         if 'read' in access:
             self.h("""\
+    /**
+     * Return the value of the exported D-Bus object property \\c %(name)s of type \\c %(type)s.
+     *
+     * Adaptees should export this property as a Qt property named
+     * '%(adaptee_name)s'.
+     *
+%(docstring)s\
+     *
+     * \\return The value of exported property \\c %(name)s.
+     */
     %(type)s %(gettername)s() const;
-""" % {'type': binding.val,
+""" % {'name': name,
+       'adaptee_name': adaptee_name,
+       'docstring': docstring,
+       'type': binding.val,
        'gettername': gettername,
        })
 
@@ -468,8 +482,19 @@ Q_SIGNALS: // SIGNALS
 
         if 'write' in access:
             self.h("""\
+    /**
+     * Set the value of the exported D-Bus object property \\c %(name)s of type \\c %(type)s.
+     *
+     * Adaptees should export this property as a writable Qt property named
+     * '%(adaptee_name)s'.
+     *
+%(docstring)s\
+     */
     void %(settername)s(const %(type)s &newValue);
-""" % {'settername': settername,
+""" % {'name': name,
+       'adaptee_name': adaptee_name,
+       'docstring': docstring,
+       'settername': settername,
        'type': binding.val,
        })
 
