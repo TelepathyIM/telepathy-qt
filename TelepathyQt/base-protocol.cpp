@@ -320,6 +320,7 @@ bool BaseProtocol::registerObject(const QString &busName, const QString &objectP
     return DBusService::registerObject(busName, objectPath, error);
 }
 
+// AbstractProtocolInterface
 AbstractProtocolInterface::AbstractProtocolInterface(const QLatin1String &interfaceName)
     : AbstractDBusServiceInterface(interfaceName)
 {
@@ -329,6 +330,7 @@ AbstractProtocolInterface::~AbstractProtocolInterface()
 {
 }
 
+// Proto.I.Addressing
 BaseProtocolAddressingInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
         QObject *dbusObject, BaseProtocolAddressingInterface *interface)
     : QObject(),
@@ -462,6 +464,101 @@ QString BaseProtocolAddressingInterface::normalizeContactUri(const QString &uri,
 void BaseProtocolAddressingInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
 {
     mPriv->adaptee = new BaseProtocolAddressingInterface::Adaptee(dbusConnection, dbusObject, this);
+}
+
+// Proto.I.Avatars
+BaseProtocolAvatarsInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
+        QObject *dbusObject, BaseProtocolAvatarsInterface *interface)
+    : QObject(),
+      mInterface(interface)
+{
+    mAdaptor = new Service::ProtocolInterfaceAvatarsAdaptor(dbusConnection, this, dbusObject);
+}
+
+BaseProtocolAvatarsInterface::Adaptee::~Adaptee()
+{
+}
+
+QStringList BaseProtocolAvatarsInterface::Adaptee::supportedAvatarMIMETypes() const
+{
+    return mInterface->avatarDetails().supportedMimeTypes();
+}
+
+uint BaseProtocolAvatarsInterface::Adaptee::minimumAvatarHeight() const
+{
+    return mInterface->avatarDetails().minimumHeight();
+}
+
+uint BaseProtocolAvatarsInterface::Adaptee::minimumAvatarWidth() const
+{
+    return mInterface->avatarDetails().minimumWidth();
+}
+
+uint BaseProtocolAvatarsInterface::Adaptee::recommendedAvatarHeight() const
+{
+    return mInterface->avatarDetails().recommendedHeight();
+}
+
+uint BaseProtocolAvatarsInterface::Adaptee::recommendedAvatarWidth() const
+{
+    return mInterface->avatarDetails().recommendedWidth();
+}
+
+uint BaseProtocolAvatarsInterface::Adaptee::maximumAvatarHeight() const
+{
+    return mInterface->avatarDetails().maximumHeight();
+}
+
+uint BaseProtocolAvatarsInterface::Adaptee::maximumAvatarWidth() const
+{
+    return mInterface->avatarDetails().maximumWidth();
+}
+
+uint BaseProtocolAvatarsInterface::Adaptee::maximumAvatarBytes() const
+{
+    return mInterface->avatarDetails().maximumBytes();
+}
+
+struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
+{
+    Private()
+        : adaptee(0)
+    {
+    }
+
+    ~Private()
+    {
+        delete adaptee;
+    }
+
+    BaseProtocolAvatarsInterface::Adaptee *adaptee;
+    AvatarSpec avatarDetails;
+};
+
+BaseProtocolAvatarsInterface::BaseProtocolAvatarsInterface()
+    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
+      mPriv(new Private)
+{
+}
+
+BaseProtocolAvatarsInterface::~BaseProtocolAvatarsInterface()
+{
+    delete mPriv;
+}
+
+AvatarSpec BaseProtocolAvatarsInterface::avatarDetails() const
+{
+    return mPriv->avatarDetails;
+}
+
+void BaseProtocolAvatarsInterface::setAvatarDetails(const AvatarSpec &details)
+{
+    mPriv->avatarDetails = details;
+}
+
+void BaseProtocolAvatarsInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
+{
+    mPriv->adaptee = new BaseProtocolAvatarsInterface::Adaptee(dbusConnection, dbusObject, this);
 }
 
 }

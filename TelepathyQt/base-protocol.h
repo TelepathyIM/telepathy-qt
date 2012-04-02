@@ -189,23 +189,40 @@ private:
     Private *mPriv;
 };
 
-/*
-class TP_QT_EXPORT BaseProtocolAvatarsInterface : public QObject
+class TP_QT_EXPORT BaseProtocolAvatarsInterface : public AbstractProtocolInterface
 {
-    Q_OBJECT
+    Q_DISABLE_COPY(BaseProtocolAvatarsInterface)
 
 public:
-    BaseProtocolAvatarsInterface(const AvatarSpec &details);
+    static BaseProtocolAvatarsInterfacePtr create()
+    {
+        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterface());
+    }
+    template<typename BaseProtocolAvatarsInterfaceSubclass>
+    static BaseProtocolAvatarsInterfacePtr create()
+    {
+        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterfaceSubclass());
+    }
+
     virtual ~BaseProtocolAvatarsInterface();
 
-    AvatarSpec details() const;
+    AvatarSpec avatarDetails() const;
+    void setAvatarDetails(const AvatarSpec &spec);
+
+protected:
+    BaseProtocolAvatarsInterface();
 
 private:
+    void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject);
+
+    class Adaptee;
+    friend class Adaptee;
     struct Private;
     friend struct Private;
     Private *mPriv;
 };
 
+/*
 class TP_QT_EXPORT BaseProtocolPresenceInterface : public QObject
 {
     Q_OBJECT

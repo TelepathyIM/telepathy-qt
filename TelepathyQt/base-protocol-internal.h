@@ -95,4 +95,35 @@ public:
     Service::ProtocolInterfaceAddressingAdaptor *mAdaptor;
 };
 
+class TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QStringList supportedAvatarMIMETypes READ supportedAvatarMIMETypes)
+    Q_PROPERTY(uint minimumAvatarHeight READ minimumAvatarHeight)
+    Q_PROPERTY(uint minimumAvatarWidth READ minimumAvatarWidth)
+    Q_PROPERTY(uint recommendedAvatarHeight READ recommendedAvatarHeight)
+    Q_PROPERTY(uint recommendedAvatarWidth READ recommendedAvatarWidth)
+    Q_PROPERTY(uint maximumAvatarHeight READ maximumAvatarHeight)
+    Q_PROPERTY(uint maximumAvatarWidth READ maximumAvatarWidth)
+    Q_PROPERTY(uint maximumAvatarBytes READ maximumAvatarBytes)
+
+public:
+    Adaptee(const QDBusConnection &dbusConnection, QObject *dbusObject,
+            BaseProtocolAvatarsInterface *interface);
+    ~Adaptee();
+
+    QStringList supportedAvatarMIMETypes() const;
+    uint minimumAvatarHeight() const;
+    uint minimumAvatarWidth() const;
+    uint recommendedAvatarHeight() const;
+    uint recommendedAvatarWidth() const;
+    uint maximumAvatarHeight() const;
+    uint maximumAvatarWidth() const;
+    uint maximumAvatarBytes() const;
+
+public:
+    BaseProtocolAvatarsInterface *mInterface;
+    Service::ProtocolInterfaceAvatarsAdaptor *mAdaptor;
+};
+
 }
