@@ -455,7 +455,7 @@ Q_SIGNALS: // SIGNALS
      * Return the value of the exported D-Bus object property \\c %(name)s of type \\c %(type)s.
      *
      * Adaptees should export this property as a Qt property named
-     * '%(adaptee_name)s'.
+     * '%(adaptee_name)s' with type %(type)s.
      *
 %(docstring)s\
      *
@@ -486,7 +486,7 @@ Q_SIGNALS: // SIGNALS
      * Set the value of the exported D-Bus object property \\c %(name)s of type \\c %(type)s.
      *
      * Adaptees should export this property as a writable Qt property named
-     * '%(adaptee_name)s'.
+     * '%(adaptee_name)s' with type %(type)s.
      *
 %(docstring)s\
      */
