@@ -50,6 +50,13 @@ Protocol::Protocol(const QDBusConnection &dbusConnection, const QString &name)
     setCreateConnectionCallback(memFun(this, &Protocol::createConnection));
     setIdentifyAccountCallback(memFun(this, &Protocol::identifyAccount));
     setNormalizeContactCallback(memFun(this, &Protocol::normalizeContact));
+
+    addrIface = BaseProtocolAddressingInterface::create();
+    addrIface->setAddressableVCardFields(QStringList() << QLatin1String("x-example-vcard-field"));
+    addrIface->setAddressableUriSchemes(QStringList() << QLatin1String("example-uri-scheme"));
+    addrIface->setNormalizeVCardAddressCallback(memFun(this, &Protocol::normalizeVCardAddress));
+    addrIface->setNormalizeContactUriCallback(memFun(this, &Protocol::normalizeContactUri));
+    plugInterface(AbstractProtocolInterfacePtr::dynamicCast(addrIface));
 }
 
 Protocol::~Protocol()
@@ -58,24 +65,31 @@ Protocol::~Protocol()
 
 BaseConnectionPtr Protocol::createConnection(const QVariantMap &parameters, Tp::DBusError *error)
 {
-    if (error) {
-        error->set(QLatin1String("CreateConnection.Error.Test"), QLatin1String(""));
-    }
+    error->set(QLatin1String("CreateConnection.Error.Test"), QLatin1String(""));
     return BaseConnectionPtr();
 }
 
 QString Protocol::identifyAccount(const QVariantMap &parameters, Tp::DBusError *error)
 {
-    if (error) {
-        error->set(QLatin1String("IdentifyAccount.Error.Test"), QLatin1String(""));
-    }
+    error->set(QLatin1String("IdentifyAccount.Error.Test"), QLatin1String(""));
     return QString();
 }
 
 QString Protocol::normalizeContact(const QString &contactId, Tp::DBusError *error)
 {
-    if (error) {
-        error->set(QLatin1String("NormalizeContact.Error.Test"), QLatin1String(""));
-    }
+    error->set(QLatin1String("NormalizeContact.Error.Test"), QLatin1String(""));
+    return QString();
+}
+
+QString Protocol::normalizeVCardAddress(const QString &vCardField, const QString vCardAddress,
+        Tp::DBusError *error)
+{
+    error->set(QLatin1String("NormalizeVCardAddress.Error.Test"), QLatin1String(""));
+    return QString();
+}
+
+QString Protocol::normalizeContactUri(const QString &uri, Tp::DBusError *error)
+{
+    error->set(QLatin1String("NormalizeContactUri.Error.Test"), QLatin1String(""));
     return QString();
 }

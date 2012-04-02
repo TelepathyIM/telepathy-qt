@@ -34,10 +34,17 @@ public:
     Protocol(const QDBusConnection &dbusConnection, const QString &name);
     virtual ~Protocol();
 
-protected Q_SLOTS:
+private:
     Tp::BaseConnectionPtr createConnection(const QVariantMap &parameters, Tp::DBusError *error);
     QString identifyAccount(const QVariantMap &parameters, Tp::DBusError *error);
     QString normalizeContact(const QString &contactId, Tp::DBusError *error);
+
+    // Proto.I.Addressing
+    QString normalizeVCardAddress(const QString &vCardField, const QString vCardAddress,
+            Tp::DBusError *error);
+    QString normalizeContactUri(const QString &uri, Tp::DBusError *error);
+
+    Tp::BaseProtocolAddressingInterfacePtr addrIface;
 };
 
 #endif
