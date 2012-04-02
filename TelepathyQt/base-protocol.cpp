@@ -561,4 +561,64 @@ void BaseProtocolAvatarsInterface::createAdaptor(const QDBusConnection &dbusConn
     mPriv->adaptee = new BaseProtocolAvatarsInterface::Adaptee(dbusConnection, dbusObject, this);
 }
 
+// Proto.I.Presence
+BaseProtocolPresenceInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
+        QObject *dbusObject, BaseProtocolPresenceInterface *interface)
+    : QObject(),
+      mInterface(interface)
+{
+    mAdaptor = new Service::ProtocolInterfacePresenceAdaptor(dbusConnection, this, dbusObject);
+}
+
+BaseProtocolPresenceInterface::Adaptee::~Adaptee()
+{
+}
+
+SimpleStatusSpecMap BaseProtocolPresenceInterface::Adaptee::statuses() const
+{
+    return mInterface->statuses().bareSpecs();
+}
+
+struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
+{
+    Private()
+        : adaptee(0)
+    {
+    }
+
+    ~Private()
+    {
+        delete adaptee;
+    }
+
+    BaseProtocolPresenceInterface::Adaptee *adaptee;
+    PresenceSpecList statuses;
+};
+
+BaseProtocolPresenceInterface::BaseProtocolPresenceInterface()
+    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
+      mPriv(new Private)
+{
+}
+
+BaseProtocolPresenceInterface::~BaseProtocolPresenceInterface()
+{
+    delete mPriv;
+}
+
+PresenceSpecList BaseProtocolPresenceInterface::statuses() const
+{
+    return mPriv->statuses;
+}
+
+void BaseProtocolPresenceInterface::setStatuses(const PresenceSpecList &statuses)
+{
+    mPriv->statuses = statuses;
+}
+
+void BaseProtocolPresenceInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
+{
+    mPriv->adaptee = new BaseProtocolPresenceInterface::Adaptee(dbusConnection, dbusObject, this);
+}
+
 }

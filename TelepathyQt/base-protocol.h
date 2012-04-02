@@ -222,23 +222,38 @@ private:
     Private *mPriv;
 };
 
-/*
-class TP_QT_EXPORT BaseProtocolPresenceInterface : public QObject
+class TP_QT_EXPORT BaseProtocolPresenceInterface : public AbstractProtocolInterface
 {
-    Q_OBJECT
+    Q_DISABLE_COPY(BaseProtocolPresenceInterface)
 
 public:
-    BaseProtocolPresenceInterface(const PresenceSpecList &statuses);
+    static BaseProtocolPresenceInterfacePtr create()
+    {
+        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterface());
+    }
+    template<typename BaseProtocolPresenceInterfaceSubclass>
+    static BaseProtocolPresenceInterfacePtr create()
+    {
+        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterfaceSubclass());
+    }
+
     virtual ~BaseProtocolPresenceInterface();
 
     PresenceSpecList statuses() const;
+    void setStatuses(const PresenceSpecList &statuses);
+
+protected:
+    BaseProtocolPresenceInterface();
 
 private:
+    void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject);
+
+    class Adaptee;
+    friend class Adaptee;
     struct Private;
     friend struct Private;
     Private *mPriv;
 };
-*/
 
 }
 

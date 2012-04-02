@@ -126,4 +126,21 @@ public:
     Service::ProtocolInterfaceAvatarsAdaptor *mAdaptor;
 };
 
+class TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(Tp::SimpleStatusSpecMap statuses READ statuses)
+
+public:
+    Adaptee(const QDBusConnection &dbusConnection, QObject *dbusObject,
+            BaseProtocolPresenceInterface *interface);
+    ~Adaptee();
+
+    SimpleStatusSpecMap statuses() const;
+
+public:
+    BaseProtocolPresenceInterface *mInterface;
+    Service::ProtocolInterfacePresenceAdaptor *mAdaptor;
+};
+
 }

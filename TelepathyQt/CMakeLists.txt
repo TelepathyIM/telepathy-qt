@@ -842,6 +842,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         BaseProtocol
         BaseProtocolAddressingInterface
         BaseProtocolAvatarsInterface
+        BaseProtocolPresenceInterface
         base-protocol.h
         DBusError
         dbus-error.h
