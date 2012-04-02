@@ -297,4 +297,13 @@ bool BaseProtocol::registerObject(const QString &busName, const QString &objectP
     return DBusService::registerObject(busName, objectPath, error);
 }
 
+AbstractProtocolInterface::AbstractProtocolInterface(const QLatin1String &interfaceName)
+    : AbstractDBusServiceInterface(interfaceName)
+{
+}
+
+AbstractProtocolInterface::~AbstractProtocolInterface()
+{
+}
+
 }

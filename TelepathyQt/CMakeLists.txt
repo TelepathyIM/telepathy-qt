@@ -834,6 +834,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         AbstractAdaptor
         abstract-adaptor.h
         AbstractDBusServiceInterface
+        AbstractProtocolInterface
         BaseConnectionManager
         base-connection-manager.h
         BaseConnection

@@ -124,6 +124,24 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT AbstractProtocolInterface : public AbstractDBusServiceInterface
+{
+    Q_DISABLE_COPY(AbstractProtocolInterface)
+
+public:
+    AbstractProtocolInterface(const QLatin1String &interfaceName);
+    virtual ~AbstractProtocolInterface();
+
+protected:
+    friend class BaseProtocol;
+
+    void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject) = 0;
+
+    class Private;
+    friend class Private;
+    Private *mPriv;
+};
+
 /*
 class TP_QT_EXPORT BaseProtocolAddressingInterface : public QObject
 {
