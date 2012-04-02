@@ -515,6 +515,7 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
         args = get_by_path(method, 'arg')
         argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists,
                 self.externals, self.typesnamespace, self.refs, '     *     ')
+        docstring = format_docstring(method, self.refs, '     * ').replace('*/', '&#42;&#47;')
 
         inargs = []
         outargs = []
@@ -544,24 +545,72 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
 
         inparams = [argbindings[i].val for i in inargs]
         inparams.append("%s::%s::%sContextPtr" % (self.namespace, ifacename, name))
-        normalizedinparams = ','.join(inparams)
+        normalized_adaptee_params = ','.join(inparams)
+
+        adaptee_params = [argbindings[i].inarg + ' ' + argnames[i] for i in inargs]
+        adaptee_params.append('const %(namespace)s::%(ifacename)s::%(name)sContextPtr &context' %
+            {'namespace': self.namespace,
+             'ifacename': ifacename,
+             'name': name})
+        adaptee_params = ', '.join(adaptee_params)
 
         self.h("""\
+    /**
+     * Begins a call to the exported D-Bus method \\c %(name)s on this object.
+     *
+     * Adaptees should export this method as a Qt slot with the following signature:
+     * void %(adaptee_name)s(%(adaptee_params)s);
+     *
+     * Implementations should call MethodInvocationContext::setFinished (or setFinishedWithError
+     * accordingly) on the received \\a context object once the method has finished processing.
+     *
+%(docstring)s\
+     *
+""" % {'name': name,
+        'adaptee_name': adaptee_name,
+        'adaptee_params': adaptee_params,
+        'rettype': rettype,
+        'docstring': docstring
+        })
+
+        for i in inargs:
+            if argdocstrings[i]:
+                self.h("""\
+     * \\param %s
+%s\
+""" % (argnames[i], argdocstrings[i]))
+
+        for i in outargs[1:]:
+            if argdocstrings[i]:
+                self.h("""\
+     * \\param %s Output parameter
+%s\
+""" % (argnames[i], argdocstrings[i]))
+
+        if outargs:
+                self.h("""\
+     * \\return
+%s\
+""" % argdocstrings[outargs[0]])
+
+        self.h("""\
+     */
     %(rettype)s %(name)s(%(params)s);
 """ % {'rettype': rettype,
        'name': name,
-       'params': params})
+       'params': params
+       })
 
         self.b("""
 %(rettype)s %(ifacename)s::%(name)s(%(params)s)
 {
-    if (!adaptee()->metaObject()->indexOfMethod("%(adaptee_name)s(%(normalizedinparams)s)") == -1) {
+    if (!adaptee()->metaObject()->indexOfMethod("%(adaptee_name)s(%(normalized_adaptee_params)s)") == -1) {
         dbusConnection().send(dbusMessage.createErrorReply(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented")));
 """ % {'rettype': rettype,
        'ifacename': ifacename,
        'name': name,
        'adaptee_name': adaptee_name,
-       'normalizedinparams': normalizedinparams,
+       'normalized_adaptee_params': normalized_adaptee_params,
        'params': params,
        })
 
