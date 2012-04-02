@@ -50,10 +50,18 @@ class TP_QT_EXPORT BaseProtocol : public DBusService
     Q_DISABLE_COPY(BaseProtocol)
 
 public:
+    static BaseProtocolPtr create(const QString &name)
+    {
+        return BaseProtocolPtr(new BaseProtocol(QDBusConnection::sessionBus(), name));
+    }
     template<typename BaseProtocolSubclass>
     static BaseProtocolPtr create(const QString &name)
     {
         return BaseProtocolPtr(new BaseProtocolSubclass(QDBusConnection::sessionBus(), name));
+    }
+    static BaseProtocolPtr create(const QDBusConnection &dbusConnection, const QString &name)
+    {
+        return BaseProtocolPtr(new BaseProtocol(dbusConnection, name));
     }
     template<typename BaseProtocolSubclass>
     static BaseProtocolPtr create(const QDBusConnection &dbusConnection, const QString &name)
