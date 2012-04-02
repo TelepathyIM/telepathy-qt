@@ -662,15 +662,42 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
 
     def do_signal(self, signal):
         name = signal.getAttribute('name')
+        adaptee_name = to_lower_camel_case(name)
         argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal,
             'arg'), self.custom_lists, self.externals, self.typesnamespace, self.refs, '     *     ')
+        params = ', '.join(['%s %s' % (binding.inarg, param_name) for binding, param_name in zip(argbindings, argnames)])
 
         for i in xrange(len(argnames)):
             assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
 
         self.h("""\
-    void %s(%s);
-""" % (name, ', '.join(['%s %s' % (binding.inarg, name) for binding, name in zip(argbindings, argnames)])))
+    /**
+     * Represents the exported D-Bus signal \\c %(name)s on this object.
+     *
+     * Adaptees should export this signal as a Qt signal with the following signature:
+     * void %(adaptee_name)s(%(params)s);
+     *
+     * The adaptee signal will be automatically relayed as a D-Bus signal once emitted.
+     *
+""" % {'name': name,
+       'adaptee_name': adaptee_name,
+       'params': params
+       })
+
+        for i in xrange(len(argnames)):
+            assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
+            if argdocstrings[i]:
+                self.h("""\
+     * \\param %s
+%s\
+""" % (argnames[i], argdocstrings[i]))
+
+        self.h("""\
+     */
+    void %(name)s(%(params)s);
+""" % {'name': name,
+       'params': params
+       })
 
     def do_signals_connect(self, signals):
         for signal in signals:
