@@ -62,6 +62,24 @@ Protocol::Protocol(const QDBusConnection &dbusConnection, const QString &name)
     avatarsIface->setAvatarDetails(AvatarSpec(QStringList() << QLatin1String("image/png"),
                 16, 64, 32, 16, 64, 32, 1024));
     plugInterface(AbstractProtocolInterfacePtr::dynamicCast(avatarsIface));
+
+    SimpleStatusSpec spAvailable;
+    spAvailable.type = ConnectionPresenceTypeAvailable;
+    spAvailable.maySetOnSelf = true;
+    spAvailable.canHaveMessage = true;
+
+    SimpleStatusSpec spOffline;
+    spOffline.type = ConnectionPresenceTypeOffline;
+    spOffline.maySetOnSelf = true;
+    spOffline.canHaveMessage = false;
+
+    SimpleStatusSpecMap specs;
+    specs.insert(QLatin1String("available"), spAvailable);
+    specs.insert(QLatin1String("offline"), spOffline);
+
+    presenceIface = BaseProtocolPresenceInterface::create();
+    presenceIface->setStatuses(PresenceSpecList(specs));
+    plugInterface(AbstractProtocolInterfacePtr::dynamicCast(presenceIface));
 }
 
 Protocol::~Protocol()

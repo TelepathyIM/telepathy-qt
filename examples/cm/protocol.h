@@ -46,6 +46,7 @@ private:
 
     Tp::BaseProtocolAddressingInterfacePtr addrIface;
     Tp::BaseProtocolAvatarsInterfacePtr avatarsIface;
+    Tp::BaseProtocolPresenceInterfacePtr presenceIface;
 };
 
 #endif
