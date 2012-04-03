@@ -78,6 +78,8 @@ public:
     QString protocolName() const;
     QVariantMap parameters() const;
 
+    QVariantMap immutableProperties() const;
+
     virtual QString uniqueName() const;
     bool registerObject(DBusError *error = NULL);
 

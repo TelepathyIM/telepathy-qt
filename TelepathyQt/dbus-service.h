@@ -32,6 +32,7 @@
 #include <TelepathyQt/Object>
 
 #include <QObject>
+#include <QVariantMap>
 
 class QDBusConnection;
 class QString;
@@ -47,6 +48,8 @@ class TP_QT_EXPORT DBusService : public Object
 public:
     DBusService(const QDBusConnection &dbusConnection);
     virtual ~DBusService();
+
+    virtual QVariantMap immutableProperties() const = 0;
 
     QDBusConnection dbusConnection() const;
     QString busName() const;
@@ -74,6 +77,8 @@ public:
     virtual ~AbstractDBusServiceInterface();
 
     QString interfaceName() const;
+
+    virtual QVariantMap immutableProperties() const = 0;
 
     QDBusConnection dbusConnection() const;
     QObject *dbusObject() const;

@@ -78,13 +78,6 @@ BaseProtocol::Adaptee::~Adaptee()
 {
 }
 
-QVariantMap BaseProtocol::immutableProperties() const
-{
-    // FIXME
-    // Ps.: also include optional interfaces immutable properties
-    return QVariantMap();
-}
-
 QStringList BaseProtocol::Adaptee::interfaces() const
 {
     QStringList ret;
@@ -180,6 +173,23 @@ BaseProtocol::~BaseProtocol()
 QString BaseProtocol::name() const
 {
     return mPriv->name;
+}
+
+QVariantMap BaseProtocol::immutableProperties() const
+{
+    QVariantMap ret;
+    foreach (const AbstractProtocolInterfacePtr &iface, mPriv->interfaces) {
+        ret.unite(iface->immutableProperties());
+    }
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces"), qVariantFromValue(mPriv->adaptee->interfaces()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters"), qVariantFromValue(mPriv->adaptee->parameters()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".ConnectionInterfaces"), qVariantFromValue(mPriv->adaptee->connectionInterfaces()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"), qVariantFromValue(mPriv->adaptee->requestableChannelClasses()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField"), qVariantFromValue(mPriv->adaptee->vCardField()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName"), qVariantFromValue(mPriv->adaptee->englishName()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Icon"), qVariantFromValue(mPriv->adaptee->icon()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".AuthenticationTypes"), qVariantFromValue(mPriv->adaptee->authenticationTypes()));
+    return ret;
 }
 
 QStringList BaseProtocol::connectionInterfaces() const
@@ -464,6 +474,12 @@ BaseProtocolAddressingInterface::~BaseProtocolAddressingInterface()
     delete mPriv;
 }
 
+QVariantMap BaseProtocolAddressingInterface::immutableProperties() const
+{
+    // no immutable property
+    return QVariantMap();
+}
+
 QStringList BaseProtocolAddressingInterface::addressableVCardFields() const
 {
     return mPriv->addressableVCardFields;
@@ -596,6 +612,20 @@ BaseProtocolAvatarsInterface::~BaseProtocolAvatarsInterface()
     delete mPriv;
 }
 
+QVariantMap BaseProtocolAvatarsInterface::immutableProperties() const
+{
+    QVariantMap ret;
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes"), mPriv->adaptee->supportedAvatarMIMETypes());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight"), mPriv->adaptee->minimumAvatarHeight());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth"), mPriv->adaptee->minimumAvatarWidth());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight"), mPriv->adaptee->recommendedAvatarHeight());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth"), mPriv->adaptee->recommendedAvatarWidth());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight"), mPriv->adaptee->maximumAvatarHeight());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth"), mPriv->adaptee->maximumAvatarWidth());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes"), mPriv->adaptee->maximumAvatarBytes());
+    return ret;
+}
+
 AvatarSpec BaseProtocolAvatarsInterface::avatarDetails() const
 {
     return mPriv->avatarDetails;
@@ -655,6 +685,12 @@ BaseProtocolPresenceInterface::BaseProtocolPresenceInterface(const QDBusConnecti
 BaseProtocolPresenceInterface::~BaseProtocolPresenceInterface()
 {
     delete mPriv;
+}
+
+QVariantMap BaseProtocolPresenceInterface::immutableProperties() const
+{
+    // no immutable property
+    return QVariantMap();
 }
 
 PresenceSpecList BaseProtocolPresenceInterface::statuses() const

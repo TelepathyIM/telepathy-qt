@@ -93,6 +93,12 @@ QVariantMap BaseConnection::parameters() const
     return mPriv->parameters;
 }
 
+QVariantMap BaseConnection::immutableProperties() const
+{
+    // FIXME
+    return QVariantMap();
+}
+
 QString BaseConnection::uniqueName() const
 {
     return QString(QLatin1String("_%1")).arg((intptr_t) this, 0, 16);

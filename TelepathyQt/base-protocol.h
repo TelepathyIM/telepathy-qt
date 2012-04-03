@@ -160,6 +160,8 @@ public:
 
     virtual ~BaseProtocolAddressingInterface();
 
+    QVariantMap immutableProperties() const;
+
     QStringList addressableVCardFields() const;
     void setAddressableVCardFields(const QStringList &vcardFields);
 
@@ -204,6 +206,8 @@ public:
 
     virtual ~BaseProtocolAvatarsInterface();
 
+    QVariantMap immutableProperties() const;
+
     AvatarSpec avatarDetails() const;
     void setAvatarDetails(const AvatarSpec &spec);
 
@@ -236,6 +240,8 @@ public:
     }
 
     virtual ~BaseProtocolPresenceInterface();
+
+    QVariantMap immutableProperties() const;
 
     PresenceSpecList statuses() const;
     void setStatuses(const PresenceSpecList &statuses);

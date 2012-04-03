@@ -182,6 +182,13 @@ QString BaseConnectionManager::name() const
     return mPriv->name;
 }
 
+QVariantMap BaseConnectionManager::immutableProperties() const
+{
+    QVariantMap ret;
+    ret.insert(TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols"), qVariantFromValue(mPriv->adaptee->protocols()));
+    return ret;
+}
+
 QList<BaseProtocolPtr> BaseConnectionManager::protocols() const
 {
     return mPriv->protocols.values();

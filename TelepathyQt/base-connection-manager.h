@@ -71,6 +71,8 @@ public:
 
     QString name() const;
 
+    QVariantMap immutableProperties() const;
+
     QList<BaseProtocolPtr> protocols() const;
     BaseProtocolPtr protocol(const QString &protocolName) const;
     bool hasProtocol(const QString &protocolName) const;
