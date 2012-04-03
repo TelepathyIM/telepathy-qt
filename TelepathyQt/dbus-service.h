@@ -64,8 +64,9 @@ private:
     Private *mPriv;
 };
 
-class AbstractDBusServiceInterface : public Object
+class TP_QT_EXPORT AbstractDBusServiceInterface : public Object
 {
+    Q_OBJECT
     Q_DISABLE_COPY(AbstractDBusServiceInterface)
 
 public:
