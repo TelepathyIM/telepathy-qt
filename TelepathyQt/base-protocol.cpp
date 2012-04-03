@@ -54,7 +54,7 @@ struct TP_QT_NO_EXPORT BaseProtocol::Private
 
     BaseProtocol::Adaptee *adaptee;
 
-    QSet<AbstractProtocolInterfacePtr> interfaces;
+    QHash<QString, AbstractProtocolInterfacePtr> interfaces;
     QStringList connInterfaces;
     ProtocolParameterList parameters;
     RequestableChannelClassSpecList rccSpecs;
@@ -329,20 +329,39 @@ QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *
     return mPriv->normalizeContactCb(contactId, error);
 }
 
-QSet<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
+QList<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
 {
-    return mPriv->interfaces;
+    return mPriv->interfaces.values();
 }
 
 bool BaseProtocol::plugInterface(const AbstractProtocolInterfacePtr &interface)
 {
     if (isRegistered()) {
-        warning() << "Trying to plug interface on registered protocol object" << objectPath() <<
-            "- ignoring";
+        warning() << "Unable to plug protocol interface " << interface->interfaceName() <<
+            "- protocol already registered";
         return false;
     }
 
-    mPriv->interfaces.insert(interface);
+    if (interface->dbusConnection().name() != dbusConnection().name()) {
+        warning() << "Unable to plug protocol interface" << interface->interfaceName() <<
+            "- interface must have the same D-Bus connection as the owning protocol";
+        return false;
+    }
+
+    if (interface->isRegistered()) {
+        warning() << "Unable to plug protocol interface" << interface->interfaceName() <<
+            "- interface already registered";
+        return false;
+    }
+
+    if (mPriv->interfaces.contains(interface->interfaceName())) {
+        warning() << "Unable to plug protocol interface" << interface->interfaceName() <<
+            "- another interface with same name already plugged";
+        return false;
+    }
+
+    debug() << "Interface" << interface->interfaceName() << "plugged";
+    mPriv->interfaces.insert(interface->interfaceName(), interface);
     return true;
 }
 
