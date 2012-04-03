@@ -91,13 +91,13 @@ void BaseConnectionManager::Adaptee::getParameters(const QString &protocolName,
 {
     if (!checkValidProtocolName(protocolName)) {
         context->setFinishedWithError(TP_QT_ERROR_INVALID_ARGUMENT,
-                protocolName + QLatin1String("is not a valid protocol name"));
+                protocolName + QLatin1String(" is not a valid protocol name"));
         return;
     }
 
     if (!mCM->hasProtocol(protocolName)) {
         context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
-                QLatin1String("unknown protocol") + protocolName);
+                QLatin1String("unknown protocol ") + protocolName);
         return;
     }
 
@@ -133,13 +133,13 @@ void BaseConnectionManager::Adaptee::requestConnection(const QString &protocolNa
 {
     if (!checkValidProtocolName(protocolName)) {
         context->setFinishedWithError(TP_QT_ERROR_INVALID_ARGUMENT,
-                protocolName + QLatin1String("is not a valid protocol name"));
+                protocolName + QLatin1String(" is not a valid protocol name"));
         return;
     }
 
     if (!mCM->hasProtocol(protocolName)) {
         context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
-                QLatin1String("unknown protocol") + protocolName);
+                QLatin1String("unknown protocol ") + protocolName);
         return;
     }
 
