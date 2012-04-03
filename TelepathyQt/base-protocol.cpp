@@ -189,6 +189,11 @@ QStringList BaseProtocol::connectionInterfaces() const
 
 void BaseProtocol::setConnectionInterfaces(const QStringList &connInterfaces)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocol::setConnectionInterfaces: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
     mPriv->connInterfaces = connInterfaces;
 }
 
@@ -199,6 +204,11 @@ ProtocolParameterList BaseProtocol::parameters() const
 
 void BaseProtocol::setParameters(const ProtocolParameterList &parameters)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocol::setParameters: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
     mPriv->parameters = parameters;
 }
 
@@ -209,6 +219,11 @@ RequestableChannelClassSpecList BaseProtocol::requestableChannelClasses() const
 
 void BaseProtocol::setRequestableChannelClasses(const RequestableChannelClassSpecList &rccSpecs)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocol::setRequestableChannelClasses: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
     mPriv->rccSpecs = rccSpecs;
 }
 
@@ -219,6 +234,11 @@ QString BaseProtocol::vCardField() const
 
 void BaseProtocol::setVCardField(const QString &vCardField)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocol::setVCardField: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
     mPriv->vCardField = vCardField;
 }
 
@@ -229,6 +249,11 @@ QString BaseProtocol::englishName() const
 
 void BaseProtocol::setEnglishName(const QString &englishName)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocol::setEnglishName: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
     mPriv->englishName = englishName;
 }
 
@@ -239,6 +264,11 @@ QString BaseProtocol::iconName() const
 
 void BaseProtocol::setIconName(const QString &iconName)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocol::setIconName: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
      mPriv->iconName = iconName;
 }
 
@@ -249,6 +279,11 @@ QStringList BaseProtocol::authenticationTypes() const
 
 void BaseProtocol::setAuthenticationTypes(const QStringList &authenticationTypes)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocol::setAuthenticationTypes: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
     mPriv->authTypes = authenticationTypes;
 }
 
@@ -549,6 +584,11 @@ AvatarSpec BaseProtocolAvatarsInterface::avatarDetails() const
 
 void BaseProtocolAvatarsInterface::setAvatarDetails(const AvatarSpec &details)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocolAvatarsInterface::setAvatarDetails: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
     mPriv->avatarDetails = details;
 }
 
@@ -610,6 +650,11 @@ PresenceSpecList BaseProtocolPresenceInterface::statuses() const
 
 void BaseProtocolPresenceInterface::setStatuses(const PresenceSpecList &statuses)
 {
+    if (isRegistered()) {
+        warning() << "BaseProtocolPresenceInterface::setStatuses: cannot change property after "
+            "registration, immutable property";
+        return;
+    }
     mPriv->statuses = statuses;
 }
 
