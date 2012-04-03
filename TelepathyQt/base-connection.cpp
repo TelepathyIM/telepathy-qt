@@ -100,6 +100,10 @@ QString BaseConnection::uniqueName() const
 
 bool BaseConnection::registerObject(DBusError *error)
 {
+    if (isRegistered()) {
+        return true;
+    }
+
     if (checkValidProtocolName(mPriv->protocolName)) {
         if (error) {
             error->set(TP_QT_ERROR_INVALID_ARGUMENT,
