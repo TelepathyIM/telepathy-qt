@@ -349,6 +349,10 @@ bool BaseProtocol::plugInterface(const AbstractProtocolInterfacePtr &interface)
 bool BaseProtocol::registerObject(const QString &busName, const QString &objectPath,
         DBusError *error)
 {
+    if (isRegistered()) {
+        return true;
+    }
+
     foreach (const AbstractProtocolInterfacePtr &iface, mPriv->interfaces) {
         iface->registerInterface(dbusObject());
     }
