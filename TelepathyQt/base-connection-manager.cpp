@@ -211,6 +211,12 @@ bool BaseConnectionManager::addProtocol(const BaseProtocolPtr &protocol)
         return false;
     }
 
+    if (protocol->isRegistered()) {
+        warning() << "Unable to add protocol" << protocol->name() <<
+            "- protocol already registered";
+        return false;
+    }
+
     if (mPriv->protocols.contains(protocol->name())) {
         warning() << "Unable to add protocol" << protocol->name() <<
             "- another protocol with same name already added";
