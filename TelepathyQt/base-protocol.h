@@ -132,13 +132,11 @@ class TP_QT_EXPORT AbstractProtocolInterface : public AbstractDBusServiceInterfa
     Q_DISABLE_COPY(AbstractProtocolInterface)
 
 public:
-    AbstractProtocolInterface(const QString &interfaceName);
+    AbstractProtocolInterface(const QDBusConnection &dbusConnection, const QString &interfaceName);
     virtual ~AbstractProtocolInterface();
 
 protected:
     friend class BaseProtocol;
-
-    void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject) = 0;
 
     class Private;
     friend class Private;
@@ -150,14 +148,14 @@ class TP_QT_EXPORT BaseProtocolAddressingInterface : public AbstractProtocolInte
     Q_DISABLE_COPY(BaseProtocolAddressingInterface)
 
 public:
-    static BaseProtocolAddressingInterfacePtr create()
+    static BaseProtocolAddressingInterfacePtr create(const QDBusConnection &dbusConnection)
     {
-        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterface());
+        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterface(dbusConnection));
     }
     template<typename BaseProtocolAddressingInterfaceSubclass>
-    static BaseProtocolAddressingInterfacePtr create()
+    static BaseProtocolAddressingInterfacePtr create(const QDBusConnection &dbusConnection)
     {
-        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterfaceSubclass());
+        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterfaceSubclass(dbusConnection));
     }
 
     virtual ~BaseProtocolAddressingInterface();
@@ -177,10 +175,10 @@ public:
     QString normalizeContactUri(const QString &uri, DBusError *error);
 
 protected:
-    BaseProtocolAddressingInterface();
+    BaseProtocolAddressingInterface(const QDBusConnection &dbusConnection);
 
 private:
-    void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject);
+    void createAdaptor();
 
     class Adaptee;
     friend class Adaptee;
@@ -194,14 +192,14 @@ class TP_QT_EXPORT BaseProtocolAvatarsInterface : public AbstractProtocolInterfa
     Q_DISABLE_COPY(BaseProtocolAvatarsInterface)
 
 public:
-    static BaseProtocolAvatarsInterfacePtr create()
+    static BaseProtocolAvatarsInterfacePtr create(const QDBusConnection &dbusConnection)
     {
-        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterface());
+        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterface(dbusConnection));
     }
     template<typename BaseProtocolAvatarsInterfaceSubclass>
-    static BaseProtocolAvatarsInterfacePtr create()
+    static BaseProtocolAvatarsInterfacePtr create(const QDBusConnection &dbusConnection)
     {
-        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterfaceSubclass());
+        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterfaceSubclass(dbusConnection));
     }
 
     virtual ~BaseProtocolAvatarsInterface();
@@ -210,10 +208,10 @@ public:
     void setAvatarDetails(const AvatarSpec &spec);
 
 protected:
-    BaseProtocolAvatarsInterface();
+    BaseProtocolAvatarsInterface(const QDBusConnection &dbusConnection);
 
 private:
-    void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject);
+    void createAdaptor();
 
     class Adaptee;
     friend class Adaptee;
@@ -227,14 +225,14 @@ class TP_QT_EXPORT BaseProtocolPresenceInterface : public AbstractProtocolInterf
     Q_DISABLE_COPY(BaseProtocolPresenceInterface)
 
 public:
-    static BaseProtocolPresenceInterfacePtr create()
+    static BaseProtocolPresenceInterfacePtr create(const QDBusConnection &dbusConnection)
     {
-        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterface());
+        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterface(dbusConnection));
     }
     template<typename BaseProtocolPresenceInterfaceSubclass>
-    static BaseProtocolPresenceInterfacePtr create()
+    static BaseProtocolPresenceInterfacePtr create(const QDBusConnection &dbusConnection)
     {
-        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterfaceSubclass());
+        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterfaceSubclass(dbusConnection));
     }
 
     virtual ~BaseProtocolPresenceInterface();
@@ -243,10 +241,10 @@ public:
     void setStatuses(const PresenceSpecList &statuses);
 
 protected:
-    BaseProtocolPresenceInterface();
+    BaseProtocolPresenceInterface(const QDBusConnection &dbusConnection);
 
 private:
-    void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject);
+    void createAdaptor();
 
     class Adaptee;
     friend class Adaptee;

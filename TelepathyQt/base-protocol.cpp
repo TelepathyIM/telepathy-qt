@@ -350,14 +350,15 @@ bool BaseProtocol::registerObject(const QString &busName, const QString &objectP
         DBusError *error)
 {
     foreach (const AbstractProtocolInterfacePtr &iface, mPriv->interfaces) {
-        iface->createAdaptor(dbusConnection(), dbusObject());
+        iface->registerInterface(dbusObject());
     }
     return DBusService::registerObject(busName, objectPath, error);
 }
 
 // AbstractProtocolInterface
-AbstractProtocolInterface::AbstractProtocolInterface(const QString &interfaceName)
-    : AbstractDBusServiceInterface(interfaceName)
+AbstractProtocolInterface::AbstractProtocolInterface(const QDBusConnection &dbusConnection,
+        const QString &interfaceName)
+    : AbstractDBusServiceInterface(dbusConnection, interfaceName)
 {
 }
 
@@ -429,8 +430,8 @@ struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
     NormalizeContactUriCallback normalizeContactUriCb;
 };
 
-BaseProtocolAddressingInterface::BaseProtocolAddressingInterface()
-    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
+BaseProtocolAddressingInterface::BaseProtocolAddressingInterface(const QDBusConnection &dbusConnection)
+    : AbstractProtocolInterface(dbusConnection, TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
       mPriv(new Private)
 {
 }
@@ -491,15 +492,10 @@ QString BaseProtocolAddressingInterface::normalizeContactUri(const QString &uri,
     return mPriv->normalizeContactUriCb(uri, error);
 }
 
-void BaseProtocolAddressingInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
+void BaseProtocolAddressingInterface::createAdaptor()
 {
-    if (mPriv->adaptee) {
-        /* it should not happen unless external code called it directly, but we don't
-         * want to assert here */
-        warning() << "BaseProtocolAddressingInterface::createAdaptor: adaptor already created";
-        return;
-    }
-    mPriv->adaptee = new BaseProtocolAddressingInterface::Adaptee(dbusConnection, dbusObject, this);
+    Q_ASSERT(!mPriv->adaptee);
+    mPriv->adaptee = new BaseProtocolAddressingInterface::Adaptee(dbusConnection(), dbusObject(), this);
 }
 
 // Proto.I.Avatars
@@ -566,8 +562,8 @@ struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
     AvatarSpec avatarDetails;
 };
 
-BaseProtocolAvatarsInterface::BaseProtocolAvatarsInterface()
-    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
+BaseProtocolAvatarsInterface::BaseProtocolAvatarsInterface(const QDBusConnection &dbusConnection)
+    : AbstractProtocolInterface(dbusConnection, TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
       mPriv(new Private)
 {
 }
@@ -592,15 +588,10 @@ void BaseProtocolAvatarsInterface::setAvatarDetails(const AvatarSpec &details)
     mPriv->avatarDetails = details;
 }
 
-void BaseProtocolAvatarsInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
+void BaseProtocolAvatarsInterface::createAdaptor()
 {
-    if (mPriv->adaptee) {
-        /* it should not happen unless external code called it directly, but we don't
-         * want to assert here */
-        warning() << "BaseProtocolAvatarsInterface::createAdaptor: adaptor already created";
-        return;
-    }
-    mPriv->adaptee = new BaseProtocolAvatarsInterface::Adaptee(dbusConnection, dbusObject, this);
+    Q_ASSERT(!mPriv->adaptee);
+    mPriv->adaptee = new BaseProtocolAvatarsInterface::Adaptee(dbusConnection(), dbusObject(), this);
 }
 
 // Proto.I.Presence
@@ -632,8 +623,8 @@ struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
     PresenceSpecList statuses;
 };
 
-BaseProtocolPresenceInterface::BaseProtocolPresenceInterface()
-    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
+BaseProtocolPresenceInterface::BaseProtocolPresenceInterface(const QDBusConnection &dbusConnection)
+    : AbstractProtocolInterface(dbusConnection, TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
       mPriv(new Private)
 {
 }
@@ -658,15 +649,10 @@ void BaseProtocolPresenceInterface::setStatuses(const PresenceSpecList &statuses
     mPriv->statuses = statuses;
 }
 
-void BaseProtocolPresenceInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
+void BaseProtocolPresenceInterface::createAdaptor()
 {
-    if (mPriv->adaptee) {
-        /* it should not happen unless external code called it directly, but we don't
-         * want to assert here */
-        warning() << "BaseProtocolPresenceInterface::createAdaptor: adaptor already created";
-        return;
-    }
-    mPriv->adaptee = new BaseProtocolPresenceInterface::Adaptee(dbusConnection, dbusObject, this);
+    Q_ASSERT(!mPriv->adaptee);
+    mPriv->adaptee = new BaseProtocolPresenceInterface::Adaptee(dbusConnection(), dbusObject(), this);
 }
 
 }

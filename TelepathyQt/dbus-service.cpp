@@ -122,16 +122,23 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
 
 struct AbstractDBusServiceInterface::Private
 {
-    Private(const QString &interfaceName)
-        : interfaceName(interfaceName)
+    Private(const QDBusConnection &dbusConnection, const QString &interfaceName)
+        : interfaceName(interfaceName),
+          dbusConnection(dbusConnection),
+          dbusObject(0),
+          registered(false)
     {
     }
 
     QString interfaceName;
+    QDBusConnection dbusConnection;
+    QObject *dbusObject;
+    bool registered;
 };
 
-AbstractDBusServiceInterface::AbstractDBusServiceInterface(const QString &interfaceName)
-    : mPriv(new Private(interfaceName))
+AbstractDBusServiceInterface::AbstractDBusServiceInterface(const QDBusConnection &dbusConnection,
+        const QString &interfaceName)
+    : mPriv(new Private(dbusConnection, interfaceName))
 {
 }
 
@@ -143,6 +150,33 @@ AbstractDBusServiceInterface::~AbstractDBusServiceInterface()
 QString AbstractDBusServiceInterface::interfaceName() const
 {
     return mPriv->interfaceName;
+}
+
+QDBusConnection AbstractDBusServiceInterface::dbusConnection() const
+{
+    return mPriv->dbusConnection;
+}
+
+QObject *AbstractDBusServiceInterface::dbusObject() const
+{
+    return mPriv->dbusObject;
+}
+
+bool AbstractDBusServiceInterface::isRegistered() const
+{
+    return mPriv->registered;
+}
+
+bool AbstractDBusServiceInterface::registerInterface(QObject *dbusObject)
+{
+    if (mPriv->registered) {
+        return true;
+    }
+
+    mPriv->dbusObject = dbusObject;
+    createAdaptor();
+    mPriv->registered = true;
+    return true;
 }
 
 }
