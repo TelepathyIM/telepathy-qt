@@ -321,7 +321,7 @@ bool BaseProtocol::registerObject(const QString &busName, const QString &objectP
 }
 
 // AbstractProtocolInterface
-AbstractProtocolInterface::AbstractProtocolInterface(const QLatin1String &interfaceName)
+AbstractProtocolInterface::AbstractProtocolInterface(const QString &interfaceName)
     : AbstractDBusServiceInterface(interfaceName)
 {
 }

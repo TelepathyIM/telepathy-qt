@@ -70,10 +70,10 @@ class TP_QT_EXPORT AbstractDBusServiceInterface : public Object
     Q_DISABLE_COPY(AbstractDBusServiceInterface)
 
 public:
-    AbstractDBusServiceInterface(const QLatin1String &interfaceName);
+    AbstractDBusServiceInterface(const QString &interfaceName);
     virtual ~AbstractDBusServiceInterface();
 
-    QLatin1String interfaceName() const;
+    QString interfaceName() const;
 
 protected:
     virtual void createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject) = 0;

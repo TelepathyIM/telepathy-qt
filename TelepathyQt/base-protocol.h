@@ -132,7 +132,7 @@ class TP_QT_EXPORT AbstractProtocolInterface : public AbstractDBusServiceInterfa
     Q_DISABLE_COPY(AbstractProtocolInterface)
 
 public:
-    AbstractProtocolInterface(const QLatin1String &interfaceName);
+    AbstractProtocolInterface(const QString &interfaceName);
     virtual ~AbstractProtocolInterface();
 
 protected:

@@ -122,15 +122,15 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
 
 struct AbstractDBusServiceInterface::Private
 {
-    Private(const QLatin1String &interfaceName)
+    Private(const QString &interfaceName)
         : interfaceName(interfaceName)
     {
     }
 
-    QLatin1String interfaceName;
+    QString interfaceName;
 };
 
-AbstractDBusServiceInterface::AbstractDBusServiceInterface(const QLatin1String &interfaceName)
+AbstractDBusServiceInterface::AbstractDBusServiceInterface(const QString &interfaceName)
     : mPriv(new Private(interfaceName))
 {
 }
@@ -140,7 +140,7 @@ AbstractDBusServiceInterface::~AbstractDBusServiceInterface()
     delete mPriv;
 }
 
-QLatin1String AbstractDBusServiceInterface::interfaceName() const
+QString AbstractDBusServiceInterface::interfaceName() const
 {
     return mPriv->interfaceName;
 }
