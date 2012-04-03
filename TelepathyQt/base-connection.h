@@ -75,6 +75,7 @@ public:
 
     virtual ~BaseConnection();
 
+    QString cmName() const;
     QString protocolName() const;
     QVariantMap parameters() const;
 

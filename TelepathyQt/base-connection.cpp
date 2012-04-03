@@ -83,6 +83,11 @@ BaseConnection::~BaseConnection()
     delete mPriv;
 }
 
+QString BaseConnection::cmName() const
+{
+    return mPriv->cmName;
+}
+
 QString BaseConnection::protocolName() const
 {
     return mPriv->protocolName;
