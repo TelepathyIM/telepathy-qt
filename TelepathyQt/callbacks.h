@@ -75,9 +75,7 @@ struct TP_QT_EXPORT BaseCallback
     BaseCallback &operator=(const BaseCallback &other)
     {
         if (caller == other.caller) return *this;
-
-        if (caller)
-            delete caller;
+        delete caller;
         caller = other.caller->clone();
         return *this;
     }
