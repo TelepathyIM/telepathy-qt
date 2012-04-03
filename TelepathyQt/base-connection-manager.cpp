@@ -224,6 +224,10 @@ bool BaseConnectionManager::addProtocol(const BaseProtocolPtr &protocol)
 
 bool BaseConnectionManager::registerObject(DBusError *error)
 {
+    if (isRegistered()) {
+        return true;
+    }
+
     QString busName = TP_QT_CONNECTION_MANAGER_BUS_NAME_BASE;
     busName.append(mPriv->name);
     QString objectPath = TP_QT_CONNECTION_MANAGER_OBJECT_PATH_BASE;
