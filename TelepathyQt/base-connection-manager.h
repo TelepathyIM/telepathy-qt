@@ -90,10 +90,10 @@ protected:
             DBusError *error);
 
 private Q_SLOTS:
-    void removeConnection();
+    TP_QT_NO_EXPORT void removeConnection();
 
 private:
-    void addConnection(const BaseConnectionPtr &connection);
+    TP_QT_NO_EXPORT void addConnection(const BaseConnectionPtr &connection);
 
     class Adaptee;
     friend class Adaptee;
