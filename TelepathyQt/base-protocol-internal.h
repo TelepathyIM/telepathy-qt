@@ -67,7 +67,6 @@ private Q_SLOTS:
 
 public:
     BaseProtocol *mProtocol;
-    Service::ProtocolAdaptor *mAdaptor;
 };
 
 class TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Adaptee : public QObject
@@ -92,7 +91,6 @@ private Q_SLOTS:
 
 public:
     BaseProtocolAddressingInterface *mInterface;
-    Service::ProtocolInterfaceAddressingAdaptor *mAdaptor;
 };
 
 class TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Adaptee : public QObject
@@ -123,7 +121,6 @@ public:
 
 public:
     BaseProtocolAvatarsInterface *mInterface;
-    Service::ProtocolInterfaceAvatarsAdaptor *mAdaptor;
 };
 
 class TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Adaptee : public QObject
@@ -140,7 +137,6 @@ public:
 
 public:
     BaseProtocolPresenceInterface *mInterface;
-    Service::ProtocolInterfacePresenceAdaptor *mAdaptor;
 };
 
 }

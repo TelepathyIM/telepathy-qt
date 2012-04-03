@@ -71,7 +71,7 @@ BaseProtocol::Adaptee::Adaptee(const QDBusConnection &dbusConnection, BaseProtoc
     : QObject(protocol),
       mProtocol(protocol)
 {
-    mAdaptor = new Service::ProtocolAdaptor(dbusConnection, this, protocol->dbusObject());
+    (void) new Service::ProtocolAdaptor(dbusConnection, this, protocol->dbusObject());
 }
 
 BaseProtocol::Adaptee::~Adaptee()
@@ -336,7 +336,7 @@ BaseProtocolAddressingInterface::Adaptee::Adaptee(const QDBusConnection &dbusCon
     : QObject(interface),
       mInterface(interface)
 {
-    mAdaptor = new Service::ProtocolInterfaceAddressingAdaptor(dbusConnection, this, dbusObject);
+    (void) new Service::ProtocolInterfaceAddressingAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolAddressingInterface::Adaptee::~Adaptee()
@@ -473,7 +473,7 @@ BaseProtocolAvatarsInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnec
     : QObject(interface),
       mInterface(interface)
 {
-    mAdaptor = new Service::ProtocolInterfaceAvatarsAdaptor(dbusConnection, this, dbusObject);
+    (void) new Service::ProtocolInterfaceAvatarsAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolAvatarsInterface::Adaptee::~Adaptee()
@@ -569,7 +569,7 @@ BaseProtocolPresenceInterface::Adaptee::Adaptee(const QDBusConnection &dbusConne
     : QObject(interface),
       mInterface(interface)
 {
-    mAdaptor = new Service::ProtocolInterfacePresenceAdaptor(dbusConnection, this, dbusObject);
+    (void) new Service::ProtocolInterfacePresenceAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolPresenceInterface::Adaptee::~Adaptee()
