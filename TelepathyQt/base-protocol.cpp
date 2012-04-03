@@ -458,6 +458,12 @@ QString BaseProtocolAddressingInterface::normalizeContactUri(const QString &uri,
 
 void BaseProtocolAddressingInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
 {
+    if (mPriv->adaptee) {
+        /* it should not happen unless external code called it directly, but we don't
+         * want to assert here */
+        warning() << "BaseProtocolAddressingInterface::createAdaptor: adaptor already created";
+        return;
+    }
     mPriv->adaptee = new BaseProtocolAddressingInterface::Adaptee(dbusConnection, dbusObject, this);
 }
 
@@ -548,6 +554,12 @@ void BaseProtocolAvatarsInterface::setAvatarDetails(const AvatarSpec &details)
 
 void BaseProtocolAvatarsInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
 {
+    if (mPriv->adaptee) {
+        /* it should not happen unless external code called it directly, but we don't
+         * want to assert here */
+        warning() << "BaseProtocolAvatarsInterface::createAdaptor: adaptor already created";
+        return;
+    }
     mPriv->adaptee = new BaseProtocolAvatarsInterface::Adaptee(dbusConnection, dbusObject, this);
 }
 
@@ -603,6 +615,12 @@ void BaseProtocolPresenceInterface::setStatuses(const PresenceSpecList &statuses
 
 void BaseProtocolPresenceInterface::createAdaptor(const QDBusConnection &dbusConnection, QObject *dbusObject)
 {
+    if (mPriv->adaptee) {
+        /* it should not happen unless external code called it directly, but we don't
+         * want to assert here */
+        warning() << "BaseProtocolPresenceInterface::createAdaptor: adaptor already created";
+        return;
+    }
     mPriv->adaptee = new BaseProtocolPresenceInterface::Adaptee(dbusConnection, dbusObject, this);
 }
 
