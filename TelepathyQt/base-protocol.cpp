@@ -333,7 +333,7 @@ AbstractProtocolInterface::~AbstractProtocolInterface()
 // Proto.I.Addressing
 BaseProtocolAddressingInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
         QObject *dbusObject, BaseProtocolAddressingInterface *interface)
-    : QObject(),
+    : QObject(interface),
       mInterface(interface)
 {
     mAdaptor = new Service::ProtocolInterfaceAddressingAdaptor(dbusConnection, this, dbusObject);
@@ -385,11 +385,6 @@ struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
     Private()
         : adaptee(0)
     {
-    }
-
-    ~Private()
-    {
-        delete adaptee;
     }
 
     BaseProtocolAddressingInterface::Adaptee *adaptee;
@@ -469,7 +464,7 @@ void BaseProtocolAddressingInterface::createAdaptor(const QDBusConnection &dbusC
 // Proto.I.Avatars
 BaseProtocolAvatarsInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
         QObject *dbusObject, BaseProtocolAvatarsInterface *interface)
-    : QObject(),
+    : QObject(interface),
       mInterface(interface)
 {
     mAdaptor = new Service::ProtocolInterfaceAvatarsAdaptor(dbusConnection, this, dbusObject);
@@ -526,11 +521,6 @@ struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
     {
     }
 
-    ~Private()
-    {
-        delete adaptee;
-    }
-
     BaseProtocolAvatarsInterface::Adaptee *adaptee;
     AvatarSpec avatarDetails;
 };
@@ -564,7 +554,7 @@ void BaseProtocolAvatarsInterface::createAdaptor(const QDBusConnection &dbusConn
 // Proto.I.Presence
 BaseProtocolPresenceInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
         QObject *dbusObject, BaseProtocolPresenceInterface *interface)
-    : QObject(),
+    : QObject(interface),
       mInterface(interface)
 {
     mAdaptor = new Service::ProtocolInterfacePresenceAdaptor(dbusConnection, this, dbusObject);
@@ -584,11 +574,6 @@ struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
     Private()
         : adaptee(0)
     {
-    }
-
-    ~Private()
-    {
-        delete adaptee;
     }
 
     BaseProtocolPresenceInterface::Adaptee *adaptee;
