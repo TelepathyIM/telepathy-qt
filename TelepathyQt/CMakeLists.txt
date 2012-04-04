@@ -827,6 +827,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         base-connection.cpp
         base-protocol.cpp
         dbus-error.cpp
+        dbus-object.cpp
         dbus-service.cpp
         abstract-adaptor.cpp)
 
@@ -846,6 +847,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         base-protocol.h
         DBusError
         dbus-error.h
+        DBusObject
+        dbus-object.h
         DBusService
         dbus-service.h
         Global
