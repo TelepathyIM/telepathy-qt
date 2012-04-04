@@ -162,7 +162,7 @@ PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool allowOtherUs
 
     if (!isReady(DBusTubeChannel::FeatureCore)) {
         warning() << "DBusTubeChannel::FeatureCore must be ready before "
-            "calling offerTube";
+            "calling acceptTube";
         return new PendingDBusTubeConnection(QLatin1String(TP_QT_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"), IncomingDBusTubeChannelPtr(this));
     }
@@ -174,7 +174,7 @@ PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool allowOtherUs
                 QLatin1String("Channel busy"), IncomingDBusTubeChannelPtr(this));
     }
 
-    // Let's offer the tube
+    // Let's accept the tube
     if (!allowOtherUsers && !supportsRestrictingToCurrentUser()) {
         warning() << "Current user restriction is not available for this tube, "
             "falling back to allowing any connection";
