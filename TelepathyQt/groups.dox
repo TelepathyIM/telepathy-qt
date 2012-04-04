@@ -103,6 +103,36 @@
  */
 
 /**
+ * \defgroup servicesideimpl Service-side implementation
+ *
+ * Classes to implement service D-Bus objects.
+ */
+
+/**
+ * \defgroup servicechannel Channel service implementation
+ * \ingroup servicesideimpl
+ *
+ * Classes to implement Telepathy Channel objects and their
+ * optional interfaces.
+ */
+
+/**
+ * \defgroup servicecm Connection manager service implementation
+ * \ingroup servicesideimpl
+ *
+ * Classes to implement Telepathy ConnectionManager objects and their
+ * optional interfaces.
+ */
+
+/**
+ * \defgroup serviceconn Connection service implementation
+ * \ingroup servicesideimpl
+ *
+ * Classes to implement Telepathy Connection objects and their
+ * optional interfaces.
+ */
+
+/**
  * \defgroup wrappers Wrapper classes
  *
  * Wrapper classes representing a Telepathy type.
