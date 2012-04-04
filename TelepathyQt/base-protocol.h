@@ -132,7 +132,7 @@ class TP_QT_EXPORT AbstractProtocolInterface : public AbstractDBusServiceInterfa
     Q_DISABLE_COPY(AbstractProtocolInterface)
 
 public:
-    AbstractProtocolInterface(const QDBusConnection &dbusConnection, const QString &interfaceName);
+    AbstractProtocolInterface(const QString &interfaceName);
     virtual ~AbstractProtocolInterface();
 
 protected:
@@ -148,14 +148,14 @@ class TP_QT_EXPORT BaseProtocolAddressingInterface : public AbstractProtocolInte
     Q_DISABLE_COPY(BaseProtocolAddressingInterface)
 
 public:
-    static BaseProtocolAddressingInterfacePtr create(const QDBusConnection &dbusConnection)
+    static BaseProtocolAddressingInterfacePtr create()
     {
-        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterface(dbusConnection));
+        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterface());
     }
     template<typename BaseProtocolAddressingInterfaceSubclass>
-    static BaseProtocolAddressingInterfacePtr create(const QDBusConnection &dbusConnection)
+    static BaseProtocolAddressingInterfacePtr create()
     {
-        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterfaceSubclass(dbusConnection));
+        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterfaceSubclass());
     }
 
     virtual ~BaseProtocolAddressingInterface();
@@ -177,7 +177,7 @@ public:
     QString normalizeContactUri(const QString &uri, DBusError *error);
 
 protected:
-    BaseProtocolAddressingInterface(const QDBusConnection &dbusConnection);
+    BaseProtocolAddressingInterface();
 
 private:
     void createAdaptor();
@@ -194,14 +194,14 @@ class TP_QT_EXPORT BaseProtocolAvatarsInterface : public AbstractProtocolInterfa
     Q_DISABLE_COPY(BaseProtocolAvatarsInterface)
 
 public:
-    static BaseProtocolAvatarsInterfacePtr create(const QDBusConnection &dbusConnection)
+    static BaseProtocolAvatarsInterfacePtr create()
     {
-        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterface(dbusConnection));
+        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterface());
     }
     template<typename BaseProtocolAvatarsInterfaceSubclass>
-    static BaseProtocolAvatarsInterfacePtr create(const QDBusConnection &dbusConnection)
+    static BaseProtocolAvatarsInterfacePtr create()
     {
-        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterfaceSubclass(dbusConnection));
+        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterfaceSubclass());
     }
 
     virtual ~BaseProtocolAvatarsInterface();
@@ -212,7 +212,7 @@ public:
     void setAvatarDetails(const AvatarSpec &spec);
 
 protected:
-    BaseProtocolAvatarsInterface(const QDBusConnection &dbusConnection);
+    BaseProtocolAvatarsInterface();
 
 private:
     void createAdaptor();
@@ -229,14 +229,14 @@ class TP_QT_EXPORT BaseProtocolPresenceInterface : public AbstractProtocolInterf
     Q_DISABLE_COPY(BaseProtocolPresenceInterface)
 
 public:
-    static BaseProtocolPresenceInterfacePtr create(const QDBusConnection &dbusConnection)
+    static BaseProtocolPresenceInterfacePtr create()
     {
-        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterface(dbusConnection));
+        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterface());
     }
     template<typename BaseProtocolPresenceInterfaceSubclass>
-    static BaseProtocolPresenceInterfacePtr create(const QDBusConnection &dbusConnection)
+    static BaseProtocolPresenceInterfacePtr create()
     {
-        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterfaceSubclass(dbusConnection));
+        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterfaceSubclass());
     }
 
     virtual ~BaseProtocolPresenceInterface();
@@ -247,7 +247,7 @@ public:
     void setStatuses(const PresenceSpecList &statuses);
 
 protected:
-    BaseProtocolPresenceInterface(const QDBusConnection &dbusConnection);
+    BaseProtocolPresenceInterface();
 
 private:
     void createAdaptor();

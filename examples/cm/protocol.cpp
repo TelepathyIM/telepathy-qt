@@ -51,14 +51,14 @@ Protocol::Protocol(const QDBusConnection &dbusConnection, const QString &name)
     setIdentifyAccountCallback(memFun(this, &Protocol::identifyAccount));
     setNormalizeContactCallback(memFun(this, &Protocol::normalizeContact));
 
-    addrIface = BaseProtocolAddressingInterface::create(dbusConnection);
+    addrIface = BaseProtocolAddressingInterface::create();
     addrIface->setAddressableVCardFields(QStringList() << QLatin1String("x-example-vcard-field"));
     addrIface->setAddressableUriSchemes(QStringList() << QLatin1String("example-uri-scheme"));
     addrIface->setNormalizeVCardAddressCallback(memFun(this, &Protocol::normalizeVCardAddress));
     addrIface->setNormalizeContactUriCallback(memFun(this, &Protocol::normalizeContactUri));
     plugInterface(AbstractProtocolInterfacePtr::dynamicCast(addrIface));
 
-    avatarsIface = BaseProtocolAvatarsInterface::create(dbusConnection);
+    avatarsIface = BaseProtocolAvatarsInterface::create();
     avatarsIface->setAvatarDetails(AvatarSpec(QStringList() << QLatin1String("image/png"),
                 16, 64, 32, 16, 64, 32, 1024));
     plugInterface(AbstractProtocolInterfacePtr::dynamicCast(avatarsIface));
@@ -77,7 +77,7 @@ Protocol::Protocol(const QDBusConnection &dbusConnection, const QString &name)
     specs.insert(QLatin1String("available"), spAvailable);
     specs.insert(QLatin1String("offline"), spOffline);
 
-    presenceIface = BaseProtocolPresenceInterface::create(dbusConnection);
+    presenceIface = BaseProtocolPresenceInterface::create();
     presenceIface->setStatuses(PresenceSpecList(specs));
     plugInterface(AbstractProtocolInterfacePtr::dynamicCast(presenceIface));
 }

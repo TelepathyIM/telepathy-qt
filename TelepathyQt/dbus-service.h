@@ -40,6 +40,8 @@ class QString;
 namespace Tp
 {
 
+class DBusObject;
+
 class TP_QT_EXPORT DBusService : public Object
 {
     Q_OBJECT
@@ -54,7 +56,7 @@ public:
     QDBusConnection dbusConnection() const;
     QString busName() const;
     QString objectPath() const;
-    QObject *dbusObject() const;
+    DBusObject *dbusObject() const;
     bool isRegistered() const;
 
 protected:
@@ -73,19 +75,18 @@ class TP_QT_EXPORT AbstractDBusServiceInterface : public Object
     Q_DISABLE_COPY(AbstractDBusServiceInterface)
 
 public:
-    AbstractDBusServiceInterface(const QDBusConnection &dbusConnection, const QString &interfaceName);
+    AbstractDBusServiceInterface(const QString &interfaceName);
     virtual ~AbstractDBusServiceInterface();
 
     QString interfaceName() const;
 
     virtual QVariantMap immutableProperties() const = 0;
 
-    QDBusConnection dbusConnection() const;
-    QObject *dbusObject() const;
+    DBusObject *dbusObject() const;
     bool isRegistered() const;
 
 protected:
-    virtual bool registerInterface(QObject *dbusObject);
+    virtual bool registerInterface(DBusObject *dbusObject);
     virtual void createAdaptor() = 0;
 
 private:

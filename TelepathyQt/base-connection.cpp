@@ -29,6 +29,7 @@
 #include "TelepathyQt/debug-internal.h"
 
 #include <TelepathyQt/Constants>
+#include <TelepathyQt/DBusObject>
 #include <TelepathyQt/Utils>
 
 #include <QString>

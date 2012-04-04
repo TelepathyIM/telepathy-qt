@@ -27,6 +27,7 @@
 #include "TelepathyQt/debug-internal.h"
 
 #include <TelepathyQt/Constants>
+#include <TelepathyQt/DBusObject>
 
 #include <QDBusConnection>
 #include <QString>
@@ -38,17 +39,15 @@ struct TP_QT_NO_EXPORT DBusService::Private
 {
     Private(DBusService *parent, const QDBusConnection &dbusConnection)
         : parent(parent),
-          dbusConnection(dbusConnection),
-          dbusObject(new QObject(parent)),
+          dbusObject(new DBusObject(dbusConnection, parent)),
           registered(false)
     {
     }
 
     DBusService *parent;
-    QDBusConnection dbusConnection;
     QString busName;
     QString objectPath;
-    QObject *dbusObject;
+    DBusObject *dbusObject;
     bool registered;
 };
 
@@ -64,7 +63,7 @@ DBusService::~DBusService()
 
 QDBusConnection DBusService::dbusConnection() const
 {
-    return mPriv->dbusConnection;
+    return mPriv->dbusObject->dbusConnection();
 }
 
 QString DBusService::busName() const
@@ -77,7 +76,7 @@ QString DBusService::objectPath() const
     return mPriv->objectPath;
 }
 
-QObject *DBusService::dbusObject() const
+DBusObject *DBusService::dbusObject() const
 {
     return mPriv->dbusObject;
 }
@@ -94,7 +93,7 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
         return true;
     }
 
-    if (!mPriv->dbusConnection.registerService(busName)) {
+    if (!mPriv->dbusObject->dbusConnection().registerService(busName)) {
         error->set(TP_QT_ERROR_INVALID_ARGUMENT,
                 QString(QLatin1String("Name %s already in use by another process"))
                     .arg(busName));
@@ -103,7 +102,7 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
         return false;
     }
 
-    if (!mPriv->dbusConnection.registerObject(objectPath, mPriv->dbusObject)) {
+    if (!mPriv->dbusObject->dbusConnection().registerObject(objectPath, mPriv->dbusObject)) {
         error->set(TP_QT_ERROR_INVALID_ARGUMENT,
                 QString(QLatin1String("Object at path %s already registered"))
                     .arg(objectPath));
@@ -122,23 +121,20 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
 
 struct AbstractDBusServiceInterface::Private
 {
-    Private(const QDBusConnection &dbusConnection, const QString &interfaceName)
+    Private(const QString &interfaceName)
         : interfaceName(interfaceName),
-          dbusConnection(dbusConnection),
           dbusObject(0),
           registered(false)
     {
     }
 
     QString interfaceName;
-    QDBusConnection dbusConnection;
-    QObject *dbusObject;
+    DBusObject *dbusObject;
     bool registered;
 };
 
-AbstractDBusServiceInterface::AbstractDBusServiceInterface(const QDBusConnection &dbusConnection,
-        const QString &interfaceName)
-    : mPriv(new Private(dbusConnection, interfaceName))
+AbstractDBusServiceInterface::AbstractDBusServiceInterface(const QString &interfaceName)
+    : mPriv(new Private(interfaceName))
 {
 }
 
@@ -152,12 +148,7 @@ QString AbstractDBusServiceInterface::interfaceName() const
     return mPriv->interfaceName;
 }
 
-QDBusConnection AbstractDBusServiceInterface::dbusConnection() const
-{
-    return mPriv->dbusConnection;
-}
-
-QObject *AbstractDBusServiceInterface::dbusObject() const
+DBusObject *AbstractDBusServiceInterface::dbusObject() const
 {
     return mPriv->dbusObject;
 }
@@ -167,7 +158,7 @@ bool AbstractDBusServiceInterface::isRegistered() const
     return mPriv->registered;
 }
 
-bool AbstractDBusServiceInterface::registerInterface(QObject *dbusObject)
+bool AbstractDBusServiceInterface::registerInterface(DBusObject *dbusObject)
 {
     if (mPriv->registered) {
         return true;

@@ -30,6 +30,7 @@
 
 #include <TelepathyQt/BaseConnection>
 #include <TelepathyQt/BaseProtocol>
+#include <TelepathyQt/DBusObject>
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Utils>
 
