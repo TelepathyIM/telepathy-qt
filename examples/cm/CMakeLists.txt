@@ -16,5 +16,6 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         ${QT_QTNETWORK_LIBRARY}
         ${QT_QTXML_LIBRARY}
         telepathy-qt${QT_VERSION_MAJOR}
-        telepathy-qt${QT_VERSION_MAJOR}-service)
+        telepathy-qt${QT_VERSION_MAJOR}-service
+        ${TP_QT_EXECUTABLE_LINKER_FLAGS})
 endif(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)

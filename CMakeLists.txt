@@ -83,6 +83,13 @@ set(QT5_MIN_VERSION "5.0.0")
 set(QT5_MAX_VERSION "6.0.0")
 find_package(Qt REQUIRED)
 
+foreach(flag ${QT_CONFIG_FLAGS})
+    if (${flag} MATCHES "reduce_relocations")
+        set(TP_QT_EXECUTABLE_LINKER_FLAGS "-fPIE")
+        set(TP_QT_LIBRARY_LINKER_FLAGS "-fPIC")
+    endif (${flag} MATCHES "reduce_relocations")
+endforeach(flag ${QT_CONFIG_FLAGS})
+
 # This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
 # occurs, and will be used for the SOVERSION of the generated shared libraries.
 if (${QT_VERSION_MAJOR} EQUAL 4)
@@ -124,7 +131,9 @@ endif (ENABLE_DEBUG_OUTPUT)
 include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_INCLUDES ${QT_INCLUDES})
 set(CMAKE_REQUIRED_DEFINITIONS "")
-set(CMAKE_REQUIRED_FLAGS "")
+# set the flags (-fPIE) here so that CHECK_CXX_SOURCE_COMPILES works properly if qt5 was built with
+# -reduce-locations
+set(CMAKE_REQUIRED_FLAGS "${TP_QT_EXECUTABLE_LINKER_FLAGS}")
 
 CHECK_CXX_SOURCE_COMPILES("
 #include <QtCore/QtGlobal>
@@ -140,6 +149,9 @@ macro_log_feature(QT_GLIB_SUPPORT "Qt Glib Support"
                   "QtCore library using Glib's main event loop"
                   "http://qt.nokia.com/" FALSE ""
                   "Needed, together with Telepathy-Glib, to build most of the unit tests")
+
+# reset flags
+set(CMAKE_REQUIRED_FLAGS "")
 
 # Find python version >= 2.5
 find_package(PythonLibrary REQUIRED)

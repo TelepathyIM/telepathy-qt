@@ -741,14 +741,16 @@ target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
-    ${QT_QTXML_LIBRARY})
+    ${QT_QTXML_LIBRARY}
+    ${TP_QT_LIBRARY_LINKER_FLAGS})
 
 # Link - Library used by tests to test some unexported functionality
 target_link_libraries(telepathy-qt-test-backdoors
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
-    ${QT_QTXML_LIBRARY})
+    ${QT_QTXML_LIBRARY}
+    ${TP_QT_LIBRARY_LINKER_FLAGS})
 
 if (ENABLE_COMPILER_COVERAGE)
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} gcov)
@@ -921,7 +923,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-service
         ${QT_QTDBUS_LIBRARY}
         ${QT_QTCORE_LIBRARY}
-        telepathy-qt${QT_VERSION_MAJOR})
+        telepathy-qt${QT_VERSION_MAJOR}
+        ${TP_QT_LIBRARY_LINKER_FLAGS})
 
     # Set the correct version number
     set_target_properties(telepathy-qt${QT_VERSION_MAJOR}-service PROPERTIES
