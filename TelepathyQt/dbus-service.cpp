@@ -51,41 +51,113 @@ struct TP_QT_NO_EXPORT DBusService::Private
     bool registered;
 };
 
+/**
+ * \class DBusService
+ * \ingroup servicesideimpl
+ * \headerfile TelepathyQt/dbus-service.h <TelepathyQt/DBusService>
+ *
+ * \brief Base class for D-Bus services.
+ *
+ * This class serves as a base for all the classes that are used to implement
+ * D-Bus services.
+ */
+
+/**
+ * Construct a DBusService that uses the given \a dbusConnection.
+ *
+ * \param dbusConnection The D-Bus connection that will be used by this service.
+ */
 DBusService::DBusService(const QDBusConnection &dbusConnection)
     : mPriv(new Private(this, dbusConnection))
 {
 }
 
+/**
+ * Class destructor.
+ */
 DBusService::~DBusService()
 {
     delete mPriv;
 }
 
+/**
+ * Return the D-Bus connection associated with this service.
+ *
+ * \return the D-Bus connection associated with this service.
+ */
 QDBusConnection DBusService::dbusConnection() const
 {
     return mPriv->dbusObject->dbusConnection();
 }
 
+/**
+ * Return the D-Bus service name of this service.
+ *
+ * This is only valid after this service has been registered
+ * on the bus using registerObject().
+ *
+ * \return the D-Bus service name of this service.
+ */
 QString DBusService::busName() const
 {
     return mPriv->busName;
 }
 
+/**
+ * Return the D-Bus object path of this service.
+ *
+ * This is only valid after this service has been registered
+ * on the bus using registerObject().
+ *
+ * \return the D-Bus object path of this service.
+ */
 QString DBusService::objectPath() const
 {
     return mPriv->objectPath;
 }
 
+/**
+ * Return the DBusObject that is used for registering this service on the bus.
+ *
+ * The DBusObject is the object on which all the interface adaptors
+ * for this service are plugged.
+ *
+ * \return a pointer to the DBusObject that is used for registering
+ * this service on the bus.
+ */
 DBusObject *DBusService::dbusObject() const
 {
     return mPriv->dbusObject;
 }
 
+/**
+ * Return whether this D-Bus service has been registered on the bus or not.
+ *
+ * \return \c true if the service has been registered, or \c false otherwise.
+ */
 bool DBusService::isRegistered() const
 {
     return mPriv->registered;
 }
 
+/**
+ * Register this service object on the bus with the given \a busName and \a objectPath.
+ *
+ * \a error needs to be a valid pointer to a DBusError instance, where any
+ * possible D-Bus error will be stored.
+ *
+ * A service may only be registered once in its lifetime.
+ * Use isRegistered() to find out if it has already been registered or not.
+ *
+ * You normally don't need to use this method directly.
+ * Subclasses should provide a simplified version of it.
+ *
+ * \param busName The D-Bus service name of this object.
+ * \param objectPath The D-Bus object path of this object.
+ * \param error A pointer to a valid DBusError instance, where any
+ * possible D-Bus error will be stored.
+ * \return \c true on success or \c false otherwise.
+ */
 bool DBusService::registerObject(const QString &busName, const QString &objectPath,
         DBusError *error)
 {
@@ -119,6 +191,17 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
     return true;
 }
 
+/**
+ * \fn QVariantMap DBusService::immutableProperties() const
+ *
+ * Return the immutable properties of this D-Bus service object.
+ *
+ * Immutable properties cannot change after the object has been registered
+ * on the bus with registerObject().
+ *
+ * \return The immutable properties of this D-Bus service object.
+ */
+
 struct AbstractDBusServiceInterface::Private
 {
     Private(const QString &interfaceName)
@@ -133,31 +216,82 @@ struct AbstractDBusServiceInterface::Private
     bool registered;
 };
 
+/**
+ * \class AbstractDBusServiceInterface
+ * \ingroup servicesideimpl
+ * \headerfile TelepathyQt/dbus-service.h <TelepathyQt/AbstractDBusServiceInterface>
+ *
+ * \brief Base class for D-Bus service interfaces.
+ *
+ * This class serves as a base for all the classes that are used to implement
+ * interfaces that sit on top of D-Bus services.
+ */
+
+/**
+ * Construct an AbstractDBusServiceInterface that implements
+ * the interface with the given \a interfaceName.
+ *
+ * \param interfaceName The name of the interface that this class implements.
+ */
 AbstractDBusServiceInterface::AbstractDBusServiceInterface(const QString &interfaceName)
     : mPriv(new Private(interfaceName))
 {
 }
 
+/**
+ * Class destructor.
+ */
 AbstractDBusServiceInterface::~AbstractDBusServiceInterface()
 {
     delete mPriv;
 }
 
+/**
+ * Return the name of the interface that this class implements,
+ * as given on the constructor.
+ *
+ * \return The name of the interface that this class implements.
+ */
 QString AbstractDBusServiceInterface::interfaceName() const
 {
     return mPriv->interfaceName;
 }
 
+/**
+ * Return the DBusObject on which the adaptor of this interface is plugged.
+ *
+ * This is only accessible after the interface has been registered
+ * with registerInterface().
+ *
+ * \return a pointer to the DBusObject on which the adaptor
+ * of this interface is plugged.
+ * \sa DBusService::dbusObject()
+ */
 DBusObject *AbstractDBusServiceInterface::dbusObject() const
 {
     return mPriv->dbusObject;
 }
 
+/**
+ * Return whether this interface has been registered.
+ *
+ * \return \c true if the service has been registered, or \c false otherwise.
+ * \sa registerInterface()
+ */
 bool AbstractDBusServiceInterface::isRegistered() const
 {
     return mPriv->registered;
 }
 
+/**
+ * Registers this interface by plugging its adaptor
+ * on the given \a dbusObject.
+ *
+ * \param dbusObject The object on which to plug the adaptor.
+ * \return \c false if the interface has already been registered,
+ * or \a true otherwise.
+ * \sa isRegistered()
+ */
 bool AbstractDBusServiceInterface::registerInterface(DBusObject *dbusObject)
 {
     if (mPriv->registered) {
@@ -169,5 +303,13 @@ bool AbstractDBusServiceInterface::registerInterface(DBusObject *dbusObject)
     mPriv->registered = true;
     return true;
 }
+
+/**
+ * \fn AbstractDBusServiceInterface::createAdaptor()
+ *
+ * Create the adaptor for this interface.
+ *
+ * Subclasses should reimplement this appropriately.
+ */
 
 }
