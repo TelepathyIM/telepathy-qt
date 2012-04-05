@@ -305,7 +305,18 @@ bool AbstractDBusServiceInterface::registerInterface(DBusObject *dbusObject)
 }
 
 /**
- * \fn AbstractDBusServiceInterface::createAdaptor()
+ * \fn QVariantMap AbstractDBusServiceInterface::immutableProperties() const
+ *
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+
+/**
+ * \fn void AbstractDBusServiceInterface::createAdaptor()
  *
  * Create the adaptor for this interface.
  *
