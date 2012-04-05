@@ -22,23 +22,57 @@
 
 #include <TelepathyQt/ProtocolParameter>
 
-#include "TelepathyQt/manager-file.h"
+#include "TelepathyQt/debug-internal.h"
+
+#include <TelepathyQt/Utils>
 
 namespace Tp
 {
 
 struct TP_QT_NO_EXPORT ProtocolParameter::Private : public QSharedData
 {
-    Private(const QString &name, const QDBusSignature &dbusSignature, QVariant::Type type,
-            const QVariant &defaultValue, ConnMgrParamFlag flags)
-        : name(name), dbusSignature(dbusSignature), type(type), defaultValue(defaultValue),
-          flags(flags) {}
+    Private(const ParamSpec &sp)
+        : spec(sp),
+          type(variantTypeFromDBusSignature(spec.signature))
+    {
+        init();
+    }
 
-    QString name;
-    QDBusSignature dbusSignature;
+    Private(const QString &name, const QString &dbusSignature,
+            ConnMgrParamFlag flags, const QVariant &defaultValue)
+        : type(variantTypeFromDBusSignature(dbusSignature))
+    {
+        spec.name = name;
+        spec.flags = flags;
+        spec.signature = dbusSignature;
+        spec.defaultValue = QDBusVariant(defaultValue);
+        init();
+    }
+
+    void init()
+    {
+        if (spec.flags & ConnMgrParamFlagHasDefault) {
+            if (spec.defaultValue.variant() == QVariant::Invalid) {
+                // flags contains HasDefault but no default value is passed,
+                // lets warn and build a default value from signature
+                warning() << "Building ProtocolParameter with flags containing ConnMgrParamFlagHasDefault"
+                    " and no default value, generating a dummy one from signature";
+                spec.defaultValue = QDBusVariant(
+                        parseValueWithDBusSignature(QString(), spec.signature));
+            }
+        } else {
+            if (spec.defaultValue.variant() != QVariant::Invalid) {
+                // flags does not contain HasDefault but a default value is passed,
+                // lets add HasDefault to flags
+                debug() << "Building ProtocolParameter with flags not containing ConnMgrParamFlagHasDefault"
+                    " and a default value, updating flags to contain ConnMgrParamFlagHasDefault";
+                spec.flags |= ConnMgrParamFlagHasDefault;
+            }
+        }
+    }
+
+    ParamSpec spec;
     QVariant::Type type;
-    QVariant defaultValue;
-    ConnMgrParamFlag flags;
 };
 
 /**
@@ -54,13 +88,24 @@ ProtocolParameter::ProtocolParameter()
 {
 }
 
+ProtocolParameter::ProtocolParameter(const ParamSpec &spec)
+    : mPriv(new Private(spec))
+{
+}
+
 ProtocolParameter::ProtocolParameter(const QString &name,
                                      const QDBusSignature &dbusSignature,
-                                     QVariant defaultValue,
-                                     ConnMgrParamFlag flags)
-    : mPriv(new Private(name, dbusSignature,
-                ManagerFile::variantTypeFromDBusSignature(dbusSignature.signature()), defaultValue,
-                flags))
+                                     ConnMgrParamFlag flags,
+                                     QVariant defaultValue)
+    : mPriv(new Private(name, dbusSignature.signature(), flags, defaultValue))
+{
+}
+
+ProtocolParameter::ProtocolParameter(const QString &name,
+                                     const QString &dbusSignature,
+                                     ConnMgrParamFlag flags,
+                                     QVariant defaultValue)
+    : mPriv(new Private(name, dbusSignature, flags, defaultValue))
 {
 }
 
@@ -88,7 +133,7 @@ bool ProtocolParameter::operator==(const ProtocolParameter &other) const
         return false;
     }
 
-    return (mPriv->name == other.name());
+    return (mPriv->spec.name == other.name());
 }
 
 bool ProtocolParameter::operator==(const QString &name) const
@@ -97,12 +142,12 @@ bool ProtocolParameter::operator==(const QString &name) const
         return false;
     }
 
-    return (mPriv->name == name);
+    return (mPriv->spec.name == name);
 }
 
 bool ProtocolParameter::operator<(const Tp::ProtocolParameter& other) const
 {
-    return mPriv->name < other.name();
+    return mPriv->spec.name < other.name();
 }
 
 QString ProtocolParameter::name() const
@@ -111,7 +156,7 @@ QString ProtocolParameter::name() const
         return QString();
     }
 
-    return mPriv->name;
+    return mPriv->spec.name;
 }
 
 QDBusSignature ProtocolParameter::dbusSignature() const
@@ -120,7 +165,7 @@ QDBusSignature ProtocolParameter::dbusSignature() const
         return QDBusSignature();
     }
 
-    return mPriv->dbusSignature;
+    return QDBusSignature(mPriv->spec.signature);
 }
 
 QVariant::Type ProtocolParameter::type() const
@@ -138,7 +183,7 @@ QVariant ProtocolParameter::defaultValue() const
         return QVariant();
     }
 
-    return mPriv->defaultValue;
+    return mPriv->spec.defaultValue.variant();
 }
 
 bool ProtocolParameter::isRequired() const
@@ -147,7 +192,7 @@ bool ProtocolParameter::isRequired() const
         return false;
     }
 
-    return mPriv->flags & ConnMgrParamFlagRequired;
+    return mPriv->spec.flags & ConnMgrParamFlagRequired;
 }
 
 bool ProtocolParameter::isSecret() const
@@ -156,7 +201,7 @@ bool ProtocolParameter::isSecret() const
         return false;
     }
 
-    return mPriv->flags & ConnMgrParamFlagSecret;
+    return mPriv->spec.flags & ConnMgrParamFlagSecret;
 }
 
 bool ProtocolParameter::isRequiredForRegistration() const
@@ -165,7 +210,16 @@ bool ProtocolParameter::isRequiredForRegistration() const
         return false;
     }
 
-    return mPriv->flags & ConnMgrParamFlagRegister;
+    return mPriv->spec.flags & ConnMgrParamFlagRegister;
+}
+
+ParamSpec ProtocolParameter::bareParameter() const
+{
+    if (!isValid()) {
+        return ParamSpec();
+    }
+
+    return mPriv->spec;
 }
 
 uint qHash(const ProtocolParameter& parameter)

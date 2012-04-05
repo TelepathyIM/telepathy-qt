@@ -49,6 +49,15 @@
 # function TPQT_FUTURE_CLIENT_GENERATOR(spec namespace [arguments] [DEPENDS dependencies ...])
 #          Same as tpqt_client_generator, but for future interfaces
 #
+# function TPQT_SERVICE_GENERATOR(spec group pretty_include namespace [arguments] [DEPENDS dependencies ...])
+#          This function takes care of invoking qt-svc-gen.py with the correct arguments, which generates
+#          headers out of specs. spec is the name of the spec headers will be generated from, group represents
+#          the spec's group, pretty_include is the name of the capitalized header (for example ServiceGenerator),
+#          namespace is the C++ namespace the generated header will belong to. This function also accepts
+#          as an optional last argument a list of additional command line arguments which will be passed to
+#          qt-svc-gen.py upon execution. After issuing DEPENDS in the last argument you can pass a list of targets
+#          the generated target will depend on.
+#
 # function TPQT_GENERATE_MANAGER_FILE(MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAME)
 #          This function takes care of invoking manager-file.py with the correct arguments. The first argument is the
 #          path to the manager-file.py file which should be used, the second is the output filename of the manager,
@@ -225,7 +234,6 @@ function(tpqt_client_generator spec group pretty_include namespace)
     tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp
                        "generate_cli-${spec}-body")
-    list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
 endfunction(tpqt_client_generator spec group pretty_include namespace)
 
 function(tpqt_future_client_generator spec namespace)
@@ -263,6 +271,40 @@ function(tpqt_future_client_generator spec namespace)
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp
                        "generate_future-${spec}-body")
 endfunction(tpqt_future_client_generator spec namespace)
+
+function(tpqt_service_generator spec group pretty_include namespace)
+    tpqt_extract_depends(service_generator_args service_generator_depends ${ARGN})
+    set(ARGS
+        ${CMAKE_SOURCE_DIR}/tools/qt-svc-gen.py
+            --group=${group}
+            --namespace=${namespace}
+            --typesnamespace=Tp
+            --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
+            --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
+            --realinclude=TelepathyQt/_gen/svc-${spec}.h
+            --mocinclude=TelepathyQt/_gen/svc-${spec}.moc.hpp
+            --specxml=${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
+            --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
+            --visibility=TP_QT_EXPORT
+            ${service_generator_args})
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
+        COMMAND ${PYTHON_EXECUTABLE}
+        ARGS ${ARGS}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/libqtcodegen.py
+                ${CMAKE_SOURCE_DIR}/tools/qt-svc-gen.py)
+    add_custom_target(generate_service-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp)
+    add_dependencies(all-generated-service-sources generate_service-${spec}-body)
+
+    if (service_generator_depends)
+        add_dependencies(generate_service-${spec}-body ${service_generator_depends})
+    endif (service_generator_depends)
+
+    tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
+                       ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.moc.hpp
+                       "generate_service-${spec}-body")
+endfunction(tpqt_service_generator spec group pretty_include namespace)
 
 # This function is used for generating CM in various examples
 function(tpqt_generate_manager_file MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAME)
@@ -361,7 +403,7 @@ endfunction(tpqt_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _N
 macro(tpqt_add_generic_unit_test _fancyName _name)
     tpqt_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
-    target_link_libraries(test-${_name} ${QT_QTCORE_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt${QT_VERSION_MAJOR} tp-qt-tests ${ARGN})
+    target_link_libraries(test-${_name} ${QT_QTCORE_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt${QT_VERSION_MAJOR} tp-qt-tests ${TP_QT_EXECUTABLE_LINKER_FLAGS} ${ARGN})
     add_test(${_fancyName} ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
     list(APPEND _telepathy_qt_test_cases test-${_name})
 
@@ -372,7 +414,7 @@ endmacro(tpqt_add_generic_unit_test _fancyName _name)
 macro(tpqt_add_dbus_unit_test _fancyName _name)
     tpqt_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
-    target_link_libraries(test-${_name} ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt${QT_VERSION_MAJOR} tp-qt-tests ${ARGN})
+    target_link_libraries(test-${_name} ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTTEST_LIBRARY} telepathy-qt${QT_VERSION_MAJOR} tp-qt-tests ${TP_QT_EXECUTABLE_LINKER_FLAGS} ${ARGN})
     set(with_session_bus ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
     add_test(${_fancyName} ${SH} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
     list(APPEND _telepathy_qt_test_cases test-${_name})

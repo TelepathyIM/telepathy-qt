@@ -126,6 +126,15 @@ public:
         }
         return ret;
     }
+
+    SimpleStatusSpecMap bareSpecs() const
+    {
+        SimpleStatusSpecMap ret;
+        Q_FOREACH (const PresenceSpec &spec, *this) {
+            ret.insert(spec.presence().status(), spec.bareSpec());
+        }
+        return ret;
+    }
 };
 
 } // Tp

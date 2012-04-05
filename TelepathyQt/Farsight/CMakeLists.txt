@@ -30,7 +30,8 @@ if(FARSIGHT_COMPONENTS_FOUND)
         ${QT_QTCORE_LIBRARY}
         ${TELEPATHY_FARSIGHT_LIBRARIES}
         ${GSTREAMER_INTERFACE_LIBRARY}
-        telepathy-qt${QT_VERSION_MAJOR})
+        telepathy-qt${QT_VERSION_MAJOR}
+        ${TP_QT_LIBRARY_LINKER_FLAGS})
 
     # Set the correct version number
     set_target_properties(telepathy-qt${QT_VERSION_MAJOR}-farsight PROPERTIES

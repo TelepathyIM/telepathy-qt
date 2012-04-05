@@ -43,7 +43,8 @@ if(FARSTREAM_COMPONENTS_FOUND)
         ${QT_QTCORE_LIBRARY}
         ${TELEPATHY_FARSTREAM_LIBRARIES}
         ${TELEPATHY_GLIB_LIBRARIES}
-        telepathy-qt${QT_VERSION_MAJOR})
+        telepathy-qt${QT_VERSION_MAJOR}
+        ${TP_QT_LIBRARY_LINKER_FLAGS})
 
     if (ENABLE_COMPILER_COVERAGE)
         target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-farstream gcov)

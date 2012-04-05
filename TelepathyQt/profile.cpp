@@ -25,9 +25,9 @@
 #include "TelepathyQt/debug-internal.h"
 #include "TelepathyQt/manager-file.h"
 
-#include <TelepathyQt/Utils>
 #include <TelepathyQt/ProtocolInfo>
 #include <TelepathyQt/ProtocolParameter>
+#include <TelepathyQt/Utils>
 
 #include <QFile>
 #include <QFileInfo>
@@ -362,7 +362,7 @@ bool Profile::Private::XmlHandler::endElement(const QString &namespaceURI,
     } else if (qName == elemName) {
         mData->name = mCurrentText;
     } else if (qName == elemParam) {
-        mCurrentParameter.setValue(ManagerFile::parseValueWithDBusSignature(mCurrentText,
+        mCurrentParameter.setValue(parseValueWithDBusSignature(mCurrentText,
                     mCurrentParameter.dbusSignature().signature()));
         mData->parameters.append(Profile::Parameter(mCurrentParameter));
     } else if (qName == elemCC) {
@@ -370,7 +370,7 @@ bool Profile::Private::XmlHandler::endElement(const QString &namespaceURI,
         mCurrentCC.fixedProperties.clear();
     } else if (qName == elemProperty) {
         mCurrentCC.fixedProperties[mCurrentPropertyName] =
-            ManagerFile::parseValueWithDBusSignature(mCurrentText,
+            parseValueWithDBusSignature(mCurrentText,
                     mCurrentPropertyType);
     }
 
@@ -979,7 +979,7 @@ void Profile::Parameter::setDBusSignature(const QDBusSignature &dbusSignature)
  */
 QVariant::Type Profile::Parameter::type() const
 {
-    return ManagerFile::variantTypeFromDBusSignature(mPriv->dbusSignature.signature());
+    return variantTypeFromDBusSignature(mPriv->dbusSignature.signature());
 }
 
 /**

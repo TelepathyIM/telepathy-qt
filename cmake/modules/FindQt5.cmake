@@ -44,7 +44,8 @@
 #  QT_QTXML_LIBRARY             The QtXml library
 #
 # also defined, but NOT for general use are
-#  QT_MOC_EXECUTABLE            Where to find the moc tool.
+#  QT_MOC_EXECUTABLE            Where to find the moc tool
+#  QT_CONFIG_FLAGS              Flags used when building Qt
 
 # Copyright (C) 2001-2009 Kitware, Inc.
 # Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
@@ -150,6 +151,12 @@ MARK_AS_ADVANCED(QT_INCLUDES QT_INCLUDE_DIR
                  QT_BINARY_DIR
                  QT_DOC_DIR
                  QT_QMAKE_EXECUTABLE_FINDQT QT_QMAKE_EXECUTABLE QT_MOC_EXECUTABLE)
+
+# Invokes pkgconfig, cleans up the result and sets variables
+EXECUTE_PROCESS(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable qt_config QtCore
+    OUTPUT_VARIABLE _pkgconfig_flags
+    RESULT_VARIABLE _pkgconfig_failed)
+STRING(REPLACE " " ";" QT_CONFIG_FLAGS "${_pkgconfig_flags}")
 
 INCLUDE(Qt5Macros)
 
