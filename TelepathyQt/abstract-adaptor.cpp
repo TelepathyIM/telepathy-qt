@@ -43,6 +43,30 @@ struct TP_QT_NO_EXPORT AbstractAdaptor::Private
     QObject *adaptee;
 };
 
+/**
+ * \class AbstractAdaptor
+ * \ingroup servicesideimpl
+ * \headerfile TelepathyQt/abstract-adaptor.h <TelepathyQt/AbstractAdaptor>
+ *
+ * \brief Base class for all the low-level service-side adaptors.
+ *
+ * This class serves as the parent for all the generated low-level service-side
+ * adaptors. Adaptors provide the interface of an object on the bus.
+ *
+ * The implementation of this interface should be provided in a special object
+ * called the adaptee. The adaptee is meant to provide properties, signals
+ * and slots that are connected automatically with the adaptor using Qt's meta-object
+ * system.
+ */
+
+/**
+ * Construct a new AbstractAdaptor that operates on the given
+ * \a dbusConnection and redirects calls to the given \a adaptee.
+ *
+ * \param dbusConnection The D-Bus connection to use.
+ * \param adaptee The class the provides the implementation of the calls.
+ * \param parent The QObject parent of this adaptor.
+ */
 AbstractAdaptor::AbstractAdaptor(const QDBusConnection &dbusConnection,
         QObject *adaptee, QObject *parent)
     : QDBusAbstractAdaptor(parent),
@@ -51,16 +75,30 @@ AbstractAdaptor::AbstractAdaptor(const QDBusConnection &dbusConnection,
     setAutoRelaySignals(false);
 }
 
+/**
+ * Class destructor.
+ */
 AbstractAdaptor::~AbstractAdaptor()
 {
     delete mPriv;
 }
 
+/**
+ * Return the D-Bus connection associated with this adaptor.
+ *
+ * \return The D-Bus connection associated with this adaptor.
+ */
 QDBusConnection AbstractAdaptor::dbusConnection() const
 {
     return mPriv->dbusConnection;
 }
 
+/**
+ * Return the adaptee object, i.e. the object that provides the implementation
+ * of this adaptor.
+ *
+ * \return The adaptee object.
+ */
 QObject *AbstractAdaptor::adaptee() const
 {
     return mPriv->adaptee;
