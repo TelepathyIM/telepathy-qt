@@ -47,7 +47,6 @@ public:
 
     QDBusConnection dbusConnection() const;
 
-    void setAdaptee(QObject *adaptee);
     QObject *adaptee() const;
 
 private:

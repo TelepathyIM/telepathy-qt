@@ -61,11 +61,6 @@ QDBusConnection AbstractAdaptor::dbusConnection() const
     return mPriv->dbusConnection;
 }
 
-void AbstractAdaptor::setAdaptee(QObject *adaptee)
-{
-    mPriv->adaptee = adaptee;
-}
-
 QObject *AbstractAdaptor::adaptee() const
 {
     return mPriv->adaptee;
