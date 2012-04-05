@@ -23,7 +23,7 @@ Requirements
 ============
 
 Building telepathy-qt requires:
-  Qt, including QtDBus <http://www.qtsoftware.com/>
+  Qt, QtDBus, QtNetwork and QtXml (QtGui and QtWidgets are required for some examples) <http://www.qt-project.org/>
 
   GNU make <http://www.gnu.org/software/make/>
   pkg-config <http://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
@@ -33,15 +33,36 @@ Building telepathy-qt requires:
 For the full set of regression tests to run, you'll also need:
   telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
 
-and to build the example VoIP call UI (examples/call), you'll need:
+For building the Farsight convenience library, you'll need:
   telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
   telepathy-farsight <http://telepathy.freedesktop.org/releases/telepathy-farsight/>
   GStreamer <http://gstreamer.freedesktop.org/>
 
+and to build the Farstream convenience library, you'll need:
+  telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+  telepathy-farstream <http://telepathy.freedesktop.org/releases/telepathy-farstream/>
+  farstream <http://freedesktop.org/software/farstream/releases/>
+  GStreamer <http://gstreamer.freedesktop.org/>
+
 See CMakeLists.txt for full details, including versions required.
-Of the packages listed above, only QtCore and QtDBus are required at runtime.
+Of the packages listed above, only Qt libraries are required at runtime.
 
 Building also requires the cmake build system.
+
+Qt 5 alpha release contains some build issues that should be addressed in order to build
+telepathy-qt against it:
+
+  - When running 'configure' in Qt 5 alpha, the pkg-config files are properly generated, but when
+    'make' is executed, these files are replaced with empty ones. So, to build telepathy-qt against
+    it one must either backup the pkg-config files generated during the 'configure' phase before
+    running 'make' and replace them afterwards, or re-run 'configure' with the same parameters
+    after building it.
+
+  - If Qt 5 alpha is built with -reduce-relocations enabled, one must add the keyword
+    "reduce_relocations" to qtbase/lib/pkgconfig/QtCore.pc in the qt_config section, so that
+    telepathy-qt knows when to use -fPIC/PIE at linking stage accordingly.
+
+Both issues were reported and should be fixed when beta is out.
 
 Bugs, feature requests and to-do list
 =====================================
