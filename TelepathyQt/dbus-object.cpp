@@ -22,6 +22,8 @@
 
 #include <TelepathyQt/DBusObject>
 
+#include "TelepathyQt/_gen/dbus-object.moc.hpp"
+
 #include <QDBusConnection>
 
 namespace Tp

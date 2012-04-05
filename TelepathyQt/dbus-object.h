@@ -38,6 +38,7 @@ namespace Tp
 
 class TP_QT_EXPORT DBusObject : public QObject
 {
+    Q_OBJECT
     Q_DISABLE_COPY(DBusObject)
 
 public:

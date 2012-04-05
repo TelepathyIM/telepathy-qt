@@ -869,6 +869,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         base-connection-internal.h
         base-protocol.h
         base-protocol-internal.h
+        dbus-object.h
         dbus-service.h)
 
     add_custom_target(all-generated-service-sources)
