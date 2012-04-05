@@ -135,7 +135,7 @@ public:
     AbstractProtocolInterface(const QString &interfaceName);
     virtual ~AbstractProtocolInterface();
 
-protected:
+private:
     friend class BaseProtocol;
 
     class Private;
