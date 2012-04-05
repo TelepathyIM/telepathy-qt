@@ -71,6 +71,22 @@ BaseConnection::Adaptee::~Adaptee()
 {
 }
 
+/**
+ * \class BaseConnection
+ * \ingroup serviceconn
+ * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
+ *
+ * \brief Base class for Connection implementations.
+ */
+
+/**
+ * Construct a BaseConnection.
+ *
+ * \param dbusConnection The D-Bus connection that will be used by this object.
+ * \param cmName The name of the connection manager associated with this connection.
+ * \param protocolName The name of the protocol associated with this connection.
+ * \param parameters The parameters of this connection.
+ */
 BaseConnection::BaseConnection(const QDBusConnection &dbusConnection,
         const QString &cmName, const QString &protocolName,
         const QVariantMap &parameters)
@@ -79,37 +95,80 @@ BaseConnection::BaseConnection(const QDBusConnection &dbusConnection,
 {
 }
 
+/**
+ * Class destructor.
+ */
 BaseConnection::~BaseConnection()
 {
     delete mPriv;
 }
 
+/**
+ * Return the name of the connection manager associated with this connection.
+ *
+ * \return The name of the connection manager associated with this connection.
+ */
 QString BaseConnection::cmName() const
 {
     return mPriv->cmName;
 }
 
+/**
+ * Return the name of the protocol associated with this connection.
+ *
+ * \return The name of the protocol associated with this connection.
+ */
 QString BaseConnection::protocolName() const
 {
     return mPriv->protocolName;
 }
 
+/**
+ * Return the parameters of this connection.
+ *
+ * \return The parameters of this connection.
+ */
 QVariantMap BaseConnection::parameters() const
 {
     return mPriv->parameters;
 }
 
+/**
+ * Return the immutable properties of this connection object.
+ *
+ * Immutable properties cannot change after the object has been registered
+ * on the bus with registerObject().
+ *
+ * \return The immutable properties of this connection object.
+ */
 QVariantMap BaseConnection::immutableProperties() const
 {
     // FIXME
     return QVariantMap();
 }
 
+/**
+ * Return a unique name for this connection.
+ *
+ * \return A unique name for this connection.
+ */
 QString BaseConnection::uniqueName() const
 {
     return QString(QLatin1String("_%1")).arg((intptr_t) this, 0, 16);
 }
 
+/**
+ * Register this connection object on the bus.
+ *
+ * If \a error is passed, any D-Bus error that may occur will
+ * be stored there.
+ *
+ * \param error A pointer to an empty DBusError where any
+ * possible D-Bus error will be stored.
+ * \return \c true on success and \c false if there was an error
+ * or this connection object is already registered.
+ * \sa isRegistered()
+ */
 bool BaseConnection::registerObject(DBusError *error)
 {
     if (isRegistered()) {
@@ -140,10 +199,19 @@ bool BaseConnection::registerObject(DBusError *error)
     return ret;
 }
 
+/**
+ * Reimplemented from DBusService.
+ */
 bool BaseConnection::registerObject(const QString &busName,
         const QString &objectPath, DBusError *error)
 {
     return DBusService::registerObject(busName, objectPath, error);
 }
+
+/**
+ * \fn void BaseConnection::disconnected()
+ *
+ * Emitted when this connection has been disconnected.
+ */
 
 }

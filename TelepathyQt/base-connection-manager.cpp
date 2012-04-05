@@ -166,6 +166,21 @@ void BaseConnectionManager::Adaptee::requestConnection(const QString &protocolNa
     context->setFinished(connection->busName(), QDBusObjectPath(connection->objectPath()));
 }
 
+/**
+ * \class BaseConnectionManager
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-connection-manager.h <TelepathyQt/BaseConnectionManager>
+ *
+ * \brief Base class for connection manager implementations.
+ */
+
+/**
+ * Constructs a new BaseConnectionManager object that implements a connection manager
+ * on the given \a dbusConnection and has the given \a name.
+ *
+ * \param dbusConnection The QDBusConnection to use.
+ * \param name The name of the connection manager.
+ */
 BaseConnectionManager::BaseConnectionManager(const QDBusConnection &dbusConnection,
         const QString &name)
     : DBusService(dbusConnection),
@@ -173,16 +188,32 @@ BaseConnectionManager::BaseConnectionManager(const QDBusConnection &dbusConnecti
 {
 }
 
+/**
+ * Class destructor.
+ */
 BaseConnectionManager::~BaseConnectionManager()
 {
     delete mPriv;
 }
 
+/**
+ * Return the connection manager's name, as given on the constructor.
+ *
+ * \return The connection manager's name.
+ */
 QString BaseConnectionManager::name() const
 {
     return mPriv->name;
 }
 
+/**
+ * Return the immutable properties of this connection manager object.
+ *
+ * Immutable properties cannot change after the object has been registered
+ * on the bus with registerObject().
+ *
+ * \return The immutable properties of this connection manager object.
+ */
 QVariantMap BaseConnectionManager::immutableProperties() const
 {
     QVariantMap ret;
@@ -190,21 +221,62 @@ QVariantMap BaseConnectionManager::immutableProperties() const
     return ret;
 }
 
+/**
+ * Return a list of all protocols that this connection manager implements.
+ *
+ * This property is immutable and cannot change after the connection manager
+ * has been registered on the bus with registerObject().
+ *
+ * \return A list of all protocols that this connection manager implements.
+ * \sa addProtocol(), hasProtocol(), protocol()
+ */
 QList<BaseProtocolPtr> BaseConnectionManager::protocols() const
 {
     return mPriv->protocols.values();
 }
 
+/**
+ * Return a pointer to the BaseProtocol instance that implements the protocol
+ * with the given \a protocolName, or a null BaseProtocolPtr if no such
+ * protocol has been added to the connection manager.
+ *
+ * \param protocolName The name of the protocol in interest.
+ * \return The BaseProtocol instance that implements the protocol with
+ * the given \a protocolName.
+ * \sa hasProtocol(), protocols(), addProtocol()
+ */
 BaseProtocolPtr BaseConnectionManager::protocol(const QString &protocolName) const
 {
     return mPriv->protocols.value(protocolName);
 }
 
+/**
+ * Return whether a protocol with the given \a protocolName has been
+ * added to the connection manager.
+ *
+ * \param protocolName The name of the protocol in interest.
+ * \return \c true if a protocol with the given \a protocolName has been
+ * added to the connection manager, or \c false otherwise.
+ * \sa addProtocol(), protocol(), protocols()
+ */
 bool BaseConnectionManager::hasProtocol(const QString &protocolName) const
 {
     return mPriv->protocols.contains(protocolName);
 }
 
+/**
+ * Add a new \a protocol to the list of protocols that this connection
+ * manager implements.
+ *
+ * Note that you cannot add new protocols after the connection manager
+ * has been registered on the bus with registerObject(). In addition,
+ * you cannot add two protocols with the same name. If any of these
+ * conditions is not met, this function will return false and print
+ * a suitable warning.
+ *
+ * \param protocol The protocol to add.
+ * \return \c true on success or \c false otherwise.
+ */
 bool BaseConnectionManager::addProtocol(const BaseProtocolPtr &protocol)
 {
     if (isRegistered()) {
@@ -236,6 +308,22 @@ bool BaseConnectionManager::addProtocol(const BaseProtocolPtr &protocol)
     return true;
 }
 
+/**
+ * Register this connection manager on the bus.
+ *
+ * A connection manager can only be registered once, and it
+ * should be registered only after all the protocols it implements
+ * have been added with addProtocol().
+ *
+ * If \a error is passed, any D-Bus error that may occur will
+ * be stored there.
+ *
+ * \param error A pointer to an empty DBusError where any
+ * possible D-Bus error will be stored.
+ * \return \c true on success and \c false if there was an error
+ * or this connection manager is already registered.
+ * \sa isRegistered()
+ */
 bool BaseConnectionManager::registerObject(DBusError *error)
 {
     if (isRegistered()) {
@@ -254,6 +342,9 @@ bool BaseConnectionManager::registerObject(DBusError *error)
     return ret;
 }
 
+/**
+ * Reimplemented from DBusService.
+ */
 bool BaseConnectionManager::registerObject(const QString &busName, const QString &objectPath,
         DBusError *error)
 {
@@ -284,6 +375,11 @@ bool BaseConnectionManager::registerObject(const QString &busName, const QString
     return true;
 }
 
+/**
+ * Return a list of all connections that have currently been made.
+ *
+ * \return A list of all connections that have currently been made.
+ */
 QList<BaseConnectionPtr> BaseConnectionManager::connections() const
 {
     return mPriv->connections.toList();
@@ -307,5 +403,17 @@ void BaseConnectionManager::removeConnection()
     Q_ASSERT(mPriv->connections.contains(connection));
     mPriv->connections.remove(connection);
 }
+
+/**
+ * \fn void newConnection(const BaseConnectionPtr &connection)
+ *
+ * Emitted when a new connection has been requested by a client and
+ * the connection object has been constructed.
+ *
+ * To handle the connection request before a connection has been created,
+ * use BaseProtocol::setCreateConnectionCallback().
+ *
+ * \param connection The newly created connection
+ */
 
 }

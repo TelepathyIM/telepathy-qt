@@ -37,17 +37,40 @@ struct TP_QT_NO_EXPORT DBusObject::Private
     QDBusConnection dbusConnection;
 };
 
+/**
+ * \class DBusObject
+ * \ingroup servicesideimpl
+ * \headerfile TelepathyQt/dbus-object.h <TelepathyQt/DBusObject>
+ *
+ * \brief A QObject on which low-level D-Bus adaptors are plugged to provide a D-Bus object.
+ */
+
+
+/**
+ * Construct a DBusObject that operates on the given \a dbusConnection.
+ *
+ * \param dbusConnection The D-Bus connection to use.
+ * \param parent The QObject parent of this instance.
+ */
 DBusObject::DBusObject(const QDBusConnection &dbusConnection, QObject *parent)
     : QObject(parent),
       mPriv(new Private(dbusConnection))
 {
 }
 
+/**
+ * Class destructor.
+ */
 DBusObject::~DBusObject()
 {
     delete mPriv;
 }
 
+/**
+ * Return the D-Bus connection associated with this object.
+ *
+ * \return The D-Bus connection associated with this object.
+ */
 QDBusConnection DBusObject::dbusConnection() const
 {
     return mPriv->dbusConnection;

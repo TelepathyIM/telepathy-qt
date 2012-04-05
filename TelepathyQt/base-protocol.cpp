@@ -160,22 +160,62 @@ void BaseProtocol::Adaptee::normalizeContact(const QString &contactId,
     context->setFinished(normalizedContactId);
 }
 
+/**
+ * \class BaseProtocol
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-protocol.h <TelepathyQt/BaseProtocol>
+ *
+ * \brief Base class for protocol implementations.
+ *
+ * A Protocol is a D-Bus object that implements an IM protocol (for instance, jabber or msn).
+ * The BaseProtocol class provides an easy way to implement a Protocol D-Bus object,
+ * by providing the basic functionality itself and allowing you to extend it by setting
+ * the appropriate properties and callbacks.
+ *
+ * A BaseProtocol instance cannot be registered by itself on the bus. You should add it
+ * to a BaseConnectionManager instance using BaseConnectionManager::addProtocol(). When
+ * the BaseConnectionManager is registered on the bus, all the BaseProtocol instances
+ * will also be registered.
+ */
+
+/**
+ * Constructs a new BaseProtocol object.
+ *
+ * \param dbusConnection The D-Bus connection to use.
+ * \param name The name of this protocol.
+ */
 BaseProtocol::BaseProtocol(const QDBusConnection &dbusConnection, const QString &name)
     : DBusService(dbusConnection),
       mPriv(new Private(this, dbusConnection, name))
 {
 }
 
+/**
+ * Class destructor.
+ */
 BaseProtocol::~BaseProtocol()
 {
     delete mPriv;
 }
 
+/**
+ * Return the protocol's name, as given on the constructor.
+ *
+ * \return The protocol's name.
+ */
 QString BaseProtocol::name() const
 {
     return mPriv->name;
 }
 
+/**
+ * Return the immutable properties of this protocol object.
+ *
+ * Immutable properties cannot change after the object has been registered
+ * on the bus with registerObject().
+ *
+ * \return The immutable properties of this protocol object.
+ */
 QVariantMap BaseProtocol::immutableProperties() const
 {
     QVariantMap ret;
@@ -193,11 +233,36 @@ QVariantMap BaseProtocol::immutableProperties() const
     return ret;
 }
 
+/**
+ * Return the list of interface names that have been set with
+ * setConnectionInterfaces().
+ *
+ * This list is exposed as the ConnectionInterfaces property of
+ * this Protocol object on the bus and represents interface names
+ * that might be in the Interfaces property of a Connection to this protocol.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \return The list of interface names that have been set with
+ * setConnectionInterfaces().
+ * \sa setConnectionInterfaces()
+ */
 QStringList BaseProtocol::connectionInterfaces() const
 {
     return mPriv->connInterfaces;
 }
 
+/**
+ * Set the interface names that may appear on Connection objects of
+ * this protocol.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \param connInterfaces The list of interface names to set.
+ * \sa connectionInterfaces()
+ */
 void BaseProtocol::setConnectionInterfaces(const QStringList &connInterfaces)
 {
     if (isRegistered()) {
@@ -208,11 +273,34 @@ void BaseProtocol::setConnectionInterfaces(const QStringList &connInterfaces)
     mPriv->connInterfaces = connInterfaces;
 }
 
+/**
+ * Return the list of parameters that have been set with setParameters().
+ *
+ * This list is exposed as the Parameters property of this Protocol object
+ * on the bus and represents the parameters which may be specified in the
+ * Parameters property of an Account for this protocol.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \return The list of parameters that have been set with setParameters().
+ * \sa setParameters()
+ */
 ProtocolParameterList BaseProtocol::parameters() const
 {
     return mPriv->parameters;
 }
 
+/**
+ * Set the parameters that may be specified in the Parameters property
+ * of an Account for this protocol.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \param parameters The list of parameters to set.
+ * \sa parameters()
+ */
 void BaseProtocol::setParameters(const ProtocolParameterList &parameters)
 {
     if (isRegistered()) {
@@ -223,11 +311,36 @@ void BaseProtocol::setParameters(const ProtocolParameterList &parameters)
     mPriv->parameters = parameters;
 }
 
+/**
+ * Return the list of requestable channel classes that have been set
+ * with setRequestableChannelClasses().
+ *
+ * This list is exposed as the RequestableChannelClasses property of
+ * this Protocol object on the bus and represents the channel classes
+ * which might be requestable from a Connection to this protocol.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \returns The list of requestable channel classes that have been set
+ * with setRequestableChannelClasses()
+ * \sa setRequestableChannelClasses()
+ */
 RequestableChannelClassSpecList BaseProtocol::requestableChannelClasses() const
 {
     return mPriv->rccSpecs;
 }
 
+/**
+ * Set the channel classes which might be requestable from a Connection
+ * to this protocol.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \param rccSpecs The list of requestable channel classes to set.
+ * \sa requestableChannelClasses()
+ */
 void BaseProtocol::setRequestableChannelClasses(const RequestableChannelClassSpecList &rccSpecs)
 {
     if (isRegistered()) {
@@ -238,11 +351,37 @@ void BaseProtocol::setRequestableChannelClasses(const RequestableChannelClassSpe
     mPriv->rccSpecs = rccSpecs;
 }
 
+/**
+ * Return the name of the vCard field that has been set with setVCardField().
+ *
+ * This is exposed as the VCardField property of this Protocol object on
+ * the bus and represents the name of the most common vCard field used for
+ * this protocol's contact identifiers, normalized to lower case.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \return The name of the vCard field that has been set with setVCardField().
+ * \sa setVCardField()
+ */
 QString BaseProtocol::vCardField() const
 {
     return mPriv->vCardField;
 }
 
+/**
+ * Set the name of the most common vCard field used for
+ * this protocol's contact identifiers, normalized to lower case.
+ *
+ * For example, this would be x-jabber for Jabber/XMPP
+ * (including Google Talk), or tel for the PSTN.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \param vCardField The name of the vCard field to set.
+ * \sa vCardField()
+ */
 void BaseProtocol::setVCardField(const QString &vCardField)
 {
     if (isRegistered()) {
@@ -253,11 +392,38 @@ void BaseProtocol::setVCardField(const QString &vCardField)
     mPriv->vCardField = vCardField;
 }
 
+/**
+ * Return the name that has been set with setEnglishName().
+ *
+ * This is exposed as the EnglishName property of this Protocol object on
+ * the bus and represents the name of the protocol in a form suitable
+ * for display to users, such as "AIM" or "Yahoo!".
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \return The name that has been set with setEnglishName().
+ * \sa setEnglishName()
+ */
 QString BaseProtocol::englishName() const
 {
     return mPriv->englishName;
 }
 
+/**
+ * Set the name of the protocol in a form suitable for display to users,
+ * such as "AIM" or "Yahoo!".
+ *
+ * This string should be in the C (english) locale. Clients are expected
+ * to lookup a translation on their own translation catalogs and fall back
+ * to this name if they have no translation for it.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \param englishName The name to set.
+ * \sa englishName()
+ */
 void BaseProtocol::setEnglishName(const QString &englishName)
 {
     if (isRegistered()) {
@@ -268,11 +434,34 @@ void BaseProtocol::setEnglishName(const QString &englishName)
     mPriv->englishName = englishName;
 }
 
+/**
+ * Return the icon name that has been set with setIconName().
+ *
+ * This is exposed as the Icon property of this Protocol object on
+ * the bus and represents the name of an icon in the system's icon
+ * theme suitable for this protocol, such as "im-msn".
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \return The icon name set with setIconName().
+ * \sa setIconName()
+ */
 QString BaseProtocol::iconName() const
 {
     return mPriv->iconName;
 }
 
+/**
+ * Set the name of an icon in the system's icon theme suitable
+ * for this protocol, such as "im-msn".
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \param iconName The icon name to set.
+ * \sa iconName()
+ */
 void BaseProtocol::setIconName(const QString &iconName)
 {
     if (isRegistered()) {
@@ -283,11 +472,37 @@ void BaseProtocol::setIconName(const QString &iconName)
      mPriv->iconName = iconName;
 }
 
+/**
+ * Return the list of interfaces that have been set with setAuthenticationTypes().
+ *
+ * This is exposed as the AuthenticationTypes property of this Protocol object
+ * on the bus and represents a list of D-Bus interfaces which provide
+ * information as to what kind of authentication channels can possibly appear
+ * before the connection reaches the CONNECTED state.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \return The list of authentication types that have been
+ * set with setAuthenticationTypes().
+ * \sa setAuthenticationTypes()
+ */
 QStringList BaseProtocol::authenticationTypes() const
 {
     return mPriv->authTypes;
 }
 
+/**
+ * Set a list of D-Bus interfaces which provide information as to
+ * what kind of authentication channels can possibly appear before
+ * the connection reaches the CONNECTED state.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \param authenticationTypes The list of interfaces to set.
+ * \sa authenticationTypes()
+ */
 void BaseProtocol::setAuthenticationTypes(const QStringList &authenticationTypes)
 {
     if (isRegistered()) {
@@ -298,11 +513,30 @@ void BaseProtocol::setAuthenticationTypes(const QStringList &authenticationTypes
     mPriv->authTypes = authenticationTypes;
 }
 
+/**
+ * Set a callback that will be called to create a new connection, when this
+ * has been requested by a client.
+ *
+ * \param cb The callback to set.
+ * \sa createConnection()
+ */
 void BaseProtocol::setCreateConnectionCallback(const CreateConnectionCallback &cb)
 {
     mPriv->createConnectionCb = cb;
 }
 
+/**
+ * Create a new connection object by calling the callback that has been set
+ * with setCreateConnectionCallback().
+ *
+ * \param parameters The connection parameters.
+ * \param error A pointer to a DBusError instance where any possible error
+ * will be stored.
+ * \return A pointer to the new connection, or a null BaseConnectionPtr if
+ * no connection could be created, in which case \a error will contain an
+ * appropriate error.
+ * \sa setCreateConnectionCallback()
+ */
 BaseConnectionPtr BaseProtocol::createConnection(const QVariantMap &parameters, Tp::DBusError *error)
 {
     if (!mPriv->createConnectionCb.isValid()) {
@@ -312,11 +546,34 @@ BaseConnectionPtr BaseProtocol::createConnection(const QVariantMap &parameters, 
     return mPriv->createConnectionCb(parameters, error);
 }
 
+/**
+ * Set a callback that will be called from a client to identify an account.
+ *
+ * This callback will be called when the IdentifyAccount method on the Protocol
+ * D-Bus object has been called.
+ *
+ * \param cb The callback to set.
+ * \sa identifyAccount()
+ */
 void BaseProtocol::setIdentifyAccountCallback(const IdentifyAccountCallback &cb)
 {
     mPriv->identifyAccountCb = cb;
 }
 
+/**
+ * Return a string which uniquely identifies the account to which
+ * the given parameters would connect, by calling the callback that
+ * has been set with setIdentifyAccountCallback().
+ *
+ * \param parameters The connection parameters, as they would
+ * be provided to createConnection().
+ * \param error A pointer to a DBusError instance where any possible error
+ * will be stored.
+ * \return A string which uniquely identifies the account to which
+ * the given parameters would connect, or an empty string if no callback
+ * to create this string has been set with setIdentifyAccountCallback().
+ * \sa setIdentifyAccountCallback()
+ */
 QString BaseProtocol::identifyAccount(const QVariantMap &parameters, Tp::DBusError *error)
 {
     if (!mPriv->identifyAccountCb.isValid()) {
@@ -326,11 +583,28 @@ QString BaseProtocol::identifyAccount(const QVariantMap &parameters, Tp::DBusErr
     return mPriv->identifyAccountCb(parameters, error);
 }
 
+/**
+ * Set a callback that will be called from a client to normalize a contact id.
+ *
+ * \param cb The callback to set.
+ * \sa normalizeContact()
+ */
 void BaseProtocol::setNormalizeContactCallback(const NormalizeContactCallback &cb)
 {
     mPriv->normalizeContactCb = cb;
 }
 
+/**
+ * Return a normalized version of the given \a contactId, by calling the callback
+ * that has been set with setNormalizeContactCallback().
+ *
+ * \param contactId The contact ID to normalize.
+ * \param error A pointer to a DBusError instance where any possible error
+ * will be stored.
+ * \return A normalized version of the given \a contactId, or an empty string
+ * if no callback to do the normalization has been set with setNormalizeContactCallback().
+ * \sa setNormalizeContactCallback()
+ */
 QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *error)
 {
     if (!mPriv->normalizeContactCb.isValid()) {
@@ -340,11 +614,32 @@ QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *
     return mPriv->normalizeContactCb(contactId, error);
 }
 
+/**
+ * Return a list of interfaces that have been plugged into this Protocol
+ * D-Bus object with plugInterface().
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \return A list containing all the Protocol interface implementation objects.
+ * \sa plugInterface()
+ */
 QList<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
 {
     return mPriv->interfaces.values();
 }
 
+/**
+ * Plug a new interface into this Protocol D-Bus object.
+ *
+ * This property is immutable and cannot change after this Protocol
+ * object has been registered on the bus with registerObject().
+ *
+ * \param interface An AbstractProtocolInterface instance that implements
+ * the interface that is to be plugged.
+ * \return \c true on success or \c false otherwise
+ * \sa interfaces()
+ */
 bool BaseProtocol::plugInterface(const AbstractProtocolInterfacePtr &interface)
 {
     if (isRegistered()) {
@@ -370,6 +665,9 @@ bool BaseProtocol::plugInterface(const AbstractProtocolInterfacePtr &interface)
     return true;
 }
 
+/**
+ * Reimplemented from DBusService.
+ */
 bool BaseProtocol::registerObject(const QString &busName, const QString &objectPath,
         DBusError *error)
 {
@@ -386,6 +684,14 @@ bool BaseProtocol::registerObject(const QString &busName, const QString &objectP
     }
     return DBusService::registerObject(busName, objectPath, error);
 }
+
+/**
+ * \class AbstractProtocolInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-protocol.h <TelepathyQt/AbstractProtocolInterface>
+ *
+ * \brief Base class for all the Protocol object interface implementations.
+ */
 
 // AbstractProtocolInterface
 AbstractProtocolInterface::AbstractProtocolInterface(const QString &interfaceName)
@@ -461,49 +767,133 @@ struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
     NormalizeContactUriCallback normalizeContactUriCb;
 };
 
+/**
+ * \class BaseProtocolAddressingInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-protocol.h <TelepathyQt/BaseProtocolAddressingInterface>
+ *
+ * \brief Base class for implementations of Protocol.Interface.Addressing
+ */
+
+/**
+ * Class constructor.
+ */
 BaseProtocolAddressingInterface::BaseProtocolAddressingInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
       mPriv(new Private)
 {
 }
 
+/**
+ * Class destructor.
+ */
 BaseProtocolAddressingInterface::~BaseProtocolAddressingInterface()
 {
     delete mPriv;
 }
 
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
 QVariantMap BaseProtocolAddressingInterface::immutableProperties() const
 {
     // no immutable property
     return QVariantMap();
 }
 
+/**
+ * Return the list of addressable vCard fields that have been set with
+ * setAddressableVCardFields().
+ *
+ * This list is exposed as the AddressableVCardFields property of this
+ * interface on the bus and represents the vCard fields that can be used
+ * to request a contact for this protocol, normalized to lower case.
+ *
+ * \return The list of addressable VCard fields that have been set with
+ * setAddressableVCardFields().
+ * \sa setAddressableVCardFields()
+ */
 QStringList BaseProtocolAddressingInterface::addressableVCardFields() const
 {
     return mPriv->addressableVCardFields;
 }
 
+/**
+ * Set the list of vCard fields that can be used to request a contact for this protocol.
+ *
+ * All the field names should be normalized to lower case.
+ *
+ * \param vcardFields The list of vCard fields to set.
+ * \sa addressableVCardFields()
+ */
 void BaseProtocolAddressingInterface::setAddressableVCardFields(const QStringList &vcardFields)
 {
     mPriv->addressableVCardFields = vcardFields;
 }
 
+/**
+ * Return the list of URI schemes that have been set with
+ * setAddressableUriSchemes().
+ *
+ * This list is exposed as the AddressableURISchemes property of this interface
+ * on the bus and represents the URI schemes that are supported by this
+ * protocol, like "tel" or "sip".
+ *
+ * \return The list of addressable URI schemes that have been set with
+ * setAddressableUriSchemes().
+ * \sa setAddressableUriSchemes()
+ */
 QStringList BaseProtocolAddressingInterface::addressableUriSchemes() const
 {
     return mPriv->addressableUriSchemes;
 }
 
+/**
+ * Set the list of URI schemes that are supported by this protocol.
+ *
+ * \param uriSchemes The list of URI schemes to set.
+ * \sa addressableUriSchemes()
+ */
 void BaseProtocolAddressingInterface::setAddressableUriSchemes(const QStringList &uriSchemes)
 {
     mPriv->addressableUriSchemes = uriSchemes;
 }
 
+/**
+ * Set a callback that will be called from a client to normalize a given
+ * vCard address.
+ *
+ * This callback will be called when the NormalizeVCardAddress method
+ * on the Protocol.Interface.Addressing D-Bus interface has been called.
+ *
+ * \param cb The callback to set.
+ * \sa normalizeVCardAddress()
+ */
 void BaseProtocolAddressingInterface::setNormalizeVCardAddressCallback(
         const NormalizeVCardAddressCallback &cb)
 {
     mPriv->normalizeVCardAddressCb = cb;
 }
 
+/**
+ * Return a normalized version of the given \a vCardAddress, which corresponds
+ * to the given \a vCardField, by calling the callback that has been set
+ * with setNormalizeVCardAddressCallback().
+ *
+ * \param vCardField The vCard field of the address we are normalizing.
+ * \param vCardAddress The address to normalize, which is assumed to belong to a contact.
+ * \param error A pointer to a DBusError instance where any possible error
+ * will be stored.
+ * \return A normalized version of the given \a vCardAddress, or an empty
+ * string if no callback to do the normalization has been set with
+ * setNormalizeVCardAddressCallback().
+ * \sa setNormalizeVCardAddressCallback()
+ */
 QString BaseProtocolAddressingInterface::normalizeVCardAddress(const QString &vCardField,
         const QString &vCardAddress, DBusError *error)
 {
@@ -514,12 +904,32 @@ QString BaseProtocolAddressingInterface::normalizeVCardAddress(const QString &vC
     return mPriv->normalizeVCardAddressCb(vCardField, vCardAddress, error);
 }
 
+/**
+ * Set a callback that will be called from a client to normalize a given contact URI.
+ *
+ * This callback will be called when the NormalizeContactURI method
+ * on the Protocol.Interface.Addressing D-Bus interface has been called.
+ *
+ * \param cb The callback to set.
+ * \sa normalizeContactUri()
+ */
 void BaseProtocolAddressingInterface::setNormalizeContactUriCallback(
         const NormalizeContactUriCallback &cb)
 {
     mPriv->normalizeContactUriCb = cb;
 }
 
+/**
+ * Return a normalized version of the given contact URI, \a uri, by calling
+ * the callback that has been set with setNormalizeContactUriCallback().
+ *
+ * \param uri The contact URI to normalize.
+ * \param error A pointer to a DBusError instance where any possible error
+ * will be stored.
+ * \return A normalized version of the given \a uri, or an empty string if no
+ * callback to do the normalization has been set with setNormalizeContactUriCallback().
+ * \sa setNormalizeContactUriCallback()
+ */
 QString BaseProtocolAddressingInterface::normalizeContactUri(const QString &uri, DBusError *error)
 {
     if (!mPriv->normalizeContactUriCb.isValid()) {
@@ -600,17 +1010,39 @@ struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
     AvatarSpec avatarDetails;
 };
 
+/**
+ * \class BaseProtocolAvatarsInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-protocol.h <TelepathyQt/BaseProtocolAvatarsInterface>
+ *
+ * \brief Base class for implementations of Protocol.Interface.Avatars
+ */
+
+/**
+ * Class constructor.
+ */
 BaseProtocolAvatarsInterface::BaseProtocolAvatarsInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
       mPriv(new Private)
 {
 }
 
+/**
+ * Class destructor.
+ */
 BaseProtocolAvatarsInterface::~BaseProtocolAvatarsInterface()
 {
     delete mPriv;
 }
 
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
 QVariantMap BaseProtocolAvatarsInterface::immutableProperties() const
 {
     QVariantMap ret;
@@ -625,11 +1057,34 @@ QVariantMap BaseProtocolAvatarsInterface::immutableProperties() const
     return ret;
 }
 
+/**
+ * Return the AvatarSpec that has been set with setAvatarDetails().
+ *
+ * The contents of this AvatarSpec are exposed as the various properties
+ * of this interface on the bus and represent the expected values of the
+ * Connection.Interface.Avatars properties on connections of this protocol.
+ *
+ * This property is immutable and cannot change after this interface
+ * has been registered on an object on the bus with registerInterface().
+ *
+ * \return The AvatarSpec that has been set with setAvatarDetails().
+ * \sa setAvatarDetails()
+ */
 AvatarSpec BaseProtocolAvatarsInterface::avatarDetails() const
 {
     return mPriv->avatarDetails;
 }
 
+/**
+ * Set the avatar details that will be exposed on the properties of this
+ * interface on the bus.
+ *
+ * This property is immutable and cannot change after this interface
+ * has been registered on an object on the bus with registerInterface().
+ *
+ * \param details The details to set.
+ * \sa avatarDetails()
+ */
 void BaseProtocolAvatarsInterface::setAvatarDetails(const AvatarSpec &details)
 {
     if (isRegistered()) {
@@ -676,28 +1131,75 @@ struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
     PresenceSpecList statuses;
 };
 
+/**
+ * \class BaseProtocolPresenceInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-protocol.h <TelepathyQt/BaseProtocolPresenceInterface>
+ *
+ * \brief Base class for implementations of Protocol.Interface.Presence
+ */
+
+/**
+ * Class constructor.
+ */
 BaseProtocolPresenceInterface::BaseProtocolPresenceInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
       mPriv(new Private)
 {
 }
 
+/**
+ * Class destructor.
+ */
 BaseProtocolPresenceInterface::~BaseProtocolPresenceInterface()
 {
     delete mPriv;
 }
 
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
 QVariantMap BaseProtocolPresenceInterface::immutableProperties() const
 {
     // no immutable property
     return QVariantMap();
 }
 
+/**
+ * Return the list of presence statuses that have been set with setStatuses().
+ *
+ * This list is exposed as the Statuses property of this interface on the bus
+ * and represents the statuses that might appear in the
+ * Connection.Interface.SimplePresence.Statuses property on a connection to
+ * this protocol that supports SimplePresence.
+ *
+ * This property is immutable and cannot change after this interface
+ * has been registered on an object on the bus with registerInterface().
+ *
+ * \return The list of presence statuses that have been set with setStatuses().
+ * \sa setStatuses()
+ */
 PresenceSpecList BaseProtocolPresenceInterface::statuses() const
 {
     return mPriv->statuses;
 }
 
+/**
+ * Set the list of statuses that might appear in the
+ * Connection.Interface.SimplePresence.Statuses property on a connection to
+ * this protocol that supports SimplePresence.
+ *
+ * This property is immutable and cannot change after this interface
+ * has been registered on an object on the bus with registerInterface().
+ *
+ * \param statuses The statuses list to set.
+ * \sa statuses()
+ */
 void BaseProtocolPresenceInterface::setStatuses(const PresenceSpecList &statuses)
 {
     if (isRegistered()) {

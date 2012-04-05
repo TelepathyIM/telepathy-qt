@@ -1,0 +1,161 @@
+/*
+ * This file is part of TelepathyQt
+ *
+ * @copyright Copyright (C) 2012 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2012 Nokia Corporation
+ * @license LGPL 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+/**
+ * \page callbacks Callbacks Usage
+ *
+ * \section callbacks_overview Overview
+ *
+ * Callbacks are used in Telepathy-Qt by the service side high-level APIs
+ * to expose methods that may/should be overriden in implementations.
+ *
+ * Ideally we would use virtual methods for this, but as new methods
+ * can be added freely (when interfaces change), we would not be able
+ * to guarantee a stable API/ABI. Other options, such as virtual padding,
+ * virtual_hook and Qt slots also have their own drawbacks.
+ *
+ * There are 8 Callback classes, Tp::Callback0 to Tp::Callback7, which
+ * define a callback with 0 to 7 arguments respectively. The first template
+ * argument is always the return value type and the rest template arguments
+ * are the types of the callback arguments in the order that they are passed
+ * to the callback.
+ *
+ * Callback classes can be constructed from a functor. To make it easy to
+ * use function pointers as functors, Telepathy-Qt also provides two helper
+ * functions, Tp::memFun and Tp::ptrFun.
+ *
+ * Here is an example of their usage:
+ * \code
+ * // assuming a member function QString MyImpl::myFunc(const QString & s, int i);
+ * Tp::Callback2<QString, const QString &, int> cb = Tp::memFun(myObj, &MyImpl::myFunc);
+ *
+ * // assuming a non-member or static member function QString myFunc(const QString & s, int i);
+ * Tp::Callback2<QString, const QString &, int> cb = Tp::ptrFun(&myFunc);
+ *
+ * // assuming Tp::BaseConnectionPtr MyProtocolImpl::createConnection(const QVariantMap &parameters, DBusError *error);
+ * myBaseProtocol->setCreateConnectionCallback(Tp::memFun(myProtocolImpl, &MyProtocolImpl::createConnection));
+ * \endcode
+ *
+ * You are also free to use any other mechanism for constructing functors,
+ * such as boost::bind, C++11's <functional> module or even C++11 lambda functions.
+ */
+
+/**
+ * \class Tp::BaseCallback
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Base class for all the callback classes
+ *
+ * See \ref callbacks
+ */
+
+/**
+ * \fn bool Tp::BaseCallback::isValid() const
+ *
+ * Return whether this callback object has a valid functor assigned to it
+ * or if it's a default-constructed dummy callback object.
+ *
+ * \return \c false if this is a default-constructed callback or
+ * \c true if this callback was constructed from a functor.
+ */
+
+/**
+ * \class Tp::Callback0
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Callback with 0 arguments
+ *
+ * See \ref callbacks
+ */
+
+/**
+ * \class Tp::Callback1
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Callback with 1 argument
+ *
+ * See \ref callbacks
+ */
+
+/**
+ * \class Tp::Callback2
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Callback with 2 arguments
+ *
+ * See \ref callbacks
+ */
+
+/**
+ * \class Tp::Callback3
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Callback with 3 arguments
+ *
+ * See \ref callbacks
+ */
+
+/**
+ * \class Tp::Callback4
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Callback with 4 arguments
+ *
+ * See \ref callbacks
+ */
+
+/**
+ * \class Tp::Callback5
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Callback with 5 arguments
+ *
+ * See \ref callbacks
+ */
+
+/**
+ * \class Tp::Callback6
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Callback with 6 arguments
+ *
+ * See \ref callbacks
+ */
+
+/**
+ * \class Tp::Callback7
+ * \ingroup utils
+ * \headerfile TelepathyQt/callbacks.h <TelepathyQt/Callbacks>
+ *
+ * \brief Callback with 7 arguments
+ *
+ * See \ref callbacks
+ */
+
