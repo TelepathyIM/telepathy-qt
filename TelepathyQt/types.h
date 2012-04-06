@@ -1,8 +1,8 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * @copyright Copyright (C) 2008 Nokia Corporation
+ * @copyright Copyright (C) 2008-2012 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2008-2012 Nokia Corporation
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -48,7 +48,6 @@ class AbstractClient;
 class AbstractClientApprover;
 class AbstractClientHandler;
 class AbstractClientObserver;
-class AbstractProtocolInterface;
 class Account;
 typedef GenericCapabilityFilter<Account> AccountCapabilityFilter;
 class AccountFactory;
@@ -60,12 +59,6 @@ class CallChannel;
 class CallContent;
 class CallStream;
 class CaptchaAuthentication;
-class BaseConnection;
-class BaseConnectionManager;
-class BaseProtocol;
-class BaseProtocolAddressingInterface;
-class BaseProtocolAvatarsInterface;
-class BaseProtocolPresenceInterface;
 class Channel;
 class ChannelDispatchOperation;
 class ChannelFactory;
@@ -83,7 +76,6 @@ class ContactManager;
 class ContactMessenger;
 class ContactSearchChannel;
 class DBusProxy;
-class DBusService;
 class FileTransferChannel;
 class IncomingFileTransferChannel;
 class IncomingStreamTubeChannel;
@@ -110,7 +102,6 @@ typedef SharedPtr<AbstractClient> AbstractClientPtr;
 typedef SharedPtr<AbstractClientApprover> AbstractClientApproverPtr;
 typedef SharedPtr<AbstractClientHandler> AbstractClientHandlerPtr;
 typedef SharedPtr<AbstractClientObserver> AbstractClientObserverPtr;
-typedef SharedPtr<AbstractProtocolInterface> AbstractProtocolInterfacePtr;
 typedef SharedPtr<Account> AccountPtr;
 typedef SharedPtr<AccountCapabilityFilter> AccountCapabilityFilterPtr;
 typedef SharedPtr<const AccountCapabilityFilter> AccountCapabilityFilterConstPtr;
@@ -126,12 +117,6 @@ typedef SharedPtr<CallChannel> CallChannelPtr;
 typedef SharedPtr<CallContent> CallContentPtr;
 typedef SharedPtr<CallStream> CallStreamPtr;
 typedef SharedPtr<CaptchaAuthentication> CaptchaAuthenticationPtr;
-typedef SharedPtr<BaseConnection> BaseConnectionPtr;
-typedef SharedPtr<BaseConnectionManager> BaseConnectionManagerPtr;
-typedef SharedPtr<BaseProtocol> BaseProtocolPtr;
-typedef SharedPtr<BaseProtocolAddressingInterface> BaseProtocolAddressingInterfacePtr;
-typedef SharedPtr<BaseProtocolAvatarsInterface> BaseProtocolAvatarsInterfacePtr;
-typedef SharedPtr<BaseProtocolPresenceInterface> BaseProtocolPresenceInterfacePtr;
 typedef SharedPtr<Channel> ChannelPtr;
 typedef SharedPtr<ChannelDispatchOperation> ChannelDispatchOperationPtr;
 typedef SharedPtr<ChannelFactory> ChannelFactoryPtr;
@@ -155,7 +140,6 @@ typedef SharedPtr<ContactManager> ContactManagerPtr;
 typedef SharedPtr<ContactMessenger> ContactMessengerPtr;
 typedef SharedPtr<ContactSearchChannel> ContactSearchChannelPtr;
 typedef SharedPtr<DBusProxy> DBusProxyPtr;
-typedef SharedPtr<DBusService> DBusServicePtr;
 typedef SharedPtr<FileTransferChannel> FileTransferChannelPtr;
 typedef SharedPtr<IncomingFileTransferChannel> IncomingFileTransferChannelPtr;
 typedef SharedPtr<IncomingStreamTubeChannel> IncomingStreamTubeChannelPtr;

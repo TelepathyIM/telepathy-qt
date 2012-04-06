@@ -852,7 +852,9 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         DBusObject
         dbus-object.h
         DBusService
-        dbus-service.h)
+        dbus-service.h
+        ServiceTypes
+        service-types.h)
 
     # Generated headers which will be installed and exported
     set(telepathy_qt_service_gen_HEADERS

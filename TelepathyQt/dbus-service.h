@@ -30,6 +30,7 @@
 #include <TelepathyQt/DBusError>
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Object>
+#include <TelepathyQt/ServiceTypes>
 
 #include <QObject>
 #include <QVariantMap>
