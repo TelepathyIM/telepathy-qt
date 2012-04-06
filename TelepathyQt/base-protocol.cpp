@@ -141,7 +141,7 @@ void BaseProtocol::Adaptee::identifyAccount(const QVariantMap &parameters,
     QString accountId;
     accountId = mProtocol->identifyAccount(parameters, &error);
     if (accountId.isEmpty()) {
-        context->setFinishedWithError(error);
+        context->setFinishedWithError(error.name(), error.message());
         return;
     }
     context->setFinished(accountId);
@@ -154,7 +154,7 @@ void BaseProtocol::Adaptee::normalizeContact(const QString &contactId,
     QString normalizedContactId;
     normalizedContactId = mProtocol->normalizeContact(contactId, &error);
     if (normalizedContactId.isEmpty()) {
-        context->setFinishedWithError(error);
+        context->setFinishedWithError(error.name(), error.message());
         return;
     }
     context->setFinished(normalizedContactId);
@@ -734,7 +734,7 @@ void BaseProtocolAddressingInterface::Adaptee::normalizeVCardAddress(const QStri
     QString normalizedAddress;
     normalizedAddress = mInterface->normalizeVCardAddress(vCardField, vCardAddress, &error);
     if (normalizedAddress.isEmpty()) {
-        context->setFinishedWithError(error);
+        context->setFinishedWithError(error.name(), error.message());
         return;
     }
     context->setFinished(normalizedAddress);
@@ -747,7 +747,7 @@ void BaseProtocolAddressingInterface::Adaptee::normalizeContactURI(const QString
     QString normalizedUri;
     normalizedUri = mInterface->normalizeContactUri(uri, &error);
     if (normalizedUri.isEmpty()) {
-        context->setFinishedWithError(error);
+        context->setFinishedWithError(error.name(), error.message());
         return;
     }
     context->setFinished(normalizedUri);

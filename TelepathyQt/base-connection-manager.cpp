@@ -150,12 +150,12 @@ void BaseConnectionManager::Adaptee::requestConnection(const QString &protocolNa
     BaseConnectionPtr connection;
     connection = protocol->createConnection(parameters, &error);
     if (!connection) {
-        context->setFinishedWithError(error);
+        context->setFinishedWithError(error.name(), error.message());
         return;
     }
 
     if (!connection->registerObject(&error)) {
-        context->setFinishedWithError(error);
+        context->setFinishedWithError(error.name(), error.message());
         return;
     }
 
