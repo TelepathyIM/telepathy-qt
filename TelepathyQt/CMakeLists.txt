@@ -852,9 +852,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         DBusObject
         dbus-object.h
         DBusService
-        dbus-service.h
-        Global
-        global.h)
+        dbus-service.h)
 
     # Generated headers which will be installed and exported
     set(telepathy_qt_service_gen_HEADERS
@@ -871,6 +869,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         base-connection-internal.h
         base-protocol.h
         base-protocol-internal.h
+        dbus-object.h
         dbus-service.h)
 
     add_custom_target(all-generated-service-sources)
