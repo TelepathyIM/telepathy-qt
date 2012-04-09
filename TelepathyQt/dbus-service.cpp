@@ -167,7 +167,7 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
 
     if (!mPriv->dbusObject->dbusConnection().registerService(busName)) {
         error->set(TP_QT_ERROR_INVALID_ARGUMENT,
-                QString(QLatin1String("Name %s already in use by another process"))
+                QString(QLatin1String("Name %1 already in use by another process"))
                     .arg(busName));
         warning() << "Unable to register service" << busName <<
             "- name already registered by another process";
@@ -176,7 +176,7 @@ bool DBusService::registerObject(const QString &busName, const QString &objectPa
 
     if (!mPriv->dbusObject->dbusConnection().registerObject(objectPath, mPriv->dbusObject)) {
         error->set(TP_QT_ERROR_INVALID_ARGUMENT,
-                QString(QLatin1String("Object at path %s already registered"))
+                QString(QLatin1String("Object at path %1 already registered"))
                     .arg(objectPath));
         warning() << "Unable to register object" << objectPath <<
             "- path already registered";
