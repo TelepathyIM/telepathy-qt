@@ -76,8 +76,7 @@ class TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Adaptee : public QObject
     Q_PROPERTY(QStringList addressableURISchemes READ addressableURISchemes)
 
 public:
-    Adaptee(const QDBusConnection &dbusConnection, QObject *dbusObject,
-            BaseProtocolAddressingInterface *interface);
+    Adaptee(BaseProtocolAddressingInterface *interface);
     ~Adaptee();
 
     QStringList addressableVCardFields() const;
@@ -106,8 +105,7 @@ class TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Adaptee : public QObject
     Q_PROPERTY(uint maximumAvatarBytes READ maximumAvatarBytes)
 
 public:
-    Adaptee(const QDBusConnection &dbusConnection, QObject *dbusObject,
-            BaseProtocolAvatarsInterface *interface);
+    Adaptee(BaseProtocolAvatarsInterface *interface);
     ~Adaptee();
 
     QStringList supportedAvatarMIMETypes() const;
@@ -129,8 +127,7 @@ class TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Adaptee : public QObject
     Q_PROPERTY(Tp::SimpleStatusSpecMap statuses READ statuses)
 
 public:
-    Adaptee(const QDBusConnection &dbusConnection, QObject *dbusObject,
-            BaseProtocolPresenceInterface *interface);
+    Adaptee(BaseProtocolPresenceInterface *interface);
     ~Adaptee();
 
     SimpleStatusSpecMap statuses() const;

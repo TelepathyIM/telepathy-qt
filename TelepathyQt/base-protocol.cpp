@@ -704,12 +704,10 @@ AbstractProtocolInterface::~AbstractProtocolInterface()
 }
 
 // Proto.I.Addressing
-BaseProtocolAddressingInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
-        QObject *dbusObject, BaseProtocolAddressingInterface *interface)
+BaseProtocolAddressingInterface::Adaptee::Adaptee(BaseProtocolAddressingInterface *interface)
     : QObject(interface),
       mInterface(interface)
 {
-    (void) new Service::ProtocolInterfaceAddressingAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolAddressingInterface::Adaptee::~Adaptee()
@@ -755,8 +753,8 @@ void BaseProtocolAddressingInterface::Adaptee::normalizeContactURI(const QString
 
 struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
 {
-    Private()
-        : adaptee(0)
+    Private(BaseProtocolAddressingInterface *parent)
+        : adaptee(new BaseProtocolAddressingInterface::Adaptee(parent))
     {
     }
 
@@ -780,7 +778,7 @@ struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
  */
 BaseProtocolAddressingInterface::BaseProtocolAddressingInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
-      mPriv(new Private)
+      mPriv(new Private(this))
 {
 }
 
@@ -941,18 +939,15 @@ QString BaseProtocolAddressingInterface::normalizeContactUri(const QString &uri,
 
 void BaseProtocolAddressingInterface::createAdaptor()
 {
-    Q_ASSERT(!mPriv->adaptee);
-    mPriv->adaptee = new BaseProtocolAddressingInterface::Adaptee(
-            dbusObject()->dbusConnection(), dbusObject(), this);
+    (void) new Service::ProtocolInterfaceAddressingAdaptor(dbusObject()->dbusConnection(),
+                mPriv->adaptee, dbusObject());
 }
 
 // Proto.I.Avatars
-BaseProtocolAvatarsInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
-        QObject *dbusObject, BaseProtocolAvatarsInterface *interface)
+BaseProtocolAvatarsInterface::Adaptee::Adaptee(BaseProtocolAvatarsInterface *interface)
     : QObject(interface),
       mInterface(interface)
 {
-    (void) new Service::ProtocolInterfaceAvatarsAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolAvatarsInterface::Adaptee::~Adaptee()
@@ -1001,8 +996,8 @@ uint BaseProtocolAvatarsInterface::Adaptee::maximumAvatarBytes() const
 
 struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
 {
-    Private()
-        : adaptee(0)
+    Private(BaseProtocolAvatarsInterface *parent)
+        : adaptee(new BaseProtocolAvatarsInterface::Adaptee(parent))
     {
     }
 
@@ -1023,7 +1018,7 @@ struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
  */
 BaseProtocolAvatarsInterface::BaseProtocolAvatarsInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
-      mPriv(new Private)
+      mPriv(new Private(this))
 {
 }
 
@@ -1097,18 +1092,15 @@ void BaseProtocolAvatarsInterface::setAvatarDetails(const AvatarSpec &details)
 
 void BaseProtocolAvatarsInterface::createAdaptor()
 {
-    Q_ASSERT(!mPriv->adaptee);
-    mPriv->adaptee = new BaseProtocolAvatarsInterface::Adaptee(
-            dbusObject()->dbusConnection(), dbusObject(), this);
+    (void) new Service::ProtocolInterfaceAvatarsAdaptor(dbusObject()->dbusConnection(),
+                mPriv->adaptee, dbusObject());
 }
 
 // Proto.I.Presence
-BaseProtocolPresenceInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
-        QObject *dbusObject, BaseProtocolPresenceInterface *interface)
+BaseProtocolPresenceInterface::Adaptee::Adaptee(BaseProtocolPresenceInterface *interface)
     : QObject(interface),
       mInterface(interface)
 {
-    (void) new Service::ProtocolInterfacePresenceAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolPresenceInterface::Adaptee::~Adaptee()
@@ -1122,8 +1114,8 @@ SimpleStatusSpecMap BaseProtocolPresenceInterface::Adaptee::statuses() const
 
 struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
 {
-    Private()
-        : adaptee(0)
+    Private(BaseProtocolPresenceInterface *parent)
+        : adaptee(new BaseProtocolPresenceInterface::Adaptee(parent))
     {
     }
 
@@ -1144,7 +1136,7 @@ struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
  */
 BaseProtocolPresenceInterface::BaseProtocolPresenceInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
-      mPriv(new Private)
+      mPriv(new Private(this))
 {
 }
 
@@ -1212,9 +1204,8 @@ void BaseProtocolPresenceInterface::setStatuses(const PresenceSpecList &statuses
 
 void BaseProtocolPresenceInterface::createAdaptor()
 {
-    Q_ASSERT(!mPriv->adaptee);
-    mPriv->adaptee = new BaseProtocolPresenceInterface::Adaptee(
-            dbusObject()->dbusConnection(), dbusObject(), this);
+    (void) new Service::ProtocolInterfacePresenceAdaptor(dbusObject()->dbusConnection(),
+                mPriv->adaptee, dbusObject());
 }
 
 }
