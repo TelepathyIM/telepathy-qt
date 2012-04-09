@@ -46,11 +46,11 @@ public:
     ProtocolParameter(const ParamSpec &spec);
     ProtocolParameter(const QString &name,
                       const QDBusSignature &dbusSignature,
-                      ConnMgrParamFlag flags,
+                      ConnMgrParamFlags flags,
                       QVariant defaultValue = QVariant());
     ProtocolParameter(const QString &name,
                       const QString &dbusSignature,
-                      ConnMgrParamFlag flags,
+                      ConnMgrParamFlags flags,
                       QVariant defaultValue = QVariant());
     ProtocolParameter(const ProtocolParameter &other);
     ~ProtocolParameter();

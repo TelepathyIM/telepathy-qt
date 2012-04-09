@@ -39,7 +39,7 @@ struct TP_QT_NO_EXPORT ProtocolParameter::Private : public QSharedData
     }
 
     Private(const QString &name, const QString &dbusSignature,
-            ConnMgrParamFlag flags, const QVariant &defaultValue)
+            ConnMgrParamFlags flags, const QVariant &defaultValue)
         : type(variantTypeFromDBusSignature(dbusSignature))
     {
         spec.name = name;
@@ -95,7 +95,7 @@ ProtocolParameter::ProtocolParameter(const ParamSpec &spec)
 
 ProtocolParameter::ProtocolParameter(const QString &name,
                                      const QDBusSignature &dbusSignature,
-                                     ConnMgrParamFlag flags,
+                                     ConnMgrParamFlags flags,
                                      QVariant defaultValue)
     : mPriv(new Private(name, dbusSignature.signature(), flags, defaultValue))
 {
@@ -103,7 +103,7 @@ ProtocolParameter::ProtocolParameter(const QString &name,
 
 ProtocolParameter::ProtocolParameter(const QString &name,
                                      const QString &dbusSignature,
-                                     ConnMgrParamFlag flags,
+                                     ConnMgrParamFlags flags,
                                      QVariant defaultValue)
     : mPriv(new Private(name, dbusSignature, flags, defaultValue))
 {
