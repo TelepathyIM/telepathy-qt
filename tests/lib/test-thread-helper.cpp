@@ -1,5 +1,6 @@
 #include "tests/lib/test-thread-helper.h"
 #include <QEventLoop>
+#include <QTimer>
 
 TestThreadHelperBase::TestThreadHelperBase(ThreadObjectBase *threadObject)
 {
@@ -11,7 +12,7 @@ TestThreadHelperBase::TestThreadHelperBase(ThreadObjectBase *threadObject)
 
     QEventLoop loop;
     QObject::connect(mThread, SIGNAL(started()), &loop, SLOT(quit()));
-    QMetaObject::invokeMethod(mThread, "start");
+    QTimer::singleShot(0, mThread, SLOT(start()));
     loop.exec();
 }
 
