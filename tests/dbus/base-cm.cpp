@@ -1,4 +1,5 @@
 #include <tests/lib/test.h>
+#include <tests/lib/test-thread-helper.h>
 
 #define TP_QT_ENABLE_LOWLEVEL_API
 
@@ -30,6 +31,9 @@ private Q_SLOTS:
     void cleanup();
     void cleanupTestCase();
 
+private:
+    static void testNoProtocolsCreateCM(BaseConnectionManagerPtr &cm);
+    static void testProtocolsCreateCM(BaseConnectionManagerPtr &cm);
 };
 
 void TestBaseCM::initTestCase()
@@ -40,6 +44,16 @@ void TestBaseCM::initTestCase()
 void TestBaseCM::init()
 {
     initImpl();
+}
+
+void TestBaseCM::testNoProtocolsCreateCM(BaseConnectionManagerPtr &cm)
+{
+    cm = BaseConnectionManager::create(QLatin1String("testcm"));
+    Tp::DBusError err;
+    QVERIFY(cm->registerObject(&err));
+    QVERIFY(!err.isValid());
+
+    QCOMPARE(cm->protocols().size(), 0);
 }
 
 void TestBaseCM::testNoProtocols()
@@ -55,13 +69,8 @@ void TestBaseCM::testNoProtocols()
 
     qDebug() << "Creating CM";
 
-    BaseConnectionManagerPtr cm = BaseConnectionManager::create(
-            QLatin1String("testcm"));
-    Tp::DBusError err;
-    QVERIFY(cm->registerObject(&err));
-    QVERIFY(!err.isValid());
-
-    QCOMPARE(cm->protocols().size(), 0);
+    TestThreadHelper<BaseConnectionManagerPtr> helper;
+    TEST_THREAD_HELPER_EXECUTE(&helper, &testNoProtocolsCreateCM);
 
     qDebug() << "Introspecting new CM";
 
@@ -83,11 +92,9 @@ void TestBaseCM::testNoProtocols()
     QCOMPARE(mLastError, TP_QT_ERROR_NOT_IMPLEMENTED);
 }
 
-void TestBaseCM::testProtocols()
+void TestBaseCM::testProtocolsCreateCM(BaseConnectionManagerPtr &cm)
 {
-    qDebug() << "Creating CM";
-
-    BaseConnectionManagerPtr cm = BaseConnectionManager::create(QLatin1String("testcm"));
+    cm = BaseConnectionManager::create(QLatin1String("testcm"));
 
     BaseProtocolPtr protocol = BaseProtocol::create(QLatin1String("myprotocol"));
     QVERIFY(!protocol.isNull());
@@ -121,6 +128,14 @@ void TestBaseCM::testProtocols()
             props[TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols")]);
     QVERIFY(protocols.contains(QLatin1String("myprotocol")));
     QVERIFY(!protocols.contains(QLatin1String("otherprotocol")));
+}
+
+void TestBaseCM::testProtocols()
+{
+    qDebug() << "Creating CM";
+
+    TestThreadHelper<BaseConnectionManagerPtr> helper;
+    TEST_THREAD_HELPER_EXECUTE(&helper, &testProtocolsCreateCM);
 
     qDebug() << "Introspecting CM";
 
