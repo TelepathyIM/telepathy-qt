@@ -51,10 +51,10 @@ public:
                     QDBusConnection::sessionBus(), cmName, protocolName, parameters));
     }
     template<typename BaseConnectionSubclass>
-    static BaseConnectionPtr create(const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters)
+    static SharedPtr<BaseConnectionSubclass> create(const QString &cmName,
+            const QString &protocolName, const QVariantMap &parameters)
     {
-        return BaseConnectionPtr(new BaseConnectionSubclass(
+        return SharedPtr<BaseConnectionSubclass>(new BaseConnectionSubclass(
                     QDBusConnection::sessionBus(), cmName, protocolName, parameters));
     }
     static BaseConnectionPtr create(const QDBusConnection &dbusConnection,
@@ -65,11 +65,11 @@ public:
                     dbusConnection, cmName, protocolName, parameters));
     }
     template<typename BaseConnectionSubclass>
-    static BaseConnectionPtr create(const QDBusConnection &dbusConnection,
+    static SharedPtr<BaseConnectionSubclass> create(const QDBusConnection &dbusConnection,
             const QString &cmName, const QString &protocolName,
             const QVariantMap &parameters)
     {
-        return BaseConnectionPtr(new BaseConnectionSubclass(
+        return SharedPtr<BaseConnectionSubclass>(new BaseConnectionSubclass(
                     dbusConnection, cmName, protocolName, parameters));
     }
 

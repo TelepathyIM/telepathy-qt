@@ -50,9 +50,9 @@ public:
                     QDBusConnection::sessionBus(), name));
     }
     template<typename BaseConnectionManagerSubclass>
-    static BaseConnectionManagerPtr create(const QString &name)
+    static SharedPtr<BaseConnectionManagerSubclass> create(const QString &name)
     {
-        return BaseConnectionManagerPtr(new BaseConnectionManagerSubclass(
+        return SharedPtr<BaseConnectionManagerSubclass>(new BaseConnectionManagerSubclass(
                     QDBusConnection::sessionBus(), name));
     }
     static BaseConnectionManagerPtr create(const QDBusConnection &dbusConnection,
@@ -61,10 +61,11 @@ public:
         return BaseConnectionManagerPtr(new BaseConnectionManager(dbusConnection, name));
     }
     template<typename BaseConnectionManagerSubclass>
-    static BaseConnectionManagerPtr create(const QDBusConnection &dbusConnection,
+    static SharedPtr<BaseConnectionManagerSubclass> create(const QDBusConnection &dbusConnection,
             const QString &name)
     {
-        return BaseConnectionManagerPtr(new BaseConnectionManagerSubclass(dbusConnection, name));
+        return SharedPtr<BaseConnectionManagerSubclass>(new BaseConnectionManagerSubclass(
+                    dbusConnection, name));
     }
 
     virtual ~BaseConnectionManager();
