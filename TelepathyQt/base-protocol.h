@@ -130,6 +130,7 @@ private:
 
 class TP_QT_EXPORT AbstractProtocolInterface : public AbstractDBusServiceInterface
 {
+    Q_OBJECT
     Q_DISABLE_COPY(AbstractProtocolInterface)
 
 public:
@@ -146,6 +147,7 @@ private:
 
 class TP_QT_EXPORT BaseProtocolAddressingInterface : public AbstractProtocolInterface
 {
+    Q_OBJECT
     Q_DISABLE_COPY(BaseProtocolAddressingInterface)
 
 public:
@@ -192,6 +194,7 @@ private:
 
 class TP_QT_EXPORT BaseProtocolAvatarsInterface : public AbstractProtocolInterface
 {
+    Q_OBJECT
     Q_DISABLE_COPY(BaseProtocolAvatarsInterface)
 
 public:
@@ -227,6 +230,7 @@ private:
 
 class TP_QT_EXPORT BaseProtocolPresenceInterface : public AbstractProtocolInterface
 {
+    Q_OBJECT
     Q_DISABLE_COPY(BaseProtocolPresenceInterface)
 
 public:
