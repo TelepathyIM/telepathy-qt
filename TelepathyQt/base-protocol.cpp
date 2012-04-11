@@ -622,11 +622,26 @@ QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *
  * object has been registered on the bus with registerObject().
  *
  * \return A list containing all the Protocol interface implementation objects.
- * \sa plugInterface()
+ * \sa plugInterface(), interface()
  */
 QList<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
 {
     return mPriv->interfaces.values();
+}
+
+/**
+ * Return a pointer to the interface with the given name.
+ *
+ * \param interfaceName The D-Bus name of the interface,
+ * ex. TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING.
+ * \return A pointer to the AbstractProtocolInterface object that implements
+ * the D-Bus interface with the given name, or a null pointer if such an interface
+ * has not been plugged into this object.
+ * \sa plugInterface(), interfaces()
+ */
+AbstractProtocolInterfacePtr BaseProtocol::interface(const QString &interfaceName) const
+{
+    return mPriv->interfaces.value(interfaceName);
 }
 
 /**
@@ -638,7 +653,7 @@ QList<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
  * \param interface An AbstractProtocolInterface instance that implements
  * the interface that is to be plugged.
  * \return \c true on success or \c false otherwise
- * \sa interfaces()
+ * \sa interfaces(), interface()
  */
 bool BaseProtocol::plugInterface(const AbstractProtocolInterfacePtr &interface)
 {

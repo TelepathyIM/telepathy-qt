@@ -110,6 +110,7 @@ public:
     QString normalizeContact(const QString &contactId, DBusError *error);
 
     QList<AbstractProtocolInterfacePtr> interfaces() const;
+    AbstractProtocolInterfacePtr interface(const QString & interfaceName) const;
     bool plugInterface(const AbstractProtocolInterfacePtr &interface);
 
 protected:
