@@ -1189,8 +1189,10 @@ BaseProtocolPresenceInterface::~BaseProtocolPresenceInterface()
  */
 QVariantMap BaseProtocolPresenceInterface::immutableProperties() const
 {
-    // no immutable property
-    return QVariantMap();
+    QVariantMap map;
+    map.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"),
+            QVariant::fromValue(mPriv->adaptee->statuses()));
+    return map;
 }
 
 /**
