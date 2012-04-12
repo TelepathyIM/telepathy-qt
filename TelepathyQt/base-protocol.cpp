@@ -222,14 +222,22 @@ QVariantMap BaseProtocol::immutableProperties() const
     foreach (const AbstractProtocolInterfacePtr &iface, mPriv->interfaces) {
         ret.unite(iface->immutableProperties());
     }
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces"), qVariantFromValue(mPriv->adaptee->interfaces()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters"), qVariantFromValue(mPriv->adaptee->parameters()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".ConnectionInterfaces"), qVariantFromValue(mPriv->adaptee->connectionInterfaces()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"), qVariantFromValue(mPriv->adaptee->requestableChannelClasses()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField"), qVariantFromValue(mPriv->adaptee->vCardField()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName"), qVariantFromValue(mPriv->adaptee->englishName()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Icon"), qVariantFromValue(mPriv->adaptee->icon()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".AuthenticationTypes"), qVariantFromValue(mPriv->adaptee->authenticationTypes()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces"),
+            QVariant::fromValue(mPriv->adaptee->interfaces()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters"),
+            QVariant::fromValue(mPriv->adaptee->parameters()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".ConnectionInterfaces"),
+            QVariant::fromValue(mPriv->adaptee->connectionInterfaces()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"),
+            QVariant::fromValue(mPriv->adaptee->requestableChannelClasses()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField"),
+            QVariant::fromValue(mPriv->adaptee->vCardField()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName"),
+            QVariant::fromValue(mPriv->adaptee->englishName()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Icon"),
+            QVariant::fromValue(mPriv->adaptee->icon()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".AuthenticationTypes"),
+            QVariant::fromValue(mPriv->adaptee->authenticationTypes()));
     return ret;
 }
 
@@ -1056,14 +1064,22 @@ BaseProtocolAvatarsInterface::~BaseProtocolAvatarsInterface()
 QVariantMap BaseProtocolAvatarsInterface::immutableProperties() const
 {
     QVariantMap ret;
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes"), mPriv->adaptee->supportedAvatarMIMETypes());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight"), mPriv->adaptee->minimumAvatarHeight());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth"), mPriv->adaptee->minimumAvatarWidth());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight"), mPriv->adaptee->recommendedAvatarHeight());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth"), mPriv->adaptee->recommendedAvatarWidth());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight"), mPriv->adaptee->maximumAvatarHeight());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth"), mPriv->adaptee->maximumAvatarWidth());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes"), mPriv->adaptee->maximumAvatarBytes());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes"),
+            QVariant::fromValue(mPriv->adaptee->supportedAvatarMIMETypes()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight"),
+            QVariant::fromValue(mPriv->adaptee->minimumAvatarHeight()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth"),
+            QVariant::fromValue(mPriv->adaptee->minimumAvatarWidth()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight"),
+            QVariant::fromValue(mPriv->adaptee->recommendedAvatarHeight()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth"),
+            QVariant::fromValue(mPriv->adaptee->recommendedAvatarWidth()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight"),
+            QVariant::fromValue(mPriv->adaptee->maximumAvatarHeight()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth"),
+            QVariant::fromValue(mPriv->adaptee->maximumAvatarWidth()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes"),
+            QVariant::fromValue(mPriv->adaptee->maximumAvatarBytes()));
     return ret;
 }
 

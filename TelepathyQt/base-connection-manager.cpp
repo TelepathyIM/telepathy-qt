@@ -217,7 +217,8 @@ QString BaseConnectionManager::name() const
 QVariantMap BaseConnectionManager::immutableProperties() const
 {
     QVariantMap ret;
-    ret.insert(TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols"), qVariantFromValue(mPriv->adaptee->protocols()));
+    ret.insert(TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols"),
+            QVariant::fromValue(mPriv->adaptee->protocols()));
     return ret;
 }
 
