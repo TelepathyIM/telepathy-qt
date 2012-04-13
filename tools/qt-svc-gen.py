@@ -33,17 +33,16 @@ def to_lower_camel_case(s):
 
     i = 0
     for c in s:
-        if not c.isupper():
+        if c == '_':
             break
         i += 1
 
     ret = s
-    if i == 1:
-        ret = s[0:i].lower() + s[i:]
-    elif i == len(s):
+    if i == len(s):
         return s.lower()
     else:
-        ret = s[0:i-1].lower() + s[i-1:]
+        ret = s[0:i].lower() + s[i:]
+    ret = ret.replace('_', '')
     return ret
 
 class Generator(object):
@@ -437,7 +436,7 @@ Q_SIGNALS: // SIGNALS
 
     def do_prop(self, ifacename, prop):
         name = prop.getAttribute('name')
-        adaptee_name = to_lower_camel_case(name)
+        adaptee_name = to_lower_camel_case(prop.getAttribute('tp:name-for-bindings'))
         access = prop.getAttribute('access')
         gettername = name
         settername = None
@@ -511,7 +510,7 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
 
     def do_method(self, ifacename, method):
         name = method.getAttribute('name')
-        adaptee_name = to_lower_camel_case(name)
+        adaptee_name = to_lower_camel_case(method.getAttribute('tp:name-for-bindings'))
         args = get_by_path(method, 'arg')
         argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists,
                 self.externals, self.typesnamespace, self.refs, '     *     ')
@@ -662,7 +661,7 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
 
     def do_signal(self, signal):
         name = signal.getAttribute('name')
-        adaptee_name = to_lower_camel_case(name)
+        adaptee_name = to_lower_camel_case(signal.getAttribute('tp:name-for-bindings'))
         argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal,
             'arg'), self.custom_lists, self.externals, self.typesnamespace, self.refs, '     *     ')
         params = ', '.join(['%s %s' % (binding.inarg, param_name) for binding, param_name in zip(argbindings, argnames)])
@@ -702,7 +701,7 @@ void %(ifacename)s::%(settername)s(const %(type)s &newValue)
     def do_signals_connect(self, signals):
         for signal in signals:
             name = signal.getAttribute('name')
-            adaptee_name = to_lower_camel_case(name)
+            adaptee_name = to_lower_camel_case(signal.getAttribute('tp:name-for-bindings'))
             _, _, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'),
                     self.custom_lists, self.externals, self.typesnamespace, self.refs, '     *     ')
 

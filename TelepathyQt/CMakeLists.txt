@@ -877,22 +877,24 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     add_custom_target(all-generated-service-sources)
 
     set(SPECS
-        channel
-        connection
-        connection-manager)
+        svc-channel
+        svc-connection
+        svc-connection-manager)
     foreach(spec ${SPECS})
+        tpqt_xincludator(${spec}-spec-xincludator ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
+                         DEPENDS stable-typesgen)
         set(NEW_FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h
-            ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
-            ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.moc.hpp)
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.h
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.cpp
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/${spec}.moc.hpp)
         list(APPEND telepathy_qt_service_SRCS ${NEW_FILES})
-        list(APPEND telepathy_qt_service_generated_specs_mocs "moc-svc-${spec}.moc.hpp")
+        list(APPEND telepathy_qt_service_generated_specs_mocs "moc-${spec}.moc.hpp")
         set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
     endforeach(spec ${SPECS})
 
-    tpqt_service_generator(channel servicechannel Channel Tp::Service DEPENDS channel-spec-xincludator)
-    tpqt_service_generator(connection serviceconn Connection Tp::Service DEPENDS connection-spec-xincludator)
-    tpqt_service_generator(connection-manager servicecm ConnectionManager Tp::Service DEPENDS connection-manager-spec-xincludator)
+    tpqt_service_generator(svc-channel servicechannel Channel Tp::Service DEPENDS svc-channel-spec-xincludator)
+    tpqt_service_generator(svc-connection serviceconn Connection Tp::Service DEPENDS svc-connection-spec-xincludator)
+    tpqt_service_generator(svc-connection-manager servicecm ConnectionManager Tp::Service DEPENDS svc-connection-manager-spec-xincludator)
 
     if (TARGET doxygen-doc)
         add_dependencies(doxygen-doc all-generated-service-sources)

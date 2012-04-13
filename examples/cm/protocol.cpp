@@ -104,7 +104,7 @@ QString Protocol::normalizeContact(const QString &contactId, Tp::DBusError *erro
     return QString();
 }
 
-QString Protocol::normalizeVCardAddress(const QString &vCardField, const QString vCardAddress,
+QString Protocol::normalizeVCardAddress(const QString &vcardField, const QString vcardAddress,
         Tp::DBusError *error)
 {
     error->set(QLatin1String("NormalizeVCardAddress.Error.Test"), QLatin1String(""));

@@ -462,11 +462,11 @@ ParamSpecList ManagerFile::parameters(const QString &protocol) const
 }
 
 /**
- * Return the name of the most common vCard field used for the given \a protocol's
+ * Return the name of the most common vcard field used for the given \a protocol's
  * contact identifiers, normalized to lower case.
  *
  * \param protocol Name of the protocol to look for.
- * \return The most common vCard field used for the given protocol's contact
+ * \return The most common vcard field used for the given protocol's contact
  *         identifiers, or an empty string if there is no such field or the
  *         protocol is not defined.
  */

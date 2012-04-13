@@ -1084,14 +1084,14 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
 }
 
 /**
- * Request contacts and enable their \a features using a given field in their vCards.
+ * Request contacts and enable their \a features using a given field in their vcards.
  *
  * This method requires Connection::FeatureCore to be ready.
  *
- * \param vcardField The vCard field of the addresses we are requesting.
+ * \param vcardField The vcard field of the addresses we are requesting.
  *                   Supported fields can be found in ProtocolInfo::addressableVCardFields().
  * \param vcardAddresses The addresses to get contacts for. The address types must match
- *                       the given vCard field.
+ *                       the given vcard field.
  * \param features The Contact features to enable.
  * \return A PendingContacts, which will emit PendingContacts::finished
  *         when the contacts are retrieved or an error occurred.

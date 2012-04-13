@@ -396,11 +396,11 @@ QString Contact::alias() const
 }
 
 /**
- * Return the various vCard addresses that identify this contact.
+ * Return the various vcard addresses that identify this contact.
  *
  * This method requires Contact::FeatureAddresses to be ready.
  *
- * \return The vCard addresses identifying this contact.
+ * \return The vcard addresses identifying this contact.
  * \sa ContactManager::contactsForVCardAddresses(), uris()
  */
 QMap<QString, QString> Contact::vcardAddresses() const

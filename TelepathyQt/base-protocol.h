@@ -87,8 +87,8 @@ public:
     RequestableChannelClassSpecList requestableChannelClasses() const;
     void setRequestableChannelClasses(const RequestableChannelClassSpecList &rccSpecs);
 
-    QString vCardField() const;
-    void setVCardField(const QString &vCardField);
+    QString vcardField() const;
+    void setVCardField(const QString &vcardField);
 
     QString englishName() const;
     void setEnglishName(const QString &englishName);
@@ -176,7 +176,7 @@ public:
 
     typedef Callback3<QString, const QString &, const QString &, DBusError*> NormalizeVCardAddressCallback;
     void setNormalizeVCardAddressCallback(const NormalizeVCardAddressCallback &cb);
-    QString normalizeVCardAddress(const QString &vCardField, const QString &vCardAddress, DBusError *error);
+    QString normalizeVCardAddress(const QString &vcardField, const QString &vcardAddress, DBusError *error);
 
     typedef Callback2<QString, const QString &, DBusError*> NormalizeContactUriCallback;
     void setNormalizeContactUriCallback(const NormalizeContactUriCallback &cb);

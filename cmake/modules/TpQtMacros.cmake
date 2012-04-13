@@ -274,6 +274,7 @@ endfunction(tpqt_future_client_generator spec namespace)
 
 function(tpqt_service_generator spec group pretty_include namespace)
     tpqt_extract_depends(service_generator_args service_generator_depends ${ARGN})
+    string(REPLACE "svc-" "" spec ${spec})
     set(ARGS
         ${CMAKE_SOURCE_DIR}/tools/qt-svc-gen.py
             --group=${group}
@@ -284,7 +285,7 @@ function(tpqt_service_generator spec group pretty_include namespace)
             --realinclude=TelepathyQt/_gen/svc-${spec}.h
             --mocinclude=TelepathyQt/_gen/svc-${spec}.moc.hpp
             --specxml=${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
-            --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
+            --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-svc-${spec}.xml
             --visibility=TP_QT_EXPORT
             ${service_generator_args})
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-${spec}.cpp
