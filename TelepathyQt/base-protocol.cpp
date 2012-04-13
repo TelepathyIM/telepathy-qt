@@ -222,14 +222,22 @@ QVariantMap BaseProtocol::immutableProperties() const
     foreach (const AbstractProtocolInterfacePtr &iface, mPriv->interfaces) {
         ret.unite(iface->immutableProperties());
     }
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces"), qVariantFromValue(mPriv->adaptee->interfaces()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters"), qVariantFromValue(mPriv->adaptee->parameters()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".ConnectionInterfaces"), qVariantFromValue(mPriv->adaptee->connectionInterfaces()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"), qVariantFromValue(mPriv->adaptee->requestableChannelClasses()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField"), qVariantFromValue(mPriv->adaptee->vCardField()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName"), qVariantFromValue(mPriv->adaptee->englishName()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Icon"), qVariantFromValue(mPriv->adaptee->icon()));
-    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".AuthenticationTypes"), qVariantFromValue(mPriv->adaptee->authenticationTypes()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces"),
+            QVariant::fromValue(mPriv->adaptee->interfaces()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters"),
+            QVariant::fromValue(mPriv->adaptee->parameters()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".ConnectionInterfaces"),
+            QVariant::fromValue(mPriv->adaptee->connectionInterfaces()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"),
+            QVariant::fromValue(mPriv->adaptee->requestableChannelClasses()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField"),
+            QVariant::fromValue(mPriv->adaptee->vCardField()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName"),
+            QVariant::fromValue(mPriv->adaptee->englishName()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Icon"),
+            QVariant::fromValue(mPriv->adaptee->icon()));
+    ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".AuthenticationTypes"),
+            QVariant::fromValue(mPriv->adaptee->authenticationTypes()));
     return ret;
 }
 
@@ -622,11 +630,26 @@ QString BaseProtocol::normalizeContact(const QString &contactId, Tp::DBusError *
  * object has been registered on the bus with registerObject().
  *
  * \return A list containing all the Protocol interface implementation objects.
- * \sa plugInterface()
+ * \sa plugInterface(), interface()
  */
 QList<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
 {
     return mPriv->interfaces.values();
+}
+
+/**
+ * Return a pointer to the interface with the given name.
+ *
+ * \param interfaceName The D-Bus name of the interface,
+ * ex. TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING.
+ * \return A pointer to the AbstractProtocolInterface object that implements
+ * the D-Bus interface with the given name, or a null pointer if such an interface
+ * has not been plugged into this object.
+ * \sa plugInterface(), interfaces()
+ */
+AbstractProtocolInterfacePtr BaseProtocol::interface(const QString &interfaceName) const
+{
+    return mPriv->interfaces.value(interfaceName);
 }
 
 /**
@@ -638,7 +661,7 @@ QList<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
  * \param interface An AbstractProtocolInterface instance that implements
  * the interface that is to be plugged.
  * \return \c true on success or \c false otherwise
- * \sa interfaces()
+ * \sa interfaces(), interface()
  */
 bool BaseProtocol::plugInterface(const AbstractProtocolInterfacePtr &interface)
 {
@@ -704,12 +727,10 @@ AbstractProtocolInterface::~AbstractProtocolInterface()
 }
 
 // Proto.I.Addressing
-BaseProtocolAddressingInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
-        QObject *dbusObject, BaseProtocolAddressingInterface *interface)
+BaseProtocolAddressingInterface::Adaptee::Adaptee(BaseProtocolAddressingInterface *interface)
     : QObject(interface),
       mInterface(interface)
 {
-    (void) new Service::ProtocolInterfaceAddressingAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolAddressingInterface::Adaptee::~Adaptee()
@@ -755,8 +776,8 @@ void BaseProtocolAddressingInterface::Adaptee::normalizeContactURI(const QString
 
 struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
 {
-    Private()
-        : adaptee(0)
+    Private(BaseProtocolAddressingInterface *parent)
+        : adaptee(new BaseProtocolAddressingInterface::Adaptee(parent))
     {
     }
 
@@ -780,7 +801,7 @@ struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
  */
 BaseProtocolAddressingInterface::BaseProtocolAddressingInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
-      mPriv(new Private)
+      mPriv(new Private(this))
 {
 }
 
@@ -941,18 +962,15 @@ QString BaseProtocolAddressingInterface::normalizeContactUri(const QString &uri,
 
 void BaseProtocolAddressingInterface::createAdaptor()
 {
-    Q_ASSERT(!mPriv->adaptee);
-    mPriv->adaptee = new BaseProtocolAddressingInterface::Adaptee(
-            dbusObject()->dbusConnection(), dbusObject(), this);
+    (void) new Service::ProtocolInterfaceAddressingAdaptor(dbusObject()->dbusConnection(),
+                mPriv->adaptee, dbusObject());
 }
 
 // Proto.I.Avatars
-BaseProtocolAvatarsInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
-        QObject *dbusObject, BaseProtocolAvatarsInterface *interface)
+BaseProtocolAvatarsInterface::Adaptee::Adaptee(BaseProtocolAvatarsInterface *interface)
     : QObject(interface),
       mInterface(interface)
 {
-    (void) new Service::ProtocolInterfaceAvatarsAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolAvatarsInterface::Adaptee::~Adaptee()
@@ -1001,8 +1019,8 @@ uint BaseProtocolAvatarsInterface::Adaptee::maximumAvatarBytes() const
 
 struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
 {
-    Private()
-        : adaptee(0)
+    Private(BaseProtocolAvatarsInterface *parent)
+        : adaptee(new BaseProtocolAvatarsInterface::Adaptee(parent))
     {
     }
 
@@ -1023,7 +1041,7 @@ struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
  */
 BaseProtocolAvatarsInterface::BaseProtocolAvatarsInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
-      mPriv(new Private)
+      mPriv(new Private(this))
 {
 }
 
@@ -1046,14 +1064,22 @@ BaseProtocolAvatarsInterface::~BaseProtocolAvatarsInterface()
 QVariantMap BaseProtocolAvatarsInterface::immutableProperties() const
 {
     QVariantMap ret;
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes"), mPriv->adaptee->supportedAvatarMIMETypes());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight"), mPriv->adaptee->minimumAvatarHeight());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth"), mPriv->adaptee->minimumAvatarWidth());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight"), mPriv->adaptee->recommendedAvatarHeight());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth"), mPriv->adaptee->recommendedAvatarWidth());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight"), mPriv->adaptee->maximumAvatarHeight());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth"), mPriv->adaptee->maximumAvatarWidth());
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes"), mPriv->adaptee->maximumAvatarBytes());
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes"),
+            QVariant::fromValue(mPriv->adaptee->supportedAvatarMIMETypes()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight"),
+            QVariant::fromValue(mPriv->adaptee->minimumAvatarHeight()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth"),
+            QVariant::fromValue(mPriv->adaptee->minimumAvatarWidth()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight"),
+            QVariant::fromValue(mPriv->adaptee->recommendedAvatarHeight()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth"),
+            QVariant::fromValue(mPriv->adaptee->recommendedAvatarWidth()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight"),
+            QVariant::fromValue(mPriv->adaptee->maximumAvatarHeight()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth"),
+            QVariant::fromValue(mPriv->adaptee->maximumAvatarWidth()));
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes"),
+            QVariant::fromValue(mPriv->adaptee->maximumAvatarBytes()));
     return ret;
 }
 
@@ -1097,18 +1123,15 @@ void BaseProtocolAvatarsInterface::setAvatarDetails(const AvatarSpec &details)
 
 void BaseProtocolAvatarsInterface::createAdaptor()
 {
-    Q_ASSERT(!mPriv->adaptee);
-    mPriv->adaptee = new BaseProtocolAvatarsInterface::Adaptee(
-            dbusObject()->dbusConnection(), dbusObject(), this);
+    (void) new Service::ProtocolInterfaceAvatarsAdaptor(dbusObject()->dbusConnection(),
+                mPriv->adaptee, dbusObject());
 }
 
 // Proto.I.Presence
-BaseProtocolPresenceInterface::Adaptee::Adaptee(const QDBusConnection &dbusConnection,
-        QObject *dbusObject, BaseProtocolPresenceInterface *interface)
+BaseProtocolPresenceInterface::Adaptee::Adaptee(BaseProtocolPresenceInterface *interface)
     : QObject(interface),
       mInterface(interface)
 {
-    (void) new Service::ProtocolInterfacePresenceAdaptor(dbusConnection, this, dbusObject);
 }
 
 BaseProtocolPresenceInterface::Adaptee::~Adaptee()
@@ -1122,8 +1145,8 @@ SimpleStatusSpecMap BaseProtocolPresenceInterface::Adaptee::statuses() const
 
 struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
 {
-    Private()
-        : adaptee(0)
+    Private(BaseProtocolPresenceInterface *parent)
+        : adaptee(new BaseProtocolPresenceInterface::Adaptee(parent))
     {
     }
 
@@ -1144,7 +1167,7 @@ struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
  */
 BaseProtocolPresenceInterface::BaseProtocolPresenceInterface()
     : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
-      mPriv(new Private)
+      mPriv(new Private(this))
 {
 }
 
@@ -1166,8 +1189,10 @@ BaseProtocolPresenceInterface::~BaseProtocolPresenceInterface()
  */
 QVariantMap BaseProtocolPresenceInterface::immutableProperties() const
 {
-    // no immutable property
-    return QVariantMap();
+    QVariantMap map;
+    map.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"),
+            QVariant::fromValue(mPriv->adaptee->statuses()));
+    return map;
 }
 
 /**
@@ -1212,9 +1237,8 @@ void BaseProtocolPresenceInterface::setStatuses(const PresenceSpecList &statuses
 
 void BaseProtocolPresenceInterface::createAdaptor()
 {
-    Q_ASSERT(!mPriv->adaptee);
-    mPriv->adaptee = new BaseProtocolPresenceInterface::Adaptee(
-            dbusObject()->dbusConnection(), dbusObject(), this);
+    (void) new Service::ProtocolInterfacePresenceAdaptor(dbusObject()->dbusConnection(),
+                mPriv->adaptee, dbusObject());
 }
 
 }

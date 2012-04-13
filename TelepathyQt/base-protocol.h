@@ -55,18 +55,20 @@ public:
         return BaseProtocolPtr(new BaseProtocol(QDBusConnection::sessionBus(), name));
     }
     template<typename BaseProtocolSubclass>
-    static BaseProtocolPtr create(const QString &name)
+    static SharedPtr<BaseProtocolSubclass> create(const QString &name)
     {
-        return BaseProtocolPtr(new BaseProtocolSubclass(QDBusConnection::sessionBus(), name));
+        return SharedPtr<BaseProtocolSubclass>(new BaseProtocolSubclass(
+                QDBusConnection::sessionBus(), name));
     }
     static BaseProtocolPtr create(const QDBusConnection &dbusConnection, const QString &name)
     {
         return BaseProtocolPtr(new BaseProtocol(dbusConnection, name));
     }
     template<typename BaseProtocolSubclass>
-    static BaseProtocolPtr create(const QDBusConnection &dbusConnection, const QString &name)
+    static SharedPtr<BaseProtocolSubclass> create(const QDBusConnection &dbusConnection,
+            const QString &name)
     {
-        return BaseProtocolPtr(new BaseProtocolSubclass(dbusConnection, name));
+        return SharedPtr<BaseProtocolSubclass>(new BaseProtocolSubclass(dbusConnection, name));
     }
 
     virtual ~BaseProtocol();
@@ -110,6 +112,7 @@ public:
     QString normalizeContact(const QString &contactId, DBusError *error);
 
     QList<AbstractProtocolInterfacePtr> interfaces() const;
+    AbstractProtocolInterfacePtr interface(const QString & interfaceName) const;
     bool plugInterface(const AbstractProtocolInterfacePtr &interface);
 
 protected:
@@ -129,6 +132,7 @@ private:
 
 class TP_QT_EXPORT AbstractProtocolInterface : public AbstractDBusServiceInterface
 {
+    Q_OBJECT
     Q_DISABLE_COPY(AbstractProtocolInterface)
 
 public:
@@ -145,6 +149,7 @@ private:
 
 class TP_QT_EXPORT BaseProtocolAddressingInterface : public AbstractProtocolInterface
 {
+    Q_OBJECT
     Q_DISABLE_COPY(BaseProtocolAddressingInterface)
 
 public:
@@ -153,9 +158,10 @@ public:
         return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterface());
     }
     template<typename BaseProtocolAddressingInterfaceSubclass>
-    static BaseProtocolAddressingInterfacePtr create()
+    static SharedPtr<BaseProtocolAddressingInterfaceSubclass> create()
     {
-        return BaseProtocolAddressingInterfacePtr(new BaseProtocolAddressingInterfaceSubclass());
+        return SharedPtr<BaseProtocolAddressingInterfaceSubclass>(
+                new BaseProtocolAddressingInterfaceSubclass());
     }
 
     virtual ~BaseProtocolAddressingInterface();
@@ -191,6 +197,7 @@ private:
 
 class TP_QT_EXPORT BaseProtocolAvatarsInterface : public AbstractProtocolInterface
 {
+    Q_OBJECT
     Q_DISABLE_COPY(BaseProtocolAvatarsInterface)
 
 public:
@@ -199,9 +206,10 @@ public:
         return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterface());
     }
     template<typename BaseProtocolAvatarsInterfaceSubclass>
-    static BaseProtocolAvatarsInterfacePtr create()
+    static SharedPtr<BaseProtocolAvatarsInterfaceSubclass> create()
     {
-        return BaseProtocolAvatarsInterfacePtr(new BaseProtocolAvatarsInterfaceSubclass());
+        return SharedPtr<BaseProtocolAvatarsInterfaceSubclass>(
+                new BaseProtocolAvatarsInterfaceSubclass());
     }
 
     virtual ~BaseProtocolAvatarsInterface();
@@ -226,6 +234,7 @@ private:
 
 class TP_QT_EXPORT BaseProtocolPresenceInterface : public AbstractProtocolInterface
 {
+    Q_OBJECT
     Q_DISABLE_COPY(BaseProtocolPresenceInterface)
 
 public:
@@ -234,9 +243,10 @@ public:
         return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterface());
     }
     template<typename BaseProtocolPresenceInterfaceSubclass>
-    static BaseProtocolPresenceInterfacePtr create()
+    static SharedPtr<BaseProtocolPresenceInterfaceSubclass> create()
     {
-        return BaseProtocolPresenceInterfacePtr(new BaseProtocolPresenceInterfaceSubclass());
+        return SharedPtr<BaseProtocolPresenceInterfaceSubclass>(
+                new BaseProtocolPresenceInterfaceSubclass());
     }
 
     virtual ~BaseProtocolPresenceInterface();
