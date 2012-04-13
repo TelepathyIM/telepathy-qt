@@ -118,7 +118,11 @@ void TestBaseProtocolCM::createCM(TestBaseProtocolCMPtr &cm)
     QVERIFY(protocol->plugInterface(avatarsIface));
 
     BaseProtocolPresenceInterfacePtr presenceIface = BaseProtocolPresenceInterface::create();
-    //TODO add statuses on presenceIface
+    presenceIface->setStatuses(PresenceSpecList()
+            << PresenceSpec::available()
+            << PresenceSpec::away()
+            << PresenceSpec::busy()
+            << PresenceSpec::offline());
     QVERIFY(protocol->plugInterface(presenceIface));
 
     QVERIFY(cm->addProtocol(protocol));
@@ -620,9 +624,24 @@ void TestBaseProtocol::presenceIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
 
     //presence interface
     PresenceSpecList statuses = iface->statuses();
-    QVERIFY(statuses.isEmpty());
+    QCOMPARE(statuses.size(), 4);
+    QVERIFY(statuses.contains(PresenceSpec::available()));
+    QVERIFY(statuses.contains(PresenceSpec::away()));
+    QVERIFY(statuses.contains(PresenceSpec::busy()));
+    QVERIFY(statuses.contains(PresenceSpec::offline()));
+    QVERIFY(!statuses.contains(PresenceSpec::xa()));
 
-    //TODO properly test statuses
+    //immutable properties
+    QVariantMap props = protocol->immutableProperties();
+    QVERIFY(props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses")));
+    statuses = PresenceSpecList(qvariant_cast<SimpleStatusSpecMap>(props.value(
+            TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"))));
+    QCOMPARE(statuses.size(), 4);
+    QVERIFY(statuses.contains(PresenceSpec::available()));
+    QVERIFY(statuses.contains(PresenceSpec::away()));
+    QVERIFY(statuses.contains(PresenceSpec::busy()));
+    QVERIFY(statuses.contains(PresenceSpec::offline()));
+    QVERIFY(!statuses.contains(PresenceSpec::xa()));
 }
 
 void TestBaseProtocol::presenceIfaceSvcSide()
@@ -646,9 +665,12 @@ void TestBaseProtocol::presenceIfaceClientSide()
 
     //presence interface
     PresenceSpecList statuses = protocol.allowedPresenceStatuses();
-    QVERIFY(statuses.isEmpty());
-
-    //TODO properly test statuses
+    QCOMPARE(statuses.size(), 4);
+    QVERIFY(statuses.contains(PresenceSpec::available()));
+    QVERIFY(statuses.contains(PresenceSpec::away()));
+    QVERIFY(statuses.contains(PresenceSpec::busy()));
+    QVERIFY(statuses.contains(PresenceSpec::offline()));
+    QVERIFY(!statuses.contains(PresenceSpec::xa()));
 }
 
 void TestBaseProtocol::cleanup()
