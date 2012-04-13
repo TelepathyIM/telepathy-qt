@@ -33,8 +33,8 @@ private:
     static QString identifyAccountCb(const QVariantMap &parameters, Tp::DBusError *error);
     static QString normalizeContactCb(const QString &contactId, Tp::DBusError *error);
 
-    static QString normalizeVCardAddressCb(const QString &vCardField,
-            const QString &vCardAddress, Tp::DBusError *error);
+    static QString normalizeVCardAddressCb(const QString &vcardField,
+            const QString &vcardAddress, Tp::DBusError *error);
     static QString normalizeContactUriCb(const QString &uri, Tp::DBusError *error);
 };
 
@@ -165,11 +165,11 @@ QString TestBaseProtocolCM::normalizeContactCb(const QString &contactId, Tp::DBu
     return contactId.toLower();
 }
 
-QString TestBaseProtocolCM::normalizeVCardAddressCb(const QString &vCardField,
-        const QString &vCardAddress, Tp::DBusError *error)
+QString TestBaseProtocolCM::normalizeVCardAddressCb(const QString &vcardField,
+        const QString &vcardAddress, Tp::DBusError *error)
 {
-    if (vCardField == QLatin1String("x-jabber")) {
-        return vCardAddress.toLower() + QLatin1String("@wonderland");
+    if (vcardField == QLatin1String("x-jabber")) {
+        return vcardAddress.toLower() + QLatin1String("@wonderland");
     } else {
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Invalid VCard field"));
         return QString();
@@ -214,7 +214,7 @@ void TestBaseProtocol::protocolObjectSvcSideCb(TestBaseProtocolCMPtr &cm)
 
     //basic properties
     QCOMPARE(protocol->name(), QLatin1String("example"));
-    QCOMPARE(protocol->vCardField(), QLatin1String("x-telepathy-example"));
+    QCOMPARE(protocol->vcardField(), QLatin1String("x-telepathy-example"));
     QCOMPARE(protocol->englishName(), QLatin1String("Test CM"));
     QCOMPARE(protocol->iconName(), QLatin1String("im-icq"));
     QCOMPARE(protocol->connectionInterfaces(), QStringList() <<
@@ -414,10 +414,10 @@ void TestBaseProtocol::addressingIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
     QVERIFY(uriSchemes.contains(QLatin1String("xmpp")));
     QVERIFY(uriSchemes.contains(QLatin1String("tel")));
 
-    QStringList vCardFields = iface->addressableVCardFields();
-    QCOMPARE(vCardFields.size(), 2);
-    QVERIFY(vCardFields.contains(QLatin1String("x-jabber")));
-    QVERIFY(vCardFields.contains(QLatin1String("tel")));
+    QStringList vcardFields = iface->addressableVCardFields();
+    QCOMPARE(vcardFields.size(), 2);
+    QVERIFY(vcardFields.contains(QLatin1String("x-jabber")));
+    QVERIFY(vcardFields.contains(QLatin1String("tel")));
 
     //no immutable properties
     QVERIFY(iface->immutableProperties().isEmpty());
@@ -467,10 +467,10 @@ void TestBaseProtocol::addressingIfaceClientSide()
     QVERIFY(uriSchemes.contains(QLatin1String("xmpp")));
     QVERIFY(uriSchemes.contains(QLatin1String("tel")));
 
-    QStringList vCardFields = protocol.addressableVCardFields();
-    QCOMPARE(vCardFields.size(), 2);
-    QVERIFY(vCardFields.contains(QLatin1String("x-jabber")));
-    QVERIFY(vCardFields.contains(QLatin1String("tel")));
+    QStringList vcardFields = protocol.addressableVCardFields();
+    QCOMPARE(vcardFields.size(), 2);
+    QVERIFY(vcardFields.contains(QLatin1String("x-jabber")));
+    QVERIFY(vcardFields.contains(QLatin1String("tel")));
 
     //methods
     PendingString *str = protocol.normalizeVCardAddress(QLatin1String("x-jabber"),

@@ -1,0 +1,38 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Channel interfaces</tp:title>
+
+<xi:include href="../spec/Channel.xml"/>
+
+<xi:include href="../spec/Channel_Type_Call.xml"/>
+<xi:include href="../spec/Channel_Type_Contact_Search.xml"/>
+<xi:include href="../spec/Channel_Type_DBus_Tube.xml"/>
+<xi:include href="../spec/Channel_Type_File_Transfer.xml"/>
+<xi:include href="../spec/Channel_Type_Room_List.xml"/>
+<xi:include href="../spec/Channel_Type_Server_Authentication.xml"/>
+<xi:include href="../spec/Channel_Type_Server_TLS_Connection.xml"/>
+<xi:include href="../spec/Channel_Type_Streamed_Media.xml"/>
+<xi:include href="../spec/Channel_Type_Stream_Tube.xml"/>
+<xi:include href="../spec/Channel_Type_Text.xml"/>
+
+<xi:include href="../spec/Channel_Interface_Anonymity.xml"/>
+<xi:include href="../spec/Channel_Interface_Captcha_Authentication.xml"/>
+<xi:include href="../spec/Channel_Interface_Call_State.xml"/>
+<xi:include href="../spec/Channel_Interface_Chat_State.xml"/>
+<xi:include href="../spec/Channel_Interface_Conference.xml"/>
+<xi:include href="../spec/Channel_Interface_Destroyable.xml"/>
+<xi:include href="../spec/Channel_Interface_DTMF.xml"/>
+<xi:include href="../spec/Channel_Interface_File_Transfer_Metadata.xml"/>
+<xi:include href="../spec/Channel_Interface_Group.xml"/>
+<xi:include href="../spec/Channel_Interface_Hold.xml"/>
+<xi:include href="../spec/Channel_Interface_Media_Signalling.xml"/>
+<xi:include href="../spec/Channel_Interface_Messages.xml"/>
+<xi:include href="../spec/Channel_Interface_Password.xml"/>
+<xi:include href="../spec/Channel_Interface_SASL_Authentication.xml"/>
+<xi:include href="../spec/Channel_Interface_Securable.xml"/>
+<xi:include href="../spec/Channel_Interface_Service_Point.xml"/>
+<xi:include href="../spec/Channel_Interface_SMS.xml"/>
+
+</tp:spec>

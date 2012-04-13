@@ -1,0 +1,29 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Connection interfaces</tp:title>
+
+<xi:include href="../spec/Connection.xml"/>
+
+<xi:include href="../spec/Connection_Interface_Addressing.xml"/>
+<xi:include href="../spec/Connection_Interface_Aliasing.xml"/>
+<xi:include href="../spec/Connection_Interface_Anonymity.xml"/>
+<xi:include href="../spec/Connection_Interface_Avatars.xml"/>
+<xi:include href="../spec/Connection_Interface_Balance.xml"/>
+<xi:include href="../spec/Connection_Interface_Cellular.xml"/>
+<xi:include href="../spec/Connection_Interface_Client_Types.xml"/>
+<xi:include href="../spec/Connection_Interface_Contacts.xml"/>
+<xi:include href="../spec/Connection_Interface_Contact_Blocking.xml"/>
+<xi:include href="../spec/Connection_Interface_Contact_Capabilities.xml"/>
+<xi:include href="../spec/Connection_Interface_Contact_Groups.xml"/>
+<xi:include href="../spec/Connection_Interface_Contact_Info.xml"/>
+<xi:include href="../spec/Connection_Interface_Contact_List.xml"/>
+<xi:include href="../spec/Connection_Interface_Location.xml"/>
+<xi:include href="../spec/Connection_Interface_Mail_Notification.xml"/>
+<xi:include href="../spec/Connection_Interface_Power_Saving.xml"/>
+<xi:include href="../spec/Connection_Interface_Requests.xml"/>
+<xi:include href="../spec/Connection_Interface_Service_Point.xml"/>
+<xi:include href="../spec/Connection_Interface_Simple_Presence.xml"/>
+
+</tp:spec>

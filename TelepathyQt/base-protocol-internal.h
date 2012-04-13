@@ -41,7 +41,7 @@ class TP_QT_NO_EXPORT BaseProtocol::Adaptee : public QObject
     Q_PROPERTY(Tp::ParamSpecList parameters READ parameters)
     Q_PROPERTY(QStringList connectionInterfaces READ connectionInterfaces)
     Q_PROPERTY(Tp::RequestableChannelClassList requestableChannelClasses READ requestableChannelClasses)
-    Q_PROPERTY(QString vCardField READ vCardField)
+    Q_PROPERTY(QString vcardField READ vcardField)
     Q_PROPERTY(QString englishName READ englishName)
     Q_PROPERTY(QString icon READ icon)
     Q_PROPERTY(QStringList authenticationTypes READ authenticationTypes)
@@ -54,7 +54,7 @@ public:
     QStringList connectionInterfaces() const;
     ParamSpecList parameters() const;
     RequestableChannelClassList requestableChannelClasses() const;
-    QString vCardField() const;
+    QString vcardField() const;
     QString englishName() const;
     QString icon() const;
     QStringList authenticationTypes() const;
@@ -83,7 +83,7 @@ public:
     QStringList addressableURISchemes() const;
 
 private Q_SLOTS:
-    void normalizeVCardAddress(const QString &vCardField, const QString &vCardAddress,
+    void normalizeVCardAddress(const QString &vcardField, const QString &vcardAddress,
             const Tp::Service::ProtocolInterfaceAddressingAdaptor::NormalizeVCardAddressContextPtr &context);
     void normalizeContactURI(const QString &uri,
             const Tp::Service::ProtocolInterfaceAddressingAdaptor::NormalizeContactURIContextPtr &context);

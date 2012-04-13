@@ -231,21 +231,21 @@ ConnectionCapabilities ProtocolInfo::capabilities() const
 }
 
 /**
- * Return the name of the most common vCard field used for this protocol's
+ * Return the name of the most common vcard field used for this protocol's
  * contact identifiers, normalized to lower case.
  *
  * One valid use of this field is to answer the question: given a contact's
- * vCard containing an X-JABBER field, how can you communicate with the contact?
+ * vcard containing an X-JABBER field, how can you communicate with the contact?
  * By iterating through protocols looking for an x-jabber VCardField, one can
  * build up a list of protocols that handle x-jabber, then offer the user a list
  * of accounts for those protocols and/or the option to create a new account for
  * one of those protocols.
  * It is not necessarily valid to interpret contacts' identifiers as values of
- * this vCard field. For instance, telepathy-sofiasip supports contacts whose
+ * this vcard field. For instance, telepathy-sofiasip supports contacts whose
  * identifiers are of the form sip:jenny@example.com or tel:8675309, which would
- * not normally both be represented by any single vCard field.
+ * not normally both be represented by any single vcard field.
  *
- * \return The most common vCard field used for this protocol's contact
+ * \return The most common vcard field used for this protocol's contact
  *         identifiers, or an empty string if there is no such field.
  */
 QString ProtocolInfo::vcardField() const
@@ -327,10 +327,10 @@ AvatarSpec ProtocolInfo::avatarRequirements() const
 }
 
 /**
- * Return the vCard fields that can be used to request a contact with on this protocol,
+ * Return the vcard fields that can be used to request a contact with on this protocol,
  * normalized to lower case.
  *
- * \return The vCard fields normalized to lower case.
+ * \return The vcard fields normalized to lower case.
  * \sa addressableUriSchemes()
  */
 QStringList ProtocolInfo::addressableVCardFields() const
@@ -360,15 +360,15 @@ QStringList ProtocolInfo::addressableUriSchemes() const
 /**
  * Attempt to normalize the given \a vcardAddress.
  *
- * For example, a vCard TEL field formatted as +1 (206) 555 1234,
+ * For example, a vcard TEL field formatted as +1 (206) 555 1234,
  * could be normalized to +12065551234.
  *
- * If a vCard address X would be normalized to Y, a successful ContactManager
+ * If a vcard address X would be normalized to Y, a successful ContactManager
  * contact request using ContactManager::contactsForVCardAddresses() for
- * vCard address X would result in a contact with Y reported as an
+ * vcard address X would result in a contact with Y reported as an
  * address that can identify it in Contact::vcardAddresses().
  *
- * \param vcardField The vCard field the \a vcardAddress belongs to.
+ * \param vcardField The vcard field the \a vcardAddress belongs to.
  * \param vcardAddress The address to normalize.
  * \return A PendingString which will emit PendingString::finished
  *         when the address has been normalized or an error occurred.

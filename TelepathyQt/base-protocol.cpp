@@ -59,7 +59,7 @@ struct TP_QT_NO_EXPORT BaseProtocol::Private
     QStringList connInterfaces;
     ProtocolParameterList parameters;
     RequestableChannelClassSpecList rccSpecs;
-    QString vCardField;
+    QString vcardField;
     QString englishName;
     QString iconName;
     QStringList authTypes;
@@ -114,9 +114,9 @@ RequestableChannelClassList BaseProtocol::Adaptee::requestableChannelClasses() c
     return mProtocol->requestableChannelClasses().bareClasses();
 }
 
-QString BaseProtocol::Adaptee::vCardField() const
+QString BaseProtocol::Adaptee::vcardField() const
 {
-    return mProtocol->vCardField();
+    return mProtocol->vcardField();
 }
 
 QString BaseProtocol::Adaptee::englishName() const
@@ -231,7 +231,7 @@ QVariantMap BaseProtocol::immutableProperties() const
     ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"),
             QVariant::fromValue(mPriv->adaptee->requestableChannelClasses()));
     ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".VCardField"),
-            QVariant::fromValue(mPriv->adaptee->vCardField()));
+            QVariant::fromValue(mPriv->adaptee->vcardField()));
     ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".EnglishName"),
             QVariant::fromValue(mPriv->adaptee->englishName()));
     ret.insert(TP_QT_IFACE_PROTOCOL + QLatin1String(".Icon"),
@@ -360,25 +360,25 @@ void BaseProtocol::setRequestableChannelClasses(const RequestableChannelClassSpe
 }
 
 /**
- * Return the name of the vCard field that has been set with setVCardField().
+ * Return the name of the vcard field that has been set with setVCardField().
  *
  * This is exposed as the VCardField property of this Protocol object on
- * the bus and represents the name of the most common vCard field used for
+ * the bus and represents the name of the most common vcard field used for
  * this protocol's contact identifiers, normalized to lower case.
  *
  * This property is immutable and cannot change after this Protocol
  * object has been registered on the bus with registerObject().
  *
- * \return The name of the vCard field that has been set with setVCardField().
+ * \return The name of the vcard field that has been set with setVCardField().
  * \sa setVCardField()
  */
-QString BaseProtocol::vCardField() const
+QString BaseProtocol::vcardField() const
 {
-    return mPriv->vCardField;
+    return mPriv->vcardField;
 }
 
 /**
- * Set the name of the most common vCard field used for
+ * Set the name of the most common vcard field used for
  * this protocol's contact identifiers, normalized to lower case.
  *
  * For example, this would be x-jabber for Jabber/XMPP
@@ -387,17 +387,17 @@ QString BaseProtocol::vCardField() const
  * This property is immutable and cannot change after this Protocol
  * object has been registered on the bus with registerObject().
  *
- * \param vCardField The name of the vCard field to set.
- * \sa vCardField()
+ * \param vcardField The name of the vcard field to set.
+ * \sa vcardField()
  */
-void BaseProtocol::setVCardField(const QString &vCardField)
+void BaseProtocol::setVCardField(const QString &vcardField)
 {
     if (isRegistered()) {
         warning() << "BaseProtocol::setVCardField: cannot change property after "
             "registration, immutable property";
         return;
     }
-    mPriv->vCardField = vCardField;
+    mPriv->vcardField = vcardField;
 }
 
 /**
@@ -747,13 +747,13 @@ QStringList BaseProtocolAddressingInterface::Adaptee::addressableURISchemes() co
     return mInterface->addressableUriSchemes();
 }
 
-void BaseProtocolAddressingInterface::Adaptee::normalizeVCardAddress(const QString& vCardField,
-        const QString& vCardAddress,
+void BaseProtocolAddressingInterface::Adaptee::normalizeVCardAddress(const QString& vcardField,
+        const QString& vcardAddress,
         const Tp::Service::ProtocolInterfaceAddressingAdaptor::NormalizeVCardAddressContextPtr &context)
 {
     DBusError error;
     QString normalizedAddress;
-    normalizedAddress = mInterface->normalizeVCardAddress(vCardField, vCardAddress, &error);
+    normalizedAddress = mInterface->normalizeVCardAddress(vcardField, vcardAddress, &error);
     if (normalizedAddress.isEmpty()) {
         context->setFinishedWithError(error.name(), error.message());
         return;
@@ -828,14 +828,14 @@ QVariantMap BaseProtocolAddressingInterface::immutableProperties() const
 }
 
 /**
- * Return the list of addressable vCard fields that have been set with
+ * Return the list of addressable vcard fields that have been set with
  * setAddressableVCardFields().
  *
  * This list is exposed as the AddressableVCardFields property of this
- * interface on the bus and represents the vCard fields that can be used
+ * interface on the bus and represents the vcard fields that can be used
  * to request a contact for this protocol, normalized to lower case.
  *
- * \return The list of addressable VCard fields that have been set with
+ * \return The list of addressable vcard fields that have been set with
  * setAddressableVCardFields().
  * \sa setAddressableVCardFields()
  */
@@ -845,11 +845,11 @@ QStringList BaseProtocolAddressingInterface::addressableVCardFields() const
 }
 
 /**
- * Set the list of vCard fields that can be used to request a contact for this protocol.
+ * Set the list of vcard fields that can be used to request a contact for this protocol.
  *
  * All the field names should be normalized to lower case.
  *
- * \param vcardFields The list of vCard fields to set.
+ * \param vcardFields The list of vcard fields to set.
  * \sa addressableVCardFields()
  */
 void BaseProtocolAddressingInterface::setAddressableVCardFields(const QStringList &vcardFields)
@@ -887,7 +887,7 @@ void BaseProtocolAddressingInterface::setAddressableUriSchemes(const QStringList
 
 /**
  * Set a callback that will be called from a client to normalize a given
- * vCard address.
+ * vcard address.
  *
  * This callback will be called when the NormalizeVCardAddress method
  * on the Protocol.Interface.Addressing D-Bus interface has been called.
@@ -902,27 +902,27 @@ void BaseProtocolAddressingInterface::setNormalizeVCardAddressCallback(
 }
 
 /**
- * Return a normalized version of the given \a vCardAddress, which corresponds
- * to the given \a vCardField, by calling the callback that has been set
+ * Return a normalized version of the given \a vcardAddress, which corresponds
+ * to the given \a vcardField, by calling the callback that has been set
  * with setNormalizeVCardAddressCallback().
  *
- * \param vCardField The vCard field of the address we are normalizing.
- * \param vCardAddress The address to normalize, which is assumed to belong to a contact.
+ * \param vcardField The vcard field of the address we are normalizing.
+ * \param vcardAddress The address to normalize, which is assumed to belong to a contact.
  * \param error A pointer to a DBusError instance where any possible error
  * will be stored.
- * \return A normalized version of the given \a vCardAddress, or an empty
+ * \return A normalized version of the given \a vcardAddress, or an empty
  * string if no callback to do the normalization has been set with
  * setNormalizeVCardAddressCallback().
  * \sa setNormalizeVCardAddressCallback()
  */
-QString BaseProtocolAddressingInterface::normalizeVCardAddress(const QString &vCardField,
-        const QString &vCardAddress, DBusError *error)
+QString BaseProtocolAddressingInterface::normalizeVCardAddress(const QString &vcardField,
+        const QString &vcardAddress, DBusError *error)
 {
     if (!mPriv->normalizeVCardAddressCb.isValid()) {
         error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
         return QString();
     }
-    return mPriv->normalizeVCardAddressCb(vCardField, vCardAddress, error);
+    return mPriv->normalizeVCardAddressCb(vcardField, vcardAddress, error);
 }
 
 /**
