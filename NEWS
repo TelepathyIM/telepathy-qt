@@ -4,6 +4,13 @@ telepathy-qt 0.9.2 (UNRELEASED)
 The "..." release.
 
 Enhancements:
+ * Introducing Telepathy-Qt-Service, a new static library that contains
+   experimental service-side bindings. For the moment this exposes
+   the required low-level interfaces for writing connection managers,
+   as well as some basic high-level API.
+ * Renamed AccountManager::accountForPath() and AccountManager::accountsForPaths()
+   to accountForObjectPath() and accountsForObjectPaths() respectively,
+   deprecating the old names.
  * ...
 
 Fixes:
