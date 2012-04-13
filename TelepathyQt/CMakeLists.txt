@@ -890,9 +890,9 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
     endforeach(spec ${SPECS})
 
-    tpqt_service_generator(channel servicechannel Channel Tp::Service)
-    tpqt_service_generator(connection serviceconn Connection Tp::Service)
-    tpqt_service_generator(connection-manager servicecm ConnectionManager Tp::Service)
+    tpqt_service_generator(channel servicechannel Channel Tp::Service DEPENDS channel-spec-xincludator)
+    tpqt_service_generator(connection serviceconn Connection Tp::Service DEPENDS connection-spec-xincludator)
+    tpqt_service_generator(connection-manager servicecm ConnectionManager Tp::Service DEPENDS connection-manager-spec-xincludator)
 
     if (TARGET doxygen-doc)
         add_dependencies(doxygen-doc all-generated-service-sources)
@@ -909,15 +909,14 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
 
     # generate service moc files
     foreach(moc_src ${telepathy_qt_service_MOC_SRCS})
-        get_filename_component(_moc_outfile_name "${moc_src}" NAME)
-        set(generated_file _gen/${_moc_outfile_name})
+        set(generated_file _gen/${moc_src})
         string(REPLACE ".h" ".moc.hpp" generated_file ${generated_file})
-
-        tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
+        tpqt_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src}
+                                        ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
                                         ${telepathy_qt_service_generated_specs_mocs})
         list(APPEND telepathy_qt_service_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
-        add_custom_target(moc-${_moc_outfile_name} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
-        add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service "moc-${_moc_outfile_name}")
+        string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
+        add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service "moc-${moc_src}")
     endforeach(moc_src ${telepathy_qt_service_MOC_SRCS})
 
     # Link
