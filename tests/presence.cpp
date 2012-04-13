@@ -124,6 +124,31 @@ void TestPresence::testPresenceSpec()
     TEST_PRESENCE_SPEC_FULL(QLatin1String("away"), ConnectionPresenceTypeAway, true, true);
     TEST_PRESENCE_SPEC_FULL(QLatin1String("xa"), ConnectionPresenceTypeExtendedAway, false, false);
     TEST_PRESENCE_SPEC_FULL(QLatin1String("offline"), ConnectionPresenceTypeOffline, true, false);
+
+    spec = PresenceSpec::available();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("available"), ConnectionPresenceTypeAvailable, true, true);
+    spec = PresenceSpec::chat();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("chat"), ConnectionPresenceTypeAvailable, true, true);
+    spec = PresenceSpec::pstn();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("pstn"), ConnectionPresenceTypeAvailable, false, true);
+    spec = PresenceSpec::away();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("away"), ConnectionPresenceTypeAway, true, true);
+    spec = PresenceSpec::brb();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("brb"), ConnectionPresenceTypeAway, true, true);
+    spec = PresenceSpec::busy();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("busy"), ConnectionPresenceTypeBusy, true, true);
+    spec = PresenceSpec::dnd();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("dnd"), ConnectionPresenceTypeBusy, true, true);
+    spec = PresenceSpec::xa();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("xa"), ConnectionPresenceTypeExtendedAway, true, true);
+    spec = PresenceSpec::hidden();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("hidden"), ConnectionPresenceTypeHidden, true, true);
+    spec = PresenceSpec::offline();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("offline"), ConnectionPresenceTypeOffline, false, true);
+    spec = PresenceSpec::unknown();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("unknown"), ConnectionPresenceTypeUnknown, false, true);
+    spec = PresenceSpec::error();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("error"), ConnectionPresenceTypeError, false, true);
 }
 
 QTEST_MAIN(TestPresence)
