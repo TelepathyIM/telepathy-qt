@@ -205,7 +205,7 @@ void TestAccountBasics::testBasics()
     QStringList paths;
     QString accPath(QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
     QCOMPARE(pathsForAccounts(mAM->allAccounts()), QStringList() << accPath);
-    QList<AccountPtr> accs = mAM->accountsForPaths(
+    QList<AccountPtr> accs = mAM->accountsForObjectPaths(
             QStringList() << accPath << QLatin1String("/invalid/path"));
     QCOMPARE(accs.size(), 2);
     QCOMPARE(accs[0]->objectPath(), accPath);

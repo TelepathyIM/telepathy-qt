@@ -93,7 +93,7 @@ void FileSender::onAMReady(PendingOperation *op)
     Q_ASSERT(pr != NULL);
     qDebug() << "AccountManager ready";
 
-    mAccount = mAM->accountForPath(
+    mAccount = mAM->accountForObjectPath(
             TP_QT_ACCOUNT_OBJECT_PATH_BASE + QLatin1Char('/') + mAccountName);
     if (!mAccount) {
         qWarning() << "The account given does not exist";

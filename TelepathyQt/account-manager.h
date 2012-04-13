@@ -109,8 +109,10 @@ public:
     AccountSetPtr filterAccounts(const AccountFilterConstPtr &filter) const;
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
-    AccountPtr accountForPath(const QString &path) const;
-    QList<AccountPtr> accountsForPaths(const QStringList &paths) const;
+    AccountPtr accountForObjectPath(const QString &path) const;
+    TP_QT_DEPRECATED AccountPtr accountForPath(const QString &path) const;
+    QList<AccountPtr> accountsForObjectPaths(const QStringList &paths) const;
+    TP_QT_DEPRECATED QList<AccountPtr> accountsForPaths(const QStringList &paths) const;
 
     QStringList supportedAccountProperties() const;
     PendingAccount *createAccount(const QString &connectionManager,

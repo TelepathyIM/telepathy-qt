@@ -889,15 +889,23 @@ AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
  *
  * \param path The account object path.
  * \return A pointer to an AccountSet object containing the matching accounts.
- * \sa allAccounts(), accountsForPaths()
+ * \sa allAccounts(), accountsForObjectPaths()
  */
-AccountPtr AccountManager::accountForPath(const QString &path) const
+AccountPtr AccountManager::accountForObjectPath(const QString &path) const
 {
     if (!isReady(FeatureCore)) {
         return AccountPtr();
     }
 
     return mPriv->accounts.value(path);
+}
+
+/**
+ * \deprecated See accountForObjectPath()
+ */
+AccountPtr AccountManager::accountForPath(const QString &path) const
+{
+    return accountForObjectPath(path);
 }
 
 /**
@@ -912,9 +920,9 @@ AccountPtr AccountManager::accountForPath(const QString &path) const
  * \param paths List of accounts object paths.
  * \return A list of pointers to Account objects for the given
  *         \a paths. Null AccountPtr objects will be used as list elements for each invalid path.
- * \sa allAccounts(), accountForPath()
+ * \sa allAccounts(), accountForObjectPath()
  */
-QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths) const
+QList<AccountPtr> AccountManager::accountsForObjectPaths(const QStringList &paths) const
 {
     if (!isReady(FeatureCore)) {
         return QList<AccountPtr>();
@@ -922,9 +930,17 @@ QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths) con
 
     QList<AccountPtr> result;
     foreach (const QString &path, paths) {
-        result << accountForPath(path);
+        result << accountForObjectPath(path);
     }
     return result;
+}
+
+/**
+ * \deprecated See accountsForObjectPaths()
+ */
+QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths) const
+{
+    return accountsForObjectPaths(paths);
 }
 
 /**
