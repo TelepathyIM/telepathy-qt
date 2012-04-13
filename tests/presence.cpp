@@ -47,6 +47,11 @@ void TestPresence::testPresence()
     pr = Presence::available(QLatin1String("I am available"));
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeAvailable, QLatin1String("available"), QLatin1String("I am available"));
 
+    pr = Presence::chat();
+    TEST_PRESENCE(pr, true, ConnectionPresenceTypeAvailable, QLatin1String("chat"), QString());
+    pr = Presence::chat(QLatin1String("I am chat"));
+    TEST_PRESENCE(pr, true, ConnectionPresenceTypeAvailable, QLatin1String("chat"), QLatin1String("I am chat"));
+
     pr = Presence::away();
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeAway, QLatin1String("away"), QString());
     pr = Presence::away(QLatin1String("I am away"));
@@ -61,6 +66,11 @@ void TestPresence::testPresence()
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeBusy, QLatin1String("busy"), QString());
     pr = Presence::busy(QLatin1String("I am busy"));
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeBusy, QLatin1String("busy"), QLatin1String("I am busy"));
+
+    pr = Presence::dnd();
+    TEST_PRESENCE(pr, true, ConnectionPresenceTypeBusy, QLatin1String("dnd"), QString());
+    pr = Presence::dnd(QLatin1String("I am dnd"));
+    TEST_PRESENCE(pr, true, ConnectionPresenceTypeBusy, QLatin1String("dnd"), QLatin1String("I am dnd"));
 
     pr = Presence::xa();
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeExtendedAway, QLatin1String("xa"), QString());
@@ -124,6 +134,31 @@ void TestPresence::testPresenceSpec()
     TEST_PRESENCE_SPEC_FULL(QLatin1String("away"), ConnectionPresenceTypeAway, true, true);
     TEST_PRESENCE_SPEC_FULL(QLatin1String("xa"), ConnectionPresenceTypeExtendedAway, false, false);
     TEST_PRESENCE_SPEC_FULL(QLatin1String("offline"), ConnectionPresenceTypeOffline, true, false);
+
+    spec = PresenceSpec::available();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("available"), ConnectionPresenceTypeAvailable, true, true);
+    spec = PresenceSpec::chat();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("chat"), ConnectionPresenceTypeAvailable, true, true);
+    spec = PresenceSpec::pstn();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("pstn"), ConnectionPresenceTypeAvailable, false, true);
+    spec = PresenceSpec::away();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("away"), ConnectionPresenceTypeAway, true, true);
+    spec = PresenceSpec::brb();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("brb"), ConnectionPresenceTypeAway, true, true);
+    spec = PresenceSpec::busy();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("busy"), ConnectionPresenceTypeBusy, true, true);
+    spec = PresenceSpec::dnd();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("dnd"), ConnectionPresenceTypeBusy, true, true);
+    spec = PresenceSpec::xa();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("xa"), ConnectionPresenceTypeExtendedAway, true, true);
+    spec = PresenceSpec::hidden();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("hidden"), ConnectionPresenceTypeHidden, true, true);
+    spec = PresenceSpec::offline();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("offline"), ConnectionPresenceTypeOffline, false, true);
+    spec = PresenceSpec::unknown();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("unknown"), ConnectionPresenceTypeUnknown, false, true);
+    spec = PresenceSpec::error();
+    TEST_PRESENCE_SPEC(spec, true, QLatin1String("error"), ConnectionPresenceTypeError, false, true);
 }
 
 QTEST_MAIN(TestPresence)

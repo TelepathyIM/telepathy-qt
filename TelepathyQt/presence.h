@@ -43,9 +43,11 @@ public:
     ~Presence();
 
     static Presence available(const QString &statusMessage = QString());
+    static Presence chat(const QString &statusMessage = QString());
     static Presence away(const QString &statusMessage = QString());
     static Presence brb(const QString &statusMessage = QString());
     static Presence busy(const QString &statusMessage = QString());
+    static Presence dnd(const QString &statusMessage = QString());
     static Presence xa(const QString &statusMessage = QString());
     static Presence hidden(const QString &statusMessage = QString());
     static Presence offline(const QString &statusMessage = QString());
@@ -75,10 +77,31 @@ private:
 class TP_QT_EXPORT PresenceSpec
 {
 public:
+    enum SimpleStatusFlag {
+        NoFlags = 0,
+        MaySetOnSelf = 0x1,
+        CanHaveStatusMessage = 0x2,
+        AllFlags = MaySetOnSelf | CanHaveStatusMessage
+    };
+    Q_DECLARE_FLAGS(SimpleStatusFlags, SimpleStatusFlag);
+
     PresenceSpec();
     PresenceSpec(const QString &status, const SimpleStatusSpec &spec);
     PresenceSpec(const PresenceSpec &other);
     ~PresenceSpec();
+
+    static PresenceSpec available(SimpleStatusFlags flags = AllFlags);
+    static PresenceSpec chat(SimpleStatusFlags flags = AllFlags);
+    static PresenceSpec pstn(SimpleStatusFlags flags = CanHaveStatusMessage);
+    static PresenceSpec away(SimpleStatusFlags flags = AllFlags);
+    static PresenceSpec brb(SimpleStatusFlags flags = AllFlags);
+    static PresenceSpec dnd(SimpleStatusFlags flags = AllFlags);
+    static PresenceSpec busy(SimpleStatusFlags flags = AllFlags);
+    static PresenceSpec xa(SimpleStatusFlags flags = AllFlags);
+    static PresenceSpec hidden(SimpleStatusFlags flags = AllFlags);
+    static PresenceSpec offline(SimpleStatusFlags flags = CanHaveStatusMessage);
+    static PresenceSpec unknown(SimpleStatusFlags flags = CanHaveStatusMessage);
+    static PresenceSpec error(SimpleStatusFlags flags = CanHaveStatusMessage);
 
     bool isValid() const { return mPriv.constData() != 0; }
 
@@ -137,9 +160,12 @@ public:
     }
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(PresenceSpec::SimpleStatusFlags)
+
 } // Tp
 
 Q_DECLARE_METATYPE(Tp::Presence);
 Q_DECLARE_METATYPE(Tp::PresenceSpec);
+Q_DECLARE_METATYPE(Tp::PresenceSpecList);
 
 #endif
