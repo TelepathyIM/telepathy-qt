@@ -39,6 +39,7 @@ private Q_SLOTS:
 private:
     AccountManagerPtr mAM;
     int mAccountsCount;
+    bool mCreatingAccount;
     QVariantMap mAllProperties;
 };
 
@@ -47,7 +48,9 @@ void TestDBusProperties::onNewAccount(const Tp::AccountPtr &acc)
     Q_UNUSED(acc);
 
     mAccountsCount++;
-    mLoop->exit(0);
+    if (!mCreatingAccount) {
+        mLoop->exit(0);
+    }
 }
 
 void TestDBusProperties::expectSuccessfulAllProperties(PendingOperation *op)
@@ -75,6 +78,8 @@ void TestDBusProperties::initTestCase()
 
 void TestDBusProperties::init()
 {
+    mCreatingAccount = false;
+
     initImpl();
 }
 
@@ -97,7 +102,9 @@ void TestDBusProperties::testDBusProperties()
     QVERIFY(connect(pacc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    mCreatingAccount = true;
     QCOMPARE(mLoop->exec(), 0);
+    mCreatingAccount = false;
     QVERIFY(pacc->account());
 
     while (mAccountsCount != 1) {

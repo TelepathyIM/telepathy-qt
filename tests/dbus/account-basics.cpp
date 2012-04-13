@@ -60,6 +60,7 @@ private:
     Tp::AccountManagerPtr mAM;
     TestConnHelper *mConn;
     int mAccountsCount;
+    bool mCreatingAccount;
 
     QHash<QString, QVariant> mProps;
 };
@@ -111,7 +112,9 @@ void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
     Q_UNUSED(acc);
 
     mAccountsCount++;
-    mLoop->exit(0);
+    if (!mCreatingAccount) {
+        mLoop->exit(0);
+    }
 }
 
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, ServiceName)
@@ -168,6 +171,7 @@ void TestAccountBasics::initTestCase()
 void TestAccountBasics::init()
 {
     mProps.clear();
+    mCreatingAccount = false;
 
     initImpl();
 }
@@ -194,7 +198,9 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(pacc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    mCreatingAccount = true;
     QCOMPARE(mLoop->exec(), 0);
+    mCreatingAccount = false;
     QVERIFY(pacc->account());
 
     while (mAccountsCount != 1) {
@@ -357,7 +363,9 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(pacc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    mCreatingAccount = true;
     QCOMPARE(mLoop->exec(), 0);
+    mCreatingAccount = false;
 
     while (mAccountsCount != 2) {
         QCOMPARE(mLoop->exec(), 0);
