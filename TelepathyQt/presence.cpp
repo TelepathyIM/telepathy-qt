@@ -253,6 +253,114 @@ PresenceSpec::~PresenceSpec()
 {
 }
 
+PresenceSpec PresenceSpec::available(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeAvailable;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("available"), spec);
+}
+
+PresenceSpec PresenceSpec::chat(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeAvailable;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("chat"), spec);
+}
+
+PresenceSpec PresenceSpec::pstn(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeAvailable;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("pstn"), spec);
+}
+
+PresenceSpec PresenceSpec::away(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeAway;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("away"), spec);
+}
+
+PresenceSpec PresenceSpec::brb(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeAway;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("brb"), spec);
+}
+
+PresenceSpec PresenceSpec::busy(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeBusy;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("busy"), spec);
+}
+
+PresenceSpec PresenceSpec::dnd(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeBusy;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("dnd"), spec);
+}
+
+PresenceSpec PresenceSpec::xa(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeExtendedAway;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("xa"), spec);
+}
+
+PresenceSpec PresenceSpec::hidden(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeHidden;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("hidden"), spec);
+}
+
+PresenceSpec PresenceSpec::offline(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeOffline;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("offline"), spec);
+}
+
+PresenceSpec PresenceSpec::unknown(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeUnknown;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("unknown"), spec);
+}
+
+PresenceSpec PresenceSpec::error(PresenceSpec::SimpleStatusFlags flags)
+{
+    SimpleStatusSpec spec;
+    spec.type = ConnectionPresenceTypeError;
+    spec.maySetOnSelf = flags & MaySetOnSelf;
+    spec.canHaveMessage = flags & CanHaveStatusMessage;
+    return PresenceSpec(QLatin1String("error"), spec);
+}
+
 PresenceSpec &PresenceSpec::operator=(const PresenceSpec &other)
 {
     this->mPriv = other.mPriv;
