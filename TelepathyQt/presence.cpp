@@ -80,6 +80,11 @@ Presence Presence::available(const QString &statusMessage)
     return Presence(ConnectionPresenceTypeAvailable, QLatin1String("available"), statusMessage);
 }
 
+Presence Presence::chat(const QString &statusMessage)
+{
+    return Presence(ConnectionPresenceTypeAvailable, QLatin1String("chat"), statusMessage);
+}
+
 Presence Presence::away(const QString &statusMessage)
 {
     return Presence(ConnectionPresenceTypeAway, QLatin1String("away"), statusMessage);
@@ -93,6 +98,11 @@ Presence Presence::brb(const QString &statusMessage)
 Presence Presence::busy(const QString &statusMessage)
 {
     return Presence(ConnectionPresenceTypeBusy, QLatin1String("busy"), statusMessage);
+}
+
+Presence Presence::dnd(const QString &statusMessage)
+{
+    return Presence(ConnectionPresenceTypeBusy, QLatin1String("dnd"), statusMessage);
 }
 
 Presence Presence::xa(const QString &statusMessage)

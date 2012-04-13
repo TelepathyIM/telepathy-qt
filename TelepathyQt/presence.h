@@ -43,9 +43,11 @@ public:
     ~Presence();
 
     static Presence available(const QString &statusMessage = QString());
+    static Presence chat(const QString &statusMessage = QString());
     static Presence away(const QString &statusMessage = QString());
     static Presence brb(const QString &statusMessage = QString());
     static Presence busy(const QString &statusMessage = QString());
+    static Presence dnd(const QString &statusMessage = QString());
     static Presence xa(const QString &statusMessage = QString());
     static Presence hidden(const QString &statusMessage = QString());
     static Presence offline(const QString &statusMessage = QString());
