@@ -166,5 +166,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(PresenceSpec::SimpleStatusFlags)
 
 Q_DECLARE_METATYPE(Tp::Presence);
 Q_DECLARE_METATYPE(Tp::PresenceSpec);
+Q_DECLARE_METATYPE(Tp::PresenceSpecList);
 
 #endif
