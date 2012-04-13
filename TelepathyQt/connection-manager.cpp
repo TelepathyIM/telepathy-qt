@@ -1046,12 +1046,17 @@ void ConnectionManager::gotProtocolsLegacy(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to ConnectionManager.ListProtocols";
         protocolsNames = reply.value();
 
-        foreach (const QString &protocolName, protocolsNames) {
-            mPriv->protocols.append(ProtocolInfo(ConnectionManagerPtr(this), protocolName));
-            mPriv->parametersQueue.enqueue(protocolName);
-        }
+        if (!protocolsNames.isEmpty()) {
+            foreach (const QString &protocolName, protocolsNames) {
+                mPriv->protocols.append(ProtocolInfo(ConnectionManagerPtr(this), protocolName));
+                mPriv->parametersQueue.enqueue(protocolName);
+            }
 
-        mPriv->introspectParametersLegacy();
+            mPriv->introspectParametersLegacy();
+        } else {
+            //no protocols - introspection finished
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        }
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
 

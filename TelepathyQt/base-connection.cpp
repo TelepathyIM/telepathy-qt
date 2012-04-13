@@ -187,10 +187,10 @@ bool BaseConnection::registerObject(DBusError *error)
     QString escapedProtocolName = mPriv->protocolName;
     escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
     QString name = uniqueName();
-    QString busName = QString(QLatin1String("%s.%s.%s.%s"))
-        .arg(TP_QT_CONNECTION_BUS_NAME_BASE).arg(mPriv->cmName).arg(escapedProtocolName).arg(name);
-    QString objectPath = QString(QLatin1String("%s/%s/%s/%s"))
-        .arg(TP_QT_CONNECTION_OBJECT_PATH_BASE).arg(mPriv->cmName).arg(escapedProtocolName).arg(name);
+    QString busName = QString(QLatin1String("%1.%2.%3.%4"))
+        .arg(TP_QT_CONNECTION_BUS_NAME_BASE, mPriv->cmName, escapedProtocolName, name);
+    QString objectPath = QString(QLatin1String("%1/%2/%3/%4"))
+        .arg(TP_QT_CONNECTION_OBJECT_PATH_BASE, mPriv->cmName, escapedProtocolName, name);
     DBusError _error;
     bool ret = registerObject(busName, objectPath, &_error);
     if (!ret && error) {

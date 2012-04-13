@@ -83,6 +83,10 @@ tpqt_add_dbus_unit_test(CmProtocol cm-protocol)
 tpqt_add_dbus_unit_test(ProfileManager profile-manager)
 tpqt_add_dbus_unit_test(Types types)
 
+if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+    tpqt_add_dbus_unit_test(BaseConnectionManager base-cm telepathy-qt${QT_VERSION_MAJOR}-service)
+endif(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
+
 # Make check target. In case of check, output on failure and put it into a log
 # This target has to stay here for catching all of the tests
 add_custom_target(check ctest --output-on-failure -O test.log
