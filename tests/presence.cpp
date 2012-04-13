@@ -47,6 +47,11 @@ void TestPresence::testPresence()
     pr = Presence::available(QLatin1String("I am available"));
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeAvailable, QLatin1String("available"), QLatin1String("I am available"));
 
+    pr = Presence::chat();
+    TEST_PRESENCE(pr, true, ConnectionPresenceTypeAvailable, QLatin1String("chat"), QString());
+    pr = Presence::chat(QLatin1String("I am chat"));
+    TEST_PRESENCE(pr, true, ConnectionPresenceTypeAvailable, QLatin1String("chat"), QLatin1String("I am chat"));
+
     pr = Presence::away();
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeAway, QLatin1String("away"), QString());
     pr = Presence::away(QLatin1String("I am away"));
@@ -61,6 +66,11 @@ void TestPresence::testPresence()
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeBusy, QLatin1String("busy"), QString());
     pr = Presence::busy(QLatin1String("I am busy"));
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeBusy, QLatin1String("busy"), QLatin1String("I am busy"));
+
+    pr = Presence::dnd();
+    TEST_PRESENCE(pr, true, ConnectionPresenceTypeBusy, QLatin1String("dnd"), QString());
+    pr = Presence::dnd(QLatin1String("I am dnd"));
+    TEST_PRESENCE(pr, true, ConnectionPresenceTypeBusy, QLatin1String("dnd"), QLatin1String("I am dnd"));
 
     pr = Presence::xa();
     TEST_PRESENCE(pr, true, ConnectionPresenceTypeExtendedAway, QLatin1String("xa"), QString());
