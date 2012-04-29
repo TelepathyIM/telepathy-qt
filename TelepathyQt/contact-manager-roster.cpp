@@ -1893,7 +1893,7 @@ void ContactManager::Roster::setContactListChannelsReady()
     uint type;
     ChannelPtr channel;
     const char *method;
-    for (QMap<uint, ChannelInfo>::const_iterator i = contactListChannels.constBegin();
+    for (QHash<uint, ChannelInfo>::const_iterator i = contactListChannels.constBegin();
             i != contactListChannels.constEnd(); ++i) {
         type = i.key();
         channel = i.value().channel;
