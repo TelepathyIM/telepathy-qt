@@ -954,7 +954,7 @@ void CallChannel::gotCallMembersContacts(PendingOperation *op)
         return;
     }
 
-    QMap<uint, ContactPtr> removed;
+    QHash<uint, ContactPtr> removed;
 
     for (ContactSendingStateMap::const_iterator i =
                 mPriv->currentCallMembersChangedInfo->updates.constBegin();
