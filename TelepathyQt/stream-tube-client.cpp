@@ -211,7 +211,7 @@ struct TP_QT_NO_EXPORT StreamTubeClient::Private
                 .arg(registrar->dbusConnection().baseService()
                         .replace(QLatin1Char(':'), QLatin1Char('_'))
                         .replace(QLatin1Char('.'), QLatin1Char('_')))
-                .arg((intptr_t) this, 0, 16);
+                .arg((quintptr) this, 0, 16);
         }
     }
 

@@ -154,7 +154,7 @@ QVariantMap BaseConnection::immutableProperties() const
  */
 QString BaseConnection::uniqueName() const
 {
-    return QString(QLatin1String("_%1")).arg((intptr_t) this, 0, 16);
+    return QString(QLatin1String("_%1")).arg((quintptr) this, 0, 16);
 }
 
 /**

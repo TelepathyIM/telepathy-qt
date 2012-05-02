@@ -888,7 +888,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
                 .arg(mPriv->bus.baseService()
                     .replace(QLatin1String(":"), QLatin1String("_"))
                     .replace(QLatin1String("."), QLatin1String("_")))
-                .arg((intptr_t) client.data(), 0, 16));
+                .arg((quintptr) client.data(), 0, 16));
     }
 
     if (mPriv->services.contains(busName) ||
