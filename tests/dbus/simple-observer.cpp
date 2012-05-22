@@ -349,8 +349,6 @@ void TestSimpleObserver::initTestCase()
 
         g_free(connName);
         g_free(connPath);
-
-        tp_handle_unref(contactRepo, handle);
     }
 }
 

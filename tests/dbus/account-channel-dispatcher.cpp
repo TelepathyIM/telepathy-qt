@@ -1069,8 +1069,6 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannelHandledAgain()
                 "handle", handle,
                 NULL));
 
-    tp_handle_unref(contactRepo, handle);
-
     PendingChannel *pcOut = 0;
     TEST_CREATE_ENSURE_AND_HANDLE_CHANNEL(createAndHandleChannel, false, false, true, "", 0, &pcOut);
 

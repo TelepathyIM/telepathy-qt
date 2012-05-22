@@ -166,7 +166,6 @@ complete_join (ExampleCSHRoomChannel *self)
       tp_group_mixin_change_members ((GObject *) self, "", NULL, removed, NULL,
           rp, 0, TP_CHANNEL_GROUP_CHANGE_REASON_RENAMED);
 
-      tp_handle_unref (contact_repo, new_self);
       tp_intset_destroy (removed);
       tp_intset_destroy (rp);
     }
@@ -191,15 +190,6 @@ complete_join (ExampleCSHRoomChannel *self)
 
   tp_group_mixin_change_members ((GObject *) self, "", added, NULL, NULL,
       NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
-
-  tp_handle_unref (contact_repo, alice_local);
-  tp_handle_unref (contact_repo, bob_local);
-  tp_handle_unref (contact_repo, chris_local);
-  tp_handle_unref (contact_repo, anon_local);
-
-  tp_handle_unref (contact_repo, alice_global);
-  tp_handle_unref (contact_repo, bob_global);
-  tp_handle_unref (contact_repo, chris_global);
 
   /* now that the dust has settled, we can also invite people */
   tp_group_mixin_change_flags ((GObject *) self,
@@ -254,11 +244,6 @@ constructor (GType type,
   TpHandleRepoIface *room_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_ROOM);
   TpHandle self_handle;
-
-  tp_handle_ref (room_repo, self->priv->handle);
-
-  if (self->priv->initiator != 0)
-    tp_handle_ref (contact_repo, self->priv->initiator);
 
   tp_dbus_daemon_register_object (
       tp_base_connection_get_dbus_daemon (self->priv->conn),
@@ -445,15 +430,7 @@ static void
 finalize (GObject *object)
 {
   ExampleCSHRoomChannel *self = EXAMPLE_CSH_ROOM_CHANNEL (object);
-  TpHandleRepoIface *contact_handles = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-  TpHandleRepoIface *room_handles = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_ROOM);
 
-  if (self->priv->initiator != 0)
-    tp_handle_unref (contact_handles, self->priv->initiator);
-
-  tp_handle_unref (room_handles, self->priv->handle);
   g_free (self->priv->object_path);
 
   tp_text_mixin_finalize (object);

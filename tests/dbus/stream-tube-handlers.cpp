@@ -408,11 +408,6 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
                     "initiator-handle", alfHandle,
                     NULL)));
 
-    if (handleType == HandleTypeContact)
-        tp_handle_unref(contactRepo, handle);
-    else
-        tp_handle_unref(roomRepo, handle);
-
     return qMakePair(chanPath, chanProps);
 }
 

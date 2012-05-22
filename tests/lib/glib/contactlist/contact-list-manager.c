@@ -434,7 +434,6 @@ receive_contact_lists (gpointer p)
   d->stored = TRUE;
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, cambridge);
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   handle = tp_handle_ensure (self->priv->contact_repo, "guillaume@example.com",
       NULL, NULL);
@@ -450,7 +449,6 @@ receive_contact_lists (gpointer p)
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, cambridge);
   tp_handle_set_add (d->tags, francophones);
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   handle = tp_handle_ensure (self->priv->contact_repo, "olivier@example.com",
       NULL, NULL);
@@ -466,7 +464,6 @@ receive_contact_lists (gpointer p)
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, montreal);
   tp_handle_set_add (d->tags, francophones);
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   handle = tp_handle_ensure (self->priv->contact_repo, "travis@example.com",
       NULL, NULL);
@@ -477,7 +474,6 @@ receive_contact_lists (gpointer p)
   d->subscribe = TRUE;
   d->publish = TRUE;
   d->stored = TRUE;
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   tp_group_mixin_change_members ((GObject *) subscribe, "",
       set, NULL, NULL, NULL,
@@ -517,7 +513,6 @@ receive_contact_lists (gpointer p)
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, cambridge);
   tp_handle_set_add (d->tags, francophones);
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   handle = tp_handle_ensure (self->priv->contact_repo, "helen@example.com",
       NULL, NULL);
@@ -530,7 +525,6 @@ receive_contact_lists (gpointer p)
   d->stored = TRUE;
   d->tags = tp_handle_set_new (self->priv->group_repo);
   tp_handle_set_add (d->tags, cambridge);
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   tp_group_mixin_change_members ((GObject *) subscribe, "",
       NULL, NULL, NULL, set,
@@ -559,7 +553,6 @@ receive_contact_lists (gpointer p)
   d->alias = g_strdup ("Wim");
   d->publish_requested = TRUE;
   d->stored = TRUE;
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   set = tp_intset_new_containing (handle);
   tp_group_mixin_change_members ((GObject *) publish,
@@ -580,7 +573,6 @@ receive_contact_lists (gpointer p)
   d->alias = g_strdup ("Christian");
   d->publish_requested = TRUE;
   d->stored = TRUE;
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   set = tp_intset_new_containing (handle);
   tp_group_mixin_change_members ((GObject *) publish,
@@ -605,7 +597,6 @@ receive_contact_lists (gpointer p)
   g_free (d->alias);
   d->alias = g_strdup ("Bill");
   d->blocked = TRUE;
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   handle = tp_handle_ensure (self->priv->contact_repo, "steve@example.com",
       NULL, NULL);
@@ -614,7 +605,6 @@ receive_contact_lists (gpointer p)
   g_free (d->alias);
   d->alias = g_strdup ("Steve");
   d->blocked = TRUE;
-  tp_handle_unref (self->priv->contact_repo, handle);
 
   tp_group_mixin_change_members ((GObject *) deny, "",
       set, NULL, NULL, NULL,
@@ -645,10 +635,6 @@ receive_contact_lists (gpointer p)
   tp_intset_destroy (fr_set);
   tp_intset_destroy (cam_set);
   tp_intset_destroy (mtl_set);
-
-  tp_handle_unref (self->priv->group_repo, cambridge);
-  tp_handle_unref (self->priv->group_repo, montreal);
-  tp_handle_unref (self->priv->group_repo, francophones);
 
   /* Now we've received the roster, we can satisfy all the queued requests */
 
@@ -1180,7 +1166,6 @@ self_and_contact_new (ExampleContactListManager *self,
 
   ret->self = g_object_ref (self);
   ret->contact = contact;
-  tp_handle_ref (self->priv->contact_repo, contact);
   return ret;
 }
 
@@ -1189,7 +1174,6 @@ self_and_contact_destroy (gpointer p)
 {
   SelfAndContact *s = p;
 
-  tp_handle_unref (s->self->priv->contact_repo, s->contact);
   g_object_unref (s->self);
   g_slice_free (SelfAndContact, s);
 }

@@ -167,9 +167,6 @@ constructed (GObject *object)
   if (chain_up != NULL)
     chain_up (object);
 
-  tp_handle_ref (contact_repo, self->priv->handle);
-  tp_handle_ref (contact_repo, self->priv->initiator);
-
   tp_dbus_daemon_register_object (
       tp_base_connection_get_dbus_daemon (self->priv->conn),
       self->priv->object_path, self);
@@ -490,11 +487,6 @@ static void
 finalize (GObject *object)
 {
   ExampleCallableMediaChannel *self = EXAMPLE_CALLABLE_MEDIA_CHANNEL (object);
-  TpHandleRepoIface *contact_handles = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-
-  tp_handle_unref (contact_handles, self->priv->handle);
-  tp_handle_unref (contact_handles, self->priv->initiator);
 
   g_free (self->priv->object_path);
 

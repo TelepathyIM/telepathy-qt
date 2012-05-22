@@ -158,8 +158,6 @@ void TestTextChan::initTestCase()
                 "object-path", chanPath.data(),
                 "handle", handle,
                 NULL));
-
-    tp_handle_unref(mContactRepo, handle);
 }
 
 void TestTextChan::init()

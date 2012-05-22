@@ -257,7 +257,6 @@ addressing_get_contacts_by_uri (FutureSvcConnectionInterfaceAddressing *iface,
   future_svc_connection_interface_addressing_return_from_get_contacts_by_uri (
       context, requested, attributes);
 
-  tp_handles_unref (contact_repo, handles);
   g_hash_table_unref (requested);
   g_hash_table_unref (attributes);
   g_free (sender);
@@ -340,7 +339,6 @@ addressing_get_contacts_by_vcard_field (FutureSvcConnectionInterfaceAddressing *
   future_svc_connection_interface_addressing_return_from_get_contacts_by_vcard_field (
       context, requested, attributes);
 
-  tp_handles_unref (contact_repo, handles);
   g_hash_table_unref (requested);
   g_hash_table_unref (attributes);
   g_free (sender);

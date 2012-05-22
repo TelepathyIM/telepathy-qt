@@ -233,19 +233,12 @@ constructor (GType type,
       G_OBJECT_CLASS (example_echo_2_channel_parent_class)->constructor (type,
           n_props, props);
   ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
-  TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
   static TpChannelTextMessageType const types[] = {
       TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL,
       TP_CHANNEL_TEXT_MESSAGE_TYPE_ACTION,
       TP_CHANNEL_TEXT_MESSAGE_TYPE_NOTICE
   };
   static const char * const content_types[] = { "*/*", NULL };
-
-  tp_handle_ref (contact_repo, self->priv->handle);
-
-  if (self->priv->initiator != 0)
-    tp_handle_ref (contact_repo, self->priv->initiator);
 
   tp_dbus_daemon_register_object (
       tp_base_connection_get_dbus_daemon (self->priv->conn),
@@ -402,13 +395,6 @@ static void
 finalize (GObject *object)
 {
   ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
-  TpHandleRepoIface *contact_handles = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-
-  tp_handle_unref (contact_handles, self->priv->handle);
-
-  if (self->priv->initiator != 0)
-    tp_handle_unref (contact_handles, self->priv->initiator);
 
   g_free (self->priv->object_path);
 
@@ -526,17 +512,7 @@ example_echo_2_channel_close (ExampleEcho2Channel *self)
         {
           if (self->priv->initiator != first_sender)
             {
-              TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
-                (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-              TpHandle old_initiator = self->priv->initiator;
-
-              if (first_sender != 0)
-                tp_handle_ref (contact_repo, first_sender);
-
               self->priv->initiator = first_sender;
-
-              if (old_initiator != 0)
-                tp_handle_unref (contact_repo, old_initiator);
             }
 
           tp_message_mixin_set_rescued (object);

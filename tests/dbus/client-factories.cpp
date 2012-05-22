@@ -533,8 +533,6 @@ void TestClientFactories::initTestCase()
                 "handle", handle,
                 NULL));
 
-    tp_handle_unref(mContactRepo, handle);
-
     mClientRegistrar = ClientRegistrar::create(mAM);
 
     // Fake ChannelRequest

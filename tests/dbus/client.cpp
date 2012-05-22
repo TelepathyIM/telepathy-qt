@@ -468,8 +468,6 @@ void TestClient::initTestCase()
                 "handle", handle,
                 NULL));
 
-    tp_handle_unref(mContactRepo, handle);
-
     mClientRegistrar = ClientRegistrar::create();
 
     QDBusConnection bus = mClientRegistrar->dbusConnection();
