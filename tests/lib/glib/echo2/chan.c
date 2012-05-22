@@ -106,12 +106,12 @@ send_message (GObject *object,
   content = tp_asv_get_string (tp_message_peek (message, 1), "content");
   if (content && strstr (content, "(fail)") != NULL)
     {
-      TpMessage *delivery_report = tp_message_new (self->priv->conn, 1, len);
+      TpMessage *delivery_report = tp_cm_message_new (self->priv->conn, 1);
+
+      tp_cm_message_set_sender (delivery_report, self->priv->handle);
 
       tp_message_set_uint32 (delivery_report, 0, "message-type",
           TP_CHANNEL_TEXT_MESSAGE_TYPE_DELIVERY_REPORT);
-      tp_message_set_handle (delivery_report, 0, "message-sender",
-          TP_HANDLE_TYPE_CONTACT, self->priv->handle);
       tp_message_set_int64 (delivery_report, 0, "message-received",
           timestamp);
 
@@ -131,15 +131,14 @@ send_message (GObject *object,
       return;
     }
 
-  received = tp_message_new (self->priv->conn, 1, len);
+  received = tp_cm_message_new (self->priv->conn, 1);
 
   /* Copy/modify the headers for the "received" message */
     {
       TpChannelTextMessageType message_type;
       gboolean valid;
 
-      tp_message_set_handle (received, 0, "message-sender",
-          TP_HANDLE_TYPE_CONTACT, self->priv->handle);
+      tp_cm_message_set_sender (received, self->priv->handle);
 
       tp_message_set_string (received, 0, "message-token", "0000");
       tp_message_set_string (received, 0, "supersedes", "1234");
