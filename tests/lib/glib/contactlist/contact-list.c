@@ -537,7 +537,7 @@ static void
 list_channel_close (TpSvcChannel *iface G_GNUC_UNUSED,
                     DBusGMethodInvocation *context)
 {
-  GError e = { TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+  GError e = { TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
       "ContactList channels with handle type LIST may not be closed" };
 
   dbus_g_method_return_error (context, &e);
@@ -552,7 +552,7 @@ group_channel_close (TpSvcChannel *iface,
 
   if (tp_handle_set_size (base->group.members) > 0)
     {
-      GError e = { TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      GError e = { TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "Non-empty groups may not be deleted (closed)" };
 
       dbus_g_method_return_error (context, &e);

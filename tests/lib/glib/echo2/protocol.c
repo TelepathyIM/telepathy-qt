@@ -134,7 +134,7 @@ new_connection (TpBaseProtocol *protocol,
 
   if (account == NULL || account[0] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "The 'account' parameter is required");
       return NULL;
     }
@@ -153,7 +153,7 @@ example_echo_2_protocol_normalize_contact (const gchar *id, GError **error)
 {
   if (id[0] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "ID must not be empty");
       return NULL;
     }
@@ -179,7 +179,7 @@ identify_account (TpBaseProtocol *self G_GNUC_UNUSED,
   if (account != NULL)
     return g_strdup (account);
 
-  g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+  g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
       "'account' parameter not given");
   return NULL;
 }
@@ -325,7 +325,7 @@ normalize_vcard_address (TpBaseProtocol *self,
     }
   else
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+      g_set_error (error, TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
           "'%s' vCard field is not supported by this protocol", vcard_field);
     }
 
@@ -342,7 +342,7 @@ normalize_contact_uri (TpBaseProtocol *self,
 
   if (scheme == NULL)
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "'%s' is not a valid URI", uri);
       goto OUT;
     }
@@ -358,7 +358,7 @@ normalize_contact_uri (TpBaseProtocol *self,
     }
   else
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+      g_set_error (error, TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
           "'%s' URI scheme is not supported by this protocol",
           scheme);
       goto OUT;

@@ -437,7 +437,7 @@ example_call_manager_request (ExampleCallManager *self,
 
   if (!initial_audio && !initial_video)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+      g_set_error (&error, TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
           "Call channels must initially have either audio or video content");
       goto error;
     }
@@ -458,7 +458,7 @@ example_call_manager_request (ExampleCallManager *self,
        * from the other. For simplicity, this example simulates a protocol
        * where this is not the case.
        */
-      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+      g_set_error (&error, TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
           "In this protocol, you can't call yourself");
       goto error;
     }

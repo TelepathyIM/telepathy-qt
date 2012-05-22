@@ -127,7 +127,7 @@ example_csh_normalize_contact (TpHandleRepoIface *repo,
 
   if (id[0] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "ID must not be empty");
       return NULL;
     }
@@ -136,28 +136,28 @@ example_csh_normalize_contact (TpHandleRepoIface *repo,
 
   if (at == NULL || at == id || at[1] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "ID must look like aaa@bbb");
       return NULL;
     }
 
   if (strchr (at + 1, '@') != NULL)
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "ID cannot contain more than one '@'");
       return NULL;
     }
 
   if (at[1] == '#' && at[2] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "chatroom name cannot be empty");
       return NULL;
     }
 
   if (strchr (at + 2, '#') != NULL)
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "realm/chatroom cannot contain '#' except at the beginning");
       return NULL;
     }
@@ -175,20 +175,20 @@ example_csh_normalize_room (TpHandleRepoIface *repo,
 
   if (id[0] != '#')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "Chatroom names in this protocol start with #");
     }
 
   if (id[1] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "Chatroom name cannot be empty");
       return NULL;
     }
 
   if (strchr (id, '@') != NULL)
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "Chatroom names in this protocol cannot contain '@'");
       return NULL;
     }

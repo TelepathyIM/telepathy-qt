@@ -558,7 +558,7 @@ add_member (GObject *object,
     }
 
   /* Otherwise it's a meaningless request, so reject it. */
-  g_set_error (error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+  g_set_error (error, TP_ERROR, TP_ERROR_NOT_AVAILABLE,
       "Cannot add handle %u to channel", member);
   return FALSE;
 }
@@ -805,7 +805,7 @@ media_remove_streams (TpSvcChannelTypeStreamedMedia *iface,
       if (g_hash_table_lookup (self->priv->streams,
             GUINT_TO_POINTER (id)) == NULL)
         {
-          GError *error = g_error_new (TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          GError *error = g_error_new (TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
               "No stream with ID %u in this channel", id);
 
           dbus_g_method_return_error (context, error);
@@ -838,14 +838,14 @@ media_request_stream_direction (TpSvcChannelTypeStreamedMedia *iface,
 
   if (stream == NULL)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "No stream with ID %u in this channel", stream_id);
       goto error;
     }
 
   if (stream_direction > TP_MEDIA_STREAM_DIRECTION_BIDIRECTIONAL)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "Stream direction %u is not valid", stream_direction);
       goto error;
     }
@@ -1119,7 +1119,7 @@ media_request_streams (TpSvcChannelTypeStreamedMedia *iface,
 
   if (contact_handle != self->priv->handle)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "This channel is for handle #%u, we can't make a stream to #%u",
           self->priv->handle, contact_handle);
       goto error;
@@ -1127,7 +1127,7 @@ media_request_streams (TpSvcChannelTypeStreamedMedia *iface,
 
   if (self->priv->progress == PROGRESS_ENDED)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      g_set_error (&error, TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "Call has terminated");
       goto error;
     }
@@ -1142,7 +1142,7 @@ media_request_streams (TpSvcChannelTypeStreamedMedia *iface,
         case TP_MEDIA_STREAM_TYPE_VIDEO:
           break;
         default:
-          g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
               "%u is not a valid Media_Stream_Type", media_type);
           goto error;
         }
@@ -1311,7 +1311,7 @@ hold_request_hold (TpSvcChannelInterfaceHold *iface,
 
   if (!hold && strstr (peer, "(no unhold)") != NULL)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "unable to unhold");
       goto error;
     }
@@ -1385,7 +1385,7 @@ dtmf_start_tone (TpSvcChannelInterfaceDTMF *iface,
 
   if (stream == NULL)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "No stream with ID %u in this channel", stream_id);
       goto error;
     }
@@ -1393,7 +1393,7 @@ dtmf_start_tone (TpSvcChannelInterfaceDTMF *iface,
   g_object_get (G_OBJECT (stream), "type", &media_type, NULL);
   if (media_type != TP_MEDIA_STREAM_TYPE_AUDIO)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "DTMF is only supported by audio streams");
       goto error;
     }
@@ -1423,7 +1423,7 @@ dtmf_stop_tone (TpSvcChannelInterfaceDTMF *iface,
 
   if (stream == NULL)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "No stream with ID %u in this channel", stream_id);
       goto error;
     }
@@ -1431,7 +1431,7 @@ dtmf_stop_tone (TpSvcChannelInterfaceDTMF *iface,
   g_object_get (G_OBJECT (stream), "type", &media_type, NULL);
   if (media_type != TP_MEDIA_STREAM_TYPE_AUDIO)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "DTMF is only supported by audio streams");
       goto error;
     }
@@ -1439,7 +1439,7 @@ dtmf_stop_tone (TpSvcChannelInterfaceDTMF *iface,
   peer = tp_handle_inspect (contact_repo, self->priv->handle);
   if (strstr (peer, "(no continuous tone)") != NULL)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      g_set_error (&error, TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "Continuous tones are not supported by this stream");
       goto error;
     }

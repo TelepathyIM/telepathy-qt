@@ -53,7 +53,7 @@ simple_observe_channels (
 
   if (fail)
     {
-      GError error = { TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      GError error = { TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "No observation for you!" };
 
       tp_observe_channels_context_fail (context, &error);

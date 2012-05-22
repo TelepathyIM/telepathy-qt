@@ -60,7 +60,7 @@ new_connection (TpBaseConnectionManager *self,
                 gpointer parsed_params,
                 GError **error)
 {
-  g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+  g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
       "Protocol's new_connection() should be called instead");
   return NULL;
 }

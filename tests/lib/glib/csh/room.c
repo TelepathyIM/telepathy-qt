@@ -496,7 +496,7 @@ remove_member_with_reason (GObject *object,
     {
       /* TODO: also simulate some channels where the user is an operator and
        * can kick people */
-      g_set_error (error, TP_ERRORS, TP_ERROR_PERMISSION_DENIED,
+      g_set_error (error, TP_ERROR, TP_ERROR_PERMISSION_DENIED,
           "You can't eject other users from this channel");
       return FALSE;
     }

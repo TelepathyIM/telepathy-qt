@@ -50,7 +50,7 @@ account_param_filter (const TpCMParamSpec *paramspec,
 
   if (id[0] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "account must not be empty");
       return FALSE;
     }
@@ -59,14 +59,14 @@ account_param_filter (const TpCMParamSpec *paramspec,
 
   if (at == NULL || at == id || at[1] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "account must look like aaa@bbb");
       return FALSE;
     }
 
   if (strchr (at, '#') != NULL)
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "realm cannot contain '#' except at the beginning");
       return FALSE;
     }

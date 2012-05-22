@@ -185,7 +185,7 @@ uri_to_id (const gchar *uri,
 
   if (scheme == NULL)
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "'%s' is not a valid URI", uri);
       goto OUT;
     }
@@ -195,7 +195,7 @@ uri_to_id (const gchar *uri,
     }
   else
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+      g_set_error (error, TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
           "'%s' URI scheme is not supported by this protocol",
           scheme);
       goto OUT;
@@ -279,7 +279,7 @@ vcard_address_to_id (const gchar *vcard_field,
     }
   else
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+      g_set_error (error, TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
           "'%s' vCard field is not supported by this protocol", vcard_field);
     }
 

@@ -611,7 +611,7 @@ chat_state_set_chat_state(TpSvcChannelInterfaceChatState *iface,
 
   if (state >= NUM_TP_CHANNEL_CHAT_STATES)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
            "invalid state: %u", state);
       dbus_g_method_return_error (context, error);
       g_error_free (error);

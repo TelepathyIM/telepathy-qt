@@ -176,7 +176,7 @@ example_contact_list_manager_close_all (ExampleContactListManager *self)
           for (l = requests; l != NULL; l = l->next)
             {
               tp_channel_manager_emit_request_failed (self,
-                  l->data, TP_ERRORS, TP_ERROR_DISCONNECTED,
+                  l->data, TP_ERROR, TP_ERROR_DISCONNECTED,
                   "Unable to complete channel request due to disconnection");
             }
 
@@ -994,7 +994,7 @@ example_contact_list_manager_request (ExampleContactListManager *self,
     }
   else if (require_new)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      g_set_error (&error, TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "A ContactList channel for type #%u, handle #%u already exists",
           handle_type, handle);
       goto error;
@@ -1412,7 +1412,7 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
             {
               /* the group mixin won't actually allow this to be reached,
                * because of the flags we set */
-              g_set_error (error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+              g_set_error (error, TP_ERROR, TP_ERROR_NOT_AVAILABLE,
                   "Can't unilaterally send presence to %s",
                   tp_handle_inspect (self->priv->contact_repo, member));
               return FALSE;

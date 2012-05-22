@@ -578,7 +578,7 @@ validate_terms (TpTestsContactSearchChannel *self,
       if (!tp_strv_contains (asks, field))
         {
           g_debug ("%s is not in AvailableSearchKeys", field);
-          g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
               "%s is not in AvailableSearchKeys", field);
           return FALSE;
         }
@@ -641,7 +641,7 @@ contact_search_search (TpSvcChannelTypeContactSearch *iface G_GNUC_UNUSED,
   if (priv->contact_search_state != TP_CHANNEL_CONTACT_SEARCH_STATE_NOT_STARTED)
     {
       g_debug ("Search state is %d", priv->contact_search_state);
-      error = g_error_new (TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      error = g_error_new (TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "SearchState is %d", priv->contact_search_state);
       goto err;
     }
@@ -681,7 +681,7 @@ contact_search_stop (TpSvcChannelTypeContactSearch *iface,
         break;
       case TP_CHANNEL_CONTACT_SEARCH_STATE_NOT_STARTED:
         {
-          GError e = { TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+          GError e = { TP_ERROR, TP_ERROR_NOT_AVAILABLE,
               "Search() hasn't been called yet" };
 
           g_debug ("%s", e.message);

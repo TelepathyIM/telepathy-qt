@@ -329,7 +329,7 @@ example_csh_room_manager_request (ExampleCSHRoomManager *self,
     }
   else if (require_new)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      g_set_error (&error, TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "A Text channel for room #%u already exists", handle);
       goto error;
     }

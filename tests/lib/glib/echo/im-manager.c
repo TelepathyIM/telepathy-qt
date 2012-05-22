@@ -326,7 +326,7 @@ example_echo_im_manager_request (ExampleEchoImManager *self,
     }
   else if (require_new)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      g_set_error (&error, TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "An echo channel to contact #%u already exists", handle);
       goto error;
     }
