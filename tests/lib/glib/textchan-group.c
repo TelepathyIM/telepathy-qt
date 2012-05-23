@@ -9,6 +9,11 @@
  * notice and this notice are preserved.
  */
 
+//TODO This either needs to be ported away from TpTextMixin,
+//or we need to use another test CM instead of this one on the tests where it is used.
+//tp-glib has not ported it because it is used in TpTextMixin tests.
+#define _TP_IGNORE_DEPRECATIONS
+
 #include "textchan-group.h"
 
 #include <telepathy-glib/base-connection.h>
