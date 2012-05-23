@@ -283,9 +283,6 @@ tp_tests_stream_tube_channel_class_init (TpTestsStreamTubeChannelClass *klass)
 
   /* base_class->target_handle_type is defined in subclasses */
 
-  tp_text_mixin_class_init (object_class,
-      G_STRUCT_OFFSET (TpTestsStreamTubeChannelClass, text_class));
-
   param_spec = g_param_spec_string ("service", "service name",
       "the service associated with this tube object.",
        "",
