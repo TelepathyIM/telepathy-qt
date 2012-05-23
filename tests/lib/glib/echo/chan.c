@@ -11,6 +11,9 @@
  * notice and this notice are preserved.
  */
 
+// We need to use the deprecated TpTextMixin here to test compatibility functionality
+#define _TP_IGNORE_DEPRECATIONS
+
 #include "chan.h"
 
 #include <telepathy-glib/telepathy-glib.h>
