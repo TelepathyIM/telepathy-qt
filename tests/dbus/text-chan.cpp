@@ -1,3 +1,6 @@
+// We need to use the deprecated TpTextMixin here to test compatibility functionality
+#define _TP_IGNORE_DEPRECATIONS
+
 #include <tests/lib/test.h>
 
 #include <tests/lib/glib-helpers/test-conn-helper.h>
@@ -158,8 +161,6 @@ void TestTextChan::initTestCase()
                 "object-path", chanPath.data(),
                 "handle", handle,
                 NULL));
-
-    tp_handle_unref(mContactRepo, handle);
 }
 
 void TestTextChan::init()

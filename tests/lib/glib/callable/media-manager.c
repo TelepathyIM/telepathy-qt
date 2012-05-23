@@ -414,7 +414,7 @@ example_callable_media_manager_request (ExampleCallableMediaManager *self,
        * from the other. For simplicity, this example simulates a protocol
        * where this is not the case.
        */
-      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+      g_set_error (&error, TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
           "In this protocol, you can't call yourself");
       goto error;
     }

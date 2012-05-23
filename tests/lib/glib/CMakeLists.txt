@@ -12,7 +12,6 @@ if(ENABLE_TP_GLIB_TESTS)
     add_subdirectory(callable)
     add_subdirectory(contactlist)
     add_subdirectory(contactlist2)
-    add_subdirectory(csh)
     add_subdirectory(echo)
     add_subdirectory(echo2)
     add_subdirectory(future)
@@ -64,7 +63,6 @@ if(ENABLE_TP_GLIB_TESTS)
         example-cm-call
         example-cm-callable
         example-cm-contactlist
-        example-cm-csh
         example-cm-echo
         example-cm-echo2
         tp-glib-tests-future-extensions)

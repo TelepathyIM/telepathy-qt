@@ -475,7 +475,7 @@ example_call_channel_add_content (ExampleCallChannel *self,
   contents = tp_base_call_channel_get_contents (base);
   if (g_list_length (contents) > MAX_CONTENTS_PER_CALL)
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_PERMISSION_DENIED,
+      g_set_error (error, TP_ERROR, TP_ERROR_PERMISSION_DENIED,
           "What are you doing with all those contents anyway?!");
       return NULL;
     }
@@ -778,7 +778,7 @@ hold_request_hold (TpSvcChannelInterfaceHold *iface,
 
   if (!hold && strstr (peer, "(no unhold)") != NULL)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "unable to unhold");
       goto error;
     }

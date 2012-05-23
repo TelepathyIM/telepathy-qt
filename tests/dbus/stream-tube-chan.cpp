@@ -300,11 +300,6 @@ void TestStreamTubeChan::createTubeChannel(bool requested,
 
     g_hash_table_unref(props);
     g_hash_table_unref(sockets);
-
-    if (withContact)
-        tp_handle_unref(contactRepo, handle);
-    else
-        tp_handle_unref(roomRepo, handle);
 }
 
 void TestStreamTubeChan::initTestCase()

@@ -116,14 +116,6 @@ constructed (GObject *object)
       NULL);
   self->priv->call_terminated_id = g_signal_connect (self->priv->channel,
       "call-terminated", G_CALLBACK (call_terminated_cb), self);
-
-  if (self->priv->handle != 0)
-    {
-      TpHandleRepoIface *contact_repo = tp_base_connection_get_handles (
-          self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-
-      tp_handle_ref (contact_repo, self->priv->handle);
-    }
 }
 
 static void
@@ -257,16 +249,8 @@ static void
 dispose (GObject *object)
 {
   ExampleCallableMediaStream *self = EXAMPLE_CALLABLE_MEDIA_STREAM (object);
-  TpHandleRepoIface *contact_repo = tp_base_connection_get_handles (
-      self->priv->conn, TP_HANDLE_TYPE_CONTACT);
 
   example_callable_media_stream_close (self);
-
-  if (self->priv->handle != 0)
-    {
-      tp_handle_unref (contact_repo, self->priv->handle);
-      self->priv->handle = 0;
-    }
 
   if (self->priv->channel != NULL)
     {

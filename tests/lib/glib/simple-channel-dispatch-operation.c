@@ -64,7 +64,7 @@ tp_tests_simple_channel_dispatch_operation_handle_with (
 {
   if (!tp_strdiff (handler, "FAIL"))
     {
-      GError error = { TP_ERRORS, TP_ERROR_INVALID_ARGUMENT, "Nope" };
+      GError error = { TP_ERROR, TP_ERROR_INVALID_ARGUMENT, "Nope" };
 
       dbus_g_method_return_error (context, &error);
       return;

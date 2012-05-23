@@ -106,12 +106,12 @@ send_message (GObject *object,
   content = tp_asv_get_string (tp_message_peek (message, 1), "content");
   if (content && strstr (content, "(fail)") != NULL)
     {
-      TpMessage *delivery_report = tp_message_new (self->priv->conn, 1, len);
+      TpMessage *delivery_report = tp_cm_message_new (self->priv->conn, 1);
+
+      tp_cm_message_set_sender (delivery_report, self->priv->handle);
 
       tp_message_set_uint32 (delivery_report, 0, "message-type",
           TP_CHANNEL_TEXT_MESSAGE_TYPE_DELIVERY_REPORT);
-      tp_message_set_handle (delivery_report, 0, "message-sender",
-          TP_HANDLE_TYPE_CONTACT, self->priv->handle);
       tp_message_set_int64 (delivery_report, 0, "message-received",
           timestamp);
 
@@ -131,15 +131,14 @@ send_message (GObject *object,
       return;
     }
 
-  received = tp_message_new (self->priv->conn, 1, len);
+  received = tp_cm_message_new (self->priv->conn, 1);
 
   /* Copy/modify the headers for the "received" message */
     {
       TpChannelTextMessageType message_type;
       gboolean valid;
 
-      tp_message_set_handle (received, 0, "message-sender",
-          TP_HANDLE_TYPE_CONTACT, self->priv->handle);
+      tp_cm_message_set_sender (received, self->priv->handle);
 
       tp_message_set_string (received, 0, "message-token", "0000");
       tp_message_set_string (received, 0, "supersedes", "1234");
@@ -233,19 +232,12 @@ constructor (GType type,
       G_OBJECT_CLASS (example_echo_2_channel_parent_class)->constructor (type,
           n_props, props);
   ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
-  TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
   static TpChannelTextMessageType const types[] = {
       TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL,
       TP_CHANNEL_TEXT_MESSAGE_TYPE_ACTION,
       TP_CHANNEL_TEXT_MESSAGE_TYPE_NOTICE
   };
   static const char * const content_types[] = { "*/*", NULL };
-
-  tp_handle_ref (contact_repo, self->priv->handle);
-
-  if (self->priv->initiator != 0)
-    tp_handle_ref (contact_repo, self->priv->initiator);
 
   tp_dbus_daemon_register_object (
       tp_base_connection_get_dbus_daemon (self->priv->conn),
@@ -402,13 +394,6 @@ static void
 finalize (GObject *object)
 {
   ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
-  TpHandleRepoIface *contact_handles = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-
-  tp_handle_unref (contact_handles, self->priv->handle);
-
-  if (self->priv->initiator != 0)
-    tp_handle_unref (contact_handles, self->priv->initiator);
 
   g_free (self->priv->object_path);
 
@@ -526,17 +511,7 @@ example_echo_2_channel_close (ExampleEcho2Channel *self)
         {
           if (self->priv->initiator != first_sender)
             {
-              TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
-                (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-              TpHandle old_initiator = self->priv->initiator;
-
-              if (first_sender != 0)
-                tp_handle_ref (contact_repo, first_sender);
-
               self->priv->initiator = first_sender;
-
-              if (old_initiator != 0)
-                tp_handle_unref (contact_repo, old_initiator);
             }
 
           tp_message_mixin_set_rescued (object);
@@ -611,7 +586,7 @@ chat_state_set_chat_state(TpSvcChannelInterfaceChatState *iface,
 
   if (state >= NUM_TP_CHANNEL_CHAT_STATES)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
            "invalid state: %u", state);
       dbus_g_method_return_error (context, error);
       g_error_free (error);

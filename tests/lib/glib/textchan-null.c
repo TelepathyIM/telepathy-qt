@@ -9,6 +9,11 @@
  * notice and this notice are preserved.
  */
 
+//TODO This either needs to be ported away from TpTextMixin,
+//or we need to use another test CM instead of this one on the tests where it is used.
+//tp-glib has not ported it because it is used in TpTextMixin tests.
+#define _TP_IGNORE_DEPRECATIONS
+
 #include "textchan-null.h"
 
 #include <telepathy-glib/base-connection.h>
@@ -94,8 +99,6 @@ constructor (GType type,
   TpTestsTextChannelNull *self = TP_TESTS_TEXT_CHANNEL_NULL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-
-  tp_handle_ref (contact_repo, self->priv->handle);
 
   tp_dbus_daemon_register_object (
       tp_base_connection_get_dbus_daemon (self->priv->conn),
@@ -236,10 +239,7 @@ static void
 finalize (GObject *object)
 {
   TpTestsTextChannelNull *self = TP_TESTS_TEXT_CHANNEL_NULL (object);
-  TpHandleRepoIface *contact_handles = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
 
-  tp_handle_unref (contact_handles, self->priv->handle);
   g_free (self->priv->object_path);
 
   tp_text_mixin_finalize (object);

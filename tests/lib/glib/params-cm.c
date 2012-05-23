@@ -76,7 +76,7 @@ filter_string_ascii_case (const TpCMParamSpec *param_spec,
 
       if (c < 0 || c > 127)   /* char might be signed or unsigned */
         {
-          g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
               "%s must be ASCII", param_spec->name);
           return FALSE;
         }
@@ -160,7 +160,7 @@ new_connection (TpBaseConnectionManager *self,
                 gpointer parsed_params,
                 GError **error)
 {
-  g_set_error (error, TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+  g_set_error (error, TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
       "No connection for you");
   return NULL;
 }

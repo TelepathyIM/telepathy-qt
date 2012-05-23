@@ -34,7 +34,7 @@ example_contact_list_protocol_check_contact_id (const gchar *id,
 
   if (id[0] == '\0')
     {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+      g_set_error (error, TP_ERROR, TP_ERROR_INVALID_HANDLE,
           "ID must not be empty");
       return FALSE;
     }
@@ -127,7 +127,7 @@ identify_account (TpBaseProtocol *self G_GNUC_UNUSED,
   if (account != NULL)
     return normalize_contact (self, account, error);
 
-  g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+  g_set_error (error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
       "'account' parameter not given");
   return NULL;
 }

@@ -419,8 +419,6 @@ void TestContactMessenger::initTestCase()
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-
-    tp_handle_unref(mContactRepo, handle);
 }
 
 void TestContactMessenger::init()
@@ -538,8 +536,6 @@ void TestContactMessenger::testReceived()
 
     tp_message_mixin_take_received(G_OBJECT(mMessagesChanService), msg);
 
-    tp_handle_unref(mContactRepo, handle);
-
     while (!mGotMessageReceived) {
         mLoop->processEvents();
     }
@@ -579,8 +575,6 @@ void TestContactMessenger::testReceivedFromContact()
     TpMessage *msg = tp_cm_message_new_text(mBaseConnService, handle, TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL, "Hi!");
 
     tp_message_mixin_take_received(G_OBJECT(mMessagesChanService), msg);
-
-    tp_handle_unref(mContactRepo, handle);
 
     while (!mGotMessageReceived) {
         mLoop->processEvents();

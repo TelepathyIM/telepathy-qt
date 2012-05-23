@@ -11,6 +11,9 @@
  * notice and this notice are preserved.
  */
 
+// We need to use the deprecated TpTextMixin here to test compatibility functionality
+#define _TP_IGNORE_DEPRECATIONS
+
 #include "chan.h"
 
 #include <telepathy-glib/telepathy-glib.h>
@@ -87,11 +90,6 @@ constructor (GType type,
   ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-
-  tp_handle_ref (contact_repo, self->priv->handle);
-
-  if (self->priv->initiator != 0)
-    tp_handle_ref (contact_repo, self->priv->initiator);
 
   tp_dbus_daemon_register_object (
       tp_base_connection_get_dbus_daemon (self->priv->conn),
@@ -247,13 +245,6 @@ static void
 finalize (GObject *object)
 {
   ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (object);
-  TpHandleRepoIface *contact_handles = tp_base_connection_get_handles
-      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-
-  tp_handle_unref (contact_handles, self->priv->handle);
-
-  if (self->priv->initiator != 0)
-    tp_handle_unref (contact_handles, self->priv->initiator);
 
   g_free (self->priv->object_path);
 
@@ -372,17 +363,7 @@ example_echo_channel_close (ExampleEchoChannel *self)
         {
           if (self->priv->initiator != first_sender)
             {
-              TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
-                (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-              TpHandle old_initiator = self->priv->initiator;
-
-              if (first_sender != 0)
-                tp_handle_ref (contact_repo, first_sender);
-
               self->priv->initiator = first_sender;
-
-              if (old_initiator != 0)
-                tp_handle_unref (contact_repo, old_initiator);
             }
 
           tp_text_mixin_set_rescued (object);

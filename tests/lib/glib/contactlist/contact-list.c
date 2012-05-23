@@ -120,8 +120,6 @@ constructed (GObject *object)
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
   TpHandle self_handle = self->priv->conn->self_handle;
-  TpHandleRepoIface *handle_repo = tp_base_connection_get_handles
-      (self->priv->conn, self->priv->handle_type);
 
   if (chain_up != NULL)
     chain_up (object);
@@ -133,7 +131,6 @@ constructed (GObject *object)
       tp_base_connection_get_dbus_daemon (self->priv->conn),
       self->priv->object_path, self);
 
-  tp_handle_ref (handle_repo, self->priv->handle);
   tp_group_mixin_init (object, G_STRUCT_OFFSET (ExampleContactListBase, group),
       contact_repo, self_handle);
   /* Both the subclasses have full support for telepathy-spec 0.17.6. */
@@ -345,10 +342,7 @@ static void
 finalize (GObject *object)
 {
   ExampleContactListBase *self = EXAMPLE_CONTACT_LIST_BASE (object);
-  TpHandleRepoIface *handle_repo = tp_base_connection_get_handles
-      (self->priv->conn, self->priv->handle_type);
 
-  tp_handle_unref (handle_repo, self->priv->handle);
   g_free (self->priv->object_path);
   tp_group_mixin_finalize (object);
 
@@ -537,7 +531,7 @@ static void
 list_channel_close (TpSvcChannel *iface G_GNUC_UNUSED,
                     DBusGMethodInvocation *context)
 {
-  GError e = { TP_ERRORS, TP_ERROR_NOT_IMPLEMENTED,
+  GError e = { TP_ERROR, TP_ERROR_NOT_IMPLEMENTED,
       "ContactList channels with handle type LIST may not be closed" };
 
   dbus_g_method_return_error (context, &e);
@@ -552,7 +546,7 @@ group_channel_close (TpSvcChannel *iface,
 
   if (tp_handle_set_size (base->group.members) > 0)
     {
-      GError e = { TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      GError e = { TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "Non-empty groups may not be deleted (closed)" };
 
       dbus_g_method_return_error (context, &e);
