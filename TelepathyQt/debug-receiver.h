@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2011-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -40,38 +40,34 @@ class TP_QT_EXPORT DebugReceiver : public StatefulDBusProxy
 {
     Q_OBJECT
     Q_DISABLE_COPY(DebugReceiver)
+
 public:
     static const Feature FeatureCore;
-    static const Feature FeatureMonitor;
 
     static DebugReceiverPtr create(const QString &busName,
             const QDBusConnection &bus = QDBusConnection::sessionBus());
     virtual ~DebugReceiver();
 
     PendingDebugMessageList *fetchMessages() const;
+    PendingOperation *setMonitoringEnabled(bool enabled);
 
 Q_SIGNALS:
     void newDebugMessage(const Tp::DebugMessage & message);
 
 protected:
-    DebugReceiver(const QDBusConnection &bus,
-                  const QString &busName,
-                  const QString &objectPath,
-                  const Feature &featureCore);
+    DebugReceiver(const QDBusConnection &bus, const QString &busName);
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onRequestAllPropertiesFinished(Tp::PendingOperation *op);
-    TP_QT_NO_EXPORT void onSetPropertyEnabledFinished(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onNewDebugMessage(double time, const QString &domain,
                                            uint level, const QString &message);
 
 private:
     struct Private;
     friend struct Private;
-
     Private *mPriv;
 };
 
-}
+} // Tp
 
 #endif
