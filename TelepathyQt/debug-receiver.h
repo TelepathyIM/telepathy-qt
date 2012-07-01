@@ -48,7 +48,7 @@ public:
             const QDBusConnection &bus = QDBusConnection::sessionBus());
     virtual ~DebugReceiver();
 
-    PendingDebugMessageList *fetchMessages() const;
+    PendingDebugMessageList *fetchMessages();
     PendingOperation *setMonitoringEnabled(bool enabled);
 
 Q_SIGNALS:

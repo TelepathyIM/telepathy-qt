@@ -111,11 +111,10 @@ DebugReceiver::~DebugReceiver()
     delete mPriv;
 }
 
-PendingDebugMessageList *DebugReceiver::fetchMessages() const
+PendingDebugMessageList *DebugReceiver::fetchMessages()
 {
-    return new PendingDebugMessageList(
-            mPriv->baseInterface->GetMessages(),
-            DebugReceiverPtr(const_cast<DebugReceiver*>(this)));
+    return new PendingDebugMessageList(mPriv->baseInterface->GetMessages(),
+            DebugReceiverPtr(this));
 }
 
 PendingOperation *DebugReceiver::setMonitoringEnabled(bool enabled)
