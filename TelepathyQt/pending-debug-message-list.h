@@ -1,7 +1,7 @@
 /**
  * This file is part of TelepathyQt
  *
- * @copyright Copyright (C) 2011 Collabora Ltd. <http://www.collabora.co.uk/>
+ * @copyright Copyright (C) 2011-2012 Collabora Ltd. <http://www.collabora.co.uk/>
  * @license LGPL 2.1
  *
  * This library is free software; you can redistribute it and/or
@@ -35,8 +35,8 @@ class TP_QT_EXPORT PendingDebugMessageList : public Tp::PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingDebugMessageList)
+
 public:
-    PendingDebugMessageList(QDBusPendingCall call, const SharedPtr<RefCounted> &object);
     virtual ~PendingDebugMessageList();
 
     DebugMessageList result() const;
@@ -45,12 +45,15 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
+    friend class DebugReceiver;
+    TP_QT_NO_EXPORT PendingDebugMessageList(const QDBusPendingCall &call,
+            const SharedPtr<RefCounted> &object);
+
     struct Private;
     friend struct Private;
-
     Private *mPriv;
 };
 
-}
+} // Tp
 
 #endif
