@@ -11,6 +11,7 @@ Enhancements:
  * Renamed AccountManager::accountForPath() and AccountManager::accountsForPaths()
    to accountForObjectPath() and accountsForObjectPaths() respectively,
    deprecating the old names.
+ * Added bindings for Debug interface.
  * ...
 
 Fixes:
