@@ -65,7 +65,7 @@ DebugReceiver::Private::Private(DebugReceiver *parent)
 
 void DebugReceiver::Private::introspectCore(DebugReceiver::Private *self)
 {
-    //this is done only to verify that the object exists...
+    // this is done only to verify that the object exists...
     PendingVariantMap *op = self->baseInterface->requestAllProperties();
     self->parent->connect(op,
             SIGNAL(finished(Tp::PendingOperation*)),
