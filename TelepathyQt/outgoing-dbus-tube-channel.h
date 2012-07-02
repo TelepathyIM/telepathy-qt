@@ -56,4 +56,4 @@ private:
 
 }
 
-#endif // TP_OUTGOING_DBUS_TUBE_CHANNEL_H
+#endif

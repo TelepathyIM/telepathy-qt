@@ -41,10 +41,7 @@ public:
 
     // Public object
     IncomingDBusTubeChannel *parent;
-    static bool initRandom;
 };
-
-bool IncomingDBusTubeChannel::Private::initRandom = true;
 
 IncomingDBusTubeChannel::Private::Private(IncomingDBusTubeChannel *parent)
     : parent(parent)

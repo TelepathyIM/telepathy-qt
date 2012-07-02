@@ -30,8 +30,6 @@
 namespace Tp
 {
 
-
-class DBusTubeChannelPrivate;
 class TP_QT_EXPORT DBusTubeChannel : public TubeChannel
 {
     Q_OBJECT
