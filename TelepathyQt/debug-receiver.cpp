@@ -111,12 +111,42 @@ DebugReceiver::~DebugReceiver()
     delete mPriv;
 }
 
+/**
+ * Retrieves buffered debug messages.
+ *
+ * This method returns a list of buffered debug messages. Depending on the service side
+ * implementation, this may not be the entire list of all messages received during the
+ * service's lifetime. Use monitoring instead for getting all the messages being streamed
+ * in realtime.
+ *
+ * \return A pending operation returning a list of buffered debug messages when finished.
+ *
+ * \sa setMonitoringEnabled
+ */
 PendingDebugMessageList *DebugReceiver::fetchMessages()
 {
     return new PendingDebugMessageList(mPriv->baseInterface->GetMessages(),
             DebugReceiverPtr(this));
 }
 
+/**
+ * Enables or disables the emission of newDebugMessage.
+ *
+ * This function either enables or disables the emission of newDebugMessage. If monitoring is
+ * enabled, everytime a message will be received, newDebugMessage will be emitted carrying the
+ * new message.
+ *
+ * Monitoring should be disabled when not needed, as it generates a high amount of traffic on
+ * the bus. It is always disabled by default.
+ *
+ * This method requires FeatureCore to be enabled.
+ *
+ * \param enabled Whether to enable or disable monitoring.
+ *
+ * \return A pending operation returning whether the operation succeeded or not.
+ *
+ * \sa newDebugMessage
+ */
 PendingOperation *DebugReceiver::setMonitoringEnabled(bool enabled)
 {
     if (!isReady()) {
@@ -153,5 +183,16 @@ void DebugReceiver::onNewDebugMessage(double time, const QString &domain,
 
     emit newDebugMessage(msg);
 }
+
+/**
+ * \fn void DebugReceiver::newDebugMessage(const Tp::DebugMessage &msg)
+ *
+ * Emitted whenever a new debug message is available. This will be emitted only if
+ * monitoring has been previously enabled.
+ *
+ * \param msg The new debug message.
+ *
+ * \sa setMonitoringEnabled
+ */
 
 } // Tp
