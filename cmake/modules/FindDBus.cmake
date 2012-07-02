@@ -2,10 +2,12 @@
 # Once done this will define
 #
 #  DBUS_FOUND - system has D-Bus
+#  DBUS_INCLUDE_DIRS - the D-Bus include directories
 #  DBUS_INCLUDE_DIR - the D-Bus include directory
 #  DBUS_ARCH_INCLUDE_DIR - the D-Bus architecture-specific include directory
 #  DBUS_LIBRARIES - the libraries needed to use D-Bus
 
+# Copyright (c) 2012, George Kiagiadakis <kiagiadakis.george@gmail.com>
 # Copyright (c) 2008, Kevin Kofler, <kevin.kofler@chello.at>
 # modeled after FindLibArt.cmake:
 # Copyright (c) 2006, Alexander Neundorf, <neundorf@kde.org>
@@ -13,60 +15,29 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
-if (DBUS_INCLUDE_DIR AND DBUS_ARCH_INCLUDE_DIR AND DBUS_LIBRARIES)
+find_package(PkgConfig)
+if (PKG_CONFIG_FOUND)
+    pkg_check_modules(PC_DBUS dbus-1)
+endif (PKG_CONFIG_FOUND)
 
-  # in cache already
-  SET(DBUS_FOUND TRUE)
+find_path(DBUS_INCLUDE_DIR dbus/dbus.h
+    PATHS ${PC_DBUS_INCLUDE_DIRS}
+    PATH_SUFFIXES dbus-1.0
+)
 
-else (DBUS_INCLUDE_DIR AND DBUS_ARCH_INCLUDE_DIR AND DBUS_LIBRARIES)
+find_path(DBUS_ARCH_INCLUDE_DIR dbus/dbus-arch-deps.h
+    PATHS ${PC_DBUS_INCLUDE_DIRS}
+    HINTS ${CMAKE_LIBRARY_PATH}/dbus-1.0/include
+          ${CMAKE_SYSTEM_LIBRARY_PATH}/dbus-1.0/include
+)
 
-  IF (NOT WIN32)
-    FIND_PACKAGE(PkgConfig)
-    IF (PKG_CONFIG_FOUND)
-      # use pkg-config to get the directories and then use these values
-      # in the FIND_PATH() and FIND_LIBRARY() calls
-      pkg_check_modules(_DBUS_PC dbus-1)
-    ENDIF (PKG_CONFIG_FOUND)
-  ENDIF (NOT WIN32)
+find_library(DBUS_LIBRARIES NAMES dbus-1
+    PATHS ${PC_DBUS_LIBRARY_DIRS}
+)
 
-  FIND_PATH(DBUS_INCLUDE_DIR dbus/dbus.h
-    ${_DBUS_PC_INCLUDE_DIRS}
-    /usr/include
-    /usr/include/dbus-1.0
-    /usr/local/include
-  )
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(DBus DBUS_INCLUDE_DIR DBUS_ARCH_INCLUDE_DIR DBUS_LIBRARIES)
 
-  FIND_PATH(DBUS_ARCH_INCLUDE_DIR dbus/dbus-arch-deps.h
-    ${_DBUS_PC_INCLUDE_DIRS}
-    /usr/lib${LIB_SUFFIX}/include
-    /usr/lib${LIB_SUFFIX}/dbus-1.0/include
-    /usr/lib64/include
-    /usr/lib64/dbus-1.0/include
-    /usr/lib/include
-    /usr/lib/dbus-1.0/include
-  )
+set(DBUS_INCLUDE_DIRS ${DBUS_INCLUDE_DIR} ${DBUS_ARCH_INCLUDE_DIR})
 
-  FIND_LIBRARY(DBUS_LIBRARIES NAMES dbus-1 dbus
-    PATHS
-     ${_DBUS_PC_LIBDIR}
-  )
-
-
-  if (DBUS_INCLUDE_DIR AND DBUS_ARCH_INCLUDE_DIR AND DBUS_LIBRARIES)
-     set(DBUS_FOUND TRUE)
-  endif (DBUS_INCLUDE_DIR AND DBUS_ARCH_INCLUDE_DIR AND DBUS_LIBRARIES)
-
-
-  if (DBUS_FOUND)
-     if (NOT DBus_FIND_QUIETLY)
-        message(STATUS "Found D-Bus: ${DBUS_LIBRARIES}")
-     endif (NOT DBus_FIND_QUIETLY)
-  else (DBUS_FOUND)
-     if (DBus_FIND_REQUIRED)
-        message(FATAL_ERROR "Could NOT find D-Bus")
-     endif (DBus_FIND_REQUIRED)
-  endif (DBUS_FOUND)
-
-  MARK_AS_ADVANCED(DBUS_INCLUDE_DIR DBUS_ARCH_INCLUDE_DIR DBUS_LIBRARIES)
-
-endif (DBUS_INCLUDE_DIR AND DBUS_ARCH_INCLUDE_DIR AND DBUS_LIBRARIES)
+mark_as_advanced(DBUS_INCLUDE_DIR DBUS_ARCH_INCLUDE_DIR DBUS_LIBRARIES)
