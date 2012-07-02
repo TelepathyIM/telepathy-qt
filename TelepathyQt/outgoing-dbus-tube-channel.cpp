@@ -37,7 +37,6 @@ namespace Tp
 struct TP_QT_NO_EXPORT OutgoingDBusTubeChannel::Private
 {
     Private(OutgoingDBusTubeChannel *parent);
-    virtual ~Private();
 
     // Public object
     OutgoingDBusTubeChannel *parent;
@@ -45,10 +44,6 @@ struct TP_QT_NO_EXPORT OutgoingDBusTubeChannel::Private
 
 OutgoingDBusTubeChannel::Private::Private(OutgoingDBusTubeChannel *parent)
         : parent(parent)
-{
-}
-
-OutgoingDBusTubeChannel::Private::~Private()
 {
 }
 

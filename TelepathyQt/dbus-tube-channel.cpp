@@ -37,7 +37,6 @@ namespace Tp
 struct TP_QT_NO_EXPORT DBusTubeChannel::Private
 {
     Private(DBusTubeChannel *parent);
-    virtual ~Private();
 
     void extractProperties(const QVariantMap &props);
     void extractParticipants(const Tp::DBusTubeParticipants &participants);
@@ -92,10 +91,6 @@ DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
     introspectables[DBusTubeChannel::FeatureBusNameMonitoring] = introspectableBusNamesMonitoring;
 
     readinessHelper->addIntrospectables(introspectables);
-}
-
-DBusTubeChannel::Private::~Private()
-{
 }
 
 void DBusTubeChannel::Private::extractProperties(const QVariantMap &props)

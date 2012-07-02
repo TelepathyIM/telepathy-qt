@@ -38,7 +38,6 @@ struct TP_QT_NO_EXPORT IncomingDBusTubeChannel::Private
 {
 public:
     Private(IncomingDBusTubeChannel *parent);
-    virtual ~Private();
 
     // Public object
     IncomingDBusTubeChannel *parent;
@@ -49,10 +48,6 @@ bool IncomingDBusTubeChannel::Private::initRandom = true;
 
 IncomingDBusTubeChannel::Private::Private(IncomingDBusTubeChannel *parent)
     : parent(parent)
-{
-}
-
-IncomingDBusTubeChannel::Private::~Private()
 {
 }
 

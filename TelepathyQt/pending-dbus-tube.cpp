@@ -35,7 +35,6 @@ namespace Tp
 struct TP_QT_NO_EXPORT PendingDBusTube::Private
 {
     Private(PendingDBusTube *parent);
-    ~Private();
 
     // Public object
     PendingDBusTube *parent;
@@ -50,10 +49,6 @@ PendingDBusTube::Private::Private(PendingDBusTube *parent)
     : parent(parent),
       requiresCredentials(false),
       credentialByte(0)
-{
-}
-
-PendingDBusTube::Private::~Private()
 {
 }
 
