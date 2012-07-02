@@ -56,6 +56,7 @@ set(telepathy_qt_SRCS
     dbus-proxy-factory.cpp
     dbus-proxy-factory-internal.h
     debug.cpp
+    debug-receiver.cpp
     debug-internal.h
     fake-handler-manager-internal.cpp
     fake-handler-manager-internal.h
@@ -90,6 +91,7 @@ set(telepathy_qt_SRCS
     pending-contact-attributes.cpp
     pending-contact-info.cpp
     pending-contacts.cpp
+    pending-debug-message-list.cpp
     pending-handles.cpp
     pending-operation.cpp
     pending-ready.cpp
@@ -315,6 +317,8 @@ set(telepathy_qt_HEADERS
     dbus-proxy-factory.h
     Debug
     debug.h
+    DebugReceiver
+    debug-receiver.h
     Feature
     Features
     feature.h
@@ -387,6 +391,8 @@ set(telepathy_qt_HEADERS
     pending-contact-info.h
     PendingContacts
     pending-contacts.h
+    PendingDebugMessageList
+    pending-debug-message-list.h
     PendingFailure
     PendingHandles
     pending-handles.h
@@ -494,6 +500,7 @@ set(telepathy_qt_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-manager.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-dbus.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-debug-receiver.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-session-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-stream-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-properties.h
@@ -537,6 +544,7 @@ set(telepathy_qt_MOC_SRCS
     dbus-proxy.h
     dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
+    debug-receiver.h
     fake-handler-manager-internal.h
     file-transfer-channel.h
     fixed-feature-factory.h
@@ -557,6 +565,7 @@ set(telepathy_qt_MOC_SRCS
     pending-contact-info.h
     pending-contacts.h
     pending-contacts-internal.h
+    pending-debug-message-list.h
     pending-handles.h
     pending-operation.h
     pending-ready.h
@@ -647,6 +656,7 @@ set(SPECS
     connection
     connection-manager
     dbus
+    debug-receiver
     media-session-handler
     media-stream-handler
     properties
@@ -700,6 +710,7 @@ tpqt_client_generator(client clientclient Client Tp::Client --mainiface=Tp::Clie
 tpqt_client_generator(connection clientconn Connection Tp::Client --mainiface=Tp::Client::ConnectionInterface DEPENDS connection-spec-xincludator)
 tpqt_client_generator(connection-manager clientcm ConnectionManager Tp::Client --mainiface=Tp::Client::ConnectionManagerInterface DEPENDS connection-manager-spec-xincludator)
 tpqt_client_generator(dbus clientdbus DBus Tp::Client::DBus DEPENDS dbus-spec-xincludator)
+tpqt_client_generator(debug-receiver clientdebug DebugReceiver Tp::Client --mainiface=Tp::Client::DebugInterface DEPENDS debug-receiver-spec-xincludator)
 tpqt_client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface DEPENDS media-session-handler-spec-xincludator)
 tpqt_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface DEPENDS media-stream-handler-spec-xincludator)
 tpqt_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)

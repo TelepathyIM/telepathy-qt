@@ -107,6 +107,12 @@
     (QLatin1String("/org/freedesktop/Telepathy/Account"))
 
 /**
+ * The object path of the Debug object of various services.
+ */
+#define TP_QT_DEBUG_OBJECT_PATH \
+    (QLatin1String("/org/freedesktop/Telepathy/debug"))
+
+/**
  * @}
  */
 
