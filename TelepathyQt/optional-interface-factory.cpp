@@ -26,7 +26,7 @@
 
 #include "TelepathyQt/debug-internal.h"
 
-#include <QMap>
+#include <QHash>
 #include <QString>
 
 namespace Tp
@@ -37,7 +37,7 @@ namespace Tp
 struct TP_QT_NO_EXPORT OptionalInterfaceCache::Private
 {
     QObject *proxy;
-    QMap<QString, AbstractInterface*> interfaces;
+    QHash<QString, AbstractInterface*> interfaces;
 
     Private(QObject *proxy);
 };

@@ -46,7 +46,6 @@
 #include <TelepathyQt/PendingVoid>
 #include <TelepathyQt/ReferencedHandles>
 
-#include <QMap>
 #include <QMetaObject>
 #include <QMutex>
 #include <QMutexLocker>
@@ -147,7 +146,7 @@ struct TP_QT_NO_EXPORT Connection::Private
 
     // misc
     // (Bus connection name, service name) -> HandleContext
-    static QMap<QPair<QString, QString>, HandleContext *> handleContexts;
+    static QHash<QPair<QString, QString>, HandleContext *> handleContexts;
     static QMutex handleContextsLock;
     HandleContext *handleContext;
 
@@ -171,7 +170,7 @@ struct TP_QT_NO_EXPORT Connection::Private::HandleContext
 {
     struct Type
     {
-        QMap<uint, uint> refcounts;
+        QHash<uint, uint> refcounts;
         QSet<uint> toRelease;
         uint requestsInFlight;
         bool releaseScheduled;
@@ -190,7 +189,7 @@ struct TP_QT_NO_EXPORT Connection::Private::HandleContext
 
     int refcount;
     QMutex lock;
-    QMap<uint, Type> types;
+    QHash<uint, Type> types;
 };
 
 Connection::Private::Private(Connection *parent,
@@ -771,7 +770,7 @@ void Connection::PendingConnect::onConnInvalidated(Tp::DBusProxy *proxy, const Q
             SLOT(onStatusChanged(Tp::ConnectionStatus)));
 }
 
-QMap<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;
+QHash<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;
 QMutex Connection::Private::handleContextsLock;
 
 /**

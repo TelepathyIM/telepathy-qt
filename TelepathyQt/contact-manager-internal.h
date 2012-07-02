@@ -29,7 +29,6 @@
 #include <TelepathyQt/Types>
 
 #include <QList>
-#include <QMap>
 #include <QObject>
 #include <QQueue>
 #include <QString>
@@ -223,12 +222,12 @@ private:
     QQueue<QStringList> contactListGroupsRemovedQueue;
     bool processingContactListChanges;
 
-    QMap<PendingOperation * /* actual */, ModifyFinishOp *> returnedModifyOps;
+    QHash<PendingOperation * /* actual */, ModifyFinishOp *> returnedModifyOps;
     QQueue<ModifyFinishOp *> modifyFinishQueue;
 
     // old roster API
     uint contactListChannelsReady;
-    QMap<uint, ChannelInfo> contactListChannels;
+    QHash<uint, ChannelInfo> contactListChannels;
     ChannelPtr subscribeChannel;
     ChannelPtr publishChannel;
     ChannelPtr storedChannel;
@@ -238,7 +237,7 @@ private:
     // 1 for Get("Channels") + 1 per channel not ready
     uint featureContactListGroupsTodo;
     QList<ChannelPtr> pendingContactListGroupChannels;
-    QMap<QString, ChannelPtr> contactListGroupChannels;
+    QHash<QString, ChannelPtr> contactListGroupChannels;
     QList<ChannelPtr> removedContactListGroupChannels;
 
     // If RosterGroups introspection completing should advance the ContactManager state to Success

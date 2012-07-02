@@ -61,9 +61,9 @@ struct TP_QT_NO_EXPORT ContactManager::Private
     WeakPtr<Connection> connection;
     ContactManager::Roster *roster;
 
-    QMap<uint, WeakPtr<Contact> > contacts;
+    QHash<uint, WeakPtr<Contact> > contacts;
 
-    QMap<Feature, bool> tracking;
+    QHash<Feature, bool> tracking;
     Features supportedFeatures;
 
     // avatar

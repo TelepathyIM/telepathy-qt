@@ -586,7 +586,7 @@ struct TP_QT_NO_EXPORT Account::Private
 
     // The contexts should never be removed from the map, to guarantee O(1) CD introspections per bus
     struct DispatcherContext;
-    static QMap<QString, QSharedPointer<DispatcherContext> > dispatcherContexts;
+    static QHash<QString, QSharedPointer<DispatcherContext> > dispatcherContexts;
     QSharedPointer<DispatcherContext> dispatcherContext;
 };
 
@@ -759,7 +759,7 @@ QString Account::Private::connectionObjectPath() const
     return !connection.isNull() ? connection->objectPath() : QString();
 }
 
-QMap<QString, QSharedPointer<Account::Private::DispatcherContext> > Account::Private::dispatcherContexts;
+QHash<QString, QSharedPointer<Account::Private::DispatcherContext> > Account::Private::dispatcherContexts;
 
 /**
  * \class Account
@@ -1801,7 +1801,7 @@ bool Account::isChangingPresence() const
  */
 PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
 {
-    QMap<QString, PresenceSpec> specMap;
+    QHash<QString, PresenceSpec> specMap;
 
     // if the connection is online and ready use it
     if (mPriv->connection &&
@@ -1853,8 +1853,8 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
 
             // now remove all presences that are not in the Profile, if it does
             // not allow other presences, and the ones that are disabled
-            QMap<QString, PresenceSpec>::iterator i = specMap.begin();
-            QMap<QString, PresenceSpec>::iterator end = specMap.end();
+            QHash<QString, PresenceSpec>::iterator i = specMap.begin();
+            QHash<QString, PresenceSpec>::iterator end = specMap.end();
             while (i != end) {
                 PresenceSpec presence = i.value();
                 QString status = presence.presence().status();
@@ -1871,8 +1871,8 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
 
     // filter out presences that may not be set on self if includeAllStatuses is false
     if (!includeAllStatuses) {
-        QMap<QString, PresenceSpec>::iterator i = specMap.begin();
-        QMap<QString, PresenceSpec>::iterator end = specMap.end();
+        QHash<QString, PresenceSpec>::iterator i = specMap.begin();
+        QHash<QString, PresenceSpec>::iterator end = specMap.end();
         while (i != end) {
             PresenceSpec presence = i.value();
             if (!presence.maySetOnSelf()) {
