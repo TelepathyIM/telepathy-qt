@@ -475,4 +475,16 @@ void DBusTubeChannel::setAddress(const QString& address)
  * \param contact The ContactPtr identifying the participant
  */
 
+/**
+ * \fn void DBusTubeChannel::busNameRemoved(const QString &busName, const Tp::ContactPtr &contact)
+ *
+ * Emitted when a participant leaves this tube.
+ *
+ * This signal will be emitted only if the tube is a group tube (not p2p), and if the
+ * FeatureBusNameMonitoring feature has been enabled.
+ *
+ * \param busName The bus name of the participant leaving
+ * \param contact The ContactPtr identifying the participant
+ */
+
 }
