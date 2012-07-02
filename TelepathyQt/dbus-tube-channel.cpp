@@ -66,6 +66,10 @@ DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
         : parent(parent),
           queuedContactFactory(new QueuedContactFactory(parent->connection()->contactManager(), parent))
 {
+    parent->connect(queuedContactFactory,
+            SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
+            SLOT(onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
+
     // Initialize readinessHelper + introspectables here
     readinessHelper = parent->readinessHelper();
 
@@ -225,10 +229,6 @@ DBusTubeChannel::DBusTubeChannel(const ConnectionPtr &connection,
     : TubeChannel(connection, objectPath, immutableProperties),
       mPriv(new Private(this))
 {
-    connect(mPriv->queuedContactFactory,
-            SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
-            this,
-            SLOT(onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
 }
 
 /**
