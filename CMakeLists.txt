@@ -108,6 +108,14 @@ endif (${TP_QT_NANO_VERSION} EQUAL 0)
 
 # Add an option for compiling tp-qt-service
 option(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT "Enable compilation of experimental and unstable service side bindings for Telepathy-Qt" FALSE)
+# Add an option for compiling examples
+option(ENABLE_EXAMPLES "Enable compilation of examples for Telepathy-Qt" TRUE)
+# Add an option for compiling Farsight (disabled by default)
+option(ENABLE_FARSIGHT "Enable compilation of Farsight bindings (deprecated)" FALSE)
+# Add an option for compiling Farstream
+option(ENABLE_FARSTREAM "Enable compilation of Farstream bindings" TRUE)
+# Add an option for building tests
+option(ENABLE_TESTS "Enable compilation of automated tests" TRUE)
 
 if (ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     message(STATUS "You have enabled experimental service support for Telepathy-Qt. Be aware there are no guarantees of API stability yet for service-side classes.")
@@ -175,91 +183,105 @@ macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
                   "http://www.python.org/" FALSE ""
                   "Needed to build some additional unit tests")
 
-# Find GLib2, GObject, DBus and LibXml2
-# Those are needed for the insane include dir dependency hell
-find_package(GLIB2)
-find_package(GObject)
-find_package(GIO)
-find_package(GIOUnix)
-find_package(DBus)
-find_package(DBusGLib)
-find_package(LibXml2)
+if(ENABLE_TESTS OR ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
+    # Find telepathy-glib
+    set(TELEPATHY_GLIB_MIN_VERSION 0.17.5)
+    find_package(TelepathyGlib)
+    macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
+                      "Glib bindings for Telepathy"
+                      "http://telepathy.freedesktop.org/" FALSE ${TELEPATHY_GLIB_MIN_VERSION}
+                      "Needed, together with Qt Glib integration, to build most of the unit tests")
 
-# Find tp-farsight
-set(TELEPATHY_FARSIGHT_MIN_VERSION "0.0.4")
-find_package(TelepathyFarsight)
-macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
-                  "A Framework for dealing with audio/video conferencing protocols"
-                  "http://farsight.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSIGHT_MIN_VERSION}"
-                  "Needed, together with GStreamer, to build telepathy-qt-farsight and some additional examples")
+    find_program(GLIB_GENMARSHAL glib-genmarshal)
 
-# Find tp-farsight
-set(FARSTREAM_MIN_VERSION "0.1.0")
-find_package(Farstream)
-macro_log_feature(FARSTREAM_FOUND "Farstream"
-                  "A Framework for dealing with audio/video conferencing protocols"
-                  "http://www.freedesktop.org/wiki/Software/Farstream" FALSE "${FARSTREAM_MIN_VERSION}"
-                  "Needed, together with GStreamer and Telepathy-Farstream, to build telepathy-qt-farstream")
+    # Find GLib2, GObject, DBus and LibXml2
+    # Those are needed for the insane include dir dependency hell
+    find_package(GLIB2)
+    find_package(GObject)
+    find_package(GIO)
+    find_package(GIOUnix)
+    find_package(DBus)
+    find_package(DBusGLib)
+    find_package(LibXml2)
+endif()
 
-# Find tp-farsight
-set(TELEPATHY_FARSTREAM_MIN_VERSION "0.2.2")
-find_package(TelepathyFarstream)
-macro_log_feature(TELEPATHYFARSTREAM_FOUND "Telepathy-Farstream"
-                  "A Framework for dealing with audio/video conferencing protocols"
-                  "http://telepathy.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSTREAM_MIN_VERSION}"
-                  "Needed, together with GStreamer and Farstream, to build telepathy-qt-farstream")
+if(ENABLE_FARSIGHT)
+    # Find tp-farsight
+    set(TELEPATHY_FARSIGHT_MIN_VERSION "0.0.4")
+    find_package(TelepathyFarsight)
+    macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
+                      "A Framework for dealing with audio/video conferencing protocols"
+                      "http://farsight.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSIGHT_MIN_VERSION}"
+                      "Needed, together with GStreamer, to build telepathy-qt-farsight and some additional examples")
+endif()
 
-# Find GStreamer
-find_package(GStreamer)
-macro_log_feature(GSTREAMER_FOUND "GStreamer"
-                  "An open source multimedia framework"
-                  "Needed, together with Tp-Farsight, to build telepathy-qt-farsight and some additional examples"
-                  "http://www.gstreamer.net/" FALSE)
+if(ENABLE_FARSTREAM)
+    # Find tp-farstream
+    set(FARSTREAM_MIN_VERSION "0.1.0")
+    find_package(Farstream)
+    macro_log_feature(FARSTREAM_FOUND "Farstream"
+                      "A Framework for dealing with audio/video conferencing protocols"
+                      "http://www.freedesktop.org/wiki/Software/Farstream" FALSE "${FARSTREAM_MIN_VERSION}"
+                      "Needed, together with GStreamer and Telepathy-Farstream, to build telepathy-qt-farstream")
+
+    # Find tp-farstream
+    set(TELEPATHY_FARSTREAM_MIN_VERSION "0.2.2")
+    find_package(TelepathyFarstream)
+    macro_log_feature(TELEPATHYFARSTREAM_FOUND "Telepathy-Farstream"
+                      "A Framework for dealing with audio/video conferencing protocols"
+                      "http://telepathy.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSTREAM_MIN_VERSION}"
+                      "Needed, together with GStreamer and Farstream, to build telepathy-qt-farstream")
+endif()
+
+if(ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
+    # Find GStreamer
+    find_package(GStreamer)
+    macro_log_feature(GSTREAMER_FOUND "GStreamer"
+                      "An open source multimedia framework"
+                      "Needed, together with Tp-Farsight, to build telepathy-qt-farsight and some additional examples"
+                      "http://www.gstreamer.net/" FALSE)
+endif()
 
 # Build TelepathyQt-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
-if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
     set (FARSIGHT_COMPONENTS_FOUND 1)
-else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
     set (FARSIGHT_COMPONENTS_FOUND 0)
-endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
 
 # Build TelepathyQt-Farstream only if GStreamer, TelepathyFarstream and all of their dependencies were found
-if (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+if (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSTREAM)
     set (FARSTREAM_COMPONENTS_FOUND 1)
-else (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+else (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSTREAM)
     set (FARSTREAM_COMPONENTS_FOUND 0)
-endif (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+endif (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSTREAM)
 
-# Find telepathy-glib
-set(TELEPATHY_GLIB_MIN_VERSION 0.17.5)
-find_package(TelepathyGlib)
-macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
-                  "Glib bindings for Telepathy"
-                  "http://telepathy.freedesktop.org/" FALSE ${TELEPATHY_GLIB_MIN_VERSION}
-                  "Needed, together with Qt Glib integration, to build most of the unit tests")
-
-find_program(GLIB_GENMARSHAL glib-genmarshal)
-
-# Enable glib-based tests only if Qt has GLib support and Telepathy-glib was found
-if(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
-    # Disable GLib deprecation warnings for now; GValueArray is deprecated but we
-    # need it for telepathy-glib.
-    add_definitions(-DGLIB_DISABLE_DEPRECATION_WARNINGS)
-    set(ENABLE_TP_GLIB_TESTS 1)
-    if(GIO_FOUND AND GIOUNIX_FOUND)
-        set(ENABLE_TP_GLIB_GIO_TESTS 1)
-    else(GIO_FOUND AND GIOUNIX_FOUND)
+if (ENABLE_TESTS)
+    # Enable glib-based tests only if Qt has GLib support and Telepathy-glib was found
+    if(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+        # Disable GLib deprecation warnings for now; GValueArray is deprecated but we
+        # need it for telepathy-glib.
+        add_definitions(-DGLIB_DISABLE_DEPRECATION_WARNINGS)
+        set(ENABLE_TP_GLIB_TESTS 1)
+        if(GIO_FOUND AND GIOUNIX_FOUND)
+            set(ENABLE_TP_GLIB_GIO_TESTS 1)
+        else(GIO_FOUND AND GIOUNIX_FOUND)
+            set(ENABLE_TP_GLIB_GIO_TESTS 0)
+        endif(GIO_FOUND AND GIOUNIX_FOUND)
+    else(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+        set(ENABLE_TP_GLIB_TESTS 0)
         set(ENABLE_TP_GLIB_GIO_TESTS 0)
-    endif(GIO_FOUND AND GIOUNIX_FOUND)
-else(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
-    set(ENABLE_TP_GLIB_TESTS 0)
-    set(ENABLE_TP_GLIB_GIO_TESTS 0)
-endif(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+    endif(QT_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+endif(ENABLE_TESTS)
 
 # Add the source subdirectories
 add_subdirectory(TelepathyQt)
-add_subdirectory(examples)
-add_subdirectory(tests)
+if(ENABLE_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+if(ENABLE_TESTS)
+    add_subdirectory(tests)
+endif()
 add_subdirectory(tools)
 
 # Generate config.h and config-version.h
