@@ -58,8 +58,6 @@ protected:
     DBusTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
-    void setAddress(const QString &address);
-
 Q_SIGNALS:
     void busNameAdded(const QString &busName, const Tp::ContactPtr &contact);
     void busNameRemoved(const QString &busName, const Tp::ContactPtr &contact);
@@ -72,6 +70,8 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onQueueCompleted();
 
 private:
+    TP_QT_NO_EXPORT void setAddress(const QString &address);
+
     struct Private;
     friend struct PendingDBusTubeConnection;
     friend struct Private;
