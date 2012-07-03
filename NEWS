@@ -14,6 +14,7 @@ Enhancements:
  * Added bindings for Debug interface.
  * Enable several options in CMake to allow to selectively build components. In particular,
    now Farsight, Farstream, examples and tests are optional. Farsight is disabled by default.
+ * fd.o #28366: Added high level bindings for DBus tubes.
  * ...
 
 Fixes:
