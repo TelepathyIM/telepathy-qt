@@ -390,7 +390,7 @@ QVariantMap streamTubeRequest(const Tp::ContactPtr &contact, const QString &serv
     return request;
 }
 
-QVariantMap dBusTubeCommonRequest(const QString &serviceName)
+QVariantMap dbusTubeCommonRequest(const QString &serviceName)
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
@@ -402,17 +402,17 @@ QVariantMap dBusTubeCommonRequest(const QString &serviceName)
     return request;
 }
 
-QVariantMap dBusTubeRequest(const QString &contactIdentifier, const QString &serviceName)
+QVariantMap dbusTubeRequest(const QString &contactIdentifier, const QString &serviceName)
 {
-    QVariantMap request = dBusTubeCommonRequest(serviceName);
+    QVariantMap request = dbusTubeCommonRequest(serviceName);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                    contactIdentifier);
     return request;
 }
 
-QVariantMap dBusTubeRequest(const Tp::ContactPtr &contact, const QString &serviceName)
+QVariantMap dbusTubeRequest(const Tp::ContactPtr &contact, const QString &serviceName)
 {
-    QVariantMap request = dBusTubeCommonRequest(serviceName);
+    QVariantMap request = dbusTubeCommonRequest(serviceName);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
     return request;
@@ -2851,7 +2851,7 @@ PendingChannelRequest* Account::createDBusTube(
         const QString& preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request = dBusTubeRequest(contactIdentifier, serviceName);
+    QVariantMap request = dbusTubeRequest(contactIdentifier, serviceName);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -2886,7 +2886,7 @@ PendingChannelRequest* Account::createDBusTube(
         const QString& preferredHandler,
         const ChannelRequestHints &hints)
 {
-    QVariantMap request = dBusTubeRequest(contact, serviceName);
+    QVariantMap request = dbusTubeRequest(contact, serviceName);
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
@@ -3678,7 +3678,7 @@ PendingChannel *Account::createAndHandleDBusTube(
         const QString &serviceName,
         const QDateTime &userActionTime)
 {
-    QVariantMap request = dBusTubeRequest(contactIdentifier, serviceName);
+    QVariantMap request = dbusTubeRequest(contactIdentifier, serviceName);
 
     return createAndHandleChannel(request, userActionTime);
 }
@@ -3704,7 +3704,7 @@ PendingChannel *Account::createAndHandleDBusTube(
         const QString &serviceName,
         const QDateTime &userActionTime)
 {
-    QVariantMap request = dBusTubeRequest(contact, serviceName);
+    QVariantMap request = dbusTubeRequest(contact, serviceName);
 
     return createAndHandleChannel(request, userActionTime);
 }
