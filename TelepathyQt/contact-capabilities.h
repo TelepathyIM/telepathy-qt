@@ -41,6 +41,9 @@ public:
     ContactCapabilities();
     virtual ~ContactCapabilities();
 
+    bool dbusTubes(const QString &serviceName) const;
+    QStringList dbusTubeServices() const;
+
     bool streamTubes(const QString &service) const;
     QStringList streamTubeServices() const;
 

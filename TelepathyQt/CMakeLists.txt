@@ -55,6 +55,7 @@ set(telepathy_qt_SRCS
     dbus-proxy.cpp
     dbus-proxy-factory.cpp
     dbus-proxy-factory-internal.h
+    dbus-tube-channel.cpp
     debug.cpp
     debug-receiver.cpp
     debug-internal.h
@@ -67,6 +68,7 @@ set(telepathy_qt_SRCS
     future.cpp
     future-internal.h
     handled-channel-notifier.cpp
+    incoming-dbus-tube-channel.cpp
     incoming-file-transfer-channel.cpp
     incoming-stream-tube-channel.cpp
     key-file.cpp
@@ -80,6 +82,7 @@ set(telepathy_qt_SRCS
     message-content-part.cpp
     object.cpp
     optional-interface-factory.cpp
+    outgoing-dbus-tube-channel.cpp
     outgoing-file-transfer-channel.cpp
     outgoing-stream-tube-channel.cpp
     pending-account.cpp
@@ -91,6 +94,7 @@ set(telepathy_qt_SRCS
     pending-contact-attributes.cpp
     pending-contact-info.cpp
     pending-contacts.cpp
+    pending-dbus-tube-connection.cpp
     pending-debug-message-list.cpp
     pending-handles.cpp
     pending-operation.cpp
@@ -315,6 +319,8 @@ set(telepathy_qt_HEADERS
     dbus-proxy.h
     DBusProxyFactory
     dbus-proxy-factory.h
+    DBusTubeChannel
+    dbus-tube-channel.h
     Debug
     debug.h
     DebugReceiver
@@ -340,6 +346,8 @@ set(telepathy_qt_HEADERS
     global.h
     HandledChannelNotifier
     handled-channel-notifier.h
+    IncomingDBusTubeChannel
+    incoming-dbus-tube-channel.h
     IncomingFileTransferChannel
     incoming-file-transfer-channel.h
     IncomingStreamTubeChannel
@@ -368,6 +376,8 @@ set(telepathy_qt_HEADERS
     optional-interface-factory.h
     OrFilter
     or-filter.h
+    OutgoingDBusTubeChannel
+    outgoing-dbus-tube-channel.h
     OutgoingFileTransferChannel
     outgoing-file-transfer-channel.h
     OutgoingStreamTubeChannel
@@ -391,6 +401,8 @@ set(telepathy_qt_HEADERS
     pending-contact-info.h
     PendingContacts
     pending-contacts.h
+    PendingDBusTubeConnection
+    pending-dbus-tube-connection.h
     PendingDebugMessageList
     pending-debug-message-list.h
     PendingFailure
@@ -545,13 +557,16 @@ set(telepathy_qt_MOC_SRCS
     dbus-proxy-factory.h
     dbus-proxy-factory-internal.h
     debug-receiver.h
+    dbus-tube-channel.h
     fake-handler-manager-internal.h
     file-transfer-channel.h
     fixed-feature-factory.h
     handled-channel-notifier.h
+    incoming-dbus-tube-channel.h
     incoming-file-transfer-channel.h
     incoming-stream-tube-channel.h
     object.h
+    outgoing-dbus-tube-channel.h
     outgoing-file-transfer-channel.h
     outgoing-stream-tube-channel.h
     outgoing-stream-tube-channel-internal.h
@@ -565,6 +580,7 @@ set(telepathy_qt_MOC_SRCS
     pending-contact-info.h
     pending-contacts.h
     pending-contacts-internal.h
+    pending-dbus-tube-connection.h
     pending-debug-message-list.h
     pending-handles.h
     pending-operation.h

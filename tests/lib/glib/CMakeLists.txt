@@ -5,7 +5,8 @@ include_directories(
     ${GOBJECT_INCLUDE_DIR}
     ${GIO_INCLUDE_DIR}
     ${GIOUNIX_INCLUDE_DIR}
-    ${DBUS_INCLUDE_DIR})
+    ${DBUS_INCLUDE_DIR}
+    ${DBUS_ARCH_INCLUDE_DIR})
 
 if(ENABLE_TP_GLIB_TESTS)
     add_subdirectory(call)
@@ -51,7 +52,8 @@ if(ENABLE_TP_GLIB_TESTS)
         util.c
         util.h)
     if(ENABLE_TP_GLIB_GIO_TESTS)
-        list(APPEND tp_glib_tests_SRCS stream-tube-chan.c stream-tube-chan.h)
+        list(APPEND tp_glib_tests_SRCS dbus-tube-chan.c dbus-tube-chan.h
+                                       stream-tube-chan.c stream-tube-chan.h)
     endif(ENABLE_TP_GLIB_GIO_TESTS)
     add_library(tp-glib-tests SHARED ${tp_glib_tests_SRCS})
     target_link_libraries(tp-glib-tests

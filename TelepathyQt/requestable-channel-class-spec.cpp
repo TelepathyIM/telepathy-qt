@@ -432,6 +432,29 @@ RequestableChannelClassSpec RequestableChannelClassSpec::contactSearchWithSpecif
     return spec;
 }
 
+RequestableChannelClassSpec RequestableChannelClassSpec::dbusTube(const QString &serviceName)
+{
+    static RequestableChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        RequestableChannelClass rcc;
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                (uint) HandleTypeContact);
+        spec = RequestableChannelClassSpec(rcc);
+    }
+
+    if (serviceName.isEmpty()) {
+        return spec;
+    }
+
+    RequestableChannelClass rcc = spec.bareClass();
+    rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+            serviceName);
+    return RequestableChannelClassSpec(rcc);
+}
+
 RequestableChannelClassSpec RequestableChannelClassSpec::streamTube(const QString &service)
 {
     static RequestableChannelClassSpec spec;

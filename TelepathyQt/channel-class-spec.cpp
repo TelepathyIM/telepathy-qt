@@ -593,6 +593,96 @@ ChannelClassSpec ChannelClassSpec::incomingRoomStreamTube(const QString &service
     }
 }
 
+ChannelClassSpec ChannelClassSpec::outgoingDBusTube(const QString &serviceName,
+                                                    const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE,
+                HandleTypeContact, true);
+    }
+
+    if (!serviceName.isEmpty()) {
+        spec.setProperty(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+                         serviceName);
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::incomingDBusTube(const QString &serviceName,
+                                                    const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE,
+                HandleTypeContact, false);
+    }
+
+    if (!serviceName.isEmpty()) {
+        spec.setProperty(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+                         serviceName);
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::outgoingRoomDBusTube(const QString &serviceName,
+                                                        const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.mPriv.constData()) {
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE,
+                HandleTypeRoom, true);
+    }
+
+    QVariantMap props = additionalProperties;
+    if (!serviceName.isEmpty()) {
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+                serviceName);
+    }
+
+    if (props.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, props);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::incomingRoomDBusTube(const QString &serviceName,
+                                                        const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.mPriv.constData()) {
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE,
+                HandleTypeRoom, false);
+    }
+
+    QVariantMap props = additionalProperties;
+    if (!serviceName.isEmpty()) {
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+                serviceName);
+    }
+
+    if (props.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, props);
+    }
+}
+
 ChannelClassSpec ChannelClassSpec::contactSearch(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;

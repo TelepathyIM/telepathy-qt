@@ -261,6 +261,22 @@ bool ConnectionCapabilities::contactSearchesWithLimit() const
 }
 
 /**
+ * Return whether creating a DBusTube channel by providing a contact identifier is supported.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::dbusTubes() const
+{
+    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
+    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
+        if (rccSpec.supports(RequestableChannelClassSpec::dbusTube())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Return whether creating a StreamTube channel by providing a contact identifier is supported.
  *
  * \return \c true if supported, \c false otherwise.

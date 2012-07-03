@@ -36,8 +36,10 @@
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/ContactSearchChannel>
 #include <TelepathyQt/FileTransferChannel>
+#include <TelepathyQt/IncomingDBusTubeChannel>
 #include <TelepathyQt/IncomingFileTransferChannel>
 #include <TelepathyQt/IncomingStreamTubeChannel>
+#include <TelepathyQt/OutgoingDBusTubeChannel>
 #include <TelepathyQt/OutgoingFileTransferChannel>
 #include <TelepathyQt/OutgoingStreamTubeChannel>
 #include <TelepathyQt/RoomListChannel>
@@ -102,6 +104,10 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
     setSubclassForCalls<CallChannel>();
     setSubclassForStreamedMediaCalls<StreamedMediaChannel>();
     setSubclassForRoomLists<RoomListChannel>();
+    setSubclassForIncomingDBusTubes<IncomingDBusTubeChannel>();
+    setSubclassForOutgoingDBusTubes<OutgoingDBusTubeChannel>();
+    setSubclassForIncomingRoomDBusTubes<IncomingDBusTubeChannel>();
+    setSubclassForOutgoingRoomDBusTubes<OutgoingDBusTubeChannel>();
     setSubclassForIncomingFileTransfers<IncomingFileTransferChannel>();
     setSubclassForOutgoingFileTransfers<OutgoingFileTransferChannel>();
     setSubclassForIncomingStreamTubes<IncomingStreamTubeChannel>();
@@ -378,6 +384,98 @@ void ChannelFactory::setConstructorForIncomingRoomStreamTubes(const ConstructorC
         const QVariantMap &additionalProps)
 {
     setConstructorFor(ChannelClassSpec::incomingRoomStreamTube(QString(), additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForOutgoingDBusTubes(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::outgoingDBusTube(QString(), additionalProps));
+}
+
+void ChannelFactory::addFeaturesForOutgoingDBusTubes(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::outgoingDBusTube(QString(), additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForOutgoingDBusTubes(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::outgoingDBusTube(QString(), additionalProps));
+}
+
+void ChannelFactory::setConstructorForOutgoingDBusTubes(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::outgoingDBusTube(QString(), additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForIncomingDBusTubes(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::incomingDBusTube(QString(), additionalProps));
+}
+
+void ChannelFactory::addFeaturesForIncomingDBusTubes(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::incomingDBusTube(QString(), additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingDBusTubes(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::incomingDBusTube(QString(), additionalProps));
+}
+
+void ChannelFactory::setConstructorForIncomingDBusTubes(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::incomingDBusTube(QString(), additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForOutgoingRoomDBusTubes(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::outgoingRoomDBusTube(QString(), additionalProps));
+}
+
+void ChannelFactory::addFeaturesForOutgoingRoomDBusTubes(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::outgoingRoomDBusTube(QString(), additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForOutgoingRoomDBusTubes(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::outgoingRoomDBusTube(QString(), additionalProps));
+}
+
+void ChannelFactory::setConstructorForOutgoingRoomDBusTubes(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::outgoingRoomDBusTube(QString(), additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForIncomingRoomDBusTubes(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::incomingRoomDBusTube(QString(), additionalProps));
+}
+
+void ChannelFactory::addFeaturesForIncomingRoomDBusTubes(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::incomingRoomDBusTube(QString(), additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingRoomDBusTubes(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::incomingRoomDBusTube(QString(), additionalProps));
+}
+
+void ChannelFactory::setConstructorForIncomingRoomDBusTubes(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::incomingRoomDBusTube(QString(), additionalProps), ctor);
 }
 
 Features ChannelFactory::featuresForContactSearches(const QVariantMap &additionalProps) const
