@@ -2844,11 +2844,11 @@ PendingChannelRequest *Account::createStreamTube(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest* Account::createDBusTube(
-        const QString& contactIdentifier,
-        const QString& serviceName,
-        const QDateTime& userActionTime,
-        const QString& preferredHandler,
+PendingChannelRequest *Account::createDBusTube(
+        const QString &contactIdentifier,
+        const QString &serviceName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
     QVariantMap request = dbusTubeRequest(contactIdentifier, serviceName);

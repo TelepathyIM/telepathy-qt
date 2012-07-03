@@ -158,7 +158,7 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
 /**
  * \class DBusTubeChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt/stream-tube-channel.h <TelepathyQt/DBusTubeChannel>
+ * \headerfile TelepathyQt/dbus-tube-channel.h <TelepathyQt/DBusTubeChannel>
  *
  * \brief The DBusTubeChannel class represents a Telepathy channel of type DBusTube.
  *
@@ -321,6 +321,8 @@ QString DBusTubeChannel::address() const
  * This function will always return an empty hash in case the tube is p2p, even if
  * FeatureBusNameMonitoring has been activated.
  *
+ * This method requires FeatureBusNameMonitoring to be enabled.
+ *
  * \returns A list of active connection ids known to this tube
  */
 QHash<QString, Tp::ContactPtr> DBusTubeChannel::contactsForBusNames() const
@@ -426,8 +428,6 @@ void DBusTubeChannel::onContactsRetrieved(const QUuid &uuid, const QList<Contact
                 emit busNameAdded(busName, contact);
             }
         }
-
-
     } else if (mPriv->pendingNewBusNamesToRemove.contains(uuid)) {
         mPriv->pendingNewBusNamesToRemove.removeOne(uuid);
 
