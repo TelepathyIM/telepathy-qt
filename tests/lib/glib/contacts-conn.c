@@ -53,6 +53,8 @@ G_DEFINE_TYPE_WITH_CODE (TpTestsContactsConnection,
       tp_base_contact_list_mixin_list_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_CONTACT_GROUPS,
       tp_base_contact_list_mixin_groups_iface_init);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CONNECTION_INTERFACE_CLIENT_TYPES,
+      NULL);
     );
 
 /* type definition stuff */
@@ -343,6 +345,23 @@ conn_contact_info_properties_getter (GObject *object,
 }
 
 static void
+client_types_fill_contact_attributes (
+    GObject *object,
+    const GArray *contacts,
+    GHashTable *attributes)
+{
+  TpTestsContactsConnectionClass *klass =
+      TP_TESTS_CONTACTS_CONNECTION_GET_CLASS (object);
+
+  if (klass->fill_client_types != NULL)
+    klass->fill_client_types (object, contacts, attributes);
+  /* …else do nothing: a no-op implementation is valid, relatively speaking.
+   * The spec sez the /client-types attribute should be “omitted from the
+   * result if the contact's client types are not known.”
+   */
+}
+
+static void
 constructed (GObject *object)
 {
   TpBaseConnection *base = TP_BASE_CONNECTION (object);
@@ -371,6 +390,9 @@ constructed (GObject *object)
   tp_contacts_mixin_add_contact_attributes_iface (object,
       TP_IFACE_CONNECTION_INTERFACE_CONTACT_INFO,
       contact_info_fill_contact_attributes);
+  tp_contacts_mixin_add_contact_attributes_iface (object,
+      TP_IFACE_CONNECTION_INTERFACE_CLIENT_TYPES,
+      client_types_fill_contact_attributes);
 
   tp_presence_mixin_init (object,
       G_STRUCT_OFFSET (TpTestsContactsConnection, presence_mixin));
@@ -503,6 +525,7 @@ tp_tests_contacts_connection_class_init (TpTestsContactsConnectionClass *klass)
       TP_IFACE_CONNECTION_INTERFACE_PRESENCE,
       TP_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
       TP_IFACE_CONNECTION_INTERFACE_LOCATION,
+      TP_IFACE_CONNECTION_INTERFACE_CLIENT_TYPES,
       TP_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES,
       TP_IFACE_CONNECTION_INTERFACE_CONTACT_INFO,
       TP_IFACE_CONNECTION_INTERFACE_REQUESTS,

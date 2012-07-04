@@ -32,6 +32,8 @@ struct _TpTestsContactsConnectionClass {
     TpPresenceMixinClass presence_mixin;
     TpContactsMixinClass contacts_mixin;
     TpDBusPropertiesMixinClass properties_class;
+
+    TpContactsMixinFillContactAttributesFunc fill_client_types;
 };
 
 struct _TpTestsContactsConnection {
