@@ -252,7 +252,8 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureLocation
             << Contact::FeatureInfo
             << Contact::FeatureRosterGroups
-            << Contact::FeatureAddresses;
+            << Contact::FeatureAddresses
+            << Contact::FeatureClientTypes;
         QStringList interfaces = connection()->lowlevel()->contactAttributeInterfaces();
         foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
@@ -1408,6 +1409,17 @@ void ContactManager::onContactInfoChanged(uint handle, const Tp::ContactInfoFiel
     }
 }
 
+void ContactManager::onClientTypesUpdated(uint handle, const QStringList &clientTypes)
+{
+    debug() << "Got ClientTypesUpdated for contact with handle" << handle;
+
+    ContactPtr contact = lookupContactByHandle(handle);
+
+    if (contact) {
+        contact->receiveClientTypes(clientTypes);
+    }
+}
+
 void ContactManager::doRefreshInfo()
 {
     PendingRefreshContactInfo *op = mPriv->refreshInfoOp;
@@ -1472,6 +1484,8 @@ QString ContactManager::featureToInterface(const Feature &feature)
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
     } else if (feature == Contact::FeatureAddresses) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING;
+    } else if (feature == Contact::FeatureClientTypes) {
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CLIENT_TYPES;
     } else {
         warning() << "ContactManager doesn't know which interface corresponds to feature"
             << feature;
@@ -1536,6 +1550,13 @@ void ContactManager::ensureTracking(const Feature &feature)
         connect(simplePresenceInterface,
                 SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
                 SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
+    } else if (feature == Contact::FeatureClientTypes) {
+        Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface =
+            conn->interface<Client::ConnectionInterfaceClientTypesInterface>();
+
+        connect(clientTypesInterface,
+                SIGNAL(ClientTypesUpdated(uint,QStringList)),
+                SLOT(onClientTypesUpdated(uint,QStringList)));
     } else if (feature == Contact::FeatureRosterGroups || feature == Contact::FeatureAddresses) {
         // nothing to do here, but we don't want to warn
         ;
