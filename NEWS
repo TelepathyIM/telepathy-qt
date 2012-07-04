@@ -18,6 +18,7 @@ Enhancements:
  * ...
 
 Fixes:
+ * Fix PkgConfig detection in DBus find files
  * Fix a race condition in test-account-basics and test-dbus-properties.
  * Fix compilation with gcc 4.7.
  * Fix tests compilation with telepathy-glib 0.19.
