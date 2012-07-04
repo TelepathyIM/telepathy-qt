@@ -1,7 +1,7 @@
 telepathy-qt 0.9.2 (UNRELEASED)
 =================================
 
-The "..." release.
+The "We were at aKademy and we got bored" release.
 
 Enhancements:
  * Introducing Telepathy-Qt-Service, a new static library that contains
@@ -15,7 +15,6 @@ Enhancements:
  * Enable several options in CMake to allow to selectively build components. In particular,
    now Farsight, Farstream, examples and tests are optional. Farsight is disabled by default.
  * fd.o #28366: Added high level bindings for DBus tubes.
- * ...
 
 Fixes:
  * Fix PkgConfig detection in DBus find files
@@ -24,7 +23,6 @@ Fixes:
  * Fix tests compilation with telepathy-glib 0.19.
  * Fix FindDBus.cmake to find the correct paths.
  * Pass -fvisibility-inlines-hidden to the compiler if it's supported.
- * ...
 
 telepathy-qt 0.9.1 (2012-03-23)
 =================================
