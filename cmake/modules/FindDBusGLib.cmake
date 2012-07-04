@@ -15,8 +15,8 @@ if(DBUS_GLIB_INCLUDE_DIR AND DBUS_GLIB_LIBRARIES)
   set(DBUS_GLIB_FIND_QUIETLY TRUE)
 endif(DBUS_GLIB_INCLUDE_DIR AND DBUS_GLIB_LIBRARIES)
 
-find_package(PkgConfig)
-if(PKG_CONFIG_FOUND)
+if(NOT WIN32)
+    find_package(PkgConfig)
     if (DBusGLib_FIND_VERSION_EXACT)
         pkg_check_modules(PC_DBUS_GLIB QUIET dbus-glib-1=${DBusGLib_FIND_VERSION})
     else (DBusGLib_FIND_VERSION_EXACT)
@@ -26,7 +26,7 @@ if(PKG_CONFIG_FOUND)
             pkg_check_modules(PC_DBUS_GLIB REQUIRED dbus-glib-1)
         endif (DBusGLib_FIND_VERSION)
     endif (DBusGLib_FIND_VERSION_EXACT)
-endif(PKG_CONFIG_FOUND)
+endif(NOT WIN32)
 
 find_path(DBUS_GLIB_INCLUDE_DIR
           NAMES dbus-1.0/dbus/dbus-glib.h

@@ -15,10 +15,10 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
-find_package(PkgConfig)
-if (PKG_CONFIG_FOUND)
+if (NOT WIN32)
+    find_package(PkgConfig)
     pkg_check_modules(PC_DBUS dbus-1)
-endif (PKG_CONFIG_FOUND)
+endif (NOT WIN32)
 
 find_path(DBUS_INCLUDE_DIR dbus/dbus.h
     PATHS ${PC_DBUS_INCLUDE_DIRS}
