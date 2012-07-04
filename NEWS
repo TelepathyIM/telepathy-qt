@@ -18,7 +18,11 @@ Enhancements:
  * ...
 
 Fixes:
+ * Fix a race condition in test-account-basics and test-dbus-properties.
+ * Fix compilation with gcc 4.7.
+ * Fix tests compilation with telepathy-glib 0.19.
  * Fix FindDBus.cmake to find the correct paths.
+ * Pass -fvisibility-inlines-hidden to the compiler if it's supported.
  * ...
 
 telepathy-qt 0.9.1 (2012-03-23)
