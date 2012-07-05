@@ -932,6 +932,12 @@ PendingOperation *Contact::removeFromGroup(const QString &group)
  */
 QStringList Contact::clientTypes() const
 {
+    if (!mPriv->requestedFeatures.contains(FeatureClientTypes)) {
+        warning() << "Contact::clientTypes() used on" << this
+            << "for which FeatureClientTypes hasn't been requested - returning an empty list";
+        return QStringList();
+    }
+
     return mPriv->clientTypes;
 }
 
@@ -939,6 +945,11 @@ QStringList Contact::clientTypes() const
  */
 PendingStringList *Contact::requestClientTypes()
 {
+    if (!mPriv->requestedFeatures.contains(FeatureClientTypes)) {
+        warning() << "Contact::requestClientTypes() used on" << this
+            << "for which FeatureClientTypes hasn't been requested - the operation will fail";
+    }
+
     Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface =
         manager()->connection()->interface<Client::ConnectionInterfaceClientTypesInterface>();
 
