@@ -285,9 +285,6 @@ tp_tests_dbus_tube_channel_class_init (TpTestsDBusTubeChannelClass *klass)
 
   /* base_class->target_handle_type is defined in subclasses */
 
-  tp_text_mixin_class_init (object_class,
-      G_STRUCT_OFFSET (TpTestsDBusTubeChannelClass, text_class));
-
   param_spec = g_param_spec_string ("service-name", "Service Name",
       "the service name associated with this tube object.",
        "",
@@ -543,7 +540,7 @@ create_dbus_server (TpTestsDBusTubeChannel *self,
       g_free (priv->socket_path);
       priv->socket_path = NULL;
 
-      g_set_error (err, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+      g_set_error (err, TP_ERROR, TP_ERROR_NOT_AVAILABLE,
           "Can't create D-Bus server");
       return FALSE;
     }
@@ -567,14 +564,14 @@ dbus_tube_offer (TpSvcChannelTypeDBusTube *iface,
 
   if (self->priv->state != TP_TUBE_CHANNEL_STATE_NOT_OFFERED)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "Tube is not in the not offered state");
       goto fail;
     }
 
   if (!check_access_control (self, access_control))
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "Address type not supported with this access control");
       goto fail;
     }
@@ -606,14 +603,14 @@ dbus_tube_accept (TpSvcChannelTypeDBusTube *iface,
 
   if (self->priv->state != TP_TUBE_CHANNEL_STATE_LOCAL_PENDING)
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "Tube is not in the local pending state");
       goto fail;
     }
 
   if (!check_access_control (self, access_control))
     {
-      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      g_set_error (&error, TP_ERROR, TP_ERROR_INVALID_ARGUMENT,
           "Address type not supported with this access control");
       goto fail;
     }
