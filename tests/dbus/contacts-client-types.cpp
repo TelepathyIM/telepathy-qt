@@ -33,6 +33,7 @@ private Q_SLOTS:
     void init();
 
     void testClientTypes();
+    void testClientTypesAttributes();
 
     void cleanup();
     void cleanupTestCase();
@@ -151,6 +152,27 @@ void TestContactsClientTypes::testClientTypes()
             SLOT(onRequestClientTypesFinished(Tp::PendingOperation*)));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mClientTypes, QStringList() << QLatin1String("web"));
+}
+
+void TestContactsClientTypes::testClientTypesAttributes()
+{
+    ContactManagerPtr contactManager = mConn->client()->contactManager();
+
+    QVERIFY(contactManager->supportedFeatures().contains(Contact::FeatureClientTypes));
+
+    const gchar *clientTypes[] = { "pc", "phone", NULL };
+    tp_tests_contacts_connection_change_client_types(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
+            2, g_strdupv((gchar**) clientTypes));
+
+    QStringList validIDs = QStringList() << QLatin1String("foo");
+    QList<ContactPtr> contacts = mConn->contacts(validIDs, Contact::FeatureClientTypes);
+    QCOMPARE(contacts.size(), 1);
+
+    ContactPtr contact = contacts[0];
+    QCOMPARE(contact->handle()[0], uint(2));
+    QCOMPARE(contact->requestedFeatures().contains(Contact::FeatureClientTypes), true);
+    QCOMPARE(contact->actualFeatures().contains(Contact::FeatureClientTypes), true);
+    QCOMPARE(contact->clientTypes(), QStringList() << QLatin1String("pc") << QLatin1String("phone"));
 }
 
 void TestContactsClientTypes::cleanup()
