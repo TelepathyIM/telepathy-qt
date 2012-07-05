@@ -35,6 +35,7 @@
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/LocationInfo>
 #include <TelepathyQt/PendingContactInfo>
+#include <TelepathyQt/PendingStringList>
 #include <TelepathyQt/PendingVoid>
 #include <TelepathyQt/Presence>
 #include <TelepathyQt/ReferencedHandles>
@@ -90,6 +91,8 @@ struct TP_QT_NO_EXPORT Contact::Private
     bool blocked;
 
     QSet<QString> groups;
+
+    QStringList clientTypes;
 };
 
 void Contact::Private::updateAvatarData()
@@ -297,6 +300,13 @@ const Feature Contact::FeatureRosterGroups = Feature(QLatin1String(Contact::stat
  * \sa vcardAddresses(), uris()
  */
 const Feature Contact::FeatureAddresses = Feature(QLatin1String(Contact::staticMetaObject.className()), 8, false);
+
+/**
+ * Feature used in order to access contact client types info.
+ *
+ * \sa clientTypes(), requestClientTypes(), clientTypesChanged()
+ */
+const Feature Contact::FeatureClientTypes = Feature(QLatin1String(Contact::staticMetaObject.className()), 9, false);
 
 /**
  * Construct a new Contact object.
@@ -918,6 +928,63 @@ PendingOperation *Contact::removeFromGroup(const QString &group)
     return manager()->removeContactsFromGroup(group, QList<ContactPtr>() << ContactPtr(this));
 }
 
+/**
+ * Return the client types of this contact, if known.
+ *
+ * Client types are represented using the values documented by the XMPP registrar,
+ * with some additional types. A contact can set one or more client types, or can simply
+ * advertise itself as unknown - in this case, an empty list is returned.
+ *
+ * This method returns cached information and is more appropriate for "lazy"
+ * client type finding, for instance displaying the client types (if available)
+ * of everyone in your contact list. For getting latest up-to-date information from
+ * the server you should use requestClientTypes() instead.
+ *
+ * This method requires FeatureClientTypes to be ready.
+ *
+ * \return A list of the client types advertised by this contact.
+ * \sa requestClientTypes(), clientTypesChanged()
+ */
+QStringList Contact::clientTypes() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureClientTypes)) {
+        warning() << "Contact::clientTypes() used on" << this
+            << "for which FeatureClientTypes hasn't been requested - returning an empty list";
+        return QStringList();
+    }
+
+    return mPriv->clientTypes;
+}
+
+/**
+ * Return the current client types of the given contact.
+ *
+ * If necessary, this method will make a request to the server for up-to-date
+ * information and wait for a reply. Therefore, this method is more appropriate
+ * for use in a "Contact Information..." dialog; it can be used to show progress
+ * information (while waiting for the method to return), and can distinguish
+ * between various error conditions.
+ *
+ * This method requires FeatureClientTypes to be ready.
+ *
+ * \return A list of the client types advertised by this contact.
+ * \sa clientTypes(), clientTypesChanged()
+ */
+PendingStringList *Contact::requestClientTypes()
+{
+    if (!mPriv->requestedFeatures.contains(FeatureClientTypes)) {
+        warning() << "Contact::requestClientTypes() used on" << this
+            << "for which FeatureClientTypes hasn't been requested - the operation will fail";
+    }
+
+    Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface =
+        manager()->connection()->interface<Client::ConnectionInterfaceClientTypesInterface>();
+
+    return new PendingStringList(
+            clientTypesInterface->RequestClientTypes(mPriv->handle.at(0)),
+            ContactPtr(this));
+}
+
 void Contact::augment(const Features &requestedFeatures, const QVariantMap &attributes)
 {
     mPriv->requestedFeatures.unite(requestedFeatures);
@@ -1042,6 +1109,21 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             QStringList uris = qdbus_cast<QStringList>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/uris")));
             receiveAddresses(addresses, uris);
+        } else if (feature == FeatureClientTypes) {
+            QStringList maybeClientTypes = qdbus_cast<QStringList>(attributes.value(
+                        TP_QT_IFACE_CONNECTION_INTERFACE_CLIENT_TYPES + QLatin1String("/client-types")));
+
+            if (!maybeClientTypes.isEmpty()) {
+                receiveClientTypes(maybeClientTypes);
+            } else {
+                if (manager()->supportedFeatures().contains(FeatureClientTypes) &&
+                    mPriv->requestedFeatures.contains(FeatureClientTypes)) {
+                    // ClientTypes being supported but not updated in the
+                    // mapping indicates that the info is not known -
+                    // however, the feature is working fine
+                    mPriv->actualFeatures.insert(FeatureClientTypes);
+                }
+            }
         } else {
             warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
         }
@@ -1162,6 +1244,20 @@ void Contact::receiveAddresses(const QMap<QString, QString> &addresses,
     mPriv->actualFeatures.insert(FeatureAddresses);
     mPriv->vcardAddresses = addresses;
     mPriv->uris = uris;
+}
+
+void Contact::receiveClientTypes(const QStringList &clientTypes)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureClientTypes)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureClientTypes);
+
+    if (mPriv->clientTypes != clientTypes) {
+        mPriv->clientTypes = clientTypes;
+        emit clientTypesChanged(mPriv->clientTypes);
+    }
 }
 
 Contact::PresenceState Contact::subscriptionStateToPresenceState(uint subscriptionState)
@@ -1331,6 +1427,15 @@ void Contact::setRemovedFromGroup(const QString &group)
  *
  * \param group The group name.
  * \sa groups(), addedToGroup()
+ */
+
+/**
+ * \fn void Contact::clientTypesChanged(const QStringList &clientTypes)
+ *
+ * Emitted when the client types of this contact change or become known.
+ *
+ * \param clientTypes The contact's client types
+ * \sa clientTypes(), requestClientTypes()
  */
 
 } // Tp

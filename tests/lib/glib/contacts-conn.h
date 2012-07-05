@@ -114,6 +114,9 @@ void tp_tests_contacts_connection_set_default_contact_info (
     TpTestsContactsConnection *self,
     GPtrArray *info);
 
+void tp_tests_contacts_connection_change_client_types (
+    TpTestsContactsConnection *self, TpHandle handle, gchar **client_types);
+
 /* Legacy version (no Contacts interface, and no immortal handles) */
 
 typedef struct _TpTestsLegacyContactsConnection TpTestsLegacyContactsConnection;

@@ -44,6 +44,7 @@ class LocationInfo;
 class ContactManager;
 class PendingContactInfo;
 class PendingOperation;
+class PendingStringList;
 class Presence;
 class ReferencedHandles;
 
@@ -61,6 +62,7 @@ public:
     static const Feature FeatureLocation;
     static const Feature FeatureSimplePresence;
     static const Feature FeatureAddresses;
+    static const Feature FeatureClientTypes;
 
     enum PresenceState {
          PresenceStateNo,
@@ -168,6 +170,9 @@ public:
     PendingOperation *addToGroup(const QString &group);
     PendingOperation *removeFromGroup(const QString &group);
 
+    QStringList clientTypes() const;
+    PendingStringList *requestClientTypes();
+
 Q_SIGNALS:
     void aliasChanged(const QString &alias);
 
@@ -190,6 +195,8 @@ Q_SIGNALS:
 
     void addedToGroup(const QString &group);
     void removedFromGroup(const QString &group);
+
+    void clientTypesChanged(const QStringList &clientTypes);
 
     // TODO: consider how the Renaming interface should work and map to Contacts
     // I guess it would be something like:
@@ -216,6 +223,7 @@ private:
     TP_QT_NO_EXPORT void receiveInfo(const ContactInfoFieldList &info);
     TP_QT_NO_EXPORT void receiveAddresses(const QMap<QString, QString> &addresses,
             const QStringList &uris);
+    TP_QT_NO_EXPORT void receiveClientTypes(const QStringList &clientTypes);
 
     TP_QT_NO_EXPORT static PresenceState subscriptionStateToPresenceState(uint subscriptionState);
     TP_QT_NO_EXPORT void setSubscriptionState(SubscriptionState state);

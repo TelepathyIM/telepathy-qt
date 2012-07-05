@@ -156,6 +156,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
     TP_QT_NO_EXPORT void onLocationUpdated(uint, const QVariantMap &);
     TP_QT_NO_EXPORT void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
+    TP_QT_NO_EXPORT void onClientTypesUpdated(uint, const QStringList &);
     TP_QT_NO_EXPORT void doRefreshInfo();
 
 private:
