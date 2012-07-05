@@ -929,6 +929,16 @@ PendingOperation *Contact::removeFromGroup(const QString &group)
 }
 
 /**
+ * Return the client types of this contact, if known.
+ *
+ * Client types are represented using the values documented by the XMPP registrar, with some additional
+ * types. A contact can set one or more client types, or can simply advertise itself as unknown - in this
+ * case, an empty list is returned.
+ *
+ * This method requires FeatureClientTypes to be ready.
+ *
+ * \return A list of the client types advertised by this contact.
+ * \sa requestClientTypes, clientTypesUpdated
  */
 QStringList Contact::clientTypes() const
 {
