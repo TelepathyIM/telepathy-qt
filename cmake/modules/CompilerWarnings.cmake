@@ -48,11 +48,11 @@ macro(compiler_warnings ret lang werror_by_default desirable_flags undesirable_f
 
     endforeach(flag ${undesirable_flags})
 
-    if(${DISABLE_WERROR} STREQUAL ON)
+    if(DISABLE_WERROR)
         set(enable_werror 0)
-    else(${DISABLE_WERROR} STREQUAL ON)
+    else(DISABLE_WERROR)
         set(enable_werror 1)
-    endif(${DISABLE_WERROR} STREQUAL ON)
+    endif(DISABLE_WERROR)
 
     if(${werror_by_default} AND ${enable_werror} AND ${all_nowarning_flags_supported})
         set(${ret} "${warning_flags} ${error_flags}")
