@@ -10,6 +10,7 @@ Enhancements:
 Fixes:
  * Fixed compilation of the DBus tube tests with tp-glib > 0.19
  * Fixed DISABLE_WERROR, which now works as expected.
+ * Fixed linking of the DBus tube tests with strict linkers like gold.
  * ...
 
 telepathy-qt 0.9.2 (2012-07-04)
