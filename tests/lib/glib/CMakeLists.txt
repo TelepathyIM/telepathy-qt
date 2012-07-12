@@ -62,6 +62,7 @@ if(ENABLE_TP_GLIB_TESTS)
         ${GOBJECT_LIBRARIES}
         ${GIO_LIBRARIES}
         ${DBUS_GLIB_LIBRARIES}
+        ${DBUS_LIBRARIES}
         example-cm-call
         example-cm-callable
         example-cm-contactlist
