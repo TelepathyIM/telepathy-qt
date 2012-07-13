@@ -53,11 +53,11 @@ public:
     bool videoCallsWithAudio() const;
     bool upgradingCalls() const;
 
-    bool streamedMediaCalls() const;
-    bool streamedMediaAudioCalls() const;
-    bool streamedMediaVideoCalls() const;
-    bool streamedMediaVideoCallsWithAudio() const;
-    bool upgradingStreamedMediaCalls() const;
+    TP_QT_DEPRECATED bool streamedMediaCalls() const;
+    TP_QT_DEPRECATED bool streamedMediaAudioCalls() const;
+    TP_QT_DEPRECATED bool streamedMediaVideoCalls() const;
+    TP_QT_DEPRECATED bool streamedMediaVideoCallsWithAudio() const;
+    TP_QT_DEPRECATED bool upgradingStreamedMediaCalls() const;
 
     bool fileTransfers() const;
 

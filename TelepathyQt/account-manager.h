@@ -97,10 +97,10 @@ public:
     AccountSetPtr textChatAccounts() const;
     AccountSetPtr textChatroomAccounts() const;
 
-    AccountSetPtr streamedMediaCallAccounts() const;
-    AccountSetPtr streamedMediaAudioCallAccounts() const;
-    AccountSetPtr streamedMediaVideoCallAccounts() const;
-    AccountSetPtr streamedMediaVideoCallWithAudioAccounts() const;
+    TP_QT_DEPRECATED AccountSetPtr streamedMediaCallAccounts() const;
+    TP_QT_DEPRECATED AccountSetPtr streamedMediaAudioCallAccounts() const;
+    TP_QT_DEPRECATED AccountSetPtr streamedMediaVideoCallAccounts() const;
+    TP_QT_DEPRECATED AccountSetPtr streamedMediaVideoCallWithAudioAccounts() const;
 
     AccountSetPtr fileTransferAccounts() const;
 
