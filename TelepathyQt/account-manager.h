@@ -97,6 +97,9 @@ public:
     AccountSetPtr textChatAccounts() const;
     AccountSetPtr textChatroomAccounts() const;
 
+    AccountSetPtr audioCallAccounts() const;
+    AccountSetPtr videoCallAccounts() const;
+
     TP_QT_DEPRECATED AccountSetPtr streamedMediaCallAccounts() const;
     TP_QT_DEPRECATED AccountSetPtr streamedMediaAudioCallAccounts() const;
     TP_QT_DEPRECATED AccountSetPtr streamedMediaVideoCallAccounts() const;
