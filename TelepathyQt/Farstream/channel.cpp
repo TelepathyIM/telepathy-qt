@@ -29,6 +29,7 @@
 #include <TelepathyQt/Connection>
 
 #include <telepathy-farstream/telepathy-farstream.h>
+#include <telepathy-glib/automatic-client-factory.h>
 #include <telepathy-glib/call-channel.h>
 #include <telepathy-glib/connection.h>
 #include <telepathy-glib/dbus.h>
@@ -78,14 +79,23 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
         return;
     }
 
-    TpConnection *gconnection = tp_connection_new(dbus,
-            connection->busName().toAscii(),
-            connection->objectPath().toAscii(),
-            0);
+    TpSimpleClientFactory *factory = (TpSimpleClientFactory *)
+            tp_automatic_client_factory_new (dbus);
+    if (!factory) {
+        warning() << "Unable to construct TpAutomaticClientFactory";
+        setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
+                QLatin1String("Unable to construct TpAutomaticClientFactory"));
+        g_object_unref(dbus);
+        return;
+    }
+
+    TpConnection *gconnection = tp_simple_client_factory_ensure_connection (factory,
+            connection->objectPath().toAscii(), NULL, 0);
     if (!gconnection) {
         warning() << "Unable to construct TpConnection";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Unable to construct TpConnection"));
+        g_object_unref(factory);
         g_object_unref(dbus);
         return;
     }
@@ -96,6 +106,8 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
             "dbus-daemon", dbus,
             "object-path", channel->objectPath().toAscii().constData(),
             NULL);
+    g_object_unref(factory);
+    factory = 0;
     g_object_unref(dbus);
     dbus = 0;
     g_object_unref(gconnection);
