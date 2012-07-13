@@ -8,11 +8,11 @@ Enhancements:
  * ...
 
 Fixes:
- * Fixed compilation of the DBus tube tests with tp-glib > 0.19
+ * Removed occurencies of deprecated tp-glib functions from the DBus tube tests.
  * Fixed DISABLE_WERROR, which now works as expected.
  * Fixed linking of the DBus tube tests with strict linkers like gold.
- * Removed occurrences of deprecated tp_handle_unref.
  * Synced tests/lib/glib/utils.* to remove deprecation warnings.
+ * Removed occurencies of the deprecated tp_connection_new from Farsight/Farstream.
  * ...
 
 telepathy-qt 0.9.2 (2012-07-04)
