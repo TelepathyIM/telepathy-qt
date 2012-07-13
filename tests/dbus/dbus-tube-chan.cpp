@@ -218,11 +218,6 @@ void TestDBusTubeChan::createTubeChannel(bool requested,
 
     g_hash_table_unref(props);
     g_array_unref(acontrols);
-
-    if (withContact)
-        tp_handle_unref(contactRepo, handle);
-    else
-        tp_handle_unref(roomRepo, handle);
 }
 
 void TestDBusTubeChan::initTestCase()
