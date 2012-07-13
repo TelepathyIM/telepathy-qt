@@ -27,6 +27,7 @@
 #include "TelepathyQt/debug-internal.h"
 
 #include <TelepathyQt/Account>
+#include <TelepathyQt/CallChannel>
 #include <TelepathyQt/ChannelClassSpec>
 #include <TelepathyQt/ChannelClassSpecList>
 #include <TelepathyQt/Connection>
@@ -65,14 +66,18 @@ SimpleCallObserver::Private::Private(SimpleCallObserver *parent,
       direction(direction)
 {
     debug() << "Creating a new SimpleCallObserver";
-    ChannelClassSpec channelFilter = ChannelClassSpec::streamedMediaCall();
+    ChannelClassSpec channelFilterSMC = ChannelClassSpec::streamedMediaCall();
+    ChannelClassSpec channelFilterCall = ChannelClassSpec::mediaCall();
     if (direction == CallDirectionIncoming) {
-        channelFilter.setRequested(false);
+        channelFilterSMC.setRequested(false);
+        channelFilterCall.setRequested(false);
     } else if (direction == CallDirectionOutgoing) {
-        channelFilter.setRequested(true);
+        channelFilterSMC.setRequested(true);
+        channelFilterCall.setRequested(true);
     }
 
-    observer = SimpleObserver::create(account, ChannelClassSpecList() << channelFilter,
+    observer = SimpleObserver::create(account,
+            ChannelClassSpecList() << channelFilterSMC << channelFilterCall,
             contactIdentifier, requiresNormalization, QList<ChannelClassFeatures>());
 
     parent->connect(observer.data(),
@@ -217,8 +222,26 @@ SimpleCallObserver::CallDirection SimpleCallObserver::direction() const
 }
 
 /**
+ * Return the list of calls currently being observed.
+ *
+ * \return A list of pointers to CallChannel objects.
+ */
+QList<CallChannelPtr> SimpleCallObserver::calls() const
+{
+    QList<CallChannelPtr> ret;
+    foreach (const ChannelPtr &channel, mPriv->observer->channels()) {
+        CallChannelPtr callChannel = CallChannelPtr::qObjectCast(channel);
+        if (callChannel) {
+            ret << callChannel;
+        }
+    }
+    return ret;
+}
+
+/**
  * Return the list of streamed media calls currently being observed.
  *
+ * \deprecated Use calls() instead. Modern clients shouldn't use StreamedMedia channels.
  * \return A list of pointers to StreamedMediaChannel objects.
  */
 QList<StreamedMediaChannelPtr> SimpleCallObserver::streamedMediaCalls() const
@@ -236,42 +259,86 @@ QList<StreamedMediaChannelPtr> SimpleCallObserver::streamedMediaCalls() const
 void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels)
 {
     foreach (const ChannelPtr &channel, channels) {
-        StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
-        if (!smChannel) {
-            if (channel->channelType() != TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
-                warning() << "Channel received to observe is not of type StreamedMedia, service "
-                    "confused. Ignoring channel";
-            } else {
+        if (channel->channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL) {
+            CallChannelPtr callChannel = CallChannelPtr::qObjectCast(channel);
+            if (!callChannel) {
+                warning() << "Channel received to observe is not a subclass of "
+                    "CallChannel. ChannelFactory set on this observer's account must "
+                    "construct CallChannel subclasses for channels of type Call. "
+                    "Ignoring channel";
+                continue;
+            }
+
+            emit callStarted(callChannel);
+        } else if (channel->channelType() == TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+            StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
+            if (!smChannel) {
                 warning() << "Channel received to observe is not a subclass of "
                     "StreamedMediaChannel. ChannelFactory set on this observer's account must "
                     "construct StreamedMediaChannel subclasses for channels of type StreamedMedia. "
                     "Ignoring channel";
+                continue;
             }
+
+            emit streamedMediaCallStarted(smChannel);
+        } else {
+            warning() << "Channel received to observe is not of type Call or StreamedMedia, "
+                    "service confused. Ignoring channel";
             continue;
         }
-
-        emit streamedMediaCallStarted(StreamedMediaChannelPtr::qObjectCast(channel));
     }
 }
 
 void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
         const QString &errorName, const QString &errorMessage)
 {
-    StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
-    if (!smChannel) {
-        if (channel->channelType() != TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
-            warning() << "Channel received by this observer is not of type StreamedMedia, service "
-                "confused. Ignoring channel";
-        } else {
-            warning() << "Channel received by this observer is not a subclass of "
+    if (channel->channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL) {
+        CallChannelPtr callChannel = CallChannelPtr::qObjectCast(channel);
+        if (!callChannel) {
+            warning() << "Channel received to observe is not a subclass of "
+                "CallChannel. ChannelFactory set on this observer's account must "
+                "construct CallChannel subclasses for channels of type Call. "
+                "Ignoring channel";
+            return;
+        }
+
+        emit callEnded(callChannel, errorName, errorMessage);
+    } else if (channel->channelType() == TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+        StreamedMediaChannelPtr smChannel = StreamedMediaChannelPtr::qObjectCast(channel);
+        if (!smChannel) {
+            warning() << "Channel received to observe is not a subclass of "
                 "StreamedMediaChannel. ChannelFactory set on this observer's account must "
                 "construct StreamedMediaChannel subclasses for channels of type StreamedMedia. "
                 "Ignoring channel";
+            return;
         }
-        return;
+
+        emit streamedMediaCallEnded(smChannel, errorName, errorMessage);
+    } else {
+        warning() << "Channel received to observe is not of type Call or StreamedMedia, "
+                "service confused. Ignoring channel";
     }
-    emit streamedMediaCallEnded(smChannel, errorName, errorMessage);
 }
+
+/**
+ * \fn void SimpleCallObserver::callStarted(const Tp::CallChannelPtr &channel)
+ *
+ * Emitted whenever a call that matches this observer's criteria is started.
+ *
+ * \param channel The channel representing the call that started.
+ */
+
+/**
+ * \fn void SimpleCallObserver::callEnded(const Tp::CallChannelPtr &channel,
+ *          const QString &errorName, const QString &errorMessage)
+ *
+ * Emitted whenever a call that matches this observer's criteria has ended.
+ *
+ * \param channel The channel representing the call that ended.
+ * \param errorName A D-Bus error name (a string in a subset
+ *                  of ASCII, prefixed with a reversed domain name).
+ * \param errorMessage A debugging message associated with the error.
+ */
 
 /**
  * \fn void SimpleCallObserver::streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel)
@@ -280,6 +347,7 @@ void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
  * started.
  *
  * \param channel The channel representing the streamed media call that started.
+ * \deprecated Use callStarted() instead. Modern clients shouldn't use StreamedMedia channels.
  */
 
 /**
@@ -293,6 +361,7 @@ void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
  * \param errorName A D-Bus error name (a string in a subset
  *                  of ASCII, prefixed with a reversed domain name).
  * \param errorMessage A debugging message associated with the error.
+ * \deprecated Use callEnded() instead. Modern clients shouldn't use StreamedMedia channels.
  */
 
 } // Tp
