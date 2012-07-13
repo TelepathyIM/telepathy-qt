@@ -5,6 +5,9 @@ The "..." release.
 
 Enhancements:
  * Added ClientTypes bindings to Contact.
+ * Fixed deprecation macros, and added TP_QT_EXPORT_DEPRECATED.
+ * Ported SimpleCallObserver to also handle Call1 calls.
+ * Deprecated Farsight and StreamedMedia.
  * ...
 
 Fixes:
