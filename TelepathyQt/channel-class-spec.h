@@ -146,36 +146,36 @@ public:
         unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"));
     }
 
-    bool hasStreamedMediaInitialAudioFlag() const
+    TP_QT_DEPRECATED bool hasStreamedMediaInitialAudioFlag() const
     {
         return qdbus_cast<bool>(
                 property(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio")));
     }
 
-    void setStreamedMediaInitialAudioFlag()
+    TP_QT_DEPRECATED void setStreamedMediaInitialAudioFlag()
     {
         setProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"),
                 QVariant::fromValue(true));
     }
 
-    void unsetStreamedMediaInitialAudioFlag()
+    TP_QT_DEPRECATED void unsetStreamedMediaInitialAudioFlag()
     {
         unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
     }
 
-    bool hasStreamedMediaInitialVideoFlag() const
+    TP_QT_DEPRECATED bool hasStreamedMediaInitialVideoFlag() const
     {
         return qdbus_cast<bool>(
                 property(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo")));
     }
 
-    void setStreamedMediaInitialVideoFlag()
+    TP_QT_DEPRECATED void setStreamedMediaInitialVideoFlag()
     {
         setProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"),
                 QVariant::fromValue(true));
     }
 
-    void unsetStreamedMediaInitialVideoFlag()
+    TP_QT_DEPRECATED void unsetStreamedMediaInitialVideoFlag()
     {
         unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"));
     }
@@ -193,28 +193,27 @@ public:
     static ChannelClassSpec textChatroom(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec unnamedTextChat(const QVariantMap &additionalProperties = QVariantMap());
 
-    static ChannelClassSpec audioCall(const QVariantMap &additionalProperties =
-            QVariantMap());
-    static ChannelClassSpec videoCall(const QVariantMap &additionalProperties =
-            QVariantMap());
+    static ChannelClassSpec mediaCall(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec audioCall(const QVariantMap &additionalProperties = QVariantMap());
+    static ChannelClassSpec videoCall(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec videoCallWithAudio(const QVariantMap &additionalProperties =
             QVariantMap());
 
-    static ChannelClassSpec streamedMediaCall(const QVariantMap &additionalProperties = QVariantMap());
-    static ChannelClassSpec streamedMediaAudioCall(const QVariantMap &additionalProperties =
+    TP_QT_DEPRECATED static ChannelClassSpec streamedMediaCall(const QVariantMap &additionalProperties = QVariantMap());
+    TP_QT_DEPRECATED static ChannelClassSpec streamedMediaAudioCall(const QVariantMap &additionalProperties =
             QVariantMap());
-    static ChannelClassSpec streamedMediaVideoCall(const QVariantMap &additionalProperties =
+    TP_QT_DEPRECATED static ChannelClassSpec streamedMediaVideoCall(const QVariantMap &additionalProperties =
             QVariantMap());
-    static ChannelClassSpec streamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
+    TP_QT_DEPRECATED static ChannelClassSpec streamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
             QVariantMap());
 
-    static ChannelClassSpec unnamedStreamedMediaCall(const QVariantMap &additionalProperties =
+    TP_QT_DEPRECATED static ChannelClassSpec unnamedStreamedMediaCall(const QVariantMap &additionalProperties =
             QVariantMap());
-    static ChannelClassSpec unnamedStreamedMediaAudioCall(const QVariantMap &additionalProperties =
+    TP_QT_DEPRECATED static ChannelClassSpec unnamedStreamedMediaAudioCall(const QVariantMap &additionalProperties =
             QVariantMap());
-    static ChannelClassSpec unnamedStreamedMediaVideoCall(const QVariantMap &additionalProperties =
+    TP_QT_DEPRECATED static ChannelClassSpec unnamedStreamedMediaVideoCall(const QVariantMap &additionalProperties =
             QVariantMap());
-    static ChannelClassSpec unnamedStreamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
+    TP_QT_DEPRECATED static ChannelClassSpec unnamedStreamedMediaVideoCallWithAudio(const QVariantMap &additionalProperties =
             QVariantMap());
 
     static ChannelClassSpec serverAuthentication(const QVariantMap &additionalProperties =

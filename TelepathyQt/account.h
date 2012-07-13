@@ -259,33 +259,33 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
-    PendingChannelRequest *ensureStreamedMediaCall(
+    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaCall(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
-    PendingChannelRequest *ensureStreamedMediaCall(
+    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaCall(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
-    PendingChannelRequest *ensureStreamedMediaAudioCall(
+    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaAudioCall(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
-    PendingChannelRequest *ensureStreamedMediaAudioCall(
+    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaAudioCall(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
-    PendingChannelRequest *ensureStreamedMediaVideoCall(
+    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaVideoCall(
             const QString &contactIdentifier,
             bool withAudio = true,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
-    PendingChannelRequest *ensureStreamedMediaVideoCall(
+    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaVideoCall(
             const ContactPtr &contact,
             bool withAudio = false,
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
@@ -331,13 +331,13 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
-    PendingChannelRequest *createConferenceStreamedMediaCall(
+    TP_QT_DEPRECATED PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
-    PendingChannelRequest *createConferenceStreamedMediaCall(
+    TP_QT_DEPRECATED PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
@@ -417,25 +417,25 @@ public:
             const QString &initialVideoContentName = QString(),
             const QDateTime &userActionTime = QDateTime::currentDateTime());
 
-    PendingChannel *ensureAndHandleStreamedMediaCall(
+    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaCall(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime());
-    PendingChannel *ensureAndHandleStreamedMediaCall(
+    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaCall(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime());
 
-    PendingChannel *ensureAndHandleStreamedMediaAudioCall(
+    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaAudioCall(
             const QString &contactIdentifier,
             const QDateTime &userActionTime = QDateTime::currentDateTime());
-    PendingChannel *ensureAndHandleStreamedMediaAudioCall(
+    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaAudioCall(
             const ContactPtr &contact,
             const QDateTime &userActionTime = QDateTime::currentDateTime());
 
-    PendingChannel *ensureAndHandleStreamedMediaVideoCall(
+    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaVideoCall(
             const QString &contactIdentifier,
             bool withAudio = true,
             const QDateTime &userActionTime = QDateTime::currentDateTime());
-    PendingChannel *ensureAndHandleStreamedMediaVideoCall(
+    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaVideoCall(
             const ContactPtr &contact,
             bool withAudio = true,
             const QDateTime &userActionTime = QDateTime::currentDateTime());
@@ -487,11 +487,11 @@ public:
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
             const QDateTime &userActionTime = QDateTime::currentDateTime());
 
-    PendingChannel *createAndHandleConferenceStreamedMediaCall(
+    TP_QT_DEPRECATED PendingChannel *createAndHandleConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
             const QDateTime &userActionTime = QDateTime::currentDateTime());
-    PendingChannel *createAndHandleConferenceStreamedMediaCall(
+    TP_QT_DEPRECATED PendingChannel *createAndHandleConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
             const QDateTime &userActionTime = QDateTime::currentDateTime());

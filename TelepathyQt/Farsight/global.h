@@ -43,4 +43,16 @@
 #  define TP_QT_FS_NO_EXPORT
 #endif
 
+#ifndef TP_QT_FS_DEPRECATED
+#  ifdef TP_QT_DEPRECATED_WARNINGS
+#    ifdef BUILDING_TP_QT_FARSIGHT
+#      define TP_QT_FS_DEPRECATED
+#    else
+#      define TP_QT_FS_DEPRECATED Q_DECL_DEPRECATED
+#    endif
+#  else
+#    define TP_QT_FS_DEPRECATED
+#  endif
+#endif
+
 #endif

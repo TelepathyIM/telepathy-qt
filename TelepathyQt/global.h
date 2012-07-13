@@ -78,6 +78,9 @@
  * struct TP_QT_DEPRECATED DeprecatedStruct { };
  * \endcode
  *
+ * \note If the class you want to deprecate is a QObject and needs to be exported,
+ *       you should use TP_QT_EXPORT_DEPRECATED instead.
+ *
  * \note
  * It does not make much sense to use the TP_QT_DEPRECATED keyword for a
  * Qt signal; this is because usually get called by the class which they belong
@@ -94,10 +97,43 @@
  */
 #ifndef TP_QT_DEPRECATED
 #  ifdef TP_QT_DEPRECATED_WARNINGS
-#    define TP_QT_DEPRECATED Q_DECL_DEPRECATED
+#    ifdef BUILDING_TP_QT
+#      define TP_QT_DEPRECATED
+#    else
+#      define TP_QT_DEPRECATED Q_DECL_DEPRECATED
+#    endif
 #  else
 #    define TP_QT_DEPRECATED
 #  endif
+#endif
+
+/**
+ * @def TP_QT_EXPORT_DEPRECATED
+ * @ingroup macros
+ *
+ * The TP_QT_EXPORT_DEPRECATED macro can be used to trigger compile-time
+ * warnings with newer compilers when deprecated functions are used, and
+ * export the symbol.
+ *
+ * This macro simply expands to TP_QT_DEPRECATED TP_QT_EXPORT, and needs
+ * to be used only when you need to deprecate a class which is a QObject
+ * and needs to be exported. This is because the following:
+ *
+ * \code
+ * class TP_QT_DEPRECATED TP_QT_EXPORT Class : public QObject
+ * \endcode
+ *
+ * Wouldn't be recognized from moc to be a valid QObject class, and hence
+ * would be skipped. Instead, you should do:
+ *
+ * \code
+ * class TP_QT_EXPORT_DEPRECATED Class : public QObject
+ * \endcode
+ *
+ * For any other use, please use TP_QT_DEPRECATED instead.
+ */
+#ifndef TP_QT_EXPORT_DEPRECATED
+#  define TP_QT_EXPORT_DEPRECATED TP_QT_DEPRECATED TP_QT_EXPORT
 #endif
 
 #endif

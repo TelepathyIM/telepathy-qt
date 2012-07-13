@@ -49,10 +49,10 @@ public:
     static RequestableChannelClassSpec videoCall();
     static RequestableChannelClassSpec videoCallWithAudioAllowed();
 
-    static RequestableChannelClassSpec streamedMediaCall();
-    static RequestableChannelClassSpec streamedMediaAudioCall();
-    static RequestableChannelClassSpec streamedMediaVideoCall();
-    static RequestableChannelClassSpec streamedMediaVideoCallWithAudio();
+    TP_QT_DEPRECATED static RequestableChannelClassSpec streamedMediaCall();
+    TP_QT_DEPRECATED static RequestableChannelClassSpec streamedMediaAudioCall();
+    TP_QT_DEPRECATED static RequestableChannelClassSpec streamedMediaVideoCall();
+    TP_QT_DEPRECATED static RequestableChannelClassSpec streamedMediaVideoCallWithAudio();
 
     static RequestableChannelClassSpec fileTransfer();
 
@@ -60,8 +60,8 @@ public:
     static RequestableChannelClassSpec conferenceTextChatWithInvitees();
     static RequestableChannelClassSpec conferenceTextChatroom();
     static RequestableChannelClassSpec conferenceTextChatroomWithInvitees();
-    static RequestableChannelClassSpec conferenceStreamedMediaCall();
-    static RequestableChannelClassSpec conferenceStreamedMediaCallWithInvitees();
+    TP_QT_DEPRECATED static RequestableChannelClassSpec conferenceStreamedMediaCall();
+    TP_QT_DEPRECATED static RequestableChannelClassSpec conferenceStreamedMediaCallWithInvitees();
 
     static RequestableChannelClassSpec contactSearch();
     static RequestableChannelClassSpec contactSearchWithSpecificServer();

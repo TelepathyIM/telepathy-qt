@@ -658,6 +658,54 @@ AccountSetPtr AccountManager::textChatroomAccounts() const
 }
 
 /**
+ * Return a set of accounts containing all accounts that support audio calls (using the
+ * Call interface) by providing a contact identifier.
+ *
+ * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
+ * ready.
+ *
+ * This method requires AccountManager::FeatureCore to be ready.
+ *
+ * \return A pointer to an AccountSet object containing the matching accounts.
+ */
+AccountSetPtr AccountManager::audioCallAccounts() const
+{
+    if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
+        warning() << "Account filtering by capabilities can only be used with an AccountFactory"
+            << "which makes Account::FeatureCapabilities ready";
+        return filterAccounts(AccountFilterConstPtr());
+    }
+
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->addRequestableChannelClassSubset(RequestableChannelClassSpec::audioCall());
+    return filterAccounts(filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that support video calls (using the
+ * Call interface) by providing a contact identifier.
+ *
+ * For this method to work, you must use an AccountFactory which makes Account::FeatureCapabilities
+ * ready.
+ *
+ * This method requires AccountManager::FeatureCore to be ready.
+ *
+ * \return A pointer to an AccountSet object containing the matching accounts.
+ */
+AccountSetPtr AccountManager::videoCallAccounts() const
+{
+    if (!accountFactory()->features().contains(Account::FeatureCapabilities)) {
+        warning() << "Account filtering by capabilities can only be used with an AccountFactory"
+            << "which makes Account::FeatureCapabilities ready";
+        return filterAccounts(AccountFilterConstPtr());
+    }
+
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->addRequestableChannelClassSubset(RequestableChannelClassSpec::videoCall());
+    return filterAccounts(filter);
+}
+
+/**
  * Return a set of accounts containing all accounts that support media calls (using the
  * StreamedMedia interface) by providing a contact identifier.
  *

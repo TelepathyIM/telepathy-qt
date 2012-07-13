@@ -36,7 +36,7 @@ typedef struct _TfChannel TfChannel;
 namespace Tp
 {
 
-TP_QT_FS_EXPORT TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel);
+TP_QT_FS_DEPRECATED TP_QT_FS_EXPORT TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel);
 
 } // Tp
 

@@ -63,9 +63,14 @@ public:
     QString contactIdentifier() const;
     CallDirection direction() const;
 
-    QList<StreamedMediaChannelPtr> streamedMediaCalls() const;
+    QList<CallChannelPtr> calls() const;
+    TP_QT_DEPRECATED QList<StreamedMediaChannelPtr> streamedMediaCalls() const;
 
 Q_SIGNALS:
+    void callStarted(const Tp::CallChannelPtr &channel);
+    void callEnded(const Tp::CallChannelPtr &channel,
+            const QString &errorName, const QString &errorMessage);
+
     void streamedMediaCallStarted(const Tp::StreamedMediaChannelPtr &channel);
     void streamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel,
             const QString &errorName, const QString &errorMessage);
