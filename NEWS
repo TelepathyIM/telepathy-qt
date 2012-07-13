@@ -1,14 +1,13 @@
-telepathy-qt 0.9.3 (UNRELEASED)
+telepathy-qt 0.9.3 (2012-07-13)
 =================================
 
-The "..." release.
+The "We promised, we delivered" release.
 
 Enhancements:
  * Added ClientTypes bindings to Contact.
  * Fixed deprecation macros, and added TP_QT_EXPORT_DEPRECATED.
  * Ported SimpleCallObserver to also handle Call1 calls.
  * Deprecated Farsight and StreamedMedia.
- * ...
 
 Fixes:
  * Removed occurencies of deprecated tp-glib functions from the DBus tube tests.
@@ -16,7 +15,6 @@ Fixes:
  * Fixed linking of the DBus tube tests with strict linkers like gold.
  * Synced tests/lib/glib/utils.* to remove deprecation warnings.
  * Removed occurencies of the deprecated tp_connection_new from Farsight/Farstream.
- * ...
 
 telepathy-qt 0.9.2 (2012-07-04)
 =================================
