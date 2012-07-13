@@ -8,7 +8,23 @@
  * notice and this notice are preserved.
  */
 
+#include "config.h"
+
 #include "util.h"
+
+#include <telepathy-glib/connection.h>
+
+#include <glib/gstdio.h>
+#include <string.h>
+
+#ifdef G_OS_UNIX
+# include <unistd.h> /* for alarm() */
+#endif
+
+#ifdef HAVE_GIO_UNIX
+#include <gio/gunixsocketaddress.h>
+#include <gio/gunixconnection.h>
+#endif
 
 void
 tp_tests_proxy_run_until_prepared (gpointer proxy,
@@ -20,8 +36,10 @@ tp_tests_proxy_run_until_prepared (gpointer proxy,
   g_assert_no_error (error);
 }
 
-static void
-prepared_cb (GObject *object,
+/* A GAsyncReadyCallback whose user_data is a GAsyncResult **. It writes a
+ * reference to the result into that pointer. */
+void
+tp_tests_result_ready_cb (GObject *object,
     GAsyncResult *res,
     gpointer user_data)
 {
@@ -30,21 +48,33 @@ prepared_cb (GObject *object,
   *result = g_object_ref (res);
 }
 
+/* Run until *result contains a result. Intended to be used with a pending
+ * async call that uses tp_tests_result_ready_cb. */
+void
+tp_tests_run_until_result (GAsyncResult **result)
+{
+  /* not synchronous */
+  g_assert (*result == NULL);
+
+  while (*result == NULL)
+    g_main_context_iteration (NULL, TRUE);
+}
+
 gboolean
 tp_tests_proxy_run_until_prepared_or_failed (gpointer proxy,
     const GQuark *features,
     GError **error)
 {
   GAsyncResult *result = NULL;
+  gboolean r;
 
-  tp_proxy_prepare_async (proxy, features, prepared_cb, &result);
-  /* not synchronous */
-  g_assert (result == NULL);
+  tp_proxy_prepare_async (proxy, features, tp_tests_result_ready_cb, &result);
 
-  while (result == NULL)
-    g_main_context_iteration (NULL, TRUE);
+  tp_tests_run_until_result (&result);
 
-  return tp_proxy_prepare_finish (proxy, result, error);
+  r =  tp_proxy_prepare_finish (proxy, result, error);
+  g_object_unref (result);
+  return r;
 }
 
 TpDBusDaemon *
@@ -146,21 +176,23 @@ _tp_tests_assert_strv_equals (const char *file,
 }
 
 void
-tp_tests_create_and_connect_conn (GType conn_type,
+tp_tests_create_conn (GType conn_type,
     const gchar *account,
+    gboolean connect,
     TpBaseConnection **service_conn,
     TpConnection **client_conn)
 {
   TpDBusDaemon *dbus;
+  TpSimpleClientFactory *factory;
   gchar *name;
   gchar *conn_path;
   GError *error = NULL;
-  GQuark conn_features[] = { TP_CONNECTION_FEATURE_CONNECTED, 0 };
 
   g_assert (service_conn != NULL);
   g_assert (client_conn != NULL);
 
   dbus = tp_tests_dbus_daemon_dup_or_die ();
+  factory = (TpSimpleClientFactory *) tp_automatic_client_factory_new (dbus);
 
   *service_conn = tp_tests_object_new_static_class (
         conn_type,
@@ -173,18 +205,33 @@ tp_tests_create_and_connect_conn (GType conn_type,
         &name, &conn_path, &error));
   g_assert_no_error (error);
 
-  *client_conn = tp_connection_new (dbus, name, conn_path,
-      &error);
+  *client_conn = tp_simple_client_factory_ensure_connection (factory,
+      conn_path, NULL, &error);
   g_assert (*client_conn != NULL);
   g_assert_no_error (error);
 
-  tp_cli_connection_call_connect (*client_conn, -1, NULL, NULL, NULL, NULL);
-  tp_tests_proxy_run_until_prepared (*client_conn, conn_features);
+  if (connect)
+    {
+      GQuark conn_features[] = { TP_CONNECTION_FEATURE_CONNECTED, 0 };
+
+      tp_cli_connection_call_connect (*client_conn, -1, NULL, NULL, NULL, NULL);
+      tp_tests_proxy_run_until_prepared (*client_conn, conn_features);
+    }
 
   g_free (name);
   g_free (conn_path);
 
   g_object_unref (dbus);
+  g_object_unref (factory);
+}
+
+void
+tp_tests_create_and_connect_conn (GType conn_type,
+    const gchar *account,
+    TpBaseConnection **service_conn,
+    TpConnection **client_conn)
+{
+  tp_tests_create_conn (conn_type, account, TRUE, service_conn, client_conn);
 }
 
 /* This object exists solely so that tests/tests.supp can ignore "leaked"
@@ -202,4 +249,217 @@ tp_tests_object_new_static_class (GType type,
   object = g_object_new_valist (type, first_property, ap);
   va_end (ap);
   return object;
+}
+
+static gboolean
+time_out (gpointer nil G_GNUC_UNUSED)
+{
+  g_error ("Timed out");
+  g_assert_not_reached ();
+  return FALSE;
+}
+
+void
+tp_tests_abort_after (guint sec)
+{
+  gboolean debugger = FALSE;
+  gchar *contents;
+
+  if (g_file_get_contents ("/proc/self/status", &contents, NULL, NULL))
+    {
+/* http://www.youtube.com/watch?v=SXmv8quf_xM */
+#define TRACER_T "\nTracerPid:\t"
+      gchar *line = strstr (contents, TRACER_T);
+
+      if (line != NULL)
+        {
+          gchar *value = line + strlen (TRACER_T);
+
+          if (value[0] != '0' || value[1] != '\n')
+            debugger = TRUE;
+        }
+
+      g_free (contents);
+    }
+
+  if (g_getenv ("TP_TESTS_NO_TIMEOUT") != NULL || debugger)
+    return;
+
+  g_timeout_add_seconds (sec, time_out, NULL);
+
+#ifdef G_OS_UNIX
+  /* On Unix, we can kill the process more reliably; this is a safety-catch
+   * in case it deadlocks or something, in which case the main loop won't be
+   * processed. The default handler for SIGALRM is process termination. */
+  alarm (sec + 2);
+#endif
+}
+
+void
+tp_tests_init (int *argc,
+    char ***argv)
+{
+  g_type_init ();
+  tp_tests_abort_after (10);
+  tp_debug_set_flags ("all");
+
+  g_test_init (argc, argv, NULL);
+}
+
+void
+_tp_destroy_socket_control_list (gpointer data)
+{
+  GArray *tab = data;
+  g_array_unref (tab);
+}
+
+GValue *
+_tp_create_local_socket (TpSocketAddressType address_type,
+    TpSocketAccessControl access_control,
+    GSocketService **service,
+    gchar **unix_address,
+    GError **error)
+{
+  gboolean success;
+  GSocketAddress *address, *effective_address;
+  GValue *address_gvalue;
+
+  g_assert (service != NULL);
+  g_assert (unix_address != NULL);
+
+  switch (access_control)
+    {
+      case TP_SOCKET_ACCESS_CONTROL_LOCALHOST:
+      case TP_SOCKET_ACCESS_CONTROL_CREDENTIALS:
+      case TP_SOCKET_ACCESS_CONTROL_PORT:
+        break;
+
+      default:
+        g_assert_not_reached ();
+    }
+
+  switch (address_type)
+    {
+#ifdef HAVE_GIO_UNIX
+      case TP_SOCKET_ADDRESS_TYPE_UNIX:
+        {
+          address = g_unix_socket_address_new (tmpnam (NULL));
+          break;
+        }
+#endif
+
+      case TP_SOCKET_ADDRESS_TYPE_IPV4:
+      case TP_SOCKET_ADDRESS_TYPE_IPV6:
+        {
+          GInetAddress *localhost;
+
+          localhost = g_inet_address_new_loopback (
+              address_type == TP_SOCKET_ADDRESS_TYPE_IPV4 ?
+              G_SOCKET_FAMILY_IPV4 : G_SOCKET_FAMILY_IPV6);
+          address = g_inet_socket_address_new (localhost, 0);
+
+          g_object_unref (localhost);
+          break;
+        }
+
+      default:
+        g_assert_not_reached ();
+    }
+
+  *service = g_socket_service_new ();
+
+  success = g_socket_listener_add_address (
+      G_SOCKET_LISTENER (*service),
+      address, G_SOCKET_TYPE_STREAM,
+      G_SOCKET_PROTOCOL_DEFAULT,
+      NULL, &effective_address, NULL);
+  g_assert (success);
+
+  switch (address_type)
+    {
+#ifdef HAVE_GIO_UNIX
+      case TP_SOCKET_ADDRESS_TYPE_UNIX:
+        *unix_address = g_strdup (g_unix_socket_address_get_path (
+              G_UNIX_SOCKET_ADDRESS (effective_address)));
+        address_gvalue =  tp_g_value_slice_new_bytes (
+            g_unix_socket_address_get_path_len (
+              G_UNIX_SOCKET_ADDRESS (effective_address)),
+            g_unix_socket_address_get_path (
+              G_UNIX_SOCKET_ADDRESS (effective_address)));
+        break;
+#endif
+
+      case TP_SOCKET_ADDRESS_TYPE_IPV4:
+      case TP_SOCKET_ADDRESS_TYPE_IPV6:
+        *unix_address = NULL;
+
+        address_gvalue = tp_g_value_slice_new_take_boxed (
+            TP_STRUCT_TYPE_SOCKET_ADDRESS_IPV4,
+            dbus_g_type_specialized_construct (
+              TP_STRUCT_TYPE_SOCKET_ADDRESS_IPV4));
+
+        dbus_g_type_struct_set (address_gvalue,
+            0, address_type == TP_SOCKET_ADDRESS_TYPE_IPV4 ?
+              "127.0.0.1" : "::1",
+            1, g_inet_socket_address_get_port (
+              G_INET_SOCKET_ADDRESS (effective_address)),
+            G_MAXUINT);
+        break;
+
+      default:
+        g_assert_not_reached ();
+    }
+
+  g_object_unref (address);
+  g_object_unref (effective_address);
+  return address_gvalue;
+}
+
+void
+tp_tests_connection_assert_disconnect_succeeds (TpConnection *connection)
+{
+  GAsyncResult *result = NULL;
+  GError *error = NULL;
+  gboolean ok;
+
+  tp_connection_disconnect_async (connection, tp_tests_result_ready_cb,
+      &result);
+  tp_tests_run_until_result (&result);
+  ok = tp_connection_disconnect_finish (connection, result, &error);
+  g_assert_no_error (error);
+  g_assert (ok);
+  g_object_unref (result);
+}
+
+static void
+one_contact_cb (GObject *object,
+    GAsyncResult *result,
+    gpointer user_data)
+{
+  TpConnection *connection = (TpConnection *) object;
+  TpContact **contact_loc = user_data;
+  GError *error = NULL;
+
+  *contact_loc = tp_connection_dup_contact_by_id_finish (connection, result,
+      &error);
+
+  g_assert_no_error (error);
+  g_assert (TP_IS_CONTACT (*contact_loc));
+}
+
+TpContact *
+tp_tests_connection_run_until_contact_by_id (TpConnection *connection,
+    const gchar *id,
+    guint n_features,
+    const TpContactFeature *features)
+{
+  TpContact *contact = NULL;
+
+  tp_connection_dup_contact_by_id_async (connection, id, n_features, features,
+      one_contact_cb, &contact);
+
+  while (contact == NULL)
+    g_main_context_iteration (NULL, TRUE);
+
+  return contact;
 }
