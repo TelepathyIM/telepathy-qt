@@ -28,6 +28,8 @@ if(FARSIGHT_COMPONENTS_FOUND)
     target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-farsight
         ${QT_QTDBUS_LIBRARY}
         ${QT_QTCORE_LIBRARY}
+        ${GOBJECT_LIBRARIES}
+        ${TELEPATHY_GLIB_LIBRARIES}
         ${TELEPATHY_FARSIGHT_LIBRARIES}
         ${GSTREAMER_INTERFACE_LIBRARY}
         telepathy-qt${QT_VERSION_MAJOR}
