@@ -7,6 +7,7 @@ Enhancements:
  * ...
 
 Fixes:
+ * fd.o #46241: Fixed linking in farstream and farsight
  * ...
 
 telepathy-qt 0.9.3 (2012-07-13)
