@@ -8,6 +8,7 @@ Enhancements:
 
 Fixes:
  * fd.o #46241: Fixed linking in farstream and farsight
+ * Require tp-glib 0.18 and fix 0.19-ism
  * ...
 
 telepathy-qt 0.9.3 (2012-07-13)
