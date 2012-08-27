@@ -185,7 +185,7 @@ macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
 
 if(ENABLE_TESTS OR ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
     # Find telepathy-glib
-    set(TELEPATHY_GLIB_MIN_VERSION 0.17.5)
+    set(TELEPATHY_GLIB_MIN_VERSION 0.18.0)
     find_package(TelepathyGlib)
     macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
                       "Glib bindings for Telepathy"
