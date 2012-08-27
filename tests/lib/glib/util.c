@@ -431,6 +431,9 @@ tp_tests_connection_assert_disconnect_succeeds (TpConnection *connection)
   g_object_unref (result);
 }
 
+/* The following blocks require tp-glib 0.19 to compile. However, tp_tests_connection_run_until_contact_by_id
+   is never used in our code, so we simply disable its compilation. */
+#if 0
 static void
 one_contact_cb (GObject *object,
     GAsyncResult *result,
@@ -463,3 +466,4 @@ tp_tests_connection_run_until_contact_by_id (TpConnection *connection,
 
   return contact;
 }
+#endif
