@@ -245,7 +245,7 @@ DBusTubeChannel::~DBusTubeChannel()
 QString DBusTubeChannel::serviceName() const
 {
     if (!isReady(FeatureCore)) {
-        warning() << "DBusTubeChannel::service() used with "
+        warning() << "DBusTubeChannel::serviceName() used with "
             "FeatureCore not ready";
         return QString();
     }
