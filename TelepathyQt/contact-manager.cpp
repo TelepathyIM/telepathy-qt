@@ -1341,17 +1341,27 @@ void ContactManager::onAvatarRetrieved(uint handle, const QString &token,
         debug() << "Filename:" << avatarFileName;
         debug() << "MimeType:" << mimeType;
 
-        QTemporaryFile mimeTypeFile(mimeTypeFileName);
-        mimeTypeFile.open();
-        mimeTypeFile.write(mimeType.toLatin1());
-        mimeTypeFile.setAutoRemove(false);
-        mimeTypeFile.rename(mimeTypeFileName);
+        if (!QFile::exists(mimeTypeFileName)) {
+            QTemporaryFile mimeTypeFile(mimeTypeFileName);
+            if (mimeTypeFile.open()) {
+                mimeTypeFile.write(mimeType.toLatin1());
+                mimeTypeFile.setAutoRemove(false);
+                if (!mimeTypeFile.rename(mimeTypeFileName)) {
+                    mimeTypeFile.remove();
+                }
+            }
+        }
 
-        QTemporaryFile avatarFile(avatarFileName);
-        avatarFile.open();
-        avatarFile.write(data);
-        avatarFile.setAutoRemove(false);
-        avatarFile.rename(avatarFileName);
+        if (!QFile::exists(avatarFileName)) {
+            QTemporaryFile avatarFile(avatarFileName);
+            if (avatarFile.open()) {
+                avatarFile.write(data);
+                avatarFile.setAutoRemove(false);
+                if (!avatarFile.rename(avatarFileName)) {
+                    avatarFile.remove();
+                }
+            }
+        }
     }
 
     ContactPtr contact = lookupContactByHandle(handle);
