@@ -9,7 +9,8 @@ Enhancements:
 Fixes:
  * fd.o #46241: Fixed linking in farstream and farsight
  * Require tp-glib 0.18 and fix 0.19-ism
- * ...
+ * fd.o #47647: Fixed storing avatars, so that they are not stored millions
+   of times each.
 
 telepathy-qt 0.9.3 (2012-07-13)
 =================================
