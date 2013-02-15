@@ -150,7 +150,7 @@ tp_tests_simple_channel_dispatch_operation_get_property (GObject *object,
                 tp_value_array_build (2,
                   DBUS_TYPE_G_OBJECT_PATH, tp_proxy_get_object_path (channel),
                   TP_HASH_TYPE_STRING_VARIANT_MAP,
-                    tp_channel_borrow_immutable_properties (channel),
+                    tp_channel_dup_immutable_properties (channel),
                   G_TYPE_INVALID));
           }
 
