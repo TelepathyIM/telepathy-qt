@@ -1223,4 +1223,124 @@ void BaseConnectionContactListInterface::Adaptee::requestSubscription(const Tp::
     context->setFinished();
 }
 
+// Conn.I.Addressing
+BaseConnectionAddressingInterface::Adaptee::Adaptee(BaseConnectionAddressingInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseConnectionAddressingInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseConnectionAddressingInterface::Private {
+    Private(BaseConnectionAddressingInterface *parent)
+        : adaptee(new BaseConnectionAddressingInterface::Adaptee(parent)) {
+    }
+    GetContactsByVCardFieldCallback getContactsByVCardFieldCB;
+    GetContactsByURICallback getContactsByURICB;
+    BaseConnectionAddressingInterface::Adaptee *adaptee;
+};
+
+/**
+ * \class BaseProtocolPresenceInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-protocol.h <TelepathyQt/BaseProtocolPresenceInterface>
+ *
+ * \brief Base class for implementations of Protocol.Interface.Presence
+ */
+
+/**
+ * Class constructor.
+ */
+BaseConnectionAddressingInterface::BaseConnectionAddressingInterface()
+    : AbstractConnectionInterface(TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseConnectionAddressingInterface::~BaseConnectionAddressingInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this<interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseConnectionAddressingInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+void BaseConnectionAddressingInterface::createAdaptor()
+{
+    (void) new Service::ConnectionInterfaceAddressingAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseConnectionAddressingInterface::setGetContactsByVCardFieldCallback(const GetContactsByVCardFieldCallback &cb)
+{
+    mPriv->getContactsByVCardFieldCB = cb;
+}
+
+void BaseConnectionAddressingInterface::setGetContactsByURICallback(const GetContactsByURICallback &cb)
+{
+    mPriv->getContactsByURICB = cb;
+}
+
+void BaseConnectionAddressingInterface::Adaptee::getContactsByVCardField(const QString &field,
+        const QStringList &addresses,
+        const QStringList &interfaces,
+        const Tp::Service::ConnectionInterfaceAddressingAdaptor::GetContactsByVCardFieldContextPtr &context)
+{
+    if (!mInterface->mPriv->getContactsByVCardFieldCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    Tp::AddressingNormalizationMap addressingNormalizationMap;
+    Tp::ContactAttributesMap contactAttributesMap;
+
+    DBusError error;
+    mInterface->mPriv->getContactsByVCardFieldCB(field, addresses, interfaces,
+            addressingNormalizationMap, contactAttributesMap,
+            &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(addressingNormalizationMap, contactAttributesMap);
+}
+
+void BaseConnectionAddressingInterface::Adaptee::getContactsByURI(const QStringList &URIs,
+        const QStringList &interfaces,
+        const Tp::Service::ConnectionInterfaceAddressingAdaptor::GetContactsByURIContextPtr &context)
+{
+    if (!mInterface->mPriv->getContactsByURICB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    Tp::AddressingNormalizationMap addressingNormalizationMap;
+    Tp::ContactAttributesMap contactAttributesMap;
+
+    DBusError error;
+    mInterface->mPriv->getContactsByURICB(URIs, interfaces,
+                                          addressingNormalizationMap, contactAttributesMap,
+                                          &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(addressingNormalizationMap, contactAttributesMap);
+}
+
 }

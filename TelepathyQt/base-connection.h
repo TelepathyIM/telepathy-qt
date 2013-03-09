@@ -317,6 +317,48 @@ private:
     friend struct Private;
     Private *mPriv;
 };
+
+class TP_QT_EXPORT BaseConnectionAddressingInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionAddressingInterface)
+
+public:
+    static BaseConnectionAddressingInterfacePtr create() {
+        return BaseConnectionAddressingInterfacePtr(new BaseConnectionAddressingInterface());
+    }
+    template<typename BaseConnectionAddressingInterfaceSubclass>
+    static SharedPtr<BaseConnectionAddressingInterfaceSubclass> create() {
+        return SharedPtr<BaseConnectionAddressingInterfaceSubclass>(
+                   new BaseConnectionAddressingInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionAddressingInterface();
+
+    QVariantMap immutableProperties() const;
+
+
+
+    typedef Callback6 < void, const QString&, const QStringList&, const QStringList&,
+            Tp::AddressingNormalizationMap&, Tp::ContactAttributesMap&, DBusError* > GetContactsByVCardFieldCallback;
+    void setGetContactsByVCardFieldCallback(const GetContactsByVCardFieldCallback &cb);
+
+    typedef Callback5 < void, const QStringList&, const QStringList&,
+            Tp::AddressingNormalizationMap&, Tp::ContactAttributesMap&, DBusError* > GetContactsByURICallback;
+    void setGetContactsByURICallback(const GetContactsByURICallback &cb);
+
+protected:
+    BaseConnectionAddressingInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
 }
 
 #endif

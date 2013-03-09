@@ -192,4 +192,23 @@ Q_SIGNALS:
 public:
     BaseConnectionContactListInterface *mInterface;
 };
+
+class TP_QT_NO_EXPORT BaseConnectionAddressingInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+
+public:
+    Adaptee(BaseConnectionAddressingInterface *interface);
+    ~Adaptee();
+
+
+private Q_SLOTS:
+    void getContactsByVCardField(const QString &field, const QStringList &addresses, const QStringList &interfaces, const Tp::Service::ConnectionInterfaceAddressingAdaptor::GetContactsByVCardFieldContextPtr &context);
+    void getContactsByURI(const QStringList &URIs, const QStringList &interfaces, const Tp::Service::ConnectionInterfaceAddressingAdaptor::GetContactsByURIContextPtr &context);
+Q_SIGNALS:
+
+public:
+    BaseConnectionAddressingInterface *mInterface;
+};
+
 }
