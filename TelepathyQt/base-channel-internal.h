@@ -156,4 +156,16 @@ public:
     BaseChannelMessagesInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelServerAuthenticationType::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString authenticationMethod READ authenticationMethod)
+public:
+    Adaptee(BaseChannelServerAuthenticationType *interface);
+    ~Adaptee();
+    QString authenticationMethod() const;
+public:
+    BaseChannelServerAuthenticationType *mInterface;
+};
+
 }

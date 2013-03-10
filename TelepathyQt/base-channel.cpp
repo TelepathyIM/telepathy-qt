@@ -729,5 +729,77 @@ QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &mes
 }
 
 
+//Chan.T.ServerAuthentication
+BaseChannelServerAuthenticationType::Adaptee::Adaptee(BaseChannelServerAuthenticationType *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelServerAuthenticationType::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseChannelServerAuthenticationType::Private {
+    Private(BaseChannelServerAuthenticationType *parent, const QString& authenticationMethod)
+        : authenticationMethod(authenticationMethod),
+          adaptee(new BaseChannelServerAuthenticationType::Adaptee(parent)) {
+    }
+    QString authenticationMethod;
+    BaseChannelServerAuthenticationType::Adaptee *adaptee;
+};
+
+QString BaseChannelServerAuthenticationType::Adaptee::authenticationMethod() const
+{
+    return mInterface->mPriv->authenticationMethod;
+}
+
+/**
+ * \class BaseChannelServerAuthenticationType
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Type.ServerAuthentifcation
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelServerAuthenticationType::BaseChannelServerAuthenticationType(const QString& authenticationMethod)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION),
+      mPriv(new Private(this, authenticationMethod))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelServerAuthenticationType::~BaseChannelServerAuthenticationType()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelServerAuthenticationType::immutableProperties() const
+{
+    QVariantMap map;
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION + QLatin1String(".AuthenticationMethod"),
+               QVariant::fromValue(mPriv->adaptee->authenticationMethod()));
+    return map;
+}
+
+void BaseChannelServerAuthenticationType::createAdaptor()
+{
+    (void) new Service::ChannelTypeServerAuthenticationAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
 
 }

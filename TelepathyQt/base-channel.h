@@ -212,5 +212,35 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelServerAuthenticationType : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelServerAuthenticationType)
+
+public:
+    static BaseChannelServerAuthenticationTypePtr create(const QString &authenticationMethod) {
+        return BaseChannelServerAuthenticationTypePtr(new BaseChannelServerAuthenticationType(authenticationMethod));
+    }
+    template<typename BaseChannelServerAuthenticationTypeSubclass>
+    static SharedPtr<BaseChannelServerAuthenticationTypeSubclass> create(const QString &authenticationMethod) {
+        return SharedPtr<BaseChannelServerAuthenticationTypeSubclass>(
+                   new BaseChannelServerAuthenticationTypeSubclass(authenticationMethod));
+    }
+    virtual ~BaseChannelServerAuthenticationType();
+
+    QVariantMap immutableProperties() const;
+private Q_SLOTS:
+private:
+    BaseChannelServerAuthenticationType(const QString &authenticationMethod);
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+
 }
 #endif
