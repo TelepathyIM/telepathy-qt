@@ -985,4 +985,252 @@ void BaseChannelCaptchaAuthenticationInterface::setCaptchaErrorDetails(const QVa
     mPriv->captchaErrorDetails = error;
 }
 
+//Chan.I.Group
+BaseChannelGroupInterface::Adaptee::Adaptee(BaseChannelGroupInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelGroupInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseChannelGroupInterface::Private {
+    Private(BaseChannelGroupInterface *parent, ChannelGroupFlags initialFlags, uint selfHandle)
+        : flags(initialFlags),
+          selfHandle(selfHandle),
+          adaptee(new BaseChannelGroupInterface::Adaptee(parent)) {
+    }
+    ChannelGroupFlags flags;
+    Tp::HandleOwnerMap handleOwners;
+    Tp::LocalPendingInfoList localPendingMembers;
+    Tp::UIntList members;
+    Tp::UIntList remotePendingMembers;
+    uint selfHandle;
+    Tp::HandleIdentifierMap memberIdentifiers;
+    RemoveMembersCallback removeMembersCB;
+    AddMembersCallback addMembersCB;
+    Tp::UIntList getLocalPendingMembers() const {
+        Tp::UIntList ret;
+        foreach(const LocalPendingInfo & info, localPendingMembers)
+        ret << info.toBeAdded;
+        return ret;
+    }
+    BaseChannelGroupInterface::Adaptee *adaptee;
+};
+
+uint BaseChannelGroupInterface::Adaptee::groupFlags() const
+{
+    return mInterface->mPriv->flags;
+}
+
+Tp::HandleOwnerMap BaseChannelGroupInterface::Adaptee::handleOwners() const
+{
+    return mInterface->mPriv->handleOwners;
+}
+
+Tp::LocalPendingInfoList BaseChannelGroupInterface::Adaptee::localPendingMembers() const
+{
+    return mInterface->mPriv->localPendingMembers;
+}
+
+Tp::UIntList BaseChannelGroupInterface::Adaptee::members() const
+{
+    return mInterface->mPriv->members;
+}
+
+Tp::UIntList BaseChannelGroupInterface::Adaptee::remotePendingMembers() const
+{
+    return mInterface->mPriv->remotePendingMembers;
+}
+
+uint BaseChannelGroupInterface::Adaptee::selfHandle() const
+{
+    return mInterface->mPriv->selfHandle;
+}
+
+Tp::HandleIdentifierMap BaseChannelGroupInterface::Adaptee::memberIdentifiers() const
+{
+    return mInterface->mPriv->memberIdentifiers;
+}
+
+void BaseChannelGroupInterface::Adaptee::addMembers(const Tp::UIntList& contacts,
+        const QString& message,
+        const Tp::Service::ChannelInterfaceGroupAdaptor::AddMembersContextPtr &context)
+{
+    debug() << "BaseChannelGroupInterface::Adaptee::addMembers";
+    if (!mInterface->mPriv->addMembersCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    DBusError error;
+    mInterface->mPriv->addMembersCB(contacts, message, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelGroupInterface::Adaptee::removeMembers(const Tp::UIntList& contacts, const QString& message,
+        const Tp::Service::ChannelInterfaceGroupAdaptor::RemoveMembersContextPtr &context)
+{
+    debug() << "BaseChannelGroupInterface::Adaptee::removeMembers";
+    if (!mInterface->mPriv->removeMembersCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    DBusError error;
+    mInterface->mPriv->removeMembersCB(contacts, message, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelGroupInterface::Adaptee::removeMembersWithReason(const Tp::UIntList& contacts,
+        const QString& message,
+        uint reason,
+        const Tp::Service::ChannelInterfaceGroupAdaptor::RemoveMembersWithReasonContextPtr &context)
+{
+    debug() << "BaseChannelGroupInterface::Adaptee::removeMembersWithReason";
+    removeMembers(contacts, message, context);
+}
+
+void BaseChannelGroupInterface::Adaptee::getAllMembers(const Tp::Service::ChannelInterfaceGroupAdaptor::GetAllMembersContextPtr &context)
+{
+    context->setFinished(mInterface->mPriv->members, mInterface->mPriv->getLocalPendingMembers(), mInterface->mPriv->remotePendingMembers);
+}
+
+void BaseChannelGroupInterface::Adaptee::getGroupFlags(const Tp::Service::ChannelInterfaceGroupAdaptor::GetGroupFlagsContextPtr &context)
+{
+    context->setFinished(mInterface->mPriv->flags);
+}
+
+void BaseChannelGroupInterface::Adaptee::getHandleOwners(const Tp::UIntList& handles, const Tp::Service::ChannelInterfaceGroupAdaptor::GetHandleOwnersContextPtr &context)
+{
+    Tp::UIntList ret;
+    foreach(uint handle, handles)
+    ret.append(mInterface->mPriv->handleOwners.contains(handle) ? mInterface->mPriv->handleOwners[handle] : 0);
+    context->setFinished(ret);
+}
+
+void BaseChannelGroupInterface::Adaptee::getLocalPendingMembers(const Tp::Service::ChannelInterfaceGroupAdaptor::GetLocalPendingMembersContextPtr &context)
+{
+    context->setFinished(mInterface->mPriv->getLocalPendingMembers());
+}
+
+void BaseChannelGroupInterface::Adaptee::getLocalPendingMembersWithInfo(const Tp::Service::ChannelInterfaceGroupAdaptor::GetLocalPendingMembersWithInfoContextPtr &context)
+{
+    context->setFinished(mInterface->mPriv->localPendingMembers);
+}
+
+void BaseChannelGroupInterface::Adaptee::getMembers(const Tp::Service::ChannelInterfaceGroupAdaptor::GetMembersContextPtr &context)
+{
+    context->setFinished(mInterface->mPriv->members);
+}
+
+void BaseChannelGroupInterface::Adaptee::getRemotePendingMembers(const Tp::Service::ChannelInterfaceGroupAdaptor::GetRemotePendingMembersContextPtr &context)
+{
+    context->setFinished(mInterface->mPriv->remotePendingMembers);
+}
+
+void BaseChannelGroupInterface::Adaptee::getSelfHandle(const Tp::Service::ChannelInterfaceGroupAdaptor::GetSelfHandleContextPtr &context)
+{
+    context->setFinished(mInterface->mPriv->selfHandle);
+}
+
+/**
+ * \class BaseChannelGroupInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.Group
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelGroupInterface::BaseChannelGroupInterface(ChannelGroupFlags initialFlags, uint selfHandle)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP),
+      mPriv(new Private(this, initialFlags, selfHandle))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelGroupInterface::~BaseChannelGroupInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelGroupInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+void BaseChannelGroupInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceGroupAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseChannelGroupInterface::setRemoveMembersCallback(const RemoveMembersCallback &cb)
+{
+    mPriv->removeMembersCB = cb;
+}
+
+void BaseChannelGroupInterface::setAddMembersCallback(const AddMembersCallback &cb)
+{
+    mPriv->addMembersCB = cb;
+}
+
+void BaseChannelGroupInterface::addMembers(const Tp::UIntList& handles, const QStringList& identifiers)
+{
+    if (handles.size() != identifiers.size()) {
+        debug() << "BaseChannelGroupInterface::addMembers: handles.size() != identifiers.size()";
+        return;
+    }
+    Tp::UIntList added;
+    for (int i = 0; i < handles.size(); ++i) {
+        uint handle = handles[i];
+        if (mPriv->members.contains(handle))
+            continue;
+
+        mPriv->memberIdentifiers[handle] = identifiers[i];
+        mPriv->members.append(handle);
+        added.append(handle);
+    }
+    if (!added.isEmpty())
+        emit mPriv->adaptee->membersChanged(QString(), added, Tp::UIntList(), Tp::UIntList(), Tp::UIntList(), 0, ChannelGroupChangeReasonNone);
+}
+
+void BaseChannelGroupInterface::removeMembers(const Tp::UIntList& handles)
+{
+    Tp::UIntList removed;
+    foreach(uint handle, handles) {
+        if (mPriv->members.contains(handle))
+            continue;
+
+        mPriv->memberIdentifiers.remove(handle);
+        mPriv->members.removeAll(handle);
+        removed.append(handle);
+    }
+    if (!removed.isEmpty())
+        emit mPriv->adaptee->membersChanged(QString(), Tp::UIntList(), removed, Tp::UIntList(), Tp::UIntList(), 0, ChannelGroupChangeReasonNone);
+}
+
 }

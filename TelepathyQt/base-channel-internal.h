@@ -191,4 +191,47 @@ public:
     BaseChannelCaptchaAuthenticationInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelGroupInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(uint groupFlags READ groupFlags)
+    Q_PROPERTY(Tp::HandleOwnerMap handleOwners READ handleOwners)
+    Q_PROPERTY(Tp::LocalPendingInfoList localPendingMembers READ localPendingMembers)
+    Q_PROPERTY(Tp::UIntList members READ members)
+    Q_PROPERTY(Tp::UIntList remotePendingMembers READ remotePendingMembers)
+    Q_PROPERTY(uint selfHandle READ selfHandle)
+    Q_PROPERTY(Tp::HandleIdentifierMap memberIdentifiers READ memberIdentifiers)
+public:
+    Adaptee(BaseChannelGroupInterface *interface);
+    ~Adaptee();
+    uint groupFlags() const;
+    Tp::HandleOwnerMap handleOwners() const;
+    Tp::LocalPendingInfoList localPendingMembers() const;
+    Tp::UIntList members() const;
+    Tp::UIntList remotePendingMembers() const;
+    uint selfHandle() const;
+    Tp::HandleIdentifierMap memberIdentifiers() const;
+public slots:
+    void addMembers(const Tp::UIntList &contacts, const QString &message, const Tp::Service::ChannelInterfaceGroupAdaptor::AddMembersContextPtr &context);
+    void getAllMembers(const Tp::Service::ChannelInterfaceGroupAdaptor::GetAllMembersContextPtr &context);
+    void getGroupFlags(const Tp::Service::ChannelInterfaceGroupAdaptor::GetGroupFlagsContextPtr &context);
+    void getHandleOwners(const Tp::UIntList &handles, const Tp::Service::ChannelInterfaceGroupAdaptor::GetHandleOwnersContextPtr &context);
+    void getLocalPendingMembers(const Tp::Service::ChannelInterfaceGroupAdaptor::GetLocalPendingMembersContextPtr &context);
+    void getLocalPendingMembersWithInfo(const Tp::Service::ChannelInterfaceGroupAdaptor::GetLocalPendingMembersWithInfoContextPtr &context);
+    void getMembers(const Tp::Service::ChannelInterfaceGroupAdaptor::GetMembersContextPtr &context);
+    void getRemotePendingMembers(const Tp::Service::ChannelInterfaceGroupAdaptor::GetRemotePendingMembersContextPtr &context);
+    void getSelfHandle(const Tp::Service::ChannelInterfaceGroupAdaptor::GetSelfHandleContextPtr &context);
+    void removeMembers(const Tp::UIntList &contacts, const QString &message, const Tp::Service::ChannelInterfaceGroupAdaptor::RemoveMembersContextPtr &context);
+    void removeMembersWithReason(const Tp::UIntList &contacts, const QString &message, uint reason, const Tp::Service::ChannelInterfaceGroupAdaptor::RemoveMembersWithReasonContextPtr &context);
+signals:
+    void handleOwnersChangedDetailed(const Tp::HandleOwnerMap &added, const Tp::UIntList &removed, const Tp::HandleIdentifierMap &identifiers);
+    void selfContactChanged(uint selfHandle, const QString &selfID);
+    void groupFlagsChanged(uint added, uint removed);
+    void membersChanged(const QString &message, const Tp::UIntList &added, const Tp::UIntList &removed, const Tp::UIntList &localPending, const Tp::UIntList &remotePending, uint actor, uint reason);
+    void membersChangedDetailed(const Tp::UIntList &added, const Tp::UIntList &removed, const Tp::UIntList &localPending, const Tp::UIntList &remotePending, const QVariantMap &details);
+    //All other signals are deprecated
+public:
+    BaseChannelGroupInterface *mInterface;
+};
+
 }

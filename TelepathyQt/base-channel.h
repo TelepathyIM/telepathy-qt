@@ -30,6 +30,7 @@
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Types>
 #include <TelepathyQt/Callbacks>
+#include <TelepathyQt/Constants>
 
 #include <QDBusConnection>
 
@@ -277,6 +278,46 @@ public:
 private Q_SLOTS:
 private:
     BaseChannelCaptchaAuthenticationInterface(bool canRetryCaptcha);
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseChannelGroupInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelGroupInterface)
+
+public:
+    static BaseChannelGroupInterfacePtr create(ChannelGroupFlags initialFlags, uint selfHandle) {
+        return BaseChannelGroupInterfacePtr(new BaseChannelGroupInterface(initialFlags, selfHandle));
+    }
+    template<typename BaseChannelGroupInterfaceSubclass>
+    static SharedPtr<BaseChannelGroupInterfaceSubclass> create(ChannelGroupFlags initialFlags, uint selfHandle) {
+        return SharedPtr<BaseChannelGroupInterfaceSubclass>(
+                   new BaseChannelGroupInterfaceSubclass(initialFlags, selfHandle));
+    }
+    virtual ~BaseChannelGroupInterface();
+
+    QVariantMap immutableProperties() const;
+
+    typedef Callback3<void, const Tp::UIntList&, const QString&, DBusError*> RemoveMembersCallback;
+    void setRemoveMembersCallback(const RemoveMembersCallback &cb);
+
+    typedef Callback3<void, const Tp::UIntList&, const QString&, DBusError*> AddMembersCallback;
+    void setAddMembersCallback(const AddMembersCallback &cb);
+
+    /* Adds a contact to this group. No-op if already in this group */
+    void addMembers(const Tp::UIntList &handles, const QStringList &identifiers);
+    void removeMembers(const Tp::UIntList &handles);
+
+private Q_SLOTS:
+private:
+    BaseChannelGroupInterface(ChannelGroupFlags initialFlags, uint selfHandle);
     void createAdaptor();
 
     class Adaptee;
