@@ -92,4 +92,27 @@ signals:
     void closed();
 };
 
+class TP_QT_NO_EXPORT BaseChannelTextType::Adaptee : public QObject
+{
+    Q_OBJECT
+public:
+    Adaptee(BaseChannelTextType *interface);
+    ~Adaptee();
+
+public slots:
+    void acknowledgePendingMessages(const Tp::UIntList &IDs, const Tp::Service::ChannelTypeTextAdaptor::AcknowledgePendingMessagesContextPtr &context);
+//deprecated:
+    //void getMessageTypes(const Tp::Service::ChannelTypeTextAdaptor::GetMessageTypesContextPtr &context);
+    //void listPendingMessages(bool clear, const Tp::Service::ChannelTypeTextAdaptor::ListPendingMessagesContextPtr &context);
+    //void send(uint type, const QString &text, const Tp::Service::ChannelTypeTextAdaptor::SendContextPtr &context);
+signals:
+    void lostMessage();
+    void received(uint ID, uint timestamp, uint sender, uint type, uint flags, const QString &text);
+    void sendError(uint error, uint timestamp, uint type, const QString &text);
+    void sent(uint timestamp, uint type, const QString &text);
+
+public:
+    BaseChannelTextType *mInterface;
+};
+
 }

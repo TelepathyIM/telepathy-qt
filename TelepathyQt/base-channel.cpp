@@ -339,4 +339,194 @@ AbstractChannelInterface::~AbstractChannelInterface()
 {
 }
 
+// Chan.T.Text
+BaseChannelTextType::Adaptee::Adaptee(BaseChannelTextType *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelTextType::Adaptee::~Adaptee()
+{
+}
+
+void BaseChannelTextType::Adaptee::acknowledgePendingMessages(const Tp::UIntList &IDs,
+        const Tp::Service::ChannelTypeTextAdaptor::AcknowledgePendingMessagesContextPtr &context)
+{
+    qDebug() << "BaseConnectionContactsInterface::acknowledgePendingMessages " << IDs;
+    DBusError error;
+    mInterface->acknowledgePendingMessages(IDs, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+struct TP_QT_NO_EXPORT BaseChannelTextType::Private {
+    Private(BaseChannelTextType *parent, BaseChannel* channel)
+        : channel(channel),
+          pendingMessagesId(0),
+          adaptee(new BaseChannelTextType::Adaptee(parent)) {
+    }
+
+    BaseChannel* channel;
+    /* maps pending-message-id to message part list */
+    QMap<uint, Tp::MessagePartList> pendingMessages;
+    /* increasing unique id of pending messages */
+    uint pendingMessagesId;
+    MessageAcknowledgedCallback messageAcknowledgedCB;
+    BaseChannelTextType::Adaptee *adaptee;
+};
+
+/**
+ * \class BaseChannelTextType
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Type.Text
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelTextType::BaseChannelTextType(BaseChannel* channel)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_TYPE_TEXT),
+      mPriv(new Private(this, channel))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelTextType::~BaseChannelTextType()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelTextType::immutableProperties() const
+{
+    return QVariantMap();
+}
+
+void BaseChannelTextType::createAdaptor()
+{
+    (void) new Service::ChannelTypeTextAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseChannelTextType::addReceivedMessage(const Tp::MessagePartList &msg)
+{
+    MessagePartList message = msg;
+    if (msg.empty()) {
+        warning() << "empty message: not sent";
+        return;
+    }
+    MessagePart &header = message.front();
+
+    if (header.count(QLatin1String("pending-message-id")))
+        warning() << "pending-message-id will be overwritten";
+
+    /* Add pending-message-id to header */
+    uint pendingMessageId = mPriv->pendingMessagesId++;
+    header[QLatin1String("pending-message-id")] = QDBusVariant(pendingMessageId);
+    mPriv->pendingMessages[pendingMessageId] = message;
+
+    uint timestamp = 0;
+    if (header.count(QLatin1String("message-received")))
+        timestamp = header[QLatin1String("message-received")].variant().toUInt();
+
+    uint handle = 0;
+    if (header.count(QLatin1String("message-sender")))
+        handle = header[QLatin1String("message-sender")].variant().toUInt();
+
+    uint type = ChannelTextMessageTypeNormal;
+    if (header.count(QLatin1String("message-type")))
+        type = header[QLatin1String("message-type")].variant().toUInt();
+
+    //FIXME: flags are not parsed
+    uint flags = 0;
+
+    QString content;
+    for (MessagePartList::Iterator i = message.begin() + 1; i != message.end(); ++i)
+        if (i->count(QLatin1String("content-type"))
+                && i->value(QLatin1String("content-type")).variant().toString() == QLatin1String("text/plain")
+                && i->count(QLatin1String("content"))) {
+            content = i->value(QLatin1String("content")).variant().toString();
+            break;
+        }
+    if (content.length() > 0)
+        QMetaObject::invokeMethod(mPriv->adaptee, "received",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(uint, pendingMessageId),
+                                  Q_ARG(uint, timestamp),
+                                  Q_ARG(uint, handle),
+                                  Q_ARG(uint, type),
+                                  Q_ARG(uint, flags),
+                                  Q_ARG(QString, content));
+
+    /* Signal on ChannelMessagesInterface */
+    BaseChannelMessagesInterfacePtr messagesIface = BaseChannelMessagesInterfacePtr::dynamicCast(
+                mPriv->channel->interface(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES));
+    if (messagesIface)
+        QMetaObject::invokeMethod(messagesIface.data(), "messageReceived",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(Tp::MessagePartList, message));
+}
+
+Tp::MessagePartListList BaseChannelTextType::pendingMessages()
+{
+    return mPriv->pendingMessages.values();
+}
+
+/*
+ * Will be called with the value of the message-token field after a received message has been acknowledged,
+ * if the message-token field existed in the header.
+ */
+void BaseChannelTextType::setMessageAcknowledgedCallback(const MessageAcknowledgedCallback &cb)
+{
+    mPriv->messageAcknowledgedCB = cb;
+}
+
+void BaseChannelTextType::acknowledgePendingMessages(const Tp::UIntList &IDs, DBusError* error)
+{
+    foreach(uint id, IDs) {
+        QMap<uint, Tp::MessagePartList>::Iterator i = mPriv->pendingMessages.find(id);
+        if (i == mPriv->pendingMessages.end()) {
+            error->set(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("id not found"));
+            return;
+        }
+
+        MessagePart &header = i->front();
+        if (header.count(QLatin1String("message-token")) && mPriv->messageAcknowledgedCB.isValid())
+            mPriv->messageAcknowledgedCB(header[QLatin1String("message-token")].variant().toString());
+
+        mPriv->pendingMessages.erase(i);
+    }
+
+    /* Signal on ChannelMessagesInterface */
+    BaseChannelMessagesInterfacePtr messagesIface = BaseChannelMessagesInterfacePtr::dynamicCast(
+                mPriv->channel->interface(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES));
+    if (messagesIface) //emit after return
+        QMetaObject::invokeMethod(messagesIface.data(), "pendingMessagesRemoved",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(Tp::UIntList, IDs));
+}
+
+
+
+void BaseChannelTextType::sent(uint timestamp, uint type, QString text)
+{
+    emit mPriv->adaptee->sent(timestamp, type, text);
+}
+
 }

@@ -106,5 +106,55 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelTextType : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelTextType)
+
+public:
+    static BaseChannelTextTypePtr create(BaseChannel* channel) {
+        return BaseChannelTextTypePtr(new BaseChannelTextType(channel));
+    }
+    template<typename BaseChannelTextTypeSubclass>
+    static SharedPtr<BaseChannelTextTypeSubclass> create(BaseChannel* channel) {
+        return SharedPtr<BaseChannelTextTypeSubclass>(
+                   new BaseChannelTextTypeSubclass(channel));
+    }
+
+    typedef Callback2<QDBusObjectPath, const QVariantMap&, DBusError*> CreateChannelCallback;
+    CreateChannelCallback createChannel;
+
+    typedef Callback2<bool, const QVariantMap&, DBusError*> EnsureChannelCallback;
+    EnsureChannelCallback ensureChannel;
+
+    virtual ~BaseChannelTextType();
+
+    QVariantMap immutableProperties() const;
+
+    Tp::RequestableChannelClassList requestableChannelClasses;
+
+    typedef Callback1<void, QString> MessageAcknowledgedCallback;
+    void setMessageAcknowledgedCallback(const MessageAcknowledgedCallback &cb);
+
+    Tp::MessagePartListList pendingMessages();
+
+    /* Convenience function */
+    void addReceivedMessage(const Tp::MessagePartList &message);
+private Q_SLOTS:
+    void sent(uint timestamp, uint type, QString text);
+protected:
+    BaseChannelTextType(BaseChannel* channel);
+    void acknowledgePendingMessages(const Tp::UIntList &IDs, DBusError* error);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 #endif
