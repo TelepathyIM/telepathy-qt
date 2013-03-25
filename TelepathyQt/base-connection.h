@@ -193,6 +193,46 @@ private:
     Private *mPriv;
 };
 
+
+class TP_QT_EXPORT BaseConnectionContactsInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionContactsInterface)
+
+
+public:
+    static BaseConnectionContactsInterfacePtr create() {
+        return BaseConnectionContactsInterfacePtr(new BaseConnectionContactsInterface());
+    }
+    template<typename BaseConnectionContactsInterfaceSubclass>
+    static SharedPtr<BaseConnectionContactsInterfaceSubclass> create() {
+        return SharedPtr<BaseConnectionContactsInterfaceSubclass>(
+                   new BaseConnectionContactsInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionContactsInterface();
+
+    QVariantMap immutableProperties() const;
+
+    typedef Callback3<ContactAttributesMap, const Tp::UIntList&, const QStringList&, DBusError*> GetContactAttributesCallback;
+    void setGetContactAttributesCallback(const GetContactAttributesCallback &cb);
+    ContactAttributesMap getContactAttributes(const Tp::UIntList &handles,
+            const QStringList &interfaces,
+            DBusError *error);
+    void setContactAttributeInterfaces(const QStringList &contactAttributeInterfaces);
+protected:
+    BaseConnectionContactsInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 
 #endif

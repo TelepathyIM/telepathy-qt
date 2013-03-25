@@ -770,4 +770,111 @@ void BaseConnectionRequestsInterface::createChannel(const QVariantMap &request,
     details = channel->details().properties;
 }
 
+
+// Conn.I.Contacts
+BaseConnectionContactsInterface::Adaptee::Adaptee(BaseConnectionContactsInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseConnectionContactsInterface::Adaptee::~Adaptee()
+{
+}
+
+void BaseConnectionContactsInterface::Adaptee::getContactAttributes(const Tp::UIntList &handles,
+        const QStringList &interfaces, bool /*hold*/,
+        const Tp::Service::ConnectionInterfaceContactsAdaptor::GetContactAttributesContextPtr &context)
+{
+    DBusError error;
+    ContactAttributesMap contactAttributes = mInterface->getContactAttributes(handles, interfaces, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(contactAttributes);
+}
+
+struct TP_QT_NO_EXPORT BaseConnectionContactsInterface::Private {
+    Private(BaseConnectionContactsInterface *parent)
+        : adaptee(new BaseConnectionContactsInterface::Adaptee(parent)) {
+    }
+    QStringList contactAttributeInterfaces;
+    GetContactAttributesCallback getContactAttributesCallback;
+    BaseConnectionContactsInterface::Adaptee *adaptee;
+};
+
+QStringList BaseConnectionContactsInterface::Adaptee::contactAttributeInterfaces() const
+{
+    return mInterface->mPriv->contactAttributeInterfaces;
+}
+
+/**
+ * \class BaseConnectionContactsInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
+ *
+ * \brief Base class for implementations of Connection.Interface.Contacts
+ */
+
+/**
+ * Class constructor.
+ */
+BaseConnectionContactsInterface::BaseConnectionContactsInterface()
+    : AbstractConnectionInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseConnectionContactsInterface::~BaseConnectionContactsInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this<interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseConnectionContactsInterface::immutableProperties() const
+{
+    QVariantMap map;
+    map.insert(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS + QLatin1String(".ContactAttributeInterfaces"),
+               QVariant::fromValue(mPriv->adaptee->contactAttributeInterfaces()));
+    return map;
+}
+
+void BaseConnectionContactsInterface::createAdaptor()
+{
+    (void) new Service::ConnectionInterfaceContactsAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseConnectionContactsInterface::setContactAttributeInterfaces(const QStringList &contactAttributeInterfaces)
+{
+    mPriv->contactAttributeInterfaces = contactAttributeInterfaces;
+}
+
+void BaseConnectionContactsInterface::setGetContactAttributesCallback(const GetContactAttributesCallback &cb)
+{
+    mPriv->getContactAttributesCallback = cb;
+}
+
+ContactAttributesMap BaseConnectionContactsInterface::getContactAttributes(const Tp::UIntList &handles,
+        const QStringList &interfaces,
+        DBusError *error)
+{
+    if (!mPriv->getContactAttributesCallback.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return ContactAttributesMap();
+    }
+    return mPriv->getContactAttributesCallback(handles, interfaces, error);
+}
+
 }

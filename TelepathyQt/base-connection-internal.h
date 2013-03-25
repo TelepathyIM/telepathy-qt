@@ -118,4 +118,21 @@ public:
     BaseConnectionRequestsInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionContactsInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QStringList contactAttributeInterfaces READ contactAttributeInterfaces)
+public:
+    Adaptee(BaseConnectionContactsInterface *interface);
+    ~Adaptee();
+    QStringList contactAttributeInterfaces() const;
+
+private Q_SLOTS:
+    void getContactAttributes(const Tp::UIntList &handles, const QStringList &interfaces, bool hold,
+                              const Tp::Service::ConnectionInterfaceContactsAdaptor::GetContactAttributesContextPtr &context);
+public:
+    BaseConnectionContactsInterface *mInterface;
+};
+
 }
