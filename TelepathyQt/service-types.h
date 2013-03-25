@@ -33,6 +33,7 @@ namespace Tp
 {
 
 class AbstractProtocolInterface;
+class AbstractConnectionInterface;
 class AbstractChannelInterface;
 class BaseConnection;
 class BaseConnectionManager;
@@ -46,6 +47,7 @@ class DBusService;
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 typedef SharedPtr<AbstractProtocolInterface> AbstractProtocolInterfacePtr;
+typedef SharedPtr<AbstractConnectionInterface> AbstractConnectionInterfacePtr;
 typedef SharedPtr<AbstractChannelInterface> AbstractChannelInterfacePtr;
 typedef SharedPtr<BaseConnection> BaseConnectionPtr;
 typedef SharedPtr<BaseConnectionManager> BaseConnectionManagerPtr;

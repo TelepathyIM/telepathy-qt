@@ -30,6 +30,7 @@
 #include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Types>
+#include <TelepathyQt/Callbacks>
 
 #include <QDBusConnection>
 
@@ -45,30 +46,26 @@ class TP_QT_EXPORT BaseConnection : public DBusService
 
 public:
     static BaseConnectionPtr create(const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters)
-    {
+                                    const QVariantMap &parameters) {
         return BaseConnectionPtr(new BaseConnection(
-                    QDBusConnection::sessionBus(), cmName, protocolName, parameters));
+                                     QDBusConnection::sessionBus(), cmName, protocolName, parameters));
     }
     template<typename BaseConnectionSubclass>
     static SharedPtr<BaseConnectionSubclass> create(const QString &cmName,
-            const QString &protocolName, const QVariantMap &parameters)
-    {
+            const QString &protocolName, const QVariantMap &parameters) {
         return SharedPtr<BaseConnectionSubclass>(new BaseConnectionSubclass(
                     QDBusConnection::sessionBus(), cmName, protocolName, parameters));
     }
     static BaseConnectionPtr create(const QDBusConnection &dbusConnection,
-            const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters)
-    {
+                                    const QString &cmName, const QString &protocolName,
+                                    const QVariantMap &parameters) {
         return BaseConnectionPtr(new BaseConnection(
-                    dbusConnection, cmName, protocolName, parameters));
+                                     dbusConnection, cmName, protocolName, parameters));
     }
     template<typename BaseConnectionSubclass>
     static SharedPtr<BaseConnectionSubclass> create(const QDBusConnection &dbusConnection,
             const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters)
-    {
+            const QVariantMap &parameters) {
         return SharedPtr<BaseConnectionSubclass>(new BaseConnectionSubclass(
                     dbusConnection, cmName, protocolName, parameters));
     }
@@ -78,8 +75,41 @@ public:
     QString cmName() const;
     QString protocolName() const;
     QVariantMap parameters() const;
-
+    uint status() const;
     QVariantMap immutableProperties() const;
+
+    void setStatus(uint newStatus, uint reason);
+
+    typedef Callback4<BaseChannelPtr, const QString&, uint, uint, DBusError*> CreateChannelCallback;
+    void setCreateChannelCallback(const CreateChannelCallback &cb);
+    Tp::BaseChannelPtr createChannel(const QString &channelType, uint targetHandleType, uint targetHandle, uint initiatorHandle, bool suppressHandler, DBusError *error);
+
+    typedef Callback3<UIntList, uint, const QStringList&, DBusError*> RequestHandlesCallback;
+    void setRequestHandlesCallback(const RequestHandlesCallback &cb);
+    UIntList requestHandles(uint handleType, const QStringList &identifiers, DBusError* error);
+
+    //typedef Callback3<uint, const QString&, const QString&, DBusError*> SetPresenceCallback;
+    //void setSetPresenceCallback(const SetPresenceCallback &cb);
+
+    void setSelfHandle(uint selfHandle);
+    uint selfHandle() const;
+
+    typedef Callback1<void, DBusError*> ConnectCallback;
+    void setConnectCallback(const ConnectCallback &cb);
+
+    typedef Callback3<QStringList, uint, const Tp::UIntList&, DBusError*> InspectHandlesCallback;
+    void setInspectHandlesCallback(const InspectHandlesCallback &cb);
+
+    Tp::ChannelInfoList channelsInfo();
+    Tp::ChannelDetailsList channelsDetails();
+
+    BaseChannelPtr ensureChannel(const QString &channelType, uint targetHandleType,
+                                 uint targetHandle, bool &yours, uint initiatorHandle, bool suppressHandler, DBusError *error);
+    void addChannel(BaseChannelPtr channel);
+
+    QList<AbstractConnectionInterfacePtr> interfaces() const;
+    AbstractConnectionInterfacePtr interface(const QString  &interfaceName) const;
+    bool plugInterface(const AbstractConnectionInterfacePtr &interface);
 
     virtual QString uniqueName() const;
     bool registerObject(DBusError *error = NULL);
@@ -87,17 +117,37 @@ public:
 Q_SIGNALS:
     void disconnected();
 
+private Q_SLOTS:
+    TP_QT_NO_EXPORT void removeChannel();
+
 protected:
     BaseConnection(const QDBusConnection &dbusConnection,
-            const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters);
+                   const QString &cmName, const QString &protocolName,
+                   const QVariantMap &parameters);
 
     virtual bool registerObject(const QString &busName, const QString &objectPath,
-            DBusError *error);
+                                DBusError *error);
 
 private:
     class Adaptee;
     friend class Adaptee;
+    class Private;
+    friend class Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT AbstractConnectionInterface : public AbstractDBusServiceInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(AbstractConnectionInterface)
+
+public:
+    AbstractConnectionInterface(const QString &interfaceName);
+    virtual ~AbstractConnectionInterface();
+
+private:
+    friend class BaseConnection;
+
     class Private;
     friend class Private;
     Private *mPriv;
