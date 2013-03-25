@@ -153,6 +153,46 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseConnectionRequestsInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionRequestsInterface)
+
+public:
+    static BaseConnectionRequestsInterfacePtr create(BaseConnection* connection) {
+        return BaseConnectionRequestsInterfacePtr(new BaseConnectionRequestsInterface(connection));
+    }
+    template<typename BaseConnectionRequestsInterfaceSubclass>
+    static SharedPtr<BaseConnectionRequestsInterfaceSubclass> create(BaseConnection* connection) {
+        return SharedPtr<BaseConnectionRequestsInterfaceSubclass>(
+                   new BaseConnectionRequestsInterfaceSubclass(connection));
+    }
+
+    virtual ~BaseConnectionRequestsInterface();
+
+    QVariantMap immutableProperties() const;
+
+    Tp::RequestableChannelClassList requestableChannelClasses;
+    void ensureChannel(const QVariantMap &request, bool &yours,
+                       QDBusObjectPath &channel, QVariantMap &details, DBusError* error);
+    void createChannel(const QVariantMap &request, QDBusObjectPath &channel,
+                       QVariantMap &details, DBusError* error);
+public Q_SLOTS:
+    void newChannels(const Tp::ChannelDetailsList &channels);
+
+protected:
+    BaseConnectionRequestsInterface(BaseConnection* connection);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 
 #endif

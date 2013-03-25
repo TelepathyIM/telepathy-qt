@@ -92,4 +92,30 @@ Q_SIGNALS:
     void statusChanged(uint status, uint reason);
 };
 
+class TP_QT_NO_EXPORT BaseConnectionRequestsInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(Tp::ChannelDetailsList channels READ channels)
+    Q_PROPERTY(Tp::RequestableChannelClassList requestableChannelClasses READ requestableChannelClasses)
+
+public:
+    Adaptee(BaseConnectionRequestsInterface *interface);
+    ~Adaptee();
+    Tp::ChannelDetailsList channels() const;
+    Tp::RequestableChannelClassList requestableChannelClasses() const {
+        debug() << "BaseConnectionRequestsInterface::requestableChannelClasses";
+        return mInterface->requestableChannelClasses;
+    }
+
+private Q_SLOTS:
+    void createChannel(const QVariantMap &request, const Tp::Service::ConnectionInterfaceRequestsAdaptor::CreateChannelContextPtr &context);
+    void ensureChannel(const QVariantMap &request, const Tp::Service::ConnectionInterfaceRequestsAdaptor::EnsureChannelContextPtr &context);
+Q_SIGNALS:
+    void newChannels(const Tp::ChannelDetailsList &channels);
+    void channelClosed(const QDBusObjectPath &removed);
+
+public:
+    BaseConnectionRequestsInterface *mInterface;
+};
+
 }
