@@ -379,7 +379,7 @@ SimpleObserverPtr SimpleObserver::create(
         const ChannelClassSpecList &channelFilter,
         const QList<ChannelClassFeatures> &extraChannelFeatures)
 {
-    return create(account, channelFilter, extraChannelFeatures);
+    return create(account, channelFilter, QString(), false, extraChannelFeatures);
 }
 
 /**
