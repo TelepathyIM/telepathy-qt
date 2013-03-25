@@ -529,4 +529,205 @@ void BaseChannelTextType::sent(uint timestamp, uint type, QString text)
     emit mPriv->adaptee->sent(timestamp, type, text);
 }
 
+
+// Chan.I.Messages
+BaseChannelMessagesInterface::Adaptee::Adaptee(BaseChannelMessagesInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelMessagesInterface::Adaptee::~Adaptee()
+{
+}
+
+void BaseChannelMessagesInterface::Adaptee::sendMessage(const Tp::MessagePartList &message, uint flags,
+        const Tp::Service::ChannelInterfaceMessagesAdaptor::SendMessageContextPtr &context)
+{
+    DBusError error;
+    QString token = mInterface->sendMessage(message, flags, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(token);
+}
+
+struct TP_QT_NO_EXPORT BaseChannelMessagesInterface::Private {
+    Private(BaseChannelMessagesInterface *parent,
+            BaseChannelTextType* textTypeInterface,
+            QStringList supportedContentTypes,
+            Tp::UIntList messageTypes,
+            uint messagePartSupportFlags,
+            uint deliveryReportingSupport)
+        : textTypeInterface(textTypeInterface),
+          supportedContentTypes(supportedContentTypes),
+          messageTypes(messageTypes),
+          messagePartSupportFlags(messagePartSupportFlags),
+          deliveryReportingSupport(deliveryReportingSupport),
+          adaptee(new BaseChannelMessagesInterface::Adaptee(parent)) {
+    }
+
+    BaseChannelTextType* textTypeInterface;
+    QStringList supportedContentTypes;
+    Tp::UIntList messageTypes;
+    uint messagePartSupportFlags;
+    uint deliveryReportingSupport;
+    SendMessageCallback sendMessageCB;
+    BaseChannelMessagesInterface::Adaptee *adaptee;
+};
+
+/**
+ * \class BaseChannelMessagesInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.Messages
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelMessagesInterface::BaseChannelMessagesInterface(BaseChannelTextType *textType,
+        QStringList supportedContentTypes,
+        UIntList messageTypes,
+        uint messagePartSupportFlags,
+        uint deliveryReportingSupport)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES),
+      mPriv(new Private(this, textType, supportedContentTypes, messageTypes,
+                        messagePartSupportFlags, deliveryReportingSupport))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelMessagesInterface::~BaseChannelMessagesInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelMessagesInterface::immutableProperties() const
+{
+    QVariantMap map;
+
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES + QLatin1String(".SupportedContentTypes"),
+               QVariant::fromValue(mPriv->adaptee->supportedContentTypes()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES + QLatin1String(".MessageTypes"),
+               QVariant::fromValue(mPriv->adaptee->messageTypes()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES + QLatin1String(".MessagePartSupportFlags"),
+               QVariant::fromValue(mPriv->adaptee->messagePartSupportFlags()));
+    map.insert(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES + QLatin1String(".DeliveryReportingSupport"),
+               QVariant::fromValue(mPriv->adaptee->deliveryReportingSupport()));
+    return map;
+}
+
+void BaseChannelMessagesInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceMessagesAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+QStringList BaseChannelMessagesInterface::supportedContentTypes()
+{
+    return mPriv->supportedContentTypes;
+}
+
+Tp::UIntList BaseChannelMessagesInterface::messageTypes()
+{
+    return mPriv->messageTypes;
+}
+
+uint BaseChannelMessagesInterface::messagePartSupportFlags()
+{
+    return mPriv->messagePartSupportFlags;
+}
+
+uint BaseChannelMessagesInterface::deliveryReportingSupport()
+{
+    return mPriv->deliveryReportingSupport;
+}
+
+Tp::MessagePartListList BaseChannelMessagesInterface::pendingMessages()
+{
+    return mPriv->textTypeInterface->pendingMessages();
+}
+
+void BaseChannelMessagesInterface::messageSent(const Tp::MessagePartList &content, uint flags, const QString &messageToken)
+{
+    emit mPriv->adaptee->messageSent(content, flags, messageToken);
+}
+
+void BaseChannelMessagesInterface::pendingMessagesRemoved(const Tp::UIntList &messageIDs)
+{
+    emit mPriv->adaptee->pendingMessagesRemoved(messageIDs);
+}
+
+void BaseChannelMessagesInterface::messageReceived(const Tp::MessagePartList &message)
+{
+    emit mPriv->adaptee->messageReceived(message);
+}
+
+void BaseChannelMessagesInterface::setSendMessageCallback(const SendMessageCallback &cb)
+{
+    mPriv->sendMessageCB = cb;
+}
+
+QString BaseChannelMessagesInterface::sendMessage(const Tp::MessagePartList &message, uint flags, DBusError* error)
+{
+    if (!mPriv->sendMessageCB.isValid()) {
+        error->set(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return QString();
+    }
+    QString token = mPriv->sendMessageCB(message, flags, error);
+
+    //emit after return
+    QMetaObject::invokeMethod(mPriv->adaptee, "messageSent",
+                              Qt::QueuedConnection,
+                              Q_ARG(Tp::MessagePartList, message),
+                              Q_ARG(uint, flags),
+                              Q_ARG(QString, token));
+
+    if (message.empty()) {
+        warning() << "Sending empty message";
+        return token;
+    }
+    const MessagePart &header = message.front();
+
+    uint timestamp = 0;
+    if (header.count(QLatin1String("message-received")))
+        timestamp = header[QLatin1String("message-received")].variant().toUInt();
+
+    uint type = ChannelTextMessageTypeNormal;
+    if (header.count(QLatin1String("message-type")))
+        type = header[QLatin1String("message-type")].variant().toUInt();
+
+    QString content;
+    for (MessagePartList::const_iterator i = message.begin() + 1; i != message.end(); ++i)
+        if (i->count(QLatin1String("content-type"))
+                && i->value(QLatin1String("content-type")).variant().toString() == QLatin1String("text/plain")
+                && i->count(QLatin1String("content"))) {
+            content = i->value(QLatin1String("content")).variant().toString();
+            break;
+        }
+    //emit after return
+    QMetaObject::invokeMethod(mPriv->textTypeInterface, "sent",
+                              Qt::QueuedConnection,
+                              Q_ARG(uint, timestamp),
+                              Q_ARG(uint, type),
+                              Q_ARG(QString, content));
+    return token;
+}
+
+
+
 }

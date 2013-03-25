@@ -115,4 +115,45 @@ public:
     BaseChannelTextType *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelMessagesInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QStringList supportedContentTypes READ supportedContentTypes)
+    Q_PROPERTY(Tp::UIntList messageTypes READ messageTypes)
+    Q_PROPERTY(uint messagePartSupportFlags READ messagePartSupportFlags)
+    Q_PROPERTY(Tp::MessagePartListList pendingMessages READ pendingMessages)
+    Q_PROPERTY(uint deliveryReportingSupport READ deliveryReportingSupport)
+public:
+    Adaptee(BaseChannelMessagesInterface *interface);
+    ~Adaptee();
+
+    QStringList supportedContentTypes() {
+        return mInterface->supportedContentTypes();
+    }
+    Tp::UIntList messageTypes() {
+        return mInterface->messageTypes();
+    }
+    uint messagePartSupportFlags() {
+        return mInterface->messagePartSupportFlags();
+    }
+    uint deliveryReportingSupport() {
+        return mInterface->deliveryReportingSupport();
+    }
+    Tp::MessagePartListList pendingMessages() {
+        return mInterface->pendingMessages();
+    }
+
+public slots:
+    void sendMessage(const Tp::MessagePartList &message, uint flags, const Tp::Service::ChannelInterfaceMessagesAdaptor::SendMessageContextPtr &context);
+//deprecated, never implemented:
+    //void getPendingMessageContent(uint messageID, const Tp::UIntList &parts, const Tp::Service::ChannelInterfaceMessagesAdaptor::GetPendingMessageContentContextPtr &context);
+signals:
+    void messageSent(const Tp::MessagePartList &content, uint flags, const QString &messageToken);
+    void pendingMessagesRemoved(const Tp::UIntList &messageIDs);
+    void messageReceived(const Tp::MessagePartList &message);
+
+public:
+    BaseChannelMessagesInterface *mInterface;
+};
+
 }

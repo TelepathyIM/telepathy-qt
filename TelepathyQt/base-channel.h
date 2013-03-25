@@ -156,5 +156,61 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelMessagesInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelMessagesInterface)
+
+public:
+    static BaseChannelMessagesInterfacePtr create(BaseChannelTextType* textTypeInterface,
+            QStringList supportedContentTypes,
+            UIntList messageTypes,
+            uint messagePartSupportFlags,
+            uint deliveryReportingSupport) {
+        return BaseChannelMessagesInterfacePtr(new BaseChannelMessagesInterface(textTypeInterface,
+                                               supportedContentTypes,
+                                               messageTypes,
+                                               messagePartSupportFlags,
+                                               deliveryReportingSupport));
+    }
+    template<typename BaseChannelMessagesInterfaceSubclass>
+    static SharedPtr<BaseChannelMessagesInterfaceSubclass> create() {
+        return SharedPtr<BaseChannelMessagesInterfaceSubclass>(
+                   new BaseChannelMessagesInterfaceSubclass());
+    }
+    virtual ~BaseChannelMessagesInterface();
+
+    QVariantMap immutableProperties() const;
+
+    QStringList supportedContentTypes();
+    Tp::UIntList messageTypes();
+    uint messagePartSupportFlags();
+    uint deliveryReportingSupport();
+    Tp::MessagePartListList pendingMessages();
+
+    void messageSent(const Tp::MessagePartList &content, uint flags, const QString &messageToken);
+
+    typedef Callback3<QString, const Tp::MessagePartList&, uint, DBusError*> SendMessageCallback;
+    void setSendMessageCallback(const SendMessageCallback &cb);
+protected:
+    QString sendMessage(const Tp::MessagePartList &message, uint flags, DBusError* error);
+private Q_SLOTS:
+    void pendingMessagesRemoved(const Tp::UIntList &messageIDs);
+    void messageReceived(const Tp::MessagePartList &message);
+private:
+    BaseChannelMessagesInterface(BaseChannelTextType* textType,
+                                 QStringList supportedContentTypes,
+                                 Tp::UIntList messageTypes,
+                                 uint messagePartSupportFlags,
+                                 uint deliveryReportingSupport);
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 #endif

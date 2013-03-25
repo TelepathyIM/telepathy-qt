@@ -45,6 +45,7 @@ class BaseProtocolAvatarsInterface;
 class BaseProtocolPresenceInterface;
 class BaseChannel;
 class BaseChannelTextType;
+class BaseChannelMessagesInterface;
 class DBusService;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -62,6 +63,7 @@ typedef SharedPtr<BaseProtocolAvatarsInterface> BaseProtocolAvatarsInterfacePtr;
 typedef SharedPtr<BaseProtocolPresenceInterface> BaseProtocolPresenceInterfacePtr;
 typedef SharedPtr<BaseChannel> BaseChannelPtr;
 typedef SharedPtr<BaseChannelTextType> BaseChannelTextTypePtr;
+typedef SharedPtr<BaseChannelMessagesInterface> BaseChannelMessagesInterfacePtr;
 typedef SharedPtr<DBusService> DBusServicePtr;
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
