@@ -11,6 +11,7 @@ Fixes:
  * Require tp-glib 0.18 and fix 0.19-ism
  * fd.o #47647: Fixed storing avatars, so that they are not stored millions
    of times each.
+ * fd.o #62711: Fixed stack overflow in SimpleObserver::create
 
 telepathy-qt 0.9.3 (2012-07-13)
 =================================
