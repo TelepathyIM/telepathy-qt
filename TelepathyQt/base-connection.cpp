@@ -29,7 +29,6 @@
 #include "TelepathyQt/debug-internal.h"
 
 #include <TelepathyQt/BaseChannel>
-#include <TelepathyQt/ChannelInterface>
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/DBusObject>
 #include <TelepathyQt/Utils>
