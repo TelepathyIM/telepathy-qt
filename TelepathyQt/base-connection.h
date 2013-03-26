@@ -273,6 +273,50 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseConnectionContactListInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionContactListInterface)
+
+public:
+    static BaseConnectionContactListInterfacePtr create() {
+        return BaseConnectionContactListInterfacePtr(new BaseConnectionContactListInterface());
+    }
+    template<typename BaseConnectionContactListInterfaceSubclass>
+    static SharedPtr<BaseConnectionContactListInterfaceSubclass> create() {
+        return SharedPtr<BaseConnectionContactListInterfaceSubclass>(
+                   new BaseConnectionContactListInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionContactListInterface();
+
+    QVariantMap immutableProperties() const;
+
+    void setContactListState(uint contactListState);
+    void setContactListPersists(bool);
+    void setCanChangeContactList(bool);
+    void setRequestUsesMessage(bool);
+    void setDownloadAtConnection(bool);
+
+    typedef Callback3<Tp::ContactAttributesMap, const QStringList&, bool, DBusError*> GetContactListAttributesCallback;
+    void setGetContactListAttributesCallback(const GetContactListAttributesCallback &cb);
+
+    typedef Callback3<void, const Tp::UIntList&, const QString&, DBusError*> RequestSubscriptionCallback;
+    void setRequestSubscriptionCallback(const RequestSubscriptionCallback &cb);
+
+    void contactsChangedWithID(const Tp::ContactSubscriptionMap &changes, const Tp::HandleIdentifierMap &identifiers, const Tp::HandleIdentifierMap &removals);
+protected:
+    BaseConnectionContactListInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
 }
 
 #endif

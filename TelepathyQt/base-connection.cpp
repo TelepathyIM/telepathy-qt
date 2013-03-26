@@ -1044,6 +1044,183 @@ void BaseConnectionSimplePresenceInterface::Adaptee::getPresences(const Tp::UInt
     context->setFinished(presences);
 }
 
+// Conn.I.ContactList
+BaseConnectionContactListInterface::Adaptee::Adaptee(BaseConnectionContactListInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
 
+BaseConnectionContactListInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseConnectionContactListInterface::Private {
+    Private(BaseConnectionContactListInterface *parent)
+        : contactListState(ContactListStateNone),
+          contactListPersists(false),
+          canChangeContactList(true),
+          requestUsesMessage(false),
+          downloadAtConnection(false),
+          adaptee(new BaseConnectionContactListInterface::Adaptee(parent)) {
+    }
+    uint contactListState;
+    bool contactListPersists;
+    bool canChangeContactList;
+    bool requestUsesMessage;
+    bool downloadAtConnection;
+    GetContactListAttributesCallback getContactListAttributesCB;
+    RequestSubscriptionCallback requestSubscriptionCB;
+    BaseConnectionContactListInterface::Adaptee *adaptee;
+};
+
+/**
+ * \class BaseConnectionContactListInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
+ *
+ * \brief Base class for implementations of Connection.Interface.ContactList
+ */
+
+/**
+ * Class constructor.
+ */
+BaseConnectionContactListInterface::BaseConnectionContactListInterface()
+    : AbstractConnectionInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseConnectionContactListInterface::~BaseConnectionContactListInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this<interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseConnectionContactListInterface::immutableProperties() const
+{
+    QVariantMap map;
+    return map;
+}
+
+void BaseConnectionContactListInterface::createAdaptor()
+{
+    (void) new Service::ConnectionInterfaceContactListAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseConnectionContactListInterface::setContactListState(uint contactListState)
+{
+    bool changed = (contactListState != mPriv->contactListState);
+    mPriv->contactListState = contactListState;
+    if (changed)
+        //emit after return
+        QMetaObject::invokeMethod(mPriv->adaptee, "contactListStateChanged",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(uint, contactListState));
+
+}
+
+void BaseConnectionContactListInterface::setContactListPersists(bool contactListPersists)
+{
+    mPriv->contactListPersists = contactListPersists;
+}
+
+void BaseConnectionContactListInterface::setCanChangeContactList(bool canChangeContactList)
+{
+    mPriv->canChangeContactList = canChangeContactList;
+}
+
+void BaseConnectionContactListInterface::setRequestUsesMessage(bool requestUsesMessage)
+{
+    mPriv->requestUsesMessage = requestUsesMessage;
+}
+
+void BaseConnectionContactListInterface::setDownloadAtConnection(bool downloadAtConnection)
+{
+    mPriv->downloadAtConnection = downloadAtConnection;
+}
+
+void BaseConnectionContactListInterface::setGetContactListAttributesCallback(const GetContactListAttributesCallback &cb)
+{
+    mPriv->getContactListAttributesCB = cb;
+}
+
+void BaseConnectionContactListInterface::setRequestSubscriptionCallback(const RequestSubscriptionCallback &cb)
+{
+    mPriv->requestSubscriptionCB = cb;
+}
+
+void BaseConnectionContactListInterface::contactsChangedWithID(const Tp::ContactSubscriptionMap &changes, const Tp::HandleIdentifierMap &identifiers, const Tp::HandleIdentifierMap &removals)
+{
+    emit mPriv->adaptee->contactsChangedWithID(changes, identifiers, removals);
+}
+
+uint BaseConnectionContactListInterface::Adaptee::contactListState() const
+{
+    return mInterface->mPriv->contactListState;
+}
+
+bool BaseConnectionContactListInterface::Adaptee::contactListPersists() const
+{
+    return mInterface->mPriv->contactListPersists;
+}
+
+bool BaseConnectionContactListInterface::Adaptee::canChangeContactList() const
+{
+    return mInterface->mPriv->canChangeContactList;
+}
+
+bool BaseConnectionContactListInterface::Adaptee::requestUsesMessage() const
+{
+    return mInterface->mPriv->requestUsesMessage;
+}
+
+bool BaseConnectionContactListInterface::Adaptee::downloadAtConnection() const
+{
+    return mInterface->mPriv->downloadAtConnection;
+}
+
+void BaseConnectionContactListInterface::Adaptee::getContactListAttributes(const QStringList &interfaces,
+        bool hold, const Tp::Service::ConnectionInterfaceContactListAdaptor::GetContactListAttributesContextPtr &context)
+{
+    if (!mInterface->mPriv->getContactListAttributesCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    DBusError error;
+    Tp::ContactAttributesMap contactAttributesMap = mInterface->mPriv->getContactListAttributesCB(interfaces, hold, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(contactAttributesMap);
+}
+
+void BaseConnectionContactListInterface::Adaptee::requestSubscription(const Tp::UIntList &contacts,
+        const QString &message, const Tp::Service::ConnectionInterfaceContactListAdaptor::RequestSubscriptionContextPtr &context)
+{
+    if (!mInterface->mPriv->requestSubscriptionCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+    DBusError error;
+    mInterface->mPriv->requestSubscriptionCB(contacts, message, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
 
 }
