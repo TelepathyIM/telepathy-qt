@@ -241,6 +241,50 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseChannelCaptchaAuthenticationInterface : public AbstractChannelInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseChannelCaptchaAuthenticationInterface)
+
+public:
+    static BaseChannelCaptchaAuthenticationInterfacePtr create(bool canRetryCaptcha) {
+        return BaseChannelCaptchaAuthenticationInterfacePtr(new BaseChannelCaptchaAuthenticationInterface(canRetryCaptcha));
+    }
+    template<typename BaseChannelCaptchaAuthenticationInterfaceSubclass>
+    static SharedPtr<BaseChannelCaptchaAuthenticationInterfaceSubclass> create(bool canRetryCaptcha) {
+        return SharedPtr<BaseChannelCaptchaAuthenticationInterfaceSubclass>(
+                   new BaseChannelCaptchaAuthenticationInterfaceSubclass(canRetryCaptcha));
+    }
+    virtual ~BaseChannelCaptchaAuthenticationInterface();
+
+    QVariantMap immutableProperties() const;
+
+    typedef Callback4<void, Tp::CaptchaInfoList&, uint&, QString&, DBusError*> GetCaptchasCallback;
+    void setGetCaptchasCallback(const GetCaptchasCallback &cb);
+
+    typedef Callback3<QByteArray, uint, const QString&, DBusError*> GetCaptchaDataCallback;
+    void setGetCaptchaDataCallback(const GetCaptchaDataCallback &cb);
+
+    typedef Callback2<void, const Tp::CaptchaAnswers&, DBusError*> AnswerCaptchasCallback;
+    void setAnswerCaptchasCallback(const AnswerCaptchasCallback &cb);
+
+    typedef Callback3<void, uint, const QString&, DBusError*> CancelCaptchaCallback;
+    void setCancelCaptchaCallback(const CancelCaptchaCallback &cb);
+
+    void setCaptchaStatus(uint status);
+    void setCaptchaError(const QString &busName);
+    void setCaptchaErrorDetails(const QVariantMap &error);
+private Q_SLOTS:
+private:
+    BaseChannelCaptchaAuthenticationInterface(bool canRetryCaptcha);
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
 
 }
 #endif

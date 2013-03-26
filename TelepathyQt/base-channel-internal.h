@@ -168,4 +168,27 @@ public:
     BaseChannelServerAuthenticationType *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseChannelCaptchaAuthenticationInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool canRetryCaptcha READ canRetryCaptcha)
+    Q_PROPERTY(uint captchaStatus READ captchaStatus)
+    Q_PROPERTY(QString captchaError READ captchaError)
+    Q_PROPERTY(QVariantMap captchaErrorDetails READ captchaErrorDetails)
+public:
+    Adaptee(BaseChannelCaptchaAuthenticationInterface *interface);
+    ~Adaptee();
+    bool canRetryCaptcha() const;
+    uint captchaStatus() const;
+    QString captchaError() const;
+    QVariantMap captchaErrorDetails() const;
+public slots:
+    void getCaptchas(const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::GetCaptchasContextPtr &context);
+    void getCaptchaData(uint ID, const QString &mimeType, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::GetCaptchaDataContextPtr &context);
+    void answerCaptchas(const Tp::CaptchaAnswers &answers, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::AnswerCaptchasContextPtr &context);
+    void cancelCaptcha(uint reason, const QString &debugMessage, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::CancelCaptchaContextPtr &context);
+public:
+    BaseChannelCaptchaAuthenticationInterface *mInterface;
+};
+
 }

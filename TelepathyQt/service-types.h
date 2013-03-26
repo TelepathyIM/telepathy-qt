@@ -50,6 +50,7 @@ class BaseChannel;
 class BaseChannelTextType;
 class BaseChannelMessagesInterface;
 class BaseChannelServerAuthenticationType;
+class BaseChannelCaptchaAuthenticationInterface;
 class DBusService;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -72,6 +73,7 @@ typedef SharedPtr<BaseChannel> BaseChannelPtr;
 typedef SharedPtr<BaseChannelTextType> BaseChannelTextTypePtr;
 typedef SharedPtr<BaseChannelMessagesInterface> BaseChannelMessagesInterfacePtr;
 typedef SharedPtr<BaseChannelServerAuthenticationType> BaseChannelServerAuthenticationTypePtr;
+typedef SharedPtr<BaseChannelCaptchaAuthenticationInterface> BaseChannelCaptchaAuthenticationInterfacePtr;
 typedef SharedPtr<DBusService> DBusServicePtr;
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */

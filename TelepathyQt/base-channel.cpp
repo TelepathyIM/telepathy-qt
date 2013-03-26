@@ -802,4 +802,187 @@ void BaseChannelServerAuthenticationType::createAdaptor()
             mPriv->adaptee, dbusObject());
 }
 
+//Chan.I.CaptchaAuthentication
+BaseChannelCaptchaAuthenticationInterface::Adaptee::Adaptee(BaseChannelCaptchaAuthenticationInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseChannelCaptchaAuthenticationInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseChannelCaptchaAuthenticationInterface::Private {
+    Private(BaseChannelCaptchaAuthenticationInterface *parent, bool canRetryCaptcha)
+        : canRetryCaptcha(canRetryCaptcha),
+          captchaStatus(CaptchaStatusLocalPending),
+          adaptee(new BaseChannelCaptchaAuthenticationInterface::Adaptee(parent)) {
+    }
+    bool canRetryCaptcha;
+    bool captchaStatus;
+    QString captchaError;
+    QVariantMap captchaErrorDetails;
+    GetCaptchasCallback getCaptchasCB;
+    GetCaptchaDataCallback getCaptchaDataCB;
+    AnswerCaptchasCallback answerCaptchasCB;
+    CancelCaptchaCallback cancelCaptchaCB;
+    BaseChannelCaptchaAuthenticationInterface::Adaptee *adaptee;
+};
+
+bool BaseChannelCaptchaAuthenticationInterface::Adaptee::canRetryCaptcha() const
+{
+    return mInterface->mPriv->canRetryCaptcha;
+}
+
+uint BaseChannelCaptchaAuthenticationInterface::Adaptee::captchaStatus() const
+{
+    return mInterface->mPriv->captchaStatus;
+}
+
+QString BaseChannelCaptchaAuthenticationInterface::Adaptee::captchaError() const
+{
+    return mInterface->mPriv->captchaError;
+}
+
+QVariantMap BaseChannelCaptchaAuthenticationInterface::Adaptee::captchaErrorDetails() const
+{
+    return mInterface->mPriv->captchaErrorDetails;
+}
+
+void BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchas(const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::GetCaptchasContextPtr &context)
+{
+    qDebug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchas";
+    DBusError error;
+    Tp::CaptchaInfoList captchaInfo;
+    uint numberRequired;
+    QString language;
+    mInterface->mPriv->getCaptchasCB(captchaInfo, numberRequired, language, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(captchaInfo, numberRequired, language);
+}
+
+void BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchaData(uint ID, const QString& mimeType, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::GetCaptchaDataContextPtr &context)
+{
+    qDebug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::getCaptchaData " << ID << mimeType;
+    DBusError error;
+    QByteArray captchaData = mInterface->mPriv->getCaptchaDataCB(ID, mimeType, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished(captchaData);
+}
+
+void BaseChannelCaptchaAuthenticationInterface::Adaptee::answerCaptchas(const Tp::CaptchaAnswers& answers, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::AnswerCaptchasContextPtr &context)
+{
+    qDebug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::answerCaptchas";
+    DBusError error;
+    mInterface->mPriv->answerCaptchasCB(answers, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+void BaseChannelCaptchaAuthenticationInterface::Adaptee::cancelCaptcha(uint reason, const QString& debugMessage, const Tp::Service::ChannelInterfaceCaptchaAuthenticationAdaptor::CancelCaptchaContextPtr &context)
+{
+    qDebug() << "BaseChannelCaptchaAuthenticationInterface::Adaptee::cancelCaptcha "
+             << reason << " " << debugMessage;
+    DBusError error;
+    mInterface->mPriv->cancelCaptchaCB(reason, debugMessage, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    context->setFinished();
+}
+
+/**
+ * \class BaseChannelCaptchaAuthenticationInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-channel.h <TelepathyQt/BaseChannel>
+ *
+ * \brief Base class for implementations of Channel.Interface.CaptchaAuthentication
+ *
+ */
+
+/**
+ * Class constructor.
+ */
+BaseChannelCaptchaAuthenticationInterface::BaseChannelCaptchaAuthenticationInterface(bool canRetryCaptcha)
+    : AbstractChannelInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION),
+      mPriv(new Private(this, canRetryCaptcha))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseChannelCaptchaAuthenticationInterface::~BaseChannelCaptchaAuthenticationInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseChannelCaptchaAuthenticationInterface::immutableProperties() const
+{
+    QVariantMap map;
+    map.insert(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION + QLatin1String(".CanRetryCaptcha"),
+               QVariant::fromValue(mPriv->adaptee->canRetryCaptcha()));
+    return map;
+}
+
+void BaseChannelCaptchaAuthenticationInterface::createAdaptor()
+{
+    (void) new Service::ChannelInterfaceCaptchaAuthenticationAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+void BaseChannelCaptchaAuthenticationInterface::setGetCaptchasCallback(const GetCaptchasCallback &cb)
+{
+    mPriv->getCaptchasCB = cb;
+}
+
+void BaseChannelCaptchaAuthenticationInterface::setGetCaptchaDataCallback(const GetCaptchaDataCallback &cb)
+{
+    mPriv->getCaptchaDataCB = cb;
+}
+
+void BaseChannelCaptchaAuthenticationInterface::setAnswerCaptchasCallback(const AnswerCaptchasCallback &cb)
+{
+    mPriv->answerCaptchasCB = cb;
+}
+
+void BaseChannelCaptchaAuthenticationInterface::setCancelCaptchaCallback(const CancelCaptchaCallback &cb)
+{
+    mPriv->cancelCaptchaCB = cb;
+}
+
+void BaseChannelCaptchaAuthenticationInterface::setCaptchaStatus(uint status)
+{
+    mPriv->captchaStatus = status;
+}
+
+void BaseChannelCaptchaAuthenticationInterface::setCaptchaError(const QString& busName)
+{
+    mPriv->captchaError = busName;
+}
+
+void BaseChannelCaptchaAuthenticationInterface::setCaptchaErrorDetails(const QVariantMap& error)
+{
+    mPriv->captchaErrorDetails = error;
+}
+
 }
