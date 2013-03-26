@@ -877,4 +877,173 @@ ContactAttributesMap BaseConnectionContactsInterface::getContactAttributes(const
     return mPriv->getContactAttributesCallback(handles, interfaces, error);
 }
 
+// Conn.I.SimplePresence
+BaseConnectionSimplePresenceInterface::Adaptee::Adaptee(BaseConnectionSimplePresenceInterface *interface)
+    : QObject(interface),
+      mInterface(interface)
+{
+}
+
+BaseConnectionSimplePresenceInterface::Adaptee::~Adaptee()
+{
+}
+
+struct TP_QT_NO_EXPORT BaseConnectionSimplePresenceInterface::Private {
+    Private(BaseConnectionSimplePresenceInterface *parent)
+        : maxmimumStatusMessageLength(0),
+          adaptee(new BaseConnectionSimplePresenceInterface::Adaptee(parent)) {
+    }
+    SetPresenceCallback setPresenceCB;
+    SimpleStatusSpecMap statuses;
+    uint maxmimumStatusMessageLength;
+    /* The current presences */
+    SimpleContactPresences presences;
+    BaseConnectionSimplePresenceInterface::Adaptee *adaptee;
+};
+
+/**
+ * \class BaseConnectionSimplePresenceInterface
+ * \ingroup servicecm
+ * \headerfile TelepathyQt/base-connection.h <TelepathyQt/BaseConnection>
+ *
+ * \brief Base class for implementations of Connection.Interface.SimplePresence
+ */
+
+/**
+ * Class constructor.
+ */
+BaseConnectionSimplePresenceInterface::BaseConnectionSimplePresenceInterface()
+    : AbstractConnectionInterface(TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Class destructor.
+ */
+BaseConnectionSimplePresenceInterface::~BaseConnectionSimplePresenceInterface()
+{
+    delete mPriv;
+}
+
+/**
+ * Return the immutable properties of this<interface.
+ *
+ * Immutable properties cannot change after the interface has been registered
+ * on a service on the bus with registerInterface().
+ *
+ * \return The immutable properties of this interface.
+ */
+QVariantMap BaseConnectionSimplePresenceInterface::immutableProperties() const
+{
+    QVariantMap map;
+    //FIXME
+    return map;
+}
+
+void BaseConnectionSimplePresenceInterface::createAdaptor()
+{
+    (void) new Service::ConnectionInterfaceSimplePresenceAdaptor(dbusObject()->dbusConnection(),
+            mPriv->adaptee, dbusObject());
+}
+
+
+
+void BaseConnectionSimplePresenceInterface::setPresences(const Tp::SimpleContactPresences &presences)
+{
+    foreach(uint handle, presences.keys()) {
+        mPriv->presences[handle] = presences[handle];
+    }
+    emit mPriv->adaptee->presencesChanged(presences);
+}
+
+void BaseConnectionSimplePresenceInterface::setSetPresenceCallback(const SetPresenceCallback &cb)
+{
+    mPriv->setPresenceCB = cb;
+}
+
+void BaseConnectionSimplePresenceInterface::setStatuses(const SimpleStatusSpecMap &statuses)
+{
+    mPriv->statuses = statuses;
+}
+
+void BaseConnectionSimplePresenceInterface::setMaxmimumStatusMessageLength(uint maxmimumStatusMessageLength)
+{
+    mPriv->maxmimumStatusMessageLength = maxmimumStatusMessageLength;
+}
+
+
+Tp::SimpleStatusSpecMap BaseConnectionSimplePresenceInterface::Adaptee::statuses() const
+{
+    return mInterface->mPriv->statuses;
+}
+
+int BaseConnectionSimplePresenceInterface::Adaptee::maximumStatusMessageLength() const
+{
+    return mInterface->mPriv->maxmimumStatusMessageLength;
+}
+
+void BaseConnectionSimplePresenceInterface::Adaptee::setPresence(const QString &status, const QString &statusMessage_,
+        const Tp::Service::ConnectionInterfaceSimplePresenceAdaptor::SetPresenceContextPtr &context)
+{
+    if (!mInterface->mPriv->setPresenceCB.isValid()) {
+        context->setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED, QLatin1String("Not implemented"));
+        return;
+    }
+
+    SimpleStatusSpecMap::Iterator i = mInterface->mPriv->statuses.find(status);
+    if (i == mInterface->mPriv->statuses.end()) {
+        warning() << "BaseConnectionSimplePresenceInterface::Adaptee::setPresence: status is not in statuses";
+        context->setFinishedWithError(TP_QT_ERROR_INVALID_ARGUMENT, QLatin1String("status not in statuses"));
+        return;
+    }
+
+    QString statusMessage = statusMessage_;
+    if ((uint)statusMessage.length() > mInterface->mPriv->maxmimumStatusMessageLength) {
+        debug() << "BaseConnectionSimplePresenceInterface::Adaptee::setPresence: "
+                << "truncating status to " << mInterface->mPriv->maxmimumStatusMessageLength;
+        statusMessage = statusMessage.left(mInterface->mPriv->maxmimumStatusMessageLength);
+    }
+
+    DBusError error;
+    uint selfHandle = mInterface->mPriv->setPresenceCB(status, statusMessage, &error);
+    if (error.isValid()) {
+        context->setFinishedWithError(error.name(), error.message());
+        return;
+    }
+    Tp::SimplePresence presence;
+    presence.type = i->type;
+    presence.status = status;
+    presence.statusMessage = statusMessage;
+    mInterface->mPriv->presences[selfHandle] = presence;
+
+    /* Emit PresencesChanged */
+    SimpleContactPresences presences;
+    presences[selfHandle] = presence;
+    //emit after return
+    QMetaObject::invokeMethod(mInterface->mPriv->adaptee, "presencesChanged",
+                              Qt::QueuedConnection,
+                              Q_ARG(Tp::SimpleContactPresences, presences));
+    context->setFinished();
+}
+
+void BaseConnectionSimplePresenceInterface::Adaptee::getPresences(const Tp::UIntList &contacts,
+        const Tp::Service::ConnectionInterfaceSimplePresenceAdaptor::GetPresencesContextPtr &context)
+{
+    Tp::SimpleContactPresences presences;
+    foreach(uint handle, contacts) {
+        SimpleContactPresences::iterator i = mInterface->mPriv->presences.find(handle);
+        if (i == mInterface->mPriv->presences.end()) {
+            Tp::SimplePresence presence;
+            presence.type = ConnectionPresenceTypeUnknown;
+            presence.status = QLatin1String("unknown");
+            presences[handle] = presence;
+        } else
+            presences[handle] = *i;
+    }
+    context->setFinished(presences);
+}
+
+
+
 }

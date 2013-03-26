@@ -233,6 +233,46 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT BaseConnectionSimplePresenceInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionSimplePresenceInterface)
+
+public:
+    static BaseConnectionSimplePresenceInterfacePtr create() {
+        return BaseConnectionSimplePresenceInterfacePtr(new BaseConnectionSimplePresenceInterface());
+    }
+    template<typename BaseConnectionSimplePresenceInterfaceSublclass>
+    static SharedPtr<BaseConnectionSimplePresenceInterfaceSublclass> create() {
+        return SharedPtr<BaseConnectionSimplePresenceInterfaceSublclass>(
+                   new BaseConnectionSimplePresenceInterfaceSublclass());
+    }
+
+    virtual ~BaseConnectionSimplePresenceInterface();
+
+    QVariantMap immutableProperties() const;
+
+    typedef Callback3<uint, const QString&, const QString&, DBusError*> SetPresenceCallback;
+    void setSetPresenceCallback(const SetPresenceCallback &cb);
+
+    void setPresences(const Tp::SimpleContactPresences &presences);
+    void setStatuses(const SimpleStatusSpecMap &statuses);
+    void setMaxmimumStatusMessageLength(uint maxmimumStatusMessageLength);
+protected:
+    BaseConnectionSimplePresenceInterface();
+    Tp::SimpleStatusSpecMap statuses() const;
+    int maximumStatusMessageLength() const;
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 }
 
 #endif

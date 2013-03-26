@@ -135,4 +135,28 @@ public:
     BaseConnectionContactsInterface *mInterface;
 };
 
+class TP_QT_NO_EXPORT BaseConnectionSimplePresenceInterface::Adaptee : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(Tp::SimpleStatusSpecMap statuses READ statuses)
+    Q_PROPERTY(uint maximumStatusMessageLength READ maximumStatusMessageLength)
+public:
+    Adaptee(BaseConnectionSimplePresenceInterface *interface);
+    ~Adaptee();
+    Tp::SimpleStatusSpecMap statuses() const;
+    int maximumStatusMessageLength() const;
+
+private Q_SLOTS:
+    void setPresence(const QString &status, const QString &statusMessage,
+                     const Tp::Service::ConnectionInterfaceSimplePresenceAdaptor::SetPresenceContextPtr &context);
+    void getPresences(const Tp::UIntList &contacts,
+                      const Tp::Service::ConnectionInterfaceSimplePresenceAdaptor::GetPresencesContextPtr &context);
+Q_SIGNALS:
+    void presencesChanged(const Tp::SimpleContactPresences &presence);
+
+public:
+    BaseConnectionSimplePresenceInterface *mInterface;
+};
+
 }
