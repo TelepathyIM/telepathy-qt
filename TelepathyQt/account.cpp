@@ -418,6 +418,20 @@ QVariantMap dbusTubeRequest(const Tp::ContactPtr &contact, const QString &servic
     return request;
 }
 
+QVariantMap dbusTubeRoomRequest(const QString &roomName, const QString &serviceName)
+{
+    QVariantMap request;
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
+                   TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+                   (uint) Tp::HandleTypeRoom);
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+                   serviceName);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
+                   roomName);
+    return request;
+}
+
 QVariantMap conferenceCommonRequest(const QString &channelType, Tp::HandleType targetHandleType,
         const QList<Tp::ChannelPtr> &channels)
 {
@@ -2890,6 +2904,19 @@ PendingChannelRequest* Account::createDBusTube(
 
     return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
             preferredHandler, true, hints);
+}
+
+PendingChannelRequest* Account::createDBusTubeRoom(
+        const QString &room,
+        const QString &serviceName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request = dbusTubeRoomRequest(room, serviceName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+        preferredHandler, true, hints);
 }
 
 /**

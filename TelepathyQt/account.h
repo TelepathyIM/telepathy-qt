@@ -330,6 +330,12 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *createDBusTubeRoom(
+                const QString &room,
+                const QString &serviceName,
+                const QDateTime &userActionTime = QDateTime::currentDateTime(),
+                const QString &preferredHandler = QString(),
+                const ChannelRequestHints &hints = ChannelRequestHints());
 
     TP_QT_DEPRECATED PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
