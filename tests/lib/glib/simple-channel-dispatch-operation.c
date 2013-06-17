@@ -145,13 +145,22 @@ tp_tests_simple_channel_dispatch_operation_get_property (GObject *object,
         for (i = 0; i < self->priv->channels->len; i++)
           {
             TpChannel *channel = g_ptr_array_index (self->priv->channels, i);
+            GValue props_value = G_VALUE_INIT;
+            GVariant *props_variant;
+
+            /* Yay, double conversion! But this is for tests corner case */
+            props_variant = tp_channel_dup_immutable_properties (channel);
+            dbus_g_value_parse_g_variant (props_variant, &props_value);
 
             g_ptr_array_add (arr,
                 tp_value_array_build (2,
                   DBUS_TYPE_G_OBJECT_PATH, tp_proxy_get_object_path (channel),
                   TP_HASH_TYPE_STRING_VARIANT_MAP,
-                    tp_channel_dup_immutable_properties (channel),
+                      g_value_get_boxed (&props_value),
                   G_TYPE_INVALID));
+
+            g_variant_unref (props_variant);
+            g_value_unset (&props_value);
           }
 
         g_value_take_boxed (value, arr);
