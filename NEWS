@@ -4,7 +4,7 @@ telepathy-qt 0.9.4 (UNRELEASED)
 The "..." release.
 
 Enhancements:
- * ...
+ * fd.o #63098: add method Account::createDbusTubeRoom
 
 Fixes:
  * fd.o #46241: Fixed linking in farstream and farsight
