@@ -80,8 +80,8 @@
  *
  * and to build the example VoIP call UI (examples/call), you'll need:
  * \li telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
- * \li telepathy-farsight
- *  <http://telepathy.freedesktop.org/releases/telepathy-farsight/>
+ * \li telepathy-farstream
+ *  <http://telepathy.freedesktop.org/releases/telepathy-farstream/>
  * \li GStreamer <http://gstreamer.freedesktop.org/>\n
  *
  * Building also requires the cmake build system.

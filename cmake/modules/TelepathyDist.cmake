@@ -78,31 +78,31 @@ if (ENABLE_CPACK)
 
     #name components
     set(CPACK_COMPONENT_MAINLIBRARY_DISPLAY_NAME "TelepathyQt main components")
-    set(CPACK_COMPONENT_FARSIGHT_DISPLAY_NAME "TelepathyQt Farsight support")
+    set(CPACK_COMPONENT_FARSTREAM_DISPLAY_NAME "TelepathyQt Farstream support")
     set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "Development files for TelepathyQt")
-    set(CPACK_COMPONENT_FARSIGHT_HEADERS_DISPLAY_NAME "Development files for TelepathyQt-Farsight")
+    set(CPACK_COMPONENT_FARSTREAM_HEADERS_DISPLAY_NAME "Development files for TelepathyQt-Farstream")
 
     #components description
     set(CPACK_COMPONENT_MAINLIBRARY_DESCRIPTION
     "The main TelepathyQt library")
-    set(CPACK_COMPONENT_FARSIGHT_DESCRIPTION
-    "The TelepathyQt-Farsight library")
+    set(CPACK_COMPONENT_FARSTREAM_DESCRIPTION
+    "The TelepathyQt-Farstream library")
     set(CPACK_COMPONENT_HEADERS_DESCRIPTION
     "Development files for TelepathyQt")
-    set(CPACK_COMPONENT_FARSIGHT_HEADERS_DESCRIPTION
-    "Development files for TelepathyQt-Farsight")
+    set(CPACK_COMPONENT_FARSTREAM_HEADERS_DESCRIPTION
+    "Development files for TelepathyQt-Farstream")
 
     set(CPACK_COMPONENT_HEADERS_DEPENDS mainlibrary)
-    set(CPACK_COMPONENT_FARSIGHT_DEPENDS mainlibrary)
-    set(CPACK_COMPONENT_FARSIGHT_HEADERS_DEPENDS mainlibrary farsight)
+    set(CPACK_COMPONENT_FARSTREAM_DEPENDS mainlibrary)
+    set(CPACK_COMPONENT_FARSTREAM_HEADERS_DEPENDS mainlibrary farstream)
 
     #installation types
     set(CPACK_ALL_INSTALL_TYPES User Developer Minimal)
 
     set(CPACK_COMPONENT_MAINLIBRARY_INSTALL_TYPES User Developer Minimal)
-    set(CPACK_COMPONENT_FARSIGHT_INSTALL_TYPES User Developer)
+    set(CPACK_COMPONENT_FARSTREAM_INSTALL_TYPES User Developer)
     set(CPACK_COMPONENT_HEADERS_INSTALL_TYPES Developer)
-    set(CPACK_COMPONENT_FARSIGHT_HEADERS_INSTALL_TYPES Developer)
+    set(CPACK_COMPONENT_FARSTREAM_HEADERS_INSTALL_TYPES Developer)
 
     # Leave this as the last declaration, always!!!
     include(CPack)

@@ -110,8 +110,6 @@ endif (${TP_QT_NANO_VERSION} EQUAL 0)
 option(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT "Enable compilation of experimental and unstable service side bindings for Telepathy-Qt" FALSE)
 # Add an option for compiling examples
 option(ENABLE_EXAMPLES "Enable compilation of examples for Telepathy-Qt" TRUE)
-# Add an option for compiling Farsight (disabled by default)
-option(ENABLE_FARSIGHT "Enable compilation of Farsight bindings (deprecated)" FALSE)
 # Add an option for compiling Farstream
 option(ENABLE_FARSTREAM "Enable compilation of Farstream bindings" TRUE)
 # Add an option for building tests
@@ -183,7 +181,7 @@ macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
                   "http://www.python.org/" FALSE ""
                   "Needed to build some additional unit tests")
 
-if(ENABLE_TESTS OR ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
+if(ENABLE_TESTS OR ENABLE_FARSTREAM)
     # Find telepathy-glib
     set(TELEPATHY_GLIB_MIN_VERSION 0.18.0)
     find_package(TelepathyGlib)
@@ -205,16 +203,6 @@ if(ENABLE_TESTS OR ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
     find_package(LibXml2)
 endif()
 
-if(ENABLE_FARSIGHT)
-    # Find tp-farsight
-    set(TELEPATHY_FARSIGHT_MIN_VERSION "0.0.4")
-    find_package(TelepathyFarsight)
-    macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
-                      "A Framework for dealing with audio/video conferencing protocols"
-                      "http://farsight.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSIGHT_MIN_VERSION}"
-                      "Needed, together with GStreamer, to build telepathy-qt-farsight and some additional examples")
-endif()
-
 if(ENABLE_FARSTREAM)
     # Find tp-farstream
     set(FARSTREAM_MIN_VERSION "0.1.0")
@@ -233,21 +221,14 @@ if(ENABLE_FARSTREAM)
                       "Needed, together with GStreamer and Farstream, to build telepathy-qt-farstream")
 endif()
 
-if(ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
+if(ENABLE_FARSTREAM)
     # Find GStreamer
     find_package(GStreamer)
     macro_log_feature(GSTREAMER_FOUND "GStreamer"
                       "An open source multimedia framework"
-                      "Needed, together with Tp-Farsight, to build telepathy-qt-farsight and some additional examples"
+                      "Needed, together with Tp-Farstream, to build telepathy-qt-farstream and some additional examples"
                       "http://www.gstreamer.net/" FALSE)
 endif()
-
-# Build TelepathyQt-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
-if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
-    set (FARSIGHT_COMPONENTS_FOUND 1)
-else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
-    set (FARSIGHT_COMPONENTS_FOUND 0)
-endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
 
 # Build TelepathyQt-Farstream only if GStreamer, TelepathyFarstream and all of their dependencies were found
 if (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSTREAM)
