@@ -13,6 +13,9 @@ Fixes:
    of times each.
  * fd.o #62711: Fixed stack overflow in SimpleObserver::create
 
+Cleanups:
+ * Removed Farsight
+
 telepathy-qt 0.9.3 (2012-07-13)
 =================================
 
