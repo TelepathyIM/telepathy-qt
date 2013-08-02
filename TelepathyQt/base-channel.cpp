@@ -526,7 +526,7 @@ void BaseChannelTextType::acknowledgePendingMessages(const Tp::UIntList &IDs, DB
 
 void BaseChannelTextType::sent(uint timestamp, uint type, QString text)
 {
-    emit mPriv->adaptee->sent(timestamp, type, text);
+    QMetaObject::invokeMethod(mPriv->adaptee,"sent",Q_ARG(uint, timestamp), Q_ARG(uint, type), Q_ARG(QString, text)); //Can simply use emit in Qt5
 }
 
 
@@ -664,17 +664,17 @@ Tp::MessagePartListList BaseChannelMessagesInterface::pendingMessages()
 
 void BaseChannelMessagesInterface::messageSent(const Tp::MessagePartList &content, uint flags, const QString &messageToken)
 {
-    emit mPriv->adaptee->messageSent(content, flags, messageToken);
+    QMetaObject::invokeMethod(mPriv->adaptee, "messageSent", Q_ARG(Tp::MessagePartList, content), Q_ARG(uint, flags), Q_ARG(QString, messageToken)); //Can simply use emit in Qt5
 }
 
 void BaseChannelMessagesInterface::pendingMessagesRemoved(const Tp::UIntList &messageIDs)
 {
-    emit mPriv->adaptee->pendingMessagesRemoved(messageIDs);
+    QMetaObject::invokeMethod(mPriv->adaptee, "pendingMessagesRemoved", Q_ARG(Tp::UIntList, messageIDs)); //Can simply use emit in Qt5
 }
 
 void BaseChannelMessagesInterface::messageReceived(const Tp::MessagePartList &message)
 {
-    emit mPriv->adaptee->messageReceived(message);
+    QMetaObject::invokeMethod(mPriv->adaptee, "messageReceived", Q_ARG(Tp::MessagePartList, message)); //Can simply use emit in Qt5
 }
 
 void BaseChannelMessagesInterface::setSendMessageCallback(const SendMessageCallback &cb)
@@ -1215,7 +1215,7 @@ void BaseChannelGroupInterface::addMembers(const Tp::UIntList& handles, const QS
         added.append(handle);
     }
     if (!added.isEmpty())
-        emit mPriv->adaptee->membersChanged(QString(), added, Tp::UIntList(), Tp::UIntList(), Tp::UIntList(), 0, ChannelGroupChangeReasonNone);
+        QMetaObject::invokeMethod(mPriv->adaptee,"membersChanged",Q_ARG(QString, QString()), Q_ARG(Tp::UIntList, added), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(uint, 0), Q_ARG(uint, ChannelGroupChangeReasonNone)); //Can simply use emit in Qt5
 }
 
 void BaseChannelGroupInterface::removeMembers(const Tp::UIntList& handles)
@@ -1230,7 +1230,7 @@ void BaseChannelGroupInterface::removeMembers(const Tp::UIntList& handles)
         removed.append(handle);
     }
     if (!removed.isEmpty())
-        emit mPriv->adaptee->membersChanged(QString(), Tp::UIntList(), removed, Tp::UIntList(), Tp::UIntList(), 0, ChannelGroupChangeReasonNone);
+        QMetaObject::invokeMethod(mPriv->adaptee,"membersChanged",Q_ARG(QString, QString()), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(Tp::UIntList, removed), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(Tp::UIntList, Tp::UIntList()), Q_ARG(uint, 0), Q_ARG(uint,ChannelGroupChangeReasonNone)); //Can simply use emit in Qt5 //Can simply use emit in Qt5
 }
 
 }

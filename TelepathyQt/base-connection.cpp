@@ -273,7 +273,7 @@ void BaseConnection::setStatus(uint newStatus, uint reason)
     bool changed = (newStatus != mPriv->status);
     mPriv->status = newStatus;
     if (changed)
-        emit mPriv->adaptee->statusChanged(newStatus, reason);
+        QMetaObject::invokeMethod(mPriv->adaptee, "statusChanged", Q_ARG(uint, newStatus), Q_ARG(uint, reason)); //Can simply use emit in Qt5
 }
 
 void BaseConnection::setCreateChannelCallback(const CreateChannelCallback &cb)
@@ -699,7 +699,7 @@ Tp::ChannelDetailsList BaseConnectionRequestsInterface::Adaptee::channels() cons
 
 void BaseConnectionRequestsInterface::newChannels(const Tp::ChannelDetailsList &channels)
 {
-    mPriv->adaptee->newChannels(channels);
+    QMetaObject::invokeMethod(mPriv->adaptee,"newChannels", Q_ARG(Tp::ChannelDetailsList,channels)); //Can replace by a direct call in Qt5
 }
 
 void BaseConnectionRequestsInterface::ensureChannel(const QVariantMap &request, bool &yours,
@@ -953,7 +953,7 @@ void BaseConnectionSimplePresenceInterface::setPresences(const Tp::SimpleContact
     foreach(uint handle, presences.keys()) {
         mPriv->presences[handle] = presences[handle];
     }
-    emit mPriv->adaptee->presencesChanged(presences);
+    QMetaObject::invokeMethod(mPriv->adaptee, "presencesChanged", Q_ARG(Tp::SimpleContactPresences, presences)); //Can simply use emit in Qt5
 }
 
 void BaseConnectionSimplePresenceInterface::setSetPresenceCallback(const SetPresenceCallback &cb)
@@ -1162,7 +1162,7 @@ void BaseConnectionContactListInterface::setRequestSubscriptionCallback(const Re
 
 void BaseConnectionContactListInterface::contactsChangedWithID(const Tp::ContactSubscriptionMap &changes, const Tp::HandleIdentifierMap &identifiers, const Tp::HandleIdentifierMap &removals)
 {
-    emit mPriv->adaptee->contactsChangedWithID(changes, identifiers, removals);
+    QMetaObject::invokeMethod(mPriv->adaptee,"contactsChangedWithID", Q_ARG(Tp::ContactSubscriptionMap, changes), Q_ARG(Tp::HandleIdentifierMap, identifiers), Q_ARG(Tp::HandleIdentifierMap,removals)); //Can simply use emit in Qt5
 }
 
 uint BaseConnectionContactListInterface::Adaptee::contactListState() const
