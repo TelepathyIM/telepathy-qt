@@ -101,3 +101,9 @@ endif(ENABLE_SERVICE_SUPPORT)
 add_custom_target(check ctest --output-on-failure -O test.log
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 add_dependencies(check check-local ${_telepathy_qt_test_cases})
+
+# Add Nemo install target for tests
+INSTALL(TARGETS ${_telepathy_qt_test_cases_dbus} RUNTIME DESTINATION ${NEMO_TESTS_DIR_BIN})
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/dbus-tests.list "${_telepathy_qt_test_cases_dbus}")
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/dbus-tests.list DESTINATION ${NEMO_TESTS_DIR})
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/tools/with-session-bus.sh DESTINATION ${NEMO_TESTS_DIR_BIN} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)

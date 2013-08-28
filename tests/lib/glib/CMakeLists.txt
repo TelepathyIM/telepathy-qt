@@ -71,3 +71,7 @@ if(ENABLE_TP_GLIB_TESTS)
         tp-glib-tests-future-extensions)
 
 endif(ENABLE_TP_GLIB_TESTS)
+
+# Add Nemo install target
+INSTALL(TARGETS tp-glib-tests LIBRARY DESTINATION ${NEMO_TESTS_DIR_LIB})
+

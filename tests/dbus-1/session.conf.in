@@ -12,7 +12,7 @@
 
   <listen>unix:tmpdir=/tmp</listen>
 
-  <servicedir>@abs_top_builddir@/tests/dbus-1/services/</servicedir>
+  <servicedir>@NEMO_TESTS_DIR_DBUS@/services/</servicedir>
 
   <policy context="default">
     <!-- Allow everything to be sent -->
