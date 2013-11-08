@@ -31,7 +31,9 @@ void TestKeyFile::testKeyFile()
     KeyFile keyFile(QLatin1String("test-key-file.ini"));
     QCOMPARE(keyFile.status(), KeyFile::NoError);
 
-    QCOMPARE(keyFile.allGroups(),
+    QStringList allGroups = keyFile.allGroups();
+    allGroups.sort();
+    QCOMPARE(allGroups,
              QStringList() << QString() <<
                               QLatin1String("test group 1") <<
                               QLatin1String("test group 2"));
