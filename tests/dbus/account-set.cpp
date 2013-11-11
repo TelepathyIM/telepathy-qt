@@ -258,7 +258,7 @@ void TestAccountSet::testFilters()
     createAccount("spurious", "normal", "spuriousnormal", parameters);
     QCOMPARE(mAM->allAccounts().size(), 2);
     QCOMPARE(mAM->validAccounts()->accounts().size(), 2);
-    AccountPtr spuriousAcc = mAM->allAccounts()[1];
+    AccountPtr spuriousAcc = *(mAM->allAccounts().toSet() -= fooAcc).begin();
 
     Tp::AccountSetPtr filteredAccountSet;
 
