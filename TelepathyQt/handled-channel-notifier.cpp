@@ -93,11 +93,20 @@ void HandledChannelNotifier::onChannelInvalidated()
     deleteLater();
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+void HandledChannelNotifier::connectNotify(const QMetaMethod &signal)
+{
+    if (signal == QMetaMethod::fromSignal(&HandledChannelNotifier::handledAgain)) {
+        mPriv->handler->setQueueChannelReceived(false);
+    }
+}
+#else
 void HandledChannelNotifier::connectNotify(const char *signalName)
 {
     if (qstrcmp(signalName, SIGNAL(handledAgain(QDateTime,Tp::ChannelRequestHints))) == 0) {
         mPriv->handler->setQueueChannelReceived(false);
     }
 }
+#endif
 
 } // Tp

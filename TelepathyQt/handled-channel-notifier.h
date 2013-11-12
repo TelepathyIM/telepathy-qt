@@ -52,7 +52,11 @@ Q_SIGNALS:
     void handledAgain(const QDateTime &userActionTime, const Tp::ChannelRequestHints &requestHints);
 
 protected:
-    void connectNotify(const char *);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    void connectNotify(const QMetaMethod &signal);
+#else
+    void connectNotify(const char *signal);
+#endif
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onChannelReceived(const Tp::ChannelPtr &channel,
