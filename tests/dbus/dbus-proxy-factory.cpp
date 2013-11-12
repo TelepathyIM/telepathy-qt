@@ -1,4 +1,5 @@
 #include <QtCore/QDebug>
+#include <QtCore/QScopedPointer>
 #include <QtCore/QTimer>
 #include <QtDBus/QtDBus>
 #include <QtTest/QtTest>
@@ -221,6 +222,9 @@ void TestDBusProxyFactory::testDropRefs()
     // Make the Conn go out of scope
     Connection *firstPtr = firstProxy.data();
     firstProxy.reset();
+
+    // Hopefully this prevents getting the new proxy instantiated on the very same address
+    QScopedPointer<char, QScopedPointerArrayDeleter<char> > hole(new char[sizeof(Connection)]);
 
     PendingReady *different = mFactory->proxy(mConnName1, mConnPath1,
             ChannelFactory::create(QDBusConnection::sessionBus()),
