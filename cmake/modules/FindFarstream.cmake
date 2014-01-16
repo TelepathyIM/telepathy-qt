@@ -23,9 +23,9 @@ if (NOT WIN32)
     # in the find_path() and find_library() calls
     find_package(PkgConfig)
     if (FARSTREAM_MIN_VERSION)
-        PKG_CHECK_MODULES(PC_FARSTREAM farstream-0.1>=${FARSTREAM_MIN_VERSION})
+        PKG_CHECK_MODULES(PC_FARSTREAM farstream-0.2>=${FARSTREAM_MIN_VERSION})
     else (FARSTREAM_MIN_VERSION)
-        PKG_CHECK_MODULES(PC_FARSTREAM farstream-0.1)
+        PKG_CHECK_MODULES(PC_FARSTREAM farstream-0.2)
     endif (FARSTREAM_MIN_VERSION)
     set(FARSTREAM_DEFINITIONS ${PC_FARSTREAM_CFLAGS_OTHER})
 endif (NOT WIN32)
@@ -34,10 +34,10 @@ find_path(FARSTREAM_INCLUDE_DIR farstream/fs-conference.h
    PATHS
    ${PC_FARSTREAM_INCLUDEDIR}
    ${PC_FARSTREAM_INCLUDE_DIRS}
-   PATH_SUFFIXES farstream-0.1
+   PATH_SUFFIXES farstream-0.2
    )
 
-find_library(FARSTREAM_LIBRARIES NAMES farstream-0.1
+find_library(FARSTREAM_LIBRARIES NAMES farstream-0.2
    PATHS
    ${PC_FARSTREAM_LIBDIR}
    ${PC_FARSTREAM_LIBRARY_DIRS}
