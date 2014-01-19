@@ -25,6 +25,7 @@
 
 import re
 import sys
+import os
 
 _NOT_C_STR = re.compile(r'[^A-Za-z0-9_-]')
 

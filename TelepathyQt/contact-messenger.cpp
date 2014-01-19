@@ -55,22 +55,21 @@ struct TP_QT_NO_EXPORT ContactMessenger::Private
     AccountPtr account;
     QString contactIdentifier;
     SimpleTextObserverPtr observer;
-    TpFuture::Client::ChannelDispatcherInterfaceMessagesInterface *cdMessagesInterface;
+    Tp::Client::ChannelDispatcherInterfaceMessages1Interface *cdMessagesInterface;
 };
 
 PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &message,
         MessageSendingFlags flags)
 {
     if (!cdMessagesInterface) {
-        cdMessagesInterface = new TpFuture::Client::ChannelDispatcherInterfaceMessagesInterface(
+        cdMessagesInterface = new Tp::Client::ChannelDispatcherInterfaceMessages1Interface(
                 account->dbusConnection(),
                 TP_QT_CHANNEL_DISPATCHER_BUS_NAME, TP_QT_CHANNEL_DISPATCHER_OBJECT_PATH, parent);
     }
 
     PendingSendMessage *op = new PendingSendMessage(ContactMessengerPtr(parent), message);
 
-    // TODO: is there a way to avoid this? Ideally TpFuture classes should use Tp types.
-    TpFuture::MessagePartList parts;
+    Tp::MessagePartList parts;
     foreach (const Tp::MessagePart &part, message.parts()) {
         parts << static_cast<QMap<QString, QDBusVariant> >(part);
     }
