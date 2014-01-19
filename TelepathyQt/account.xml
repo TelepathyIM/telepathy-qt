@@ -6,8 +6,8 @@
 
 <xi:include href="../spec/Account.xml"/>
 
-<xi:include href="../spec/Account_Interface_Addressing.xml"/>
-<xi:include href="../spec/Account_Interface_Avatar.xml"/>
-<xi:include href="../spec/Account_Interface_Storage.xml"/>
+<xi:include href="../spec/Account_Interface_Addressing1.xml"/>
+<xi:include href="../spec/Account_Interface_Avatar1.xml"/>
+<xi:include href="../spec/Account_Interface_Storage1.xml"/>
 
 </tp:spec>

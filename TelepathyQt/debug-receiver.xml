@@ -4,6 +4,6 @@
 
 <tp:title>Debug interface</tp:title>
 
-<xi:include href="../spec/Debug.xml"/>
+<xi:include href="../spec/Debug1.xml"/>
 
 </tp:spec>

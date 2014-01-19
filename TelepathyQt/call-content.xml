@@ -4,10 +4,10 @@
 
 <tp:title>Call Content interfaces, version 1</tp:title>
 
-<xi:include href="../spec/Call_Content_Interface_Media.xml" />
-<xi:include href="../spec/Call_Content_Interface_DTMF.xml" />
-<xi:include href="../spec/Call_Content_Interface_Video_Control.xml" />
-<xi:include href="../spec/Call_Content_Interface_Audio_Control.xml" />
-<xi:include href="../spec/Call_Content.xml" />
+<xi:include href="../spec/Call1_Content_Interface_Media.xml" />
+<xi:include href="../spec/Call1_Content_Interface_DTMF1.xml" />
+<xi:include href="../spec/Call1_Content_Interface_Video_Control1.xml" />
+<xi:include href="../spec/Call1_Content_Interface_Audio_Control1.xml" />
+<xi:include href="../spec/Call1_Content.xml" />
 
 </tp:spec>

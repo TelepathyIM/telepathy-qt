@@ -4,7 +4,7 @@
 
 <tp:title>Call Stream interfaces, version 1</tp:title>
 
-<xi:include href="../spec/Call_Stream_Interface_Media.xml" />
-<xi:include href="../spec/Call_Stream.xml" />
+<xi:include href="../spec/Call1_Stream_Interface_Media.xml" />
+<xi:include href="../spec/Call1_Stream.xml" />
 
 </tp:spec>

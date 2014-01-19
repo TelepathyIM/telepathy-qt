@@ -3,7 +3,8 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>The Telepathy properties interface</tp:title>
+<!-- REMOVE THIS FILE-->
 
-<xi:include href="../spec/Properties_Interface.xml"/>
+<!-- <xi:include href="../spec/Properties_Interface.xml"/> -->
 
 </tp:spec>

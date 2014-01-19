@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Media stream handler</tp:title>
-
-<xi:include href="../spec/Media_Stream_Handler.xml"/>
+<!-- REMOVE THIS FILE-->
+<!-- <xi:include href="../spec/Media_Stream_Handler.xml"/> -->
 
 </tp:spec>

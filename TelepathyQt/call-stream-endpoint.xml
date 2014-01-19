@@ -4,6 +4,6 @@
 
 <tp:title>Call misc interfaces, version 1</tp:title>
 
-<xi:include href="../spec/Call_Stream_Endpoint.xml" />
+<xi:include href="../spec/Call1_Stream_Endpoint.xml" />
 
 </tp:spec>

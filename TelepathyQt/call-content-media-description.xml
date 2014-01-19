@@ -4,9 +4,9 @@
 
 <tp:title>Call misc interfaces, version 1</tp:title>
 
-<xi:include href="../spec/Call_Content_Media_Description_Interface_RTCP_Extended_Reports.xml" />
-<xi:include href="../spec/Call_Content_Media_Description_Interface_RTCP_Feedback.xml" />
-<xi:include href="../spec/Call_Content_Media_Description_Interface_RTP_Header_Extensions.xml" />
-<xi:include href="../spec/Call_Content_Media_Description.xml" />
+<xi:include href="../spec/Call1_Content_Media_Description_Interface_RTCP_Extended_Reports1.xml" />
+<xi:include href="../spec/Call1_Content_Media_Description_Interface_RTCP_Feedback1.xml" />
+<xi:include href="../spec/Call1_Content_Media_Description_Interface_RTP_Header_Extensions1.xml" />
+<xi:include href="../spec/Call1_Content_Media_Description.xml" />
 
 </tp:spec>
