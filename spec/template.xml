@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<node name="/Foo"
+<node name="/Foo1"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
 
   <tp:copyright>Copyright © 2010 Collabora Ltd.</tp:copyright>
@@ -20,7 +20,7 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Foo.DRAFT"
+  <interface name="im.telepathy1.Foo1"
     tp:causes-havoc="experimental">
     <tp:added version="0.UNRELEASED">(draft 1)</tp:added>
 

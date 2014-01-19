@@ -1,31 +1,38 @@
 <?xml version="1.0" ?>
 <node name="/Connection_Interface_Sidecars1"
-  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-  >
-  <tp:copyright>Copyright © 2009-2013 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:copyright>Copyright © 2012 Collabora Ltd.</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
-<p>This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.</p>
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
 
-<p>This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.</p>
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
 
-<p>You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-USA.</p>
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.Sidecars1">
-    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
-    <tp:added version="0.27.3"/>
+
+  <interface name="im.telepathy1.Connection.Interface.Sidecars1">
+    <tp:requires interface="im.telepathy1.Connection"/>
+    <tp:added version="0.99.1">from Connection.FUTURE</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A <a href="http://en.wikipedia.org/wiki/Sidecar">sidecar</a>
+        is an object with a particular interface which provides
+        additional connection-specific functionality. This interface
+        serves as a way to ensure these sidecars.</p>
+    </tp:docstring>
 
     <method name="EnsureSidecar" tp:name-for-bindings="Ensure_Sidecar">
-      <tp:added version="0.27.3">(as stable API)</tp:added>
+      <tp:added version="0.19.0">(as a draft)</tp:added>
 
       <arg direction="in" name="Main_Interface" type="s"
            tp:type="DBus_Interface">
@@ -75,23 +82,19 @@ USA.</p>
             in a dictionary, build a proxy object from the value). More
             “plural” plugins are likely to want to implement new types of
             <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>
+              namespace="im.telepathy1">Channel</tp:dbus-ref>
             instead.</p>
         </tp:rationale>
       </tp:docstring>
 
-      <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+      <tp:error name="im.telepathy1.Error.NotImplemented">
         <tp:docstring>
           The requested sidecar is not implemented by this connection manager,
-          or a necessary server-side component does not exist. (FIXME: split
-          these two errors out? Then again, once we list the guaranteed and
-          possible sidecars on a Protocol object, clients can tell the
-          difference themselves, because they shouldn't be calling this in the
-          first case.)
+          or a necessary server-side component does not exist.
         </tp:docstring>
       </tp:error>
 
-      <tp:error name="org.freedesktop.Telepathy.Error.ServiceBusy">
+      <tp:error name="im.telepathy1.Error.ServiceBusy">
         <tp:docstring>
           A server-side component needed by the requested sidecar reported it
           is currently too busy, or did not respond for some
@@ -99,7 +102,7 @@ USA.</p>
         </tp:docstring>
       </tp:error>
 
-      <tp:error name="org.freedesktop.Telepathy.Error.Cancelled">
+      <tp:error name="im.telepathy1.Error.Cancelled">
         <tp:docstring>
           The connection was disconnected while the sidecar was being set up.
         </tp:docstring>
@@ -108,3 +111,4 @@ USA.</p>
 
   </interface>
 </node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

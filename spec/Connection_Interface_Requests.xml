@@ -21,8 +21,8 @@
       USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.Requests">
-    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+  <interface name="im.telepathy1.Connection.Interface.Requests">
+    <tp:requires interface="im.telepathy1.Connection"/>
     <tp:added version="0.17.11">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -30,12 +30,6 @@
         represent bundles of channels that should be dispatched together, and
         does not assume any particular properties by which channels are
         uniquely identifiable.</p>
-
-      <p>If this interface is implemented on a connection, then
-        <tp:member-ref>NewChannels</tp:member-ref> MUST be emitted for
-        all new channels, even those created with <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Connection"
-        >RequestChannel</tp:dbus-ref>.</p>
     </tp:docstring>
 
     <tp:struct name="Channel_Details" array-name="Channel_Details_List">
@@ -84,12 +78,12 @@
           </tp:rationale>
 
           <p>Each dictionary MUST contain the keys
-            <tp:dbus-ref>org.freedesktop.Telepathy.Channel.ChannelType</tp:dbus-ref>,
-            <tp:dbus-ref>org.freedesktop.Telepathy.Channel.TargetHandleType</tp:dbus-ref>,
-            <tp:dbus-ref>org.freedesktop.Telepathy.Channel.TargetHandle</tp:dbus-ref>,
-            <tp:dbus-ref>org.freedesktop.Telepathy.Channel.TargetID</tp:dbus-ref>
+            <tp:dbus-ref>im.telepathy1.Channel.ChannelType</tp:dbus-ref>,
+            <tp:dbus-ref>im.telepathy1.Channel.TargetHandleType</tp:dbus-ref>,
+            <tp:dbus-ref>im.telepathy1.Channel.TargetHandle</tp:dbus-ref>,
+            <tp:dbus-ref>im.telepathy1.Channel.TargetID</tp:dbus-ref>
             and
-            <tp:dbus-ref>org.freedesktop.Telepathy.Channel.Requested</tp:dbus-ref>.
+            <tp:dbus-ref>im.telepathy1.Channel.Requested</tp:dbus-ref>.
           </p>
 
           <tp:rationale>
@@ -108,16 +102,6 @@
 
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Request that an entirely new channel is created.</p>
-
-        <tp:rationale>
-          <p>There is deliberately no flag corresponding to the
-            suppress_handler argument to
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.RequestChannel</tp:dbus-ref>,
-            because passing a FALSE value for that argument is deprecated.
-            Requests made using this interface always behave as though
-            suppress_handler was TRUE.</p>
-        </tp:rationale>
-
       </tp:docstring>
 
       <arg direction="in" name="Request" type="a{sv}"
@@ -125,7 +109,7 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary containing desirable properties, which MUST include
             <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>.
+              namespace="im.telepathy1.Channel">ChannelType</tp:dbus-ref>.
             Some properties
             are defined such that only an exact match makes sense, and
             connection managers MUST NOT satisfy a request with a channel
@@ -184,9 +168,9 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+        <tp:error name="im.telepathy1.Error.Disconnected"/>
+        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy1.Error.NotImplemented">
           <tp:docstring>
             The channel request was one that can never succeed,
             such as requesting an unsupported channel type, or requesting
@@ -194,42 +178,42 @@
             the given target handle type.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
+        <tp:error name="im.telepathy1.Error.InvalidHandle">
           <tp:docstring>
             An invalid handle was requested as the value of a property whose
             value is a handle (like
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.TargetHandle</tp:dbus-ref>),
+            <tp:dbus-ref namespace="im.telepathy1">Channel.TargetHandle</tp:dbus-ref>),
             or a syntactically invalid identifier was requested as the value
             of a property whose value is the string corresponding to a handle
             (like <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">Channel.TargetID</tp:dbus-ref>).
+            namespace="im.telepathy1">Channel.TargetID</tp:dbus-ref>).
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+        <tp:error name="im.telepathy1.Error.InvalidArgument">
           <tp:docstring>
             The request matched the fixed properties of a
             <tp:type>Requestable_Channel_Class</tp:type> in
             <tp:member-ref>RequestableChannelClasses</tp:member-ref>, but the
             allowed arguments did not make sense; for example, a <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel.Type">RoomList</tp:dbus-ref>
+              namespace="im.telepathy1.Channel.Type">RoomList1</tp:dbus-ref>
             was requested, but the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel.Type.RoomList">Server</tp:dbus-ref>
+              namespace="im.telepathy1.Channel.Type.RoomList1">Server</tp:dbus-ref>
             property provided was not a valid DNS name.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotCapable">
+        <tp:error name="im.telepathy1.Error.NotCapable">
           <tp:docstring>
             The requested channel cannot be created because the requested
             contact is using a client that lacks a particular feature.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.Offline">
+        <tp:error name="im.telepathy1.Error.Offline">
           <tp:docstring>
             The requested channel cannot be created because the target is
             offline.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+        <tp:error name="im.telepathy1.Error.NotAvailable">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
             <p>The requested channel cannot be created, but in
               principle, a similar request might succeed in future.
@@ -242,17 +226,15 @@
               <li>a channel matching the request has already been requested
                 (by a previous call to CreateChannel,
                 <tp:member-ref>EnsureChannel</tp:member-ref>,
-                <tp:dbus-ref
-                  namespace="org.freedesktop.Telepathy">Connection.RequestChannel</tp:dbus-ref>
                 or similar) and the protocol requires that only one such
                 channel can exist at a time</li>
             </ul>
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.Channel.Banned"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.Channel.Full"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.Channel.InviteOnly"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy1.Error.Channel.Banned"/>
+        <tp:error name="im.telepathy1.Error.Channel.Full"/>
+        <tp:error name="im.telepathy1.Error.Channel.InviteOnly"/>
+        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 
@@ -330,9 +312,9 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+        <tp:error name="im.telepathy1.Error.Disconnected"/>
+        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy1.Error.NotImplemented">
           <tp:docstring>
             The channel request was one that can never succeed,
             such as requesting an unsupported channel type, or requesting
@@ -340,102 +322,84 @@
             the given target handle type.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
+        <tp:error name="im.telepathy1.Error.InvalidHandle">
           <tp:docstring>
             An invalid handle was requested as the value of a property whose
             value is a handle (like
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.TargetHandle</tp:dbus-ref>),
+            <tp:dbus-ref namespace="im.telepathy1">Channel.TargetHandle</tp:dbus-ref>),
             or a syntactically invalid identifier was requested as the value
             of a property whose value is the string corresponding to a handle
             (like <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">Channel.TargetID</tp:dbus-ref>).
+            namespace="im.telepathy1">Channel.TargetID</tp:dbus-ref>).
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+        <tp:error name="im.telepathy1.Error.InvalidArgument">
           <tp:docstring>
             The request matched the fixed properties of a
             <tp:type>Requestable_Channel_Class</tp:type> in
             <tp:member-ref>RequestableChannelClasses</tp:member-ref>, but the
             allowed arguments did not make sense; for example, a <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel.Type">RoomList</tp:dbus-ref>
+              namespace="im.telepathy1.Channel.Type">RoomList1</tp:dbus-ref>
             was requested, but the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel.Type.RoomList">Server</tp:dbus-ref>
+              namespace="im.telepathy1.Channel.Type.RoomList1">Server</tp:dbus-ref>
             property provided was not a valid DNS name.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotCapable">
+        <tp:error name="im.telepathy1.Error.NotCapable">
           <tp:docstring>
             The requested channel cannot be created because the requested
             contact is using a client that lacks a particular feature.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.Offline">
+        <tp:error name="im.telepathy1.Error.Offline">
           <tp:docstring>
             The requested channel cannot be created because the target is
             offline.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+        <tp:error name="im.telepathy1.Error.NotAvailable">
           <tp:docstring>
             The requested channel cannot be created, but in
             principle, a similar request might succeed in future.
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.Channel.Banned"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.Channel.Full"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.Channel.InviteOnly"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy1.Error.Channel.Banned"/>
+        <tp:error name="im.telepathy1.Error.Channel.Full"/>
+        <tp:error name="im.telepathy1.Error.Channel.InviteOnly"/>
+        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 
     <signal name="NewChannels" tp:name-for-bindings="New_Channels">
       <tp:added version="0.17.11">(as stable API)</tp:added>
       <tp:changed version="0.17.14">Added a guarantee of ordering
-        relative to NewChannel</tp:changed>
+        relative to the old NewChannel signal (now removed)</tp:changed>
+      <tp:changed version="0.27.1">Added recommendation against
+        announcing channels together</tp:changed>
 
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>New channels have been created. The connection manager SHOULD emit
-          a single signal for any group of closely related channels that are
-          created at the same time, so that the channel dispatcher can try to
-          dispatch them to a handler as a unit.</p>
+        <p>A new channel has been created. The connection manager
+          SHOULD emit a single signal for each channel created.</p>
 
-        <p>In particular, if additional channels are created as a side-effect
-          of a call to <tp:member-ref>CreateChannel</tp:member-ref>,
-          these channels SHOULD appear in the same NewChannels signal as
-          the channel that satisfies the request.</p>
-
-        <tp:rationale>
-          <p>Joining a MUC Tube in XMPP requires joining the corresponding
-            MUC (chatroom), so a <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
-            channel can be created as a side-effect.</p>
-        </tp:rationale>
-
-        <p>Every time NewChannels is emitted, it MUST be followed by
-          a <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">Connection.NewChannel</tp:dbus-ref>
-          signal for each channel.</p>
+        <p>For example, joining a MUC Tube in XMPP requires joining the
+          corresponding MUC (chatroom). Either the connection manager
+          should announce a new <tp:dbus-ref
+          namespace="imt1.Channel.Type">Text</tp:dbus-ref> channel
+          separately, or not expose the Text channel on the bus
+          until it's actually requested (or an incoming message
+          appears).</p>
 
         <tp:rationale>
-          <p>The double signal emission is for the benefit of older Telepathy
-            clients, which won't be listening for NewChannels.</p>
-
-          <p>The more informative NewChannels signal comes first so that
-            clients that did not examine the connection to find
-            out whether Requests is supported will see the more informative
-            signal for each channel first, and then ignore the less
-            informative signal because it announces a new channel of which
-            they are already aware.</p>
+          <p>Signalling the creation of multiple channels together
+            makes writing simple clients much more complicated, can
+            result in lost messages, and isn't nearly as useful in
+            practice as it sounds.</p>
         </tp:rationale>
       </tp:docstring>
 
       <arg name="Channels" type="a(oa{sv})" tp:type="Channel_Details[]">
         <tp:docstring>
-          The channels and their details. All channels that are signalled
-          together like this MUST have the same
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.FUTURE">Bundle</tp:dbus-ref>
-          property, which may
-          either refer to an existing bundle, or establish a new bundle.
+          The channels and their details.
         </tp:docstring>
       </arg>
     </signal>
@@ -459,7 +423,7 @@
 
         <tp:rationale>
           This is redundant with the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel">Closed</tp:dbus-ref>
+            namespace="im.telepathy1.Channel">Closed</tp:dbus-ref>
           signal on the channel itself, but it does provide full change
           notification for the Channels property.
         </tp:rationale>
@@ -483,13 +447,9 @@
           a subset of their properties.</p>
 
         <p>Channel classes SHOULD always include the keys
-          <tp:dbus-ref>org.freedesktop.Telepathy.Channel.ChannelType</tp:dbus-ref>
+          <tp:dbus-ref>im.telepathy1.Channel.ChannelType</tp:dbus-ref>
           and
-          <tp:dbus-ref>org.freedesktop.Telepathy.Channel.TargetHandleType</tp:dbus-ref>.
-          (One exception is that <tp:dbus-ref namespace="ofdT.Channel.Type"
-            >ContactSearch</tp:dbus-ref> channels do not have TargetHandleType
-          <code>None</code> in their requestable channel classes, for
-          historical reasons.)</p>
+          <tp:dbus-ref>im.telepathy1.Channel.TargetHandleType</tp:dbus-ref>.</p>
       </tp:docstring>
 
       <tp:member type="s" name="Key" tp:type="DBus_Qualified_Member">
@@ -586,15 +546,6 @@
               between the properties, so we do not have separate arrays
               of required and optional properties.</p>
           </tp:rationale>
-
-          <p>If this array contains the
-            <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.FUTURE">Bundle</tp:dbus-ref>
-            property, then this class of channel can be combined with other
-            channels with that property in a request, or added to an existing
-            bundle. If not, this signifies that the connection manager is
-            unable to mark channels of this class as part of a bundle - this
-            means that to the remote contact they are likely to be
-            indistinguishable from channels requested separately.</p>
         </tp:docstring>
       </tp:member>
     </tp:struct>

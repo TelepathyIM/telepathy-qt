@@ -20,10 +20,10 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Client.Observer">
+  <interface name="im.telepathy1.Client.Observer">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
-    <tp:requires interface="org.freedesktop.Telepathy.Client"/>
+    <tp:requires interface="im.telepathy1.Client"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Observers monitor the creation of new channels. This
@@ -48,14 +48,14 @@
           each channel, it would not make sense for observers to do things
           that can only be done by one process (acknowledging
           <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
+            namespace="im.telepathy1.Channel.Type">Text</tp:dbus-ref>
           messages, carrying out streaming for
           <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+            namespace="im.telepathy1.Channel.Type">Call1</tp:dbus-ref>
           channels, doing the actual data transfer for file transfers,
           setting up the out-of-band connection for Tubes). The
           <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Client">Handler</tp:dbus-ref>
+            namespace="im.telepathy1.Client">Handler</tp:dbus-ref>
           is responsible for such tasks.</p>
 
         <p>Handlers MAY, of course, delegate responsibility for these
@@ -75,7 +75,7 @@
         although of course the ObserverChannelFilter property can be set
         to filter on the
         <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel">Requested</tp:dbus-ref>
+          namespace="im.telepathy1.Channel">Requested</tp:dbus-ref>
         property.</p>
 
       <p>Because it might take time for an observer to become ready (for
@@ -96,12 +96,12 @@
         <li><tp:member-ref>ObserveChannels</tp:member-ref>() is called
           on the observer.</li>
         <li>The observer calls <tp:dbus-ref
-          namespace="ofdT.ChannelDispatchOperation">Claim</tp:dbus-ref>()
+          namespace="imt1.ChannelDispatchOperation">Claim</tp:dbus-ref>()
           on the CDO.</li>
         <li>The observer then returns from
           <tp:member-ref>ObserveChannels</tp:member-ref>().</li>
         <li><tp:dbus-ref
-          namespace="ofdT.ChannelDispatchOperation">Claim</tp:dbus-ref>
+          namespace="imt1.ChannelDispatchOperation">Claim</tp:dbus-ref>
           will return successfully if the channels were successfully
           claimed, or failure if someone else got there first.</li>
       </ol>
@@ -122,7 +122,7 @@
           interested. The <tp:member-ref>ObserveChannels</tp:member-ref> method
           should be called by the channel dispatcher whenever any of the new
           channels in a <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+            namespace="im.telepathy1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
           signal match this description.</p>
 
         <p>Only certain D-Bus types have useful semantics for matching like this,
@@ -161,9 +161,9 @@
 
           <p>If an Observer wants to add extra channels to its list of
             interests at runtime, it can register an additional Client bus name
-            (for instance, the org.freedesktop.Telepathy.Client.Empathy process
+            (for instance, the im.telepathy1.Client.Empathy process
             with unique name :1.42 could additionally register
-            org.freedesktop.Telepathy.Client.Empathy._1_42) with additional
+            im.telepathy1.Client.Empathy._1_42) with additional
             filters. To remove those filters, it can release the bus name;
             it could even re-claim the bus name immediately, with different
             filters.</p>
@@ -180,7 +180,7 @@
 
         <p>Values in the .client file are encoded in exactly the same way as
           the <code>default-<em>p</em></code> keys in .manager files, as
-          described in the <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          described in the <tp:dbus-ref namespace="im.telepathy1"
             >ConnectionManager</tp:dbus-ref> interface (but note that not all
           types supported in .manager files can appear in .client files).</p>
 
@@ -189,18 +189,18 @@
           a local client:</p>
 
 <pre>
-[org.freedesktop.Telepathy.Client]
-Interfaces=org.freedesktop.Telepathy.Client.Observer;
+[im.telepathy1.Client]
+Interfaces=im.telepathy1.Client.Observer;
 
-[org.freedesktop.Telepathy.Client.Observer.ObserverChannelFilter 0]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
-org.freedesktop.Telepathy.Channel.TargetHandleType u=1
-org.freedesktop.Telepathy.Channel.Requested b=true
+[im.telepathy1.Client.Observer.ObserverChannelFilter 0]
+im.telepathy1.Channel.ChannelType s=im.telepathy1.Channel.Type.Text
+im.telepathy1.Channel.TargetHandleType u=1
+im.telepathy1.Channel.Requested b=true
 
-[org.freedesktop.Telepathy.Client.Observer.ObserverChannelFilter 1]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
-org.freedesktop.Telepathy.Channel.TargetHandleType u=2
-org.freedesktop.Telepathy.Channel.Requested b=true
+[im.telepathy1.Client.Observer.ObserverChannelFilter 1]
+im.telepathy1.Channel.ChannelType s=im.telepathy1.Channel.Type.Text
+im.telepathy1.Channel.TargetHandleType u=2
+im.telepathy1.Channel.Requested b=true
 </pre>
 
       </tp:docstring>
@@ -215,10 +215,10 @@ org.freedesktop.Telepathy.Channel.Requested b=true
 
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>If true, upon the startup of this observer, <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy.Client.Observer">ObserveChannels</tp:dbus-ref>
+        namespace="im.telepathy1.Client.Observer">ObserveChannels</tp:dbus-ref>
         will be called for every already existing channel matching
         its <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy.Client.Observer">ObserverChannelFilter</tp:dbus-ref></p>
+        namespace="im.telepathy1.Client.Observer">ObserverChannelFilter</tp:dbus-ref></p>
 
         <p>When an activatable client having this property disappears from the
           bus and there are channels matching its ObserverChannelFilter,
@@ -227,7 +227,7 @@ org.freedesktop.Telepathy.Channel.Requested b=true
           <tt>.client</tt> file as follows:</p>
 
 <pre>
-[org.freedesktop.Telepathy.Client.Observer]
+[im.telepathy1.Client.Observer]
 Recover=true
 </pre>
 
@@ -236,7 +236,7 @@ Recover=true
             be restarted as soon as possible; while there is an unavoidable
             possibility that it will miss some events during this process
             (particularly <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
+              namespace="im.telepathy1.Channel.Type">Text</tp:dbus-ref>
             messages), this window of event loss is kept to a minimum.</p>
 
            <p>Non-activatable observers can't take advantage of this
@@ -255,7 +255,7 @@ Recover=true
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Called by the channel dispatcher when channels in which the
           observer has registered an interest are announced in a <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+            namespace="im.telepathy1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
           signal.</p>
 
         <p>If the same NewChannels signal announces some channels that match
@@ -276,7 +276,7 @@ Recover=true
             to avoid the following race: text channel logger (observer) gets
             ObserveChannels, text channel handler gets
             <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Client.Handler">HandleChannels</tp:dbus-ref>
+              namespace="im.telepathy1.Client.Handler">HandleChannels</tp:dbus-ref>
             channel handler starts up faster and acknowledges messages,
             logger never sees those messages.</p>
         </tp:rationale>
@@ -296,17 +296,17 @@ Recover=true
       <arg name="Account" type="o" direction="in">
         <tp:docstring>
           The
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1">Account</tp:dbus-ref>
           with which the channels are associated. The
           well-known bus name to use is that of the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>.
+          <tp:dbus-ref namespace="im.telepathy1">AccountManager</tp:dbus-ref>.
         </tp:docstring>
       </arg>
 
       <arg name="Connection" type="o" direction="in">
         <tp:docstring>
           The
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>
           with which the channels are associated. The
           well-known bus name to use can be derived from this object
           path by removing the leading '/' and replacing all subsequent
@@ -318,7 +318,7 @@ Recover=true
         direction="in">
         <tp:docstring>
           The <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>s
+            namespace="im.telepathy1">Channel</tp:dbus-ref>s
           and their properties. Their well-known bus names are all the same as
           that of the Connection.
         </tp:docstring>
@@ -327,25 +327,25 @@ Recover=true
       <arg name="Dispatch_Operation" type="o" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The path to the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">ChannelDispatchOperation</tp:dbus-ref>
+              namespace="im.telepathy1">ChannelDispatchOperation</tp:dbus-ref>
             for these channels, or the special value '/' if there is no
             ChannelDispatchOperation (because the channels were requested, not
             incoming).</p>
 
           <p>If the Observer calls <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Claim</tp:dbus-ref>
+              namespace="im.telepathy1.ChannelDispatchOperation">Claim</tp:dbus-ref>
             or <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">HandleWith</tp:dbus-ref>
+              namespace="im.telepathy1.ChannelDispatchOperation">HandleWith</tp:dbus-ref>
             on the dispatch operation, it MUST be careful to avoid deadlock,
             since these methods cannot return until the Observer has returned
             from <tp:member-ref>ObserveChannels</tp:member-ref>.</p>
 
           <tp:rationale>
             <p>This allows an Observer to <tp:dbus-ref
-                namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Claim</tp:dbus-ref>
+                namespace="im.telepathy1.ChannelDispatchOperation">Claim</tp:dbus-ref>
               a set of channels without having to match up calls to this method
               with calls to <tp:dbus-ref
-                namespace="org.freedesktop.Telepathy.Client.Approver">AddDispatchOperation</tp:dbus-ref>.</p>
+                namespace="im.telepathy1.Client.Approver">AddDispatchOperation</tp:dbus-ref>.</p>
           </tp:rationale>
         </tp:docstring>
       </arg>
@@ -353,14 +353,14 @@ Recover=true
       <arg name="Requests_Satisfied" type="ao" direction="in">
         <tp:docstring>
           The <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>s
+          namespace="im.telepathy1">ChannelRequest</tp:dbus-ref>s
           satisfied by these channels.
 
           <tp:rationale>
             If the same process is an Observer and a Handler, it can be useful
             to be given this information as soon as possible (it will also
             be passed to <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Client">Handler.HandleChannels</tp:dbus-ref>).
+              namespace="im.telepathy1.Client">Handler.HandleChannels</tp:dbus-ref>).
           </tp:rationale>
         </tp:docstring>
       </arg>
@@ -387,7 +387,7 @@ Recover=true
 
             <dt><code>request-properties</code> - a{oa{sv}}</dt>
             <dd>A map from <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
+              namespace="im.telepathy1">ChannelRequest</tp:dbus-ref>
               paths listed in <var>Requests_Satisfied</var> to
               <tp:type>Qualified_Property_Value_Map</tp:type>s containing
               namespaced immutable properties of each request.</dd>
@@ -407,14 +407,14 @@ Recover=true
           <p>If true, the channel dispatcher will wait for
             <tp:member-ref>ObserveChannels</tp:member-ref> to return
             before calling <tp:dbus-ref
-            namespace="ofdT.Client">Approver.AddDispatchOperation</tp:dbus-ref>
+            namespace="imt1.Client">Approver.AddDispatchOperation</tp:dbus-ref>
             on appropriate Approvers.</p>
 
           <p>This property SHOULD be false unless there is a reason
             why a channel should not be given to approvers. An example
             of this is if an Observer is also a Handler and wants to
             <tp:dbus-ref
-            namespace="ofdT.ChannelDispatchOperation">Claim</tp:dbus-ref>
+            namespace="imt1.ChannelDispatchOperation">Claim</tp:dbus-ref>
             a channel so that it becomes its handler and doesn't want
             any approver to be called, this property should be true.</p>
 
@@ -431,12 +431,8 @@ Recover=true
             specified in the observer's <tt>.client</tt> file as
             follows:</p>
 
-          <p>If this property is not implemented (telepathy-mission-control
-            5.7.5 and older), the channel dispatcher SHOULD consider it as
-            being false.</p>
-
 <pre>
-[org.freedesktop.Telepathy.Client.Observer]
+[im.telepathy1.Client.Observer]
 DelayApprovers=true
 </pre>
         </tp:docstring>

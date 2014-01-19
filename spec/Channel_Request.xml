@@ -21,44 +21,45 @@
       MA 02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.ChannelRequest">
+  <interface name="im.telepathy1.ChannelRequest">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel request is an object in the <tp:dbus-ref
-        namespace='ofdT'>ChannelDispatcher</tp:dbus-ref> representing
+        namespace='imt1'>ChannelDispatcher</tp:dbus-ref> representing
         an ongoing request for some channels to be created or found. They are
         created by methods such as <tp:dbus-ref
-        namespace='ofdT.ChannelDispatcher'>CreateChannel</tp:dbus-ref>. There
+        namespace='imt1.ChannelDispatcher'>CreateChannel</tp:dbus-ref>. There
         can be any number of ChannelRequest objects at the same time.</p>
 
       <p>Its well-known bus name is the same as that of the ChannelDispatcher,
-        <code>"org.freedesktop.Telepathy.ChannelDispatcher"</code>.</p>
+        <code>"im.telepathy1.ChannelDispatcher"</code>.</p>
 
       <tp:rationale>
         <p>See
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelDispatcher.CreateChannel</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1">ChannelDispatcher.CreateChannel</tp:dbus-ref>
           for rationale for ChannelRequest being a separate object.</p>
       </tp:rationale>
 
       <p>A channel request can be cancelled by any client (not just the one
         that requested it). This means that the ChannelDispatcher will
-        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy1.Channel">Close</tp:dbus-ref>
         the resulting channel, or refrain from requesting it at all, rather
         than dispatching it to a handler.</p>
     </tp:docstring>
 
     <property name="Account" tp:name-for-bindings="Account"
-      type="o" access="read">
+      type="o" access="read" tp:immutable="yes">
       <tp:docstring>
         The <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>
+          namespace="im.telepathy1">Account</tp:dbus-ref>
         on which this request was made. This property cannot change.
       </tp:docstring>
     </property>
 
     <property name="UserActionTime" tp:name-for-bindings="User_Action_Time"
-      type="x" tp:type="User_Action_Timestamp" access="read">
+      type="x" tp:type="User_Action_Timestamp" access="read"
+      tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The time at which user action occurred, or 0 if this channel
           request is for some reason not involving user action.</p>
@@ -69,10 +70,10 @@
     </property>
 
     <property name="PreferredHandler" tp:name-for-bindings="Preferred_Handler"
-      type="s" tp:type="DBus_Well_Known_Name" access="read">
+      type="s" tp:type="DBus_Well_Known_Name" access="read" tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>Either the well-known bus name (starting with
-            <code>org.freedesktop.Telepathy.Client.</code>)
+            <code>im.telepathy1.Client.</code>)
             of the preferred handler for this
             channel, or an empty string to indicate that any handler would be
             acceptable.</p>
@@ -84,7 +85,7 @@
 
     <property name="Requests" tp:name-for-bindings="Requests" type="aa{sv}"
       tp:type="Qualified_Property_Value_Map[]"
-      access="read">
+      access="read" tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>An array of dictionaries containing desirable properties for
           the channel or channels to be created.</p>
@@ -100,7 +101,7 @@
     </property>
 
     <property name="Interfaces" tp:name-for-bindings="Interfaces"
-      type="as" access="read" tp:type="DBus_Interface[]">
+      type="as" access="read" tp:type="DBus_Interface[]" tp:immutable="yes">
       <tp:docstring>
         A list of the extra interfaces provided by this channel request.
         This property cannot change.
@@ -133,7 +134,7 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+        <tp:error name="im.telepathy1.Error.NotAvailable">
           <tp:docstring>
             This method has already been called, so it is no longer
             available. Stop calling it.
@@ -153,7 +154,7 @@
 
         <p>If the connection manager has already been asked to create a
           channel but has not produced one yet (e.g. if <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+            namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
           has been called, but has not yet returned), then the
           ChannelDispatcher will remember that the request has been cancelled.
           When the channel appears, it will be closed (if it was newly
@@ -165,14 +166,14 @@
           then the channel dispatcher will not dispatch that
           channel to a handler. If the channel was newly created for this
           request, the channel dispatcher will close it with <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref>;
+          namespace="im.telepathy1.Channel">Close</tp:dbus-ref>;
           otherwise, the channel dispatcher will ignore it. In either case,
           <tp:member-ref>Failed</tp:member-ref> will be emitted when processing
           has been completed.</p>
 
         <p>If <tp:member-ref>Failed</tp:member-ref> is emitted in response to
           this method, the error SHOULD be
-          <code>org.freedesktop.Telepathy.Error.Cancelled</code>.</p>
+          <code>im.telepathy1.Error.Cancelled</code>.</p>
 
         <p>If the channel has already been dispatched to a handler, then
           it's too late to call this method, and the channel request will
@@ -190,10 +191,10 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The name of a D-Bus error. This can come from various sources,
             including the error raised by <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
+              namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
             or an error generated
             to represent failure to establish the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>.</p>
+              namespace="im.telepathy1">Connection</tp:dbus-ref>.</p>
         </tp:docstring>
       </arg>
 
@@ -205,15 +206,8 @@
       </arg>
     </signal>
 
-    <signal name="Succeeded" tp:name-for-bindings="Succeeded">
-      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The channel request has succeeded. It is no longer present,
-          and further methods must not be called on it.</p>
-      </tp:docstring>
-    </signal>
-
     <property name="Hints" tp:name-for-bindings="Hints"
-      type="a{sv}" access="read">
+      type="a{sv}" access="read" tp:immutable="yes">
       <tp:added version="0.21.5"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A dictionary of metadata provided by the channel
@@ -239,24 +233,24 @@
           hints: they are solely for communication between cooperating
           clients. If hints that do affect the channel dispatcher are added in
           future, their names will start with an appropriate reversed domain
-          name (e.g. <code>org.freedesktop.Telepathy</code> for hints defined
+          name (e.g. <code>im.telepathy1</code> for hints defined
           by this specification, or an appropriate vendor name for third-party
           plugins).</p>
 
         <p>This property may be set when the channel request is created, and
           can never change. Since it is immutable, it SHOULD be included in the
           dictionary of properties passed to <tp:dbus-ref
-          namespace="ofdT.Client.Interface.Requests">AddRequest</tp:dbus-ref>
+          namespace="imt1.Client.Interface.Requests">AddRequest</tp:dbus-ref>
           by the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">ChannelDispatcher</tp:dbus-ref>.</p>
+          namespace="im.telepathy1">ChannelDispatcher</tp:dbus-ref>.</p>
         <p>The following standardised hints are defined:</p>
 
         <dl>
-          <dt>org.freedesktop.Telepathy.ChannelRequest.DelegateToPreferredHandler - b</dt>
+          <dt>im.telepathy1.ChannelRequest.DelegateToPreferredHandler - b</dt>
           <dd>If present and True the client currently handling the channel
             SHOULD pass the channel to the
             <tp:member-ref>PreferredHandler</tp:member-ref> using
-            <tp:dbus-ref namespace="ofdT.ChannelDispatcher">DelegateChannels</tp:dbus-ref>.
+            <tp:dbus-ref namespace="imt1.ChannelDispatcher">DelegateChannels</tp:dbus-ref>.
 
             <tp:rationale>
               This hint allows the user to request a channel in their
@@ -276,15 +270,15 @@
             </tp:rationale>
 
             The Handler should check each
-            <tp:dbus-ref namespace="ofdT">ChannelRequest</tp:dbus-ref>
+            <tp:dbus-ref namespace="imt1">ChannelRequest</tp:dbus-ref>
             of the Requests_Satisfied parameter of
-            <tp:dbus-ref namespace="ofdT.Client.Handler">HandleChannels</tp:dbus-ref>
+            <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannels</tp:dbus-ref>
             for the hint. The first request containing the hint SHOULD be used
             and all further hints SHOULD be ignored.
 
             <tp:rationale>
               This covers the very unlikely case where
-              <tp:dbus-ref namespace="ofdT.Client.Handler">HandleChannels</tp:dbus-ref>
+              <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannels</tp:dbus-ref>
               satisfies two separate requests which have different
               <tp:member-ref>PreferredHandler</tp:member-ref>s.
             </tp:rationale>
@@ -294,18 +288,13 @@
       </tp:docstring>
     </property>
 
-    <signal name="SucceededWithChannel" tp:name-for-bindings="Succeeded_With_Channel">
+    <signal name="Succeeded" tp:name-for-bindings="Succeeded">
       <tp:added version="0.21.5"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Variant of the <tp:dbus-ref
-            namespace="ofdT.ChannelRequest">Succeeded</tp:dbus-ref> signal
-        allowing to get the channel which has been created.</p>
+        <p>The channel request has succeeded. It is no longer present,
+          and further methods must not be called on it.</p>
 
-        <p>This signal MUST be emitted if the
-          <tp:dbus-ref namespace="ofdT">ChannelDispatcher</tp:dbus-ref>'s
-          <tp:dbus-ref
-            namespace="ofdT.ChannelDispatcher">SupportsRequestHints</tp:dbus-ref>
-          property is true. If supported, it MUST be emitted before
+        <p>This signal MUST be emitted before
           the <tp:member-ref>Succeeded</tp:member-ref> signal.</p>
       </tp:docstring>
 
@@ -333,7 +322,7 @@
         tp:type="Qualified_Property_Value_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The same immutable properties of the Channel that would appear
-            in a <tp:dbus-ref namespace="ofdT.Connection.Interface.Requests"
+            in a <tp:dbus-ref namespace="imt1.Connection.Interface.Requests"
               >NewChannels</tp:dbus-ref> signal.</p>
         </tp:docstring>
       </arg>

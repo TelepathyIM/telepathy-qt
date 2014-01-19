@@ -20,14 +20,14 @@
   <tp:simple-type name="DBus_Bus_Name" type="s"
     array-name="DBus_Bus_Name_List">
     <tp:docstring>A string representing a D-Bus bus name - either a well-known
-      name like "org.freedesktop.Telepathy.MissionControl" or a unique name
+      name like "im.telepathy1.MissionControl" or a unique name
       like ":1.123"</tp:docstring>
   </tp:simple-type>
 
   <tp:simple-type name="DBus_Well_Known_Name" type="s"
     array-name="DBus_Well_Known_Name_List">
     <tp:docstring>A string representing a D-Bus well-known
-      name like "org.freedesktop.Telepathy.MissionControl".</tp:docstring>
+      name like "im.telepathy1.MissionControl".</tp:docstring>
   </tp:simple-type>
 
   <tp:simple-type name="DBus_Unique_Name" type="s"
@@ -110,7 +110,7 @@
         as for <tp:type>Socket_Address_IPv6</tp:type>.
       </tp:docstring>
     </tp:member>
-    <tp:member type="q" name="Port">
+    <tp:member type="u" name="Port">
       <tp:docstring>The TCP or UDP port number.</tp:docstring>
     </tp:member>
   </tp:struct>
@@ -122,7 +122,7 @@
         numbers, each between 0 and 255 inclusive, e.g.
         "192.168.0.1".</tp:docstring>
     </tp:member>
-    <tp:member type="q" name="Port">
+    <tp:member type="u" name="Port">
       <tp:docstring>The TCP or UDP port number.</tp:docstring>
     </tp:member>
   </tp:struct>
@@ -133,7 +133,7 @@
       <tp:docstring>An IPv6 address literal as specified by RFC2373
         section 2.2, e.g. "2001:DB8::8:800:200C:4171".</tp:docstring>
     </tp:member>
-    <tp:member type="q" name="Port">
+    <tp:member type="u" name="Port">
       <tp:docstring>The TCP or UDP port number.</tp:docstring>
     </tp:member>
   </tp:struct>

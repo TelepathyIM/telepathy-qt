@@ -20,31 +20,26 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Protocol">
+  <interface name="im.telepathy1.Protocol">
     <tp:added version="0.19.10">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An object representing a protocol for which this <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">ConnectionManager</tp:dbus-ref>
+          namespace="im.telepathy1">ConnectionManager</tp:dbus-ref>
         can create <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>s.</p>
+          namespace="im.telepathy1">Connection</tp:dbus-ref>s.</p>
 
       <p>Each Protocol object has the same well-known bus name as its parent
         ConnectionManager. Its object path is formed by taking the
-        ConnectionManager's object path and appending '/', followed by the
-        <tp:type>Protocol</tp:type> name with any hyphen/minus '-' converted
-        to underscores '_'.</p>
+        ConnectionManager's object path and appending '/' followed by the
+        <tp:type>Protocol_Name</tp:type>.</p>
 
-      <tp:rationale>
-        <p>This is the same as the representation of protocol names
-          in Account object paths, and in Connection object paths and bus
-          names. For instance, telepathy-gabble and telepathy-salut would
-          implement objects at
-          <code>/org/freedesktop/Telepathy/ConnectionManager/gabble/jabber</code>
-          and
-          <code>/org/freedesktop/Telepathy/ConnectionManager/salut/local_xmpp</code>,
-          respectively.</p>
-      </tp:rationale>
+      <p>For instance, telepathy-gabble and telepathy-salut would
+        implement objects at
+        <code>/im/telepathy1/ConnectionManager/gabble/jabber</code>
+        and
+        <code>/im/telepathy1/ConnectionManager/salut/local_xmpp</code>,
+        respectively.</p>
 
       <p>If the ConnectionManager has a <tt>.manager</tt> file, each
         Protocol's immutable properties must be represented in that file;
@@ -58,19 +53,19 @@ Interfaces=
 
 [Protocol example]
 Interfaces=
-ConnectionInterfaces=org.freedesktop.Telepathy.Connection.Interface.Requests;
+ConnectionInterfaces=im.telepathy1.Connection.Interface.Requests;
 param-account=s required
 param-password=s required secret
 RequestableChannelClasses=text;
 VCardField=x-example
 EnglishName=Example
 Icon=im-example
-AuthenticationTypes=org.freedesktop.Telepathy.Channel.Type.ServerTLSConnection;org.freedesktop.Telepathy.Channel.Interface.SASLAuthentication;
+AuthenticationTypes=im.telepathy1.Channel.Type.ServerTLSConnection;im.telepathy1.Channel.Interface.SASLAuthentication;
 
 [text]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
-org.freedesktop.Telepathy.Channel.TargetHandleType u=1
-allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+im.telepathy1.Channel.ChannelType s=im.telepathy1.Channel.Type.Text
+im.telepathy1.Channel.TargetHandleType u=1
+allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
 </pre>
     </tp:docstring>
 
@@ -87,7 +82,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
 
         <p>Connection managers with a <code>.manager</code> file
           (as described as part of the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          <tp:dbus-ref namespace="im.telepathy1"
             >ConnectionManager</tp:dbus-ref> interface) MUST cache this
           property in the protocol's section of the <code>.manager</code>
           file, using the key <code>Interfaces</code>. The corresponding value
@@ -100,23 +95,23 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The parameters which may be specified in the
-          <tp:dbus-ref namespace='ofdT.Account'>Parameters</tp:dbus-ref> of an
-          <tp:dbus-ref namespace='ofdT'>Account</tp:dbus-ref> (or, for
+          <tp:dbus-ref namespace='imt1.Account'>Parameters</tp:dbus-ref> of an
+          <tp:dbus-ref namespace='imt1'>Account</tp:dbus-ref> (or, for
           specialised applications which do not use the account manager, passed
           to <tp:dbus-ref
-          namespace='ofdT.ConnectionManager'>RequestConnection</tp:dbus-ref>).
+          namespace='imt1.ConnectionManager'>RequestConnection</tp:dbus-ref>).
           Some parameters are mandatory, and some parameters only make sense
           when registering new accounts with the server; see the
           <tp:type>Param_Spec</tp:type> documentation for more details.</p>
 
         <p>Connection managers with a <code>.manager</code> file
           (as described as part of the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          <tp:dbus-ref namespace="im.telepathy1"
             >ConnectionManager</tp:dbus-ref> interface) MUST cache this
           property in the protocol's section of the <code>.manager</code>
           file via keys of the form <code>param-<em>p</em></code> and
           <code>default-<em>p</em></code>, as documented in the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          <tp:dbus-ref namespace="im.telepathy1"
             >ConnectionManager</tp:dbus-ref> interface.</p>
       </tp:docstring>
     </property>
@@ -127,9 +122,9 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of interface names which might be in the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection"
+          <tp:dbus-ref namespace="im.telepathy1.Connection"
             >Interfaces</tp:dbus-ref> property of a
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          <tp:dbus-ref namespace="im.telepathy1"
             >Connection</tp:dbus-ref> to this protocol. Whether a Connection
           will have all, some or none of these interfaces depends on server
           capabilities.</p>
@@ -151,10 +146,10 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of channel classes which might be requestable from a
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          <tp:dbus-ref namespace="im.telepathy1"
             >Connection</tp:dbus-ref> to this protocol (i.e. they will,
           or might, appear in the Connection's <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests"
+            namespace="im.telepathy1.Connection.Interface.Requests"
             >RequestableChannelClasses</tp:dbus-ref> property).</p>
 
         <p>Whether a Connection will have all, some or none of these
@@ -184,7 +179,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
           "<code><em>propertyname</em> <em>type</em></code>", and the value
           is encoded in the same way as for the <code>default-<em>p</em></code>
           keys described in the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy"
+            namespace="im.telepathy1"
             >ConnectionManager</tp:dbus-ref> documentation.</p>
 
         <p>Connection managers that have channel classes whose fixed
@@ -193,7 +188,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
 
         <p>For instance, this <code>.manager</code> file could represent
           a connection manager that supports 1-1 Text messages and
-          StreamedMedia audio calls:</p>
+          Call audio calls:</p>
 
 <pre>[Protocol jabber]
 param-account=s required
@@ -201,14 +196,14 @@ param-password=s required
 RequestableChannelClasses=rcc0;rcc1;
 
 [rcc0]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
-org.freedesktop.Telepathy.Channel.TargetHandleType u=1
-allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+im.telepathy1.Channel.ChannelType s=im.telepathy1.Channel.Type.Text
+im.telepathy1.Channel.TargetHandleType u=1
+allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
 
 [rcc1]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.StreamedMedia
-org.freedesktop.Telepathy.Channel.TargetHandleType u=1
-allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;org.freedesktop.Telepathy.Channel.Type.StreamedMedia.InitialAudio;
+im.telepathy1.Channel.ChannelType s=im.telepathy1.Channel.Type.Call1
+im.telepathy1.Channel.TargetHandleType u=1
+allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.telepathy1.Channel.Type.Call1.InitialAudio;
 </pre>
       </tp:docstring>
     </property>
@@ -226,7 +221,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
 
         <p>A more exhaustive list of addressable vCard fields can be found in
           the Protocol's Addressing interface's
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Protocol.Interface.Addressing">AddressableVCardFields</tp:dbus-ref>.</p>
+          <tp:dbus-ref namespace="im.telepathy1.Protocol.Interface.Addressing1">AddressableVCardFields</tp:dbus-ref>.</p>
 
         <p>It is not necessarily valid to interpret contacts' identifiers
           as values of this vCard field. For instance, telepathy-sofiasip
@@ -235,7 +230,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
           both be represented by any single vCard field. Arbitrary
           handles/identifiers as vCard fields are represented
           through the Connection's
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface">Addressing1</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1.Connection.Interface">Addressing1</tp:dbus-ref>
           contact attributes.</p>
 
         <tp:rationale>
@@ -268,9 +263,9 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
         <p>This is effectively in the C locale (international English);
           user interfaces requiring a localized protocol name SHOULD look
           one up in their own message catalog based on either the Telepathy
-          <tp:type>Protocol</tp:type> name or this property, but SHOULD use
-          this English version as a fallback if no translated version can be
-          found.</p>
+          <tp:type>Protocol_Name</tp:type> name or this property, but SHOULD
+          use this English version as a fallback if no translated version can
+          be found.</p>
 
         <tp:rationale>
           <p>Many protocols are named after a company or product which isn't
@@ -280,8 +275,8 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
         </tp:rationale>
 
         <p>If this property's value is empty, clients MAY fall back to using
-          the Telepathy <tp:type>Protocol</tp:type> name, possibly with its
-          capitalization adjusted.</p>
+          the Telepathy <tp:type>Protocol_Name</tp:type> name, possibly with
+          its capitalization adjusted.</p>
 
         <p>Connection managers with a <code>.manager</code> file
           MUST cache this property in the protocol's section of the
@@ -300,15 +295,15 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
 
         <tp:rationale>
           <p>This can be used as a default if the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Account">Icon</tp:dbus-ref>
+              namespace="im.telepathy1.Account">Icon</tp:dbus-ref>
             property is not set on an Account, or used by the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>
+              namespace="im.telepathy1">AccountManager</tp:dbus-ref>
             to choose a default icon if none is set during account
             creation.</p>
         </tp:rationale>
 
         <p>If this property's value is empty, clients MAY fall back to
-          generating a name based on the <tp:type>Protocol</tp:type> name.</p>
+          generating a name based on the <tp:type>Protocol_Name</tp:type>.</p>
 
         <p>Connection managers with a <code>.manager</code> file
           MUST cache this property in the protocol's section of the
@@ -338,7 +333,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
         type="a{sv}" tp:type="String_Variant_Map">
         <tp:docstring>
           A set of parameters as would be provided to <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ConnectionManager"
+            namespace="im.telepathy1.ConnectionManager"
             >RequestConnection</tp:dbus-ref>
         </tp:docstring>
       </arg>
@@ -346,7 +341,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       <arg direction="out" name="Account_ID" type="s">
         <tp:docstring>
           <p>An opaque string suitable for use as the account-specific part of
-            an <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            an <tp:dbus-ref namespace="im.telepathy1"
               >Account</tp:dbus-ref>'s object path. This is not necessarily
             globally unique, but should represent a "best-effort"
             identification of the account.</p>
@@ -363,7 +358,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+        <tp:error name="im.telepathy1.Error.NotImplemented">
           <tp:docstring>
             The IdentifyAccount method is not supported by this connection
             manager. The caller SHOULD fall back to deriving identification
@@ -377,14 +372,14 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       tp:name-for-bindings="Normalize_Contact">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Attempt to normalize the given contact ID. Where possible, this
-          SHOULD return the same thing that would be returned by
-          InspectHandles(RequestHandles(CONTACT, [Contact_ID])) on a connected
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
-            >Connection</tp:dbus-ref>.</p>
+          SHOULD return the same thing that would be returned by <tp:dbus-ref
+          namespace="imt1.Connection.Interface.Contacts">GetContactByID</tp:dbus-ref>
+           on a connected <tp:dbus-ref namespace="im.telepathy1"
+           >Connection</tp:dbus-ref>.</p>
 
         <p>If full normalization requires network activity or is otherwise
           impossible to do without a <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>,
+            namespace="im.telepathy1">Connection</tp:dbus-ref>,
           this method SHOULD perform a best-effort normalization.</p>
 
         <tp:rationale>
@@ -428,7 +423,7 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+        <tp:error name="im.telepathy1.Error.NotImplemented">
           <tp:docstring>
             The NormalizeContact method is not supported by this connection
             manager. The caller MAY recover by using the contact ID as-is.
@@ -449,14 +444,14 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
         <p>These can either be channel types, or where the channel
           type isn't enough information to be useful, interfaces
           indicating a specific use of a channel type. For example,
-          <tp:dbus-ref namespace="ofdT.Channel.Type">ServerTLSConnection</tp:dbus-ref>
+          <tp:dbus-ref namespace="imt1.Channel.Type">ServerTLSConnection1</tp:dbus-ref>
           channels are obviously about TLS certificates so the channel
           type would appear in this list. However, a
-          <tp:dbus-ref namespace="ofdT.Channel.Type">ServerAuthentication</tp:dbus-ref>
+          <tp:dbus-ref namespace="imt1.Channel.Type">ServerAuthentication1</tp:dbus-ref>
           channel type alone does not explain enough about the authentication type
           in use as it is merely a base for the channel interfaces that appear in
           said channels. In this case, CMs should use the value of the
-          <tp:dbus-ref namespace="ofdT.Channel.Type">ServerAuthentication.AuthenticationMethod</tp:dbus-ref>
+          <tp:dbus-ref namespace="imt1.Channel.Type">ServerAuthentication1.AuthenticationMethod</tp:dbus-ref>
           property in this list.</p>
 
         <p>For example, if a protocol's
@@ -465,19 +460,19 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
 
         <blockquote>
           <pre>
-[ ...<tp:dbus-ref namespace="ofdT">Channel.Type.ServerTLSConnection</tp:dbus-ref>,
-  ...<tp:dbus-ref namespace="ofdT">Channel.Interface.SASLAuthentication</tp:dbus-ref> ]</pre></blockquote>
+[ ...<tp:dbus-ref namespace="imt1">Channel.Type.ServerTLSConnection1</tp:dbus-ref>,
+  ...<tp:dbus-ref namespace="imt1">Channel.Interface.SASLAuthentication1</tp:dbus-ref> ]</pre></blockquote>
 
         <p>This tells a client that before the connection status
           reached CONNECTED, a <tp:dbus-ref
-          namespace="ofdT.Channel.Type">ServerTLSConnection</tp:dbus-ref>
+          namespace="imt1.Channel.Type">ServerTLSConnection1</tp:dbus-ref>
           could appear carrying a TLS certificate. It also tells the
           client that before the connection status reaches CONNECTED, a
           <tp:dbus-ref
-          namespace="ofdT.Channel.Type">ServerAuthentication</tp:dbus-ref>
+          namespace="imt1.Channel.Type">ServerAuthentication1</tp:dbus-ref>
           channel could also appear, where <tp:dbus-ref
-          namespace="ofdT.Channel.Type">ServerAuthentication.AuthenticationMethod</tp:dbus-ref>=<tp:dbus-ref
-          namespace="ofdT.Channel.Interface">SASLAuthentication</tp:dbus-ref>. A
+          namespace="imt1.Channel.Type">ServerAuthentication1.AuthenticationMethod</tp:dbus-ref>=<tp:dbus-ref
+          namespace="imt1.Channel.Interface">SASLAuthentication1</tp:dbus-ref>. A
           hypothetical future Channel.Interface.Captcha interface would
           also appear in this list if the CM might require the user
           solve a captcha before connecting.</p>

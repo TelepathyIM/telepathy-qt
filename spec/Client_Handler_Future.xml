@@ -20,14 +20,14 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Client.Handler.FUTURE"
+  <interface name="im.telepathy1.Client.Handler.FUTURE"
     tp:causes-havoc="a staging area for future Handler functionality">
-    <tp:requires interface="org.freedesktop.Telepathy.Client.Handler"/>
+    <tp:requires interface="im.telepathy1.Client.Handler"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface contains functionality which we intend to incorporate
         into the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Client">Handler</tp:dbus-ref>
+          namespace="im.telepathy1.Client">Handler</tp:dbus-ref>
         interface in future. It should be considered to
         be conceptually part of the core Handler interface, but without
         API or ABI guarantees.</p>
@@ -50,7 +50,7 @@
           in the handler's <tt>.client</tt> file as follows:</p>
 
 <pre>
-[org.freedesktop.Telepathy.Client.Handler]
+[im.telepathy1.Client.Handler]
 BypassObservers=true
 </pre>
       </tp:docstring>
@@ -61,13 +61,13 @@ BypassObservers=true
       type="b" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>If true, channels destined for this handler that have the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface"
-            >Conference</tp:dbus-ref> interface, with a channel that
+          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface"
+            >Conference1</tp:dbus-ref> interface, with a channel that
           was previously handled by the same client process in their
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Conference"
+          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface.Conference1"
             >InitialChannels</tp:dbus-ref> property, should bypass the
           approval stage. In effect, this is a weaker form of
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Client.Handler"
+          <tp:dbus-ref namespace="im.telepathy1.Client.Handler"
             >BypassApproval</tp:dbus-ref>.</p>
 
         <tp:rationale>

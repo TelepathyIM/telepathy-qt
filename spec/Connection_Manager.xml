@@ -18,13 +18,14 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.ConnectionManager">
+  <interface name="im.telepathy1.ConnectionManager">
 
     <tp:simple-type name="Connection_Manager_Name" type="s">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The name of a connection manager, found in its well-known
           bus name and object path. This must be a non-empty string of
-          ASCII letters, digits and underscores, starting with a letter.
+          ASCII letters, digits and underscores, starting with a letter
+          or underscore.
           This is typically the name of the executable with any "telepathy-"
           prefix removed, and any hyphen/minus signs replaced by
           underscores.</p>
@@ -56,11 +57,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         characters were not specified</tp:changed>
     </tp:simple-type>
 
-    <tp:simple-type name="Protocol" type="s" array-name="Protocol_List">
+    <tp:simple-type name="Protocol_Name" type="s" array-name="Protocol_Name_List">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>An instant messaging protocol. It must consist only of ASCII
-          letters, digits and hyphen/minus signs (U+002D "-"), and must start
-          with a letter. Where possible, this SHOULD be
+          letters, digits and underscores, and must start
+          with a letter or underscore. Where possible, this SHOULD be
           chosen from the following well-known values:</p>
 
         <ul>
@@ -70,7 +71,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <li>icq - ICQ (OSCAR)</li>
           <li>irc - Internet Relay Chat (RFC 1459, 2810-2813)</li>
           <li>jabber - XMPP (RFC 3920, 3921) or Jabber</li>
-          <li>local-xmpp - Link-local XMPP (XEP-0174) (Bonjour, Salut)</li>
+          <li>local_xmpp - Link-local XMPP (XEP-0174) (Bonjour, Salut)</li>
           <li>msn - MSNP (Windows Live Messenger)</li>
           <li>myspace - MySpaceIM</li>
           <li>mxit - MXit</li>
@@ -89,14 +90,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <li>yahoojp - Japanese version of YMSG</li>
           <li>zephyr - Zephyr</li>
         </ul>
+
+        <tp:rationale>
+          <p>Identifiers formed with letters, digits and underscores and not
+            starting with a digit are valid in all syntactically-restricted
+            strings used in D-Bus, and non-problematic in filenames.</p>
+
+          <p>Telepathy 0.x used hyphen/minus instead of underscore in the
+            canonical form of a protocol name, which meant that protocol
+            names often had to be transformed between their canonical form,
+            and a form that used underscores for use in a D-Bus name.</p>
+        </tp:rationale>
       </tp:docstring>
       <tp:changed version="0.17.1">Prior to version 0.17.1, the allowed
         characters were not specified</tp:changed>
+      <tp:changed version="0.99.1">
+        In Telepathy 0.x, protocol names could contain hyphen/minus signs,
+        but not underscores.
+      </tp:changed>
     </tp:simple-type>
 
     <tp:struct name="Param_Spec" array-name="Param_Spec_List">
-      <tp:docstring>A struct representing an allowed parameter, as returned
-        by GetParameters on the ConnectionManager interface.</tp:docstring>
+      <tp:docstring>A struct representing an allowed parameter.</tp:docstring>
       <tp:member type="s" name="Name">
         <tp:docstring>A string parameter name</tp:docstring>
       </tp:member>
@@ -128,9 +143,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:flag>
       <tp:flag suffix="Has_Default" value="4">
         <tp:docstring>
-          This parameter has a default value, which is returned in
-          GetParameters; not providing this parameter is equivalent to
-          providing the default.
+          This parameter has a default value; not providing this
+          parameter is equivalent to providing the default.
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Secret" value="8">
@@ -150,7 +164,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>This parameter is also a D-Bus property on the resulting
             <tp:dbus-ref
-              namespace="ofdT">Connection</tp:dbus-ref>; a
+              namespace="imt1">Connection</tp:dbus-ref>; a
             parameter named <code>com.example.Duck.Macaroni</code> with this
             flag corresponds to the <code>Macaroni</code> property on the
             <code>com.example.Duck</code> interface.  Its value can be queried
@@ -158,7 +172,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             <code>org.freedesktop.DBus.Properties</code> interface.</p>
 
           <p>When a new value for a parameter with this flag is passed to
-            <tp:dbus-ref namespace="ofdT">Account.UpdateParameters</tp:dbus-ref>,
+            <tp:dbus-ref namespace="imt1">Account.UpdateParameters</tp:dbus-ref>,
             the account manager will attempt to update its value on any running
             connections. Similarly, if the parameter also has the
             <code>Has_Default</code> flag, and is passed in the second argument
@@ -166,16 +180,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             to any running
             connections. Thus, clients generally do not need to directly access
             or update the connection property; instead, they SHOULD manipulate
-            <tp:dbus-ref namespace="ofdT">Account.Parameters</tp:dbus-ref>.</p>
+            <tp:dbus-ref namespace="imt1">Account.Parameters</tp:dbus-ref>.</p>
 
           <tp:rationale>
             <p>This allows runtime-configurable options to be stored and
               maintained by the <tp:dbus-ref
-              namespace='ofdT'>AccountManager</tp:dbus-ref>, without needing to
+              namespace='imt1'>AccountManager</tp:dbus-ref>, without needing to
               invent a separate account preference for “properties that should
               be set on the connection as soon as it is created”. It was
               originally invented to manage <tp:dbus-ref
-                namespace='ofdT.Connection.Interface'>Cellular</tp:dbus-ref>
+                namespace='imt1.Connection.Interface'>Cellular1</tp:dbus-ref>
               preferences.</p>
           </tp:rationale>
         </tp:docstring>
@@ -183,46 +197,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:flag>
     </tp:flags>
 
-    <method name="GetParameters" tp:name-for-bindings="Get_Parameters">
-      <arg direction="in" name="Protocol" type="s" tp:type="Protocol">
-        <tp:docstring>
-          The required protocol name
-        </tp:docstring>
-      </arg>
-      <arg direction="out" type="a(susv)" tp:type="Param_Spec[]"
-        name="Parameters">
-        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          An array of structs representing possible parameters.
-        </tp:docstring>
-      </arg>
-      <tp:docstring>
-        Get a list of the parameters which may be specified in the
-        <tp:dbus-ref namespace='ofdT.Account'>Parameters</tp:dbus-ref> of an
-        <tp:dbus-ref namespace='ofdT'>Account</tp:dbus-ref> (or, for
-        specialised applications which do not use the account manager, passed
-        to <tp:member-ref>RequestConnection</tp:member-ref>). Some parameters
-        are mandatory, and some parameters only make sense when registering new
-        accounts with the server; see the <tp:type>Param_Spec</tp:type>
-        documentation for more details.
-      </tp:docstring>
-      <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
-          <tp:docstring>
-            The requested protocol is not supported by this manager
-          </tp:docstring>
-        </tp:error>
-      </tp:possible-errors>
-    </method>
-
     <tp:mapping name="Protocol_Properties_Map">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A map from protocol identifiers supported by a connection
           manager to the immutable properties of the corresponding
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          <tp:dbus-ref namespace="im.telepathy1"
             >Protocol</tp:dbus-ref> objects.</p>
       </tp:docstring>
 
-      <tp:member name="Protocol" type="s" tp:type="Protocol">
+      <tp:member name="Name" type="s" tp:type="Protocol_Name">
         <tp:docstring>A protocol name</tp:docstring>
       </tp:member>
 
@@ -239,7 +222,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A map from protocol identifiers supported by this connection
           manager to the immutable properties of the corresponding
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          <tp:dbus-ref namespace="im.telepathy1"
             >Protocol</tp:dbus-ref> objects.</p>
 
         <tp:rationale>
@@ -248,24 +231,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             most clients will only need one D-Bus round trip to interrogate
             the ConnectionManager about all its protocols.</p>
         </tp:rationale>
-
-        <p>If this map is empty or missing, clients SHOULD fall back to
-          calling <tp:member-ref>ListProtocols</tp:member-ref> and
-          <tp:member-ref>GetParameters</tp:member-ref>.</p>
       </tp:docstring>
     </property>
-
-    <method name="ListProtocols" tp:name-for-bindings="List_Protocols">
-      <arg direction="out" type="as" tp:type="Protocol[]" name="Protocols">
-        <tp:docstring>
-          The keys of the <tp:member-ref>Protocols</tp:member-ref> map.
-        </tp:docstring>
-      </arg>
-      <tp:docstring>
-        Get a list of protocol identifiers that are implemented by this
-        connection manager.
-      </tp:docstring>
-    </method>
 
     <signal name="NewConnection" tp:name-for-bindings="New_Connection">
       <arg name="Bus_Name" type="s" tp:type="DBus_Bus_Name">
@@ -278,20 +245,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The object path of the Connection object on this service
         </tp:docstring>
       </arg>
-      <arg name="Protocol" type="s" tp:type="Protocol">
+      <arg name="Protocol" type="s" tp:type="Protocol_Name">
         <tp:docstring>
           The identifier for the protocol this connection uses
         </tp:docstring>
       </arg>
       <tp:docstring>
         Emitted when a new <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref> object
+        namespace="im.telepathy1">Connection</tp:dbus-ref> object
         is created.
       </tp:docstring>
     </signal>
 
     <method name="RequestConnection" tp:name-for-bindings="Request_Connection">
-      <arg direction="in" name="Protocol" type="s" tp:type="Protocol">
+      <arg direction="in" name="Protocol" type="s" tp:type="Protocol_Name">
         <tp:docstring>
           The protocol identifier
         </tp:docstring>
@@ -299,9 +266,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="in" name="Parameters" type="a{sv}"
         tp:type="String_Variant_Map">
         <tp:docstring>
-          A dictionary mapping parameter names to values of the appropriate
-          type, as indicated by <tp:member-ref>GetParameters</tp:member-ref>
-          and the well-known list of names and value types documented on the
+          A dictionary mapping parameter names to values of the
+          appropriate type, as indicated by the <tp:dbus-ref
+          namespace="imt1.Protocol">Parameters</tp:dbus-ref> property
+          (which can be retrieved by getting the
+          <tp:member-ref>Protocols</tp:member-ref> property) and the
+          well-known list of names and value types documented on the
           <tp:type>Connection_Parameter_Name</tp:type> type.
         </tp:docstring>
       </arg>
@@ -317,31 +287,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Request a
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>
           object representing a given account on a given
           protocol with the given parameters. The method returns the bus name
           and the object path where the new Connection object can be found,
           which should have the status of Connection_Status_Disconnected, to
           allow signal handlers to be attached before connecting is started
           with the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">Connect</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1.Connection">Connect</tp:dbus-ref>
           method.</p>
 
         <p><strong>Most applications should not use this method</strong>: they
           should instead use the the <tp:dbus-ref
-          namespace='ofdT.Account'>Connection</tp:dbus-ref> property on an
-          <tp:dbus-ref namespace='ofdT'>Account</tp:dbus-ref> object obtained
+          namespace='imt1.Account'>Connection</tp:dbus-ref> property on an
+          <tp:dbus-ref namespace='imt1'>Account</tp:dbus-ref> object obtained
           from the <tp:dbus-ref
-          namespace='ofdT'>AccountManager</tp:dbus-ref>. This method is used
+          namespace='imt1'>AccountManager</tp:dbus-ref>. This method is used
           internally by the account manager to create connections when
           needed.</p>
 
-        <p>The parameters which must and may be provided in the parameters
-        dictionary can be discovered with the
-        <tp:member-ref>GetParameters</tp:member-ref> method. These
-        parameters, their types, and their default values may be cached
-        in files so that all available connection managers do not need to be
-        started to discover which protocols are available.</p>
+        <p>The parameters which must and may be provided in the
+        parameters dictionary can be discovered by looking at the
+        <tp:dbus-ref
+        namespace="imt1.Protocol">Parameters</tp:dbus-ref> property by
+        getting the <tp:member-ref>Protocols</tp:member-ref>
+        property. These parameters, their types, and their default
+        values may be cached in files so that all available connection
+        managers do not need to be started to discover which protocols
+        are available.</p>
 
         <p>To request values for these parameters from the user, a client must
         have prior knowledge of the meaning of the parameter names, so the
@@ -367,18 +340,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         the creation of new connections.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy1.Error.NotImplemented">
           <tp:docstring>
             The requested protocol is not supported by this manager
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+        <tp:error name="im.telepathy1.Error.NotAvailable">
           <tp:docstring>
             The requested connection already appears to exist
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+        <tp:error name="im.telepathy1.Error.InvalidArgument">
           <tp:docstring>
             Unrecognised connection parameters
           </tp:docstring>
@@ -392,7 +365,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>Well-known connection parameter names, along with their expected
           type. Where possible, connection managers should use names and types
           from this list in the <tp:dbus-ref
-          namespace='ofdT.Protocol'>Parameters</tp:dbus-ref> that may be passed
+          namespace='imt1.Protocol'>Parameters</tp:dbus-ref> that may be passed
           to <tp:member-ref>RequestConnection</tp:member-ref>.</p>
 
         <dl>
@@ -446,7 +419,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
               pings.</p>
 
             <p>This parameter is superseded by the <tp:dbus-ref
-                namespace='ofdT.Connection.Interface.Keepalive.DRAFT'>KeepaliveInterval</tp:dbus-ref>
+                namespace='imt1.Connection.Interface.Keepalive1'>KeepaliveInterval</tp:dbus-ref>
               property, which can be updated on an already-established
               connection as well as being specified when requesting the
               connection. Clients SHOULD provide that parameter instead, if
@@ -475,10 +448,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           defined; it's provided as a hook for possible future
           functionality.</p>
 
-        <p>To be compatible with older connection managers, if retrieving
-          this property fails, clients SHOULD assume that its value is
-          an empty list.</p>
-
         <p>Connection managers with a non-empty list of Interfaces MUST
           represent them in the <code>.manager</code> file, if they have one,
           as an <code>Interfaces</code> key in the
@@ -497,7 +466,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:type>Connection_Manager_Name</tp:type> for syntax).</p>
 
     <p>The connection manager must then provide a well-known bus name of
-      <code>org.freedesktop.Telepathy.ConnectionManager.<em>cmname</em></code>
+      <code>im.telepathy1.ConnectionManager.<em>cmname</em></code>
       where <em>cmname</em> is its connection manager name. If it makes sense
       to start the connection manager using D-Bus service activation, it
       must register that well-known name for service activation by installing
@@ -512,14 +481,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <p>When the connection manager is running, it must have an object
       implementing the ConnectionManager interface at the object path
-      <code>/org/freedesktop/Telepathy/ConnectionManager/<em>cmname</em></code>.
+      <code>/im/telepathy1/ConnectionManager/<em>cmname</em></code>.
     </p>
 
     <p>Connection managers' capabilities can be determined dynamically by
-      calling their <tp:member-ref>ListProtocols</tp:member-ref> method, then
-      for each protocol of interest, calling
-      <tp:member-ref>GetParameters</tp:member-ref> to discover the required and
-      optional parameters.
+      getting the <tp:member-ref>Protocols</tp:member-ref> property.
       However, since it is inefficient to activate all possible connection
       managers on the system just to find out what they can do, there
       is a standard mechanism to store static information about CMs in
@@ -533,7 +499,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       colon-separated paths from $XDG_DATA_DIRS, defaulting to
       /usr/local/share:/usr/share if unset) for the first file named
       <code>telepathy/managers/<em>cmname</em>.manager</code> that can be
-      read without error. This file has the same syntax as a
+      read without error and contains a group whose name is the name of this
+      interface. This file has the same syntax as a
       <a href="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html">freedesktop.org Desktop Entry file</a>.</p>
 
     <p>Clients must still support connection managers for which no
@@ -544,31 +511,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       a plugin architecture) should not install a <code>.manager</code>
       file.</p>
 
-    <p>The <code>.manager</code> file SHOULD have a group headed
-      <code>[ConnectionManager]</code>, containing a key
+    <p>The <code>.manager</code> file MUST have a group headed
+      <code>[im.telepathy1.ConnectionManager]</code>, containing a key
       <code>Interfaces</code> representing
       <tp:member-ref>Interfaces</tp:member-ref> as a sequence of strings
       each followed by a semicolon (the "localestrings" type from the Desktop
       Entry Specification).</p>
 
-    <p>The <code>[ConnectionManager]</code> group SHOULD NOT contain keys
-      <code>ObjectPath</code> or <code>BusName</code>. If it does, they MUST
-      be ignored.</p>
-
-    <tp:rationale>
-      <p>The object path and bus name are derivable from the connection
-        manager's name, which is part of the filename, so these keys are
-        redundant. They were required in very old versions of Telepathy.</p>
-    </tp:rationale>
-
     <p>For each protocol name <em>proto</em> that would be returned by
-      ListProtocols, the .manager file contains a group
-      headed <code>[Protocol <em>proto</em>]</code>. For each parameter
-      <em>p</em> that would be returned by GetParameters(<em>proto</em>), the
-      .manager file contains a key <code>param-<em>p</em></code> with a value
-      consisting of a D-Bus signature (a single complete type), optionally
-      followed by a space and a space-separated list of flags. The supported
-      flags are:</p>
+    the keys of the <tp:member-ref>Protocols</tp:member-ref> property,
+    the .manager file contains a group headed <code>[im.telepathy1.Protocol
+    <em>proto</em>]</code>. For each parameter <em>p</em> that would
+    be in the <tp:dbus-ref
+    namespace="imt1.Protocol">Parameters</tp:dbus-ref> property
+    (retrievable using the <tp:member-ref>Protocols</tp:member-ref>
+    property), the .manager file contains a key
+    <code>param-<em>p</em></code> with a value consisting of a D-Bus
+    signature (a single complete type), optionally followed by a space
+    and a space-separated list of flags. The supported flags are:</p>
 
     <ul>
       <li><code>required</code>, corresponding to
@@ -630,6 +590,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:changed version="0.25.2">Prior to version 0.25.2 the
       serialization of object-path arrays (signature 'ao') was not
       defined</tp:changed>
+    <tp:changed version="0.99.1">GetParameters and ListProtocols
+      have been removed in favour of the
+      <tp:member-ref>Protocols</tp:member-ref> property.</tp:changed>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

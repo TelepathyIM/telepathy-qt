@@ -18,8 +18,8 @@
       along with this library; if not, write to the Free Software Foundation,
       Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.Contacts">
-    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+  <interface name="im.telepathy1.Connection.Interface.Contacts">
+    <tp:requires interface="im.telepathy1.Connection"/>
     <tp:added version="0.17.9"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -81,16 +81,6 @@
       </tp:member>
     </tp:mapping>
 
-    <property name="ContactAttributeInterfaces" access="read" type="as"
-      tp:type="DBus_Interface[]"
-      tp:name-for-bindings="Contact_Attribute_Interfaces">
-      <tp:docstring>
-        A list of D-Bus interfaces for which
-        <tp:member-ref>GetContactAttributes</tp:member-ref> is expected to work.
-        This cannot change during the lifetime of the Connection.
-      </tp:docstring>
-    </property>
-
     <method name="GetContactAttributes"
       tp:name-for-bindings="Get_Contact_Attributes">
       <tp:docstring>
@@ -111,22 +101,8 @@
             interfaces, whose values can be obtained without additional network
             activity, will be in the reply.</p>
 
-          <p>Connection managers SHOULD ignore interfaces requested which they
-            do not support (i.e. those not mentioned in the
-            <tp:member-ref>ContactAttributeInterfaces</tp:member-ref>
-            property.)</p>
-
-          <tp:rationale>
-            <p>This simplifies client-side code. Clients which care may
-              distinguish between unsupported interfaces (e.g. this Connection
-              does not support Avatars), and interfaces on which no information
-              is known for these contacts (e.g. we don't know the avatar tokens
-              of any of the contacts, so we omitted them all) by inspecting
-              <tp:member-ref>ContactAttributeInterfaces</tp:member-ref>.</p>
-          </tp:rationale>
-
           <p>Attributes from the interface
-            <tp:dbus-ref>org.freedesktop.Telepathy.Connection</tp:dbus-ref>
+            <tp:dbus-ref>im.telepathy1.Connection</tp:dbus-ref>
             are always returned, and need not be requested explicitly.</p>
 
           <p>As well as returning cached information immediately, the
@@ -134,34 +110,13 @@
             values for the contact attributes. If better values are later
             obtained by this process, they will be indicated with the usual
             signals (such as <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection.Interface.Aliasing">AliasesChanged</tp:dbus-ref>).</p>
+              namespace="im.telepathy1.Connection.Interface.Aliasing1">AliasesChanged</tp:dbus-ref>).</p>
 
           <tp:rationale>
             For instance, an XMPP connection manager could download vCards
             in response to a request for <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection.Interface">Aliasing</tp:dbus-ref>
+              namespace="im.telepathy1.Connection.Interface">Aliasing1</tp:dbus-ref>
             attributes.
-          </tp:rationale>
-        </tp:docstring>
-        <tp:changed version="0.19.2">
-          requesting information for interfaces not mentioned in
-          <tp:member-ref>ContactAttributeInterfaces</tp:member-ref> is no
-          longer an error. Be aware that older connection managers may still
-          consider this an error.
-        </tp:changed>
-      </arg>
-
-      <arg direction="in" name="Hold" type="b">
-        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>If true, all handles that appear as keys in the result have been
-            held on behalf of the calling process, as if by a call to
-            <tp:dbus-ref namespace="ofdT">Connection.HoldHandles</tp:dbus-ref>.
-            (If <tp:dbus-ref namespace="ofdT.Connection"
-              >HasImmortalHandles</tp:dbus-ref> is true, which SHOULD be the
-            case in all new connection managers, this has no effect.)</p>
-
-          <tp:rationale>
-            <p>For further round-trip avoidance.</p>
           </tp:rationale>
         </tp:docstring>
       </arg>
@@ -178,12 +133,12 @@
 
           <p>Each contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
-            (<code>org.freedesktop.Telepathy.Connection/contact-id</code>).</p>
+            (<code>im.telepathy1.Connection/contact-id</code>).</p>
         </tp:docstring>
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="im.telepathy1.Error.Disconnected"/>
       </tp:possible-errors>
     </method>
 
@@ -219,8 +174,7 @@
 
       <arg direction="out" name="Handle" type="u" tp:type="Contact_Handle">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The contact's handle, as returned by <tp:dbus-ref
-          namespace="ofdT.Connection">RequestHandles</tp:dbus-ref></p>
+          <p>The contact's handle</p>
         </tp:docstring>
       </arg>
 
@@ -240,8 +194,8 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy1.Error.Disconnected"/>
+        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
       </tp:possible-errors>
     </method>
   </interface>

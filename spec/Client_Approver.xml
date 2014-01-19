@@ -20,16 +20,16 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Client.Approver">
+  <interface name="im.telepathy1.Client.Approver">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
-    <tp:requires interface="org.freedesktop.Telepathy.Client"/>
+    <tp:requires interface="im.telepathy1.Client"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Approvers are clients that notify the user that new channels have
         been created by a contact, and allow the user to accept or reject
         those channels. The new channels are represented by a <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">ChannelDispatchOperation</tp:dbus-ref>
+          namespace="im.telepathy1">ChannelDispatchOperation</tp:dbus-ref>
         object, which is passed to the
         <tp:member-ref>AddDispatchOperation</tp:member-ref> method.</p>
 
@@ -59,9 +59,9 @@
 
       <p>Any approver can approve the handling of a channel dispatch operation
         with a particular channel handler by calling the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">HandleWith</tp:dbus-ref>
+          namespace="im.telepathy1.ChannelDispatchOperation">HandleWith</tp:dbus-ref>
         method. Approvers can also attempt to <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Claim</tp:dbus-ref>
+          namespace="im.telepathy1.ChannelDispatchOperation">Claim</tp:dbus-ref>
         channels; if this succeeds, the approver may handle the channels
         itself (if it is also a Handler), or close the channels in order to
         reject them.</p>
@@ -79,7 +79,7 @@
         straight away.</p>
 
       <p>Non-interactive approvers can also be implemented as
-        <tp:dbus-ref namespace="ofdT.Client">Observer</tp:dbus-ref>s as
+        <tp:dbus-ref namespace="imt1.Client">Observer</tp:dbus-ref>s as
         described in the interface description.</p>
     </tp:docstring>
 
@@ -94,7 +94,7 @@
           description.</p>
 
         <p>This property works in exactly the same way as the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Observer.ObserverChannelFilter</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1">Client.Observer.ObserverChannelFilter</tp:dbus-ref>
           property. In particular, it cannot change while the approver process
           continues to own the corresponding Client bus name.</p>
 
@@ -134,9 +134,9 @@
         type="a(oa{sv})" tp:type="Channel_Details[]">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The initial value of the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.Channels</tp:dbus-ref>
+              namespace="im.telepathy1">ChannelDispatchOperation.Channels</tp:dbus-ref>
             property, containing the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>s
+              namespace="im.telepathy1">Channel</tp:dbus-ref>s
             to be dispatched and their properties.</p>
 
           <tp:rationale>
@@ -158,11 +158,11 @@
 
           <p>The actual channels to be dispatched may reduce as channels are
             closed: this is signalled by <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.ChannelLost</tp:dbus-ref>.
+              namespace="im.telepathy1">ChannelDispatchOperation.ChannelLost</tp:dbus-ref>.
           </p>
 
           <p>Approvers SHOULD connect to ChannelLost and <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.Finished</tp:dbus-ref>.
+              namespace="im.telepathy1">ChannelDispatchOperation.Finished</tp:dbus-ref>.
             (if desired) before returning from AddDispatchOperation, since
             those signals are guaranteed not to be emitted until after all
             AddDispatchOperation calls have returned (with success or failure)
@@ -173,7 +173,7 @@
       <arg name="DispatchOperation" type="o" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelDispatchOperation</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1">ChannelDispatchOperation</tp:dbus-ref>
             to be processed.</p>
         </tp:docstring>
       </arg>
@@ -186,11 +186,11 @@
             properties that could change, SHOULD include as many properties as
             possible given that constraint, and MUST include at least the
             <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Account</tp:dbus-ref>,
+              namespace="im.telepathy1.ChannelDispatchOperation">Account</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Connection</tp:dbus-ref>
+              namespace="im.telepathy1.ChannelDispatchOperation">Connection</tp:dbus-ref>
             and <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">PossibleHandlers</tp:dbus-ref>
+              namespace="im.telepathy1.ChannelDispatchOperation">PossibleHandlers</tp:dbus-ref>
             properties.</p>
         </tp:docstring>
       </arg>

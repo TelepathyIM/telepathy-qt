@@ -18,7 +18,7 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Channel">
+  <interface name="im.telepathy1.Channel">
 
     <property name="ChannelType" type="s" tp:type="DBus_Interface"
       access="read" tp:name-for-bindings="Channel_Type">
@@ -26,11 +26,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The channel's type. This cannot change once the channel has
           been created.</p>
-
-        <p>For compatibility between older connection managers and newer
-          clients, if this is unavailable or is an empty string,
-          clients MUST use the result of calling
-          <tp:member-ref>GetChannelType</tp:member-ref>.</p>
 
         <tp:rationale>
           The GetAll method lets clients retrieve all properties in one
@@ -54,21 +49,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>Extra interfaces provided by this channel. This SHOULD NOT include
           the channel type and the Channel interface itself, and cannot
           change once the channel has been created.</p>
-
-        <p>For compatibility between older connection managers and newer
-          clients, if this is unavailable, or if this is an empty list and
-          <tp:member-ref>ChannelType</tp:member-ref> is an empty string,
-          clients MUST use the result of calling
-          <tp:member-ref>GetInterfaces</tp:member-ref> instead. If this is an
-          empty list but ChannelType is non-empty, clients SHOULD NOT call
-          GetInterfaces; this implies that connection managers that implement
-          the ChannelType property MUST also implement the Interfaces property
-          correctly.</p>
-
-        <tp:rationale>
-          The GetAll method lets clients retrieve all properties in one
-          round-trip, which is desirable.
-        </tp:rationale>
 
         <p>When requesting a channel with a particular value for this
           property, the request must fail without side-effects unless the
@@ -102,7 +82,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           MUST be present and not Handle_Type_None, and
           <tp:member-ref>TargetID</tp:member-ref> MUST NOT be
           present. Properties from
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface">Addressing1</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface">Addressing1</tp:dbus-ref>
           MUST NOT be present.</p>
 
         <p>The channel that satisfies the request MUST either:</p>
@@ -129,40 +109,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           room, etc. with which this channel communicates), or the empty
           string if the TargetHandle is 0.</p>
 
-        <tp:rationale>
-          <p>The presence of this property avoids the following race
-            condition:</p>
-
-          <ul>
-            <li>New channel C is signalled with target handle T</li>
-            <li>Client calls <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>(CONTACT,
-              [T])</li>
-            <li>Channel C closes, removing the last reference to handle T</li>
-            <li><tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>(CONTACT,
-              [T]) returns an error</li>
-          </ul>
-        </tp:rationale>
-
         <p>If this is present in a channel request,
           <tp:member-ref>TargetHandleType</tp:member-ref>
           MUST be present and not Handle_Type_None, and
           <tp:member-ref>TargetHandle</tp:member-ref> MUST NOT be
           present. Properties from
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface">Addressing1</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface">Addressing1</tp:dbus-ref>
           MUST NOT be present.The request MUST fail with error InvalidHandle,
-          without side-effects, if the requested TargetID would not be
-          accepted by
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">RequestHandles</tp:dbus-ref>.</p>
+          without side-effects, if the requested TargetID is invalid.</p>
 
         <p>The returned channel must be related to the handle corresponding
           to the given identifier, in the same way as if TargetHandle
           had been part of the request instead.</p>
 
         <tp:rationale>
-          <p>Requesting channels with a string identifier saves a round-trip
-            (the call to RequestHandles). It also allows the channel
+          <p>Requesting channels with a string identifier allows the channel
             dispatcher to accept a channel request for an account that is not
             yet connected (and thus has no valid handles), bring the account
             online, and pass on the same parameters to the new connection's
@@ -197,14 +158,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         such as contact list channels may not be closed.
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+        <tp:error name="im.telepathy1.Error.Disconnected"/>
+        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy1.Error.NotImplemented">
           <tp:docstring>
             This channel may never be closed, e.g. a contact list
           </tp:docstring>
         </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+        <tp:error name="im.telepathy1.Error.NotAvailable">
           <tp:docstring>
             This channel is not currently in a state where it can be closed,
             e.g. a non-empty user-defined contact group
@@ -222,84 +183,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <method name="GetChannelType" tp:name-for-bindings="Get_Channel_Type">
-      <tp:deprecated version="0.17.7">Use the ChannelType
-        property if possible.</tp:deprecated>
-      <arg direction="out" type="s" tp:type="DBus_Interface"
-        name="Channel_Type">
-        <tp:docstring>The interface name</tp:docstring>
-      </arg>
-      <tp:docstring>
-        Returns the interface name for the type of this channel.  Clients
-        SHOULD use the <tp:member-ref>ChannelType</tp:member-ref> property
-        instead, falling back to this method only if necessary.
-
-        <tp:rationale>
-          The GetAll method lets clients retrieve all properties in one
-          round-trip.
-        </tp:rationale>
-      </tp:docstring>
-    </method>
-
-    <method name="GetHandle" tp:name-for-bindings="Get_Handle">
-      <tp:deprecated version="0.17.7">Use the TargetHandleType
-        and TargetHandle properties if possible.</tp:deprecated>
-      <arg direction="out" type="u" tp:type="Handle_Type"
-        name="Target_Handle_Type">
-        <tp:docstring>
-          The same as TargetHandleType.
-        </tp:docstring>
-      </arg>
-      <arg direction="out" type="u" tp:type="Handle" name="Target_Handle">
-        <tp:docstring>
-          The same as TargetHandle.
-        </tp:docstring>
-      </arg>
-      <tp:docstring>
-        Returns the handle type and number if this channel represents a
-        communication with a particular contact, room or server-stored list, or
-        zero if it is transient and defined only by its contents. Clients
-        SHOULD use the <tp:member-ref>TargetHandle</tp:member-ref> and
-        <tp:member-ref>TargetHandleType</tp:member-ref> properties instead,
-        falling back to this method only if necessary.
-
-        <tp:rationale>
-          The GetAll method lets clients retrieve all properties in one
-          round-trip.
-        </tp:rationale>
-      </tp:docstring>
-    </method>
-
-    <method name="GetInterfaces" tp:name-for-bindings="Get_Interfaces">
-      <tp:deprecated version="0.17.7">Use the Interfaces
-        property if possible.</tp:deprecated>
-      <arg direction="out" type="as" tp:type="DBus_Interface[]"
-        name="Interfaces">
-        <tp:docstring>
-          An array of the D-Bus interface names
-        </tp:docstring>
-      </arg>
-      <tp:docstring>
-        Get the optional interfaces implemented by the channel.
-        Clients SHOULD use the <tp:member-ref>Interfaces</tp:member-ref>
-        property instead, falling back to this method only if necessary.
-
-        <tp:rationale>
-          The GetAll method lets clients retrieve all properties in one
-          round-trip.
-        </tp:rationale>
-      </tp:docstring>
-    </method>
-
     <property name="Requested" tp:name-for-bindings="Requested"
       type="b" access="read">
       <tp:added version="0.17.13">(as stable API)</tp:added>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>True if this channel was created in response to a local request,
           such as a call to
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.RequestChannel</tp:dbus-ref>
-          or
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>.</p>
+          <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>.</p>
 
         <tp:rationale>
           <p>The idea of this property is to distinguish between "incoming"
@@ -319,34 +209,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           created as a side-effect of a call to one of those functions,
           e.g. because joining a Tube in a MUC context on XMPP implies
           joining that MUC), then this property is false.</p>
-
-        <p>For compatibility with older connection managers, clients SHOULD
-          assume that this property is true if they see a channel announced
-          by the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.NewChannel</tp:dbus-ref>
-          signal with the suppress_handler parameter set to true.</p>
-
-        <tp:rationale>
-          <p>In a correct connection manager, the only way to get such a
-            channel is to request it.</p>
-        </tp:rationale>
-
-        <p>Clients MAY additionally assume that this property is false
-          if they see a channel announced by the NewChannel signal with the
-          suppress_handler parameter set to false.</p>
-
-        <tp:rationale>
-          <p>This is more controversial, since it's possible to get that
-            parameter set to false by requesting a channel. However, there's
-            no good reason to do so, and we've deprecated this practice.</p>
-
-          <p>In the particular case of the channel dispatcher, the only
-            side-effect of wrongly thinking a channel is unrequested
-            is likely to be that the user has to confirm that they want to
-            use it, so it seems fairly harmless to assume in the channel
-            dispatcher that channels with suppress_handler false are
-            indeed unrequested.</p>
-        </tp:rationale>
 
         <p>It does not make sense for this property to be in channel
           requests—it will always be true for channels returned by
@@ -383,14 +245,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <p>For channels requested by the
           local user, this MUST be the value of
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.SelfHandle</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy1">Connection.SelfHandle</tp:dbus-ref>
           at the time the channel was created (i.e. not a channel-specific
           handle).</p>
 
         <tp:rationale>
           <p>On some protocols, the SelfHandle may change (as signalled by
             <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">Connection.SelfContactChanged</tp:dbus-ref>),
+              namespace="im.telepathy1">Connection.SelfContactChanged</tp:dbus-ref>),
             but this property is immutable. Hence, locally-requested channels'
             InitiatorHandle and InitiatorID may not match the current
             SelfHandle; <tp:member-ref>Requested</tp:member-ref> can be used to
@@ -404,7 +266,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           anonymous).</p>
 
         <p>For channels with the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Interface">Group</tp:dbus-ref>
+            namespace="im.telepathy1.Channel.Interface">Group1</tp:dbus-ref>
           interface, this SHOULD be the same
           contact who is signalled as the "Actor" causing the self-handle
           to be placed in the local-pending set.</p>
@@ -425,25 +287,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:member-ref>InitiatorHandle</tp:member-ref>
           property (i.e. the initiator's identifier in the IM protocol).</p>
 
-        <tp:rationale>
-          <p>The presence of this property avoids the following race
-            condition:</p>
-
-          <ul>
-            <li>New StreamedMedia channel C is signalled with initiator
-              handle I</li>
-            <li>Client calls <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>(CONTACT,
-              [I])</li>
-            <li>Channel C closes, removing the last reference to handle I</li>
-            <li><tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>(CONTACT,
-              [I]) returns an error</li>
-            <li>Client can indicate that a call was missed, but not who
-              called!</li>
-          </ul>
-        </tp:rationale>
-
         <p>It does not make sense for this property to be in channel
           requests - the initiator will always be the local user - so it
           MUST NOT be accepted.</p>
@@ -451,18 +294,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </property>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-    <p>All communication in the Telepathy framework is carried out via channel
-    objects which are created and managed by connections. This interface must
-    be implemented by all channel objects, along with one single channel type,
-    such as <tp:dbus-ref
-    namespace="org.freedesktop.Telepathy">Channel.Type.ContactList</tp:dbus-ref>
-    which represents a list of people (such as a buddy list) or <tp:dbus-ref
-    namespace="org.freedesktop.Telepathy">Channel.Type.Text</tp:dbus-ref> which
-    represents a channel over which textual messages are sent and received.</p>
+    <p>
+      All communication in the Telepathy framework is carried out via
+      channel objects which are created and managed by
+      connections. This interface must be implemented by all channel
+      objects, along with one single channel type, such as
+      <tp:dbus-ref
+      namespace="im.telepathy1">Channel.Type.Text</tp:dbus-ref> which
+      represents a channel over which textual messages are sent and
+      received.</p>
 
     <p>Each Channel's object path MUST start with the object path of
       its associated <tp:dbus-ref
-      namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>, followed
+      namespace="im.telepathy1">Connection</tp:dbus-ref>, followed
       by '/'. There MAY be any number of additional object-path components,
       which clients MUST NOT attempt to parse.</p>
 
@@ -479,11 +323,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <p>Each channel has a number of immutable properties (which cannot vary
       after the channel has been announced with <tp:dbus-ref
-        namespace='ofdT.Connection.Interface.Requests'>NewChannels</tp:dbus-ref>),
+        namespace='imt1.Connection.Interface.Requests'>NewChannels</tp:dbus-ref>),
       provided to clients in the
-      <tp:dbus-ref namespace='ofdT.Client.Observer'>ObserveChannels</tp:dbus-ref>,
-      <tp:dbus-ref namespace='ofdT.Client.Approver'>AddDispatchOperation</tp:dbus-ref> and
-      <tp:dbus-ref namespace='ofdT.Client.Handler'>HandleChannels</tp:dbus-ref>
+      <tp:dbus-ref namespace='imt1.Client.Observer'>ObserveChannels</tp:dbus-ref>,
+      <tp:dbus-ref namespace='imt1.Client.Approver'>AddDispatchOperation</tp:dbus-ref> and
+      <tp:dbus-ref namespace='imt1.Client.Handler'>HandleChannels</tp:dbus-ref>
       methods to permit immediate identification of the channel. This interface
       contains immutable properties common to all channels. In brief:</p>
 
@@ -507,12 +351,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <p>Other optional <tp:member-ref>Interfaces</tp:member-ref> can be
       implemented to indicate other available
       functionality, such as <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy">Channel.Interface.Group</tp:dbus-ref>
+        namespace="im.telepathy1">Channel.Interface.Group1</tp:dbus-ref>
       if the channel contains a number of contacts, <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy">Channel.Interface.Password</tp:dbus-ref>
+        namespace="im.telepathy1">Channel.Interface.Password1</tp:dbus-ref>
       to indicate that a channel may have a password set to require entry, and
       <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy">Channel.Interface.ChatState</tp:dbus-ref>
+        namespace="im.telepathy1">Channel.Interface.ChatState1</tp:dbus-ref>
       for typing notifications. The interfaces implemented may not vary after
       the channel has been created. These other interfaces (along with the
       interface named by <tp:member-ref>ChannelType</tp:member-ref>) may
@@ -524,11 +368,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       which indicates that the channel is defined by some other properties. For
       instance, transient ad-hoc chat rooms may be defined only by their members (as visible
       through the <tp:dbus-ref
-        namespace="ofdT.Channel.Interface">Group</tp:dbus-ref>
+        namespace="imt1.Channel.Interface">Group1</tp:dbus-ref>
       interface), and <tp:dbus-ref
-        namespace='ofdT.Channel.Type'>ContactSearch</tp:dbus-ref>
+        namespace='imt1.Channel.Type'>ContactSearch1</tp:dbus-ref>
       channels represent a single search attempt for a particular <tp:dbus-ref
-        namespace='ofdT.Channel.Type.ContactSearch'>Server</tp:dbus-ref>.</p>
+        namespace='imt1.Channel.Type.ContactSearch1'>Server</tp:dbus-ref>.</p>
 
     <p>Specific connection manager implementations may implement channel types and
     interfaces which are not contained within this specification in order to
@@ -552,6 +396,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       guarantee that Channels' object paths had the Connection's object path
       as a prefix.
     </tp:changed>
+
+    <tp:changed version="0.99.1">Deprecated methods
+      (GetChannelType, GetHandle, and GetInterfaces) have been removed
+      from this interface.</tp:changed>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->
