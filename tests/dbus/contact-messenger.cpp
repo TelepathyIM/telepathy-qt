@@ -44,9 +44,9 @@ class TestContactMessenger;
 class CDMessagesAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT")
+    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages1")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages.DRAFT\" >\n"
+"  <interface name=\"org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages1\" >\n"
 "    <method name=\"SendMessage\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"TargetID\" type=\"s\" direction=\"in\" />\n"
