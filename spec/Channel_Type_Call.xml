@@ -613,7 +613,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             the remote client indicates that the user has been notified about
             the call. If the network is known not to provide feedback about whether
             the remote side is ringing, then the call should immediately be
-            set to Ringing.</li>
+            set to Initialised.</li>
           <li>Initialising → Initialised (for incoming calls, when e.g. the
             implementation has been initialised far enough that it is sensible
             to notify the user about the call (to reduce the probability that
@@ -908,13 +908,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           <p>The change was requested by the contact indicated by the Actor
             member of a <tp:type>Call_State_Reason</tp:type> struct.</p>
 
-          <p>If the Actor is the local user, the DBus_Reason SHOULD be the
-            empty string.</p>
-
-          <p>If the Actor is a remote user, the DBus_Reason SHOULD be the empty
-            string if the call was terminated normally, but MAY be a non-empty
-            error name to indicate error-like call termination reasons (call
-            rejected as busy, kicked from a conference by a moderator, etc.).</p>
+          <p>The DBus_Reason SHOULD be the empty string if the call
+            was terminated normally, but MAY be a non-empty error name
+            to indicate error-like call termination reasons (kicked from
+            a conference by a moderator, etc.).</p>
         </tp:docstring>
       </tp:enumvalue>
 
@@ -1154,7 +1151,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:rationale>
           <p>A connection manager might be intended for a specialized hardware
             device, which will take care of the audio streaming (e.g.
-            telepathy-yafono, which uses GSM hardware which does the actual
+            telepathy-ring, which uses GSM hardware which does the actual
             audio streaming for the call).</p>
         </tp:rationale>
 

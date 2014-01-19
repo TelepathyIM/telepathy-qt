@@ -234,7 +234,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:mapping>
 
     <property name="Protocols" tp:name-for-bindings="Protocols"
-      access="read" type="a{sa{sv}}" tp:type="Protocol_Properties_Map">
+      access="read" type="a{sa{sv}}" tp:type="Protocol_Properties_Map"
+      tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A map from protocol identifiers supported by this connection
           manager to the immutable properties of the corresponding

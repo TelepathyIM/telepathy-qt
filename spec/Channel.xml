@@ -390,7 +390,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:rationale>
           <p>On some protocols, the SelfHandle may change (as signalled by
             <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">Connection.SelfHandleChanged</tp:dbus-ref>),
+              namespace="org.freedesktop.Telepathy">Connection.SelfContactChanged</tp:dbus-ref>),
             but this property is immutable. Hence, locally-requested channels'
             InitiatorHandle and InitiatorID may not match the current
             SelfHandle; <tp:member-ref>Requested</tp:member-ref> can be used to

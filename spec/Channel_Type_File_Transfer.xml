@@ -579,6 +579,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
     </signal>
 
+    <property name="FileCollection" tp:name-for-bindings="File_Collection"
+      type="s" access="read">
+      <tp:added version="0.27.3"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The collection of files to which this channel belongs,
+          or the empty string if this channel does not belong to
+          a collection of files.</p>
+
+        <p>A channel's FileCollection property can never change.</p>
+
+        <p>At least on GTalk and apparently also on iChat the user can
+          send a set of files to a contact and that contact can then
+          pick and choose which files to actually receive.</p>
+
+        <p> The CM should emit all new FT channels belonging to one collection
+          at the same time. UIs supporting this feature can then
+          bundle all these channels together in some way, and show a
+          nice UI. UIs not supporting it will treat them as separate
+          transfers, which is not great but a reasonable fallback.</p>
+
+        <p>No mechanism is currently defined to indicate whether the UI
+          should expect any more files in the same collection. UIs
+          SHOULD assume that more file transfers may be added to a
+          collection. It is possible that a "no more channels in this
+          collection" indication will be added in a future version of
+          this specification.</p>
+      </tp:docstring>
+    </property>
+
   </interface>
 
 </node>

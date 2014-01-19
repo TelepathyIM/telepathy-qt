@@ -60,7 +60,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </tp:docstring>
 
     <property name="Parameters" type="a{sv}" tp:type="String_Variant_Map"
-              access="read" tp:name-for-bindings="Parameters">
+              access="read" tp:name-for-bindings="Parameters"
+              tp:immutable="sometimes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Each tube has a dictionary of arbitrary parameters. Parameters are
           commonly used to bootstrap legacy protocols where you can't

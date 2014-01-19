@@ -127,7 +127,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </signal>
 
     <property name="ServiceName" type="s" access="read"
-              tp:name-for-bindings="Service_Name">
+              tp:name-for-bindings="Service_Name"
+              tp:requestable="yep"
+              tp:immutable="yep">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A string representing the service name that will be used over the
           tube. It SHOULD be a well-known D-Bus service name, of the form
@@ -170,7 +172,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     <property name="SupportedAccessControls" type="au"
               tp:type="Socket_Access_Control[]" access="read"
-              tp:name-for-bindings="Supported_Access_Controls">
+              tp:name-for-bindings="Supported_Access_Controls"
+              tp:immutable="yep">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of the access control types that are supported with this channel.
         Note that only Socket_Access_Control_Localhost and

@@ -227,7 +227,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </signal>
 
     <property name="Service" type="s" access="read"
-              tp:name-for-bindings="Service">
+              tp:name-for-bindings="Service"
+              tp:immutable="yes"
+              tp:requestable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p> A string representing the service name that will be used over the
           tube.  It should be a well-known TCP service name as defined by
@@ -246,7 +248,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     <property name="SupportedSocketTypes" type="a{uau}"
               tp:type="Supported_Socket_Map" access="read"
-              tp:name-for-bindings="Supported_Socket_Types">
+              tp:name-for-bindings="Supported_Socket_Types"
+              tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A mapping from address types (members of Socket_Address_Type) to
         arrays of access-control type (members of Socket_Access_Control)

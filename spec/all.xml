@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.25.2</tp:version>
+<tp:version>0.27.3</tp:version>
 
 <tp:copyright>Copyright © 2005-2012 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2011 Nokia Corporation</tp:copyright>
@@ -48,7 +48,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    </p>
   </tp:docstring>
   <xi:include href="Connection.xml"/>
-  <xi:include href="Connection_Future.xml"/>
   <xi:include href="Connection_Interface_Contacts.xml"/>
   <xi:include href="Connection_Interface_Requests.xml"/>
 
@@ -108,6 +107,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Connection_Interface_Mail_Notification.xml"/>
    <xi:include href="Connection_Interface_Power_Saving.xml"/>
    <xi:include href="Connection_Interface_Service_Point.xml"/>
+   <xi:include href="Connection_Interface_Sidecars1.xml"/>
+   <xi:include href="Connection_Interface_IRC_Command1.xml"/>
   </tp:section>
  </tp:section>
 
@@ -149,7 +150,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Type_Tubes.xml"/>
   </tp:section>
 
-  <tp:section name="Channel Interfaces">
+  <tp:section name="Channel interfaces">
    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
     <p>
      A Channel may also implement one or more of the following interfaces,
@@ -240,9 +241,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
  <tp:section name="Calls">
    <xi:include href="Call_Content.xml"/>
-   <xi:include href="Call_Content_Interface_Media.xml"/>
-   <xi:include href="Call_Interface_Mute.xml"/>
    <xi:include href="Call_Content_Interface_DTMF.xml"/>
+   <xi:include href="Call_Stream.xml"/>
+   <xi:include href="Call_Interface_Mute.xml"/>
+ </tp:section>
+
+ <tp:section name="Call media interfaces">
+   <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+     <p>
+       These interfaces are used when a <tp:dbus-ref
+       namespace='ofdT.Channel.Type'>Call1</tp:dbus-ref> channel
+       doesn't have <tp:dbus-ref
+       namespace="ofdT.Channel.Type.Call1">HardwareStreaming</tp:dbus-ref> to
+       implement the media streaming aspects of a call.
+     </p>
+   </tp:docstring>
+   <xi:include href="Call_Content_Interface_Media.xml"/>
    <xi:include href="Call_Content_Interface_Video_Control.xml"/>
    <xi:include href="Call_Content_Interface_Audio_Control.xml"/>
    <xi:include href="Call_Content_Media_Description.xml"/>
@@ -250,7 +264,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Call_Content_Media_Description_Interface_RTCP_Feedback.xml"/>
    <xi:include
    href="Call_Content_Media_Description_Interface_RTCP_Extended_Reports.xml"/>
-   <xi:include href="Call_Stream.xml"/>
    <xi:include href="Call_Stream_Interface_Media.xml"/>
    <xi:include href="Call_Stream_Endpoint.xml"/>
  </tp:section>
@@ -288,6 +301,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </p>
  </tp:docstring>
  <xi:include href="Channel_Dispatcher.xml"/>
+ <xi:include href="Channel_Dispatcher_Interface_Messages1.xml"/>
  <xi:include href="Channel_Dispatcher_Interface_Operation_List.xml"/>
  <xi:include href="Channel_Dispatch_Operation.xml"/>
  <xi:include href="Channel_Request.xml"/>
