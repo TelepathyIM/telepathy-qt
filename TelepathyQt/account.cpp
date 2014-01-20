@@ -234,36 +234,36 @@ QVariantMap fileTransferCommonRequest(const Tp::FileTransferChannelCreationPrope
 
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                   TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+                   TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
 
-    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Filename"),
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".Filename"),
                    properties.suggestedFileName());
-    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentType"),
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".ContentType"),
                    properties.contentType());
-    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Size"),
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".Size"),
                    properties.size());
 
     if (properties.hasContentHash()) {
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHashType"),
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".ContentHashType"),
                        (uint) properties.contentHashType());
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHash"),
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".ContentHash"),
                        properties.contentHash());
     }
 
     if (properties.hasDescription()) {
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Description"),
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".Description"),
                        properties.description());
     }
 
     if (properties.hasLastModificationTime()) {
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".Date"),
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".Date"),
                        (qulonglong) properties.lastModificationTime().toTime_t());
     }
 
     if (properties.hasUri()) {
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".URI"),
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".URI"),
                        properties.uri());
     }
 

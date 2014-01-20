@@ -251,7 +251,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::fileTransfer()
     if (!spec.isValid()) {
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+                TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeContact);
         spec = RequestableChannelClassSpec(rcc);

@@ -119,7 +119,7 @@ void FileTransferChannel::Private::introspectProperties(
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 self->properties->GetAll(
-                    TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER),
+                    TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1),
                 self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),

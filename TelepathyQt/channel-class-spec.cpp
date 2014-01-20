@@ -353,7 +353,7 @@ ChannelClassSpec ChannelClassSpec::outgoingFileTransfer(const QVariantMap &addit
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1,
                 HandleTypeContact, true);
     }
 
@@ -369,7 +369,7 @@ ChannelClassSpec ChannelClassSpec::incomingFileTransfer(const QVariantMap &addit
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1,
                 HandleTypeContact, false);
     }
 
