@@ -115,35 +115,35 @@ public:
     bool hasCallInitialAudioFlag() const
     {
         return qdbus_cast<bool>(
-                property(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")));
+                property(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio")));
     }
 
     void setCallInitialAudioFlag()
     {
-        setProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
+        setProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),
                 QVariant::fromValue(true));
     }
 
     void unsetCallInitialAudioFlag()
     {
-        unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"));
+        unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"));
     }
 
     bool hasCallInitialVideoFlag() const
     {
         return qdbus_cast<bool>(
-                property(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")));
+                property(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo")));
     }
 
     void setCallInitialVideoFlag()
     {
-        setProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
+        setProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo"),
                 QVariant::fromValue(true));
     }
 
     void unsetCallInitialVideoFlag()
     {
-        unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"));
+        unsetProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo"));
     }
 
     bool hasProperty(const QString &qualifiedName) const;

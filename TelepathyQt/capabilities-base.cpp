@@ -231,8 +231,8 @@ bool CapabilitiesBase::videoCallsWithAudio() const
 bool CapabilitiesBase::upgradingCalls() const
 {
     foreach (const RequestableChannelClassSpec &rccSpec, mPriv->rccSpecs) {
-        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL &&
-            rccSpec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".MutableContents"))) {
+        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL1 &&
+            rccSpec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".MutableContents"))) {
             return true;
         }
     }

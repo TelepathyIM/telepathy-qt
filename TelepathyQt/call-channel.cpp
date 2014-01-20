@@ -182,13 +182,13 @@ CallChannel::Private::~Private()
 void CallChannel::Private::introspectCore(CallChannel::Private *self)
 {
     const static QString qualifiedNames[] = {
-        TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".HardwareStreaming"),
-        TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialTransport"),
-        TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
-        TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
-        TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName"),
-        TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName"),
-        TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".MutableContents")
+        TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".HardwareStreaming"),
+        TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialTransport"),
+        TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),
+        TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo"),
+        TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudioName"),
+        TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideoName"),
+        TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".MutableContents")
     };
 
     CallChannel *parent = self->parent;
@@ -211,19 +211,19 @@ void CallChannel::Private::introspectCore(CallChannel::Private *self)
                 SLOT(gotMainProperties(Tp::PendingOperation*)));
     } else {
         self->hardwareStreaming = qdbus_cast<bool>(immutableProperties[
-                TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".HardwareStreaming")]);
+                TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".HardwareStreaming")]);
         self->initialTransportType = qdbus_cast<uint>(immutableProperties[
-                TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialTransport")]);
+                TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialTransport")]);
         self->initialAudio = qdbus_cast<bool>(immutableProperties[
-                TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio")]);
+                TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio")]);
         self->initialVideo = qdbus_cast<bool>(immutableProperties[
-                TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo")]);
+                TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo")]);
         self->initialAudioName = qdbus_cast<QString>(immutableProperties[
-                TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName")]);
+                TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudioName")]);
         self->initialVideoName = qdbus_cast<QString>(immutableProperties[
-                TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName")]);
+                TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideoName")]);
         self->mutableContents = qdbus_cast<bool>(immutableProperties[
-                TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".MutableContents")]);
+                TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".MutableContents")]);
 
         self->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }

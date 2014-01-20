@@ -148,24 +148,24 @@ QVariantMap callCommonRequest(bool withAudio, const QString &audioName,
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                   TP_QT_IFACE_CHANNEL_TYPE_CALL);
+                   TP_QT_IFACE_CHANNEL_TYPE_CALL1);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
 
     if (withAudio) {
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),
                        true);
         if (!audioName.isEmpty()) {
-            request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudioName"),
+            request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudioName"),
                            audioName);
         }
     }
 
     if (withVideo) {
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo"),
                        true);
         if (!videoName.isEmpty()) {
-            request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideoName"),
+            request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideoName"),
                            videoName);
         }
     }

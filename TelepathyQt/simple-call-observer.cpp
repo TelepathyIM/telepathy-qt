@@ -259,7 +259,7 @@ QList<StreamedMediaChannelPtr> SimpleCallObserver::streamedMediaCalls() const
 void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels)
 {
     foreach (const ChannelPtr &channel, channels) {
-        if (channel->channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL) {
+        if (channel->channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL1) {
             CallChannelPtr callChannel = CallChannelPtr::qObjectCast(channel);
             if (!callChannel) {
                 warning() << "Channel received to observe is not a subclass of "
@@ -292,7 +292,7 @@ void SimpleCallObserver::onNewChannels(const QList<ChannelPtr> &channels)
 void SimpleCallObserver::onChannelInvalidated(const ChannelPtr &channel,
         const QString &errorName, const QString &errorMessage)
 {
-    if (channel->channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL) {
+    if (channel->channelType() == TP_QT_IFACE_CHANNEL_TYPE_CALL1) {
         CallChannelPtr callChannel = CallChannelPtr::qObjectCast(channel);
         if (!callChannel) {
             warning() << "Channel received to observe is not a subclass of "
