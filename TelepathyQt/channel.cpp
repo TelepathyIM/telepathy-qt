@@ -320,7 +320,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
     ReadinessHelper::Introspectable introspectableConferenceInitialInviteeContacts(
         QSet<uint>() << 0,                                           // makesSenseForStatuses
         Features() << FeatureCore,                                   // dependsOnFeatures
-        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE,  // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1,  // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectConferenceInitialInviteeContacts,
         this);
     introspectables[FeatureConferenceInitialInviteeContacts] =
@@ -560,7 +560,7 @@ void Channel::Private::introspectConference()
 
     debug() << "Calling Properties::GetAll(Channel.Interface.Conference)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE),
+            properties->GetAll(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1),
             parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -730,7 +730,7 @@ void Channel::Private::nowHaveInterfaces()
         introspectQueue.enqueue(&Private::introspectGroup);
     }
 
-    if (interfaces.contains(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+    if (interfaces.contains(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1)) {
         introspectQueue.enqueue(&Private::introspectConference);
     }
 }
@@ -2672,7 +2672,7 @@ PendingOperation *Channel::groupAddSelfHandle()
 
 /**
  * Return whether this channel implements the conference interface
- * (#TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE is in the list returned by interfaces()).
+ * (#TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 is in the list returned by interfaces()).
  *
  * This method requires Channel::FeatureCore to be ready.
  *
@@ -2680,7 +2680,7 @@ PendingOperation *Channel::groupAddSelfHandle()
  */
 bool Channel::isConference() const
 {
-    return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE);
+    return hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1);
 }
 
 /**

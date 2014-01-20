@@ -382,7 +382,7 @@ QVariantMap conferenceCommonRequest(const QString &channelType, Tp::HandleType t
         objectPaths << QDBusObjectPath(channel->objectPath());
     }
 
-    request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels"),
+    request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels"),
             qVariantFromValue(objectPaths));
     return request;
 }
@@ -392,7 +392,7 @@ QVariantMap conferenceRequest(const QString &channelType, Tp::HandleType targetH
 {
     QVariantMap request = conferenceCommonRequest(channelType, targetHandleType, channels);
     if (!initialInviteeContactsIdentifiers.isEmpty()) {
-        request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeIDs"),
+        request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialInviteeIDs"),
                 initialInviteeContactsIdentifiers);
     }
     return request;
@@ -411,7 +411,7 @@ QVariantMap conferenceRequest(const QString &channelType, Tp::HandleType targetH
             handles << contact->handle()[0];
         }
         if (!handles.isEmpty()) {
-            request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE +
+            request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 +
                         QLatin1String(".InitialInviteeHandles"), qVariantFromValue(handles));
         }
     }
