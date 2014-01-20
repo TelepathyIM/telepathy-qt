@@ -567,7 +567,7 @@ ChannelClassSpec ChannelClassSpec::contactSearch(const QVariantMap &additionalPr
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1,
                 HandleTypeNone);
     }
 

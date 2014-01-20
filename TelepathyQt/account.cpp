@@ -459,15 +459,15 @@ QVariantMap contactSearchRequest(const ConnectionCapabilities &capabilities,
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                   TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+                   TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
     if (capabilities.contactSearchesWithSpecificServer()) {
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server"),
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Server"),
                        server);
     } else if (!server.isEmpty()) {
         warning() << "Ignoring Server parameter for contact search, since the protocol does not support it.";
     }
     if (capabilities.contactSearchesWithLimit()) {
-        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit"), limit);
+        request.insert(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Limit"), limit);
     } else if (limit > 0) {
         warning() << "Ignoring Limit parameter for contact search, since the protocol does not support it.";
     }

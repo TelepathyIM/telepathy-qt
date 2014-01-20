@@ -375,7 +375,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::contactSearch()
     if (!spec.isValid()) {
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
         spec = RequestableChannelClassSpec(rcc);
     }
 
@@ -389,9 +389,9 @@ RequestableChannelClassSpec RequestableChannelClassSpec::contactSearchWithSpecif
     if (!spec.isValid()) {
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
         rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server"));
+                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Server"));
         spec = RequestableChannelClassSpec(rcc);
     }
 
@@ -405,9 +405,9 @@ RequestableChannelClassSpec RequestableChannelClassSpec::contactSearchWithLimit(
     if (!spec.isValid()) {
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
         rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit"));
+                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Limit"));
         spec = RequestableChannelClassSpec(rcc);
     }
 
@@ -421,11 +421,11 @@ RequestableChannelClassSpec RequestableChannelClassSpec::contactSearchWithSpecif
     if (!spec.isValid()) {
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
         rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server"));
+                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Server"));
         rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit"));
+                TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Limit"));
         spec = RequestableChannelClassSpec(rcc);
     }
 

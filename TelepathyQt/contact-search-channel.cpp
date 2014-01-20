@@ -150,7 +150,7 @@ void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
                     self->properties->GetAll(
-                        TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH),
+                        TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1),
                     self->parent);
         self->parent->connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -161,7 +161,7 @@ void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
                     self->properties->Get(
-                        TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH,
+                        TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1,
                         QLatin1String("SearchState")),
                     self->parent);
         self->parent->connect(watcher,
