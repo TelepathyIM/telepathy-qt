@@ -304,19 +304,6 @@ public:
                 const QString &preferredHandler = QString(),
                 const ChannelRequestHints &hints = ChannelRequestHints());
 
-    TP_QT_DEPRECATED PendingChannelRequest *createConferenceStreamedMediaCall(
-            const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers = QStringList(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString(),
-            const ChannelRequestHints &hints = ChannelRequestHints());
-    TP_QT_DEPRECATED PendingChannelRequest *createConferenceStreamedMediaCall(
-            const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString(),
-            const ChannelRequestHints &hints = ChannelRequestHints());
-
     PendingChannelRequest *createConferenceTextChat(
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
@@ -433,15 +420,6 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime());
     PendingChannel *createAndHandleConferenceTextChatroom(
             const QString &roomName,
-            const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime());
-
-    TP_QT_DEPRECATED PendingChannel *createAndHandleConferenceStreamedMediaCall(
-            const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers = QStringList(),
-            const QDateTime &userActionTime = QDateTime::currentDateTime());
-    TP_QT_DEPRECATED PendingChannel *createAndHandleConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QList<ContactPtr> &initialInviteeContacts = QList<ContactPtr>(),
             const QDateTime &userActionTime = QDateTime::currentDateTime());
