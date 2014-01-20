@@ -76,8 +76,6 @@ set(telepathy_qt_SRCS
     location-info.cpp
     manager-file.cpp
     manager-file.h
-    media-session-handler.cpp
-    media-stream-handler.cpp
     message.cpp
     message-content-part.cpp
     object.cpp
@@ -130,7 +128,6 @@ set(telepathy_qt_SRCS
     stream-tube-client-internal.h
     stream-tube-server.cpp
     stream-tube-server-internal.h
-    streamed-media-channel.cpp
     text-channel.cpp
     tls-certificate.cpp
     tube-channel.cpp
@@ -358,12 +355,6 @@ set(telepathy_qt_HEADERS
     IntrospectableInterface
     LocationInfo
     location-info.h
-    MediaSessionHandler
-    media-session-handler.h
-    MediaSessionHandlerInterface
-    MediaStreamHandler
-    media-stream-handler.h
-    MediaStreamHandlerInterface
     Message
     message.h
     MessageContentPart
@@ -485,9 +476,6 @@ set(telepathy_qt_HEADERS
     stream-tube-channel.h
     stream-tube-client.h
     stream-tube-server.h
-    StreamedMediaChannel
-    streamed-media-channel.h
-    StreamedMediaStream
     TextChannel
     text-channel.h
     tls-certificate.h
@@ -516,8 +504,6 @@ set(telepathy_qt_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-manager.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-dbus.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-debug-receiver.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-session-handler.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-stream-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-properties.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-tls-certificate.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
@@ -611,7 +597,6 @@ set(telepathy_qt_MOC_SRCS
     stream-tube-client-internal.h
     stream-tube-server.h
     stream-tube-server-internal.h
-    streamed-media-channel.h
     text-channel.h
     tube-channel.h)
 
@@ -676,8 +661,6 @@ set(SPECS
     connection-manager
     dbus
     debug-receiver
-    media-session-handler
-    media-stream-handler
     properties
     tls-certificate)
 foreach(spec ${SPECS})
@@ -730,8 +713,6 @@ tpqt_client_generator(connection clientconn Connection Tp::Client --mainiface=Tp
 tpqt_client_generator(connection-manager clientcm ConnectionManager Tp::Client --mainiface=Tp::Client::ConnectionManagerInterface DEPENDS connection-manager-spec-xincludator)
 tpqt_client_generator(dbus clientdbus DBus Tp::Client::DBus DEPENDS dbus-spec-xincludator)
 tpqt_client_generator(debug-receiver clientdebug DebugReceiver Tp::Client --mainiface=Tp::Client::DebugInterface DEPENDS debug-receiver-spec-xincludator)
-tpqt_client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface DEPENDS media-session-handler-spec-xincludator)
-tpqt_client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface DEPENDS media-stream-handler-spec-xincludator)
 tpqt_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)
 tpqt_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPENDS tls-certificate-spec-xincludator)
 
