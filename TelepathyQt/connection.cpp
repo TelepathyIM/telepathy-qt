@@ -138,7 +138,7 @@ struct TP_QT_NO_EXPORT Connection::Private
     QStringList contactAttributeInterfaces;
 
     // FeatureSimplePresence
-    SimpleStatusSpecMap simplePresenceStatuses;
+    StatusSpecMap simplePresenceStatuses;
     uint maxPresenceStatusMessageLength;
 
     // FeatureAccountBalance
@@ -500,7 +500,7 @@ void Connection::Private::introspectSimplePresence(Connection::Private *self)
         new QDBusPendingCallWatcher(call, self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotSimpleStatuses(QDBusPendingCallWatcher*)));
+            SLOT(gotStatuses(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectRoster(Connection::Private *self)
@@ -1290,14 +1290,14 @@ uint Connection::selfHandle() const
  *
  * This method requires Connection::FeatureSimplePresence to be ready.
  *
- * \return The allowed statuses as a map from string identifiers to SimpleStatusSpec objects.
+ * \return The allowed statuses as a map from string identifiers to StatusSpec objects.
  */
-SimpleStatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
+StatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 {
     if (!isValid()) {
         warning() << "ConnectionLowlevel::selfHandle() "
             "called for a connection which is already destroyed";
-        return SimpleStatusSpecMap();
+        return StatusSpecMap();
     }
 
     ConnectionPtr conn(connection());
@@ -1678,14 +1678,14 @@ void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
+void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
     if (!reply.isError()) {
         QVariantMap props = reply.value();
 
-        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(
+        mPriv->simplePresenceStatuses = qdbus_cast<StatusSpecMap>(
                 props[QLatin1String("Statuses")]);
         mPriv->maxPresenceStatusMessageLength = qdbus_cast<uint>(
                 props[QLatin1String("MaximumStatusMessageLength")]);

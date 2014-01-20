@@ -147,12 +147,12 @@ bool ManagerFile::Private::parse(const QString &fileName)
             keyFile.setGroup(group);
 
             ParamSpecList paramSpecList;
-            SimpleStatusSpecMap statuses;
+            StatusSpecMap statuses;
             QString param;
             QStringList params = keyFile.keys();
             foreach (param, params) {
                 ParamSpec spec;
-                SimpleStatusSpec status;
+                StatusSpec status;
                 spec.flags = 0;
 
                 QStringList values = keyFile.value(param).split(QLatin1String(" "));

@@ -500,7 +500,7 @@ void ConnectionManager::Private::ProtocolWrapper::extractPresenceProperties(cons
     mHasPresenceProps =
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"));
 
-    mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<SimpleStatusSpecMap>(
+    mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<StatusSpecMap>(
                 props[TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses")])));
 }
 

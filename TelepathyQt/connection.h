@@ -210,7 +210,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void gotSelfHandle(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotCapabilities(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
+    TP_QT_NO_EXPORT void gotStatuses(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotSelfContact(Tp::PendingOperation *op);
 
     TP_QT_NO_EXPORT void onIntrospectRosterFinished(Tp::PendingOperation *op);

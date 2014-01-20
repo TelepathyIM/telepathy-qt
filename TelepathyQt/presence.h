@@ -77,31 +77,31 @@ private:
 class TP_QT_EXPORT PresenceSpec
 {
 public:
-    enum SimpleStatusFlag {
+    enum StatusFlag {
         NoFlags = 0,
         MaySetOnSelf = 0x1,
         CanHaveStatusMessage = 0x2,
         AllFlags = MaySetOnSelf | CanHaveStatusMessage
     };
-    Q_DECLARE_FLAGS(SimpleStatusFlags, SimpleStatusFlag);
+    Q_DECLARE_FLAGS(StatusFlags, StatusFlag);
 
     PresenceSpec();
-    PresenceSpec(const QString &status, const SimpleStatusSpec &spec);
+    PresenceSpec(const QString &status, const StatusSpec &spec);
     PresenceSpec(const PresenceSpec &other);
     ~PresenceSpec();
 
-    static PresenceSpec available(SimpleStatusFlags flags = AllFlags);
-    static PresenceSpec chat(SimpleStatusFlags flags = AllFlags);
-    static PresenceSpec pstn(SimpleStatusFlags flags = CanHaveStatusMessage);
-    static PresenceSpec away(SimpleStatusFlags flags = AllFlags);
-    static PresenceSpec brb(SimpleStatusFlags flags = AllFlags);
-    static PresenceSpec dnd(SimpleStatusFlags flags = AllFlags);
-    static PresenceSpec busy(SimpleStatusFlags flags = AllFlags);
-    static PresenceSpec xa(SimpleStatusFlags flags = AllFlags);
-    static PresenceSpec hidden(SimpleStatusFlags flags = AllFlags);
-    static PresenceSpec offline(SimpleStatusFlags flags = CanHaveStatusMessage);
-    static PresenceSpec unknown(SimpleStatusFlags flags = CanHaveStatusMessage);
-    static PresenceSpec error(SimpleStatusFlags flags = CanHaveStatusMessage);
+    static PresenceSpec available(StatusFlags flags = AllFlags);
+    static PresenceSpec chat(StatusFlags flags = AllFlags);
+    static PresenceSpec pstn(StatusFlags flags = CanHaveStatusMessage);
+    static PresenceSpec away(StatusFlags flags = AllFlags);
+    static PresenceSpec brb(StatusFlags flags = AllFlags);
+    static PresenceSpec dnd(StatusFlags flags = AllFlags);
+    static PresenceSpec busy(StatusFlags flags = AllFlags);
+    static PresenceSpec xa(StatusFlags flags = AllFlags);
+    static PresenceSpec hidden(StatusFlags flags = AllFlags);
+    static PresenceSpec offline(StatusFlags flags = CanHaveStatusMessage);
+    static PresenceSpec unknown(StatusFlags flags = CanHaveStatusMessage);
+    static PresenceSpec error(StatusFlags flags = CanHaveStatusMessage);
 
     bool isValid() const { return mPriv.constData() != 0; }
 
@@ -114,7 +114,7 @@ public:
     bool maySetOnSelf() const;
     bool canHaveStatusMessage() const;
 
-    SimpleStatusSpec bareSpec() const;
+    StatusSpec bareSpec() const;
 
 private:
     struct Private;
@@ -126,13 +126,13 @@ class TP_QT_EXPORT PresenceSpecList : public QList<PresenceSpec>
 {
 public:
     PresenceSpecList() { }
-    PresenceSpecList(const SimpleStatusSpecMap &specMap)
+    PresenceSpecList(const StatusSpecMap &specMap)
     {
-        SimpleStatusSpecMap::const_iterator i = specMap.constBegin();
-        SimpleStatusSpecMap::const_iterator end = specMap.end();
+        StatusSpecMap::const_iterator i = specMap.constBegin();
+        StatusSpecMap::const_iterator end = specMap.end();
         for (; i != end; ++i) {
             QString status = i.key();
-            SimpleStatusSpec spec = i.value();
+            StatusSpec spec = i.value();
             append(PresenceSpec(status, spec));
         }
     }
@@ -150,9 +150,9 @@ public:
         return ret;
     }
 
-    SimpleStatusSpecMap bareSpecs() const
+    StatusSpecMap bareSpecs() const
     {
-        SimpleStatusSpecMap ret;
+        StatusSpecMap ret;
         Q_FOREACH (const PresenceSpec &spec, *this) {
             ret.insert(spec.presence().status(), spec.bareSpec());
         }
@@ -160,7 +160,7 @@ public:
     }
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(PresenceSpec::SimpleStatusFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(PresenceSpec::StatusFlags)
 
 } // Tp
 

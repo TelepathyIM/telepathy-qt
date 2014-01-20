@@ -124,13 +124,13 @@ public:
 class TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Adaptee : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Tp::SimpleStatusSpecMap statuses READ statuses)
+    Q_PROPERTY(Tp::StatusSpecMap statuses READ statuses)
 
 public:
     Adaptee(BaseProtocolPresenceInterface *interface);
     ~Adaptee();
 
-    SimpleStatusSpecMap statuses() const;
+    StatusSpecMap statuses() const;
 
 public:
     BaseProtocolPresenceInterface *mInterface;

@@ -1138,7 +1138,7 @@ BaseProtocolPresenceInterface::Adaptee::~Adaptee()
 {
 }
 
-SimpleStatusSpecMap BaseProtocolPresenceInterface::Adaptee::statuses() const
+StatusSpecMap BaseProtocolPresenceInterface::Adaptee::statuses() const
 {
     return mInterface->statuses().bareSpecs();
 }

@@ -65,7 +65,7 @@ namespace
 struct PresenceStatusInfo
 {
     QString name;
-    Tp::SimpleStatusSpec spec;
+    Tp::StatusSpec spec;
 };
 
 Tp::ConnectionPresenceType presenceTypeForStatus(const QString &status, bool &maySetOnSelf)
@@ -99,7 +99,7 @@ Tp::ConnectionPresenceType presenceTypeForStatus(const QString &status, bool &ma
 
 Tp::PresenceSpec presenceSpecForStatus(const QString &status, bool canHaveStatusMessage)
 {
-    Tp::SimpleStatusSpec spec;
+    Tp::StatusSpec spec;
     spec.type = presenceTypeForStatus(status, spec.maySetOnSelf);
     spec.canHaveMessage = canHaveStatusMessage;
     return Tp::PresenceSpec(status, spec);
@@ -1849,10 +1849,10 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
     if (mPriv->connection &&
         mPriv->connection->status() == ConnectionStatusConnected &&
         mPriv->connection->actualFeatures().contains(Connection::FeatureSimplePresence)) {
-        SimpleStatusSpecMap connectionAllowedPresences =
+        StatusSpecMap connectionAllowedPresences =
             mPriv->connection->lowlevel()->allowedPresenceStatuses();
-        SimpleStatusSpecMap::const_iterator i = connectionAllowedPresences.constBegin();
-        SimpleStatusSpecMap::const_iterator end = connectionAllowedPresences.constEnd();
+        StatusSpecMap::const_iterator i = connectionAllowedPresences.constBegin();
+        StatusSpecMap::const_iterator end = connectionAllowedPresences.constEnd();
         for (; i != end; ++i) {
             PresenceSpec presence = PresenceSpec(i.key(), i.value());
             specMap.insert(i.key(), presence);
@@ -1880,7 +1880,7 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
                     // canHaveStatusMessage if needed
                     PresenceSpec presence = specMap.value(prStatus);
                     if (presence.canHaveStatusMessage() != prPresence.canHaveStatusMessage()) {
-                        SimpleStatusSpec spec;
+                        StatusSpec spec;
                         spec.type = presence.presence().type();
                         spec.maySetOnSelf = presence.maySetOnSelf();
                         spec.canHaveMessage = prPresence.canHaveStatusMessage();

@@ -54,7 +54,7 @@ public:
     PendingReady *requestConnect(const Features &requestedFeatures = Features());
     PendingOperation *requestDisconnect();
 
-    SimpleStatusSpecMap allowedPresenceStatuses() const;
+    StatusSpecMap allowedPresenceStatuses() const;
     uint maxPresenceStatusMessageLength() const;
 
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
