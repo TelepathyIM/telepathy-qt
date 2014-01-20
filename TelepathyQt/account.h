@@ -390,29 +390,6 @@ public:
             const QString &initialVideoContentName = QString(),
             const QDateTime &userActionTime = QDateTime::currentDateTime());
 
-    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaCall(
-            const QString &contactIdentifier,
-            const QDateTime &userActionTime = QDateTime::currentDateTime());
-    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaCall(
-            const ContactPtr &contact,
-            const QDateTime &userActionTime = QDateTime::currentDateTime());
-
-    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaAudioCall(
-            const QString &contactIdentifier,
-            const QDateTime &userActionTime = QDateTime::currentDateTime());
-    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaAudioCall(
-            const ContactPtr &contact,
-            const QDateTime &userActionTime = QDateTime::currentDateTime());
-
-    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaVideoCall(
-            const QString &contactIdentifier,
-            bool withAudio = true,
-            const QDateTime &userActionTime = QDateTime::currentDateTime());
-    TP_QT_DEPRECATED PendingChannel *ensureAndHandleStreamedMediaVideoCall(
-            const ContactPtr &contact,
-            bool withAudio = true,
-            const QDateTime &userActionTime = QDateTime::currentDateTime());
-
     PendingChannel *createAndHandleFileTransfer(
             const QString &contactIdentifier,
             const FileTransferChannelCreationProperties &properties,
