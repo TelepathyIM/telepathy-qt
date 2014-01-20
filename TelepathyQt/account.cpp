@@ -653,7 +653,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
     ReadinessHelper::Introspectable introspectableAvatar(
         QSet<uint>() << 0,                                                            // makesSenseForStatuses
         Features() << FeatureCore,                                                    // dependsOnFeatures (core)
-        QStringList() << TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR, // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR1, // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectAvatar,
         this);
     introspectables[FeatureAvatar] = introspectableAvatar;
@@ -1414,7 +1414,7 @@ const Avatar &Account::avatar() const
  */
 PendingOperation *Account::setAvatar(const Avatar &avatar)
 {
-    if (!interfaces().contains(TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR)) {
+    if (!interfaces().contains(TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR1)) {
         return new PendingFailure(
                 TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Account does not support Avatar"),
@@ -1423,7 +1423,7 @@ PendingOperation *Account::setAvatar(const Avatar &avatar)
 
     return new PendingVoid(
             mPriv->properties->Set(
-                TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR,
+                TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR1,
                 QLatin1String("Avatar"),
                 QDBusVariant(QVariant::fromValue(avatar))),
             AccountPtr(this));
@@ -4267,7 +4267,7 @@ void Account::Private::retrieveAvatar()
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             parent->mPriv->properties->Get(
-                TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR,
+                TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR1,
                 QLatin1String("Avatar")), parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
