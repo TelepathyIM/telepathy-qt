@@ -259,39 +259,6 @@ public:
             const QString &preferredHandler = QString(),
             const ChannelRequestHints &hints = ChannelRequestHints());
 
-    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaCall(
-            const QString &contactIdentifier,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString(),
-            const ChannelRequestHints &hints = ChannelRequestHints());
-    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaCall(
-            const ContactPtr &contact,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString(),
-            const ChannelRequestHints &hints = ChannelRequestHints());
-    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaAudioCall(
-            const QString &contactIdentifier,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString(),
-            const ChannelRequestHints &hints = ChannelRequestHints());
-    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaAudioCall(
-            const ContactPtr &contact,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString(),
-            const ChannelRequestHints &hints = ChannelRequestHints());
-    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaVideoCall(
-            const QString &contactIdentifier,
-            bool withAudio = true,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString(),
-            const ChannelRequestHints &hints = ChannelRequestHints());
-    TP_QT_DEPRECATED PendingChannelRequest *ensureStreamedMediaVideoCall(
-            const ContactPtr &contact,
-            bool withAudio = false,
-            const QDateTime &userActionTime = QDateTime::currentDateTime(),
-            const QString &preferredHandler = QString(),
-            const ChannelRequestHints &hints = ChannelRequestHints());
-
     PendingChannelRequest *createFileTransfer(
             const QString &contactIdentifier,
             const FileTransferChannelCreationProperties &properties,
