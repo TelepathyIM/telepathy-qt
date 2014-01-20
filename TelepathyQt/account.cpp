@@ -300,10 +300,10 @@ QVariantMap streamTubeCommonRequest(const QString &service)
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                   TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE);
+                   TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
-    request.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"),
                    service);
     return request;
 }
@@ -328,10 +328,10 @@ QVariantMap dbusTubeCommonRequest(const QString &serviceName)
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                   TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE);
+                   TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
-    request.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
                    serviceName);
     return request;
 }
@@ -356,10 +356,10 @@ QVariantMap dbusTubeRoomRequest(const QString &roomName, const QString &serviceN
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                   TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE);
+                   TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeRoom);
-    request.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+    request.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
                    serviceName);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                    roomName);

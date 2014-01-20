@@ -126,7 +126,7 @@ void SimpleStreamTubeHandler::handleChannels(
             const QString channelType =
                 chan->immutableProperties()[TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")].toString();
 
-            if (channelType != TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE) {
+            if (channelType != TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1) {
                 debug() << "We got a non-StreamTube channel" << chan->objectPath() <<
                     "of type" << channelType << ", ignoring";
             } else {

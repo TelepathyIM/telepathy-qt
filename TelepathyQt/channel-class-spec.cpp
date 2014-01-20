@@ -386,13 +386,13 @@ ChannelClassSpec ChannelClassSpec::outgoingStreamTube(const QString &service,
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1,
                 HandleTypeContact, true);
     }
 
     QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"),
                 service);
     }
 
@@ -409,13 +409,13 @@ ChannelClassSpec ChannelClassSpec::incomingStreamTube(const QString &service,
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1,
                 HandleTypeContact, false);
     }
 
     QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"),
                 service);
     }
 
@@ -432,13 +432,13 @@ ChannelClassSpec ChannelClassSpec::outgoingRoomStreamTube(const QString &service
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1,
                 HandleTypeRoom, true);
     }
 
     QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"),
                 service);
     }
 
@@ -455,13 +455,13 @@ ChannelClassSpec ChannelClassSpec::incomingRoomStreamTube(const QString &service
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1,
                 HandleTypeRoom, false);
     }
 
     QVariantMap props = additionalProperties;
     if (!service.isEmpty()) {
-        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"),
                 service);
     }
 
@@ -478,12 +478,12 @@ ChannelClassSpec ChannelClassSpec::outgoingDBusTube(const QString &serviceName,
     static ChannelClassSpec spec;
 
     if (!spec.isValid()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1,
                 HandleTypeContact, true);
     }
 
     if (!serviceName.isEmpty()) {
-        spec.setProperty(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+        spec.setProperty(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
                          serviceName);
     }
 
@@ -500,12 +500,12 @@ ChannelClassSpec ChannelClassSpec::incomingDBusTube(const QString &serviceName,
     static ChannelClassSpec spec;
 
     if (!spec.isValid()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1,
                 HandleTypeContact, false);
     }
 
     if (!serviceName.isEmpty()) {
-        spec.setProperty(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+        spec.setProperty(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
                          serviceName);
     }
 
@@ -522,13 +522,13 @@ ChannelClassSpec ChannelClassSpec::outgoingRoomDBusTube(const QString &serviceNa
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1,
                 HandleTypeRoom, true);
     }
 
     QVariantMap props = additionalProperties;
     if (!serviceName.isEmpty()) {
-        props.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
                 serviceName);
     }
 
@@ -545,13 +545,13 @@ ChannelClassSpec ChannelClassSpec::incomingRoomDBusTube(const QString &serviceNa
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1,
                 HandleTypeRoom, false);
     }
 
     QVariantMap props = additionalProperties;
     if (!serviceName.isEmpty()) {
-        props.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+        props.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
                 serviceName);
     }
 

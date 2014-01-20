@@ -95,8 +95,8 @@ DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
 
 void DBusTubeChannel::Private::extractProperties(const QVariantMap &props)
 {
-    serviceName = qdbus_cast<QString>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName")]);
-    accessControls = qdbus_cast<UIntList>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".SupportedAccessControls")]);
+    serviceName = qdbus_cast<QString>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName")]);
+    accessControls = qdbus_cast<UIntList>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".SupportedAccessControls")]);
 }
 
 void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipants &participants)
@@ -140,8 +140,8 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
 
     debug() << "Introspect dbus tube properties";
 
-    if (parent->immutableProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName")) &&
-        parent->immutableProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".SupportedAccessControls"))) {
+    if (parent->immutableProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName")) &&
+        parent->immutableProperties().contains(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".SupportedAccessControls"))) {
         self->extractProperties(parent->immutableProperties());
         self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureCore, true);
     } else {
@@ -346,7 +346,7 @@ void DBusTubeChannel::onRequestAllPropertiesFinished(PendingOperation *op)
         QVariantMap qualifiedMap;
 
         for (QVariantMap::const_iterator i = map.constBegin(); i != map.constEnd(); ++i) {
-            qualifiedMap.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1Char('.') + i.key(),
+            qualifiedMap.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1Char('.') + i.key(),
                                 i.value());
         }
 

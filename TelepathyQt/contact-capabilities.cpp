@@ -112,12 +112,12 @@ QStringList ContactCapabilities::dbusTubeServices() const
 
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE &&
+        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 &&
             rccSpec.targetHandleType() == HandleTypeContact &&
             rccSpec.hasFixedProperty(
-                    TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"))) {
+                    TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"))) {
             ret << rccSpec.fixedProperty(
-                    TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName")).toString();
+                    TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName")).toString();
         }
     }
 
@@ -153,12 +153,12 @@ QStringList ContactCapabilities::streamTubeServices() const
 
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE &&
+        if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 &&
             rccSpec.targetHandleType() == HandleTypeContact &&
             rccSpec.hasFixedProperty(
-                    TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"))) {
+                    TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"))) {
             ret << rccSpec.fixedProperty(
-                    TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service")).toString();
+                    TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service")).toString();
         }
     }
 

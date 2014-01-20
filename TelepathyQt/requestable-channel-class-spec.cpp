@@ -439,7 +439,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::dbusTube(const QString 
     if (!spec.isValid()) {
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE);
+                TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeContact);
         spec = RequestableChannelClassSpec(rcc);
@@ -450,7 +450,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::dbusTube(const QString 
     }
 
     RequestableChannelClass rcc = spec.bareClass();
-    rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE + QLatin1String(".ServiceName"),
+    rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
             serviceName);
     return RequestableChannelClassSpec(rcc);
 }
@@ -462,7 +462,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::streamTube(const QStrin
     if (!spec.isValid()) {
         RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE);
+                TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeContact);
         spec = RequestableChannelClassSpec(rcc);
@@ -473,7 +473,7 @@ RequestableChannelClassSpec RequestableChannelClassSpec::streamTube(const QStrin
     }
 
     RequestableChannelClass rcc = spec.bareClass();
-    rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE + QLatin1String(".Service"),
+    rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"),
             service);
     return RequestableChannelClassSpec(rcc);
 }
