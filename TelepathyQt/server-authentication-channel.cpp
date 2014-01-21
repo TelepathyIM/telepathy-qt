@@ -187,7 +187,7 @@ bool ServerAuthenticationChannel::hasSaslInterface() const
         return false;
     }
 
-    return mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION;
+    return mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_SASL_AUTHENTICATION1;
 }*/
 
 /**

@@ -483,7 +483,7 @@ void Channel::Private::introspectGroup()
     debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                properties->GetAll(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP),
+                properties->GetAll(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1),
                 parent);
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -654,7 +654,7 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
         }
 
         if (!fakeGroupInterfaceIfNeeded() &&
-            !parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP) &&
+            !parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1) &&
             initiatorHandle) {
             // No group interface, so nobody will build the poor fellow for us. Will do it ourselves
             // out of pity for him.
@@ -726,7 +726,7 @@ void Channel::Private::nowHaveInterfaces()
 
     QStringList interfaces = parent->interfaces();
 
-    if (interfaces.contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (interfaces.contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         introspectQueue.enqueue(&Private::introspectGroup);
     }
 
@@ -794,7 +794,7 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
     groupFlags = newGroupFlags;
 
     // this shouldn't happen but let's make sure
-    if (!parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         return false;
     }
 
@@ -1111,7 +1111,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
 
 bool Channel::Private::fakeGroupInterfaceIfNeeded()
 {
-    if (parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         return false;
     } else if (targetHandleType != HandleTypeContact) {
         return false;
@@ -1145,7 +1145,7 @@ void Channel::Private::setReady()
     debug() << " Target handle" << targetHandle;
     debug() << " Target handle type" << targetHandleType;
 
-    if (parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         debug() << " Group: flags" << groupFlags;
         if (groupAreHandleOwnersAvailable) {
             debug() << " Group: Number of handle owner mappings" <<
@@ -1946,7 +1946,7 @@ void Channel::PendingLeave::onCloseFinished(Tp::PendingOperation *op)
  *
  * If leaving any more gracefully is not possible, this will revert to the same as requestClose().
  * In particular, this will be the case for channels with no group interface
- * (#TP_QT_IFACE_CHANNEL_INTERFACE_GROUP not in the list returned by interfaces()).
+ * (#TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1 not in the list returned by interfaces()).
  *
  * The returned PendingOperation object will signal the success or failure
  * of this request; under normal circumstances, it can be expected to
@@ -1978,7 +1978,7 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
                 ChannelPtr(this));
     }
 
-    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         return requestClose();
     }
 
@@ -2142,7 +2142,7 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
         }
     }
 
-    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupAddContacts() used with no group interface";
         return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Channel does not support group interface"),
@@ -2338,7 +2338,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
         }
     }
 
-    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupRemoveContacts() used with no group interface";
         return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Channel does not support group interface"),
@@ -2402,7 +2402,7 @@ Contacts Channel::groupLocalPendingContacts(bool includeSelfContact) const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupLocalPendingContacts() used channel not ready";
-    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupLocalPendingContacts() used with no group interface";
     }
 
@@ -2433,7 +2433,7 @@ Contacts Channel::groupRemotePendingContacts(bool includeSelfContact) const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupRemotePendingContacts() used channel not ready";
-    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupRemotePendingContacts() used with no "
             "group interface";
     }
@@ -2460,7 +2460,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupLocalPendingContactChangeInfo() used channel not ready";
-    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupLocalPendingContactChangeInfo() used with no group interface";
     } else if (!contact) {
         warning() << "Channel::groupLocalPendingContactChangeInfo() used with null contact param";
@@ -2495,7 +2495,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
     // self remove info when it has been closed and hence invalidated is valid
     if (isValid() && !isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupSelfContactRemoveInfo() used before Channel::FeatureCore is ready";
-    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupSelfContactRemoveInfo() used with "
             "no group interface";
     }
@@ -2510,7 +2510,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
  * Handle owner lookup is only available if:
  * <ul>
  *  <li>The object is ready
- *  <li>The list returned by interfaces() contains #TP_QT_IFACE_CHANNEL_INTERFACE_GROUP</li>
+ *  <li>The list returned by interfaces() contains #TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1</li>
  *  <li>The set of flags returned by groupFlags() contains
  *      #GroupFlagProperties and #GroupFlagChannelSpecificHandles</li>
  * </ul>
@@ -2530,7 +2530,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used channel not ready";
-    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with "
             "no group interface";
     }
@@ -2558,7 +2558,7 @@ HandleOwnerMap Channel::groupHandleOwners() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupHandleOwners() used channel not ready";
-    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with no "
             "group interface";
     }
@@ -2588,7 +2588,7 @@ bool Channel::groupIsSelfContactTracked() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupIsSelfHandleTracked() used channel not ready";
-    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         warning() << "Channel::groupIsSelfHandleTracked() used with "
             "no group interface";
     }
