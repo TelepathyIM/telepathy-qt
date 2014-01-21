@@ -174,7 +174,7 @@ PendingDBusTubeConnection *IncomingDBusTubeChannel::acceptTube(bool allowOtherUs
     }
 
     PendingString *ps = new PendingString(
-        interface<Client::ChannelTypeDBusTubeInterface>()->Accept(
+        interface<Client::ChannelTypeDBusTube1Interface>()->Accept(
             accessControl),
         IncomingDBusTubeChannelPtr(this));
 

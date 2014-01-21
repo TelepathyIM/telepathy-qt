@@ -244,7 +244,7 @@ set(telepathy_qt_HEADERS
     ChannelTypeCall1Interface
     ChannelTypeContactListInterface
     ChannelTypeContactSearch1Interface
-    ChannelTypeDBusTubeInterface
+    ChannelTypeDBusTube1Interface
     ChannelTypeFileTransfer1Interface
     ChannelTypeRoomList1Interface
     ChannelTypeServerAuthentication1Interface

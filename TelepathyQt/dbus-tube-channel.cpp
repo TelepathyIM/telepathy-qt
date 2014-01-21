@@ -114,8 +114,8 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Pri
 {
     DBusTubeChannel *parent = self->parent;
 
-    Client::ChannelTypeDBusTubeInterface *dbusTubeInterface =
-            parent->interface<Client::ChannelTypeDBusTubeInterface>();
+    Client::ChannelTypeDBusTube1Interface *dbusTubeInterface =
+            parent->interface<Client::ChannelTypeDBusTube1Interface>();
 
     // It must be present
     Q_ASSERT(dbusTubeInterface);
@@ -145,8 +145,8 @@ void DBusTubeChannel::Private::introspectDBusTube(DBusTubeChannel::Private *self
         self->extractProperties(parent->immutableProperties());
         self->readinessHelper->setIntrospectCompleted(DBusTubeChannel::FeatureCore, true);
     } else {
-        Client::ChannelTypeDBusTubeInterface *dbusTubeInterface =
-                parent->interface<Client::ChannelTypeDBusTubeInterface>();
+        Client::ChannelTypeDBusTube1Interface *dbusTubeInterface =
+                parent->interface<Client::ChannelTypeDBusTube1Interface>();
 
         parent->connect(dbusTubeInterface->requestAllProperties(),
                         SIGNAL(finished(Tp::PendingOperation*)),

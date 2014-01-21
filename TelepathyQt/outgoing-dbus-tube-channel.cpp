@@ -172,7 +172,7 @@ PendingDBusTubeConnection *OutgoingDBusTubeChannel::offerTube(const QVariantMap 
     }
 
     PendingString *ps = new PendingString(
-        interface<Client::ChannelTypeDBusTubeInterface>()->Offer(
+        interface<Client::ChannelTypeDBusTube1Interface>()->Offer(
             parameters,
             accessControl),
         OutgoingDBusTubeChannelPtr(this));
