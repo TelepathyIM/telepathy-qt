@@ -68,9 +68,6 @@ struct TP_QT_NO_EXPORT Connection::Private
     void init();
 
     static void introspectMain(Private *self);
-    void introspectMainFallbackStatus();
-    void introspectMainFallbackInterfaces();
-    void introspectMainFallbackSelfHandle();
     void introspectCapabilities();
     void introspectContactAttributeInterfaces();
     static void introspectSelfContact(Private *self);
@@ -410,39 +407,6 @@ void Connection::Private::introspectMain(Connection::Private *self)
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
-}
-
-void Connection::Private::introspectMainFallbackStatus()
-{
-    debug() << "Calling GetStatus()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(baseInterface->GetStatus(),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotStatus(QDBusPendingCallWatcher*)));
-}
-
-void Connection::Private::introspectMainFallbackInterfaces()
-{
-    debug() << "Calling GetInterfaces()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(baseInterface->GetInterfaces(),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
-}
-
-void Connection::Private::introspectMainFallbackSelfHandle()
-{
-    debug() << "Calling GetSelfHandle()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(baseInterface->GetSelfHandle(),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectCapabilities()
@@ -1542,28 +1506,16 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
             && ((status = qdbus_cast<uint>(props[QLatin1String("Status")])) <=
                 ConnectionStatusDisconnected)) {
         mPriv->forceCurrentStatus(status);
-    } else {
-        // only introspect status if we did not got it from StatusChanged
-        if (mPriv->pendingStatus == (uint) -1) {
-            mPriv->introspectMainQueue.enqueue(
-                    &Private::introspectMainFallbackStatus);
-        }
     }
 
     if (props.contains(QLatin1String("Interfaces"))) {
         mPriv->setInterfaces(qdbus_cast<QStringList>(
                     props[QLatin1String("Interfaces")]));
-    } else {
-        mPriv->introspectMainQueue.enqueue(
-                &Private::introspectMainFallbackInterfaces);
     }
 
     if (props.contains(QLatin1String("SelfHandle"))) {
         mPriv->selfHandle = qdbus_cast<uint>(
                 props[QLatin1String("SelfHandle")]);
-    } else {
-        mPriv->introspectMainQueue.enqueue(
-                &Private::introspectMainFallbackSelfHandle);
     }
 
     if (props.contains(QLatin1String("HasImmortalHandles"))) {
