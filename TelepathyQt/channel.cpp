@@ -65,9 +65,6 @@ struct TP_QT_NO_EXPORT Channel::Private
 
     static void introspectMain(Private *self);
     void introspectMainProperties();
-    void introspectMainFallbackChannelType();
-    void introspectMainFallbackHandle();
-    void introspectMainFallbackInterfaces();
     void introspectGroup();
     void introspectGroupFallbackFlags();
     void introspectGroupFallbackMembers();
@@ -410,36 +407,6 @@ void Channel::Private::introspectMainProperties()
     }
 }
 
-void Channel::Private::introspectMainFallbackChannelType()
-{
-    debug() << "Calling Channel::GetChannelType()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(baseInterface->GetChannelType(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotChannelType(QDBusPendingCallWatcher*)));
-}
-
-void Channel::Private::introspectMainFallbackHandle()
-{
-    debug() << "Calling Channel::GetHandle()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(baseInterface->GetHandle(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotHandle(QDBusPendingCallWatcher*)));
-}
-
-void Channel::Private::introspectMainFallbackInterfaces()
-{
-    debug() << "Calling Channel::GetInterfaces()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
-}
-
 void Channel::Private::introspectGroup()
 {
     Q_ASSERT(properties != 0);
@@ -614,57 +581,50 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
                   && props.contains(keyTargetHandle)
                   && props.contains(keyTargetHandleType);
 
-    if (!haveProps) {
-        warning() << "Channel properties specified in 0.17.7 not found";
+    parent->setInterfaces(qdbus_cast<QStringList>(props[keyInterfaces]));
+    readinessHelper->setInterfaces(parent->interfaces());
+    channelType = qdbus_cast<QString>(props[keyChannelType]);
+    targetHandle = qdbus_cast<uint>(props[keyTargetHandle]);
+    targetHandleType = qdbus_cast<uint>(props[keyTargetHandleType]);
 
-        introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
-        introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
-        introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
-    } else {
-        parent->setInterfaces(qdbus_cast<QStringList>(props[keyInterfaces]));
-        readinessHelper->setInterfaces(parent->interfaces());
-        channelType = qdbus_cast<QString>(props[keyChannelType]);
-        targetHandle = qdbus_cast<uint>(props[keyTargetHandle]);
-        targetHandleType = qdbus_cast<uint>(props[keyTargetHandleType]);
+    const static QString keyTargetId(QLatin1String("TargetID"));
+    const static QString keyRequested(QLatin1String("Requested"));
+    const static QString keyInitiatorHandle(QLatin1String("InitiatorHandle"));
+    const static QString keyInitiatorId(QLatin1String("InitiatorID"));
 
-        const static QString keyTargetId(QLatin1String("TargetID"));
-        const static QString keyRequested(QLatin1String("Requested"));
-        const static QString keyInitiatorHandle(QLatin1String("InitiatorHandle"));
-        const static QString keyInitiatorId(QLatin1String("InitiatorID"));
+    if (props.contains(keyTargetId)) {
+        targetId = qdbus_cast<QString>(props[keyTargetId]);
 
-        if (props.contains(keyTargetId)) {
-            targetId = qdbus_cast<QString>(props[keyTargetId]);
-
-            if (targetHandleType == HandleTypeContact) {
-                connection->lowlevel()->injectContactId(targetHandle, targetId);
-            }
+        if (targetHandleType == HandleTypeContact) {
+            connection->lowlevel()->injectContactId(targetHandle, targetId);
         }
-
-        if (props.contains(keyRequested)) {
-            requested = qdbus_cast<uint>(props[keyRequested]);
-        }
-
-        if (props.contains(keyInitiatorHandle)) {
-            initiatorHandle = qdbus_cast<uint>(props[keyInitiatorHandle]);
-        }
-
-        if (props.contains(keyInitiatorId)) {
-            QString initiatorId = qdbus_cast<QString>(props[keyInitiatorId]);
-            connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
-        }
-
-        if (!fakeGroupInterfaceIfNeeded() &&
-            !parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1) &&
-            initiatorHandle) {
-            // No group interface, so nobody will build the poor fellow for us. Will do it ourselves
-            // out of pity for him.
-            // TODO: needs testing. I would imagine some of the elaborate updateContacts logic
-            // tripping over with just this.
-            buildContacts();
-        }
-
-        nowHaveInterfaces();
     }
+
+    if (props.contains(keyRequested)) {
+        requested = qdbus_cast<uint>(props[keyRequested]);
+    }
+
+    if (props.contains(keyInitiatorHandle)) {
+        initiatorHandle = qdbus_cast<uint>(props[keyInitiatorHandle]);
+    }
+
+    if (props.contains(keyInitiatorId)) {
+        QString initiatorId = qdbus_cast<QString>(props[keyInitiatorId]);
+        connection->lowlevel()->injectContactId(initiatorHandle, initiatorId);
+    }
+
+    if (!fakeGroupInterfaceIfNeeded() &&
+        !parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1) &&
+        initiatorHandle) {
+        // No group interface, so nobody will build the poor fellow for us. Will do it ourselves
+        // out of pity for him.
+        // TODO: needs testing. I would imagine some of the elaborate updateContacts logic
+        // tripping over with just this.
+        buildContacts();
+    }
+
+    nowHaveInterfaces();
+
 
     debug() << "Have initiator handle:" << (initiatorHandle ? "yes" : "no");
 }
