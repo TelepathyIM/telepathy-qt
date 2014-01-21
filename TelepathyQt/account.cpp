@@ -592,7 +592,9 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified),
       usingConnectionCaps(false),
-      dispatcherContext(dispatcherContexts.value(parent->dbusConnection().name()))
+      dispatcherInterface(new Client::ChannelDispatcherInterface(parent->dbusConnection(),
+                                                                 TP_QT_CHANNEL_DISPATCHER_BUS_NAME,
+                                                                 TP_QT_CHANNEL_DISPATCHER_OBJECT_PATH))
 {
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
@@ -670,11 +672,6 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
             << parent->objectPath();
     }
 
-    if (!dispatcherContext) {
-        dispatcherContext = QSharedPointer<DispatcherContext>(new DispatcherContext(parent->dbusConnection()));
-        dispatcherContexts.insert(parent->dbusConnection().name(), dispatcherContext);
-    }
-
     init();
 }
 
@@ -718,8 +715,6 @@ QString Account::Private::connectionObjectPath() const
 {
     return !connection.isNull() ? connection->objectPath() : QString();
 }
-
-QHash<QString, QSharedPointer<Account::Private::DispatcherContext> > Account::Private::dispatcherContexts;
 
 /**
  * \class Account
@@ -2073,7 +2068,7 @@ PendingOperation *Account::remove()
  */
 bool Account::supportsRequestHints() const
 {
-    return mPriv->dispatcherContext->supportsHints;
+    return true;
 }
 
 /**
@@ -3516,7 +3511,7 @@ Client::AccountInterface *Account::baseInterface() const
  */
 Client::ChannelDispatcherInterface *Account::dispatcherInterface() const
 {
-    return mPriv->dispatcherContext->iface;
+    return mPriv->dispatcherInterface;
 }
 
 /**** Private ****/
@@ -3536,21 +3531,12 @@ void Account::Private::init()
 
 void Account::Private::introspectMain(Account::Private *self)
 {
-    if (self->dispatcherContext->introspected) {
-        self->parent->onDispatcherIntrospected(0);
-        return;
-    }
-
-    if (!self->dispatcherContext->introspectOp) {
-        debug() << "Discovering if the Channel Dispatcher supports request hints";
-        self->dispatcherContext->introspectOp =
-            self->dispatcherContext->iface->requestPropertySupportsRequestHints();
-    }
-
-    connect(self->dispatcherContext->introspectOp.data(),
-            SIGNAL(finished(Tp::PendingOperation*)),
-            self->parent,
-            SLOT(onDispatcherIntrospected(Tp::PendingOperation*)));
+    debug() << "Calling Properties::GetAll(Account) on " << self->parent->objectPath();
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                self->properties->GetAll(TP_QT_IFACE_ACCOUNT), self->parent);
+    self->parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void Account::Private::introspectAvatar(Account::Private *self)
@@ -3910,42 +3896,6 @@ bool Account::Private::processConnQueue()
     }
 
     return true;
-}
-
-void Account::onDispatcherIntrospected(Tp::PendingOperation *op)
-{
-    if (!mPriv->dispatcherContext->introspected) {
-        Tp::PendingVariant *pv = static_cast<Tp::PendingVariant *>(op);
-        Q_ASSERT(pv != NULL);
-
-        // Only the first Account for a given dispatcher will enter this branch, and will
-        // immediately make further created accounts skip the whole waiting for CD to get
-        // introspected part entirely
-        mPriv->dispatcherContext->introspected = true;
-
-        if (pv->isValid()) {
-            mPriv->dispatcherContext->supportsHints = qdbus_cast<bool>(pv->result());
-            debug() << "Discovered channel dispatcher support for request hints: "
-                << mPriv->dispatcherContext->supportsHints;
-        } else {
-            if (pv->errorName() == TP_QT_ERROR_NOT_IMPLEMENTED) {
-                debug() << "Channel Dispatcher does not implement support for request hints";
-            } else {
-                warning() << "(Too old?) Channel Dispatcher failed to tell us whether"
-                    << "it supports request hints, assuming it doesn't:"
-                    << pv->errorName() << ':' << pv->errorMessage();
-            }
-            mPriv->dispatcherContext->supportsHints = false;
-        }
-    }
-
-    debug() << "Calling Properties::GetAll(Account) on " << objectPath();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            mPriv->properties->GetAll(
-                TP_QT_IFACE_ACCOUNT), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void Account::gotMainProperties(QDBusPendingCallWatcher *watcher)

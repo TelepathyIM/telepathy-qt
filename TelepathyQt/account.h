@@ -200,8 +200,8 @@ public:
 
     PendingOperation *remove();
 
-    bool supportsRequestHints() const;
-    bool requestsSucceedWithChannel() const;
+    TP_QT_DEPRECATED bool supportsRequestHints() const;
+    TP_QT_DEPRECATED bool requestsSucceedWithChannel() const;
 
     PendingChannelRequest *ensureTextChat(
             const QString &contactIdentifier,
@@ -486,7 +486,6 @@ protected:
     Client::ChannelDispatcherInterface *dispatcherInterface() const;
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void onDispatcherIntrospected(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *);
     TP_QT_NO_EXPORT void gotAvatar(QDBusPendingCallWatcher *);
     TP_QT_NO_EXPORT void onAvatarChanged();
