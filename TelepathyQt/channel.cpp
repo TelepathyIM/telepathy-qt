@@ -2682,7 +2682,7 @@ QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
  */
 bool Channel::supportsConferenceMerging() const
 {
-    return interfaces().contains(TP_QT_FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE);
+    return interfaces().contains(TP_QT_FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE1);
 }
 
 /**
@@ -2717,7 +2717,7 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
  */
 bool Channel::supportsConferenceSplitting() const
 {
-    return interfaces().contains(TP_QT_FUTURE_IFACE_CHANNEL_INTERFACE_SPLITTABLE);
+    return interfaces().contains(TP_QT_FUTURE_IFACE_CHANNEL_INTERFACE_SPLITTABLE1);
 }
 
 /**
