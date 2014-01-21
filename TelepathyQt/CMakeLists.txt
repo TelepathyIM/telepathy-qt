@@ -183,7 +183,7 @@ set(telepathy_qt_HEADERS
     CallContentMediaDescription
     CallContentMediaDescriptionInterface
     CallContentMediaDescriptionInterfaceRTCPExtendedReportsInterface
-    CallContentMediaDescriptionInterfaceRTCPFeedbackInterface
+    Call1ContentMediaDescriptionInterfaceRTCPFeedback1Interface
     CallContentMediaDescriptionInterfaceRTPHeaderExtensionsInterface
     call-content-media-description.h
     CallStream
