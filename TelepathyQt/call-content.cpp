@@ -56,7 +56,7 @@ struct TP_QT_NO_EXPORT CallContent::Private
     WeakPtr<CallChannel> channel;
 
     // Mandatory proxies
-    Client::CallContentInterface *contentInterface;
+    Client::Call1ContentInterface *contentInterface;
 
     ReadinessHelper *readinessHelper;
 
@@ -71,7 +71,7 @@ struct TP_QT_NO_EXPORT CallContent::Private
 CallContent::Private::Private(CallContent *parent, const CallChannelPtr &channel)
     : parent(parent),
       channel(channel.data()),
-      contentInterface(parent->interface<Client::CallContentInterface>()),
+      contentInterface(parent->interface<Client::Call1ContentInterface>()),
       readinessHelper(parent->readinessHelper())
 {
     ReadinessHelper::Introspectables introspectables;
@@ -323,14 +323,14 @@ PendingOperation *CallContent::stopDTMFTone()
 void CallContent::gotMainProperties(PendingOperation *op)
 {
     if (op->isError()) {
-        warning().nospace() << "CallContentInterface::requestAllProperties() failed with" <<
+        warning().nospace() << "Call1ContentInterface::requestAllProperties() failed with" <<
             op->errorName() << ": " << op->errorMessage();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
             op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Got reply to CallContentInterface::requestAllProperties()";
+    debug() << "Got reply to Call1ContentInterface::requestAllProperties()";
 
     PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
     Q_ASSERT(pvm);

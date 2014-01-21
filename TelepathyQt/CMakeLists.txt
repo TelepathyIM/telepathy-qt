@@ -174,7 +174,7 @@ set(telepathy_qt_HEADERS
     Callbacks
     callbacks.h
     CallContent
-    CallContentInterface
+    Call1ContentInterface
     Call1ContentInterfaceAudioControl1Interface
     Call1ContentInterfaceDTMF1Interface
     Call1ContentInterfaceMediaInterface
@@ -699,7 +699,7 @@ endif(MSVC)
 # Use the client generator for generating headers out of specs
 tpqt_client_generator(account clientaccount AccountManager Tp::Client --mainiface=Tp::Client::AccountInterface DEPENDS account-spec-xincludator)
 tpqt_client_generator(account-manager clientam AccountManager Tp::Client --mainiface=Tp::Client::AccountManagerInterface DEPENDS account-manager-spec-xincludator)
-tpqt_client_generator(call-content clientcall CallContent Tp::Client --mainiface=Tp::Client::CallContentInterface DEPENDS call-content-spec-xincludator)
+tpqt_client_generator(call-content clientcall CallContent Tp::Client --mainiface=Tp::Client::Call1ContentInterface DEPENDS call-content-spec-xincludator)
 tpqt_client_generator(call-content-media-description clientcall CallContentMediaDescriptionInterface Tp::Client --mainiface=Tp::Client::CallContentMediaDescriptionInterface DEPENDS call-content-media-description-spec-xincludator)
 tpqt_client_generator(call-stream clientcall CallStream Tp::Client --mainiface=Tp::Client::Call1StreamInterface DEPENDS call-stream-spec-xincludator)
 tpqt_client_generator(call-stream-endpoint clientcall CallStreamEndpoint Tp::Client --mainiface=Tp::Client::Call1StreamEndpointInterface DEPENDS call-stream-endpoint-spec-xincludator)
