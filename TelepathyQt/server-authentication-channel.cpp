@@ -169,7 +169,7 @@ bool ServerAuthenticationChannel::hasCaptchaInterface() const
         return false;
     }
 
-    return mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION;
+    return mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION1;
 }
 
 /*
@@ -239,7 +239,7 @@ void ServerAuthenticationChannel::gotServerAuthenticationProperties(Tp::PendingO
         debug() << "Got reply to Properties::GetAll(ServerAuthentication)";
         mPriv->authMethod = qdbus_cast<QString>(pvm->result()[QLatin1String("AuthenticationMethod")]);
 
-        if (mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION) {
+        if (mPriv->authMethod == TP_QT_IFACE_CHANNEL_INTERFACE_CAPTCHA_AUTHENTICATION1) {
             mPriv->captchaAuthentication =
                     CaptchaAuthenticationPtr(new CaptchaAuthentication(ChannelPtr(this)));
 
