@@ -282,7 +282,7 @@ set(telepathy_qt_HEADERS
     ConnectionInterfaceContactCapabilitiesInterface
     ConnectionInterfaceContactGroups1Interface
     ConnectionInterfaceContactInfoInterface
-    ConnectionInterfaceContactListInterface
+    ConnectionInterfaceContactList1Interface
     ConnectionInterfaceContactsInterface
     ConnectionInterfaceLocationInterface
     ConnectionInterfaceMailNotificationInterface

@@ -409,8 +409,8 @@ PendingOperation *ContactManager::Roster::requestPresenceSubscription(
         handles << contact->handle()[0];
     }
 
-    Client::ConnectionInterfaceContactListInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactListInterface>();
+    Client::ConnectionInterfaceContactList1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactList1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->RequestSubscription(handles, message));
 }
@@ -473,8 +473,8 @@ PendingOperation *ContactManager::Roster::removePresenceSubscription(
         handles << contact->handle()[0];
     }
 
-    Client::ConnectionInterfaceContactListInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactListInterface>();
+    Client::ConnectionInterfaceContactList1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactList1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->Unsubscribe(handles));
 }
@@ -521,8 +521,8 @@ PendingOperation *ContactManager::Roster::authorizePresencePublication(
         handles << contact->handle()[0];
     }
 
-    Client::ConnectionInterfaceContactListInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactListInterface>();
+    Client::ConnectionInterfaceContactList1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactList1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->AuthorizePublication(handles));
 }
@@ -576,8 +576,8 @@ PendingOperation *ContactManager::Roster::removePresencePublication(
         handles << contact->handle()[0];
     }
 
-    Client::ConnectionInterfaceContactListInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactListInterface>();
+    Client::ConnectionInterfaceContactList1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactList1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->Unpublish(handles));
 }
@@ -624,8 +624,8 @@ PendingOperation *ContactManager::Roster::removeContacts(
         handles << contact->handle()[0];
     }
 
-    Client::ConnectionInterfaceContactListInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactListInterface>();
+    Client::ConnectionInterfaceContactList1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactList1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->RemoveContacts(handles));
 }
@@ -1653,8 +1653,8 @@ void ContactManager::Roster::introspectContactList()
 
     ConnectionPtr conn(contactManager->connection());
 
-    Client::ConnectionInterfaceContactListInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactListInterface>();
+    Client::ConnectionInterfaceContactList1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactList1Interface>();
 
     connect(iface,
             SIGNAL(ContactListStateChanged(uint)),
@@ -1676,8 +1676,8 @@ void ContactManager::Roster::introspectContactListContacts()
 {
     ConnectionPtr conn(contactManager->connection());
 
-    Client::ConnectionInterfaceContactListInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactListInterface>();
+    Client::ConnectionInterfaceContactList1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactList1Interface>();
 
     Features features(conn->contactFactory()->features());
     Features supportedFeatures(contactManager->supportedFeatures());
