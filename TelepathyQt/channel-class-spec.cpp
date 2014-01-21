@@ -321,7 +321,7 @@ Tp::ChannelClassSpec ChannelClassSpec::serverAuthentication(const QVariantMap &a
     static Tp::ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION1,
                 HandleTypeNone);
     }
 
@@ -337,7 +337,7 @@ ChannelClassSpec ChannelClassSpec::roomList(const QVariantMap &additionalPropert
     static ChannelClassSpec spec;
 
     if (!spec.mPriv.constData()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_ROOM_LIST,
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_ROOM_LIST1,
                 HandleTypeNone);
     }
 
