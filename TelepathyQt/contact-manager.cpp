@@ -1375,9 +1375,8 @@ void ContactManager::onPresencesChanged(const ContactSimplePresenceMap &presence
 {
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
 
-    QMap::ConstIterator<uint, QString> it(presences);
+    QMap::ConstIterator<uint, Tp::SimplePresence> it(presences);
     while (it.hasNext()) {
-    foreach (uint handle, presences.keys()) {
         ContactPtr contact = lookupContactByHandle(it.key());
 
         if (contact) {
