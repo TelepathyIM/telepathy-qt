@@ -251,13 +251,13 @@ PendingOperation *CallContent::remove()
 /**
  * Return whether sending DTMF events is supported on this content.
  * DTMF is only supported on audio contents that implement the
- * #TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF interface.
+ * #TP_QT_IFACE_CALL1_CONTENT_INTERFACE_DTMF1 interface.
  *
  * \returns \c true if DTMF is supported, or \c false otherwise.
  */
 bool CallContent::supportsDTMF() const
 {
-    return hasInterface(TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF);
+    return hasInterface(TP_QT_IFACE_CALL1_CONTENT_INTERFACE_DTMF1);
 }
 
 /**
@@ -268,7 +268,7 @@ bool CallContent::supportsDTMF() const
  * length. In this case, the implementation may emit a fixed-length tone,
  * and the stopDTMFTone() method call should return #TP_QT_ERROR_NOT_AVAILABLE.
  *
- * If this content does not support the #TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF
+ * If this content does not support the #TP_QT_IFACE_CALL1_CONTENT_INTERFACE_DTMF1
  * interface, the resulting PendingOperation will fail with error code
  * #TP_QT_ERROR_NOT_IMPLEMENTED.
  *
@@ -298,7 +298,7 @@ PendingOperation *CallContent::startDTMFTone(DTMFEvent event)
  * If there is no current tone, the resulting PendingOperation will
  * finish successfully.
  *
- * If this content does not support the #TP_QT_IFACE_CALL_CONTENT_INTERFACE_DTMF
+ * If this content does not support the #TP_QT_IFACE_CALL1_CONTENT_INTERFACE_DTMF1
  * interface, the resulting PendingOperation will fail with error code
  * #TP_QT_ERROR_NOT_IMPLEMENTED.
  *
