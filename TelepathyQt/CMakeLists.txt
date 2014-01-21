@@ -154,7 +154,7 @@ set(telepathy_qt_HEADERS
     account-filter.h
     AccountInterface
     AccountInterfaceAddressingInterface
-    AccountInterfaceAvatarInterface
+    AccountInterfaceAvatar1Interface
     AccountInterfaceStorageInterface
     AccountManager
     account-manager.h

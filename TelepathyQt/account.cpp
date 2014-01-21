@@ -3544,8 +3544,8 @@ void Account::Private::introspectAvatar(Account::Private *self)
     debug() << "Calling GetAvatar(Account)";
     // we already checked if avatar interface exists, so bypass avatar interface
     // checking
-    Client::AccountInterfaceAvatarInterface *iface =
-        self->parent->interface<Client::AccountInterfaceAvatarInterface>();
+    Client::AccountInterfaceAvatar1Interface *iface =
+        self->parent->interface<Client::AccountInterfaceAvatar1Interface>();
 
     // If we are here it means the user cares about avatar, so
     // connect to avatar changed signal, so we update the avatar
