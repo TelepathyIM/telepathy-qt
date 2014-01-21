@@ -46,7 +46,7 @@ struct TP_QT_NO_EXPORT IncomingFileTransferChannel::Private
     // Public object
     IncomingFileTransferChannel *parent;
 
-    Client::ChannelTypeFileTransferInterface *fileTransferInterface;
+    Client::ChannelTypeFileTransfer1Interface *fileTransferInterface;
 
     QIODevice *output;
     QTcpSocket *socket;
@@ -58,7 +58,7 @@ struct TP_QT_NO_EXPORT IncomingFileTransferChannel::Private
 
 IncomingFileTransferChannel::Private::Private(IncomingFileTransferChannel *parent)
     : parent(parent),
-      fileTransferInterface(parent->interface<Client::ChannelTypeFileTransferInterface>()),
+      fileTransferInterface(parent->interface<Client::ChannelTypeFileTransfer1Interface>()),
       output(0),
       socket(0),
       requestedOffset(0),

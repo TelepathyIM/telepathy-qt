@@ -44,7 +44,7 @@ struct TP_QT_NO_EXPORT FileTransferChannel::Private
     // Public object
     FileTransferChannel *parent;
 
-    Client::ChannelTypeFileTransferInterface *fileTransferInterface;
+    Client::ChannelTypeFileTransfer1Interface *fileTransferInterface;
     Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
@@ -72,7 +72,7 @@ struct TP_QT_NO_EXPORT FileTransferChannel::Private
 
 FileTransferChannel::Private::Private(FileTransferChannel *parent)
     : parent(parent),
-      fileTransferInterface(parent->interface<Client::ChannelTypeFileTransferInterface>()),
+      fileTransferInterface(parent->interface<Client::ChannelTypeFileTransfer1Interface>()),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       pendingState(FileTransferStateNone),
