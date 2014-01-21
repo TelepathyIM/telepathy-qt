@@ -230,7 +230,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceMessagesInterface
     ChannelInterfacePassword1Interface
     ChannelInterfaceRoom1Interface
-    ChannelInterfaceRoomConfigInterface
+    ChannelInterfaceRoomConfig1Interface
     ChannelInterfaceSASLAuthenticationInterface
     ChannelInterfaceSecurableInterface
     ChannelInterfaceServicePointInterface
