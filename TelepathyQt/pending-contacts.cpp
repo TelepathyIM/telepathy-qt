@@ -237,8 +237,8 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
     } else if (type == ForUris) {
-        Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
-            conn->optionalInterface<Client::ConnectionInterfaceAddressingInterface>(
+        Client::ConnectionInterfaceAddressing1Interface *connAddressingIface =
+            conn->optionalInterface<Client::ConnectionInterfaceAddressing1Interface>(
                     OptionalInterfaceFactory<Connection>::CheckInterfaceSupported);
         if (!connAddressingIface) {
             setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
@@ -267,8 +267,8 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 
     ConnectionPtr conn = manager->connection();
 
-    Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
-        conn->optionalInterface<Client::ConnectionInterfaceAddressingInterface>(
+    Client::ConnectionInterfaceAddressing1Interface *connAddressingIface =
+        conn->optionalInterface<Client::ConnectionInterfaceAddressing1Interface>(
                 OptionalInterfaceFactory<Connection>::CheckInterfaceSupported);
     if (!connAddressingIface) {
         setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
@@ -666,8 +666,8 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
 {
     // no check for the interface here again, we expect this interface to be used only when
     // Conn.I.Addressing is available
-    Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
-        connection->optionalInterface<Client::ConnectionInterfaceAddressingInterface>(
+    Client::ConnectionInterfaceAddressing1Interface *connAddressingIface =
+        connection->optionalInterface<Client::ConnectionInterfaceAddressing1Interface>(
                 OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             connAddressingIface->GetContactsByVCardField(vcardField, vcardAddresses, interfaces));
@@ -685,8 +685,8 @@ PendingAddressingGetContacts::PendingAddressingGetContacts(const ConnectionPtr &
 {
     // no check for the interface here again, we expect this interface to be used only when
     // Conn.I.Addressing is available
-    Client::ConnectionInterfaceAddressingInterface *connAddressingIface =
-        connection->optionalInterface<Client::ConnectionInterfaceAddressingInterface>(
+    Client::ConnectionInterfaceAddressing1Interface *connAddressingIface =
+        connection->optionalInterface<Client::ConnectionInterfaceAddressing1Interface>(
                 OptionalInterfaceFactory<Connection>::BypassInterfaceCheck);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             connAddressingIface->GetContactsByURI(uris, interfaces));

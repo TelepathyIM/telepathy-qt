@@ -271,7 +271,7 @@ set(telepathy_qt_HEADERS
     connection-factory.h
     connection-lowlevel.h
     ConnectionInterface
-    ConnectionInterfaceAddressingInterface
+    ConnectionInterfaceAddressing1Interface
     ConnectionInterfaceAliasingInterface
     ConnectionInterfaceAnonymityInterface
     ConnectionInterfaceAvatarsInterface
