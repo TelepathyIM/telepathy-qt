@@ -1,5 +1,5 @@
-#ifndef _TelepathyQt_ChannelTypeCallInterface_HEADER_GUARD_
-#define _TelepathyQt_ChannelTypeCallInterface_HEADER_GUARD_
+#ifndef _TelepathyQt_ChannelTypeCall1Interface_HEADER_GUARD_
+#define _TelepathyQt_ChannelTypeCall1Interface_HEADER_GUARD_
 
 #ifndef IN_TP_QT_HEADER
 #define IN_TP_QT_HEADER

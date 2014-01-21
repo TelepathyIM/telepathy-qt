@@ -241,7 +241,7 @@ set(telepathy_qt_HEADERS
     ChannelRequestHints
     channel-request.h
     ChannelRequestInterface
-    ChannelTypeCallInterface
+    ChannelTypeCall1Interface
     ChannelTypeContactListInterface
     ChannelTypeContactSearchInterface
     ChannelTypeDBusTubeInterface

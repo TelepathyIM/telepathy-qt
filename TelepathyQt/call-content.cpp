@@ -457,8 +457,8 @@ PendingCallContent::PendingCallContent(const CallChannelPtr &channel,
     : PendingOperation(channel),
       mPriv(new Private(this, channel))
 {
-    Client::ChannelTypeCallInterface *callInterface =
-        channel->interface<Client::ChannelTypeCallInterface>();
+    Client::ChannelTypeCall1Interface *callInterface =
+        channel->interface<Client::ChannelTypeCall1Interface>();
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 callInterface->AddContent(name, type, direction), this);

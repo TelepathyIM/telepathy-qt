@@ -56,7 +56,7 @@ struct TP_QT_NO_EXPORT CallChannel::Private
     CallChannel *parent;
 
     // Mandatory proxies
-    Client::ChannelTypeCallInterface *callInterface;
+    Client::ChannelTypeCall1Interface *callInterface;
 
     ReadinessHelper *readinessHelper;
 
@@ -118,7 +118,7 @@ struct TP_QT_NO_EXPORT CallChannel::Private::CallMembersChangedInfo
 
 CallChannel::Private::Private(CallChannel *parent)
     : parent(parent),
-      callInterface(parent->interface<Client::ChannelTypeCallInterface>()),
+      callInterface(parent->interface<Client::ChannelTypeCall1Interface>()),
       readinessHelper(parent->readinessHelper()),
       state(CallStateUnknown),
       flags((uint) -1),
