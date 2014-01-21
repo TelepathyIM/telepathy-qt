@@ -1513,57 +1513,57 @@ void ContactManager::ensureTracking(const Feature &feature)
     ConnectionPtr conn(connection());
 
     if (feature == Contact::FeatureAlias) {
-        Client::ConnectionInterfaceAliasingInterface *aliasingInterface =
-            conn->interface<Client::ConnectionInterfaceAliasingInterface>();
+        Client::ConnectionInterfaceAliasing1Interface *aliasingInterface =
+            conn->interface<Client::ConnectionInterfaceAliasing1Interface>();
 
         connect(aliasingInterface,
                 SIGNAL(AliasesChanged(Tp::AliasMap)),
                 SLOT(onAliasesChanged(Tp::AliasMap)));
     } else if (feature == Contact::FeatureAvatarData) {
-        Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
-            conn->interface<Client::ConnectionInterfaceAvatarsInterface>();
+        Client::ConnectionInterfaceAvatars1Interface *avatarsInterface =
+            conn->interface<Client::ConnectionInterfaceAvatars1Interface>();
 
         connect(avatarsInterface,
                 SIGNAL(AvatarRetrieved(uint,QString,QByteArray,QString)),
                 SLOT(onAvatarRetrieved(uint,QString,QByteArray,QString)));
     } else if (feature == Contact::FeatureAvatarToken) {
-        Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
-            conn->interface<Client::ConnectionInterfaceAvatarsInterface>();
+        Client::ConnectionInterfaceAvatars1Interface *avatarsInterface =
+            conn->interface<Client::ConnectionInterfaceAvatars1Interface>();
 
         connect(avatarsInterface,
                 SIGNAL(AvatarUpdated(uint,QString)),
                 SLOT(onAvatarUpdated(uint,QString)));
     } else if (feature == Contact::FeatureCapabilities) {
-        Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface =
-            conn->interface<Client::ConnectionInterfaceContactCapabilitiesInterface>();
+        Client::ConnectionInterfaceContactCapabilities1Interface *contactCapabilitiesInterface =
+            conn->interface<Client::ConnectionInterfaceContact1CapabilitiesInterface>();
 
         connect(contactCapabilitiesInterface,
                 SIGNAL(ContactCapabilitiesChanged(Tp::ContactCapabilitiesMap)),
                 SLOT(onCapabilitiesChanged(Tp::ContactCapabilitiesMap)));
     } else if (feature == Contact::FeatureInfo) {
-        Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
-            conn->interface<Client::ConnectionInterfaceContactInfoInterface>();
+        Client::ConnectionInterfaceContactInfo1Interface *contactInfoInterface =
+            conn->interface<Client::ConnectionInterfaceContactInfo1Interface>();
 
         connect(contactInfoInterface,
                 SIGNAL(ContactInfoChanged(uint,Tp::ContactInfoFieldList)),
                 SLOT(onContactInfoChanged(uint,Tp::ContactInfoFieldList)));
     } else if (feature == Contact::FeatureLocation) {
-        Client::ConnectionInterfaceLocationInterface *locationInterface =
-            conn->interface<Client::ConnectionInterfaceLocationInterface>();
+        Client::ConnectionInterfaceLocation1Interface *locationInterface =
+            conn->interface<Client::ConnectionInterfaceLocation1Interface>();
 
         connect(locationInterface,
                 SIGNAL(LocationUpdated(uint,QVariantMap)),
                 SLOT(onLocationUpdated(uint,QVariantMap)));
     } else if (feature == Contact::FeatureSimplePresence) {
-        Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
-            conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
+        Client::ConnectionInterfacePresence1Interface *simplePresenceInterface =
+            conn->interface<Client::ConnectionInterfacePresence1Interface>();
 
         connect(simplePresenceInterface,
                 SIGNAL(PresencesChanged(Tp::ContactSimplePresenceMap)),
                 SLOT(onPresencesChanged(Tp::ContactSimplePresenceMap)));
     } else if (feature == Contact::FeatureClientTypes) {
-        Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface =
-            conn->interface<Client::ConnectionInterfaceClientTypesInterface>();
+        Client::ConnectionInterfaceClientTypes1Interface *clientTypesInterface =
+            conn->interface<Client::ConnectionInterfaceClientTypes1Interface>();
 
         connect(clientTypesInterface,
                 SIGNAL(ClientTypesUpdated(uint,QStringList)),
