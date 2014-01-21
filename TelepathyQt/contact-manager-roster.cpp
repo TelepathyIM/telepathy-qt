@@ -150,8 +150,8 @@ PendingOperation *ContactManager::Roster::introspectGroups()
             return new PendingSuccess(conn);
         }
 
-        Client::ConnectionInterfaceContactGroupsInterface *iface =
-            conn->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+        Client::ConnectionInterfaceContactGroups1Interface *iface =
+            conn->interface<Client::ConnectionInterfaceContactGroups1Interface>();
 
         connect(iface,
                 SIGNAL(GroupsChanged(Tp::UIntList,QStringList,QStringList)),
@@ -252,8 +252,8 @@ PendingOperation *ContactManager::Roster::addGroup(const QString &group)
                 conn);
     }
 
-    Client::ConnectionInterfaceContactGroupsInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+    Client::ConnectionInterfaceContactGroups1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactGroups1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->AddToGroup(group, UIntList()));
 }
@@ -279,8 +279,8 @@ PendingOperation *ContactManager::Roster::removeGroup(const QString &group)
                 conn);
     }
 
-    Client::ConnectionInterfaceContactGroupsInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+    Client::ConnectionInterfaceContactGroups1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactGroups1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->RemoveGroup(group));
 }
@@ -331,8 +331,8 @@ PendingOperation *ContactManager::Roster::addContactsToGroup(const QString &grou
         handles << contact->handle()[0];
     }
 
-    Client::ConnectionInterfaceContactGroupsInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+    Client::ConnectionInterfaceContactGroups1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactGroups1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->AddToGroup(group, handles));
 }
@@ -364,8 +364,8 @@ PendingOperation *ContactManager::Roster::removeContactsFromGroup(const QString 
         handles << contact->handle()[0];
     }
 
-    Client::ConnectionInterfaceContactGroupsInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactGroupsInterface>();
+    Client::ConnectionInterfaceContactGroups1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactGroups1Interface>();
     Q_ASSERT(iface);
     return queuedFinishVoid(iface->RemoveFromGroup(group, handles));
 }

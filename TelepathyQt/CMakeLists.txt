@@ -280,7 +280,7 @@ set(telepathy_qt_HEADERS
     ConnectionInterfaceContactBlockingInterface
     ConnectionInterfaceClientTypesInterface
     ConnectionInterfaceContactCapabilitiesInterface
-    ConnectionInterfaceContactGroupsInterface
+    ConnectionInterfaceContactGroups1Interface
     ConnectionInterfaceContactInfoInterface
     ConnectionInterfaceContactListInterface
     ConnectionInterfaceContactsInterface
