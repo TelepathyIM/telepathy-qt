@@ -132,9 +132,9 @@ public:
         return interface<Client::ProtocolInterface>();
     }
 
-    inline Client::ProtocolInterfaceAvatarsInterface *avatarsInterface() const
+    inline Client::ProtocolInterfaceAvatars1Interface *avatarsInterface() const
     {
-        return interface<Client::ProtocolInterfaceAvatarsInterface>();
+        return interface<Client::ProtocolInterfaceAvatars1Interface>();
     }
 
     inline Client::ProtocolInterfacePresenceInterface *presenceInterface() const

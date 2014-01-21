@@ -205,7 +205,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
 
 void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
 {
-    Client::ProtocolInterfaceAvatarsInterface *avatars = avatarsInterface();
+    Client::ProtocolInterfaceAvatars1Interface *avatars = avatarsInterface();
     Q_ASSERT(avatars != 0);
 
     debug() << "Calling Properties::GetAll(Protocol.Avatars) for" << info().name();
