@@ -133,7 +133,7 @@ struct TP_QT_NO_EXPORT Channel::Private
 
     // Optional interface proxies
     Client::ChannelInterfaceGroup1Interface *group;
-    Client::ChannelInterfaceConferenceInterface *conference;
+    Client::ChannelInterfaceConference1Interface *conference;
 
     ReadinessHelper *readinessHelper;
 
@@ -545,7 +545,7 @@ void Channel::Private::introspectConference()
     Q_ASSERT(conference == 0);
 
     debug() << "Introspecting Conference interface";
-    conference = parent->interface<Client::ChannelInterfaceConferenceInterface>();
+    conference = parent->interface<Client::ChannelInterfaceConference1Interface>();
     Q_ASSERT(conference != 0);
 
     introspectingConference = true;

@@ -220,7 +220,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceCaptchaAuthentication1Interface
     ChannelInterfaceCallStateInterface
     ChannelInterfaceChatStateInterface
-    ChannelInterfaceConferenceInterface
+    ChannelInterfaceConference1Interface
     ChannelInterfaceDestroyableInterface
     ChannelInterfaceDTMFInterface
     ChannelInterfaceFileTransferMetadataInterface
