@@ -167,7 +167,7 @@ CallChannel::Private::Private(CallChannel *parent)
     ReadinessHelper::Introspectable introspectableLocalHoldState(
         QSet<uint>() << 0,                                                         // makesSenseForStatuses
         Features() << CallChannel::FeatureCore,                                    // dependsOnFeatures (core)
-        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_HOLD,                      // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_HOLD1,                      // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectLocalHoldState,
         this);
     introspectables[FeatureLocalHoldState] = introspectableLocalHoldState;
@@ -274,8 +274,8 @@ void CallChannel::Private::introspectContents(CallChannel::Private *self)
 void CallChannel::Private::introspectLocalHoldState(CallChannel::Private *self)
 {
     CallChannel *parent = self->parent;
-    Client::ChannelInterfaceHoldInterface *holdInterface =
-        parent->interface<Client::ChannelInterfaceHoldInterface>();
+    Client::ChannelInterfaceHold1Interface *holdInterface =
+        parent->interface<Client::ChannelInterfaceHold1Interface>();
 
     parent->connect(holdInterface,
             SIGNAL(HoldStateChanged(uint,uint)),
@@ -766,7 +766,7 @@ LocalHoldState CallChannel::localHoldState() const
 {
     if (!isReady(FeatureLocalHoldState)) {
         warning() << "CallChannel::localHoldState() used with FeatureLocalHoldState not ready";
-    } else if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
+    } else if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD1)) {
         warning() << "CallChannel::localHoldStateReason() used with no hold interface";
     }
 
@@ -785,7 +785,7 @@ LocalHoldStateReason CallChannel::localHoldStateReason() const
 {
     if (!isReady(FeatureLocalHoldState)) {
         warning() << "CallChannel::localHoldStateReason() used with FeatureLocalHoldState not ready";
-    } else if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
+    } else if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD1)) {
         warning() << "CallChannel::localHoldStateReason() used with no hold interface";
     }
 
@@ -815,7 +815,7 @@ LocalHoldStateReason CallChannel::localHoldStateReason() const
  * another, it will attempt to revert all streams to their previous hold
  * states.
  *
- * If the channel does not support the #TP_QT_IFACE_CHANNEL_INTERFACE_HOLD
+ * If the channel does not support the #TP_QT_IFACE_CHANNEL_INTERFACE_HOLD1
  * interface, the PendingOperation will fail with error code
  * #TP_QT_ERROR_NOT_IMPLEMENTED.
  *
@@ -826,15 +826,15 @@ LocalHoldStateReason CallChannel::localHoldStateReason() const
  */
 PendingOperation *CallChannel::requestHold(bool hold)
 {
-    if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD)) {
+    if (!hasInterface(TP_QT_IFACE_CHANNEL_INTERFACE_HOLD1)) {
         warning() << "CallChannel::requestHold() used with no hold interface";
         return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("CallChannel does not support hold interface"),
                 CallChannelPtr(this));
     }
 
-    Client::ChannelInterfaceHoldInterface *holdInterface =
-        interface<Client::ChannelInterfaceHoldInterface>();
+    Client::ChannelInterfaceHold1Interface *holdInterface =
+        interface<Client::ChannelInterfaceHold1Interface>();
     return new PendingVoid(holdInterface->RequestHold(hold), CallChannelPtr(this));
 }
 
