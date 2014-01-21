@@ -217,7 +217,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectAvatars()
 
 void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
 {
-    Client::ProtocolInterfacePresenceInterface *presence = presenceInterface();
+    Client::ProtocolInterfacePresence1Interface *presence = presenceInterface();
     Q_ASSERT(presence != 0);
 
     debug() << "Calling Properties::GetAll(Protocol.Presence) for" << info().name();

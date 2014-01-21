@@ -137,9 +137,9 @@ public:
         return interface<Client::ProtocolInterfaceAvatars1Interface>();
     }
 
-    inline Client::ProtocolInterfacePresenceInterface *presenceInterface() const
+    inline Client::ProtocolInterfacePresence1Interface *presenceInterface() const
     {
-        return interface<Client::ProtocolInterfacePresenceInterface>();
+        return interface<Client::ProtocolInterfacePresence1Interface>();
     }
 
     inline Client::ProtocolInterfaceAddressingInterface *addressingInterface() const

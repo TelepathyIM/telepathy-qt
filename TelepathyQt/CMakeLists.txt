@@ -437,7 +437,7 @@ set(telepathy_qt_HEADERS
     ProtocolInterface
     ProtocolInterfaceAddressingInterface
     ProtocolInterfaceAvatars1Interface
-    ProtocolInterfacePresenceInterface
+    ProtocolInterfacePresence1Interface
     ProtocolParameter
     ProtocolParameterList
     protocol-parameter.h
