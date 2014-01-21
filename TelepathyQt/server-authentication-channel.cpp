@@ -243,8 +243,8 @@ void ServerAuthenticationChannel::gotServerAuthenticationProperties(Tp::PendingO
             mPriv->captchaAuthentication =
                     CaptchaAuthenticationPtr(new CaptchaAuthentication(ChannelPtr(this)));
 
-            Client::ChannelInterfaceCaptchaAuthenticationInterface *captchaAuthenticationInterface =
-                    interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>();
+            Client::ChannelInterfaceCaptchaAuthentication1Interface *captchaAuthenticationInterface =
+                    interface<Client::ChannelInterfaceCaptchaAuthentication1Interface>();
 
             captchaAuthenticationInterface->setMonitorProperties(true);
 

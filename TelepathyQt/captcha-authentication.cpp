@@ -309,7 +309,7 @@ PendingCaptchas *CaptchaAuthentication::requestCaptchas(const QStringList &prefe
     ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel);
 
     return new PendingCaptchas(
-            serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchas(),
+            serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthentication1Interface>()->GetCaptchas(),
             preferredMimeTypes,
             preferredTypes,
             CaptchaAuthenticationPtr(this));
@@ -369,7 +369,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &re
 
     ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel);
 
-    return new PendingCaptchaAnswer(serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->AnswerCaptchas(response),
+    return new PendingCaptchaAnswer(serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthentication1Interface>()->AnswerCaptchas(response),
             CaptchaAuthenticationPtr(this));
 }
 
@@ -394,7 +394,7 @@ Tp::PendingOperation *CaptchaAuthentication::cancel(CaptchaCancelReason reason,
 {
     ChannelPtr serverAuthChannel = ChannelPtr(mPriv->channel);
 
-    return new PendingCaptchaCancel(serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->CancelCaptcha(
+    return new PendingCaptchaCancel(serverAuthChannel->interface<Client::ChannelInterfaceCaptchaAuthentication1Interface>()->CancelCaptcha(
                     reason, message),
             CaptchaAuthenticationPtr(this));
 }

@@ -265,7 +265,7 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
         }
 
         QDBusPendingCall call =
-        mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthenticationInterface>()->GetCaptchaData(
+        mPriv->channel->interface<Client::ChannelInterfaceCaptchaAuthentication1Interface>()->GetCaptchaData(
                     captchaInfo.ID, mimeType);
 
         QDBusPendingCallWatcher *dataWatcher = new QDBusPendingCallWatcher(call);

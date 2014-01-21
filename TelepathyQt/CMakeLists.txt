@@ -217,7 +217,7 @@ set(telepathy_qt_HEADERS
     channel-factory.h
     ChannelInterface
     ChannelInterfaceAnonymityInterface
-    ChannelInterfaceCaptchaAuthenticationInterface
+    ChannelInterfaceCaptchaAuthentication1Interface
     ChannelInterfaceCallStateInterface
     ChannelInterfaceChatStateInterface
     ChannelInterfaceConferenceInterface
