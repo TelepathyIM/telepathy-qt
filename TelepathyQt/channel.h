@@ -209,10 +209,6 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onConnectionInvalidated();
 
     TP_QT_NO_EXPORT void gotGroupProperties(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotGroupFlags(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotAllMembers(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotSelfHandle(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotContacts(Tp::PendingOperation *op);
 
     TP_QT_NO_EXPORT void onGroupFlagsChanged(uint added, uint removed);

@@ -66,10 +66,6 @@ struct TP_QT_NO_EXPORT Channel::Private
     static void introspectMain(Private *self);
     void introspectMainProperties();
     void introspectGroup();
-    void introspectGroupFallbackFlags();
-    void introspectGroupFallbackMembers();
-    void introspectGroupFallbackLocalPendingWithInfo();
-    void introspectGroupFallbackSelfHandle();
     void introspectConference();
 
     static void introspectConferenceInitialInviteeContacts(Private *self);
@@ -457,55 +453,6 @@ void Channel::Private::introspectGroup()
                     SLOT(gotGroupProperties(QDBusPendingCallWatcher*)));
 }
 
-void Channel::Private::introspectGroupFallbackFlags()
-{
-    Q_ASSERT(group != 0);
-
-    debug() << "Calling Channel.Interface.Group::GetGroupFlags()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(group->GetGroupFlags(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotGroupFlags(QDBusPendingCallWatcher*)));
-}
-
-void Channel::Private::introspectGroupFallbackMembers()
-{
-    Q_ASSERT(group != 0);
-
-    debug() << "Calling Channel.Interface.Group::GetAllMembers()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(group->GetAllMembers(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotAllMembers(QDBusPendingCallWatcher*)));
-}
-
-void Channel::Private::introspectGroupFallbackLocalPendingWithInfo()
-{
-    Q_ASSERT(group != 0);
-
-    debug() << "Calling Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(group->GetLocalPendingMembersWithInfo(),
-                parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher*)));
-}
-
-void Channel::Private::introspectGroupFallbackSelfHandle()
-{
-    Q_ASSERT(group != 0);
-
-    debug() << "Calling Channel.Interface.Group::GetSelfHandle()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(group->GetSelfHandle(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
-}
-
 void Channel::Private::introspectConference()
 {
     Q_ASSERT(properties != 0);
@@ -648,35 +595,23 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
                   && props.contains(keyRPMembers)
                   && props.contains(keySelfHandle);
 
-    if (!haveProps) {
-        warning() << " Properties specified in 0.17.6 not found";
-        warning() << "  Handle owners and self handle tracking disabled";
+    groupAreHandleOwnersAvailable = true;
+    groupIsSelfHandleTracked = true;
 
-        introspectQueue.enqueue(&Private::introspectGroupFallbackFlags);
-        introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
-        introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPendingWithInfo);
-        introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
-    } else {
-        debug() << " Found properties specified in 0.17.6";
+    setGroupFlags(qdbus_cast<uint>(props[keyGroupFlags]));
+    groupHandleOwners = qdbus_cast<HandleOwnerMap>(props[keyHandleOwners]);
 
-        groupAreHandleOwnersAvailable = true;
-        groupIsSelfHandleTracked = true;
+    groupInitialMembers = qdbus_cast<UIntList>(props[keyMembers]);
+    groupInitialLP = qdbus_cast<LocalPendingInfoList>(props[keyLPMembers]);
+    groupInitialRP = qdbus_cast<UIntList>(props[keyRPMembers]);
 
-        setGroupFlags(qdbus_cast<uint>(props[keyGroupFlags]));
-        groupHandleOwners = qdbus_cast<HandleOwnerMap>(props[keyHandleOwners]);
-
-        groupInitialMembers = qdbus_cast<UIntList>(props[keyMembers]);
-        groupInitialLP = qdbus_cast<LocalPendingInfoList>(props[keyLPMembers]);
-        groupInitialRP = qdbus_cast<UIntList>(props[keyRPMembers]);
-
-        uint propSelfHandle = qdbus_cast<uint>(props[keySelfHandle]);
-        // Don't overwrite the self handle we got from the Connection with 0
-        if (propSelfHandle) {
-            groupSelfHandle = propSelfHandle;
-        }
-
-        nowHaveInitialMembers();
+    uint propSelfHandle = qdbus_cast<uint>(props[keySelfHandle]);
+    // Don't overwrite the self handle we got from the Connection with 0
+    if (propSelfHandle) {
+        groupSelfHandle = propSelfHandle;
     }
+
+    nowHaveInitialMembers();
 }
 
 void Channel::Private::nowHaveInterfaces()
@@ -2964,90 +2899,6 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)
 
     mPriv->extract0176GroupProps(props);
     // Add extraction (and possible fallbacks) in similar functions, called from here
-
-    mPriv->continueIntrospection();
-}
-
-void Channel::gotGroupFlags(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<uint> reply = *watcher;
-
-    if (reply.isError()) {
-        warning().nospace() << "Channel.Interface.Group::GetGroupFlags() failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-    }
-    else {
-        debug() << "Got reply to fallback Channel.Interface.Group::GetGroupFlags()";
-        mPriv->setGroupFlags(reply.value());
-
-        if (mPriv->groupFlags & ChannelGroupFlagProperties) {
-            warning() << " Reply included ChannelGroupFlagProperties, even "
-                "though properties specified in 0.17.7 didn't work! - unsetting";
-            mPriv->groupFlags &= ~ChannelGroupFlagProperties;
-        }
-    }
-
-    mPriv->continueIntrospection();
-}
-
-void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<UIntList, UIntList, UIntList> reply = *watcher;
-
-    if (reply.isError()) {
-        warning().nospace() << "Channel.Interface.Group::GetAllMembers() failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-    } else {
-        debug() << "Got reply to fallback Channel.Interface.Group::GetAllMembers()";
-
-        mPriv->groupInitialMembers = reply.argumentAt<0>();
-        mPriv->groupInitialRP = reply.argumentAt<2>();
-
-        foreach (uint handle, reply.argumentAt<1>()) {
-            LocalPendingInfo info = {handle, 0, ChannelGroupChangeReasonNone,
-                QLatin1String("")};
-            mPriv->groupInitialLP.push_back(info);
-        }
-    }
-
-    mPriv->continueIntrospection();
-}
-
-void Channel::gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<LocalPendingInfoList> reply = *watcher;
-
-    if (reply.isError()) {
-        warning().nospace() << "Channel.Interface.Group::GetLocalPendingMembersWithInfo() "
-            "failed with " << reply.error().name() << ": " << reply.error().message();
-        warning() << " Falling back to what GetAllMembers returned with no extended info";
-    }
-    else {
-        debug() << "Got reply to fallback "
-            "Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
-        // Overrides the previous vague list provided by gotAllMembers
-        mPriv->groupInitialLP = reply.value();
-    }
-
-    mPriv->continueIntrospection();
-}
-
-void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<uint> reply = *watcher;
-
-    if (reply.isError()) {
-        warning().nospace() << "Channel.Interface.Group::GetSelfHandle() failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-    } else {
-        debug() << "Got reply to fallback Channel.Interface.Group::GetSelfHandle()";
-        // Don't overwrite the self handle we got from the connection with 0
-        if (reply.value()) {
-            mPriv->groupSelfHandle = reply.value();
-        }
-    }
-
-    mPriv->nowHaveInitialMembers();
 
     mPriv->continueIntrospection();
 }
