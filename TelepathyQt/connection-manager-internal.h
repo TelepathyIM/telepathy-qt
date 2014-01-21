@@ -142,9 +142,9 @@ public:
         return interface<Client::ProtocolInterfacePresence1Interface>();
     }
 
-    inline Client::ProtocolInterfaceAddressingInterface *addressingInterface() const
+    inline Client::ProtocolInterfaceAddressing1Interface *addressingInterface() const
     {
-        return interface<Client::ProtocolInterfaceAddressingInterface>();
+        return interface<Client::ProtocolInterfaceAddressing1Interface>();
     }
 
 private Q_SLOTS:

@@ -229,7 +229,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectPresence()
 
 void ConnectionManager::Private::ProtocolWrapper::introspectAddressing()
 {
-    Client::ProtocolInterfaceAddressingInterface *addressing = addressingInterface();
+    Client::ProtocolInterfaceAddressing1Interface *addressing = addressingInterface();
     Q_ASSERT(addressing != 0);
 
     debug() << "Calling Properties::GetAll(Protocol.Addressing) for" << info().name();

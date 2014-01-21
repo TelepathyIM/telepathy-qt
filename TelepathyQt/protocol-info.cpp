@@ -56,10 +56,10 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
         delete addressingIface;
     }
 
-    Client::ProtocolInterfaceAddressingInterface *addressingInterface()
+    Client::ProtocolInterfaceAddressing1Interface *addressingInterface()
     {
         if (!addressingIface) {
-            addressingIface = new Client::ProtocolInterfaceAddressingInterface(
+            addressingIface = new Client::ProtocolInterfaceAddressing1Interface(
                     dbusConnection, busName, objectPath);
         }
 
@@ -81,7 +81,7 @@ struct TP_QT_NO_EXPORT ProtocolInfo::Private : public QSharedData
     QStringList addressableVCardFields;
     QStringList addressableUriSchemes;
 
-    Client::ProtocolInterfaceAddressingInterface *addressingIface;
+    Client::ProtocolInterfaceAddressing1Interface *addressingIface;
 };
 
 /**
@@ -382,7 +382,7 @@ PendingString *ProtocolInfo::normalizeVCardAddress(const QString &vcardField,
                 QLatin1String("Protocol object is invalid"));
     }
 
-    Client::ProtocolInterfaceAddressingInterface *iface = mPriv->addressingInterface();
+    Client::ProtocolInterfaceAddressing1Interface *iface = mPriv->addressingInterface();
     if (!iface->isValid()) {
         // cm is still valid but no Protocol object found
         return new PendingString(TP_QT_ERROR_NOT_IMPLEMENTED,
@@ -419,7 +419,7 @@ PendingString *ProtocolInfo::normalizeContactUri(const QString &uri)
                 QLatin1String("Protocol object is invalid"));
     }
 
-    Client::ProtocolInterfaceAddressingInterface *iface = mPriv->addressingInterface();
+    Client::ProtocolInterfaceAddressing1Interface *iface = mPriv->addressingInterface();
     if (!iface->isValid()) {
         // cm is still valid but no Protocol object found
         return new PendingString(TP_QT_ERROR_NOT_IMPLEMENTED,
