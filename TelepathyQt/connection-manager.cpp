@@ -179,7 +179,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMainProperties()
 void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
 {
     if (!mHasAvatarsProps) {
-        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS)) {
+        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1)) {
             introspectQueue.enqueue(&ProtocolWrapper::introspectAvatars);
         } else {
             debug() << "Full functionality requires CM support for the Protocol.Avatars interface";
@@ -187,7 +187,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
     }
 
     if (!mHasPresenceProps) {
-        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE)) {
+        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1)) {
             introspectQueue.enqueue(&ProtocolWrapper::introspectPresence);
         } else {
             debug() << "Full functionality requires CM support for the Protocol.Presence interface";
@@ -195,7 +195,7 @@ void ConnectionManager::Private::ProtocolWrapper::introspectInterfaces()
     }
 
     if (!mHasAddressingProps) {
-        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING)) {
+        if (hasInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1)) {
             introspectQueue.enqueue(&ProtocolWrapper::introspectAddressing);
         } else {
             debug() << "Full functionality requires CM support for the Protocol.Addressing interface";
@@ -277,7 +277,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotAvatarsProperties(
         PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
         QVariantMap unqualifiedProps = pvm->result();
 
-        extractAvatarsProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS,
+        extractAvatarsProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
@@ -297,7 +297,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotPresenceProperties(
         PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
         QVariantMap unqualifiedProps = pvm->result();
 
-        extractPresenceProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE,
+        extractPresenceProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
@@ -319,7 +319,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotAddressingProperties(
         PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
         QVariantMap unqualifiedProps = pvm->result();
 
-        extractAddressingProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING,
+        extractAddressingProperties(qualifyProperties(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1,
                     unqualifiedProps));
     } else {
         warning().nospace() <<
@@ -464,31 +464,31 @@ void ConnectionManager::Private::ProtocolWrapper::extractMainProperties(const QV
 void ConnectionManager::Private::ProtocolWrapper::extractAvatarsProperties(const QVariantMap &props)
 {
     mHasAvatarsProps =
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes")) &&
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")) &&
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight")) &&
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight")) &&
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth")) &&
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth")) &&
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth")) &&
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes"));
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".SupportedAvatarMIMETypes")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarHeight")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarHeight")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarHeight")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarWidth")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarWidth")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarWidth")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarBytes"));
 
     QStringList supportedMimeTypes = qdbus_cast<QStringList>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".SupportedAvatarMIMETypes")]);
     uint minHeight = qdbus_cast<uint>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarHeight")]);
     uint maxHeight = qdbus_cast<uint>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarHeight")]);
     uint recommendedHeight = qdbus_cast<uint>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarHeight")]);
     uint minWidth = qdbus_cast<uint>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarWidth")]);
     uint maxWidth = qdbus_cast<uint>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarWidth")]);
     uint recommendedWidth = qdbus_cast<uint>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarWidth")]);
     uint maxBytes = qdbus_cast<uint>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarBytes")]);
     mInfo.setAvatarRequirements(AvatarSpec(supportedMimeTypes,
                 minHeight, maxHeight, recommendedHeight,
                 minWidth, maxWidth, recommendedWidth,
@@ -498,22 +498,22 @@ void ConnectionManager::Private::ProtocolWrapper::extractAvatarsProperties(const
 void ConnectionManager::Private::ProtocolWrapper::extractPresenceProperties(const QVariantMap &props)
 {
     mHasPresenceProps =
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"));
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses"));
 
     mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<StatusSpecMap>(
-                props[TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses")])));
+                props[TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses")])));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::extractAddressingProperties(const QVariantMap &props)
 {
     mHasAddressingProps =
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableVCardFields")) &&
-        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableURISchemes"));
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1 + QLatin1String(".AddressableVCardFields")) &&
+        props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1 + QLatin1String(".AddressableURISchemes"));
 
     QStringList vcardFields = qdbus_cast<QStringList>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableVCardFields")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1 + QLatin1String(".AddressableVCardFields")]);
     QStringList uriSchemes = qdbus_cast<QStringList>(
-            props[TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING + QLatin1String(".AddressableURISchemes")]);
+            props[TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1 + QLatin1String(".AddressableURISchemes")]);
     mInfo.setAddressableVCardFields(vcardFields);
     mInfo.setAddressableUriSchemes(uriSchemes);
 }

@@ -641,7 +641,7 @@ QList<AbstractProtocolInterfacePtr> BaseProtocol::interfaces() const
  * Return a pointer to the interface with the given name.
  *
  * \param interfaceName The D-Bus name of the interface,
- * ex. TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING.
+ * ex. TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1.
  * \return A pointer to the AbstractProtocolInterface object that implements
  * the D-Bus interface with the given name, or a null pointer if such an interface
  * has not been plugged into this object.
@@ -800,7 +800,7 @@ struct TP_QT_NO_EXPORT BaseProtocolAddressingInterface::Private
  * Class constructor.
  */
 BaseProtocolAddressingInterface::BaseProtocolAddressingInterface()
-    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING),
+    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1),
       mPriv(new Private(this))
 {
 }
@@ -1040,7 +1040,7 @@ struct TP_QT_NO_EXPORT BaseProtocolAvatarsInterface::Private
  * Class constructor.
  */
 BaseProtocolAvatarsInterface::BaseProtocolAvatarsInterface()
-    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS),
+    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1),
       mPriv(new Private(this))
 {
 }
@@ -1064,21 +1064,21 @@ BaseProtocolAvatarsInterface::~BaseProtocolAvatarsInterface()
 QVariantMap BaseProtocolAvatarsInterface::immutableProperties() const
 {
     QVariantMap ret;
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes"),
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".SupportedAvatarMIMETypes"),
             QVariant::fromValue(mPriv->adaptee->supportedAvatarMIMETypes()));
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight"),
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarHeight"),
             QVariant::fromValue(mPriv->adaptee->minimumAvatarHeight()));
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth"),
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarWidth"),
             QVariant::fromValue(mPriv->adaptee->minimumAvatarWidth()));
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight"),
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarHeight"),
             QVariant::fromValue(mPriv->adaptee->recommendedAvatarHeight()));
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth"),
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarWidth"),
             QVariant::fromValue(mPriv->adaptee->recommendedAvatarWidth()));
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight"),
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarHeight"),
             QVariant::fromValue(mPriv->adaptee->maximumAvatarHeight()));
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth"),
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarWidth"),
             QVariant::fromValue(mPriv->adaptee->maximumAvatarWidth()));
-    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes"),
+    ret.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarBytes"),
             QVariant::fromValue(mPriv->adaptee->maximumAvatarBytes()));
     return ret;
 }
@@ -1166,7 +1166,7 @@ struct TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Private
  * Class constructor.
  */
 BaseProtocolPresenceInterface::BaseProtocolPresenceInterface()
-    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE),
+    : AbstractProtocolInterface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1),
       mPriv(new Private(this))
 {
 }
@@ -1190,7 +1190,7 @@ BaseProtocolPresenceInterface::~BaseProtocolPresenceInterface()
 QVariantMap BaseProtocolPresenceInterface::immutableProperties() const
 {
     QVariantMap map;
-    map.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"),
+    map.insert(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses"),
             QVariant::fromValue(mPriv->adaptee->statuses()));
     return map;
 }
