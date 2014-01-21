@@ -659,8 +659,8 @@ PendingOperation *ContactManager::Roster::blockContacts(
 
     if (!usingFallbackContactList && hasContactBlockingInterface) {
         ConnectionPtr conn(contactManager->connection());
-        Client::ConnectionInterfaceContactBlockingInterface *iface =
-            conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
+        Client::ConnectionInterfaceContactBlocking1Interface *iface =
+            conn->interface<Client::ConnectionInterfaceContactBlocking1Interface>();
 
         UIntList handles;
         foreach (const ContactPtr &contact, contacts) {
@@ -1618,8 +1618,8 @@ void ContactManager::Roster::introspectContactBlocking()
 
     ConnectionPtr conn(contactManager->connection());
 
-    Client::ConnectionInterfaceContactBlockingInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
+    Client::ConnectionInterfaceContactBlocking1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactBlocking1Interface>();
 
     PendingVariant *pv = iface->requestPropertyContactBlockingCapabilities();
     connect(pv,
@@ -1631,8 +1631,8 @@ void ContactManager::Roster::introspectContactBlockingBlockedContacts()
 {
     ConnectionPtr conn(contactManager->connection());
 
-    Client::ConnectionInterfaceContactBlockingInterface *iface =
-        conn->interface<Client::ConnectionInterfaceContactBlockingInterface>();
+    Client::ConnectionInterfaceContactBlocking1Interface *iface =
+        conn->interface<Client::ConnectionInterfaceContactBlocking1Interface>();
 
     Q_ASSERT(iface);
 
