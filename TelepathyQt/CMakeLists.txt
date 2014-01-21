@@ -247,7 +247,7 @@ set(telepathy_qt_HEADERS
     ChannelTypeDBusTubeInterface
     ChannelTypeFileTransfer1Interface
     ChannelTypeRoomList1Interface
-    ChannelTypeServerAuthenticationInterface
+    ChannelTypeServerAuthentication1Interface
     ChannelTypeServerTLSConnection1Interface
     ChannelTypeStreamedMediaInterface
     ChannelTypeStreamTubeInterface

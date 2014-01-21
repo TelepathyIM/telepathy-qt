@@ -72,8 +72,8 @@ void ServerAuthenticationChannel::Private::introspectMain(ServerAuthenticationCh
 {
     ServerAuthenticationChannel *parent = self->parent;
 
-    Client::ChannelTypeServerAuthenticationInterface *serverAuthenticationInterface =
-                parent->interface<Client::ChannelTypeServerAuthenticationInterface>();
+    Client::ChannelTypeServerAuthentication1Interface *serverAuthenticationInterface =
+                parent->interface<Client::ChannelTypeServerAuthentication1Interface>();
 
     PendingVariantMap *pvm = serverAuthenticationInterface->requestAllProperties();
     parent->connect(pvm,
