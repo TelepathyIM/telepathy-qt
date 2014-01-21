@@ -71,8 +71,8 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
     TubeChannel *parent = self->parent;
 
     debug() << "Introspecting tube properties";
-    Client::ChannelInterfaceTubeInterface *tubeInterface =
-            parent->interface<Client::ChannelInterfaceTubeInterface>();
+    Client::ChannelInterfaceTube1Interface *tubeInterface =
+            parent->interface<Client::ChannelInterfaceTube1Interface>();
 
     parent->connect(tubeInterface,
             SIGNAL(TubeChannelStateChanged(uint)),
