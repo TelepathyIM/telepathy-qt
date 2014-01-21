@@ -221,7 +221,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceCallStateInterface
     ChannelInterfaceChatStateInterface
     ChannelInterfaceConference1Interface
-    ChannelInterfaceDestroyableInterface
+    ChannelInterfaceDestroyable1Interface
     ChannelInterfaceDTMFInterface
     ChannelInterfaceFileTransferMetadataInterface
     ChannelInterfaceGroup1Interface
