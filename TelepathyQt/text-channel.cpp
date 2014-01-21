@@ -156,7 +156,7 @@ TextChannel::Private::Private(TextChannel *parent)
     ReadinessHelper::Introspectable introspectableChatState(
         QSet<uint>() << 0,                                                                  // makesSenseForStatuses
         Features() << Channel::FeatureCore,                                                 // dependsOnFeatures (core)
-        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE,   // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE1,   // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::enableChatStateNotifications,
         this);
     introspectables[FeatureChatState] = introspectableChatState;
@@ -276,8 +276,8 @@ void TextChannel::Private::enableChatStateNotifications(
         TextChannel::Private *self)
 {
     TextChannel *parent = self->parent;
-    Client::ChannelInterfaceChatStateInterface *chatStateInterface =
-        parent->interface<Client::ChannelInterfaceChatStateInterface>();
+    Client::ChannelInterfaceChatState1Interface *chatStateInterface =
+        parent->interface<Client::ChannelInterfaceChatState1Interface>();
 
     parent->connect(chatStateInterface,
             SIGNAL(ChatStateChanged(uint,uint)),
@@ -692,7 +692,7 @@ bool TextChannel::hasMessagesInterface() const
  */
 bool TextChannel::hasChatStateInterface() const
 {
-    return interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE);
+    return interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE1);
 }
 
 /**
@@ -1048,7 +1048,7 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
  */
 PendingOperation *TextChannel::requestChatState(ChannelChatState state)
 {
-    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE)) {
+    if (!interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_CHAT_STATE1)) {
         warning() << "TextChannel::requestChatState() used with no chat "
             "state interface";
         return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
@@ -1056,8 +1056,8 @@ PendingOperation *TextChannel::requestChatState(ChannelChatState state)
                 TextChannelPtr(this));
     }
 
-    Client::ChannelInterfaceChatStateInterface *chatStateInterface =
-        interface<Client::ChannelInterfaceChatStateInterface>();
+    Client::ChannelInterfaceChatState1Interface *chatStateInterface =
+        interface<Client::ChannelInterfaceChatState1Interface>();
     return new PendingVoid(chatStateInterface->SetChatState(
                 (uint) state), TextChannelPtr(this));
 }

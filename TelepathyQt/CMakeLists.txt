@@ -219,7 +219,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceAnonymity1Interface
     ChannelInterfaceCaptchaAuthentication1Interface
     ChannelInterfaceCallStateInterface
-    ChannelInterfaceChatStateInterface
+    ChannelInterfaceChatState1Interface
     ChannelInterfaceConference1Interface
     ChannelInterfaceDestroyable1Interface
     ChannelInterfaceDTMFInterface
