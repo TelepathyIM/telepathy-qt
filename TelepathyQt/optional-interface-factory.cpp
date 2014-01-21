@@ -160,7 +160,7 @@ void OptionalInterfaceCache::cache(AbstractInterface *interface) const
  * Return a pointer to a valid instance of a interface class, associated
  * with the same remote object as the given main interface instance. The
  * given main interface must be of the class the optional interface is
- * generated for (for eg. ChannelInterfaceGroupInterface this means
+ * generated for (for eg. ChannelInterfaceGroup1Interface this means
  * ChannelInterface) or a subclass.
  *
  * First invocation of this method for a particular optional interface

@@ -54,8 +54,8 @@
 namespace Tp
 {
 
-using TpFuture::Client::ChannelInterfaceMergeableConferenceInterface;
-using TpFuture::Client::ChannelInterfaceSplittableInterface;
+using TpFuture::Client::ChannelInterfaceMergeableConference1Interface;
+using TpFuture::Client::ChannelInterfaceSplittable1Interface;
 
 struct TP_QT_NO_EXPORT Channel::Private
 {
@@ -99,16 +99,16 @@ struct TP_QT_NO_EXPORT Channel::Private
     QString groupMemberChangeDetailsTelepathyError(
             const GroupMemberChangeDetails &details);
 
-    inline ChannelInterfaceMergeableConferenceInterface *mergeableConferenceInterface(
+    inline ChannelInterfaceMergeableConference1Interface *mergeableConferenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return parent->optionalInterface<ChannelInterfaceMergeableConferenceInterface>(check);
+        return parent->optionalInterface<ChannelInterfaceMergeableConference1Interface>(check);
     }
 
-    inline ChannelInterfaceSplittableInterface *splittableInterface(
+    inline ChannelInterfaceSplittable1Interface *splittableInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return parent->optionalInterface<ChannelInterfaceSplittableInterface>(check);
+        return parent->optionalInterface<ChannelInterfaceSplittable1Interface>(check);
     }
 
     void processConferenceChannelRemoved();
@@ -132,7 +132,7 @@ struct TP_QT_NO_EXPORT Channel::Private
     QVariantMap immutableProperties;
 
     // Optional interface proxies
-    Client::ChannelInterfaceGroupInterface *group;
+    Client::ChannelInterfaceGroup1Interface *group;
     Client::ChannelInterfaceConferenceInterface *conference;
 
     ReadinessHelper *readinessHelper;
@@ -445,7 +445,7 @@ void Channel::Private::introspectGroup()
     Q_ASSERT(properties != 0);
 
     if (!group) {
-        group = parent->interface<Client::ChannelInterfaceGroupInterface>();
+        group = parent->interface<Client::ChannelInterfaceGroup1Interface>();
         Q_ASSERT(group != 0);
     }
 
