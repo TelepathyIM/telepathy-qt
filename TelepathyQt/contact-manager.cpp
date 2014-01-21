@@ -1244,15 +1244,15 @@ PendingOperation *ContactManager::refreshContactInfo(const QList<ContactPtr> &co
     return mPriv->refreshInfoOp;
 }
 
-void ContactManager::onAliasesChanged(const AliasPairList &aliases)
+void ContactManager::onAliasesChanged(const AliasMap &aliases)
 {
     debug() << "Got AliasesChanged for" << aliases.size() << "contacts";
 
-    foreach (AliasPair pair, aliases) {
-        ContactPtr contact = lookupContactByHandle(pair.handle);
-
+    QMap::ConstIterator<uint, QString> it(aliases);
+    while (it.hasNext()) {
+        ContactPtr contact = lookupContactByHandle(it.key());
         if (contact) {
-            contact->receiveAlias(pair.alias);
+            contact->receiveAlias(it.value());
         }
     }
 }
@@ -1516,8 +1516,8 @@ void ContactManager::ensureTracking(const Feature &feature)
             conn->interface<Client::ConnectionInterfaceAliasingInterface>();
 
         connect(aliasingInterface,
-                SIGNAL(AliasesChanged(Tp::AliasPairList)),
-                SLOT(onAliasesChanged(Tp::AliasPairList)));
+                SIGNAL(AliasesChanged(Tp::AliasMap)),
+                SLOT(onAliasesChanged(Tp::AliasMap)));
     } else if (feature == Contact::FeatureAvatarData) {
         Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
             conn->interface<Client::ConnectionInterfaceAvatarsInterface>();

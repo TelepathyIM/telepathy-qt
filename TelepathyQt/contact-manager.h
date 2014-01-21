@@ -148,7 +148,7 @@ Q_SIGNALS:
             const Tp::Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void onAliasesChanged(const Tp::AliasPairList &);
+    TP_QT_NO_EXPORT void onAliasesChanged(const Tp::AliasMap &);
     TP_QT_NO_EXPORT void doRequestAvatars();
     TP_QT_NO_EXPORT void onAvatarUpdated(uint, const QString &);
     TP_QT_NO_EXPORT void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
