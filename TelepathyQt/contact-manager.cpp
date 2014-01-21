@@ -170,11 +170,11 @@ void ContactManager::PendingRefreshContactInfo::refreshInfo()
     }
 
     debug() << "Calling ContactInfo.RefreshContactInfo for" << mToRequest.size() << "handles";
-    Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface =
-        mConn->interface<Client::ConnectionInterfaceContactInfoInterface>();
-    Q_ASSERT(contactInfoInterface);
+    Client::ConnectionInterfaceContactInfo1Interface *contactInfo1Interface =
+        mConn->interface<Client::ConnectionInterfaceContactInfo1Interface>();
+    Q_ASSERT(contactInfo1Interface);
     PendingVoid *nested = new PendingVoid(
-            contactInfoInterface->RefreshContactInfo(mToRequest.toList()),
+            contactInfo1Interface->RefreshContactInfo(mToRequest.toList()),
             mConn);
     connect(nested,
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -1248,8 +1248,8 @@ void ContactManager::onAliasesChanged(const AliasMap &aliases)
 {
     debug() << "Got AliasesChanged for" << aliases.size() << "contacts";
 
-    QMap::ConstIterator<uint, QString> it(aliases);
-    while (it.hasNext()) {
+    QMap<uint, QString>::const_iterator it;
+    for (it = aliases.constBegin(); it != aliases.constEnd(); ++it) {
         ContactPtr contact = lookupContactByHandle(it.key());
         if (contact) {
             contact->receiveAlias(it.value());
@@ -1306,10 +1306,10 @@ void ContactManager::doRequestAvatars()
 
     debug() << "Requesting avatar(s) for" << contacts.size() - found << "contact(s)";
 
-    Client::ConnectionInterfaceAvatarsInterface *avatarsInterface =
-        connection()->interface<Client::ConnectionInterfaceAvatarsInterface>();
+    Client::ConnectionInterfaceAvatars1Interface *avatars1Interface =
+        connection()->interface<Client::ConnectionInterfaceAvatars1Interface>();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-        avatarsInterface->RequestAvatars(notFound),
+        avatars1Interface->RequestAvatars(notFound),
         this);
     connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)), watcher,
         SLOT(deleteLater()));
@@ -1375,8 +1375,8 @@ void ContactManager::onPresencesChanged(const ContactSimplePresenceMap &presence
 {
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
 
-    QMap::ConstIterator<uint, Tp::SimplePresence> it(presences);
-    while (it.hasNext()) {
+    QMap<uint, Tp::SimplePresence>::const_iterator it;
+    for (it = presences.constBegin(); it != presences.constEnd(); ++it) {
         ContactPtr contact = lookupContactByHandle(it.key());
 
         if (contact) {
@@ -1478,25 +1478,25 @@ ContactPtr ContactManager::ensureContact(uint bareHandle, const QString &id,
 QString ContactManager::featureToInterface(const Feature &feature)
 {
     if (feature == Contact::FeatureAlias) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING1;
     } else if (feature == Contact::FeatureAvatarToken) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS1;
     } else if (feature == Contact::FeatureAvatarData) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS1;
     } else if (feature == Contact::FeatureSimplePresence) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1;
     } else if (feature == Contact::FeatureCapabilities) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES1;
     } else if (feature == Contact::FeatureLocation) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_LOCATION;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_LOCATION1;
     } else if (feature == Contact::FeatureInfo) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO1;
     } else if (feature == Contact::FeatureRosterGroups) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS1;
     } else if (feature == Contact::FeatureAddresses) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING1;
     } else if (feature == Contact::FeatureClientTypes) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_CLIENT_TYPES;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CLIENT_TYPES1;
     } else {
         warning() << "ContactManager doesn't know which interface corresponds to feature"
             << feature;
@@ -1513,59 +1513,59 @@ void ContactManager::ensureTracking(const Feature &feature)
     ConnectionPtr conn(connection());
 
     if (feature == Contact::FeatureAlias) {
-        Client::ConnectionInterfaceAliasing1Interface *aliasingInterface =
+        Client::ConnectionInterfaceAliasing1Interface *aliasing1Interface =
             conn->interface<Client::ConnectionInterfaceAliasing1Interface>();
 
-        connect(aliasingInterface,
+        connect(aliasing1Interface,
                 SIGNAL(AliasesChanged(Tp::AliasMap)),
                 SLOT(onAliasesChanged(Tp::AliasMap)));
     } else if (feature == Contact::FeatureAvatarData) {
-        Client::ConnectionInterfaceAvatars1Interface *avatarsInterface =
+        Client::ConnectionInterfaceAvatars1Interface *avatars1Interface =
             conn->interface<Client::ConnectionInterfaceAvatars1Interface>();
 
-        connect(avatarsInterface,
+        connect(avatars1Interface,
                 SIGNAL(AvatarRetrieved(uint,QString,QByteArray,QString)),
                 SLOT(onAvatarRetrieved(uint,QString,QByteArray,QString)));
     } else if (feature == Contact::FeatureAvatarToken) {
-        Client::ConnectionInterfaceAvatars1Interface *avatarsInterface =
+        Client::ConnectionInterfaceAvatars1Interface *avatars1Interface =
             conn->interface<Client::ConnectionInterfaceAvatars1Interface>();
 
-        connect(avatarsInterface,
+        connect(avatars1Interface,
                 SIGNAL(AvatarUpdated(uint,QString)),
                 SLOT(onAvatarUpdated(uint,QString)));
     } else if (feature == Contact::FeatureCapabilities) {
-        Client::ConnectionInterfaceContactCapabilities1Interface *contactCapabilitiesInterface =
-            conn->interface<Client::ConnectionInterfaceContact1CapabilitiesInterface>();
+        Client::ConnectionInterfaceContactCapabilities1Interface *contactCapabilities1Interface =
+            conn->interface<Client::ConnectionInterfaceContactCapabilities1Interface>();
 
-        connect(contactCapabilitiesInterface,
+        connect(contactCapabilities1Interface,
                 SIGNAL(ContactCapabilitiesChanged(Tp::ContactCapabilitiesMap)),
                 SLOT(onCapabilitiesChanged(Tp::ContactCapabilitiesMap)));
     } else if (feature == Contact::FeatureInfo) {
-        Client::ConnectionInterfaceContactInfo1Interface *contactInfoInterface =
+        Client::ConnectionInterfaceContactInfo1Interface *contactInfo1Interface =
             conn->interface<Client::ConnectionInterfaceContactInfo1Interface>();
 
-        connect(contactInfoInterface,
+        connect(contactInfo1Interface,
                 SIGNAL(ContactInfoChanged(uint,Tp::ContactInfoFieldList)),
                 SLOT(onContactInfoChanged(uint,Tp::ContactInfoFieldList)));
     } else if (feature == Contact::FeatureLocation) {
-        Client::ConnectionInterfaceLocation1Interface *locationInterface =
+        Client::ConnectionInterfaceLocation1Interface *location1Interface =
             conn->interface<Client::ConnectionInterfaceLocation1Interface>();
 
-        connect(locationInterface,
+        connect(location1Interface,
                 SIGNAL(LocationUpdated(uint,QVariantMap)),
                 SLOT(onLocationUpdated(uint,QVariantMap)));
     } else if (feature == Contact::FeatureSimplePresence) {
-        Client::ConnectionInterfacePresence1Interface *simplePresenceInterface =
+        Client::ConnectionInterfacePresence1Interface *simplePresence1Interface =
             conn->interface<Client::ConnectionInterfacePresence1Interface>();
 
-        connect(simplePresenceInterface,
+        connect(simplePresence1Interface,
                 SIGNAL(PresencesChanged(Tp::ContactSimplePresenceMap)),
                 SLOT(onPresencesChanged(Tp::ContactSimplePresenceMap)));
     } else if (feature == Contact::FeatureClientTypes) {
-        Client::ConnectionInterfaceClientTypes1Interface *clientTypesInterface =
+        Client::ConnectionInterfaceClientTypes1Interface *clientTypes1Interface =
             conn->interface<Client::ConnectionInterfaceClientTypes1Interface>();
 
-        connect(clientTypesInterface,
+        connect(clientTypes1Interface,
                 SIGNAL(ClientTypesUpdated(uint,QStringList)),
                 SLOT(onClientTypesUpdated(uint,QStringList)));
     } else if (feature == Contact::FeatureRosterGroups || feature == Contact::FeatureAddresses) {
