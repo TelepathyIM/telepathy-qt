@@ -102,8 +102,8 @@ void StreamTubeChannel::Private::introspectStreamTube(
     StreamTubeChannel *parent = self->parent;
 
     debug() << "Introspecting stream tube properties";
-    Client::ChannelTypeStreamTubeInterface *streamTubeInterface =
-            parent->interface<Client::ChannelTypeStreamTubeInterface>();
+    Client::ChannelTypeStreamTube1Interface *streamTubeInterface =
+            parent->interface<Client::ChannelTypeStreamTube1Interface>();
 
     PendingVariantMap *pvm = streamTubeInterface->requestAllProperties();
     parent->connect(pvm,
@@ -116,8 +116,8 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
 {
     StreamTubeChannel *parent = self->parent;
 
-    Client::ChannelTypeStreamTubeInterface *streamTubeInterface =
-            parent->interface<Client::ChannelTypeStreamTubeInterface>();
+    Client::ChannelTypeStreamTube1Interface *streamTubeInterface =
+            parent->interface<Client::ChannelTypeStreamTube1Interface>();
 
     parent->connect(streamTubeInterface,
             SIGNAL(ConnectionClosed(uint,QString,QString)),

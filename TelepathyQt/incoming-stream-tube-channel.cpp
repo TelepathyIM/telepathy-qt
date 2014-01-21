@@ -268,7 +268,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
 
     // Perform the actual call
     PendingVariant *pv = new PendingVariant(
-            interface<Client::ChannelTypeStreamTubeInterface>()->Accept(
+            interface<Client::ChannelTypeStreamTube1Interface>()->Accept(
                     addressType(),
                     accessControl,
                     QDBusVariant(controlParameter)),
@@ -397,7 +397,7 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 
     // Perform the actual call
     PendingVariant *pv = new PendingVariant(
-            interface<Client::ChannelTypeStreamTubeInterface>()->Accept(
+            interface<Client::ChannelTypeStreamTube1Interface>()->Accept(
                     addressType(),
                     accessControl,
                     accessControlParam),

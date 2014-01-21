@@ -250,7 +250,7 @@ set(telepathy_qt_HEADERS
     ChannelTypeServerAuthentication1Interface
     ChannelTypeServerTLSConnection1Interface
     ChannelTypeStreamedMediaInterface
-    ChannelTypeStreamTubeInterface
+    ChannelTypeStreamTube1Interface
     ChannelTypeTextInterface
     ChannelTypeTubeInterface
     ChannelTypeTubesInterface

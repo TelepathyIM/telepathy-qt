@@ -360,7 +360,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
         addr.port = port;
 
         PendingVoid *pv = new PendingVoid(
-                interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
+                interface<Client::ChannelTypeStreamTube1Interface>()->Offer(
                         SocketAddressTypeIPv4,
                         QDBusVariant(QVariant::fromValue(addr)),
                         accessControl,
@@ -396,7 +396,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
         addr.port = port;
 
         PendingVoid *pv = new PendingVoid(
-                interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
+                interface<Client::ChannelTypeStreamTube1Interface>()->Offer(
                         SocketAddressTypeIPv6,
                         QDBusVariant(QVariant::fromValue(addr)),
                         accessControl,
@@ -518,7 +518,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
         setLocalAddress(socketAddress);
 
         PendingVoid *pv = new PendingVoid(
-                interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
+                interface<Client::ChannelTypeStreamTube1Interface>()->Offer(
                         SocketAddressTypeAbstractUnix,
                         QDBusVariant(QVariant(socketAddress.toLatin1())),
                         accessControl,
@@ -549,7 +549,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
         setLocalAddress(socketAddress);
 
         PendingVoid *pv = new PendingVoid(
-                interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
+                interface<Client::ChannelTypeStreamTube1Interface>()->Offer(
                         SocketAddressTypeUnix,
                         QDBusVariant(QVariant(socketAddress.toLatin1())),
                         accessControl,
