@@ -977,8 +977,8 @@ PendingStringList *Contact::requestClientTypes()
             << "for which FeatureClientTypes hasn't been requested - the operation will fail";
     }
 
-    Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface =
-        manager()->connection()->interface<Client::ConnectionInterfaceClientTypesInterface>();
+    Client::ConnectionInterfaceClientTypes1Interface *clientTypesInterface =
+        manager()->connection()->interface<Client::ConnectionInterfaceClientTypes1Interface>();
 
     return new PendingStringList(
             clientTypesInterface->RequestClientTypes(mPriv->handle.at(0)),
@@ -1017,7 +1017,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
 
         if (feature == FeatureAlias) {
             maybeAlias = qdbus_cast<QString>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING + QLatin1String("/alias")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING1 + QLatin1String("/alias")));
 
             if (!maybeAlias.isEmpty()) {
                 receiveAlias(maybeAlias);
@@ -1031,9 +1031,9 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureAvatarToken) {
             if (attributes.contains(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS + QLatin1String("/token"))) {
+                        TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS1 + QLatin1String("/token"))) {
                 receiveAvatarToken(qdbus_cast<QString>(attributes.value(
-                                TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS + QLatin1String("/token"))));
+                                TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS1 + QLatin1String("/token"))));
             } else {
                 if (manager()->supportedFeatures().contains(FeatureAvatarToken)) {
                     // AvatarToken being supported but not included in the mapping indicates
@@ -1076,7 +1076,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureLocation) {
             maybeLocation = qdbus_cast<QVariantMap>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_LOCATION + QLatin1String("/location")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_LOCATION1 + QLatin1String("/location")));
 
             if (!maybeLocation.isEmpty()) {
                 receiveLocation(maybeLocation);
@@ -1091,7 +1091,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureSimplePresence) {
             maybePresence = qdbus_cast<SimplePresence>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE + QLatin1String("/presence")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1 + QLatin1String("/presence")));
 
             if (!maybePresence.status.isEmpty()) {
                 receiveSimplePresence(maybePresence);
@@ -1105,13 +1105,13 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             mPriv->groups = groups.toSet();
         } else if (feature == FeatureAddresses) {
             VCardFieldAddressMap addresses = qdbus_cast<VCardFieldAddressMap>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/addresses")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING1 + QLatin1String("/addresses")));
             QStringList uris = qdbus_cast<QStringList>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING + QLatin1String("/uris")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING1 + QLatin1String("/uris")));
             receiveAddresses(addresses, uris);
         } else if (feature == FeatureClientTypes) {
             QStringList maybeClientTypes = qdbus_cast<QStringList>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_CLIENT_TYPES + QLatin1String("/client-types")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_CLIENT_TYPES1 + QLatin1String("/client-types")));
 
             if (!maybeClientTypes.isEmpty()) {
                 receiveClientTypes(maybeClientTypes);
