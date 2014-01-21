@@ -187,12 +187,12 @@ set(telepathy_qt_HEADERS
     CallContentMediaDescriptionInterfaceRTPHeaderExtensionsInterface
     call-content-media-description.h
     CallStream
-    CallStreamInterface
-    CallStreamInterfaceMediaInterface
+    Call1StreamInterface
+    Call1StreamInterfaceMediaInterface
     call-stream.h
     CallStreamEndpoint
     CallStreamEndpoint
-    CallStreamEndpointInterface
+    Call1StreamEndpointInterface
     call-stream-endpoint.h
     CapabilitiesBase
     capabilities-base.h
@@ -701,8 +701,8 @@ tpqt_client_generator(account clientaccount AccountManager Tp::Client --mainifac
 tpqt_client_generator(account-manager clientam AccountManager Tp::Client --mainiface=Tp::Client::AccountManagerInterface DEPENDS account-manager-spec-xincludator)
 tpqt_client_generator(call-content clientcall CallContent Tp::Client --mainiface=Tp::Client::CallContentInterface DEPENDS call-content-spec-xincludator)
 tpqt_client_generator(call-content-media-description clientcall CallContentMediaDescriptionInterface Tp::Client --mainiface=Tp::Client::CallContentMediaDescriptionInterface DEPENDS call-content-media-description-spec-xincludator)
-tpqt_client_generator(call-stream clientcall CallStream Tp::Client --mainiface=Tp::Client::CallStreamInterface DEPENDS call-stream-spec-xincludator)
-tpqt_client_generator(call-stream-endpoint clientcall CallStreamEndpoint Tp::Client --mainiface=Tp::Client::CallStreamEndpointInterface DEPENDS call-stream-endpoint-spec-xincludator)
+tpqt_client_generator(call-stream clientcall CallStream Tp::Client --mainiface=Tp::Client::Call1StreamInterface DEPENDS call-stream-spec-xincludator)
+tpqt_client_generator(call-stream-endpoint clientcall CallStreamEndpoint Tp::Client --mainiface=Tp::Client::Call1StreamEndpointInterface DEPENDS call-stream-endpoint-spec-xincludator)
 tpqt_client_generator(channel clientchannel Channel Tp::Client --mainiface=Tp::Client::ChannelInterface DEPENDS channel-spec-xincludator)
 tpqt_client_generator(channel-dispatcher clientchanneldispatcher ChannelDispatcher Tp::Client --mainiface=Tp::Client::ChannelDispatcherInterface DEPENDS channel-dispatcher-spec-xincludator)
 tpqt_client_generator(channel-dispatch-operation clientchanneldispatchoperation ChannelDispatchOperation Tp::Client --mainiface=Tp::Client::ChannelDispatchOperationInterface DEPENDS channel-dispatch-operation-spec-xincludator)

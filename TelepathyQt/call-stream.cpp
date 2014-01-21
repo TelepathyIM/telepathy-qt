@@ -58,7 +58,7 @@ struct TP_QT_NO_EXPORT CallStream::Private
     WeakPtr<CallContent> content;
 
     // Mandatory proxies
-    Client::CallStreamInterface *streamInterface;
+    Client::Call1StreamInterface *streamInterface;
 
     ReadinessHelper *readinessHelper;
 
@@ -104,7 +104,7 @@ struct TP_QT_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
 CallStream::Private::Private(CallStream *parent, const CallContentPtr &content)
     : parent(parent),
       content(content.data()),
-      streamInterface(parent->interface<Client::CallStreamInterface>()),
+      streamInterface(parent->interface<Client::Call1StreamInterface>()),
       readinessHelper(parent->readinessHelper()),
       localSendingState(SendingStateNone),
       canRequestReceiving(true)
@@ -337,14 +337,14 @@ PendingOperation *CallStream::requestReceiving(const ContactPtr &contact, bool r
 void CallStream::gotMainProperties(PendingOperation *op)
 {
     if (op->isError()) {
-        warning().nospace() << "CallStreamInterface::requestAllProperties() failed with " <<
+        warning().nospace() << "Call1StreamInterface::requestAllProperties() failed with " <<
             op->errorName() << ": " << op->errorMessage();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
             op->errorName(), op->errorMessage());
         return;
     }
 
-    debug() << "Got reply to CallStreamInterface::requestAllProperties()";
+    debug() << "Got reply to Call1StreamInterface::requestAllProperties()";
 
     PendingVariantMap *pvm = qobject_cast<PendingVariantMap*>(op);
     Q_ASSERT(pvm);
