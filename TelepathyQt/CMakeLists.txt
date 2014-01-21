@@ -710,7 +710,7 @@ tpqt_client_generator(client clientclient Client Tp::Client --mainiface=Tp::Clie
 tpqt_client_generator(connection clientconn Connection Tp::Client --mainiface=Tp::Client::ConnectionInterface DEPENDS connection-spec-xincludator)
 tpqt_client_generator(connection-manager clientcm ConnectionManager Tp::Client --mainiface=Tp::Client::ConnectionManagerInterface DEPENDS connection-manager-spec-xincludator)
 tpqt_client_generator(dbus clientdbus DBus Tp::Client::DBus DEPENDS dbus-spec-xincludator)
-tpqt_client_generator(debug-receiver clientdebug DebugReceiver Tp::Client --mainiface=Tp::Client::DebugInterface DEPENDS debug-receiver-spec-xincludator)
+tpqt_client_generator(debug-receiver clientdebug DebugReceiver Tp::Client --mainiface=Tp::Client::Debug1Interface DEPENDS debug-receiver-spec-xincludator)
 tpqt_client_generator(properties clientprops Properties Tp::Client DEPENDS properties-spec-xincludator)
 tpqt_client_generator(tls-certificate clienttls TLSCertificate Tp::Client DEPENDS tls-certificate-spec-xincludator)
 

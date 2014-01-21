@@ -42,12 +42,12 @@ struct TP_QT_NO_EXPORT DebugReceiver::Private
     static void introspectCore(Private *self);
 
     DebugReceiver *parent;
-    Client::DebugInterface *baseInterface;
+    Client::Debug1Interface *baseInterface;
 };
 
 DebugReceiver::Private::Private(DebugReceiver *parent)
     : parent(parent),
-      baseInterface(new Client::DebugInterface(parent))
+      baseInterface(new Client::Debug1Interface(parent))
 {
     ReadinessHelper::Introspectables introspectables;
 
