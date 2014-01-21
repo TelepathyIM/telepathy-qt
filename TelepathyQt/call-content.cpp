@@ -286,8 +286,8 @@ PendingOperation *CallContent::startDTMFTone(DTMFEvent event)
                 CallContentPtr(this));
     }
 
-    Client::CallContentInterfaceDTMFInterface *dtmfInterface =
-        interface<Client::CallContentInterfaceDTMFInterface>();
+    Client::Call1ContentInterfaceDTMF1Interface *dtmfInterface =
+        interface<Client::Call1ContentInterfaceDTMF1Interface>();
     return new PendingVoid(dtmfInterface->StartTone(event), CallContentPtr(this));
 }
 
@@ -315,8 +315,8 @@ PendingOperation *CallContent::stopDTMFTone()
                 CallContentPtr(this));
     }
 
-    Client::CallContentInterfaceDTMFInterface *dtmfInterface =
-        interface<Client::CallContentInterfaceDTMFInterface>();
+    Client::Call1ContentInterfaceDTMF1Interface *dtmfInterface =
+        interface<Client::Call1ContentInterfaceDTMF1Interface>();
     return new PendingVoid(dtmfInterface->StopTone(), CallContentPtr(this));
 }
 

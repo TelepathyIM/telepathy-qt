@@ -176,7 +176,7 @@ set(telepathy_qt_HEADERS
     CallContent
     CallContentInterface
     CallContentInterfaceAudioControlInterface
-    CallContentInterfaceDTMFInterface
+    Call1ContentInterfaceDTMF1Interface
     CallContentInterfaceMediaInterface
     CallContentInterfaceVideoControlInterface
     call-content.h
