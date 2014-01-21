@@ -992,19 +992,19 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
     mPriv->id = qdbus_cast<QString>(attributes[
             TP_QT_IFACE_CONNECTION + QLatin1String("/contact-id")]);
 
-    if (attributes.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
+    if (attributes.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST1 +
                 QLatin1String("/subscribe"))) {
         uint subscriptionState = qdbus_cast<uint>(attributes.value(
-                     TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/subscribe")));
+                     TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST1 + QLatin1String("/subscribe")));
         setSubscriptionState((SubscriptionState) subscriptionState);
     }
 
-    if (attributes.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST +
+    if (attributes.contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST1 +
                 QLatin1String("/publish"))) {
         uint publishState = qdbus_cast<uint>(attributes.value(
-                    TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish")));
+                    TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST1 + QLatin1String("/publish")));
         QString publishRequest = qdbus_cast<QString>(attributes.value(
-                    TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST + QLatin1String("/publish-request")));
+                    TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST1 + QLatin1String("/publish-request")));
         setPublishState((SubscriptionState) publishState, publishRequest);
     }
 
@@ -1046,7 +1046,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureCapabilities) {
             maybeCaps = qdbus_cast<RequestableChannelClassList>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES + QLatin1String("/capabilities")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES1 + QLatin1String("/capabilities")));
 
             if (!maybeCaps.isEmpty()) {
                 receiveCapabilities(maybeCaps);
@@ -1061,7 +1061,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureInfo) {
             maybeInfo = qdbus_cast<ContactInfoFieldList>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO + QLatin1String("/info")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO1 + QLatin1String("/info")));
 
             if (!maybeInfo.isEmpty()) {
                 receiveInfo(maybeInfo);
@@ -1101,7 +1101,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             }
         } else if (feature == FeatureRosterGroups) {
             QStringList groups = qdbus_cast<QStringList>(attributes.value(
-                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS + QLatin1String("/groups")));
+                        TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS1 + QLatin1String("/groups")));
             mPriv->groups = groups.toSet();
         } else if (feature == FeatureAddresses) {
             VCardFieldAddressMap addresses = qdbus_cast<VCardFieldAddressMap>(attributes.value(

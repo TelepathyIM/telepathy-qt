@@ -163,7 +163,7 @@ void ContactManager::PendingRefreshContactInfo::refreshInfo()
         return;
     }
 
-    if (!mConn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO)) {
+    if (!mConn->hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO1)) {
         setFinishedWithError(TP_QT_ERROR_NOT_IMPLEMENTED,
                 QLatin1String("Connection does not support ContactInfo interface"));
         return;
@@ -1485,13 +1485,13 @@ QString ContactManager::featureToInterface(const Feature &feature)
     } else if (feature == Contact::FeatureSimplePresence) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
     } else if (feature == Contact::FeatureCapabilities) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES1;
     } else if (feature == Contact::FeatureLocation) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_LOCATION;
     } else if (feature == Contact::FeatureInfo) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO1;
     } else if (feature == Contact::FeatureRosterGroups) {
-        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS;
+        return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS1;
     } else if (feature == Contact::FeatureAddresses) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING;
     } else if (feature == Contact::FeatureClientTypes) {
