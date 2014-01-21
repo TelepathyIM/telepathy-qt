@@ -1371,15 +1371,17 @@ void ContactManager::onAvatarRetrieved(uint handle, const QString &token,
     }
 }
 
-void ContactManager::onPresencesChanged(const SimpleContactPresences &presences)
+void ContactManager::onPresencesChanged(const ContactSimplePresenceMap &presences)
 {
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
 
+    QMap::ConstIterator<uint, QString> it(presences);
+    while (it.hasNext()) {
     foreach (uint handle, presences.keys()) {
-        ContactPtr contact = lookupContactByHandle(handle);
+        ContactPtr contact = lookupContactByHandle(it.key());
 
         if (contact) {
-            contact->receiveSimplePresence(presences[handle]);
+            contact->receiveSimplePresence(it.value());
         }
     }
 }
@@ -1558,8 +1560,8 @@ void ContactManager::ensureTracking(const Feature &feature)
             conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
 
         connect(simplePresenceInterface,
-                SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
-                SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
+                SIGNAL(PresencesChanged(Tp::ContactSimplePresenceMap)),
+                SLOT(onPresencesChanged(Tp::ContactSimplePresenceMap)));
     } else if (feature == Contact::FeatureClientTypes) {
         Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface =
             conn->interface<Client::ConnectionInterfaceClientTypesInterface>();
