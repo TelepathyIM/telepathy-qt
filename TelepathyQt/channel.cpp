@@ -2773,63 +2773,6 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
     mPriv->continueIntrospection();
 }
 
-void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QString> reply = *watcher;
-
-    if (reply.isError()) {
-        warning().nospace() << "Channel::GetChannelType() failed with " <<
-            reply.error().name() << ": " << reply.error().message() <<
-            ", Channel officially dead";
-        invalidate(reply.error());
-        return;
-    }
-
-    debug() << "Got reply to fallback Channel::GetChannelType()";
-    mPriv->channelType = reply.value();
-    mPriv->continueIntrospection();
-}
-
-void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<uint, uint> reply = *watcher;
-
-    if (reply.isError()) {
-        warning().nospace() << "Channel::GetHandle() failed with " <<
-            reply.error().name() << ": " << reply.error().message() <<
-            ", Channel officially dead";
-        invalidate(reply.error());
-        return;
-    }
-
-    debug() << "Got reply to fallback Channel::GetHandle()";
-    mPriv->targetHandleType = reply.argumentAt<0>();
-    mPriv->targetHandle = reply.argumentAt<1>();
-    mPriv->continueIntrospection();
-}
-
-void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QStringList> reply = *watcher;
-
-    if (reply.isError()) {
-        warning().nospace() << "Channel::GetInterfaces() failed with " <<
-            reply.error().name() << ": " << reply.error().message() <<
-            ", Channel officially dead";
-        invalidate(reply.error());
-        return;
-    }
-
-    debug() << "Got reply to fallback Channel::GetInterfaces()";
-    setInterfaces(reply.value());
-    mPriv->readinessHelper->setInterfaces(interfaces());
-    mPriv->nowHaveInterfaces();
-
-    mPriv->fakeGroupInterfaceIfNeeded();
-
-    mPriv->continueIntrospection();
-}
-
 void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
