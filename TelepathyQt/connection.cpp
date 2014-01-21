@@ -272,7 +272,7 @@ Connection::Private::Private(Connection *parent,
     ReadinessHelper::Introspectable introspectableBalance(
         QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
-        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_BALANCE,           // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_BALANCE1,           // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectBalance,
         this);
     introspectables[FeatureAccountBalance] = introspectableBalance;
@@ -493,8 +493,8 @@ void Connection::Private::introspectBalance(Connection::Private *self)
 
     // we already checked if balance interface exists, so bypass requests
     // interface checking
-    Client::ConnectionInterfaceBalanceInterface *iface =
-        self->parent->interface<Client::ConnectionInterfaceBalanceInterface>();
+    Client::ConnectionInterfaceBalance1Interface *iface =
+        self->parent->interface<Client::ConnectionInterfaceBalance1Interface>();
 
     debug() << "Connecting to Balance.BalanceChanged";
     self->parent->connect(iface,
@@ -504,7 +504,7 @@ void Connection::Private::introspectBalance(Connection::Private *self)
     debug() << "Retrieving balance";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             self->properties->Get(
-                TP_QT_IFACE_CONNECTION_INTERFACE_BALANCE,
+                TP_QT_IFACE_CONNECTION_INTERFACE_BALANCE1,
                 QLatin1String("AccountBalance")), self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
