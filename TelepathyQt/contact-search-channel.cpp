@@ -69,7 +69,7 @@ struct TP_QT_NO_EXPORT ContactSearchChannel::Private
 
     QVariantMap immutableProperties;
 
-    Client::ChannelTypeContactSearchInterface *contactSearchInterface;
+    Client::ChannelTypeContactSearch1Interface *contactSearchInterface;
     Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
@@ -90,7 +90,7 @@ ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
         const QVariantMap &immutableProperties)
     : parent(parent),
       immutableProperties(immutableProperties),
-      contactSearchInterface(parent->interface<Client::ChannelTypeContactSearchInterface>()),
+      contactSearchInterface(parent->interface<Client::ChannelTypeContactSearch1Interface>()),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
       searchState(ChannelContactSearchStateNotStarted),
