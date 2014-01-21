@@ -276,7 +276,6 @@ set(telepathy_qt_HEADERS
     ConnectionInterfaceAnonymityInterface
     ConnectionInterfaceAvatarsInterface
     ConnectionInterfaceBalanceInterface
-    ConnectionInterfaceCapabilitiesInterface
     ConnectionInterfaceCellularInterface
     ConnectionInterfaceContactBlockingInterface
     ConnectionInterfaceClientTypesInterface
