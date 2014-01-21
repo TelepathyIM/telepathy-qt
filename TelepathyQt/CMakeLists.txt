@@ -235,7 +235,7 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceSecurableInterface
     ChannelInterfaceServicePointInterface
     ChannelInterfaceSMSInterface
-    ChannelInterfaceSubjectInterface
+    ChannelInterfaceSubject1Interface
     ChannelInterfaceTubeInterface
     ChannelRequest
     ChannelRequestHints
