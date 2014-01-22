@@ -1010,7 +1010,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
 
     ConnectionLowlevelPtr connLowlevel = connection()->lowlevel();
 
-    if (connLowlevel->hasImmortalHandles() && realFeatures.isEmpty()) {
+    if (realFeatures.isEmpty()) {
         // try to avoid a roundtrip if all handles have an id set and no feature was requested
         foreach (uint handle, handles) {
             if (connLowlevel->hasContactId(handle)) {
