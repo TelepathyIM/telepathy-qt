@@ -110,22 +110,6 @@ public:
     void setConstructorForCalls(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
-    TP_QT_DEPRECATED Features featuresForStreamedMediaCalls(const QVariantMap &additionalProps = QVariantMap()) const;
-    TP_QT_DEPRECATED void addFeaturesForStreamedMediaCalls(const Features &features,
-            const QVariantMap &additionalProps = QVariantMap());
-
-    TP_QT_DEPRECATED ConstructorConstPtr constructorForStreamedMediaCalls(
-            const QVariantMap &additionalProps = QVariantMap()) const;
-
-    template<typename Subclass>
-    TP_QT_DEPRECATED void setSubclassForStreamedMediaCalls(const QVariantMap &additionalProps = QVariantMap())
-    {
-        setConstructorForStreamedMediaCalls(SubclassCtor<Subclass>::create(), additionalProps);
-    }
-
-    TP_QT_DEPRECATED void setConstructorForStreamedMediaCalls(const ConstructorConstPtr &ctor,
-            const QVariantMap &additionalProps = QVariantMap());
-
     Features featuresForRoomLists(const QVariantMap &additionalProps = QVariantMap()) const;
     void addFeaturesForRoomLists(const Features &features,
             const QVariantMap &additionalProps = QVariantMap());
