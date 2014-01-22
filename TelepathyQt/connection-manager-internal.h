@@ -48,8 +48,6 @@ struct TP_QT_NO_EXPORT ConnectionManager::Private
     bool parseConfigFile();
 
     static void introspectMain(Private *self);
-    void introspectProtocolsLegacy();
-    void introspectParametersLegacy();
 
     static QString makeBusName(const QString &name);
     static QString makeObjectPath(const QString &name);

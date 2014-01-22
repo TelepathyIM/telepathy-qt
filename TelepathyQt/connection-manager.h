@@ -108,8 +108,6 @@ protected:
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void gotMainProperties(Tp::PendingOperation *op);
-    TP_QT_NO_EXPORT void gotProtocolsLegacy(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotParametersLegacy(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void onProtocolReady(Tp::PendingOperation *watcher);
 
 private:

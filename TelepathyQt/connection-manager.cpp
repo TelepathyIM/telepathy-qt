@@ -607,28 +607,6 @@ void ConnectionManager::Private::introspectMain(ConnectionManager::Private *self
             SLOT(gotMainProperties(Tp::PendingOperation*)));
 }
 
-void ConnectionManager::Private::introspectProtocolsLegacy()
-{
-    debug() << "Calling ConnectionManager::ListProtocols";
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            baseInterface->ListProtocols(), parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotProtocolsLegacy(QDBusPendingCallWatcher*)));
-}
-
-void ConnectionManager::Private::introspectParametersLegacy()
-{
-    foreach (const QString &protocolName, parametersQueue) {
-        debug() << "Calling ConnectionManager::GetParameters(" << protocolName << ")";
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                baseInterface->GetParameters(protocolName), parent);
-        parent->connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(gotParametersLegacy(QDBusPendingCallWatcher*)));
-    }
-}
-
 QString ConnectionManager::Private::makeBusName(const QString &name)
 {
     return QString(TP_QT_CONNECTION_MANAGER_BUS_NAME_BASE).append(name);
@@ -1009,112 +987,29 @@ void ConnectionManager::gotMainProperties(Tp::PendingOperation *op)
 
     ProtocolPropertiesMap protocolsMap =
         qdbus_cast<ProtocolPropertiesMap>(props[QLatin1String("Protocols")]);
-    if (!protocolsMap.isEmpty()) {
-        ProtocolPropertiesMap::const_iterator i = protocolsMap.constBegin();
-        ProtocolPropertiesMap::const_iterator end = protocolsMap.constEnd();
-        while (i != end) {
-            QString protocolName = i.key();
-            if (!checkValidProtocolName(protocolName)) {
-                warning() << "Protocol has an invalid name" << protocolName << "- ignoring";
-                continue;
-            }
 
-            QString escapedProtocolName = protocolName;
-            escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
-            QString protocolPath = QString(
-                    QLatin1String("%1/%2")).arg(objectPath()).arg(escapedProtocolName);
-            SharedPtr<Private::ProtocolWrapper> wrapper = SharedPtr<Private::ProtocolWrapper>(
-                    new Private::ProtocolWrapper(ConnectionManagerPtr(this),
-                        protocolPath, protocolName, i.value()));
-            connect(wrapper->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(onProtocolReady(Tp::PendingOperation*)));
-            mPriv->wrappers.insert(wrapper);
-            ++i;
+    ProtocolPropertiesMap::const_iterator i = protocolsMap.constBegin();
+    ProtocolPropertiesMap::const_iterator end = protocolsMap.constEnd();
+    while (i != end) {
+        QString protocolName = i.key();
+        if (!checkValidProtocolName(protocolName)) {
+            warning() << "Protocol has an invalid name" << protocolName << "- ignoring";
+            continue;
         }
-    } else {
-        mPriv->introspectProtocolsLegacy();
+
+        QString escapedProtocolName = protocolName;
+        escapedProtocolName.replace(QLatin1Char('-'), QLatin1Char('_'));
+        QString protocolPath = QString(
+                QLatin1String("%1/%2")).arg(objectPath()).arg(escapedProtocolName);
+        SharedPtr<Private::ProtocolWrapper> wrapper = SharedPtr<Private::ProtocolWrapper>(
+                new Private::ProtocolWrapper(ConnectionManagerPtr(this),
+                    protocolPath, protocolName, i.value()));
+        connect(wrapper->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onProtocolReady(Tp::PendingOperation*)));
+        mPriv->wrappers.insert(wrapper);
+        ++i;
     }
-}
-
-void ConnectionManager::gotProtocolsLegacy(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QStringList> reply = *watcher;
-    QStringList protocolsNames;
-
-    if (!reply.isError()) {
-        debug() << "Got reply to ConnectionManager.ListProtocols";
-        protocolsNames = reply.value();
-
-        if (!protocolsNames.isEmpty()) {
-            foreach (const QString &protocolName, protocolsNames) {
-                mPriv->protocols.append(ProtocolInfo(ConnectionManagerPtr(this), protocolName));
-                mPriv->parametersQueue.enqueue(protocolName);
-            }
-
-            mPriv->introspectParametersLegacy();
-        } else {
-            //no protocols - introspection finished
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-        }
-    } else {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
-
-        warning().nospace() <<
-            "ConnectionManager.ListProtocols failed: " <<
-            reply.error().name() << ": " << reply.error().message();
-
-        // FIXME shouldn't this invalidate the CM?
-    }
-
-    watcher->deleteLater();
-}
-
-void ConnectionManager::gotParametersLegacy(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<ParamSpecList> reply = *watcher;
-    QString protocolName = mPriv->parametersQueue.dequeue();
-    bool found = false;
-    int pos = 0;
-    foreach (const ProtocolInfo &info, mPriv->protocols) {
-        if (info.name() == protocolName) {
-            found = true;
-            break;
-        }
-        ++pos;
-    }
-    Q_ASSERT(found);
-    Q_UNUSED(found);
-
-    if (!reply.isError()) {
-        debug() << QString(QLatin1String("Got reply to ConnectionManager.GetParameters(%1)")).arg(protocolName);
-        ParamSpecList parameters = reply.value();
-        ProtocolInfo &info = mPriv->protocols[pos];
-        foreach (const ParamSpec &spec, parameters) {
-            debug() << "Parameter" << spec.name << "has flags" << spec.flags
-                << "and signature" << spec.signature;
-
-            info.addParameter(spec);
-        }
-    } else {
-        // let's remove this protocol as we can't get the params
-        mPriv->protocols.removeAt(pos);
-
-        warning().nospace() <<
-            QString(QLatin1String("ConnectionManager.GetParameters(%1) failed: ")).arg(protocolName) <<
-            reply.error().name() << ": " << reply.error().message();
-    }
-
-    if (mPriv->parametersQueue.isEmpty()) {
-        if (!mPriv->protocols.isEmpty()) {
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-        } else {
-            // we could not retrieve the params for any protocol, fail core.
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
-        }
-    }
-
-    watcher->deleteLater();
 }
 
 void ConnectionManager::onProtocolReady(Tp::PendingOperation *op)
