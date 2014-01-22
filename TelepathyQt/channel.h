@@ -216,7 +216,7 @@ private Q_SLOTS:
             const Tp::UIntList &added, const Tp::UIntList &removed,
             const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
             uint actor, uint reason);
-    TP_QT_NO_EXPORT void onMembersChangedDetailed(
+    TP_QT_NO_EXPORT void onMembersChanged(
             const Tp::UIntList &added, const Tp::UIntList &removed,
             const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
             const QVariantMap &details);

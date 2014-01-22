@@ -78,10 +78,8 @@ struct TP_QT_NO_EXPORT Channel::Private
     void nowHaveInterfaces();
     void nowHaveInitialMembers();
 
-    bool setGroupFlags(uint groupFlags);
-
     void buildContacts();
-    void doMembersChangedDetailed(const UIntList &, const UIntList &, const UIntList &,
+    void doMembersChanged(const UIntList &, const UIntList &, const UIntList &,
             const UIntList &, const QVariantMap &);
     void processMembersChanged();
     void updateContacts(const QList<ContactPtr> &contacts =
@@ -147,7 +145,6 @@ struct TP_QT_NO_EXPORT Channel::Private
 
     // Group flags
     uint groupFlags;
-    bool usingMembersChangedDetailed;
 
     // Group member introspection
     bool groupHaveMembers;
@@ -267,7 +264,6 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       requested(false),
       initiatorHandle(0),
       groupFlags(0),
-      usingMembersChangedDetailed(false),
       groupHaveMembers(false),
       buildingContacts(false),
       currentGroupMembersChangedInfo(0),
@@ -419,17 +415,10 @@ void Channel::Private::introspectGroup()
                     SLOT(onGroupFlagsChanged(uint,uint)));
 
     parent->connect(group,
-                    SIGNAL(MembersChanged(QString,Tp::UIntList,
-                            Tp::UIntList,Tp::UIntList,
-                            Tp::UIntList,uint,uint)),
-                    SLOT(onMembersChanged(QString,Tp::UIntList,
-                            Tp::UIntList,Tp::UIntList,
-                            Tp::UIntList,uint,uint)));
-    parent->connect(group,
-                    SIGNAL(MembersChangedDetailed(Tp::UIntList,
+                    SIGNAL(MembersChanged(Tp::UIntList,
                             Tp::UIntList,Tp::UIntList,
                             Tp::UIntList,QVariantMap)),
-                    SLOT(onMembersChangedDetailed(Tp::UIntList,
+                    SLOT(onMembersChanged(Tp::UIntList,
                             Tp::UIntList,Tp::UIntList,
                             Tp::UIntList,QVariantMap)));
 
@@ -521,13 +510,6 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
     const static QString keyTargetHandle(QLatin1String("TargetHandle"));
     const static QString keyTargetHandleType(QLatin1String("TargetHandleType"));
 
-    bool haveProps = props.size() >= 4
-                  && props.contains(keyChannelType)
-                  && !qdbus_cast<QString>(props[keyChannelType]).isEmpty()
-                  && props.contains(keyInterfaces)
-                  && props.contains(keyTargetHandle)
-                  && props.contains(keyTargetHandleType);
-
     parent->setInterfaces(qdbus_cast<QStringList>(props[keyInterfaces]));
     readinessHelper->setInterfaces(parent->interfaces());
     channelType = qdbus_cast<QString>(props[keyChannelType]);
@@ -598,7 +580,7 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
     groupAreHandleOwnersAvailable = true;
     groupIsSelfHandleTracked = true;
 
-    setGroupFlags(qdbus_cast<uint>(props[keyGroupFlags]));
+    groupFlags = qdbus_cast<uint>(props[keyGroupFlags]);
     groupHandleOwners = qdbus_cast<HandleOwnerMap>(props[keyHandleOwners]);
 
     groupInitialMembers = qdbus_cast<UIntList>(props[keyMembers]);
@@ -678,49 +660,6 @@ void Channel::Private::nowHaveInitialMembers()
 
     // At least our added MCD event to process
     processMembersChanged();
-}
-
-bool Channel::Private::setGroupFlags(uint newGroupFlags)
-{
-    if (groupFlags == newGroupFlags) {
-        return false;
-    }
-
-    groupFlags = newGroupFlags;
-
-    // this shouldn't happen but let's make sure
-    if (!parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
-        return false;
-    }
-
-    if ((groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
-        !usingMembersChangedDetailed) {
-        usingMembersChangedDetailed = true;
-        debug() << "Starting to exclusively listen to MembersChangedDetailed for" <<
-            parent->objectPath();
-        parent->disconnect(group,
-                           SIGNAL(MembersChanged(QString,Tp::UIntList,
-                                   Tp::UIntList,Tp::UIntList,
-                                   Tp::UIntList,uint,uint)),
-                           parent,
-                           SLOT(onMembersChanged(QString,Tp::UIntList,
-                                   Tp::UIntList,Tp::UIntList,
-                                   Tp::UIntList,uint,uint)));
-    } else if (!(groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
-               usingMembersChangedDetailed) {
-        warning() << " Channel service did spec-incompliant removal of MCD from GroupFlags";
-        usingMembersChangedDetailed = false;
-        parent->connect(group,
-                        SIGNAL(MembersChanged(QString,Tp::UIntList,
-                                Tp::UIntList,Tp::UIntList,
-                                Tp::UIntList,uint,uint)),
-                        parent,
-                        SLOT(onMembersChanged(QString,Tp::UIntList,
-                                Tp::UIntList,Tp::UIntList,
-                                Tp::UIntList,uint,uint)));
-    }
-
-    return true;
 }
 
 void Channel::Private::buildContacts()
@@ -978,7 +917,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
         if (currentGroupMembersChangedInfo
                 && currentGroupMembersChangedInfo->removed.contains(groupSelfHandle)) {
             // Update groupSelfContactRemoveInfo with the proper actor in case
-            // the actor was not available by the time onMembersChangedDetailed
+            // the actor was not available by the time onMembersChanged
             // was called.
             groupSelfContactRemoveInfo = details;
         }
@@ -2889,9 +2828,9 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
     uint groupFlags = mPriv->groupFlags;
     groupFlags |= added;
     groupFlags &= ~removed;
-    // just emit groupFlagsChanged and related signals if the flags really
+    // only emit groupFlagsChanged and related signals if the flags really
     // changed and we are ready
-    if (mPriv->setGroupFlags(groupFlags) && isReady(Channel::FeatureCore)) {
+    if ((mPriv->groupFlags != groupFlags) && isReady(Channel::FeatureCore)) {
         debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags <<
             "value" << added << "added" << removed << "removed";
         emit groupFlagsChanged((ChannelGroupFlags) mPriv->groupFlags,
@@ -2917,56 +2856,20 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
     }
 }
 
-void Channel::onMembersChanged(const QString &message,
-        const UIntList &added, const UIntList &removed,
-        const UIntList &localPending, const UIntList &remotePending,
-        uint actor, uint reason)
-{
-    // Ignore the signal if we're using the MCD signal to not duplicate events
-    if (mPriv->usingMembersChangedDetailed) {
-        return;
-    }
-
-    debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() <<
-        "added," << removed.size() << "removed," << localPending.size() <<
-        "moved to LP," << remotePending.size() << "moved to RP," << actor <<
-        "being the actor," << reason << "the reason and" << message << "the message";
-    debug() << " synthesizing a corresponding MembersChangedDetailed signal";
-
-    QVariantMap details;
-
-    if (!message.isEmpty()) {
-        details.insert(QLatin1String("message"), message);
-    }
-
-    if (actor != 0) {
-        details.insert(QLatin1String("actor"), actor);
-    }
-
-    details.insert(QLatin1String("change-reason"), reason);
-
-    mPriv->doMembersChangedDetailed(added, removed, localPending, remotePending, details);
-}
-
-void Channel::onMembersChangedDetailed(
+void Channel::onMembersChanged(
         const UIntList &added, const UIntList &removed,
         const UIntList &localPending, const UIntList &remotePending,
         const QVariantMap &details)
 {
-    // Ignore the signal if we aren't (yet) using MCD to not duplicate events
-    if (!mPriv->usingMembersChangedDetailed) {
-        return;
-    }
-
-    debug() << "Got Channel.Interface.Group::MembersChangedDetailed with" << added.size() <<
+    debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() <<
         "added," << removed.size() << "removed," << localPending.size() <<
         "moved to LP," << remotePending.size() << "moved to RP and with" << details.size() <<
         "details";
 
-    mPriv->doMembersChangedDetailed(added, removed, localPending, remotePending, details);
+    mPriv->doMembersChanged(added, removed, localPending, remotePending, details);
 }
 
-void Channel::Private::doMembersChangedDetailed(
+void Channel::Private::doMembersChanged(
         const UIntList &added, const UIntList &removed,
         const UIntList &localPending, const UIntList &remotePending,
         const QVariantMap &details)
@@ -2992,7 +2895,7 @@ void Channel::Private::doMembersChangedDetailed(
             if (removed.size() != 1 ||
                 (added.size() + localPending.size() + remotePending.size()) != 1) {
                 // spec-incompliant CM, ignoring members changed
-                warning() << "Received MembersChangedDetailed with reason "
+                warning() << "Received MembersChanged with reason "
                     "Renamed and removed.size != 1 or added.size + "
                     "localPending.size + remotePending.size != 1. Ignoring";
                 return;
