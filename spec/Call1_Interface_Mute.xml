@@ -18,12 +18,12 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
 
-  <interface name="im.telepathy1.Call1.Interface.Mute" tp:causes-havoc="experimental">
+  <interface name="im.telepathy.v1.Call1.Interface.Mute" tp:causes-havoc="experimental">
     <tp:added version="0.25.2">(as stable API)</tp:added>
     <tp:xor-requires>
-      <tp:requires interface="im.telepathy1.Channel.Type.Call1"/>
-      <tp:requires interface="im.telepathy1.Call1.Content"/>
-      <tp:requires interface="im.telepathy1.Call1.Stream"/>
+      <tp:requires interface="im.telepathy.v1.Channel.Type.Call1"/>
+      <tp:requires interface="im.telepathy.v1.Call1.Content"/>
+      <tp:requires interface="im.telepathy.v1.Call1.Stream"/>
     </tp:xor-requires>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

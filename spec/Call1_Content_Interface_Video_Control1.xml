@@ -19,9 +19,9 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Call1.Content.Interface.VideoControl1">
+  <interface name="im.telepathy.v1.Call1.Content.Interface.VideoControl1">
     <tp:added version="0.25.2">(as stable API)</tp:added>
-    <tp:requires interface="im.telepathy1.Call1.Content.Interface.Media"/>
+    <tp:requires interface="im.telepathy.v1.Call1.Content.Interface.Media"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface that allows the connection manager to control the video

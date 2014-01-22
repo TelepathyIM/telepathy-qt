@@ -20,7 +20,7 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Account.Interface.Hidden1"
+  <interface name="im.telepathy.v1.Account.Interface.Hidden1"
     tp:causes-havoc="outrageous">
     <tp:added version="0.21.10">(draft 1)</tp:added>
 

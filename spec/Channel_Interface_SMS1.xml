@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
 
   <interface
-    name="im.telepathy1.Channel.Interface.SMS1">
-    <tp:requires interface="im.telepathy1.Channel.Type.Text"/>
+    name="im.telepathy.v1.Channel.Interface.SMS1">
+    <tp:requires interface="im.telepathy.v1.Channel.Type.Text"/>
     <tp:added version='0.19.12'>Imported from
       rtcom-telepathy-glib, with the unused properties removed and the
       documentation tidied up.</tp:added>
@@ -270,13 +270,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Raised when the method is not available on this channel.
             Clients MAY choose to make their own estimation.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             Raised when the content cannot be encoded into a valid SMS.
           </tp:docstring>

@@ -20,7 +20,7 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Client">
+  <interface name="im.telepathy.v1.Client">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -33,7 +33,7 @@
         address-book synchronization.</p>
 
       <p>Every running or activatable process with a well-known
-        name of the form im.telepathy1.Client.<em>clientname</em>
+        name of the form im.telepathy.v1.Client.<em>clientname</em>
         should be probed by the channel dispatcher to discover its
         capabilities. Each client is either an <em>observer</em>, an
         <em>approver</em>, a <em>channel handler</em>, or some combination
@@ -62,7 +62,7 @@
         <p>If each of a client Foo's instances should be able to manipulate
           channels separately, the instance with unique name
           <code>:1.25</code> might request a well-known name like
-          <code>im.telepathy1.Client.Foo._1._25</code>.</p>
+          <code>im.telepathy.v1.Client.Foo._1._25</code>.</p>
 
         <p>(Note that well-known bus-name components may not start with a
           digit, so o.f.T.Client.Foo.1.25 would not be acceptable.)</p>
@@ -75,7 +75,7 @@
         its properties when appropriate.</p>
 
       <p>As an optimization, activatable clients SHOULD install a file
-        <code><a href="http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html">$XDG_DATA_DIRS</a>/telepathy/clients/<em>clientname</em>.client</code>
+        <code><a href="http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html">$XDG_DATA_DIRS</a>/telepathy-1/clients/<em>clientname</em>.client</code>
         containing a cached version of its immutable properties,
         so that for most clients, the channel dispatcher can
         just read a file to discover capabilities, instead of
@@ -104,9 +104,9 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of the extra interfaces provided by this client.
           This SHOULD include at least one of
-          <tp:dbus-ref namespace="im.telepathy1">Client.Observer</tp:dbus-ref>,
-          <tp:dbus-ref namespace="im.telepathy1">Client.Approver</tp:dbus-ref> or
-          <tp:dbus-ref namespace="im.telepathy1">Client.Handler</tp:dbus-ref>.</p>
+          <tp:dbus-ref namespace="im.telepathy.v1">Client.Observer</tp:dbus-ref>,
+          <tp:dbus-ref namespace="im.telepathy.v1">Client.Approver</tp:dbus-ref> or
+          <tp:dbus-ref namespace="im.telepathy.v1">Client.Handler</tp:dbus-ref>.</p>
 
         <p>In the <code>.client</code> file, this is represented by key
           "<code>Interfaces</code>" in the group named after this interface.

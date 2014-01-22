@@ -17,9 +17,9 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
-  <interface name="im.telepathy1.Channel.Type.DBusTube1">
-    <tp:requires interface="im.telepathy1.Channel"/>
-    <tp:requires interface="im.telepathy1.Channel.Interface.Tube1"/>
+  <interface name="im.telepathy.v1.Channel.Type.DBusTube1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
+    <tp:requires interface="im.telepathy.v1.Channel.Interface.Tube1"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A D-Bus tube is an ordered reliable transport, for transporting D-Bus
         traffic.</p>
@@ -61,7 +61,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         tp:type="String_Variant_Map">
         <tp:docstring>
           The dictionary of arbitrary
-          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface.Tube1">Parameters</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel.Interface.Tube1">Parameters</tp:dbus-ref>
           to send with the tube offer.
         </tp:docstring>
       </arg>
@@ -77,8 +77,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:docstring>
       </arg>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The contact associated with this channel doesn't have tubes
             capabilities.
@@ -92,7 +92,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         Accept a D-Bus tube that's in the "local pending" state. The
         connection manager will attempt to open the tube. The tube remains in
         the "local pending" state until the <tp:dbus-ref
-          namespace="im.telepathy1.Channel.Interface.Tube1">TubeChannelStateChanged</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel.Interface.Tube1">TubeChannelStateChanged</tp:dbus-ref>
         signal is emitted.
       </tp:docstring>
       <arg direction="in" name="access_control" type="u" tp:type="Socket_Access_Control">
@@ -138,7 +138,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           other end.</p>
         <p>When requesting a channel with
           <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
+            namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
           this property MUST be included in the request.</p>
       </tp:docstring>
     </property>
@@ -190,7 +190,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:rationale>
 
         <p>When requesting a channel with
-          <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
           this property MUST NOT be included in the request.</p>
 
       </tp:docstring>

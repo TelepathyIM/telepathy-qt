@@ -18,8 +18,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Type.ContactSearch1">
-    <tp:requires interface="im.telepathy1.Channel"/>
+  <interface name="im.telepathy.v1.Channel.Type.ContactSearch1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:added version="0.19.10">
       as stable API. Changes from draft 2:
       <tp:type>Contact_Search_Result_Map</tp:type> keys are now identifiers
@@ -81,11 +81,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:member-ref>Limit</tp:member-ref> results. If allowed by the
         connection manager, clients may specify the "page size" by specifying
         <tp:member-ref>Limit</tp:member-ref> when calling
-        <tp:dbus-ref namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>.
+        <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>.
         </p>
 
       <p>The client should call the channel's <tp:dbus-ref
-        namespace="im.telepathy1.Channel">Close</tp:dbus-ref>
+        namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref>
         method when it is finished with the channel.</p>
 
       <p>Each channel can only be used for a single search; a new channel
@@ -94,10 +94,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         to the same server, if applicable).</p>
 
       <p>It does not make sense to request this channel type using <tp:dbus-ref
-          namespace="im.telepathy1.Connection.Interface.Requests">EnsureChannel</tp:dbus-ref>;
+          namespace="im.telepathy.v1.Connection.Interface.Requests">EnsureChannel</tp:dbus-ref>;
         clients SHOULD request channels of this type using
         <tp:dbus-ref
-          namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>
+          namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>
         instead.</p>
 
       <tp:rationale>
@@ -296,7 +296,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <tp:rationale>
           It can be in the <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
           signal for round-trip reduction.
         </tp:rationale>
       </tp:docstring>
@@ -335,19 +335,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         with the state In_Progress.
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The <tp:member-ref>SearchState</tp:member-ref> is no longer
             Not_Started, so this method is no longer available.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The search terms included something this connection manager cannot
             search for.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
 
@@ -358,7 +358,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         and continue listing up to <tp:member-ref>Limit</tp:member-ref> more results.
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The <tp:member-ref>SearchState</tp:member-ref> is not
             <code>More_Available</code>.
@@ -374,7 +374,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           while the SearchState is In_Progress,
           <tp:member-ref>SearchStateChanged</tp:member-ref> will be emitted,
           with the state Failed and the error
-          <code>im.telepathy1.Error.<tp:error-ref>Cancelled</tp:error-ref></code>.</p>
+          <code>im.telepathy.v1.Error.<tp:error-ref>Cancelled</tp:error-ref></code>.</p>
 
         <p>Calling this method on a search in state Completed or Failed
           succeeds, but has no effect.</p>
@@ -392,7 +392,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           results.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The <tp:member-ref>SearchState</tp:member-ref> is Not_Started, so
             this method is not yet available.
@@ -425,9 +425,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>An array of fields representing information about this
             contact, in the same format used in the <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface">ContactInfo1</tp:dbus-ref>
+              namespace="im.telepathy.v1.Connection.Interface">ContactInfo1</tp:dbus-ref>
             interface. It is possible that a separate call to <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface.ContactInfo1">RequestContactInfo</tp:dbus-ref>
+              namespace="im.telepathy.v1.Connection.Interface.ContactInfo1">RequestContactInfo</tp:dbus-ref>
             would return more information than this signal provides.</p>
         </tp:docstring>
       </tp:member>

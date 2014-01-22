@@ -21,7 +21,7 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Connection.Interface.Cellular1">
+  <interface name="im.telepathy.v1.Connection.Interface.Cellular1">
     <tp:added version="0.19.8">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

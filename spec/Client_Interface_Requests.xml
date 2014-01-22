@@ -20,11 +20,11 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Client.Interface.Requests">
+  <interface name="im.telepathy.v1.Client.Interface.Requests">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
-    <tp:requires interface="im.telepathy1.Client"/>
-    <tp:requires interface="im.telepathy1.Client.Handler"/>
+    <tp:requires interface="im.telepathy.v1.Client"/>
+    <tp:requires interface="im.telepathy.v1.Client.Handler"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface can be implemented by a Handler to be notified about
@@ -47,14 +47,14 @@
             a channel request which handler will handle particular channels.
             A reasonable heuristic would be to match the request against the
             <tp:dbus-ref
-              namespace="im.telepathy1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>,
             and respect the preferred handler (if any).</p>
         </tp:rationale>
 
         <p>If the request succeeds and is given to the expected Handler,
           the Requests_Satisfied parameter to
           <tp:dbus-ref
-            namespace="im.telepathy1.Client.Handler">HandleChannels</tp:dbus-ref>
+            namespace="im.telepathy.v1.Client.Handler">HandleChannels</tp:dbus-ref>
           can be used to match the channel to a previous AddRequest call.</p>
 
         <tp:rationale>
@@ -74,7 +74,7 @@
           and if the channel request succeeds, it SHOULD dispatch the channels
           to the expected handler, unless the channels do not match that
           handler's <tp:dbus-ref
-            namespace="im.telepathy1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>.
+            namespace="im.telepathy.v1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>.
           If the channels are not dispatched to the expected handler, the
           handler that was expected is notified by the channel dispatcher
           calling its <tp:member-ref>RemoveRequest</tp:member-ref> method
@@ -97,11 +97,11 @@
       <arg name="Request" type="o" direction="in">
         <tp:docstring>
           The <tp:dbus-ref
-            namespace="im.telepathy1">ChannelRequest</tp:dbus-ref>
+            namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>
           object, which MUST have been returned by <tp:dbus-ref
-            namespace="im.telepathy1.ChannelDispatcher">CreateChannel</tp:dbus-ref>
+            namespace="im.telepathy.v1.ChannelDispatcher">CreateChannel</tp:dbus-ref>
           or <tp:dbus-ref
-            namespace="im.telepathy1.ChannelDispatcher">EnsureChannel</tp:dbus-ref>
+            namespace="im.telepathy.v1.ChannelDispatcher">EnsureChannel</tp:dbus-ref>
           before this method is called.
 
           <tp:rationale>
@@ -119,11 +119,11 @@
             properties as possible, given that constraint.</p>
 
           <p>In particular, the properties <tp:dbus-ref
-              namespace="im.telepathy1.ChannelRequest">Requests</tp:dbus-ref>,
+              namespace="im.telepathy.v1.ChannelRequest">Requests</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.ChannelRequest">UserActionTime</tp:dbus-ref>
+              namespace="im.telepathy.v1.ChannelRequest">UserActionTime</tp:dbus-ref>
             and <tp:dbus-ref
-              namespace="im.telepathy1.ChannelRequest">Account</tp:dbus-ref>
+              namespace="im.telepathy.v1.ChannelRequest">Account</tp:dbus-ref>
             MUST be included, and <tp:dbus-ref
               namespace="imt1.ChannelRequest">Hints</tp:dbus-ref>
             MUST be included if implemented.</p>
@@ -157,7 +157,7 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The name of the D-Bus error with which the request failed.</p>
 
-          <p>If this is <code>im.telepathy1.Error.NotYours</code>,
+          <p>If this is <code>im.telepathy.v1.Error.NotYours</code>,
             this indicates that the request succeeded, but all the resulting
             channels were given to some other handler.</p>
         </tp:docstring>

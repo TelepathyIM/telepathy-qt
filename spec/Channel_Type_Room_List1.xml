@@ -18,8 +18,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Type.RoomList1">
-    <tp:requires interface="im.telepathy1.Channel"/>
+  <interface name="im.telepathy.v1.Channel.Type.RoomList1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
 
     <tp:struct name="Room_Info" array-name="Room_Info_List">
       <tp:member type="u" tp:type="Room_Handle" name="Handle"/>
@@ -88,7 +88,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <dt>subject (s)</dt>
           <dd>The current subject of conversation in the room (as would
             be returned by getting the string part of the <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface.Subject1"
+            namespace="im.telepathy.v1.Channel.Interface.Subject1"
             >Subject</tp:dbus-ref> property)</dd>
 
           <dt>members (u)</dt>
@@ -103,13 +103,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <dt>room-id (s)</dt>
           <dd>The human-readable identifier of a chat room (as would be
             returned by getting the <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface.Room1"
+            namespace="im.telepathy.v1.Channel.Interface.Room1"
             >RoomName</tp:dbus-ref> property)</dd>
 
           <dt>server (s)</dt>
           <dd>The DNS name of the server hosting these channels (as would be
             returned by getting the <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface.Room1"
+            namespace="im.telepathy.v1.Channel.Interface.Room1"
             >Server</tp:dbus-ref> property)</dd>
         </dl>
       </tp:docstring>
@@ -124,10 +124,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         the request is complete.
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
     <method name="StopListing" tp:name-for-bindings="Stop_Listing">
@@ -150,7 +150,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>A channel type for listing named channels available on the server. Once the
     <tp:member-ref>ListRooms</tp:member-ref> method is called, it emits signals for rooms present on the
     server, until you <tp:dbus-ref
-    namespace="im.telepathy1.Channel">Close</tp:dbus-ref> this
+    namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref> this
     channel. In some cases, it may not be possible
     to stop the deluge of information from the server. This channel should be
     closed when the room information is no longer being displayed, so that the

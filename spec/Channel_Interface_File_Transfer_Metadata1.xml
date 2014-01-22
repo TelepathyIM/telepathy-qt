@@ -21,8 +21,8 @@
   </tp:license>
 
   <interface
-    name="im.telepathy1.Channel.Interface.FileTransfer.Metadata1">
-    <tp:requires interface="im.telepathy1.Channel.Type.FileTransfer1"/>
+    name="im.telepathy.v1.Channel.Interface.FileTransfer.Metadata1">
+    <tp:requires interface="im.telepathy.v1.Channel.Type.FileTransfer1"/>
     <tp:added version="0.25.0"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

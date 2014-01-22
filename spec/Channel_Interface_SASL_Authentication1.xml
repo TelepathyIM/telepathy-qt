@@ -17,9 +17,9 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Interface.SASLAuthentication1">
+  <interface name="im.telepathy.v1.Channel.Interface.SASLAuthentication1">
     <tp:added version="0.21.5">(as stable API)</tp:added>
-    <tp:requires interface="im.telepathy1.Channel"/>
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel interface for SASL authentication,
         as defined by
@@ -407,7 +407,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The channel is not in a state where starting authentication makes
             sense (i.e. SASL_Status_Not_Started, or (if
@@ -418,8 +418,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             SASL_Status_Client_Failed before starting another attempt.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The server or connection manager doesn't implement the given
             SASL mechanism. Choose a SASL mechanism from
@@ -481,7 +481,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The channel is not in a state where starting authentication makes
             sense (i.e. SASL_Status_Not_Started, or (if
@@ -492,8 +492,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             SASL_Status_Client_Failed before starting another attempt.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The server or connection manager doesn't implement the given
             SASL mechanism (choose one from
@@ -519,13 +519,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             Either the state is not In_Progress, or no challenge has been
             received yet, or you have already responded to the last challenge.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
 
@@ -553,14 +553,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             Either the state is neither In_Progress nor Server_Succeeded, or no
             challenge has been received yet, or you have already responded to
             the last challenge.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
 
@@ -587,7 +587,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           reason code.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The current state is either Succeeded or Client_Accepted.
           </tp:docstring>
@@ -694,7 +694,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:member-ref>AcceptSASL</tp:member-ref>). Connection to the server
           will proceed as soon as this state is reached. The Handler SHOULD
           call <tp:dbus-ref
-            namespace="im.telepathy1.Channel">Close</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref>
           to close the channel.
         </tp:docstring>
       </tp:enumvalue>
@@ -706,7 +706,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:member-ref>StartMechanism</tp:member-ref> or
           <tp:member-ref>StartMechanismWithData</tp:member-ref> again.
           Otherwise, it should give up completely, by calling <tp:dbus-ref
-            namespace="im.telepathy1.Channel">Close</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref>
           on the channel.
         </tp:docstring>
       </tp:enumvalue>

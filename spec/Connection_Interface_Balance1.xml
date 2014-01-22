@@ -19,8 +19,8 @@
       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
       USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.Balance1">
-    <tp:requires interface="im.telepathy1.Connection"/>
+  <interface name="im.telepathy.v1.Connection.Interface.Balance1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
     <tp:added version="0.19.0">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -82,7 +82,7 @@
       access="read" type="(ius)" tp:type="Currency_Amount">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The user's balance on the account corresponding to this <tp:dbus-ref
-            namespace="im.telepathy1">Connection</tp:dbus-ref>.
+            namespace="im.telepathy.v1">Connection</tp:dbus-ref>.
           A negative amount may be possible on some services, and indicates
           that the user owes money to the service provider.</p>
 

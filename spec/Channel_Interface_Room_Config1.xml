@@ -20,11 +20,11 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Channel.Interface.RoomConfig1">
+  <interface name="im.telepathy.v1.Channel.Interface.RoomConfig1">
     <tp:added version="0.24.0">version 1. This replaces the old-school
       Telepathy properties on <tp:dbus-ref
       namespace='imt1.Channel.Type'>Text</tp:dbus-ref>.</tp:added>
-    <tp:requires interface='im.telepathy1.Channel.Interface.Room1'/>
+    <tp:requires interface='im.telepathy.v1.Channel.Interface.Room1'/>
     <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal"
                 value="true"/>
 
@@ -233,26 +233,26 @@
           method.</p>
       </tp:docstring>
 
-      <tp:error name="im.telepathy1.Error.PermissionDenied">
+      <tp:error name="im.telepathy.v1.Error.PermissionDenied">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           The user is not allowed to reconfigure this room.
         </tp:docstring>
       </tp:error>
 
-      <tp:error name="im.telepathy1.Error.InvalidArgument">
+      <tp:error name="im.telepathy.v1.Error.InvalidArgument">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           One or more of the specified properties is unknown, or ill-typed.
         </tp:docstring>
       </tp:error>
 
-      <tp:error name="im.telepathy1.Error.NotImplemented">
+      <tp:error name="im.telepathy.v1.Error.NotImplemented">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           One or more of the specified properties cannot be modified on this
           protocol.
         </tp:docstring>
       </tp:error>
 
-      <tp:error name="im.telepathy1.Error.NotAvailable">
+      <tp:error name="im.telepathy.v1.Error.NotAvailable">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           The room's current configuration has not yet been retrieved, so we
           cannot update it just yet. The application might like to try again

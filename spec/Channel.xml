@@ -18,7 +18,7 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel">
+  <interface name="im.telepathy.v1.Channel">
 
     <property name="ChannelType" type="s" tp:type="DBus_Interface"
       access="read" tp:name-for-bindings="Channel_Type">
@@ -82,7 +82,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           MUST be present and not Handle_Type_None, and
           <tp:member-ref>TargetID</tp:member-ref> MUST NOT be
           present. Properties from
-          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface">Addressing1</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel.Interface">Addressing1</tp:dbus-ref>
           MUST NOT be present.</p>
 
         <p>The channel that satisfies the request MUST either:</p>
@@ -114,7 +114,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           MUST be present and not Handle_Type_None, and
           <tp:member-ref>TargetHandle</tp:member-ref> MUST NOT be
           present. Properties from
-          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface">Addressing1</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel.Interface">Addressing1</tp:dbus-ref>
           MUST NOT be present.The request MUST fail with error InvalidHandle,
           without side-effects, if the requested TargetID is invalid.</p>
 
@@ -158,14 +158,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         such as contact list channels may not be closed.
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             This channel may never be closed, e.g. a contact list
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             This channel is not currently in a state where it can be closed,
             e.g. a non-empty user-defined contact group
@@ -189,7 +189,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>True if this channel was created in response to a local request,
           such as a call to
-          <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>.</p>
+          <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>.</p>
 
         <tp:rationale>
           <p>The idea of this property is to distinguish between "incoming"
@@ -245,14 +245,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <p>For channels requested by the
           local user, this MUST be the value of
-          <tp:dbus-ref namespace="im.telepathy1">Connection.SelfHandle</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1">Connection.SelfHandle</tp:dbus-ref>
           at the time the channel was created (i.e. not a channel-specific
           handle).</p>
 
         <tp:rationale>
           <p>On some protocols, the SelfHandle may change (as signalled by
             <tp:dbus-ref
-              namespace="im.telepathy1">Connection.SelfContactChanged</tp:dbus-ref>),
+              namespace="im.telepathy.v1">Connection.SelfContactChanged</tp:dbus-ref>),
             but this property is immutable. Hence, locally-requested channels'
             InitiatorHandle and InitiatorID may not match the current
             SelfHandle; <tp:member-ref>Requested</tp:member-ref> can be used to
@@ -266,7 +266,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           anonymous).</p>
 
         <p>For channels with the <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface">Group1</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel.Interface">Group1</tp:dbus-ref>
           interface, this SHOULD be the same
           contact who is signalled as the "Actor" causing the self-handle
           to be placed in the local-pending set.</p>
@@ -300,13 +300,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       connections. This interface must be implemented by all channel
       objects, along with one single channel type, such as
       <tp:dbus-ref
-      namespace="im.telepathy1">Channel.Type.Text</tp:dbus-ref> which
+      namespace="im.telepathy.v1">Channel.Type.Text</tp:dbus-ref> which
       represents a channel over which textual messages are sent and
       received.</p>
 
     <p>Each Channel's object path MUST start with the object path of
       its associated <tp:dbus-ref
-      namespace="im.telepathy1">Connection</tp:dbus-ref>, followed
+      namespace="im.telepathy.v1">Connection</tp:dbus-ref>, followed
       by '/'. There MAY be any number of additional object-path components,
       which clients MUST NOT attempt to parse.</p>
 
@@ -351,12 +351,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <p>Other optional <tp:member-ref>Interfaces</tp:member-ref> can be
       implemented to indicate other available
       functionality, such as <tp:dbus-ref
-        namespace="im.telepathy1">Channel.Interface.Group1</tp:dbus-ref>
+        namespace="im.telepathy.v1">Channel.Interface.Group1</tp:dbus-ref>
       if the channel contains a number of contacts, <tp:dbus-ref
-        namespace="im.telepathy1">Channel.Interface.Password1</tp:dbus-ref>
+        namespace="im.telepathy.v1">Channel.Interface.Password1</tp:dbus-ref>
       to indicate that a channel may have a password set to require entry, and
       <tp:dbus-ref
-        namespace="im.telepathy1">Channel.Interface.ChatState1</tp:dbus-ref>
+        namespace="im.telepathy.v1">Channel.Interface.ChatState1</tp:dbus-ref>
       for typing notifications. The interfaces implemented may not vary after
       the channel has been created. These other interfaces (along with the
       interface named by <tp:member-ref>ChannelType</tp:member-ref>) may

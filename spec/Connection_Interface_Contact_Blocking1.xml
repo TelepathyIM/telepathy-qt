@@ -18,8 +18,8 @@
       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
       USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.ContactBlocking1">
-    <tp:requires interface="im.telepathy1.Connection"/>
+  <interface name="im.telepathy.v1.Connection.Interface.ContactBlocking1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
     <tp:added version='0.21.13'>Changes from the draft:
       methods and signals now return <tp:type>Handle_Identifier_Map</tp:type>
       (<code>a{us}</code>) rather than bare lists of contact handles

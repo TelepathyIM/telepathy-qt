@@ -17,12 +17,12 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
-  <interface name="im.telepathy1.Channel.Type.Call1">
+  <interface name="im.telepathy.v1.Channel.Type.Call1">
     <tp:added version="0.25.2">(as stable API)</tp:added>
 
-    <tp:requires interface="im.telepathy1.Channel"/>
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:requires
-      interface="im.telepathy1.Call1.Interface.Mute"/>
+      interface="im.telepathy.v1.Call1.Interface.Mute"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type for making audio and video calls. Call channels
         supersede the old StreamedMedia channel type. Call channels
@@ -149,7 +149,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:member-ref>CallStateReason</tp:member-ref> property
         changing to (remote contact,
         <tp:value-ref type="Call_State_Change_Reason">User_Requested</tp:value-ref>,
-        "im.telepathy1.Error.Rejected").</p>
+        "im.telepathy.v1.Error.Rejected").</p>
 
       <h4>Incoming calls</h4>
 
@@ -161,7 +161,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <blockquote>
         <pre>
 <tp:dbus-ref namespace="imt1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>([
-  /im/telepathy1/Connection/foo/bar/foo_40bar_2ecom/CallChannel,
+  /im/telepathy/v1/Connection/foo/bar/foo_40bar_2ecom/CallChannel,
   {
     ...<tp:dbus-ref namespace="imt1.Channel">ChannelType</tp:dbus-ref>: ...<tp:dbus-ref
       namespace="imt1.Channel.Type">Call1</tp:dbus-ref>,
@@ -211,7 +211,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:member-ref>CallStateReason</tp:member-ref> property will
         change to (self handle,
         <tp:value-ref type="Call_State_Change_Reason">User_Requested</tp:value-ref>,
-        "im.telepathy1.Error.Rejected").</p>
+        "im.telepathy.v1.Error.Rejected").</p>
 
       <h4>Ongoing calls</h4>
 
@@ -252,7 +252,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:member-ref>CallStateReason</tp:member-ref> will change
         to (self handle,
         <tp:value-ref type="Call_State_Change_Reason">User_Requested</tp:value-ref>,
-        "im.telepathy1.Error.Cancelled").</p>
+        "im.telepathy.v1.Error.Cancelled").</p>
 
       <p>If the other participant hangs up first then the
         <tp:member-ref>CallState</tp:member-ref> property will change to
@@ -260,7 +260,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:member-ref>CallStateReason</tp:member-ref> will change
         to (remote contact,
         <tp:value-ref type="Call_State_Change_Reason">User_Requested</tp:value-ref>,
-        "im.telepathy1.Error.Terminated").</p>
+        "im.telepathy.v1.Error.Terminated").</p>
 
       <h4>Multi-party calls</h4>
 
@@ -307,7 +307,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:dbus-ref namespace="imt1.Channel">Close</tp:dbus-ref> on the
         channel which SHOULD also imply a call to
         <tp:member-ref>Hangup</tp:member-ref>(<tp:value-ref type="Call_State_Change_Reason">User_Requested</tp:value-ref>,
-        "im.telepathy1.Error.Terminated", "") before
+        "im.telepathy.v1.Error.Terminated", "") before
         actually closing the channel.</p>
 
     </tp:docstring>
@@ -335,13 +335,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The call was <tp:dbus-ref namespace="imt1.Channel"
             >Requested</tp:dbus-ref>, so ringing does not make sense.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The call is no longer in state
             <tp:value-ref type="Call_State">Initialised</tp:value-ref>.
@@ -375,13 +375,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The call was <tp:dbus-ref namespace="imt1.Channel"
             >Requested</tp:dbus-ref>, so queueing does not make sense.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The call is no longer in state
             <tp:value-ref type="Call_State">Initialising</tp:value-ref> or
@@ -423,7 +423,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The call is not in one of the states where this method makes sense.
           </tp:docstring>
@@ -466,7 +466,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The call has already been ended.
           </tp:docstring>
@@ -520,30 +520,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <arg direction="out" name="Content" type="o">
         <tp:docstring>
           Path to the newly-created <tp:dbus-ref
-            namespace="im.telepathy1"
+            namespace="im.telepathy.v1"
             >Call1.Content</tp:dbus-ref> object.
         </tp:docstring>
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The media stream type given is invalid.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The media stream type requested is not implemented by the
             CM.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.Media.UnsupportedType">
+        <tp:error name="im.telepathy.v1.Error.Media.UnsupportedType">
           <tp:docstring>
             The media stream type requested is not supported by either the
             local or remote side.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotCapable">
+        <tp:error name="im.telepathy.v1.Error.NotCapable">
           <tp:docstring>
             The content type requested cannot be added to this
             call. Examples of why this might be the case include
@@ -1378,7 +1378,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           calling <tp:dbus-ref
           namespace="imt1.Connection.Interface.ContactCapabilities1">UpdateCapabilities</tp:dbus-ref>
           (clients of a <tp:dbus-ref
-          namespace="im.telepathy1">ChannelDispatcher</tp:dbus-ref>
+          namespace="im.telepathy.v1">ChannelDispatcher</tp:dbus-ref>
           SHOULD instead arrange for the ChannelDispatcher to do this,
           by including the filters in their <tp:dbus-ref
           namespace="imt1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
@@ -1554,11 +1554,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           property:</p>
 
         <ul>
-          <li><code>im.telepathy1.Channel.Type.Call1/audio</code></li>
-          <li><code>im.telepathy1.Channel.Type.Call1/audio/speex</code></li>
-          <li><code>im.telepathy1.Channel.Type.Call1/video</code></li>
-          <li><code>im.telepathy1.Channel.Type.Call1/video/theora</code></li>
-          <li><code>im.telepathy1.Channel.Type.Call1/video/h264</code></li>
+          <li><code>im.telepathy.v1.Channel.Type.Call1/audio</code></li>
+          <li><code>im.telepathy.v1.Channel.Type.Call1/audio/speex</code></li>
+          <li><code>im.telepathy.v1.Channel.Type.Call1/video</code></li>
+          <li><code>im.telepathy.v1.Channel.Type.Call1/video/theora</code></li>
+          <li><code>im.telepathy.v1.Channel.Type.Call1/video/h264</code></li>
         </ul>
 
         <p>Clients MAY have media signalling abilities without explicitly

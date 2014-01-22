@@ -19,7 +19,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
   <interface
-    name="im.telepathy1.Connection.Interface.PowerSaving1">
+    name="im.telepathy.v1.Connection.Interface.PowerSaving1">
     <tp:added version="0.21.5">(as stable API)</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Some protocols support mechanisms for reducing bandwidth usage—and
@@ -72,12 +72,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The current connection has no power saving features.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotImplemented"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented"/>
       </tp:possible-errors>
     </method>
 

@@ -19,14 +19,14 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 </p>
   </tp:license>
-  <interface name="im.telepathy1.Account">
+  <interface name="im.telepathy.v1.Account">
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An Account object encapsulates the necessary details to make a
         Telepathy connection.</p>
 
       <p>Accounts are uniquely identified by object path. The object path
         of an Account MUST take the form
-        <code>/im/telepathy1/Account/<em>cm</em>/<em>proto</em>/<em>acct</em></code>, where:</p>
+        <code>/im/telepathy/v1/Account/<em>cm</em>/<em>proto</em>/<em>acct</em></code>, where:</p>
 
       <ul>
         <li><em>cm</em> is the same <tp:type>Connection_Manager_Name</tp:type>
@@ -34,10 +34,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           object path</li>
         <li><em>proto</em> is the <tp:type>Protocol_Name</tp:type> as seen in
           <tp:dbus-ref
-          namespace="im.telepathy1">ConnectionManager.Protocols</tp:dbus-ref>,
+          namespace="im.telepathy.v1">ConnectionManager.Protocols</tp:dbus-ref>,
           but with "-" replaced with "_"
           (i.e. the same as in the object-path of a <tp:dbus-ref
-          namespace="im.telepathy1">Connection</tp:dbus-ref>)</li>
+          namespace="im.telepathy.v1">Connection</tp:dbus-ref>)</li>
         <li><em>acct</em> is an arbitrary string of ASCII letters, digits
           and underscores, starting with a letter or underscore, which
           uniquely identifies this account</li>
@@ -117,7 +117,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <method name="Remove" tp:name-for-bindings="Remove">
       <tp:docstring>Delete the account.</tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 
@@ -127,7 +127,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <tp:rationale>
           This is redundant with <tp:dbus-ref
-          namespace="im.telepathy1.AccountManager">AccountRemoved</tp:dbus-ref>,
+          namespace="im.telepathy.v1.AccountManager">AccountRemoved</tp:dbus-ref>,
           but it's still worth having,
           to avoid having to bind to AccountManager.AccountRemoved to tell
           you whether your Account is valid — ideally, an account-editing UI
@@ -235,7 +235,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         The nickname to set on this account for display to other contacts,
         as set by the user. When the account becomes connected, the
         account manager SHOULD set this as the user's alias using <tp:dbus-ref
-        namespace="im.telepathy1.Connection.Interface.Aliasing1">SetAliases</tp:dbus-ref>
+        namespace="im.telepathy.v1.Connection.Interface.Aliasing1">SetAliases</tp:dbus-ref>
         if appropriate.
 
         <tp:rationale>
@@ -292,10 +292,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <p>This property MAY be set, if appropriate, when calling
           <tp:dbus-ref
-            namespace="im.telepathy1.AccountManager"
+            namespace="im.telepathy.v1.AccountManager"
             >CreateAccount</tp:dbus-ref>. Updating this property will fail on
           externally-stored accounts whose <tp:dbus-ref
-            namespace="im.telepathy1.Account.Interface.Storage1"
+            namespace="im.telepathy.v1.Account.Interface.Storage1"
             >StorageRestrictions</tp:dbus-ref> include
           <code>Cannot_Set_Service</code>.</p>
       </tp:docstring>
@@ -306,7 +306,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A map from connection manager parameter names (as in the
           <tp:dbus-ref
-          namespace="im.telepathy1">ConnectionManager</tp:dbus-ref>
+          namespace="im.telepathy.v1">ConnectionManager</tp:dbus-ref>
           interface) to their values. This property includes
           only those parameters that are stored for this account, and SHOULD
           only include those parameters that the user has explicitly set.
@@ -380,7 +380,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             the empty list, signifying that no reconnection is required for the
             new parameters to take effect. For example, if the only parameter
             updated is <tt>...Cellular.<tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface.Cellular1">MessageValidityPeriod</tp:dbus-ref></tt>,
+              namespace="im.telepathy.v1.Connection.Interface.Cellular1">MessageValidityPeriod</tp:dbus-ref></tt>,
             the new value can be applied immediately to the connection.</p>
 
           <p>Otherwise, a list of the names of parameters with changes that
@@ -389,7 +389,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             <tp:member-ref>Reconnect</tp:member-ref> in response to receiving a
             non-empty list. For example, if the caller updates both
             <tt>...Anonymity.<tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface.Anonymity1">AnonymityMandatory</tp:dbus-ref></tt>
+              namespace="im.telepathy.v1.Connection.Interface.Anonymity1">AnonymityMandatory</tp:dbus-ref></tt>
             and <tt>require-encryption</tt>, the former can be applied to the
             current connection, but the latter needs a reconnect to take
             effect, so this method should return
@@ -398,8 +398,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
-        <tp:error name="im.telepathy1.Error.InvalidArgument"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument"/>
       </tp:possible-errors>
     </method>
 
@@ -450,7 +450,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       type="o" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Either the object path of the <tp:dbus-ref
-          namespace="im.telepathy1">Connection</tp:dbus-ref> to
+          namespace="im.telepathy.v1">Connection</tp:dbus-ref> to
         this account, or the special value <code>'/'</code> if there is no
         connection.</p>
 
@@ -507,9 +507,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <p>If the last connection to this account failed with an error,
           the D-Bus error name of that error; otherwise, the empty string.
           The account manager is expected to set this by observing the
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >Connection.ConnectionError</tp:dbus-ref> and
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >Connection.StatusChanged</tp:dbus-ref>
           signals.</p>
 
@@ -538,7 +538,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           a mapping representing any additional information about the last
           disconnection; otherwise, the empty map. The keys and values are
           the same as for the second argument of
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >Connection.ConnectionError</tp:dbus-ref>.</p>
 
         <p>Whenever the Connection connects successfully, this property should
@@ -559,7 +559,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:type>Connection_Presence_Type</tp:type> SHOULD be
         Connection_Presence_Type_Offline.
         If the connection is online but does not support the <tp:dbus-ref
-        namespace="im.telepathy1.Connection.Interface">Presence1</tp:dbus-ref>
+        namespace="im.telepathy.v1.Connection.Interface">Presence1</tp:dbus-ref>
         interface, the type SHOULD be Connection_Presence_Type_Unset.
         The account manager is expected to set this by observing signals
         from the Connection.
@@ -668,7 +668,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The normalized user ID of the local user on this account (i.e. the
           value of the <tp:dbus-ref
-          namespace="im.telepathy1.Connection">SelfID</tp:dbus-ref>
+          namespace="im.telepathy.v1.Connection">SelfID</tp:dbus-ref>
           property for an active connection).</p>
 
         <p>It is unspecified whether this user ID is globally unique.</p>

@@ -18,8 +18,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.Aliasing1">
-    <tp:requires interface="im.telepathy1.Connection"/>
+  <interface name="im.telepathy.v1.Connection.Interface.Aliasing1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
 
     <tp:mapping name="Alias_Map" array-name="">
       <tp:docstring>A dictionary whose keys are contact handles and whose
@@ -80,10 +80,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         Request the value of several contacts' aliases at once.
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
       </tp:possible-errors>
     </method>
     <method name="SetAliases" tp:name-for-bindings="Set_Aliases">
@@ -99,15 +99,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         signal. On connections where the CONNECTION_ALIAS_FLAG_USER_SET flag is
         not set, this method will only ever succeed if the contact is the
         user's own handle (as returned by the <tp:dbus-ref
-          namespace="im.telepathy1">Connection.SelfHandle</tp:dbus-ref>
+          namespace="im.telepathy.v1">Connection.SelfHandle</tp:dbus-ref>
         property).
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.InvalidArgument"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 

@@ -17,9 +17,9 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Interface.CaptchaAuthentication1">
+  <interface name="im.telepathy.v1.Channel.Interface.CaptchaAuthentication1">
     <tp:added version="0.25.2">(version 1)</tp:added>
-    <tp:requires interface="im.telepathy1.Channel"/>
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal"
       value="true"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -288,14 +288,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             Either the state is not Local_Pending or Try_Again, or it has
             already been called and
             <tp:member-ref>CanRetryCaptcha</tp:member-ref> is False.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
 
@@ -335,13 +335,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The state is not in Local_Pending or
             <tp:member-ref>GetCaptchas</tp:member-ref> had never been called.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
 
@@ -359,12 +359,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The state is not in Local_Pending.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
 
@@ -392,7 +392,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           to close the channel.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The current state is Failed.
           </tp:docstring>

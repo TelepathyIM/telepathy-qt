@@ -20,9 +20,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 </p>
   </tp:license>
   <interface
-      name="im.telepathy1.AccountManager.Interface.Hidden1"
+      name="im.telepathy.v1.AccountManager.Interface.Hidden1"
       tp:causes-havoc='kind of sketchy'>
-    <tp:requires interface='im.telepathy1.AccountManager'/>
+    <tp:requires interface='im.telepathy.v1.AccountManager'/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface lists accounts whose <tp:dbus-ref
         namespace='imt1.Account.Interface.Hidden1'>Hidden</tp:dbus-ref>
@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Usable_Hidden_Accounts">
       <tp:docstring>
         A list of valid (complete, usable) <tp:dbus-ref
-          namespace="im.telepathy1">Account</tp:dbus-ref>s intended
+          namespace="im.telepathy.v1">Account</tp:dbus-ref>s intended
         exclusively for noninteractive applications. These accounts are not
         included in <tp:dbus-ref
           namespace='imt1'>AccountManager.UsableAccounts</tp:dbus-ref>.  Change
@@ -47,7 +47,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Unusable_Hidden_Accounts">
       <tp:docstring>
         A list of incomplete or otherwise unusable <tp:dbus-ref
-          namespace="im.telepathy1">Account</tp:dbus-ref>s intended
+          namespace="im.telepathy.v1">Account</tp:dbus-ref>s intended
         exclusively for noninteractive applications. Change notification is via
         <tp:member-ref>HiddenAccountUsabilityChanged</tp:member-ref>.
       </tp:docstring>
@@ -84,7 +84,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <arg name="Account" type="o">
         <tp:docstring>
           An <tp:dbus-ref
-            namespace="im.telepathy1">Account</tp:dbus-ref>.
+            namespace="im.telepathy.v1">Account</tp:dbus-ref>.
         </tp:docstring>
       </arg>
 

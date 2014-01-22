@@ -20,10 +20,10 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Client.Handler">
+  <interface name="im.telepathy.v1.Client.Handler">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
-    <tp:requires interface="im.telepathy1.Client"/>
+    <tp:requires interface="im.telepathy.v1.Client"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Handlers are the user interface for a channel. They turn an abstract
@@ -36,17 +36,17 @@
 
       <p>Because each channel is only handled by one Handler, handlers may
         perform actions that only make sense to do once, such as acknowledging
-        <tp:dbus-ref namespace="im.telepathy1.Channel.Type">Text</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1.Channel.Type">Text</tp:dbus-ref>
         messages, doing the actual streaming for <tp:dbus-ref
-          namespace="im.telepathy1.Channel.Type">Call1</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel.Type">Call1</tp:dbus-ref>
         channels, or transferring the file in <tp:dbus-ref
-          namespace="im.telepathy1.Channel.Type">FileTransfer1</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel.Type">FileTransfer1</tp:dbus-ref>
         channels.</p>
 
       <p>When a new incoming channel (one with
-        <tp:dbus-ref namespace="im.telepathy1.Channel">Requested</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1.Channel">Requested</tp:dbus-ref>
         = FALSE) is offered to
-        <tp:dbus-ref namespace="im.telepathy1.Client">Approver</tp:dbus-ref>s
+        <tp:dbus-ref namespace="im.telepathy.v1.Client">Approver</tp:dbus-ref>s
         by the channel dispatcher, it also offers the Approvers a list of all
         the running or activatable handlers whose
         <tp:member-ref>HandlerChannelFilter</tp:member-ref> property
@@ -55,7 +55,7 @@
         those channel handlers to handle the channel.</p>
 
       <p>When a new outgoing channel (one with
-        <tp:dbus-ref namespace="im.telepathy1.Channel">Requested</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1.Channel">Requested</tp:dbus-ref>
         = TRUE) appears, the channel dispatcher passes it to an appropriate
         channel handler automatically.
       </p>
@@ -70,7 +70,7 @@
           deal with.</p>
 
         <p>This property works in exactly the same way as the
-          <tp:dbus-ref namespace="im.telepathy1">Client.Observer.ObserverChannelFilter</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1">Client.Observer.ObserverChannelFilter</tp:dbus-ref>
           property. In particular, it cannot change while the handler process
           continues to own the corresponding Client bus name.</p>
 
@@ -91,7 +91,7 @@
           in the handler's <tt>.client</tt> file as follows:</p>
 
 <pre>
-[im.telepathy1.Client.Handler]
+[im.telepathy.v1.Client.Handler]
 BypassApproval=true
 </pre>
       </tp:docstring>
@@ -114,7 +114,7 @@ BypassApproval=true
         </tp:rationale>
 
         <p>So far, all client capabilities are defined by the <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Type">Call1</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel.Type">Call1</tp:dbus-ref>
           interface.</p>
       </tp:docstring>
     </tp:simple-type>
@@ -129,7 +129,7 @@ BypassApproval=true
 
         <p>For handlers that have a <code>.client</code> file, the
           channel dispatcher may discover this property from the
-          <code>im.telepathy1.Client.Handler.Capabilities</code>
+          <code>im.telepathy.v1.Client.Handler.Capabilities</code>
           group; for each capability, that group contains a key
           whose name is the capability, with value <code>true</code>.
           Keys with other values SHOULD NOT appear in this group.</p>
@@ -139,11 +139,11 @@ BypassApproval=true
           and Theora and H264 video might contain this group:</p>
 
 <pre>
-[im.telepathy1.Client.Handler.Capabilities]
-im.telepathy1.Channel.Interface.MediaSignalling/ice-udp=true
-im.telepathy1.Channel.Interface.MediaSignalling/audio/speex=true
-im.telepathy1.Channel.Interface.MediaSignalling/video/theora=true
-im.telepathy1.Channel.Interface.MediaSignalling/video/h264=true
+[im.telepathy.v1.Client.Handler.Capabilities]
+im.telepathy.v1.Channel.Interface.MediaSignalling/ice-udp=true
+im.telepathy.v1.Channel.Interface.MediaSignalling/audio/speex=true
+im.telepathy.v1.Channel.Interface.MediaSignalling/video/theora=true
+im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
 </pre>
 
         <p>Like the <tp:member-ref>HandlerChannelFilter</tp:member-ref>
@@ -184,10 +184,10 @@ im.telepathy1.Channel.Interface.MediaSignalling/video/h264=true
         <p>If closing the channels, it is RECOMMENDED that the channel
           dispatcher attempts to close the channels using
           <tp:dbus-ref
-            namespace="im.telepathy1">Channel.Close</tp:dbus-ref>,
+            namespace="im.telepathy.v1">Channel.Close</tp:dbus-ref>,
           but resorts to calling
           <tp:dbus-ref
-            namespace="im.telepathy1">Channel.Interface.Destroyable1.Destroy</tp:dbus-ref>
+            namespace="im.telepathy.v1">Channel.Interface.Destroyable1.Destroy</tp:dbus-ref>
           (if available) or ignoring the channel (if not) if the same handler
           repeatedly fails to handle channels.</p>
 
@@ -206,10 +206,10 @@ im.telepathy1.Channel.Interface.MediaSignalling/video/h264=true
       <arg name="Account" type="o" direction="in">
         <tp:docstring>
           The
-          <tp:dbus-ref namespace="im.telepathy1">Account</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1">Account</tp:dbus-ref>
           with which the channels are associated. The
           well-known bus name to use is that of the
-          <tp:dbus-ref namespace="im.telepathy1">AccountManager</tp:dbus-ref>.
+          <tp:dbus-ref namespace="im.telepathy.v1">AccountManager</tp:dbus-ref>.
         </tp:docstring>
       </arg>
 
@@ -237,7 +237,7 @@ im.telepathy1.Channel.Interface.MediaSignalling/video/h264=true
           <tp:rationale>
             <p>If the handler implements Requests, this tells it
               that these channels match previous <tp:dbus-ref
-                namespace="im.telepathy1.Client.Interface.Requests">AddRequest</tp:dbus-ref>
+                namespace="im.telepathy.v1.Client.Interface.Requests">AddRequest</tp:dbus-ref>
               calls that it may have received.</p>
 
             <p>There can be more than one, if they were EnsureChannel
@@ -265,7 +265,7 @@ im.telepathy1.Channel.Interface.MediaSignalling/video/h264=true
           <dl>
             <dt><code>request-properties</code> - a{oa{sv}}</dt>
             <dd>A map from <tp:dbus-ref
-              namespace="im.telepathy1">ChannelRequest</tp:dbus-ref>
+              namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>
               paths listed in <var>Requests_Satisfied</var> to
               <tp:type>Qualified_Property_Value_Map</tp:type>s containing
               namespaced immutable properties of each request.</dd>

@@ -16,8 +16,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Interface.ChatState1">
-    <tp:requires interface="im.telepathy1.Channel.Type.Text"/>
+  <interface name="im.telepathy.v1.Channel.Interface.ChatState1">
+    <tp:requires interface="im.telepathy.v1.Channel.Type.Text"/>
 
     <tp:mapping name="Chat_State_Map">
       <tp:added version="0.19.7"/>
@@ -53,9 +53,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         has changed.
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.InvalidArgument"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument"/>
       </tp:possible-errors>
     </method>
     <signal name="ChatStateChanged" tp:name-for-bindings="Chat_State_Changed">

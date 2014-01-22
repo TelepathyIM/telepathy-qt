@@ -21,7 +21,7 @@
   </tp:license>
 
   <interface
-     name="im.telepathy1.Protocol.Interface.Addressing1">
+     name="im.telepathy.v1.Protocol.Interface.Addressing1">
     <tp:added version="0.25.1">(as stable API). From the draft,
       NormalizeURI was renamed to NormalizeContactURI, clarifying that
       it removes any actions from the URI.</tp:added>
@@ -116,7 +116,7 @@ AddressableURISchemes=tel;sip;
           offline. When it is connected the addressable URI schemes should be
           retrieved from the
           <tp:dbus-ref
-             namespace="im.telepathy1.Connection.Interface">Requests.RequestableChannelClasses</tp:dbus-ref>'s
+             namespace="im.telepathy.v1.Connection.Interface">Requests.RequestableChannelClasses</tp:dbus-ref>'s
              TargetURIScheme fixed-property instead.</p>
 
         <p>Connection managers with a <code>.manager</code> file
@@ -144,20 +144,20 @@ AddressableURISchemes=tel;sip;
             For example: <code>xmpp:julien@example.com</code>.</dd>
           <dt><code>msnim</code></dt>
           <dd>For the purposes of
-            <tp:dbus-ref namespace="im.telepathy1">Protocol.Interface.Addressing1</tp:dbus-ref>,
-            <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Protocol.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Addressing1</tp:dbus-ref>,
             and
-            <tp:dbus-ref namespace="im.telepathy1">Channel.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Channel.Interface.Addressing1</tp:dbus-ref>,
             the verb part is ignored, and SHOULD be <code>add</code>; the
             <code>contact</code> field in the query string is used to
             identify the contact.
             For example: <code>msnim:add?contact=julien</code>.</dd>
           <dt><code>aim</code></dt>
           <dd>For the purposes of
-            <tp:dbus-ref namespace="im.telepathy1">Protocol.Interface.Addressing1</tp:dbus-ref>,
-            <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Protocol.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Addressing1</tp:dbus-ref>,
             and
-            <tp:dbus-ref namespace="im.telepathy1">Channel.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Channel.Interface.Addressing1</tp:dbus-ref>,
             the verb part is ignored, and SHOULD be <code>addbuddy</code>; the
             <code>screenname</code> field in the query string is used to
             identify the contact.
@@ -167,10 +167,10 @@ AddressableURISchemes=tel;sip;
             For example: <code>skype:julien</code>.</dd>
           <dt><code>ymsgr</code></dt>
           <dd>For the purposes of
-            <tp:dbus-ref namespace="im.telepathy1">Protocol.Interface.Addressing1</tp:dbus-ref>,
-            <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Protocol.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Addressing1</tp:dbus-ref>,
             and
-            <tp:dbus-ref namespace="im.telepathy1">Channel.Interface.Addressing1</tp:dbus-ref>,
+            <tp:dbus-ref namespace="im.telepathy.v1">Channel.Interface.Addressing1</tp:dbus-ref>,
             the verb part is ignored, and SHOULD be <code>addfriend</code>; the
             query string is used to identify the contact.
             For example: <code>ymsgr:addfriend?julien</code>.</dd>
@@ -186,14 +186,14 @@ AddressableURISchemes=tel;sip;
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Attempt to normalize the given vCard address. Where possible, this
           SHOULD return an address that would appear in the
-          <code>im.telepathy1.Connection.Interface.Addressing1/addresses</code>
+          <code>im.telepathy.v1.Connection.Interface.Addressing1/addresses</code>
           attribute for a contact on a connected
-          <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>.
+          <tp:dbus-ref namespace="im.telepathy.v1">Connection</tp:dbus-ref>.
         </p>
 
         <p>If full normalization requires network activity or is otherwise
           impossible to do without a <tp:dbus-ref
-            namespace="im.telepathy1">Connection</tp:dbus-ref>,
+            namespace="im.telepathy.v1">Connection</tp:dbus-ref>,
           this method SHOULD perform a best-effort normalization.</p>
 
         <p>An example would be a vCard TEL field with a formatted
@@ -226,14 +226,14 @@ AddressableURISchemes=tel;sip;
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The vCard field is not supported (it is not in
             <tp:member-ref>AddressableVCardFields</tp:member-ref>).
           </tp:docstring>
         </tp:error>
 
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The address is syntactically incorrect.
           </tp:docstring>
@@ -247,14 +247,14 @@ AddressableURISchemes=tel;sip;
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Attempt to normalize the given contact URI. Where possible, this
           SHOULD return an address that would appear in the
-          <code>im.telepathy1.Connection.Interface.Addressing1/uris</code>
+          <code>im.telepathy.v1.Connection.Interface.Addressing1/uris</code>
           attribute for a contact on a connected
-          <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>.
+          <tp:dbus-ref namespace="im.telepathy.v1">Connection</tp:dbus-ref>.
         </p>
 
         <p>If full normalization requires network activity or is otherwise
           impossible to do without a <tp:dbus-ref
-            namespace="im.telepathy1">Connection</tp:dbus-ref>,
+            namespace="im.telepathy.v1">Connection</tp:dbus-ref>,
           this method SHOULD perform a best-effort normalization.</p>
 
         <p>If the URI has extra information beyond what's necessary to
@@ -308,14 +308,14 @@ AddressableURISchemes=tel;sip;
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The URI scheme is not supported (it is not in
             <tp:member-ref>AddressableURISchemes</tp:member-ref>).
           </tp:docstring>
         </tp:error>
 
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             <p>The URI is syntactically incorrect or cannot be interpreted
               as a reference to a contact.</p>

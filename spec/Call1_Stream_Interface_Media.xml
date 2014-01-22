@@ -20,9 +20,9 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Call1.Stream.Interface.Media">
+  <interface name="im.telepathy.v1.Call1.Stream.Interface.Media">
     <tp:added version="0.25.2">(as stable API)</tp:added>
-    <tp:requires interface="im.telepathy1.Call1.Stream"/>
+    <tp:requires interface="im.telepathy.v1.Call1.Stream"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface deals with how to connect a stream to an
@@ -126,7 +126,7 @@
         </tp:docstring>
       </arg>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The state change made no sense, and was ignored by the CM. The
             most likely cause for this is a race-condition between the CM
@@ -187,7 +187,7 @@
         </tp:docstring>
       </arg>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The state change made no sense, and was ignored by the CM. The
             most likely cause for this is a race-condition between the CM
@@ -416,7 +416,7 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The minimal required candidates have not been set. For
             example, for an RTP protocol, at least one candidate on the

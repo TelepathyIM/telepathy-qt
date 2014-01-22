@@ -17,16 +17,16 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
-  <interface name="im.telepathy1.Channel.Interface.Tube1">
-    <tp:requires interface="im.telepathy1.Channel"/>
+  <interface name="im.telepathy.v1.Channel.Interface.Tube1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A <i>tube</i> is a mechanism for arbitrary data transfer between
       two or more IM users, used to allow applications on the users'
       systems to communicate without having to establish network
       connections themselves. Currently, two types of tube exist:
-      <tp:dbus-ref namespace="im.telepathy1"
+      <tp:dbus-ref namespace="im.telepathy.v1"
       >Channel.Type.DBusTube1</tp:dbus-ref> and
-      <tp:dbus-ref namespace="im.telepathy1"
+      <tp:dbus-ref namespace="im.telepathy.v1"
       >Channel.Type.StreamTube1</tp:dbus-ref>. This interface contains
       the properties, signals and methods common to both types of tube;
       you can only create channels of a specific tube type, not of this
@@ -56,7 +56,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           participants.</p>
 
         <p>For example, a stream tube for <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Type.StreamTube1">Service</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel.Type.StreamTube1">Service</tp:dbus-ref>
           <tt>"smb"</tt> (<cite>Server Message Block over TCP/IP</cite>) might
           use the following properties, as defined in <a
           href="http://www.dns-sd.org/ServiceTypes.html">DNS SRV (RFC 2782)
@@ -70,18 +70,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <p>When requesting a tube with
           <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
+            namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
           this property MUST NOT be included in the request; instead, it is set
           when <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Type">StreamTube1.Offer</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel.Type">StreamTube1.Offer</tp:dbus-ref>
           or <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Type">DBusTube1.Offer</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel.Type">DBusTube1.Offer</tp:dbus-ref>
           (as appropriate) is called. Its value is undefined until the tube is
           offered; once set, its value MUST NOT change.</p>
 
         <p>When receiving an incoming tube, this property is immutable and so advertised in the
           <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
           signal.</p>
       </tp:docstring>
     </property>
@@ -93,7 +93,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <p>When requesting a tube with
           <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
+            namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
           this property MUST NOT be included in the request.</p>
       </tp:docstring>
     </property>
@@ -218,7 +218,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             interact with the tube. Exactly how this is achieved varies by
             channel type.</p>
 
-          <p>For <tp:dbus-ref namespace="im.telepathy1.Channel.Type"
+          <p>For <tp:dbus-ref namespace="im.telepathy.v1.Channel.Type"
               >StreamTube1</tp:dbus-ref> channels, this access control type
             may only be used on UNIX sockets.
             The connecting process must send a byte when
@@ -231,7 +231,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             in D-Bus the byte is always zero, whereas in Tubes it can be
             nonzero.)</p>
 
-          <p>For <tp:dbus-ref namespace="im.telepathy1.Channel.Type"
+          <p>For <tp:dbus-ref namespace="im.telepathy.v1.Channel.Type"
               >DBusTube1</tp:dbus-ref> channels, this access control type
             may be used on any type of socket, and there is no extra byte
             added by Telepathy at the beginning of the stream: all bytes in

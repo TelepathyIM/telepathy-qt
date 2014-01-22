@@ -18,8 +18,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.ContactCapabilities1">
-    <tp:requires interface="im.telepathy1.Connection"/>
+  <interface name="im.telepathy.v1.Connection.Interface.ContactCapabilities1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
     <tp:added version="0.17.28">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -58,7 +58,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member name="Well_Known_Name" type="s" tp:type="DBus_Well_Known_Name">
         <tp:docstring>
           For implementations of the <tp:dbus-ref
-            namespace="im.telepathy1">Client</tp:dbus-ref>
+            namespace="im.telepathy.v1">Client</tp:dbus-ref>
           interface, the well-known bus name name of the client; for any other
           process, any other reversed domain name that uniquely identifies it.
         </tp:docstring>
@@ -69,7 +69,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of channel classes that can be handled by this client.
           This will usually be a copy of the client's <tp:dbus-ref
-            namespace="im.telepathy1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
+            namespace="im.telepathy.v1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
           property.
         </tp:docstring>
       </tp:member>
@@ -80,7 +80,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           An array of client capabilities supported by this client, to be
           used by the connection manager to determine what capabilities to
           advertise. This will usually be a copy of the client's <tp:dbus-ref
-            namespace="im.telepathy1.Client.Handler">Capabilities</tp:dbus-ref>
+            namespace="im.telepathy.v1.Client.Handler">Capabilities</tp:dbus-ref>
           property.
         </tp:docstring>
       </tp:member>
@@ -96,7 +96,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           than the ChannelDispatcher SHOULD NOT call this method, and the
           ChannelDispatcher SHOULD use this method to advertise the
           capabilities of all the registered <tp:dbus-ref
-            namespace="im.telepathy1">Client.Handler</tp:dbus-ref>
+            namespace="im.telepathy.v1">Client.Handler</tp:dbus-ref>
           implementations.On connections not managed by the ChannelDispatcher,
           clients MAY use this method directly, to indicate the channels they
           will handle and the extra capabilities they have.</p>
@@ -105,7 +105,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           will only emit the
           <tp:member-ref>ContactCapabilitiesChanged</tp:member-ref> signal
           for the user's <tp:dbus-ref
-            namespace="im.telepathy1.Connection">SelfHandle</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection">SelfHandle</tp:dbus-ref>
           if, in the underlying protocol, the new capabilities are distinct
           from the previous state.</p>
 
@@ -155,7 +155,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
 
@@ -194,7 +194,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
          <p>The contact's capabilities. These should be represented
           in the same way as in <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests"
+            namespace="im.telepathy.v1.Connection.Interface.Requests"
             >RequestableChannelClasses</tp:dbus-ref>,
           except that they may have more fixed properties or fewer allowed
           properties, to represent contacts who do not have all the
@@ -202,7 +202,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <p>In particular, requestable channel classes for channels with
           target handle type Contact MUST list <tp:dbus-ref
-            namespace="im.telepathy1.Channel"
+            namespace="im.telepathy.v1.Channel"
             >TargetHandleType</tp:dbus-ref> among their fixed properties when
           they appear here, and clients MAY assume that this will be the
           case.</p>
@@ -217,9 +217,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>Channel classes with target handle type Handle_Type_Contact
           indicate that a request that matches the channel class, and also
           either has the contact's handle as <tp:dbus-ref
-            namespace="im.telepathy1.Channel"
+            namespace="im.telepathy.v1.Channel"
             >TargetHandle</tp:dbus-ref> or the contact's identifier as
-          <tp:dbus-ref namespace="im.telepathy1.Channel"
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel"
             >TargetID</tp:dbus-ref>, can be expected to succeed. Connection
           managers SHOULD NOT include the TargetHandle or TargetID as a
           fixed property in contact capabilities.</p>

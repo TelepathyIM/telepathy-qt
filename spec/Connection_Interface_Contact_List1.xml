@@ -18,8 +18,8 @@
       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
       USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.ContactList1">
-    <tp:requires interface="im.telepathy1.Connection"/>
+  <interface name="im.telepathy.v1.Connection.Interface.ContactList1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
     <tp:added version="0.21.0">(as stable API)</tp:added>
     <tp:changed version="0.99.1">The deprecated ContactsChanged
       signal has been replaced with the ContactsChangedWithID
@@ -164,7 +164,7 @@
           <p>A list of strings indicating which D-Bus interfaces the calling
             process is interested in. Equivalent to the corresponding argument
             to <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface.Contacts"
+              namespace="im.telepathy.v1.Connection.Interface.Contacts"
               >GetContactAttributes</tp:dbus-ref>,
             except that if this list does not contain the ContactList
             interface itself, it is treated as though that interface was also
@@ -177,18 +177,18 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary mapping the contact handles to contact attributes,
             equivalent to the result of <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface.Contacts"
+              namespace="im.telepathy.v1.Connection.Interface.Contacts"
               >GetContactAttributes</tp:dbus-ref>.</p>
 
         </tp:docstring>
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.ServiceBusy"/>
-        <tp:error name="im.telepathy1.Error.NotYet">
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.ServiceBusy"/>
+        <tp:error name="im.telepathy.v1.Error.NotYet">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
             <p>The <tp:member-ref>ContactListState</tp:member-ref> is
               None or Waiting. In particular, this error is raised if the
@@ -255,7 +255,7 @@
 
         <p>If this attribute is not Yes, the local user cannot generally
           expect to receive presence from this contact. Their <tp:token-ref
-            namespace="im.telepathy1.Connection.Interface.Presence1">presence</tp:token-ref>
+            namespace="im.telepathy.v1.Connection.Interface.Presence1">presence</tp:token-ref>
           contact attribute is likely to be (Unknown, "unknown", ""), unless the
           local user can temporarily see their presence for some other reason
           (for instance, on XMPP, contacts seen in chatrooms will temporarily
@@ -630,7 +630,7 @@
           <tp:member-ref>RemoveContacts</tp:member-ref> methods.</p>
 
         <p>If false, all of those methods will always fail; they SHOULD raise
-          the error im.telepathy1.Error.NotImplemented.</p>
+          the error im.telepathy.v1.Error.NotImplemented.</p>
 
         <tp:rationale>
           <p>In XEP-0174 "Serverless Messaging" (link-local XMPP), presence is
@@ -663,11 +663,11 @@
         </tp:rationale>
 
         <p>Before calling this method on a connection where <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Aliasing1"
+            namespace="im.telepathy.v1.Connection.Interface.Aliasing1"
             >AliasFlags</tp:dbus-ref> property has the <code>User_Set</code>
           flag, user interfaces SHOULD obtain, from the user, an alias to
           identify the contact in future, and store it using <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Aliasing1"
+            namespace="im.telepathy.v1.Connection.Interface.Aliasing1"
             >SetAliases</tp:dbus-ref>.</p>
 
         <p>The user MAY be
@@ -754,16 +754,16 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotYet">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotYet">
           <tp:docstring>
             The <tp:member-ref>ContactListState</tp:member-ref> is None
             or Waiting.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             It was not possible to perform the requested action, because
             <tp:member-ref>CanChangeContactList</tp:member-ref> is false.
@@ -892,16 +892,16 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             It was not possible to perform the requested action, because
             <tp:member-ref>CanChangeContactList</tp:member-ref> is false.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet">
+        <tp:error name="im.telepathy.v1.Error.NotYet">
           <tp:docstring>
             The <tp:member-ref>ContactListState</tp:member-ref> is None
             or Waiting.
@@ -954,16 +954,16 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             It was not possible to perform the requested action because
             <tp:member-ref>CanChangeContactList</tp:member-ref> is false.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet">
+        <tp:error name="im.telepathy.v1.Error.NotYet">
           <tp:docstring>
             The <tp:member-ref>ContactListState</tp:member-ref> is None
             or Waiting.
@@ -1003,10 +1003,10 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             It was not possible to perform the requested action because
             <tp:member-ref>CanChangeContactList</tp:member-ref> is false.
@@ -1046,16 +1046,16 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             It was not possible to perform the requested action because
             <tp:member-ref>CanChangeContactList</tp:member-ref> is false.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet">
+        <tp:error name="im.telepathy.v1.Error.NotYet">
           <tp:docstring>
             The <tp:member-ref>ContactListState</tp:member-ref> is None
             or Waiting.
@@ -1073,9 +1073,9 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented"/>
       </tp:possible-errors>
     </method>
 

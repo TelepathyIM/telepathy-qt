@@ -20,7 +20,7 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Foo1"
+  <interface name="im.telepathy.v1.Foo1"
     tp:causes-havoc="experimental">
     <tp:added version="0.UNRELEASED">(draft 1)</tp:added>
 

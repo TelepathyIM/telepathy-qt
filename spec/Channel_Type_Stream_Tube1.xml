@@ -17,9 +17,9 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
-  <interface name="im.telepathy1.Channel.Type.StreamTube1">
-    <tp:requires interface="im.telepathy1.Channel"/>
-    <tp:requires interface="im.telepathy1.Channel.Interface.Tube1"/>
+  <interface name="im.telepathy.v1.Channel.Type.StreamTube1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
+    <tp:requires interface="im.telepathy.v1.Channel.Interface.Tube1"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A stream tube is a transport for ordered, reliable data transfer,
         similar to SOCK_STREAM sockets.</p>
@@ -63,19 +63,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         tp:type="String_Variant_Map">
         <tp:docstring>
           The dictionary of arbitrary
-          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface.Tube1">Parameters</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel.Interface.Tube1">Parameters</tp:dbus-ref>
           to send with the tube offer.
         </tp:docstring>
       </arg>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The contact associated with this channel doesn't have tube
             capabilities.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The connection manager doesn't support the given address type
             or access-control type.
@@ -89,7 +89,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         Accept a stream tube that's in the "local pending" state. The
         connection manager will attempt to open the tube. The tube remains in
         the "local pending" state until the <tp:dbus-ref
-          namespace="im.telepathy1.Channel.Interface.Tube1">TubeChannelStateChanged</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel.Interface.Tube1">TubeChannelStateChanged</tp:dbus-ref>
         signal is emitted.
       </tp:docstring>
       <arg direction="in" name="address_type" type="u" tp:type="Socket_Address_Type">
@@ -123,12 +123,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The access_control_param is invalid with the given access_control.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The given address type or access-control mechanism is not supported.
           </tp:docstring>
@@ -215,11 +215,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
           <p>The following errors can be used:</p>
           <ul>
-            <li><code>im.telepathy1.Error.Cancelled</code>:
+            <li><code>im.telepathy.v1.Error.Cancelled</code>:
                user closed the socket or the tube.</li>
-            <li><code>im.telepathy1.Error.ConnectionLost</code>:
+            <li><code>im.telepathy.v1.Error.ConnectionLost</code>:
                the bytestream relaying connection's data has been broken.</li>
-            <li><code>im.telepathy1.Error.ConnectionRefused</code>:
+            <li><code>im.telepathy.v1.Error.ConnectionRefused</code>:
                the tube offer refused the connection.</li>
           </ul>
         </tp:docstring>
@@ -246,7 +246,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <p>When the tube is offered, the service name is transmitted to the
           other end.</p>
         <p>When requesting a channel with
-          <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
           this property MUST be included in the request.</p>
       </tp:docstring>
     </property>
@@ -286,7 +286,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           access control.</p>
 
         <p>When requesting a channel with
-          <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
           this property MUST NOT be included in the request.</p>
 
       </tp:docstring>

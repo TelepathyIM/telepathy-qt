@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
-<tp:errors xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0" namespace="im.telepathy1.Error">
+<tp:errors xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0" namespace="im.telepathy.v1.Error">
 
   <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
     <p>The D-Bus errors used in Telepathy all start with
-      <code>im.telepathy1.Error.</code>. They are used in
+      <code>im.telepathy.v1.Error.</code>. They are used in
       D-Bus messages of type ERROR, and also as plain strings annotated with
       the <tp:type>DBus_Error_Name</tp:type> type.</p>
 
@@ -16,7 +16,7 @@
       indicate specialized failure conditions. For better interoperability,
       if a suitable Telepathy error exists, it should be preferred.</p>
 
-    <p>The namespace <code>im.telepathy1.Qt4.Error.</code>
+    <p>The namespace <code>im.telepathy.v1.Qt4.Error.</code>
       is reserved for use by the D-Bus client implementation in telepathy-qt4,
       which uses it to represent certain error situations that did not involve
       a D-Bus ERROR message. These errors are defined and documented as part of
@@ -58,7 +58,7 @@
       The connection is not currently connected and cannot be used.
       This error may also be raised when operations are performed on a
       Connection for which
-      <tp:dbus-ref namespace="im.telepathy1.Connection">StatusChanged</tp:dbus-ref>
+      <tp:dbus-ref namespace="im.telepathy.v1.Connection">StatusChanged</tp:dbus-ref>
       has signalled status Disconnected for reason None.
 
       <tp:rationale>
@@ -502,7 +502,7 @@
 
       <tp:rationale>
         For instance, the <tp:dbus-ref
-          namespace="im.telepathy1">ChannelDispatcher</tp:dbus-ref>
+          namespace="im.telepathy.v1">ChannelDispatcher</tp:dbus-ref>
         might raise this error for some or all channel requests if it has
         detected that there is not enough free memory.
       </tp:rationale>
@@ -515,9 +515,9 @@
       Raised if a request cannot be satisfied without violating an earlier
       request for anonymity, and the earlier request specified that raising
       an error is preferable to disclosing the user's identity (for instance
-      via <tp:dbus-ref namespace="im.telepathy1"
+      via <tp:dbus-ref namespace="im.telepathy.v1"
         >Connection.Interface.Anonymity1.AnonymityMandatory</tp:dbus-ref> or
-      <tp:dbus-ref namespace="im.telepathy1"
+      <tp:dbus-ref namespace="im.telepathy.v1"
         >Channel.Interface.Anonymity1.AnonymityMandatory</tp:dbus-ref>).
     </tp:docstring>
   </tp:error>

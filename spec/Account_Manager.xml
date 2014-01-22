@@ -19,15 +19,15 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 </p>
   </tp:license>
-  <interface name="im.telepathy1.AccountManager">
+  <interface name="im.telepathy.v1.AccountManager">
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>The account manager is a central service used to store account
         details.</p>
 
       <p>The current account manager is defined to be the process that owns
-        the well-known bus name <tt>im.telepathy1.AccountManager</tt> on
+        the well-known bus name <tt>im.telepathy.v1.AccountManager</tt> on
         the session bus. This process must export an
-        <tt>/im/telepathy1/AccountManager</tt> object with the
+        <tt>/im/telepathy/v1/AccountManager</tt> object with the
         AccountManager interface.</p>
     </tp:docstring>
     <tp:added version="0.17.2"/>
@@ -54,7 +54,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Usable_Accounts">
       <tp:docstring>
         A list of the valid (complete, usable) <tp:dbus-ref
-          namespace="im.telepathy1">Account</tp:dbus-ref>s. Change
+          namespace="im.telepathy.v1">Account</tp:dbus-ref>s. Change
         notification is via
         <tp:member-ref>AccountUsabilityChanged</tp:member-ref>.
 
@@ -71,7 +71,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Unusable_Accounts">
       <tp:docstring>
         A list of incomplete or otherwise unusable <tp:dbus-ref
-          namespace="im.telepathy1">Account</tp:dbus-ref>s. Change
+          namespace="im.telepathy.v1">Account</tp:dbus-ref>s. Change
         notification is via
         <tp:member-ref>AccountUsabilityChanged</tp:member-ref>.
       </tp:docstring>
@@ -111,7 +111,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <arg name="Account" type="o">
         <tp:docstring>
           An <tp:dbus-ref
-            namespace="im.telepathy1">Account</tp:dbus-ref>.
+            namespace="im.telepathy.v1">Account</tp:dbus-ref>.
         </tp:docstring>
       </arg>
 
@@ -135,45 +135,45 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:rationale>
           <p>Examples of good properties to support here include
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">Icon</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">Icon</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">Enabled</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">Enabled</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">Nickname</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">Nickname</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">AutomaticPresence</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">AutomaticPresence</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">ConnectAutomatically</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">ConnectAutomatically</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">RequestedPresence</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">RequestedPresence</tp:dbus-ref>,
             <tp:dbus-ref
               namespace="imt1.Account">Supersedes</tp:dbus-ref>
             and
             <tp:dbus-ref
-              namespace="im.telepathy1.Account.Interface.Avatar1">Avatar</tp:dbus-ref>.
+              namespace="im.telepathy.v1.Account.Interface.Avatar1">Avatar</tp:dbus-ref>.
             </p>
 
           <p>Examples of properties that would make no sense here include
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">Usable</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">Usable</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">Connection</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">Connection</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">ConnectionStatus</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">ConnectionStatus</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">ConnectionStatusReason</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Account">ConnectionStatusReason</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">CurrentPresence</tp:dbus-ref>
+              namespace="im.telepathy.v1.Account">CurrentPresence</tp:dbus-ref>
             and
             <tp:dbus-ref
-              namespace="im.telepathy1.Account">NormalizedName</tp:dbus-ref>.
+              namespace="im.telepathy.v1.Account">NormalizedName</tp:dbus-ref>.
           </p>
         </tp:rationale>
 
         <p>This property MUST NOT include include the <tp:dbus-ref
-            namespace="im.telepathy1.Account">DisplayName</tp:dbus-ref>
+            namespace="im.telepathy.v1.Account">DisplayName</tp:dbus-ref>
           and <tp:dbus-ref
-            namespace="im.telepathy1.Account">Parameters</tp:dbus-ref>
+            namespace="im.telepathy.v1.Account">Parameters</tp:dbus-ref>
           properties, which are set using separate arguments.</p>
 
         <p>This property MAY include the names of properties that, after
@@ -183,7 +183,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:rationale>
           <p>For example, an account manager might support migration tools that
             use this to preserve the <tp:dbus-ref
-              namespace="im.telepathy1.Account">HasBeenOnline</tp:dbus-ref>
+              namespace="im.telepathy.v1.Account">HasBeenOnline</tp:dbus-ref>
             property, even though that property is usually read-only.</p>
         </tp:rationale>
       </tp:docstring>
@@ -192,7 +192,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <method name="CreateAccount" tp:name-for-bindings="Create_Account">
       <tp:docstring>
         Request the creation of a new <tp:dbus-ref
-          namespace="im.telepathy1">Account</tp:dbus-ref>. The
+          namespace="im.telepathy.v1">Account</tp:dbus-ref>. The
         account manager SHOULD NOT allow invalid accounts to be created.
       </tp:docstring>
       <tp:changed version="0.17.24">added the Properties argument</tp:changed>
@@ -211,7 +211,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <arg name="Display_Name" direction="in" type="s">
         <tp:docstring>The initial value of the new account's <tp:dbus-ref
-            namespace="im.telepathy1.Account">DisplayName</tp:dbus-ref>
+            namespace="im.telepathy.v1.Account">DisplayName</tp:dbus-ref>
           property. The account manager SHOULD modify this to make it unique if
           an Account already exists with the same display name, for instance by
           appending a number or the 'account' parameter. Account manager
@@ -237,7 +237,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <arg name="Parameters" direction="in" type="a{sv}">
         <tp:docstring>Initial parameter values, as would be passed to
           <tp:dbus-ref
-            namespace="im.telepathy1.ConnectionManager">RequestConnection</tp:dbus-ref>.</tp:docstring>
+            namespace="im.telepathy.v1.ConnectionManager">RequestConnection</tp:dbus-ref>.</tp:docstring>
       </arg>
 
       <arg name="Properties" direction="in" type="a{sv}"
@@ -249,9 +249,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           <p>Only the properties mentioned in
             <tp:member-ref>SupportedAccountProperties</tp:member-ref> are
             acceptable here. In particular, the <tp:dbus-ref
-              namespace="im.telepathy1.Account">DisplayName</tp:dbus-ref>
+              namespace="im.telepathy.v1.Account">DisplayName</tp:dbus-ref>
             and <tp:dbus-ref
-              namespace="im.telepathy1.Account">Parameters</tp:dbus-ref>
+              namespace="im.telepathy.v1.Account">Parameters</tp:dbus-ref>
             properties are never allowed here, since they are set using the other
             arguments to this method.</p>
 
@@ -262,17 +262,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <arg name="Account" direction="out" type="o">
         <tp:docstring>The new <tp:dbus-ref
-          namespace="im.telepathy1">Account</tp:dbus-ref>.</tp:docstring>
+          namespace="im.telepathy.v1">Account</tp:dbus-ref>.</tp:docstring>
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
             <p>The <var>Connection_Manager</var> is not installed or does not
               implement the given <var>Protocol</var>.</p>
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
             <p>The <var>Parameters</var> provided were unacceptable: they might
               omit a

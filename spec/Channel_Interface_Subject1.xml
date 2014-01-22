@@ -20,8 +20,8 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Channel.Interface.Subject1">
-    <tp:requires interface="im.telepathy1.Channel"/>
+  <interface name="im.telepathy.v1.Channel.Interface.Subject1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:added version="0.24.0">(version 2)</tp:added>
     <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal"
                 value="true"/>
@@ -51,8 +51,8 @@
           further changes by other users or the server.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 

@@ -17,10 +17,10 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.Resources1"
+  <interface name="im.telepathy.v1.Connection.Interface.Resources1"
     tp:causes-havoc="experimental">
     <tp:added version="0.21.1">(draft 1)</tp:added>
-    <tp:requires interface="im.telepathy1.Connection"/>
+    <tp:requires interface="im.telepathy.v1.Connection"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface on connections to show contact attributes for
@@ -45,16 +45,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         attempts to change this.</p>
 
       <p>When using this interface, it is a little like using the
-        <tp:dbus-ref namespace="im.telepathy1.Connection.Interface"
+        <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface"
         >Contacts</tp:dbus-ref> interface, but only resource-specific
         attributes are ever returned. The resource-specific contact
         attributes are decided on by the CM, but XMPP's are listed
         below:</p>
 
       <ul>
-        <li><tp:dbus-ref namespace="im.telepathy1.Connection.Interface">Presence1/presence</tp:dbus-ref></li>
-        <li><tp:dbus-ref namespace="im.telepathy1.Connection.Interface">ContactCapabilities1/capabilities</tp:dbus-ref></li>
-        <li><tp:dbus-ref namespace="im.telepathy1.Connection.Interface">ClientTypes1/client-types</tp:dbus-ref></li>
+        <li><tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface">Presence1/presence</tp:dbus-ref></li>
+        <li><tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface">ContactCapabilities1/capabilities</tp:dbus-ref></li>
+        <li><tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface">ClientTypes1/client-types</tp:dbus-ref></li>
       </ul>
 
     </tp:docstring>
@@ -91,8 +91,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
       </tp:possible-errors>
     </method>
 

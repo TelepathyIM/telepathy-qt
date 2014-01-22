@@ -18,8 +18,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Type.Text">
-    <tp:requires interface="im.telepathy1.Channel"/>
+  <interface name="im.telepathy.v1.Channel.Type.Text">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:changed version="0.24.0">This interface used to have a bunch of
       clunky Telepathy.Properties. They have been removed in favour of
       D-Bus properties on the <tp:dbus-ref
@@ -53,7 +53,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         the user (or equivalent), so they can be removed from the pending queue.
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             A given message ID was not found, so no action was taken
           </tp:docstring>
@@ -1055,14 +1055,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The requested message is malformed and cannot be sent.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
 
@@ -1396,18 +1396,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         and the message is placed in a pending queue represented by the
         <tp:member-ref>PendingMessages</tp:member-ref> property.
         When the <tp:dbus-ref
-          namespace="im.telepathy1.Client">Handler</tp:dbus-ref>
+          namespace="im.telepathy.v1.Client">Handler</tp:dbus-ref>
         for a channel has handled the message by showing it to the user
         (or equivalent), it should acknowledge the receipt of that message
         using the <tp:member-ref>AcknowledgePendingMessages</tp:member-ref>
         method, and the message will then be removed from the pending queue.
         Numeric identifiers for received messages may be reused over the
         lifetime of the channel. Only the <tp:dbus-ref
-          namespace="im.telepathy1.Client">Handler</tp:dbus-ref>
+          namespace="im.telepathy.v1.Client">Handler</tp:dbus-ref>
         for a channel should acknowledge messages; <tp:dbus-ref
-          namespace="im.telepathy1.Client">Observer</tp:dbus-ref>s
+          namespace="im.telepathy.v1.Client">Observer</tp:dbus-ref>s
         (such as loggers) and <tp:dbus-ref
-          namespace="im.telepathy1.Client">Approver</tp:dbus-ref>s
+          namespace="im.telepathy.v1.Client">Approver</tp:dbus-ref>s
         for the channel may listen for incoming messages, and send
         messages of their own, but SHOULD NOT acknowledge messages.</p>
 

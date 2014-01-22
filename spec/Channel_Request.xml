@@ -21,7 +21,7 @@
       MA 02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.ChannelRequest">
+  <interface name="im.telepathy.v1.ChannelRequest">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -33,17 +33,17 @@
         can be any number of ChannelRequest objects at the same time.</p>
 
       <p>Its well-known bus name is the same as that of the ChannelDispatcher,
-        <code>"im.telepathy1.ChannelDispatcher"</code>.</p>
+        <code>"im.telepathy.v1.ChannelDispatcher"</code>.</p>
 
       <tp:rationale>
         <p>See
-          <tp:dbus-ref namespace="im.telepathy1">ChannelDispatcher.CreateChannel</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1">ChannelDispatcher.CreateChannel</tp:dbus-ref>
           for rationale for ChannelRequest being a separate object.</p>
       </tp:rationale>
 
       <p>A channel request can be cancelled by any client (not just the one
         that requested it). This means that the ChannelDispatcher will
-        <tp:dbus-ref namespace="im.telepathy1.Channel">Close</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref>
         the resulting channel, or refrain from requesting it at all, rather
         than dispatching it to a handler.</p>
     </tp:docstring>
@@ -52,7 +52,7 @@
       type="o" access="read" tp:immutable="yes">
       <tp:docstring>
         The <tp:dbus-ref
-          namespace="im.telepathy1">Account</tp:dbus-ref>
+          namespace="im.telepathy.v1">Account</tp:dbus-ref>
         on which this request was made. This property cannot change.
       </tp:docstring>
     </property>
@@ -73,7 +73,7 @@
       type="s" tp:type="DBus_Well_Known_Name" access="read" tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>Either the well-known bus name (starting with
-            <code>im.telepathy1.Client.</code>)
+            <code>im.telepathy.v1.Client.</code>)
             of the preferred handler for this
             channel, or an empty string to indicate that any handler would be
             acceptable.</p>
@@ -134,7 +134,7 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             This method has already been called, so it is no longer
             available. Stop calling it.
@@ -154,7 +154,7 @@
 
         <p>If the connection manager has already been asked to create a
           channel but has not produced one yet (e.g. if <tp:dbus-ref
-            namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+            namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
           has been called, but has not yet returned), then the
           ChannelDispatcher will remember that the request has been cancelled.
           When the channel appears, it will be closed (if it was newly
@@ -166,14 +166,14 @@
           then the channel dispatcher will not dispatch that
           channel to a handler. If the channel was newly created for this
           request, the channel dispatcher will close it with <tp:dbus-ref
-          namespace="im.telepathy1.Channel">Close</tp:dbus-ref>;
+          namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref>;
           otherwise, the channel dispatcher will ignore it. In either case,
           <tp:member-ref>Failed</tp:member-ref> will be emitted when processing
           has been completed.</p>
 
         <p>If <tp:member-ref>Failed</tp:member-ref> is emitted in response to
           this method, the error SHOULD be
-          <code>im.telepathy1.Error.Cancelled</code>.</p>
+          <code>im.telepathy.v1.Error.Cancelled</code>.</p>
 
         <p>If the channel has already been dispatched to a handler, then
           it's too late to call this method, and the channel request will
@@ -191,10 +191,10 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The name of a D-Bus error. This can come from various sources,
             including the error raised by <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
+              namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
             or an error generated
             to represent failure to establish the <tp:dbus-ref
-              namespace="im.telepathy1">Connection</tp:dbus-ref>.</p>
+              namespace="im.telepathy.v1">Connection</tp:dbus-ref>.</p>
         </tp:docstring>
       </arg>
 
@@ -233,7 +233,7 @@
           hints: they are solely for communication between cooperating
           clients. If hints that do affect the channel dispatcher are added in
           future, their names will start with an appropriate reversed domain
-          name (e.g. <code>im.telepathy1</code> for hints defined
+          name (e.g. <code>im.telepathy.v1</code> for hints defined
           by this specification, or an appropriate vendor name for third-party
           plugins).</p>
 
@@ -242,11 +242,11 @@
           dictionary of properties passed to <tp:dbus-ref
           namespace="imt1.Client.Interface.Requests">AddRequest</tp:dbus-ref>
           by the <tp:dbus-ref
-          namespace="im.telepathy1">ChannelDispatcher</tp:dbus-ref>.</p>
+          namespace="im.telepathy.v1">ChannelDispatcher</tp:dbus-ref>.</p>
         <p>The following standardised hints are defined:</p>
 
         <dl>
-          <dt>im.telepathy1.ChannelRequest.DelegateToPreferredHandler - b</dt>
+          <dt>im.telepathy.v1.ChannelRequest.DelegateToPreferredHandler - b</dt>
           <dd>If present and True the client currently handling the channel
             SHOULD pass the channel to the
             <tp:member-ref>PreferredHandler</tp:member-ref> using

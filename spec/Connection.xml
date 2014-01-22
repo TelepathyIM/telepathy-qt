@@ -21,9 +21,9 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection">
-    <tp:requires interface="im.telepathy1.Connection.Interface.Requests"/>
-    <tp:requires interface="im.telepathy1.Connection.Interface.Contacts"/>
+  <interface name="im.telepathy.v1.Connection">
+    <tp:requires interface="im.telepathy.v1.Connection.Interface.Requests"/>
+    <tp:requires interface="im.telepathy.v1.Connection.Interface.Contacts"/>
 
     <method name="Connect" tp:name-for-bindings="Connect">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -214,7 +214,7 @@ USA.</p>
             reasons SHOULD be treated like this reason.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.<tp:error-ref>Disconnected</tp:error-ref></code>.</p>
+            <code>im.telepathy.v1.Error.<tp:error-ref>Disconnected</tp:error-ref></code>.</p>
         </tp:docstring>
       </tp:enumvalue>
 
@@ -226,7 +226,7 @@ USA.</p>
             if and only if the disconnection was requested by the user.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cancelled</code>.</p>
+            <code>im.telepathy.v1.Error.Cancelled</code>.</p>
         </tp:docstring>
       </tp:enumvalue>
 
@@ -236,15 +236,15 @@ USA.</p>
 
           <p>When the status changes from Connecting to Disconnected for this
             reason, the equivalent D-Bus error is either
-            <code>im.telepathy1.Error.NetworkError</code>,
-            <code>im.telepathy1.Error.ConnectionRefused</code>,
-            <code>im.telepathy1.Error.ConnectionFailed</code>
+            <code>im.telepathy.v1.Error.NetworkError</code>,
+            <code>im.telepathy.v1.Error.ConnectionRefused</code>,
+            <code>im.telepathy.v1.Error.ConnectionFailed</code>
             or some more specific error.</p>
 
           <p>When the status changes from Connected to Disconnected for this
             reason, the equivalent D-Bus error is either
-            <code>im.telepathy1.Error.NetworkError</code>,
-            <code>im.telepathy1.Error.ConnectionLost</code>
+            <code>im.telepathy.v1.Error.NetworkError</code>,
+            <code>im.telepathy.v1.Error.ConnectionLost</code>
             or some more specific error.</p>
         </tp:docstring>
       </tp:enumvalue>
@@ -254,7 +254,7 @@ USA.</p>
           <p>The username or password was invalid.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.AuthenticationFailed</code>.
+            <code>im.telepathy.v1.Error.AuthenticationFailed</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -266,9 +266,9 @@ USA.</p>
             connection was created.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.EncryptionNotAvailable</code>
+            <code>im.telepathy.v1.Error.EncryptionNotAvailable</code>
             if encryption was not available at all, or
-            <code>im.telepathy1.Error.EncryptionError</code>
+            <code>im.telepathy.v1.Error.EncryptionError</code>
             if encryption failed.</p>
         </tp:docstring>
       </tp:enumvalue>
@@ -285,7 +285,7 @@ USA.</p>
               and true, the requested account could not be created on the
               server because it already exists.
               The equivalent D-Bus error is
-              <code>im.telepathy1.Error.RegistrationExists</code>.
+              <code>im.telepathy.v1.Error.RegistrationExists</code>.
             </li>
 
             <li>If the status change is from Connecting to Disconnected
@@ -293,7 +293,7 @@ USA.</p>
               manager could not connect to the specified account because
               a connection to that account already exists.
               The equivalent D-Bus error is
-              <code>im.telepathy1.Error.AlreadyConnected</code>.
+              <code>im.telepathy.v1.Error.AlreadyConnected</code>.
 
               <tp:rationale>
                 In some protocols, like XMPP (when connecting with the same
@@ -307,7 +307,7 @@ USA.</p>
               a new connection to the same account (perhaps from a different
               client or location) was established.
               The equivalent D-Bus error is
-              <code>im.telepathy1.Error.ConnectionReplaced</code>.
+              <code>im.telepathy.v1.Error.ConnectionReplaced</code>.
 
               <tp:rationale>
                 In some protocols, like MSNP (when connecting twice with the
@@ -324,7 +324,7 @@ USA.</p>
           <p>The server did not provide a SSL certificate.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.NotProvided</code>.
+            <code>im.telepathy.v1.Error.Cert.NotProvided</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -337,7 +337,7 @@ USA.</p>
             that.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.Untrusted</code>.
+            <code>im.telepathy.v1.Error.Cert.Untrusted</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -347,7 +347,7 @@ USA.</p>
           <p>The server's SSL certificate has expired.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.Expired</code>.
+            <code>im.telepathy.v1.Error.Cert.Expired</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -357,7 +357,7 @@ USA.</p>
           <p>The server's SSL certificate is not yet valid.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.NotActivated</code>.
+            <code>im.telepathy.v1.Error.Cert.NotActivated</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -367,7 +367,7 @@ USA.</p>
           <p>The server's SSL certificate did not match its hostname.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.HostnameMismatch</code>.
+            <code>im.telepathy.v1.Error.Cert.HostnameMismatch</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -378,7 +378,7 @@ USA.</p>
             fingerprint.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.FingerprintMismatch</code>.
+            <code>im.telepathy.v1.Error.Cert.FingerprintMismatch</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -388,7 +388,7 @@ USA.</p>
           <p>The server's SSL certificate is self-signed.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.SelfSigned</code>.
+            <code>im.telepathy.v1.Error.Cert.SelfSigned</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -399,7 +399,7 @@ USA.</p>
             certificate.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.Invalid</code>.
+            <code>im.telepathy.v1.Error.Cert.Invalid</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -409,7 +409,7 @@ USA.</p>
           <p>The server's SSL certificate has been revoked.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.Revoked</code>.
+            <code>im.telepathy.v1.Error.Cert.Revoked</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -420,7 +420,7 @@ USA.</p>
 	  or is cryptographically weak.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cert.Insecure</code>.
+            <code>im.telepathy.v1.Error.Cert.Insecure</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -432,7 +432,7 @@ USA.</p>
 	  library.</p>
 
 	  <p>When disconnected for this reason, the equivalent D-Bus error is
-	    <code>im.telepathy1.Error.Cert.LimitExceeded</code>
+	    <code>im.telepathy.v1.Error.Cert.LimitExceeded</code>
 	  </p>
 	</tp:docstring>
       </tp:enumvalue>
@@ -477,7 +477,7 @@ USA.</p>
           <tp:type>Connection_Status_Reason</tp:type>, or may be a more
           specific Telepathy error
           (such as
-          <code>im.telepathy1.Error.ConnectionRefused</code>
+          <code>im.telepathy.v1.Error.ConnectionRefused</code>
           for Connection_Status_Reason_Network_Error)
           or a protocol-specific or connection-manager-specific error in a
           suitable namespace.
@@ -544,7 +544,7 @@ USA.</p>
           as passed to <tp:dbus-ref
           namespace="imt1.Connection.Interface.Contacts">GetContactByID</tp:dbus-ref>.
           As a special case, this is always present in the result of <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Contacts">GetContactAttributes</tp:dbus-ref>,
+            namespace="im.telepathy.v1.Connection.Interface.Contacts">GetContactAttributes</tp:dbus-ref>,
           whether it was explicitly requested or not.</p>
       </tp:docstring>
     </tp:contact-attribute>
@@ -589,7 +589,7 @@ USA.</p>
             there is no active subscription.</p>
 
           <p>One situation where this is useful is <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface"
+              namespace="im.telepathy.v1.Connection.Interface"
               >Location1</tp:dbus-ref>: on XMPP, location updates are received
             over PEP. If the Connection advertises the
             <code>geoloc+notify</code> capability, it will be sent location
@@ -600,7 +600,7 @@ USA.</p>
           <p>Another example of a protocol that benefits from this method is
             the Google XMPP Mail Notification extension, which can be used
             to implement <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface"
+              namespace="im.telepathy.v1.Connection.Interface"
               >MailNotification1</tp:dbus-ref>. In this protocol, the CM
             receives a notification that something has changed, but to get
             more information, the CM must request this information. Knowing
@@ -676,9 +676,9 @@ USA.</p>
 
       <p>In order to allow Connection objects to be discovered by new clients,
         the object path and well-known bus name MUST be of the form
-        <code>/im/telepathy1/Connection/cmname/proto/account</code>
+        <code>/im/telepathy/v1/Connection/cmname/proto/account</code>
         and
-        <code>im.telepathy1.Connection.cmname.proto.account</code>
+        <code>im.telepathy.v1.Connection.cmname.proto.account</code>
         where:</p>
 
       <ul>

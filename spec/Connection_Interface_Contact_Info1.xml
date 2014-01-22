@@ -17,9 +17,9 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.ContactInfo1">
+  <interface name="im.telepathy.v1.Connection.Interface.ContactInfo1">
     <tp:added version="0.19.4">(as stable API)</tp:added>
-    <tp:requires interface="im.telepathy1.Connection"/>
+    <tp:requires interface="im.telepathy.v1.Connection"/>
 
     <tp:struct name="Contact_Info_Field" array-name="Contact_Info_Field_List">
       <tp:member type="s" name="Field_Name">
@@ -211,8 +211,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
       </tp:possible-errors>
     </method>
 
@@ -240,10 +240,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The contact's information could not be retrieved.
           </tp:docstring>
@@ -266,16 +266,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Setting your own information is not supported on this protocol.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The supplied fields do not match the restrictions specified by
             <tp:member-ref>SupportedFields</tp:member-ref>.

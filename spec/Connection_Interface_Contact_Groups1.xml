@@ -18,9 +18,9 @@
       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
       USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.ContactGroups1">
-    <tp:requires interface="im.telepathy1.Connection"/>
-    <tp:requires interface="im.telepathy1.Connection.Interface.ContactList1"/>
+  <interface name="im.telepathy.v1.Connection.Interface.ContactGroups1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
+    <tp:requires interface="im.telepathy.v1.Connection.Interface.ContactList1"/>
     <tp:added version="0.21.0">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -281,21 +281,21 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>Raised if <tp:member-ref>DisjointGroups</tp:member-ref>
             is true and the list of groups has more than one
             member.</tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Raised if <tp:member-ref>GroupStorage</tp:member-ref>
             is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet"/>
+        <tp:error name="im.telepathy.v1.Error.NotYet"/>
       </tp:possible-errors>
     </method>
 
@@ -342,16 +342,16 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Raised if <tp:member-ref>GroupStorage</tp:member-ref>
             is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet"/>
+        <tp:error name="im.telepathy.v1.Error.NotYet"/>
       </tp:possible-errors>
     </method>
 
@@ -391,16 +391,16 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Raised if <tp:member-ref>GroupStorage</tp:member-ref>
             is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet"/>
+        <tp:error name="im.telepathy.v1.Error.NotYet"/>
       </tp:possible-errors>
     </method>
 
@@ -440,16 +440,16 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Raised if <tp:member-ref>GroupStorage</tp:member-ref>
             is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet"/>
+        <tp:error name="im.telepathy.v1.Error.NotYet"/>
       </tp:possible-errors>
     </method>
 
@@ -477,15 +477,15 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Raised if <tp:member-ref>GroupStorage</tp:member-ref>
             is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet"/>
+        <tp:error name="im.telepathy.v1.Error.NotYet"/>
       </tp:possible-errors>
     </method>
 
@@ -524,23 +524,23 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Raised if <tp:member-ref>GroupStorage</tp:member-ref>
             is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.DoesNotExist">
+        <tp:error name="im.telepathy.v1.Error.DoesNotExist">
           <tp:docstring>Raised if there is no group with that
             name.</tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>Raised if there is already a group with the new
             name.</tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotYet"/>
+        <tp:error name="im.telepathy.v1.Error.NotYet"/>
       </tp:possible-errors>
     </method>
 

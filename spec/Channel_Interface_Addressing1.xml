@@ -16,7 +16,7 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Interface.Addressing1"
+  <interface name="im.telepathy.v1.Channel.Interface.Addressing1"
              tp:causes-havoc="experimental">
     <tp:added version="0.19.12">(as draft)</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -54,7 +54,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:rationale>
           <p>While this seems redundant, since the scheme is included in
             <tp:member-ref>TargetURI</tp:member-ref>, it exists for constructing
-            <tp:dbus-ref namespace="im.telepathy1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
+            <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
             that support a limited set of URI schemes.</p>
         </tp:rationale>
 
@@ -72,10 +72,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>If this is present in a channel request,
           <tp:member-ref>TargetVCardField</tp:member-ref>
           MUST be present, and
-          <tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandle</tp:dbus-ref>,
-          <tp:dbus-ref namespace="im.telepathy1.Channel">TargetID</tp:dbus-ref>,
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandle</tp:dbus-ref>,
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>,
           and <tp:member-ref>TargetURI</tp:member-ref> MUST NOT be present.
-          <tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandleType</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
           must either not be present or set to Handle_Type_Contact.
           The request MUST fail with error InvalidHandle, without
           side-effects, if the requested vCard address cannot be found.</p>
@@ -92,11 +92,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>If this is present in a channel request,
           <tp:member-ref>TargetVCardField</tp:member-ref>
           MUST be present, and
-          <tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandle</tp:dbus-ref>,
-          <tp:dbus-ref namespace="im.telepathy1.Channel">TargetID</tp:dbus-ref>,
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandle</tp:dbus-ref>,
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>,
           and <tp:member-ref>TargetVCardAddress</tp:member-ref> MUST NOT be
           present.
-          <tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandleType</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
           must either not be present or set to Handle_Type_Contact.
           The request MUST fail with error InvalidHandle, without
           side-effects, if the requested vCard address cannot be found.</p>

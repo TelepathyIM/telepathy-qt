@@ -21,7 +21,7 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Connection.Interface.Anonymity1">
+  <interface name="im.telepathy.v1.Connection.Interface.Anonymity1">
     <tp:added version="0.19.7">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -118,7 +118,7 @@
           by the CM and any intermediaries between the local and remote contacts.
           If this is set to true but anonymity settings cannot be followed, then
           the session MUST be denied with a
-          <code>im.telepathy1.Error.<tp:error-ref>WouldBreakAnonymity</tp:error-ref></code>
+          <code>im.telepathy.v1.Error.<tp:error-ref>WouldBreakAnonymity</tp:error-ref></code>
           error.
           Any client that sets <tp:member-ref>AnonymityModes</tp:member-ref>
           SHOULD also set this property first (rather than accepting the CM's
@@ -137,7 +137,7 @@
           <tp:member-ref>AnonymityModesChanged</tp:member-ref> signal.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             An unsupported mode was supplied. Supported modes are specified
             in the SupportedAnonymityModes property, and this should be

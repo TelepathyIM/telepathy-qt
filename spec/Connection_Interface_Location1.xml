@@ -18,9 +18,9 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.Location1">
+  <interface name="im.telepathy.v1.Connection.Interface.Location1">
     <tp:added version="0.17.27">(as stable API)</tp:added>
-    <tp:requires interface="im.telepathy1.Connection"/>
+    <tp:requires interface="im.telepathy.v1.Connection"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface on connections to support protocols which allow users to
@@ -49,11 +49,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         possible.</p>
 
       <p>Clients of this interface SHOULD register an interest in it by calling
-        <tp:dbus-ref namespace="im.telepathy1"
+        <tp:dbus-ref namespace="im.telepathy.v1"
           >Connection.AddClientInterest</tp:dbus-ref> with an argument
         containing the name of this interface,
         before calling any Location method. If they do so, they SHOULD also call
-        <tp:dbus-ref namespace="im.telepathy1"
+        <tp:dbus-ref namespace="im.telepathy.v1"
           >Connection.RemoveClientInterest</tp:dbus-ref> after use to allow
         the CM to release resources associated with this interface.</p>
     </tp:docstring>
@@ -286,10 +286,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied">
           <tp:docstring>
             The requested contact does not allow the local user to see their
             location information.
@@ -335,8 +335,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The user's server does not support publishing their own location.
             If it is possible to determine this ahead of time, the
@@ -344,7 +344,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             <tp:member-ref>SupportedLocationFeatures</tp:member-ref>.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 
@@ -370,7 +370,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         Indicates the Location features supported by this connection. This
         property MAY be undefined before <tp:dbus-ref
-          namespace="im.telepathy1.Connection">Status</tp:dbus-ref>
+          namespace="im.telepathy.v1.Connection">Status</tp:dbus-ref>
         becomes <code>Connected</code>, but MUST remain constant thereafter.
       </tp:docstring>
     </property>

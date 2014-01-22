@@ -18,8 +18,8 @@
       along with this library; if not, write to the Free Software Foundation,
       Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.Contacts">
-    <tp:requires interface="im.telepathy1.Connection"/>
+  <interface name="im.telepathy.v1.Connection.Interface.Contacts">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
     <tp:added version="0.17.9"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -102,7 +102,7 @@
             activity, will be in the reply.</p>
 
           <p>Attributes from the interface
-            <tp:dbus-ref>im.telepathy1.Connection</tp:dbus-ref>
+            <tp:dbus-ref>im.telepathy.v1.Connection</tp:dbus-ref>
             are always returned, and need not be requested explicitly.</p>
 
           <p>As well as returning cached information immediately, the
@@ -110,12 +110,12 @@
             values for the contact attributes. If better values are later
             obtained by this process, they will be indicated with the usual
             signals (such as <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface.Aliasing1">AliasesChanged</tp:dbus-ref>).</p>
+              namespace="im.telepathy.v1.Connection.Interface.Aliasing1">AliasesChanged</tp:dbus-ref>).</p>
 
           <tp:rationale>
             For instance, an XMPP connection manager could download vCards
             in response to a request for <tp:dbus-ref
-              namespace="im.telepathy1.Connection.Interface">Aliasing1</tp:dbus-ref>
+              namespace="im.telepathy.v1.Connection.Interface">Aliasing1</tp:dbus-ref>
             attributes.
           </tp:rationale>
         </tp:docstring>
@@ -133,12 +133,12 @@
 
           <p>Each contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
-            (<code>im.telepathy1.Connection/contact-id</code>).</p>
+            (<code>im.telepathy.v1.Connection/contact-id</code>).</p>
         </tp:docstring>
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
       </tp:possible-errors>
     </method>
 
@@ -189,13 +189,13 @@
 
           <p>The contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
-            (<code>org.freedesktop.Telepathy.Connection/contact-id</code>).</p>
+            (<code>im.telepathy.v1.Connection/contact-id</code>).</p>
         </tp:docstring>
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
       </tp:possible-errors>
     </method>
   </interface>

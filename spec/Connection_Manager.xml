@@ -18,7 +18,7 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.ConnectionManager">
+  <interface name="im.telepathy.v1.ConnectionManager">
 
     <tp:simple-type name="Connection_Manager_Name" type="s">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -201,7 +201,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A map from protocol identifiers supported by a connection
           manager to the immutable properties of the corresponding
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >Protocol</tp:dbus-ref> objects.</p>
       </tp:docstring>
 
@@ -222,7 +222,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A map from protocol identifiers supported by this connection
           manager to the immutable properties of the corresponding
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >Protocol</tp:dbus-ref> objects.</p>
 
         <tp:rationale>
@@ -252,7 +252,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring>
         Emitted when a new <tp:dbus-ref
-        namespace="im.telepathy1">Connection</tp:dbus-ref> object
+        namespace="im.telepathy.v1">Connection</tp:dbus-ref> object
         is created.
       </tp:docstring>
     </signal>
@@ -287,14 +287,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Request a
-          <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1">Connection</tp:dbus-ref>
           object representing a given account on a given
           protocol with the given parameters. The method returns the bus name
           and the object path where the new Connection object can be found,
           which should have the status of Connection_Status_Disconnected, to
           allow signal handlers to be attached before connecting is started
           with the
-          <tp:dbus-ref namespace="im.telepathy1.Connection">Connect</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Connection">Connect</tp:dbus-ref>
           method.</p>
 
         <p><strong>Most applications should not use this method</strong>: they
@@ -340,18 +340,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         the creation of new connections.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The requested protocol is not supported by this manager
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The requested connection already appears to exist
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             Unrecognised connection parameters
           </tp:docstring>
@@ -466,7 +466,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:type>Connection_Manager_Name</tp:type> for syntax).</p>
 
     <p>The connection manager must then provide a well-known bus name of
-      <code>im.telepathy1.ConnectionManager.<em>cmname</em></code>
+      <code>im.telepathy.v1.ConnectionManager.<em>cmname</em></code>
       where <em>cmname</em> is its connection manager name. If it makes sense
       to start the connection manager using D-Bus service activation, it
       must register that well-known name for service activation by installing
@@ -481,7 +481,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <p>When the connection manager is running, it must have an object
       implementing the ConnectionManager interface at the object path
-      <code>/im/telepathy1/ConnectionManager/<em>cmname</em></code>.
+      <code>/im/telepathy/v1/ConnectionManager/<em>cmname</em></code>.
     </p>
 
     <p>Connection managers' capabilities can be determined dynamically by
@@ -498,7 +498,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       defaulting to $HOME/.local/share if unset, followed by
       colon-separated paths from $XDG_DATA_DIRS, defaulting to
       /usr/local/share:/usr/share if unset) for the first file named
-      <code>telepathy/managers/<em>cmname</em>.manager</code> that can be
+      <code>telepathy-1/managers/<em>cmname</em>.manager</code> that can be
       read without error and contains a group whose name is the name of this
       interface. This file has the same syntax as a
       <a href="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html">freedesktop.org Desktop Entry file</a>.</p>
@@ -512,7 +512,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       file.</p>
 
     <p>The <code>.manager</code> file MUST have a group headed
-      <code>[im.telepathy1.ConnectionManager]</code>, containing a key
+      <code>[im.telepathy.v1.ConnectionManager]</code>, containing a key
       <code>Interfaces</code> representing
       <tp:member-ref>Interfaces</tp:member-ref> as a sequence of strings
       each followed by a semicolon (the "localestrings" type from the Desktop
@@ -520,7 +520,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <p>For each protocol name <em>proto</em> that would be returned by
     the keys of the <tp:member-ref>Protocols</tp:member-ref> property,
-    the .manager file contains a group headed <code>[im.telepathy1.Protocol
+    the .manager file contains a group headed <code>[im.telepathy.v1.Protocol
     <em>proto</em>]</code>. For each parameter <em>p</em> that would
     be in the <tp:dbus-ref
     namespace="imt1.Protocol">Parameters</tp:dbus-ref> property

@@ -19,8 +19,8 @@
       Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Connection.Interface.Presence1">
-    <tp:requires interface="im.telepathy1.Connection"/>
+  <interface name="im.telepathy.v1.Connection.Interface.Presence1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
 
     <tp:struct name="Presence">
       <tp:docstring>
@@ -157,7 +157,7 @@
 
           <tp:rationale>
             <p>To go offline, call <tp:dbus-ref
-                namespace="im.telepathy1.Connection">Disconnect</tp:dbus-ref>
+                namespace="im.telepathy.v1.Connection">Disconnect</tp:dbus-ref>
             instead. The "error" and "unknown" statuses make no sense.</p>
           </tp:rationale>
         </tp:docstring>
@@ -185,8 +185,8 @@
           presences might change upon connecting.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             Either the specified status is not supported, the specified
             status cannot be set on the user themselves, or a non-empty
@@ -194,7 +194,7 @@
             accept a message.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
       </tp:possible-errors>
     </method>
 
@@ -454,7 +454,7 @@
 
         <p>The presence is likely to be (Unknown, "unknown", "") unless
           <tp:token-ref
-            namespace="im.telepathy1.Connection.Interface.ContactList1">subscribe</tp:token-ref>
+            namespace="im.telepathy.v1.Connection.Interface.ContactList1">subscribe</tp:token-ref>
           contact attribute is Yes, or the local user can temporarily see their
           presence for some other reason (for instance, on XMPP, contacts seen
           in chatrooms will temporarily have available presence).</p>

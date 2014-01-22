@@ -20,7 +20,7 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Call1.Content.MediaDescription">
+  <interface name="im.telepathy.v1.Call1.Content.MediaDescription">
     <tp:added version="0.25.2">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -55,7 +55,7 @@
         FurtherNegotiationRequired set to False).
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The description given is invalid in some way.
           </tp:docstring>

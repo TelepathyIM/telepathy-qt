@@ -21,12 +21,12 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Channel.Interface.Anonymity1">
+  <interface name="im.telepathy.v1.Channel.Interface.Anonymity1">
     <tp:added version="0.19.7">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Interface for requesting the anonymity modes of a channel
-        (as defined in <tp:dbus-ref namespace="im.telepathy1"
+        (as defined in <tp:dbus-ref namespace="im.telepathy.v1"
           >Connection.Interface.Anonymity1</tp:dbus-ref>).</p>
     </tp:docstring>
 

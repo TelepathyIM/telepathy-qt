@@ -18,8 +18,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Interface.Group1">
-    <tp:requires interface="im.telepathy1.Channel"/>
+  <interface name="im.telepathy.v1.Channel.Interface.Group1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:changed version="0.99.1">Deprecated methods, signals, and
       properties have all been removed.</tp:changed>
 
@@ -75,15 +75,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           connection managers must silently accept this, without error.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.NotCapable"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.Channel.Full"/>
-        <tp:error name="im.telepathy1.Error.Channel.InviteOnly"/>
-        <tp:error name="im.telepathy1.Error.Channel.Banned"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.NotCapable"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.Full"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.InviteOnly"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.Banned"/>
       </tp:possible-errors>
     </method>
 
@@ -343,7 +343,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         member at all (which is likely to be the case, for instance,
         on the old ContactList channels). Note that this is different
         from the value of the <tp:dbus-ref
-        namespace="im.telepathy1">Connection.SelfHandle</tp:dbus-ref>
+        namespace="im.telepathy.v1">Connection.SelfHandle</tp:dbus-ref>
         property on some protocols, so the value of this handle should
         always be used with the methods of this interface.
       </tp:docstring>
@@ -410,11 +410,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed from
             a group for this reason and the actor is not the SelfHandle, the
             equivalent D-Bus error is
-            <code>im.telepathy1.Error.Terminated</code>.</p>
+            <code>im.telepathy.v1.Error.Terminated</code>.</p>
 
           <p>If the SelfHandle is removed from a group for this reason and
             the actor is also the SelfHandle, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Cancelled</code>.</p>
+            <code>im.telepathy.v1.Error.Cancelled</code>.</p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Offline" value="1">
@@ -437,7 +437,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
           <p>If a handle is removed from a group for this reason, the
             equivalent D-Bus error is
-            <code>im.telepathy1.Error.Offline</code>.</p>
+            <code>im.telepathy.v1.Error.Offline</code>.</p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Kicked" value="2">
@@ -446,7 +446,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
           <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed
             from a group for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Channel.Kicked</code>.
+            <code>im.telepathy.v1.Error.Channel.Kicked</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -469,7 +469,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
           <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed
             from a group for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Busy</code>.
+            <code>im.telepathy.v1.Error.Busy</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -491,7 +491,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
           <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed
             from a group for this reason, the equivalent D-Bus error is
-            <code>im.telepathy1.Error.Channel.Banned</code>.
+            <code>im.telepathy.v1.Error.Channel.Banned</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -520,7 +520,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
           <p>If a contact is removed from a group for this reason, the
             equivalent D-Bus error is
-            <code>im.telepathy1.Error.DoesNotExist</code>.
+            <code>im.telepathy.v1.Error.DoesNotExist</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -542,7 +542,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
           <p>If a contact is removed from a group for this reason, the
             equivalent D-Bus error is
-            <code>im.telepathy1.Error.NoAnswer</code>.
+            <code>im.telepathy.v1.Error.NoAnswer</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -551,10 +551,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <p>The change is because a contact's unique identifier changed.
           There must be exactly one handle in the removed set and exactly
           one handle in one of the added sets. The <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Renaming1">Renamed</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection.Interface.Renaming1">Renamed</tp:dbus-ref>
           signal on the
           <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface">Renaming1</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection.Interface">Renaming1</tp:dbus-ref>
           interface will have been emitted for the same handles,
           shortly before this <tp:member-ref>MembersChanged</tp:member-ref> signal is emitted.</p>
         </tp:docstring>
@@ -566,7 +566,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
           <p>If a contact is removed from a group for this reason, the
             equivalent D-Bus error is
-            <code>im.telepathy1.Error.PermissionDenied</code>.
+            <code>im.telepathy.v1.Error.PermissionDenied</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -581,7 +581,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             If members are added with this reason code, the change is because
             unconnected parts of the group have rejoined. If this channel
             carries messages (e.g. <tp:dbus-ref
-              namespace="im.telepathy1.Channel.Type">Text</tp:dbus-ref>
+              namespace="im.telepathy.v1.Channel.Type">Text</tp:dbus-ref>
             channels) applications must
             assume that the contacts being added are likely to have missed some
             messages as a result of the separation, and that the contacts
@@ -749,7 +749,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           If doing so fails with PermissionDenied, this is considered to a bug
           in the connection manager, but clients MUST recover by falling back
           to closing the channel with the <tp:dbus-ref
-            namespace="im.telepathy1.Channel">Close</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref>
           method.</p>
 
         <p>Removing any contact from the local pending list is always
@@ -775,12 +775,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             protocol is unable to represent the given reason.</p>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
-        <tp:error name="im.telepathy1.Error.InvalidHandle"/>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The provided reason code was invalid.
           </tp:docstring>
@@ -812,7 +812,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <p>If the <tp:member-ref>MembersChanged</tp:member-ref> signal indicates
     that the <tp:member-ref>SelfHandle</tp:member-ref> has been removed from
     the channel, and the channel subsequently emits <tp:dbus-ref
-      namespace="im.telepathy1.Channel">Closed</tp:dbus-ref>,
+      namespace="im.telepathy.v1.Channel">Closed</tp:dbus-ref>,
     clients SHOULD consider the details given in the MembersChanged
     signal to be the reason why the channel closed.</p>
 

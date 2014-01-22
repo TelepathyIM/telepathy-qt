@@ -21,9 +21,9 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Connection.Interface.Keepalive1"
+  <interface name="im.telepathy.v1.Connection.Interface.Keepalive1"
     tp:causes-havoc="experimental">
-    <tp:requires interface="im.telepathy1.Connection"/>
+    <tp:requires interface="im.telepathy.v1.Connection"/>
     <tp:added version="0.21.2">(draft 1)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -47,10 +47,10 @@
         <tp:member-ref>KeepaliveInterval</tp:member-ref> property which
         controls the frequency of keepalive pings, if any. Connection managers
         implementing this property should also include it in <tp:dbus-ref
-        namespace='im.telepathy1'>Protocol.Parameters</tp:dbus-ref>
+        namespace='im.telepathy.v1'>Protocol.Parameters</tp:dbus-ref>
         with the <code>DBus_Property</code> flag, allowing the desired value to
         be stored in <tp:dbus-ref
-          namespace='im.telepathy1'>Account.Parameters</tp:dbus-ref>
+          namespace='im.telepathy.v1'>Account.Parameters</tp:dbus-ref>
         and passed onto the connection by the account manager.</p>
     </tp:docstring>
 

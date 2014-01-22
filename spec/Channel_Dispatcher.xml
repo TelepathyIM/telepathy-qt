@@ -21,7 +21,7 @@
       USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.ChannelDispatcher">
+  <interface name="im.telepathy.v1.ChannelDispatcher">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -32,9 +32,9 @@
 
       <p>If a channel dispatcher is running, it is responsible for dispatching
         new channels on all
-        <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>s
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection</tp:dbus-ref>s
         created by the
-        <tp:dbus-ref namespace="im.telepathy1">AccountManager</tp:dbus-ref>.
+        <tp:dbus-ref namespace="im.telepathy.v1">AccountManager</tp:dbus-ref>.
         Connections not created by the AccountManager are outside the scope
         of the channel dispatcher.</p>
 
@@ -48,10 +48,10 @@
 
       <p>The current channel dispatcher is defined to be the process that
         owns the well-known bus name
-        <code>im.telepathy1.ChannelDispatcher</code> on
+        <code>im.telepathy.v1.ChannelDispatcher</code> on
         the session bus. This process MUST export an object with this
         interface at the object path
-        <code>/im/telepathy1/ChannelDispatcher</code>.</p>
+        <code>/im/telepathy/v1/ChannelDispatcher</code>.</p>
 
       <p>Until a mechanism exists for making a reasonable automatic choice
         of ChannelDispatcher implementation, implementations SHOULD NOT
@@ -68,13 +68,13 @@
 
       <dl>
         <dt><tp:dbus-ref
-            namespace="im.telepathy1.Client">Observer</tp:dbus-ref></dt>
+            namespace="im.telepathy.v1.Client">Observer</tp:dbus-ref></dt>
         <dd><p>Observers monitor the creation of new channels. This
             functionality can be used for things like message logging.
             All observers are notified simultaneously.</p></dd>
 
         <dt><tp:dbus-ref
-            namespace="im.telepathy1.Client">Approver</tp:dbus-ref></dt>
+            namespace="im.telepathy.v1.Client">Approver</tp:dbus-ref></dt>
         <dd>
           <p>Approvers notify the user that new channels have been created,
             and also select which channel handler will be used for the channel,
@@ -83,7 +83,7 @@
         </dd>
 
         <dt><tp:dbus-ref
-            namespace="im.telepathy1.Client">Handler</tp:dbus-ref></dt>
+            namespace="im.telepathy.v1.Client">Handler</tp:dbus-ref></dt>
         <dd>
           <p>Each new channel or set of channels is passed to exactly one
             handler as its final destination. A typical channel handler is a
@@ -104,7 +104,7 @@
       <tp:added version="0.21.5"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Start a request to create a channel. This initially just creates a
-          <tp:dbus-ref namespace="im.telepathy1">ChannelRequest</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>
           object, which can be used to continue the request and track its
           success or failure.</p>
 
@@ -124,10 +124,10 @@
         <p>If this method is called for an Account that is disabled, invalid
           or otherwise unusable, no error is signalled until
           <tp:dbus-ref
-            namespace="im.telepathy1">ChannelRequest.Proceed</tp:dbus-ref>
+            namespace="im.telepathy.v1">ChannelRequest.Proceed</tp:dbus-ref>
           is called, at which point
           <tp:dbus-ref
-            namespace="im.telepathy1">ChannelRequest.Failed</tp:dbus-ref>
+            namespace="im.telepathy.v1">ChannelRequest.Failed</tp:dbus-ref>
           is emitted with an appropriate error.</p>
 
         <tp:rationale>
@@ -143,7 +143,7 @@
       <arg direction="in" name="Account" type="o">
         <tp:docstring>
           The
-            <tp:dbus-ref namespace="im.telepathy1">Account</tp:dbus-ref>
+            <tp:dbus-ref namespace="im.telepathy.v1">Account</tp:dbus-ref>
           for which the new channel is to be created.
         </tp:docstring>
       </arg>
@@ -153,14 +153,14 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary containing desirable properties. This has the same
             semantics as the corresponding parameter to
-            <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>.
+            <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>.
           </p>
 
           <p>Certain properties will not necessarily make sense in this
             dictionary: for instance,
-            <tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandle</tp:dbus-ref>
+            <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandle</tp:dbus-ref>
             can only be given if the requester is able to interact with a
-            <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>
+            <tp:dbus-ref namespace="im.telepathy.v1">Connection</tp:dbus-ref>
             to the desired account.</p>
         </tp:docstring>
       </arg>
@@ -171,10 +171,10 @@
           <p>The time at which user action occurred, or 0 if this channel
             request is for some reason not involving user action.
             The <tp:dbus-ref
-              namespace="im.telepathy1.ChannelRequest">UserActionTime</tp:dbus-ref>
+              namespace="im.telepathy.v1.ChannelRequest">UserActionTime</tp:dbus-ref>
             property will be set to this value, and it will eventually be
             passed as the <code>User_Action_Time</code> parameter of <tp:dbus-ref
-              namespace="im.telepathy1.Client.Handler">HandleChannels</tp:dbus-ref>.</p>
+              namespace="im.telepathy.v1.Client.Handler">HandleChannels</tp:dbus-ref>.</p>
         </tp:docstring>
       </arg>
 
@@ -182,13 +182,13 @@
         tp:type="DBus_Well_Known_Name">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>Either the well-known bus name (starting with
-            <code>im.telepathy1.Client.</code>)
+            <code>im.telepathy.v1.Client.</code>)
             of the preferred handler for this
             channel, or an empty string to indicate that any handler would be
             acceptable. The channel dispatcher SHOULD dispatch as many as
             possible of the resulting channels (ideally, all of them)
             to that handler—irrespective of whether that handler's <tp:dbus-ref
-              namespace="im.telepathy1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
+              namespace="im.telepathy.v1.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
             matches the channel—and SHOULD remember the preferred handler
             so it can try to dispatch subsequent channels in the same bundle
             to the same handler.</p>
@@ -200,7 +200,7 @@
 
             <p>This is partly so the channel dispatcher can call
               <tp:dbus-ref
-                namespace="im.telepathy1.Client.Handler">HandleChannels</tp:dbus-ref>
+                namespace="im.telepathy.v1.Client.Handler">HandleChannels</tp:dbus-ref>
               on it, and partly so the channel dispatcher
               can recover state if it crashes and is restarted.</p>
 
@@ -215,7 +215,7 @@
           <p>If this is a well-known bus name and the handler has the
             Requests interface, the channel dispatcher SHOULD
             call <tp:dbus-ref
-              namespace="im.telepathy1.Client.Interface.Requests">AddRequest</tp:dbus-ref>
+              namespace="im.telepathy.v1.Client.Interface.Requests">AddRequest</tp:dbus-ref>
             on that Handler after this method has returned.</p>
 
           <tp:rationale>
@@ -226,7 +226,7 @@
 
           <p>This is copied to the ChannelRequest that is returned,
             as the <tp:dbus-ref
-              namespace="im.telepathy1.ChannelRequest">PreferredHandler</tp:dbus-ref>
+              namespace="im.telepathy.v1.ChannelRequest">PreferredHandler</tp:dbus-ref>
             property.</p>
         </tp:docstring>
 
@@ -255,7 +255,7 @@
       <arg direction="out" name="Request" type="o">
         <tp:docstring>
           A
-          <tp:dbus-ref namespace="im.telepathy1">ChannelRequest</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>
           object.
         </tp:docstring>
       </arg>
@@ -268,10 +268,10 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The <var>Preferred_Handler</var> is syntactically invalid or does
-            not start with <code>im.telepathy1.Client.</code>,
+            not start with <code>im.telepathy.v1.Client.</code>,
             the <var>Account</var> does not exist, or one of the
             <var>Requested_Properties</var> is invalid
           </tp:docstring>
@@ -286,29 +286,29 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Start a request to ensure that a channel exists, creating it if
           necessary.  This initially just creates a <tp:dbus-ref
-            namespace="im.telepathy1">ChannelRequest</tp:dbus-ref>
+            namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>
           object, which can be used to continue the request and track its
           success or failure.</p>
 
         <p>If this method is called for an Account that is disabled, invalid
           or otherwise unusable, no error is signalled until
           <tp:dbus-ref
-            namespace="im.telepathy1">ChannelRequest.Proceed</tp:dbus-ref>
+            namespace="im.telepathy.v1">ChannelRequest.Proceed</tp:dbus-ref>
           is called, at which point
           <tp:dbus-ref
-            namespace="im.telepathy1">ChannelRequest.Failed</tp:dbus-ref>
+            namespace="im.telepathy.v1">ChannelRequest.Failed</tp:dbus-ref>
           is emitted with an appropriate error.</p>
 
         <tp:rationale>
           <p>The rationale is as for <tp:dbus-ref
-              namespace='im.telepathy1.ChannelDispatcher'>CreateChannel</tp:dbus-ref>.</p>
+              namespace='im.telepathy.v1.ChannelDispatcher'>CreateChannel</tp:dbus-ref>.</p>
         </tp:rationale>
       </tp:docstring>
 
       <arg direction="in" name="Account" type="o">
         <tp:docstring>
           The
-            <tp:dbus-ref namespace="im.telepathy1">Account</tp:dbus-ref>
+            <tp:dbus-ref namespace="im.telepathy.v1">Account</tp:dbus-ref>
           for which the new channel is to be created.
         </tp:docstring>
       </arg>
@@ -318,14 +318,14 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary containing desirable properties. This has the same
             semantics as the corresponding parameter to
-            <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.EnsureChannel</tp:dbus-ref>.
+            <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.EnsureChannel</tp:dbus-ref>.
           </p>
 
           <p>Certain properties will not necessarily make sense in this
             dictionary: for instance,
-            <tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandle</tp:dbus-ref>
+            <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandle</tp:dbus-ref>
             can only be given if the requester is able to interact with a
-            <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>
+            <tp:dbus-ref namespace="im.telepathy.v1">Connection</tp:dbus-ref>
             to the desired account.</p>
         </tp:docstring>
       </arg>
@@ -346,7 +346,7 @@
         tp:type="DBus_Well_Known_Name">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>Either the well-known bus name (starting with
-            <code>im.telepathy1.Client.</code>)
+            <code>im.telepathy.v1.Client.</code>)
             of the preferred handler for this
             channel, or an empty string to indicate that any handler would be
             acceptable. The behaviour and rationale are the same as for the
@@ -361,7 +361,7 @@
             so it can try to dispatch subsequent channels in the same bundle
             to the same handler. If the requested channel already exists (that
             is, <tp:dbus-ref
-              namespace="im.telepathy1">Connection.Interface.Requests.EnsureChannel</tp:dbus-ref>
+              namespace="im.telepathy.v1">Connection.Interface.Requests.EnsureChannel</tp:dbus-ref>
             returns <code>Yours=False</code>) then the channel dispatcher
             SHOULD re-dispatch the channel to its existing handler, and MUST
             NOT dispatch it to this client (unless it is the existing handler);
@@ -369,11 +369,11 @@
 
           <tp:rationale>
             <p>An address book application, for example, might call <tp:dbus-ref
-                namespace='im.telepathy1.ChannelDispatcher'>EnsureChannel</tp:dbus-ref>
+                namespace='im.telepathy.v1.ChannelDispatcher'>EnsureChannel</tp:dbus-ref>
               to ensure that a text channel with a particular contact is
               displayed to the user; it does not care whether a new channel was
               made. An IM client might call <tp:dbus-ref
-                namespace='im.telepathy1.ChannelDispatcher'>EnsureChannel</tp:dbus-ref>
+                namespace='im.telepathy.v1.ChannelDispatcher'>EnsureChannel</tp:dbus-ref>
               in response to the user double-clicking an entry in the contact
               list, with itself as the <code>Preferred_Handler</code>; if the
               user already has a conversation with that contact in another
@@ -397,7 +397,7 @@
       <arg direction="out" name="Request" type="o">
         <tp:docstring>
           A
-          <tp:dbus-ref namespace="im.telepathy1">ChannelRequest</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>
           object.
         </tp:docstring>
       </arg>
@@ -410,10 +410,10 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The <var>Preferred_Handler</var> is syntactically invalid or does
-            not start with <code>im.telepathy1.Client.</code>,
+            not start with <code>im.telepathy.v1.Client.</code>,
             the <var>Account</var> does not exist, or one of the
             <var>Requested_Properties</var> is invalid
           </tp:docstring>
@@ -434,7 +434,7 @@
       </tp:changed>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Called by a
-        <tp:dbus-ref namespace="im.telepathy1.Client">Handler</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1.Client">Handler</tp:dbus-ref>
           to redispatch a bunch of channels it is currently handling.</p>
 
         <p>For each <var>Channel</var> in <var>Channels</var>, if another
@@ -449,7 +449,7 @@
           been accepted or rejected by Handlers.</p>
 
         <p>If this method fails, the original
-          <tp:dbus-ref namespace="im.telepathy1.Client">Handler</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Client">Handler</tp:dbus-ref>
           is still handling the channels.</p>
 
       </tp:docstring>
@@ -457,7 +457,7 @@
       <arg direction="in" name="Channels" type="ao">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The list of channels to redispatch. The caller has to be the current
-            <tp:dbus-ref namespace="im.telepathy1.Client">Handler</tp:dbus-ref>
+            <tp:dbus-ref namespace="im.telepathy.v1.Client">Handler</tp:dbus-ref>
             of all of these channels
           </p>
         </tp:docstring>
@@ -479,7 +479,7 @@
         tp:type="DBus_Well_Known_Name">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>Either the well-known bus name (starting with
-            <code>im.telepathy1.Client.</code>)
+            <code>im.telepathy.v1.Client.</code>)
             of the preferred new handler for these
             channels, or an empty string to indicate that any handler would be
             acceptable. The behaviour and rationale are the same as for the
@@ -509,14 +509,14 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The Preferred_Handler is syntactically invalid or does
-            not start with <code>im.telepathy1.Client.</code>.
+            not start with <code>im.telepathy.v1.Client.</code>.
           </tp:docstring>
         </tp:error>
 
-        <tp:error name="im.telepathy1.Error.NotYours">
+        <tp:error name="im.telepathy.v1.Error.NotYours">
           <tp:docstring>
             At least one <var>Channel</var> in <var>Channels</var> is not
             currently handled by the caller. No <var>Channel</var> has been
@@ -564,7 +564,7 @@
       </tp:added>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Equivalent of calling
-        <tp:dbus-ref namespace="im.telepathy1.ChannelDispatcher">EnsureChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1.ChannelDispatcher">EnsureChannel</tp:dbus-ref>
         with a <var>Requested_Properties</var> which would result in ensuring
         <var>Channel</var>.</p>
 
@@ -591,7 +591,7 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The Account does not exist, the Channel does not exist or it
             does not belong to the Account.

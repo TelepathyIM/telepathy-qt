@@ -20,9 +20,9 @@
       USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Channel.Interface.Securable1">
+  <interface name="im.telepathy.v1.Channel.Interface.Securable1">
     <tp:added version="0.21.5">as stable API</tp:added>
-    <tp:requires interface="im.telepathy1.Channel"/>
+    <tp:requires interface="im.telepathy.v1.Channel"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface exists to expose security information about

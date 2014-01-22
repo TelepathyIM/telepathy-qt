@@ -20,11 +20,11 @@
       02110-1301, USA.</p>
   </tp:license>
   <interface
-    name="im.telepathy1.Channel.Interface.Conference1">
+    name="im.telepathy.v1.Channel.Interface.Conference1">
     <tp:added version="0.19.13">(as stable API)</tp:added>
-    <tp:requires interface="im.telepathy1.Channel"/>
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:requires
-      interface="im.telepathy1.Channel.Interface.Group1"/>
+      interface="im.telepathy.v1.Channel.Interface.Group1"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for multi-user conference channels that can "continue
@@ -44,13 +44,13 @@
 
       <p>Existing channels are upgraded by requesting a new channel of the same
         <tp:dbus-ref
-        namespace="im.telepathy1.Channel">ChannelType</tp:dbus-ref>,
+        namespace="im.telepathy.v1.Channel">ChannelType</tp:dbus-ref>,
         listing the channels to be merged into the new conference in the
         <tp:member-ref>InitialChannels</tp:member-ref> property of the request.
         If <tp:member-ref>InitialInviteeHandles</tp:member-ref> and
         <tp:member-ref>InitialInviteeIDs</tp:member-ref> are
         <var>Allowed_Properties</var> in <tp:dbus-ref
-          namespace="im.telepathy1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>,
+          namespace="im.telepathy.v1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>,
         ad-hoc conferences to a set of contacts may be created by requesting a
         channel, specifying
         <tp:member-ref>InitialInviteeHandles</tp:member-ref> and/or
@@ -67,7 +67,7 @@
         support being broken out of a Conference channel.</p>
 
       <p>The <tp:dbus-ref
-          namespace="im.telepathy1.Channel.Interface"
+          namespace="im.telepathy.v1.Channel.Interface"
           >Group1</tp:dbus-ref> interface on Conference channels MAY use
           channel-specific handles for participants; clients SHOULD support
           both Conferences that have channel-specific handles, and those that
@@ -114,8 +114,8 @@
         into a single conference call by calling:</p>
 
       <blockquote>
-        <code><tp:dbus-ref namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>({
-            ...<tp:dbus-ref namespace="im.telepathy1.Channel">ChannelType</tp:dbus-ref>: ...Call,
+        <code><tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>({
+            ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">ChannelType</tp:dbus-ref>: ...Call,
             ...<tp:member-ref>InitialChannels</tp:member-ref>: [C1, C2]
           })</code>
       </blockquote>
@@ -153,10 +153,10 @@
         the room), call:</p>
 
       <blockquote>
-        <code><tp:dbus-ref namespace="im.telepathy1.Connection.Interface.Requests">EnsureChannel</tp:dbus-ref>({
+        <code><tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface.Requests">EnsureChannel</tp:dbus-ref>({
             ...ChannelType: ...Text,
-            ...<tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandleType</tp:dbus-ref>: ...Room,
-            ...<tp:dbus-ref namespace="im.telepathy1.Channel">TargetID</tp:dbus-ref>: 'telepathy@conf.example.com',
+            ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>: ...Room,
+            ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>: 'telepathy@conf.example.com',
             ...<tp:member-ref>InitialChannels</tp:member-ref>: [C3]
           })</code>
       </blockquote>
@@ -189,7 +189,7 @@
           (maybe it transformed the existing tab into the group chat window,
           and so there'd be no UI element still around to show new messages),
           then it should just <tp:dbus-ref
-          namespace="im.telepathy1.Channel">Close</tp:dbus-ref> the
+          namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref> the
           old 1-1 channel; it'll respawn if necessary.</p>
       </tp:rationale>
 
@@ -272,11 +272,11 @@
       access="read" type="ao">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The individual <tp:dbus-ref
-            namespace="im.telepathy1">Channel</tp:dbus-ref>s that
+            namespace="im.telepathy.v1">Channel</tp:dbus-ref>s that
           are continued by this conference, which have the same <tp:dbus-ref
-              namespace="im.telepathy1.Channel"
+              namespace="im.telepathy.v1.Channel"
               >ChannelType</tp:dbus-ref> as this one, but with <tp:dbus-ref
-              namespace="im.telepathy1.Channel"
+              namespace="im.telepathy.v1.Channel"
               >TargetHandleType</tp:dbus-ref> = CONTACT.</p>
 
         <p>This property MUST NOT be requestable; instead, the
@@ -288,7 +288,7 @@
             <tp:member-ref>InitialInviteeHandles</tp:member-ref> and
             <tp:member-ref>InitialInviteeIDs</tp:member-ref>, rather than
             requesting <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface">Group1.Members</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel.Interface">Group1.Members</tp:dbus-ref>
             and some hypothetical ID version of that property.</p>
        </tp:rationale>
 
@@ -331,7 +331,7 @@
         <p>Emitted when a channel is removed from the value of
           <tp:member-ref>Channels</tp:member-ref>, either because it closed
           or because it was split using the <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface"
+            namespace="im.telepathy.v1.Channel.Interface"
             >Splittable1.Split</tp:dbus-ref> method.</p>
 
         <p>If a channel is removed because it was closed, <tp:dbus-ref
@@ -385,7 +385,7 @@
           the protocol, the Channels MAY be placed in a "frozen" state by placing
           them in this property's value or by calling
           <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface"
+            namespace="im.telepathy.v1.Channel.Interface"
             >MergeableConference1.Merge</tp:dbus-ref> on them.</p>
 
         <tp:rationale>
@@ -396,7 +396,7 @@
 
           <p>In GSM, the calls that are merged go into a state similar to
             Hold, but they cannot be unheld, only split from the conference
-            call using <tp:dbus-ref namespace="im.telepathy1"
+            call using <tp:dbus-ref namespace="im.telepathy.v1"
               >Channel.Interface.Splittable1.Split</tp:dbus-ref>.</p>
         </tp:rationale>
 
@@ -428,7 +428,7 @@
           (as opposed to merging several channels into one new conference
           channel), this property SHOULD be requestable, and appear in the allowed
           properties in <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests"
+            namespace="im.telepathy.v1.Connection.Interface.Requests"
             >RequestableChannelClasses</tp:dbus-ref>. Otherwise, this property
           SHOULD NOT be requestable, and its value SHOULD always be the empty
           list.</p>
@@ -442,7 +442,7 @@
 
         <p>If included in a request, the given contacts are automatically
           invited into the new channel, as if they had been added with
-          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface"
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel.Interface"
             >Group1.AddMembers</tp:dbus-ref>(InitialInviteeHandles,
           <tp:member-ref>InvitationMessage</tp:member-ref>) immediately after
           the channel was created.</p>
@@ -454,7 +454,7 @@
         </tp:rationale>
 
         <p>If the local user was not the initiator of this channel, the
-          <tp:dbus-ref namespace="im.telepathy1.Channel.Interface"
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel.Interface"
             >Group1.SelfHandle</tp:dbus-ref> SHOULD appear in the value of this
           property, together with any other contacts invited at the same time
           (if that information is known).</p>
@@ -521,7 +521,7 @@
 
         <p>This property SHOULD be requestable, and appear in the allowed
           properties in <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests"
+            namespace="im.telepathy.v1.Connection.Interface.Requests"
             >RequestableChannelClasses</tp:dbus-ref>, in protocols where
           invitations can have an accompanying text message.</p>
 
@@ -548,7 +548,7 @@
           reported in <tp:dbus-ref
           namespace='imt1.Channel.Interface'>Group1.GroupFlags</tp:dbus-ref>.
           The <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface">Group1.HandleOwners</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel.Interface">Group1.HandleOwners</tp:dbus-ref>
           property specifies the mapping from opaque channel-specific handles
           to actual numbers; this property specifies the original 1-1 channel
           corresponding to each channel-specific handle in the conference.</p>

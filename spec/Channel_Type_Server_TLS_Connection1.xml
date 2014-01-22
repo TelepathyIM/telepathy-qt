@@ -18,26 +18,26 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
 
-  <interface name="im.telepathy1.Channel.Type.ServerTLSConnection1">
+  <interface name="im.telepathy.v1.Channel.Type.ServerTLSConnection1">
     <tp:added version="0.19.13">(as stable API)</tp:added>
 
-    <tp:requires interface="im.telepathy1.Channel"/>
+    <tp:requires interface="im.telepathy.v1.Channel"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type that carries a TLS certificate between a server
       and a client connecting to it.</p>
       <p>Channels of this kind always have <tp:dbus-ref
-      namespace="im.telepathy1.Channel">Requested</tp:dbus-ref> = False,
-      <tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandleType</tp:dbus-ref>
-      = None and <tp:dbus-ref namespace="im.telepathy1.Channel">TargetHandle</tp:dbus-ref>
+      namespace="im.telepathy.v1.Channel">Requested</tp:dbus-ref> = False,
+      <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+      = None and <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandle</tp:dbus-ref>
       = 0, and cannot be requested with methods such as <tp:dbus-ref
-      namespace="im.telepathy1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>.
+      namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>.
       Also, they SHOULD be dispatched while the
-      <tp:dbus-ref namespace="im.telepathy1">Connection</tp:dbus-ref>
+      <tp:dbus-ref namespace="im.telepathy.v1">Connection</tp:dbus-ref>
       owning them is in the CONNECTING state.</p>
       <p>In this case, handlers SHOULD accept or reject the certificate, using
       the relevant methods on the provided object, or MAY just <tp:dbus-ref
-      namespace="im.telepathy1.Channel">Close</tp:dbus-ref> the channel before doing so, to fall
+      namespace="im.telepathy.v1.Channel">Close</tp:dbus-ref> the channel before doing so, to fall
       back to a non-interactive verification process done inside the CM.</p>
       <p>For example, channels of this kind can pop up while a client is
       connecting to an XMPP server.</p>
@@ -48,7 +48,7 @@
               tp:immutable='yeah'>
       <tp:docstring>
         <p>A <tp:dbus-ref
-        namespace="im.telepathy1.Authentication">TLSCertificate</tp:dbus-ref>
+        namespace="im.telepathy.v1.Authentication">TLSCertificate</tp:dbus-ref>
         containing the certificate chain as sent by the server,
         and other relevant information.</p>
       </tp:docstring>

@@ -20,10 +20,10 @@
       02110-1301, USA.</p>
   </tp:license>
   <interface
-    name="im.telepathy1.Channel.Interface.MergeableConference1"
+    name="im.telepathy.v1.Channel.Interface.MergeableConference1"
     tp:causes-havoc="experimental">
     <tp:added version="0.19.0">(draft 1)</tp:added>
-    <tp:requires interface="im.telepathy1.Channel.Interface.Conference1"/>
+    <tp:requires interface="im.telepathy.v1.Channel.Interface.Conference1"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for multi-user conference channels that can have
@@ -49,11 +49,11 @@
           channel.</p>
 
         <p>The given channel SHOULD be added to <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface"
+            namespace="im.telepathy.v1.Channel.Interface"
             >Conference1.Channels</tp:dbus-ref> if and only if the
           underlying protocol signals the merge in some way. It MUST NOT be
           added to <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface"
+            namespace="im.telepathy.v1.Channel.Interface"
             >Conference1.InitialChannels</tp:dbus-ref> (to preserve
           immutability).</p>
 
@@ -73,28 +73,28 @@
       <arg direction="in" name="Channel" type="o">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A channel with the same <tp:dbus-ref
-              namespace="im.telepathy1.Channel"
+              namespace="im.telepathy.v1.Channel"
               >ChannelType</tp:dbus-ref>
             as this one, but with <tp:dbus-ref
-              namespace="im.telepathy1.Channel"
+              namespace="im.telepathy.v1.Channel"
               >TargetHandleType</tp:dbus-ref> = CONTACT.</p>
         </tp:docstring>
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The given channel isn't suitable for merging into this one: for
             instance, it might have the wrong channel type or handle type.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             It will never be possible to merge channels into this particular
             conference.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
             The given channel is theoretically suitable for merging into this
             one, but that's not currently possible for some reason (for

@@ -20,9 +20,9 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Protocol.Interface.Presence1">
+  <interface name="im.telepathy.v1.Protocol.Interface.Presence1">
     <tp:added version="0.21.3">(as stable API)</tp:added>
-    <tp:requires interface="im.telepathy1.Protocol"/>
+    <tp:requires interface="im.telepathy.v1.Protocol"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for protocols where it might be possible to set the
@@ -47,7 +47,7 @@
       <dl>
         <dt>settable</dt>
         <dd>If present, the user can set this status on themselves using
-          <tp:dbus-ref namespace="im.telepathy1.Connection.Interface.Presence1"
+          <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface.Presence1"
             >SetPresence</tp:dbus-ref>; this corresponds to May_Set_On_Self
           in the <tp:type>Status_Spec</tp:type> struct.</dd>
 
@@ -63,7 +63,7 @@
         <code>.manager</code> file:</p>
 
 <pre>[Protocol jabber]
-Interfaces=im.telepathy1.Protocol.Interface.Presence;
+Interfaces=im.telepathy.v1.Protocol.Interface.Presence;
 param-account=s required
 param-password=s required
 status-offline=1
@@ -100,7 +100,7 @@ status-chat=2 settable message
       tp:immutable="yes">
       <tp:docstring>
         <p>The statuses that might appear in the <tp:dbus-ref
-          namespace="im.telepathy1"
+          namespace="im.telepathy.v1"
           >Connection.Interface.Presence1.Statuses</tp:dbus-ref>
           property on a connection to this protocol that supports
           Presence. This property is immutable.</p>

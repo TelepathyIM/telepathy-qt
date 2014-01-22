@@ -19,8 +19,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
   <interface
-    name="im.telepathy1.Connection.Interface.MailNotification1">
-    <tp:requires interface="im.telepathy1.Connection"/>
+    name="im.telepathy.v1.Connection.Interface.MailNotification1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
     <tp:added version="0.21.3">(as stable API)</tp:added>
 
     <tp:client-interest>
@@ -500,9 +500,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented"/>
       </tp:possible-errors>
     </method>
 
@@ -538,10 +538,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented"/>
-        <tp:error name="im.telepathy1.Error.InvalidArgument"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument"/>
       </tp:possible-errors>
     </method>
 
@@ -555,12 +555,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <p>To use this interface, a client MUST first subscribe by passing the
         name of this interface to the <tp:dbus-ref
-          namespace="im.telepathy1"
+          namespace="im.telepathy.v1"
           >Connection.AddClientInterest</tp:dbus-ref> method. The subscription
         mechanic aims at reducing network traffic and memory footprint in the
         situation where nobody is currently interesting in provided
         information. When done with this interface, clients SHOULD call
-        <tp:dbus-ref namespace="im.telepathy1"
+        <tp:dbus-ref namespace="im.telepathy.v1"
           >Connection.RemoveClientInterest</tp:dbus-ref> to allow the CM to
         release resources.</p>
 

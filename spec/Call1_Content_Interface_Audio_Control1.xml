@@ -19,9 +19,9 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Call1.Content.Interface.AudioControl1">
+  <interface name="im.telepathy.v1.Call1.Content.Interface.AudioControl1">
     <tp:added version="0.25.2">(as stable API)</tp:added>
-    <tp:requires interface="im.telepathy1.Call1.Content.Interface.Media"/>
+    <tp:requires interface="im.telepathy.v1.Call1.Content.Interface.Media"/>
     <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

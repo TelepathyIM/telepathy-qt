@@ -19,9 +19,9 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
 
-  <interface name="im.telepathy1.Channel.Interface.Hold1">
-    <tp:requires interface="im.telepathy1.Channel.Type.Call1"/>
-    <tp:requires interface="im.telepathy1.Call1.Content"/>
+  <interface name="im.telepathy.v1.Channel.Interface.Hold1">
+    <tp:requires interface="im.telepathy.v1.Channel.Type.Call1"/>
+    <tp:requires interface="im.telepathy.v1.Call1.Content"/>
     <tp:changed version="0.17.4">first API-stable version</tp:changed>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         This only makes sense for channels where
         you are streaming media to or from the members. (To see whether the
         other participant has put you on hold, see <tp:dbus-ref
-          namespace="im.telepathy1.Channel.Type.Call1"
+          namespace="im.telepathy.v1.Channel.Type.Call1"
         >CallState</tp:dbus-ref>.)</p>
 
       <p>If you place a channel on hold, this indicates that you do not wish
@@ -212,9 +212,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The requested hold state cannot be achieved; for example,
             if only a limited number of channels can be in the "not on hold"

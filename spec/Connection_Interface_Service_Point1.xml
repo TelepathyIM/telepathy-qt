@@ -17,7 +17,7 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.ServicePoint1">
+  <interface name="im.telepathy.v1.Connection.Interface.ServicePoint1">
     <tp:added version="0.19.7">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -43,7 +43,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           A list of IDs that are mapped to this service. This is provided as
           a convenience for the UIs, but the preferred method for
           requesting channel to a service is by setting the <tp:dbus-ref
-            namespace="im.telepathy1.Channel.Interface.ServicePoint1">InitialServicePoint</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel.Interface.ServicePoint1">InitialServicePoint</tp:dbus-ref>
             property in a channel request.
         </tp:docstring>
       </tp:member>

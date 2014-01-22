@@ -21,8 +21,8 @@
       USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Connection.Interface.Requests">
-    <tp:requires interface="im.telepathy1.Connection"/>
+  <interface name="im.telepathy.v1.Connection.Interface.Requests">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
     <tp:added version="0.17.11">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -78,12 +78,12 @@
           </tp:rationale>
 
           <p>Each dictionary MUST contain the keys
-            <tp:dbus-ref>im.telepathy1.Channel.ChannelType</tp:dbus-ref>,
-            <tp:dbus-ref>im.telepathy1.Channel.TargetHandleType</tp:dbus-ref>,
-            <tp:dbus-ref>im.telepathy1.Channel.TargetHandle</tp:dbus-ref>,
-            <tp:dbus-ref>im.telepathy1.Channel.TargetID</tp:dbus-ref>
+            <tp:dbus-ref>im.telepathy.v1.Channel.ChannelType</tp:dbus-ref>,
+            <tp:dbus-ref>im.telepathy.v1.Channel.TargetHandleType</tp:dbus-ref>,
+            <tp:dbus-ref>im.telepathy.v1.Channel.TargetHandle</tp:dbus-ref>,
+            <tp:dbus-ref>im.telepathy.v1.Channel.TargetID</tp:dbus-ref>
             and
-            <tp:dbus-ref>im.telepathy1.Channel.Requested</tp:dbus-ref>.
+            <tp:dbus-ref>im.telepathy.v1.Channel.Requested</tp:dbus-ref>.
           </p>
 
           <tp:rationale>
@@ -109,7 +109,7 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary containing desirable properties, which MUST include
             <tp:dbus-ref
-              namespace="im.telepathy1.Channel">ChannelType</tp:dbus-ref>.
+              namespace="im.telepathy.v1.Channel">ChannelType</tp:dbus-ref>.
             Some properties
             are defined such that only an exact match makes sense, and
             connection managers MUST NOT satisfy a request with a channel
@@ -168,9 +168,9 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The channel request was one that can never succeed,
             such as requesting an unsupported channel type, or requesting
@@ -178,42 +178,42 @@
             the given target handle type.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidHandle">
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle">
           <tp:docstring>
             An invalid handle was requested as the value of a property whose
             value is a handle (like
-            <tp:dbus-ref namespace="im.telepathy1">Channel.TargetHandle</tp:dbus-ref>),
+            <tp:dbus-ref namespace="im.telepathy.v1">Channel.TargetHandle</tp:dbus-ref>),
             or a syntactically invalid identifier was requested as the value
             of a property whose value is the string corresponding to a handle
             (like <tp:dbus-ref
-            namespace="im.telepathy1">Channel.TargetID</tp:dbus-ref>).
+            namespace="im.telepathy.v1">Channel.TargetID</tp:dbus-ref>).
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The request matched the fixed properties of a
             <tp:type>Requestable_Channel_Class</tp:type> in
             <tp:member-ref>RequestableChannelClasses</tp:member-ref>, but the
             allowed arguments did not make sense; for example, a <tp:dbus-ref
-              namespace="im.telepathy1.Channel.Type">RoomList1</tp:dbus-ref>
+              namespace="im.telepathy.v1.Channel.Type">RoomList1</tp:dbus-ref>
             was requested, but the <tp:dbus-ref
-              namespace="im.telepathy1.Channel.Type.RoomList1">Server</tp:dbus-ref>
+              namespace="im.telepathy.v1.Channel.Type.RoomList1">Server</tp:dbus-ref>
             property provided was not a valid DNS name.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotCapable">
+        <tp:error name="im.telepathy.v1.Error.NotCapable">
           <tp:docstring>
             The requested channel cannot be created because the requested
             contact is using a client that lacks a particular feature.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.Offline">
+        <tp:error name="im.telepathy.v1.Error.Offline">
           <tp:docstring>
             The requested channel cannot be created because the target is
             offline.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
             <p>The requested channel cannot be created, but in
               principle, a similar request might succeed in future.
@@ -231,10 +231,10 @@
             </ul>
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.Channel.Banned"/>
-        <tp:error name="im.telepathy1.Error.Channel.Full"/>
-        <tp:error name="im.telepathy1.Error.Channel.InviteOnly"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.Banned"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.Full"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.InviteOnly"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 
@@ -312,9 +312,9 @@
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The channel request was one that can never succeed,
             such as requesting an unsupported channel type, or requesting
@@ -322,51 +322,51 @@
             the given target handle type.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidHandle">
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle">
           <tp:docstring>
             An invalid handle was requested as the value of a property whose
             value is a handle (like
-            <tp:dbus-ref namespace="im.telepathy1">Channel.TargetHandle</tp:dbus-ref>),
+            <tp:dbus-ref namespace="im.telepathy.v1">Channel.TargetHandle</tp:dbus-ref>),
             or a syntactically invalid identifier was requested as the value
             of a property whose value is the string corresponding to a handle
             (like <tp:dbus-ref
-            namespace="im.telepathy1">Channel.TargetID</tp:dbus-ref>).
+            namespace="im.telepathy.v1">Channel.TargetID</tp:dbus-ref>).
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidArgument">
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument">
           <tp:docstring>
             The request matched the fixed properties of a
             <tp:type>Requestable_Channel_Class</tp:type> in
             <tp:member-ref>RequestableChannelClasses</tp:member-ref>, but the
             allowed arguments did not make sense; for example, a <tp:dbus-ref
-              namespace="im.telepathy1.Channel.Type">RoomList1</tp:dbus-ref>
+              namespace="im.telepathy.v1.Channel.Type">RoomList1</tp:dbus-ref>
             was requested, but the <tp:dbus-ref
-              namespace="im.telepathy1.Channel.Type.RoomList1">Server</tp:dbus-ref>
+              namespace="im.telepathy.v1.Channel.Type.RoomList1">Server</tp:dbus-ref>
             property provided was not a valid DNS name.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotCapable">
+        <tp:error name="im.telepathy.v1.Error.NotCapable">
           <tp:docstring>
             The requested channel cannot be created because the requested
             contact is using a client that lacks a particular feature.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.Offline">
+        <tp:error name="im.telepathy.v1.Error.Offline">
           <tp:docstring>
             The requested channel cannot be created because the target is
             offline.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The requested channel cannot be created, but in
             principle, a similar request might succeed in future.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.Channel.Banned"/>
-        <tp:error name="im.telepathy1.Error.Channel.Full"/>
-        <tp:error name="im.telepathy1.Error.Channel.InviteOnly"/>
-        <tp:error name="im.telepathy1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.Banned"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.Full"/>
+        <tp:error name="im.telepathy.v1.Error.Channel.InviteOnly"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 
@@ -423,7 +423,7 @@
 
         <tp:rationale>
           This is redundant with the <tp:dbus-ref
-            namespace="im.telepathy1.Channel">Closed</tp:dbus-ref>
+            namespace="im.telepathy.v1.Channel">Closed</tp:dbus-ref>
           signal on the channel itself, but it does provide full change
           notification for the Channels property.
         </tp:rationale>
@@ -447,9 +447,9 @@
           a subset of their properties.</p>
 
         <p>Channel classes SHOULD always include the keys
-          <tp:dbus-ref>im.telepathy1.Channel.ChannelType</tp:dbus-ref>
+          <tp:dbus-ref>im.telepathy.v1.Channel.ChannelType</tp:dbus-ref>
           and
-          <tp:dbus-ref>im.telepathy1.Channel.TargetHandleType</tp:dbus-ref>.</p>
+          <tp:dbus-ref>im.telepathy.v1.Channel.TargetHandleType</tp:dbus-ref>.</p>
       </tp:docstring>
 
       <tp:member type="s" name="Key" tp:type="DBus_Qualified_Member">

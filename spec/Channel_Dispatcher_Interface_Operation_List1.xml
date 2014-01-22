@@ -21,10 +21,10 @@
       USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.ChannelDispatcher.Interface.OperationList1">
+  <interface name="im.telepathy.v1.ChannelDispatcher.Interface.OperationList1">
     <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
-    <tp:requires interface="im.telepathy1.ChannelDispatcher"/>
+    <tp:requires interface="im.telepathy.v1.ChannelDispatcher"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface allows users of the ChannelDispatcher to enumerate
@@ -51,7 +51,7 @@
         <tp:docstring>
           The object path of the
           <tp:dbus-ref
-            namespace="im.telepathy1">ChannelDispatchOperation</tp:dbus-ref>.
+            namespace="im.telepathy.v1">ChannelDispatchOperation</tp:dbus-ref>.
         </tp:docstring>
       </tp:member>
 
@@ -71,10 +71,10 @@
 
           <p>Each dictionary MUST contain at least the following keys:</p>
           <ul>
-            <li><tp:dbus-ref>im.telepathy1.ChannelDispatchOperation.Interfaces</tp:dbus-ref></li>
-            <li><tp:dbus-ref>im.telepathy1.ChannelDispatchOperation.Connection</tp:dbus-ref></li>
-            <li><tp:dbus-ref>im.telepathy1.ChannelDispatchOperation.Account</tp:dbus-ref></li>
-            <li><tp:dbus-ref>im.telepathy1.ChannelDispatchOperation.PossibleHandlers</tp:dbus-ref></li>
+            <li><tp:dbus-ref>im.telepathy.v1.ChannelDispatchOperation.Interfaces</tp:dbus-ref></li>
+            <li><tp:dbus-ref>im.telepathy.v1.ChannelDispatchOperation.Connection</tp:dbus-ref></li>
+            <li><tp:dbus-ref>im.telepathy.v1.ChannelDispatchOperation.Account</tp:dbus-ref></li>
+            <li><tp:dbus-ref>im.telepathy.v1.ChannelDispatchOperation.PossibleHandlers</tp:dbus-ref></li>
           </ul>
         </tp:docstring>
       </tp:member>
@@ -118,7 +118,7 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         Emitted when a dispatch operation finishes (i.e. exactly once per
         emission of <tp:dbus-ref
-          namespace="im.telepathy1">ChannelDispatchOperation.Finished</tp:dbus-ref>).
+          namespace="im.telepathy.v1">ChannelDispatchOperation.Finished</tp:dbus-ref>).
 
         <tp:rationale>
           Strictly speaking this is redundant with

@@ -20,14 +20,14 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Protocol">
+  <interface name="im.telepathy.v1.Protocol">
     <tp:added version="0.19.10">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An object representing a protocol for which this <tp:dbus-ref
-          namespace="im.telepathy1">ConnectionManager</tp:dbus-ref>
+          namespace="im.telepathy.v1">ConnectionManager</tp:dbus-ref>
         can create <tp:dbus-ref
-          namespace="im.telepathy1">Connection</tp:dbus-ref>s.</p>
+          namespace="im.telepathy.v1">Connection</tp:dbus-ref>s.</p>
 
       <p>Each Protocol object has the same well-known bus name as its parent
         ConnectionManager. Its object path is formed by taking the
@@ -36,9 +36,9 @@
 
       <p>For instance, telepathy-gabble and telepathy-salut would
         implement objects at
-        <code>/im/telepathy1/ConnectionManager/gabble/jabber</code>
+        <code>/im/telepathy/v1/ConnectionManager/gabble/jabber</code>
         and
-        <code>/im/telepathy1/ConnectionManager/salut/local_xmpp</code>,
+        <code>/im/telepathy/v1/ConnectionManager/salut/local_xmpp</code>,
         respectively.</p>
 
       <p>If the ConnectionManager has a <tt>.manager</tt> file, each
@@ -53,19 +53,19 @@ Interfaces=
 
 [Protocol example]
 Interfaces=
-ConnectionInterfaces=im.telepathy1.Connection.Interface.Requests;
+ConnectionInterfaces=im.telepathy.v1.Connection.Interface.Requests;
 param-account=s required
 param-password=s required secret
 RequestableChannelClasses=text;
 VCardField=x-example
 EnglishName=Example
 Icon=im-example
-AuthenticationTypes=im.telepathy1.Channel.Type.ServerTLSConnection;im.telepathy1.Channel.Interface.SASLAuthentication;
+AuthenticationTypes=im.telepathy.v1.Channel.Type.ServerTLSConnection;im.telepathy.v1.Channel.Interface.SASLAuthentication;
 
 [text]
-im.telepathy1.Channel.ChannelType s=im.telepathy1.Channel.Type.Text
-im.telepathy1.Channel.TargetHandleType u=1
-allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
+im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Text
+im.telepathy.v1.Channel.TargetHandleType u=1
+allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;
 </pre>
     </tp:docstring>
 
@@ -82,7 +82,7 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
 
         <p>Connection managers with a <code>.manager</code> file
           (as described as part of the
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >ConnectionManager</tp:dbus-ref> interface) MUST cache this
           property in the protocol's section of the <code>.manager</code>
           file, using the key <code>Interfaces</code>. The corresponding value
@@ -106,12 +106,12 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
 
         <p>Connection managers with a <code>.manager</code> file
           (as described as part of the
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >ConnectionManager</tp:dbus-ref> interface) MUST cache this
           property in the protocol's section of the <code>.manager</code>
           file via keys of the form <code>param-<em>p</em></code> and
           <code>default-<em>p</em></code>, as documented in the
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >ConnectionManager</tp:dbus-ref> interface.</p>
       </tp:docstring>
     </property>
@@ -122,9 +122,9 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
       tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of interface names which might be in the
-          <tp:dbus-ref namespace="im.telepathy1.Connection"
+          <tp:dbus-ref namespace="im.telepathy.v1.Connection"
             >Interfaces</tp:dbus-ref> property of a
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >Connection</tp:dbus-ref> to this protocol. Whether a Connection
           will have all, some or none of these interfaces depends on server
           capabilities.</p>
@@ -146,10 +146,10 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
       tp:immutable="yes">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A list of channel classes which might be requestable from a
-          <tp:dbus-ref namespace="im.telepathy1"
+          <tp:dbus-ref namespace="im.telepathy.v1"
             >Connection</tp:dbus-ref> to this protocol (i.e. they will,
           or might, appear in the Connection's <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests"
+            namespace="im.telepathy.v1.Connection.Interface.Requests"
             >RequestableChannelClasses</tp:dbus-ref> property).</p>
 
         <p>Whether a Connection will have all, some or none of these
@@ -179,7 +179,7 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
           "<code><em>propertyname</em> <em>type</em></code>", and the value
           is encoded in the same way as for the <code>default-<em>p</em></code>
           keys described in the <tp:dbus-ref
-            namespace="im.telepathy1"
+            namespace="im.telepathy.v1"
             >ConnectionManager</tp:dbus-ref> documentation.</p>
 
         <p>Connection managers that have channel classes whose fixed
@@ -196,14 +196,14 @@ param-password=s required
 RequestableChannelClasses=rcc0;rcc1;
 
 [rcc0]
-im.telepathy1.Channel.ChannelType s=im.telepathy1.Channel.Type.Text
-im.telepathy1.Channel.TargetHandleType u=1
-allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;
+im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Text
+im.telepathy.v1.Channel.TargetHandleType u=1
+allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;
 
 [rcc1]
-im.telepathy1.Channel.ChannelType s=im.telepathy1.Channel.Type.Call1
-im.telepathy1.Channel.TargetHandleType u=1
-allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.telepathy1.Channel.Type.Call1.InitialAudio;
+im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Call1
+im.telepathy.v1.Channel.TargetHandleType u=1
+allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;im.telepathy.v1.Channel.Type.Call1.InitialAudio;
 </pre>
       </tp:docstring>
     </property>
@@ -221,7 +221,7 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.tel
 
         <p>A more exhaustive list of addressable vCard fields can be found in
           the Protocol's Addressing interface's
-          <tp:dbus-ref namespace="im.telepathy1.Protocol.Interface.Addressing1">AddressableVCardFields</tp:dbus-ref>.</p>
+          <tp:dbus-ref namespace="im.telepathy.v1.Protocol.Interface.Addressing1">AddressableVCardFields</tp:dbus-ref>.</p>
 
         <p>It is not necessarily valid to interpret contacts' identifiers
           as values of this vCard field. For instance, telepathy-sofiasip
@@ -230,7 +230,7 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.tel
           both be represented by any single vCard field. Arbitrary
           handles/identifiers as vCard fields are represented
           through the Connection's
-          <tp:dbus-ref namespace="im.telepathy1.Connection.Interface">Addressing1</tp:dbus-ref>
+          <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface">Addressing1</tp:dbus-ref>
           contact attributes.</p>
 
         <tp:rationale>
@@ -295,9 +295,9 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.tel
 
         <tp:rationale>
           <p>This can be used as a default if the <tp:dbus-ref
-              namespace="im.telepathy1.Account">Icon</tp:dbus-ref>
+              namespace="im.telepathy.v1.Account">Icon</tp:dbus-ref>
             property is not set on an Account, or used by the <tp:dbus-ref
-              namespace="im.telepathy1">AccountManager</tp:dbus-ref>
+              namespace="im.telepathy.v1">AccountManager</tp:dbus-ref>
             to choose a default icon if none is set during account
             creation.</p>
         </tp:rationale>
@@ -333,7 +333,7 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.tel
         type="a{sv}" tp:type="String_Variant_Map">
         <tp:docstring>
           A set of parameters as would be provided to <tp:dbus-ref
-            namespace="im.telepathy1.ConnectionManager"
+            namespace="im.telepathy.v1.ConnectionManager"
             >RequestConnection</tp:dbus-ref>
         </tp:docstring>
       </arg>
@@ -341,7 +341,7 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.tel
       <arg direction="out" name="Account_ID" type="s">
         <tp:docstring>
           <p>An opaque string suitable for use as the account-specific part of
-            an <tp:dbus-ref namespace="im.telepathy1"
+            an <tp:dbus-ref namespace="im.telepathy.v1"
               >Account</tp:dbus-ref>'s object path. This is not necessarily
             globally unique, but should represent a "best-effort"
             identification of the account.</p>
@@ -358,7 +358,7 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.tel
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The IdentifyAccount method is not supported by this connection
             manager. The caller SHOULD fall back to deriving identification
@@ -374,12 +374,12 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.tel
         <p>Attempt to normalize the given contact ID. Where possible, this
           SHOULD return the same thing that would be returned by <tp:dbus-ref
           namespace="imt1.Connection.Interface.Contacts">GetContactByID</tp:dbus-ref>
-           on a connected <tp:dbus-ref namespace="im.telepathy1"
+           on a connected <tp:dbus-ref namespace="im.telepathy.v1"
            >Connection</tp:dbus-ref>.</p>
 
         <p>If full normalization requires network activity or is otherwise
           impossible to do without a <tp:dbus-ref
-            namespace="im.telepathy1">Connection</tp:dbus-ref>,
+            namespace="im.telepathy.v1">Connection</tp:dbus-ref>,
           this method SHOULD perform a best-effort normalization.</p>
 
         <tp:rationale>
@@ -423,7 +423,7 @@ allowed=im.telepathy1.Channel.TargetHandle;im.telepathy1.Channel.TargetID;im.tel
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The NormalizeContact method is not supported by this connection
             manager. The caller MAY recover by using the contact ID as-is.

@@ -22,17 +22,17 @@
   </tp:license>
 
   <interface
-    name="im.telepathy1.Channel.Interface.Destroyable1">
-    <tp:requires interface="im.telepathy1.Channel"/>
+    name="im.telepathy.v1.Channel.Interface.Destroyable1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:added version="0.17.14">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface exists to support channels where
         <tp:dbus-ref
-          namespace="im.telepathy1">Channel.Close</tp:dbus-ref>
+          namespace="im.telepathy.v1">Channel.Close</tp:dbus-ref>
         is insufficiently destructive. At the moment this means
         <tp:dbus-ref
-          namespace="im.telepathy1">Channel.Type.Text</tp:dbus-ref>,
+          namespace="im.telepathy.v1">Channel.Type.Text</tp:dbus-ref>,
         but the existence of this interface means that unsupported channels
         can be terminated in a non-channel-type-specific way.</p>
     </tp:docstring>
@@ -55,12 +55,12 @@
 
         <p>Most clients SHOULD call
           <tp:dbus-ref
-            namespace="im.telepathy1">Channel.Close</tp:dbus-ref>
+            namespace="im.telepathy.v1">Channel.Close</tp:dbus-ref>
           instead. However, if a client explicitly intends to destroy the
           channel with possible loss of data, it SHOULD call this method
           if this interface is supported (according to the
           <tp:dbus-ref
-            namespace="im.telepathy1">Channel.Interfaces</tp:dbus-ref>
+            namespace="im.telepathy.v1">Channel.Interfaces</tp:dbus-ref>
           property), falling back to Close if not.</p>
 
         <p>In particular, channel dispatchers SHOULD use this method if

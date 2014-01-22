@@ -20,14 +20,14 @@
   <tp:simple-type name="DBus_Bus_Name" type="s"
     array-name="DBus_Bus_Name_List">
     <tp:docstring>A string representing a D-Bus bus name - either a well-known
-      name like "im.telepathy1.MissionControl" or a unique name
+      name like "im.telepathy.v1.MissionControl" or a unique name
       like ":1.123"</tp:docstring>
   </tp:simple-type>
 
   <tp:simple-type name="DBus_Well_Known_Name" type="s"
     array-name="DBus_Well_Known_Name_List">
     <tp:docstring>A string representing a D-Bus well-known
-      name like "im.telepathy1.MissionControl".</tp:docstring>
+      name like "im.telepathy.v1.MissionControl".</tp:docstring>
   </tp:simple-type>
 
   <tp:simple-type name="DBus_Unique_Name" type="s"

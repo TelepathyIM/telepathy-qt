@@ -16,9 +16,9 @@
       along with this library; if not, write to the Free Software Foundation,
       Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Connection.Interface.Addressing1">
-    <tp:requires interface="im.telepathy1.Connection"/>
-    <tp:requires interface="im.telepathy1.Connection.Interface.Contacts"/>
+  <interface name="im.telepathy.v1.Connection.Interface.Addressing1">
+    <tp:requires interface="im.telepathy.v1.Connection"/>
+    <tp:requires interface="im.telepathy.v1.Connection.Interface.Contacts"/>
     <tp:added version="0.25.2">(as stable API)</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface deals with the multiple address types that can
@@ -38,7 +38,7 @@
           <p>The vCard field of the addresses we are requesting. The
             field name SHOULD be in lower case. Supported
             fields can be found in
-            <tp:dbus-ref namespace="im.telepathy1.Protocol.Interface.Addressing1">AddressableVCardFields</tp:dbus-ref>.</p>
+            <tp:dbus-ref namespace="im.telepathy.v1.Protocol.Interface.Addressing1">AddressableVCardFields</tp:dbus-ref>.</p>
 
           <p>The <code>url</code> vCard field MUST NOT appear here; see
             <tp:member-ref>GetContactsByURI</tp:member-ref> instead.</p>
@@ -65,13 +65,13 @@
             activity, will be in the reply.</p>
 
           <p>Attributes from this interface and from
-            <tp:dbus-ref>im.telepathy1.Connection</tp:dbus-ref>
+            <tp:dbus-ref>im.telepathy.v1.Connection</tp:dbus-ref>
             are always returned, and need not be requested
             explicitly.</p>
 
           <p>The behavior of this parameter is similar to the same
             parameter in
-            <tp:dbus-ref namespace="im.telepathy1.Connection.Interface">Contacts.GetContactAttributes</tp:dbus-ref>.</p>
+            <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface">Contacts.GetContactAttributes</tp:dbus-ref>.</p>
           </tp:docstring>
       </arg>
 
@@ -101,7 +101,7 @@
 
           <p>Each contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
-            (<code>im.telepathy1.Connection/contact-id</code>).
+            (<code>im.telepathy.v1.Connection/contact-id</code>).
           </p>
         </tp:docstring>
       </arg>
@@ -112,7 +112,7 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
       </tp:possible-errors>
     </method>
 
@@ -122,7 +122,7 @@
         <tp:docstring>
           The URI addresses to get contact handles for. Supported
           schemes can be found in
-          <tp:dbus-ref namespace="im.telepathy1.Protocol.Interface.Addressing1">AddressableURISchemes</tp:dbus-ref>.
+          <tp:dbus-ref namespace="im.telepathy.v1.Protocol.Interface.Addressing1">AddressableURISchemes</tp:dbus-ref>.
         </tp:docstring>
       </arg>
       <arg direction="in" name="Interfaces" type="as"
@@ -134,13 +134,13 @@
             activity, will be in the reply.</p>
 
           <p>Attributes from this interface and from
-            <tp:dbus-ref>im.telepathy1.Connection</tp:dbus-ref>
+            <tp:dbus-ref>im.telepathy.v1.Connection</tp:dbus-ref>
             are always returned, and need not be requested
             explicitly.</p>
 
           <p>The behavior of this parameter is similar to the same
             parameter in
-            <tp:dbus-ref namespace="im.telepathy1.Connection.Interface">Contacts.GetContactAttributes</tp:dbus-ref>.</p>
+            <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface">Contacts.GetContactAttributes</tp:dbus-ref>.</p>
           </tp:docstring>
       </arg>
 
@@ -169,7 +169,7 @@
 
           <p>Each contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
-            (<code>im.telepathy1.Connection/contact-id</code>).
+            (<code>im.telepathy.v1.Connection/contact-id</code>).
           </p>
         </tp:docstring>
       </arg>
@@ -179,7 +179,7 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
       </tp:possible-errors>
     </method>
 

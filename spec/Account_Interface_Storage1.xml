@@ -18,8 +18,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 </p>
   </tp:license>
-  <interface name="im.telepathy1.Account.Interface.Storage1">
-    <tp:requires interface="im.telepathy1.Account"/>
+  <interface name="im.telepathy.v1.Account.Interface.Storage1">
+    <tp:requires interface="im.telepathy.v1.Account"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>
@@ -130,9 +130,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:flag suffix="Cannot_Set_Parameters" value="1">
         <tp:docstring>
           The account's <tp:dbus-ref
-            namespace="im.telepathy1.Account"
+            namespace="im.telepathy.v1.Account"
             >Parameters</tp:dbus-ref> property can't be changed by calling
-          <tp:dbus-ref namespace="im.telepathy1.Account"
+          <tp:dbus-ref namespace="im.telepathy.v1.Account"
             >UpdateParameters</tp:dbus-ref>.
         </tp:docstring>
       </tp:flag>
@@ -140,7 +140,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:flag suffix="Cannot_Set_Enabled" value="2">
         <tp:docstring>
           The account can't be enabled/disabled by setting the <tp:dbus-ref
-            namespace="im.telepathy1.Account"
+            namespace="im.telepathy.v1.Account"
             >Enabled</tp:dbus-ref> property.
         </tp:docstring>
       </tp:flag>
@@ -148,9 +148,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:flag suffix="Cannot_Set_Presence" value="4">
         <tp:docstring>
           The account's presence can't be changed by setting the <tp:dbus-ref
-            namespace="im.telepathy1.Account"
+            namespace="im.telepathy.v1.Account"
             >RequestedPresence</tp:dbus-ref> and <tp:dbus-ref
-            namespace="im.telepathy1.Account"
+            namespace="im.telepathy.v1.Account"
             >AutomaticPresence</tp:dbus-ref> properties.
         </tp:docstring>
       </tp:flag>
@@ -158,7 +158,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:flag suffix="Cannot_Set_Service" value="8">
         <tp:docstring>
           The account's <tp:dbus-ref
-            namespace="im.telepathy1.Account">Service</tp:dbus-ref>
+            namespace="im.telepathy.v1.Account">Service</tp:dbus-ref>
           property cannot be changed.
         </tp:docstring>
       </tp:flag>

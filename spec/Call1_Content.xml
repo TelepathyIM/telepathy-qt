@@ -20,7 +20,7 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="im.telepathy1.Call1.Content">
+  <interface name="im.telepathy.v1.Call1.Content">
     <tp:added version="0.25.2">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -57,8 +57,8 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NetworkError" />
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NetworkError" />
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             Raised when a Call doesn't support removing contents
             (e.g. a Google Talk video call).

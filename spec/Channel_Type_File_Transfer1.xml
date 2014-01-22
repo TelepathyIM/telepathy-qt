@@ -18,8 +18,8 @@ Library General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="im.telepathy1.Channel.Type.FileTransfer1">
-    <tp:requires interface="im.telepathy1.Channel"/>
+  <interface name="im.telepathy.v1.Channel.Type.FileTransfer1">
+    <tp:requires interface="im.telepathy.v1.Channel"/>
     <tp:added version="0.17.18">(as stable API)</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type for transferring files. The
@@ -70,7 +70,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </li></ul>
 
       <p>If something goes wrong with the transfer,
-      <tp:dbus-ref namespace="im.telepathy1">Channel.Close</tp:dbus-ref>
+      <tp:dbus-ref namespace="im.telepathy.v1">Channel.Close</tp:dbus-ref>
       should be called on the channel.</p>
 
       <p>The File channel type may be requested for handles of type
@@ -80,7 +80,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>Connection managers SHOULD NOT advertise support for file transfer to
         other contacts unless it has been indicated by a call to
         <tp:dbus-ref
-          namespace="im.telepathy1.Connection.Interface.ContactCapabilities1">UpdateCapabilities</tp:dbus-ref>.
+          namespace="im.telepathy.v1.Connection.Interface.ContactCapabilities1">UpdateCapabilities</tp:dbus-ref>.
       </p>
       <tp:rationale>
         <p>People would send us files, and it would always fail. That would be silly.</p>
@@ -102,7 +102,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         been created.</p>
 
         <p>This property is mandatory when requesting the channel with the
-        <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
         method. Protocols which do not have a content-type property with file
         transfers should set this value to application/octet-stream.</p>
       </tp:docstring>
@@ -120,7 +120,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         be set to monkey.pdf.</p>
 
         <p>This property is mandatory when requesting the channel with the
-        <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
         method. This property cannot be empty and MUST be set to a sensible value.</p>
       </tp:docstring>
     </property>
@@ -138,7 +138,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         to the byte.</p>
 
         <p>This property is mandatory when requesting the channel with the
-        <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
         method. If this information isn't provided in the protocol, connection managers MUST set it
         to UINT64_MAX.</p>
       </tp:docstring>
@@ -151,15 +151,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>The type of the <tp:member-ref>ContentHash</tp:member-ref> property.</p>
 
         <p>This property is optional when requesting the channel with the
-        <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
         method. However, if you wish to include the <tp:member-ref>ContentHash</tp:member-ref>
         property you MUST also include this property. If you omit this property from a
-        <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
         method call then its value will be assumed to be File_Hash_Type_None.</p>
 
         <p>For each supported hash type, implementations SHOULD include an entry
           in <tp:dbus-ref
-            namespace="im.telepathy1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
           with this property fixed to that hash type. If the protocol supports
           offering a file without a content hash, implementations SHOULD list
           this property in Allowed in a requestable channel class, mapping hash
@@ -177,7 +177,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         property.</p>
 
         <p>This property is optional when requesting the channel with the
-        <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
         method. Its value MUST correspond to the appropriate type of the
         <tp:member-ref>ContentHashType</tp:member-ref> property. If the
         ContentHashType property is not set, or set to File_Hash_Type_None,
@@ -192,7 +192,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         channel has been created.</p>
 
         <p>This property is optional when requesting the channel with the
-        <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
         method. If this property was not provided by the remote party, connection managers MUST set it to
         the empty string.</p>
       </tp:docstring>
@@ -206,7 +206,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         cannot change once the channel has been created</p>
 
         <p>This property is optional when requesting the channel with the
-        <tp:dbus-ref namespace="im.telepathy1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
         method.</p>
       </tp:docstring>
     </property>
@@ -440,18 +440,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The given address type or access-control mechanism is not supported.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.NetworkError"/>
-        <tp:error name="im.telepathy1.Error.InvalidArgument"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument"/>
           <tp:docstring>
             Your address type, access control, access control parameter,
             offset, or a combination of all four is invalid.
           </tp:docstring>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             The file transfer is not in the Pending state, there isn't
             or there is a local error with acquiring a socket.
@@ -492,17 +492,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
 
       <tp:possible-errors>
-        <tp:error name="im.telepathy1.Error.NotImplemented">
+        <tp:error name="im.telepathy.v1.Error.NotImplemented">
           <tp:docstring>
             The given address type or access-control mechanism is not supported.
           </tp:docstring>
         </tp:error>
-        <tp:error name="im.telepathy1.Error.InvalidArgument"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidArgument"/>
           <tp:docstring>
             Your address type, access control, access control parameter, or
             a combination of all three is invalid.
           </tp:docstring>
-        <tp:error name="im.telepathy1.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             Channel is not an outgoing transfer, ProvideFile has already been called,
             or there was a local error acquiring the socket.
@@ -578,6 +578,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
     </signal>
+
+    <property name="FileCollection" tp:name-for-bindings="File_Collection"
+      type="s" access="read">
+      <tp:added version="0.27.3"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The collection of files to which this channel belongs,
+          or the empty string if this channel does not belong to
+          a collection of files.</p>
+
+        <p>A channel's FileCollection property can never change.</p>
+
+        <p>At least on GTalk and apparently also on iChat the user can
+          send a set of files to a contact and that contact can then
+          pick and choose which files to actually receive.</p>
+
+        <p> The CM should emit all new FT channels belonging to one collection
+          at the same time. UIs supporting this feature can then
+          bundle all these channels together in some way, and show a
+          nice UI. UIs not supporting it will treat them as separate
+          transfers, which is not great but a reasonable fallback.</p>
+
+        <p>No mechanism is currently defined to indicate whether the UI
+          should expect any more files in the same collection. UIs
+          SHOULD assume that more file transfers may be added to a
+          collection. It is possible that a "no more channels in this
+          collection" indication will be added in a future version of
+          this specification.</p>
+      </tp:docstring>
+    </property>
 
   </interface>
 
