@@ -40,7 +40,6 @@
 #include <TelepathyQt/PendingContactAttributes>
 #include <TelepathyQt/PendingContacts>
 #include <TelepathyQt/PendingFailure>
-#include <TelepathyQt/PendingHandles>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/PendingVoid>
@@ -1807,100 +1806,6 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request,
 }
 
 /**
- * Request handles of the given type for the given entities (contacts,
- * rooms, lists, etc.).
- *
- * Typically one doesn't need to request and use handles directly; instead, string identifiers
- * and/or Contact objects are used in most APIs. File a bug for APIs in which there is no
- * alternative to using handles. In particular however using low-level DBus interfaces for which
- * there is no corresponding high-level (or one is implementing that abstraction) functionality does
- * and will always require using bare handles.
- *
- * Upon completion, the reply to the request can be retrieved through the
- * returned PendingHandles object. The object also provides access to the
- * parameters with which the call was made and a signal to connect to to get
- * notification of the request finishing processing. See the documentation
- * for that class for more info.
- *
- * The returned PendingHandles object should be freed using
- * its QObject::deleteLater() method after it is no longer used. However,
- * all PendingHandles objects resulting from requests to a particular
- * Connection will be freed when the Connection itself is freed. Conversely,
- * this means that the PendingHandles object should not be used after the
- * Connection is destroyed.
- *
- * \param handleType Type for the handles to request, as specified in
- *                   #HandleType.
- * \param names Names of the entities to request handles for.
- * \return A PendingHandles which will emit PendingHandles::finished
- *         when the handles have been requested, or an error occurred.
- * \sa PendingHandles
- */
-PendingHandles *ConnectionLowlevel::requestHandles(HandleType handleType, const QStringList &names)
-{
-    debug() << "Request for" << names.length() << "handles of type" << handleType;
-
-    if (!isValid()) {
-        return new PendingHandles(TP_QT_ERROR_NOT_AVAILABLE,
-                QLatin1String("The connection has been destroyed"));
-    }
-
-    ConnectionPtr conn(connection());
-    PendingHandles *pending = new PendingHandles(conn, handleType, names);
-    return pending;
-}
-
-/**
- * Request a reference to the given handles. Handles not explicitly
- * requested (via requestHandles()) but eg. observed in a signal need to be
- * referenced to guarantee them staying valid.
- *
- * Typically one doesn't need to reference and use handles directly; instead, string identifiers
- * and/or Contact objects are used in most APIs. File a bug for APIs in which there is no
- * alternative to using handles. In particular however using low-level DBus interfaces for which
- * there is no corresponding high-level (or one is implementing that abstraction) functionality does
- * and will always require using bare handles.
- *
- * Upon completion, the reply to the operation can be retrieved through the
- * returned PendingHandles object. The object also provides access to the
- * parameters with which the call was made and a signal to connect to to get
- * notification of the request finishing processing. See the documentation
- * for that class for more info.
- *
- * The returned PendingHandles object should be freed using
- * its QObject::deleteLater() method after it is no longer used. However,
- * all PendingHandles objects resulting from requests to a particular
- * Connection will be freed when the Connection itself is freed. Conversely,
- * this means that the PendingHandles object should not be used after the
- * Connection is destroyed.
- *
- * \sa PendingHandles
- *
- * \param handleType Type of the handles given, as specified in #HandleType.
- * \param handles Handles to request a reference to.
- * \return A PendingHandles which will emit PendingHandles::finished
- *         when the handles have been referenced, or an error occurred.
- */
-PendingHandles *ConnectionLowlevel::referenceHandles(HandleType handleType, const UIntList &handles)
-{
-    debug() << "Reference of" << handles.length() << "handles of type" << handleType;
-
-    if (!isValid()) {
-        return new PendingHandles(TP_QT_ERROR_NOT_AVAILABLE,
-                QLatin1String("The connection has been destroyed"));
-    }
-
-    ConnectionPtr conn(connection());
-    UIntList alreadyHeld;
-    UIntList notYetHeld;
-    alreadyHeld = handles;
-
-    PendingHandles *pending =
-        new PendingHandles(conn, handleType, handles, alreadyHeld, notYetHeld);
-    return pending;
-}
-
-/**
  * Start an asynchronous request that the connection be connected.
  *
  * When using a full-fledged Telepathy setup with an Account Manager service, the Account methods
@@ -2056,10 +1961,6 @@ QStringList ConnectionLowlevel::contactAttributeInterfaces() const
 
 void ConnectionLowlevel::injectContactIds(const HandleIdentifierMap &contactIds)
 {
-    if (!hasImmortalHandles()) {
-        return;
-    }
-
     for (HandleIdentifierMap::const_iterator i = contactIds.constBegin();
             i != contactIds.constEnd(); ++i) {
         uint handle = i.key();

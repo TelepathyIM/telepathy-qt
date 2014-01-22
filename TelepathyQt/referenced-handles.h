@@ -245,7 +245,6 @@ private:
     friend class ContactManager;
     friend class PendingContactAttributes;
     friend class PendingContacts;
-    friend class PendingHandles;
 
     TP_QT_NO_EXPORT ReferencedHandles(const ConnectionPtr &connection,
             HandleType handleType, const UIntList& handles);

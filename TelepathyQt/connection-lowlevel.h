@@ -36,7 +36,6 @@ namespace Tp
 class Connection;
 class PendingChannel;
 class PendingContactAttributes;
-class PendingHandles;
 class PendingOperation;
 class PendingReady;
 
@@ -64,9 +63,6 @@ public:
     PendingChannel *ensureChannel(const QVariantMap &request);
     PendingChannel *ensureChannel(const QVariantMap &request, int timeout);
 
-    PendingHandles *requestHandles(HandleType handleType, const QStringList &names);
-    PendingHandles *referenceHandles(HandleType handleType, const UIntList &handles);
-
     PendingContactAttributes *contactAttributes(const UIntList &handles,
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
@@ -80,8 +76,6 @@ private:
     friend class PendingContacts;
 
     TP_QT_NO_EXPORT ConnectionLowlevel(Connection *parent);
-
-    TP_QT_NO_EXPORT bool hasImmortalHandles() const;
 
     TP_QT_NO_EXPORT bool hasContactId(uint handle) const;
     TP_QT_NO_EXPORT QString contactId(uint handle) const;

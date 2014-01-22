@@ -33,7 +33,6 @@
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/ContactFactory>
 #include <TelepathyQt/PendingContactAttributes>
-#include <TelepathyQt/PendingHandles>
 #include <TelepathyQt/ReferencedHandles>
 
 // FIXME: Refactor PendingContacts code to make it more readable/maintainable and reuse common code
@@ -127,8 +126,6 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
     QHash<QString, QPair<QString, QString> > invalidIds;
     QStringList validAddresses;
     QStringList invalidAddresses;
-
-    ReferencedHandles handlesToInspect;
 };
 
 void PendingContacts::Private::setFinished()
@@ -195,22 +192,13 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 
     if (!otherContacts.isEmpty()) {
         ConnectionPtr conn = manager->connection();
-        if (conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
-            PendingContactAttributes *attributes =
-                conn->lowlevel()->contactAttributes(otherContacts.toList(),
-                        interfaces, true);
+        PendingContactAttributes *attributes =
+            conn->lowlevel()->contactAttributes(otherContacts.toList(),
+                    interfaces, true);
 
-            connect(attributes,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(onAttributesFinished(Tp::PendingOperation*)));
-        } else {
-            // fallback to just create the contacts
-            PendingHandles *handles = conn->lowlevel()->referenceHandles(HandleTypeContact,
-                    otherContacts.toList());
-            connect(handles,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(onReferenceHandlesFinished(Tp::PendingOperation*)));
-        }
+        connect(attributes,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onAttributesFinished(Tp::PendingOperation*)));
     } else {
         allAttributesFetched();
     }
@@ -231,11 +219,10 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
     ConnectionPtr conn = manager->connection();
 
     if (type == ForIdentifiers) {
-        Q_ASSERT(interfaces.isEmpty());
-        PendingHandles *handles = conn->lowlevel()->requestHandles(HandleTypeContact, list);
-        connect(handles,
+        PendingGetContactsByID *po = new PendingGetContactsByID(conn, list, interfaces);
+        connect(po,
                 SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
+                SLOT(onGetContactsByIDFinished(Tp::PendingOperation*)));
     } else if (type == ForUris) {
         Client::ConnectionInterfaceAddressing1Interface *connAddressingIface =
             conn->optionalInterface<Client::ConnectionInterfaceAddressing1Interface>(
@@ -511,26 +498,6 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
     allAttributesFetched();
 }
 
-void PendingContacts::onRequestHandlesFinished(PendingOperation *operation)
-{
-    PendingHandles *pendingHandles = qobject_cast<PendingHandles *>(operation);
-
-    mPriv->validIds = pendingHandles->validNames();
-    mPriv->invalidIds = pendingHandles->invalidNames();
-
-    if (pendingHandles->isError()) {
-        debug() << "RequestHandles error" << operation->errorName()
-                << "message" << operation->errorMessage();
-        setFinishedWithError(operation->errorName(), operation->errorMessage());
-        return;
-    }
-
-    mPriv->nested = manager()->contactsForHandles(pendingHandles->handles(), features());
-    connect(mPriv->nested,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onNestedFinished(Tp::PendingOperation*)));
-}
-
 void PendingContacts::onAddressingGetContactsFinished(PendingOperation *operation)
 {
     PendingAddressingGetContacts *pa = qobject_cast<PendingAddressingGetContacts *>(operation);
@@ -562,41 +529,31 @@ void PendingContacts::onAddressingGetContactsFinished(PendingOperation *operatio
     setFinished();
 }
 
-void PendingContacts::onReferenceHandlesFinished(PendingOperation *operation)
+void PendingContacts::onGetContactsByIDFinished(Tp::PendingOperation *operation)
 {
-    PendingHandles *pendingHandles = qobject_cast<PendingHandles *>(operation);
+    PendingGetContactsByID *pa = qobject_cast<PendingGetContactsByID *>(operation);
 
-    if (pendingHandles->isError()) {
-        debug() << "ReferenceHandles error" << operation->errorName()
-                << "message" << operation->errorMessage();
+    if (pa->isError()) {
         setFinishedWithError(operation->errorName(), operation->errorMessage());
         return;
     }
 
-    ReferencedHandles validHandles = pendingHandles->handles();
-    UIntList invalidHandles = pendingHandles->invalidHandles();
     ConnectionPtr conn = mPriv->manager->connection();
-    mPriv->handlesToInspect = ReferencedHandles(conn, HandleTypeContact, UIntList());
-    foreach (uint handle, mPriv->handles) {
-        if (!mPriv->satisfyingContacts.contains(handle)) {
-            int indexInValid = validHandles.indexOf(handle);
-            if (indexInValid >= 0) {
-                ReferencedHandles referencedHandle = validHandles.mid(indexInValid, 1);
-                mPriv->handlesToInspect.append(referencedHandle);
-            } else {
-                mPriv->invalidHandles.push_back(handle);
-            }
-        }
+    ContactAttributesMap attributes = pa->attributes();
+    UIntList handles = attributes.keys();
+    ReferencedHandles referencedHandles(conn, HandleTypeContact, handles);
+
+    foreach (uint handle, handles) {
+        int indexInValid = referencedHandles.indexOf(handle);
+        Q_ASSERT(indexInValid >= 0);
+        ReferencedHandles referencedHandle = referencedHandles.mid(indexInValid, 1);
+        QVariantMap handleAttributes = attributes[handle];
+        ContactPtr contact = mPriv->manager->ensureContact(referencedHandle,
+                    mPriv->missingFeatures, handleAttributes);
+        mPriv->contacts.push_back(contact);
     }
 
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                conn->baseInterface()->InspectHandles(HandleTypeContact,
-                    mPriv->handlesToInspect.toList()),
-                this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(onInspectHandlesFinished(QDBusPendingCallWatcher*)));
+    setFinished();
 }
 
 void PendingContacts::onNestedFinished(PendingOperation *operation)
@@ -615,34 +572,6 @@ void PendingContacts::onNestedFinished(PendingOperation *operation)
     mPriv->setFinished();
 }
 
-void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QStringList> reply = *watcher;
-
-    if (reply.isError()) {
-        debug().nospace() << "InspectHandles: error " << reply.error().name() << ": "
-            << reply.error().message();
-        setFinishedWithError(reply.error());
-        return;
-    }
-
-    QStringList names = reply.value();
-    int i = 0;
-    ConnectionPtr conn = mPriv->manager->connection();
-    foreach (uint handle, mPriv->handlesToInspect) {
-        QVariantMap handleAttributes;
-        handleAttributes.insert(TP_QT_IFACE_CONNECTION + QLatin1String("/contact-id"),
-                names[i++]);
-        ReferencedHandles referencedHandle(conn, HandleTypeContact,
-                UIntList() << handle);
-        mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
-                    mPriv->missingFeatures, handleAttributes));
-    }
-
-    allAttributesFetched();
-
-    watcher->deleteLater();
-}
 
 void PendingContacts::allAttributesFetched()
 {

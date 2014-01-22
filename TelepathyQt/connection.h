@@ -55,9 +55,9 @@ class Contact;
 class ContactManager;
 class PendingChannel;
 class PendingContactAttributes;
-class PendingHandles;
 class PendingOperation;
 class PendingReady;
+class PendingGetContactsByID;
 
 class TP_QT_EXPORT Connection : public StatefulDBusProxy,
                    public OptionalInterfaceFactory<Connection>
@@ -228,7 +228,7 @@ private:
     friend class PendingConnect;
     friend class PendingContactAttributes;
     friend class PendingContacts;
-    friend class PendingHandles;
+    friend class PendingGetContactsByID;
     friend class ReferencedHandles;
 
     struct Private;

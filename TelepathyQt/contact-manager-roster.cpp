@@ -32,7 +32,6 @@
 #include <TelepathyQt/PendingChannel>
 #include <TelepathyQt/PendingContacts>
 #include <TelepathyQt/PendingFailure>
-#include <TelepathyQt/PendingHandles>
 #include <TelepathyQt/PendingVariant>
 #include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/PendingReady>

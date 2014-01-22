@@ -82,6 +82,31 @@ private:
     ContactAttributesMap mAttributes;
 };
 
+class TP_QT_NO_EXPORT PendingGetContactsByID : public PendingOperation
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(PendingGetContactsByID)
+
+public:
+    PendingGetContactsByID(const ConnectionPtr &connection, const QStringList &identifiers,
+            const QStringList &interfaces);
+    ~PendingGetContactsByID();
+
+    UIntList validHandles() const { return mValidHandles; }
+    QStringList identifiers() const { return mIdentifiers; }
+    ContactAttributesMap attributes() const { return mAttributes; }
+
+private Q_SLOTS:
+    void onGetContactByIDFinished(QDBusPendingCallWatcher* watcher);
+
+private:
+    ConnectionPtr mConnection;
+    QSet<QDBusPendingCallWatcher*> pendingCalls;
+    UIntList mValidHandles;
+    QStringList mIdentifiers;
+    ContactAttributesMap mAttributes;
+};
+
 } // Tp
 
 #endif

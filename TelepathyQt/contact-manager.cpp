@@ -36,7 +36,6 @@
 #include <TelepathyQt/PendingContactAttributes>
 #include <TelepathyQt/PendingContacts>
 #include <TelepathyQt/PendingFailure>
-#include <TelepathyQt/PendingHandles>
 #include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/Utils>
