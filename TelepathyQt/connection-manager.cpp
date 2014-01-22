@@ -371,36 +371,6 @@ void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
     RequestableChannelClass text = {fixedProps, allowedProps};
     classes.append(text);
 
-    // Media calls
-    fixedProps[TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")] =
-            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA;
-
-    RequestableChannelClass media = {fixedProps, allowedProps};
-    classes.append(media);
-
-    // Initially audio-only calls
-    allowedProps.push_back(
-            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
-
-    RequestableChannelClass initialAudio = {fixedProps, allowedProps};
-    classes.append(initialAudio);
-
-    // Initially AV calls
-    allowedProps.push_back(
-            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"));
-
-    RequestableChannelClass initialAV = {fixedProps, allowedProps};
-    classes.append(initialAV);
-
-    // Initially video-only calls
-    allowedProps.removeAll(
-            TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
-
-    RequestableChannelClass initialVideo = {fixedProps, allowedProps};
-    classes.append(initialVideo);
-
-    // That also settles upgrading calls, because the media classes don't have ImmutableStreams
-
     mInfo.setRequestableChannelClasses(classes);
 }
 
