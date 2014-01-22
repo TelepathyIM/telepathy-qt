@@ -1662,7 +1662,7 @@ Channel::PendingLeave::PendingLeave(const ChannelPtr &chan, const QString &messa
     Q_ASSERT(chan->mPriv->group != NULL);
 
     QDBusPendingCall call =
-        chan->mPriv->group->RemoveMembersWithReason(
+        chan->mPriv->group->RemoveMembers(
                 UIntList() << chan->mPriv->groupSelfHandle,
                 message,
                 reason);
@@ -2173,7 +2173,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
         handles << contact->handle();
     }
     return new PendingVoid(
-            mPriv->group->RemoveMembersWithReason(handles, message, reason),
+            mPriv->group->RemoveMembers(handles, message, reason),
             ChannelPtr(this));
 }
 
