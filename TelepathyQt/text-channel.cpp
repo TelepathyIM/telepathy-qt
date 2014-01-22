@@ -180,48 +180,26 @@ void TextChannel::Private::introspectMessageQueue(
 {
     TextChannel *parent = self->parent;
 
-    if (parent->hasMessagesInterface()) {
-        Client::ChannelInterfaceMessagesInterface *messagesInterface =
-            parent->interface<Client::ChannelInterfaceMessagesInterface>();
+    // FeatureMessageQueue needs signal connections + Get (but we
+    // might as well do GetAll and reduce the number of code paths)
+    parent->connect(self->textInterface,
+            SIGNAL(MessageReceived(Tp::MessagePartList)),
+            SLOT(onMessageReceived(Tp::MessagePartList)));
+    parent->connect(self->textInterface,
+            SIGNAL(PendingMessagesRemoved(Tp::UIntList)),
+            SLOT(onPendingMessagesRemoved(Tp::UIntList)));
 
-        // FeatureMessageQueue needs signal connections + Get (but we
-        // might as well do GetAll and reduce the number of code paths)
-        parent->connect(messagesInterface,
-                SIGNAL(MessageReceived(Tp::MessagePartList)),
-                SLOT(onMessageReceived(Tp::MessagePartList)));
-        parent->connect(messagesInterface,
-                SIGNAL(PendingMessagesRemoved(Tp::UIntList)),
-                SLOT(onPendingMessagesRemoved(Tp::UIntList)));
-
-        if (!self->gotProperties && !self->getAllInFlight) {
-            self->getAllInFlight = true;
-            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                    self->properties->GetAll(
-                        TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES),
-                        parent);
-            parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotProperties(QDBusPendingCallWatcher*)));
-        } else if (self->gotProperties) {
-            self->updateInitialMessages();
-        }
-    } else {
-        // FeatureMessageQueue needs signal connections + ListPendingMessages
-        parent->connect(self->textInterface,
-                SIGNAL(Received(uint,uint,uint,uint,uint,QString)),
-                SLOT(onTextReceived(uint,uint,uint,uint,uint,const QString)));
-
-        // we present SendError signals as if they were incoming
-        // messages, to be consistent with Messages
-        parent->connect(self->textInterface,
-                SIGNAL(SendError(uint,uint,uint,QString)),
-                SLOT(onTextSendError(uint,uint,uint,QString)));
-
+    if (!self->gotProperties && !self->getAllInFlight) {
+        self->getAllInFlight = true;
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                self->textInterface->ListPendingMessages(false), parent);
+                self->properties->GetAll(
+                    TP_QT_IFACE_CHANNEL_TYPE_TEXT),
+                    parent);
         parent->connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(gotPendingMessages(QDBusPendingCallWatcher*)));
+                SLOT(gotProperties(QDBusPendingCallWatcher*)));
+    } else if (self->gotProperties) {
+        self->updateInitialMessages();
     }
 }
 
@@ -229,45 +207,26 @@ void TextChannel::Private::introspectMessageCapabilities(
         TextChannel::Private *self)
 {
     TextChannel *parent = self->parent;
-
-    if (parent->hasMessagesInterface()) {
-        if (!self->gotProperties && !self->getAllInFlight) {
-            self->getAllInFlight = true;
-            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                    self->properties->GetAll(
-                        TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES),
-                        parent);
-            parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotProperties(QDBusPendingCallWatcher*)));
-        } else if (self->gotProperties) {
-            self->updateCapabilities();
-        }
-    } else {
-        self->supportedContentTypes =
-            (QStringList(QLatin1String("text/plain")));
-        parent->readinessHelper()->setIntrospectCompleted(
-                FeatureMessageCapabilities, true);
+    if (!self->gotProperties && !self->getAllInFlight) {
+        self->getAllInFlight = true;
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                self->properties->GetAll(
+                    TP_QT_IFACE_CHANNEL_TYPE_TEXT),
+                    parent);
+        parent->connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotProperties(QDBusPendingCallWatcher*)));
+    } else if (self->gotProperties) {
+        self->updateCapabilities();
     }
 }
 
 void TextChannel::Private::introspectMessageSentSignal(
         TextChannel::Private *self)
 {
-    TextChannel *parent = self->parent;
-
-    if (parent->hasMessagesInterface()) {
-        Client::ChannelInterfaceMessagesInterface *messagesInterface =
-            parent->interface<Client::ChannelInterfaceMessagesInterface>();
-
-        parent->connect(messagesInterface,
-                SIGNAL(MessageSent(Tp::MessagePartList,uint,QString)),
-                SLOT(onMessageSent(Tp::MessagePartList,uint,QString)));
-    } else {
-        parent->connect(self->textInterface,
-                SIGNAL(Sent(uint,uint,QString)),
-                SLOT(onTextSent(uint,uint,QString)));
-    }
+    self->parent->connect(self->textInterface,
+            SIGNAL(MessageSent(Tp::MessagePartList,uint,QString)),
+            SLOT(onMessageSent(Tp::MessagePartList,uint,QString)));
 
     self->readinessHelper->setIntrospectCompleted(FeatureMessageSentSignal, true);
 }
@@ -666,20 +625,6 @@ TextChannel::~TextChannel()
 }
 
 /**
- * Return whether this channel supports the Messages interface.
- *
- * If the interface is not supported, some advanced functionality will be unavailable.
- *
- * This method requires TextChannel::FeatureCore to be ready.
- *
- * \return \c true if the Messages interface is supported, \c false otherwise.
- */
-bool TextChannel::hasMessagesInterface() const
-{
-    return interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_MESSAGES);
-}
-
-/**
  * Return whether this channel supports the ChatState interface.
  *
  * If the interface is not supported, requestChatState() will fail and all contacts' chat states
@@ -814,8 +759,7 @@ DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
  * of all the messages in a channel is preserved.
  *
  * Messages are removed from this list when they are acknowledged with the
- * acknowledge() or forget() methods. On channels where hasMessagesInterface()
- * returns \c true, they will also be removed when acknowledged by a different
+ * acknowledge() or forget() methods or when acknowledged by a different
  * client. In either case, the pendingMessageRemoved() signal is emitted.
  *
  * This method requires TextChannel::FeatureMessageQueue to be ready.
@@ -969,22 +913,11 @@ PendingSendMessage *TextChannel::send(const QString &text,
     Message m(type, text);
     PendingSendMessage *op = new PendingSendMessage(TextChannelPtr(this), m);
 
-    if (hasMessagesInterface()) {
-        Client::ChannelInterfaceMessagesInterface *messagesInterface =
-            interface<Client::ChannelInterfaceMessagesInterface>();
-
-        connect(new QDBusPendingCallWatcher(
-                    messagesInterface->SendMessage(m.parts(),
-                        (uint) flags)),
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                op,
-                SLOT(onMessageSent(QDBusPendingCallWatcher*)));
-    } else {
-        connect(new QDBusPendingCallWatcher(mPriv->textInterface->Send(type, text)),
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                op,
-                SLOT(onTextSent(QDBusPendingCallWatcher*)));
-    }
+    connect(new QDBusPendingCallWatcher(
+                mPriv->textInterface->SendMessage(m.parts(), (uint) flags)),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            op,
+            SLOT(onMessageSent(QDBusPendingCallWatcher*)));
     return op;
 }
 
@@ -1014,23 +947,12 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
     Message m(parts);
     PendingSendMessage *op = new PendingSendMessage(TextChannelPtr(this), m);
 
-    if (hasMessagesInterface()) {
-        Client::ChannelInterfaceMessagesInterface *messagesInterface =
-            interface<Client::ChannelInterfaceMessagesInterface>();
-
-        connect(new QDBusPendingCallWatcher(
-                    messagesInterface->SendMessage(m.parts(),
-                        (uint) flags)),
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                op,
-                SLOT(onMessageSent(QDBusPendingCallWatcher*)));
-    } else {
-        connect(new QDBusPendingCallWatcher(mPriv->textInterface->Send(
-                        m.messageType(), m.text())),
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                op,
-                SLOT(onTextSent(QDBusPendingCallWatcher*)));
-    }
+    connect(new QDBusPendingCallWatcher(
+                mPriv->textInterface->SendMessage(m.parts(),
+                    (uint) flags)),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            op,
+            SLOT(onMessageSent(QDBusPendingCallWatcher*)));
     return op;
 }
 
@@ -1124,125 +1046,6 @@ void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
     mPriv->processMessageQueue();
 }
 
-void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
-{
-    emit messageSent(Message(timestamp, type, text), 0,
-            QLatin1String(""));
-}
-
-void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
-        uint type, uint flags, const QString &text)
-{
-    if (!mPriv->initialMessagesReceived) {
-        return;
-    }
-
-    MessagePart header;
-
-    if (timestamp == 0) {
-        timestamp = QDateTime::currentDateTime().toTime_t();
-    }
-    header.insert(QLatin1String("message-received"),
-            QDBusVariant(static_cast<qlonglong>(timestamp)));
-
-    header.insert(QLatin1String("pending-message-id"), QDBusVariant(id));
-    header.insert(QLatin1String("message-sender"), QDBusVariant(sender));
-    header.insert(QLatin1String("message-type"), QDBusVariant(type));
-
-    if (flags & ChannelTextMessageFlagScrollback) {
-        header.insert(QLatin1String("scrollback"), QDBusVariant(true));
-    }
-    if (flags & ChannelTextMessageFlagRescued) {
-        header.insert(QLatin1String("rescued"), QDBusVariant(true));
-    }
-
-    MessagePart body;
-
-    body.insert(QLatin1String("content-type"),
-            QDBusVariant(QLatin1String("text/plain")));
-    body.insert(QLatin1String("content"), QDBusVariant(text));
-
-    if (flags & ChannelTextMessageFlagTruncated) {
-        header.insert(QLatin1String("truncated"), QDBusVariant(true));
-    }
-
-    MessagePartList parts;
-    parts << header;
-    parts << body;
-
-    ReceivedMessage m(parts, TextChannelPtr(this));
-
-    if (flags & ChannelTextMessageFlagNonTextContent) {
-        // set the "you are not expected to understand this" flag
-        m.setForceNonText();
-    }
-
-    mPriv->incompleteMessages << new Private::MessageEvent(m);
-    mPriv->processMessageQueue();
-}
-
-void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
-        const QString &text)
-{
-    if (!mPriv->initialMessagesReceived) {
-        return;
-    }
-
-    MessagePart header;
-
-    header.insert(QLatin1String("message-received"),
-            QDBusVariant(static_cast<qlonglong>(
-                    QDateTime::currentDateTime().toTime_t())));
-    header.insert(QLatin1String("message-type"),
-            QDBusVariant(static_cast<uint>(
-                    ChannelTextMessageTypeDeliveryReport)));
-
-    // we can't tell whether it's a temporary or permanent failure here,
-    // so guess based on the delivery-error
-    uint deliveryStatus;
-    switch (error) {
-        case ChannelTextSendErrorOffline:
-        case ChannelTextSendErrorPermissionDenied:
-            deliveryStatus = DeliveryStatusTemporarilyFailed;
-            break;
-
-        case ChannelTextSendErrorInvalidContact:
-        case ChannelTextSendErrorTooLong:
-        case ChannelTextSendErrorNotImplemented:
-            deliveryStatus = DeliveryStatusPermanentlyFailed;
-            break;
-
-        case ChannelTextSendErrorUnknown:
-        default:
-            deliveryStatus = DeliveryStatusTemporarilyFailed;
-            break;
-    }
-
-    header.insert(QLatin1String("delivery-status"),
-            QDBusVariant(deliveryStatus));
-    header.insert(QLatin1String("delivery-error"), QDBusVariant(error));
-
-    MessagePart echoHeader;
-    echoHeader.insert(QLatin1String("message-sent"),
-            QDBusVariant(timestamp));
-    echoHeader.insert(QLatin1String("message-type"),
-            QDBusVariant(type));
-
-    MessagePart echoBody;
-    echoBody.insert(QLatin1String("content-type"),
-            QDBusVariant(QLatin1String("text/plain")));
-    echoBody.insert(QLatin1String("content"), QDBusVariant(text));
-
-    MessagePartList echo;
-    echo << echoHeader;
-    echo << echoBody;
-    header.insert(QLatin1String("delivery-echo"),
-            QDBusVariant(QVariant::fromValue(echo)));
-
-    MessagePartList parts;
-    parts << header;
-}
-
 void TextChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 {
     Q_ASSERT(mPriv->getAllInFlight);
@@ -1273,40 +1076,6 @@ void TextChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 
     mPriv->updateInitialMessages();
     mPriv->updateCapabilities();
-
-    watcher->deleteLater();
-}
-
-void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
-{
-    Q_ASSERT(!mPriv->initialMessagesReceived);
-    mPriv->initialMessagesReceived = true;
-
-    QDBusPendingReply<PendingTextMessageList> reply = *watcher;
-    if (reply.isError()) {
-        warning().nospace() << "Properties::GetAll(Channel.Interface.Messages)"
-            " failed with " << reply.error().name() << ": " <<
-            reply.error().message();
-
-        // TODO should we fail here?
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, false, reply.error());
-        return;
-    }
-
-    debug() << "Text::ListPendingMessages returned";
-    PendingTextMessageList list = reply.value();
-
-    if (!list.isEmpty()) {
-        foreach (const PendingTextMessage &message, list) {
-            onTextReceived(message.identifier, message.unixTimestamp,
-                    message.sender, message.messageType, message.flags,
-                    message.text);
-        }
-        // processMessageQueue sets FeatureMessageQueue ready when the queue is empty for the first
-        // time
-    } else {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
-    }
 
     watcher->deleteLater();
 }

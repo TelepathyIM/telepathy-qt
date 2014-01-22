@@ -54,7 +54,6 @@ public:
 
     virtual ~TextChannel();
 
-    bool hasMessagesInterface() const;
     bool hasChatStateInterface() const;
     bool canInviteContacts() const;
 
@@ -121,12 +120,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onMessageReceived(const Tp::MessagePartList &);
     TP_QT_NO_EXPORT void onPendingMessagesRemoved(const Tp::UIntList &);
 
-    TP_QT_NO_EXPORT void onTextSent(uint, uint, const QString &);
-    TP_QT_NO_EXPORT void onTextReceived(uint, uint, uint, uint, uint, const QString &);
-    TP_QT_NO_EXPORT void onTextSendError(uint, uint, uint, const QString &);
-
     TP_QT_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *);
-    TP_QT_NO_EXPORT void gotPendingMessages(QDBusPendingCallWatcher *);
 
     TP_QT_NO_EXPORT void onChatStateChanged(uint, uint);
 
