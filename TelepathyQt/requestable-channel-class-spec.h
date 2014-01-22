@@ -49,19 +49,12 @@ public:
     static RequestableChannelClassSpec videoCall();
     static RequestableChannelClassSpec videoCallWithAudioAllowed();
 
-    TP_QT_DEPRECATED static RequestableChannelClassSpec streamedMediaCall();
-    TP_QT_DEPRECATED static RequestableChannelClassSpec streamedMediaAudioCall();
-    TP_QT_DEPRECATED static RequestableChannelClassSpec streamedMediaVideoCall();
-    TP_QT_DEPRECATED static RequestableChannelClassSpec streamedMediaVideoCallWithAudio();
-
     static RequestableChannelClassSpec fileTransfer();
 
     static RequestableChannelClassSpec conferenceTextChat();
     static RequestableChannelClassSpec conferenceTextChatWithInvitees();
     static RequestableChannelClassSpec conferenceTextChatroom();
     static RequestableChannelClassSpec conferenceTextChatroomWithInvitees();
-    TP_QT_DEPRECATED static RequestableChannelClassSpec conferenceStreamedMediaCall();
-    TP_QT_DEPRECATED static RequestableChannelClassSpec conferenceStreamedMediaCallWithInvitees();
 
     static RequestableChannelClassSpec contactSearch();
     static RequestableChannelClassSpec contactSearchWithSpecificServer();

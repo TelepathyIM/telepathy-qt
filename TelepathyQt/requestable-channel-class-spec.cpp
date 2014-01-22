@@ -172,78 +172,6 @@ RequestableChannelClassSpec RequestableChannelClassSpec::videoCallWithAudioAllow
     return spec;
 }
 
-RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaCall()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaAudioCall()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaVideoCall()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::streamedMediaVideoCallWithAudio()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
-        rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialAudio"));
-        rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA + QLatin1String(".InitialVideo"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
 RequestableChannelClassSpec RequestableChannelClassSpec::fileTransfer()
 {
     static RequestableChannelClassSpec spec;
@@ -324,40 +252,6 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatroomW
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                 (uint) HandleTypeRoom);
 
-        rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels"));
-        rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialInviteeHandles"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::conferenceStreamedMediaCall()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
-        rcc.allowedProperties.append(
-                TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels"));
-        spec = RequestableChannelClassSpec(rcc);
-    }
-
-    return spec;
-}
-
-RequestableChannelClassSpec RequestableChannelClassSpec::conferenceStreamedMediaCallWithInvitees()
-{
-    static RequestableChannelClassSpec spec;
-
-    if (!spec.isValid()) {
-        RequestableChannelClass rcc;
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-                TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA);
         rcc.allowedProperties.append(
                 TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels"));
         rcc.allowedProperties.append(
