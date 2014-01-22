@@ -98,51 +98,20 @@ PendingChannelRequest::PendingChannelRequest(const AccountPtr &account,
 
     QDBusPendingCallWatcher *watcher = 0;
     if (create) {
-        if (hints.isValid()) {
-            if (account->supportsRequestHints()) {
-                watcher = new QDBusPendingCallWatcher(
-                    channelDispatcherInterface->CreateChannelWithHints(
-                        QDBusObjectPath(account->objectPath()),
-                        requestedProperties,
-                        userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
-                        preferredHandler, hints.allHints()), this);
-            } else {
-                warning() << "Hints passed to channel request won't have an effect"
-                    << "because the Channel Dispatcher service in use is too old";
-            }
-        }
+        watcher = new QDBusPendingCallWatcher(
+            channelDispatcherInterface->CreateChannel(
+                QDBusObjectPath(account->objectPath()),
+                requestedProperties,
+                userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+                preferredHandler, hints.allHints()), this);
 
-        if (!watcher) {
-            watcher = new QDBusPendingCallWatcher(
-                    channelDispatcherInterface->CreateChannel(
-                        QDBusObjectPath(account->objectPath()),
-                        requestedProperties,
-                        userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
-                        preferredHandler), this);
-        }
     } else {
-        if (hints.isValid()) {
-            if (account->supportsRequestHints()) {
-                watcher = new QDBusPendingCallWatcher(
-                    channelDispatcherInterface->EnsureChannelWithHints(
-                        QDBusObjectPath(account->objectPath()),
-                        requestedProperties,
-                        userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
-                        preferredHandler, hints.allHints()), this);
-            } else {
-                warning() << "Hints passed to channel request won't have an effect"
-                    << "because the Channel Dispatcher service in use is too old";
-            }
-        }
-
-        if (!watcher) {
-            watcher = new QDBusPendingCallWatcher(
-                    channelDispatcherInterface->EnsureChannel(
-                        QDBusObjectPath(account->objectPath()),
-                        requestedProperties,
-                        userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
-                        preferredHandler), this);
-        }
+        watcher = new QDBusPendingCallWatcher(
+            channelDispatcherInterface->EnsureChannel(
+                QDBusObjectPath(account->objectPath()),
+                requestedProperties,
+                userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+                preferredHandler, hints.allHints()), this);
     }
 
     // TODO: This is a Qt bug fixed upstream, should be in the next Qt release.
