@@ -43,7 +43,6 @@
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingSuccess>
 #include <TelepathyQt/StreamTubeChannel>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/Constants>
 
 #include <QHash>
@@ -800,7 +799,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
 
     // FIXME: simplify. Some duplication of logic present.
     foreach (ContactPtr contact, contacts) {
-        uint handle = contact->handle()[0];
+        uint handle = contact->handle();
         if (pendingGroupMembers.contains(handle)) {
             groupContactsAdded.insert(contact);
             groupContacts[handle] = contact;
@@ -836,7 +835,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
         }
 
         if (currentGroupMembersChangedInfo &&
-            currentGroupMembersChangedInfo->actor == contact->handle()[0]) {
+            currentGroupMembersChangedInfo->actor == contact->handle()) {
             actorContact = contact;
         }
     }
@@ -853,7 +852,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
     // FIXME: This shouldn't be needed. Clearer would be to first scan for the actor being present
     // in the contacts supplied.
     foreach (ContactPtr contact, contacts) {
-        uint handle = contact->handle()[0];
+        uint handle = contact->handle();
         if (groupLocalPendingContactsChangeInfo.contains(handle)) {
             groupLocalPendingContactsChangeInfo[handle] =
                 GroupMemberChangeDetails(actorContact,
@@ -1975,7 +1974,7 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
     return new PendingVoid(mPriv->group->AddMembers(handles, message), ChannelPtr(this));
 }
@@ -2171,7 +2170,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
     return new PendingVoid(
             mPriv->group->RemoveMembersWithReason(handles, message, reason),
@@ -2291,7 +2290,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
         return GroupMemberChangeDetails();
     }
 
-    uint handle = contact->handle()[0];
+    uint handle = contact->handle();
     return mPriv->groupLocalPendingContactsChangeInfo.value(handle);
 }
 

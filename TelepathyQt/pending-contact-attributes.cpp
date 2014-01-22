@@ -25,7 +25,6 @@
 #include "TelepathyQt/_gen/pending-contact-attributes.moc.hpp"
 
 #include <TelepathyQt/Connection>
-#include <TelepathyQt/ReferencedHandles>
 
 #include "TelepathyQt/debug-internal.h"
 
@@ -51,7 +50,7 @@ struct TP_QT_NO_EXPORT PendingContactAttributes::Private
     UIntList contactsRequested;
     QStringList interfacesRequested;
     bool shouldReference;
-    ReferencedHandles validHandles;
+    UIntList validHandles;
     UIntList invalidHandles;
     ContactAttributesMap attributes;
 };
@@ -126,9 +125,9 @@ bool PendingContactAttributes::shouldReference() const
  * contactsRequested(), only the ones which were valid. The valid handles will be in the same order
  * as in contactsRequested(), though.
  *
- * \return ReferencedHandles instance containing the handles.
+ * \return UIntList instance containing the handles.
  */
-ReferencedHandles PendingContactAttributes::validHandles() const
+UIntList PendingContactAttributes::validHandles() const
 {
     if (!isFinished()) {
         warning() << "PendingContactAttributes::validHandles() called before finished";
@@ -199,8 +198,7 @@ void PendingContactAttributes::onCallFinished(QDBusPendingCallWatcher* watcher)
         }
 
         if (shouldReference()) {
-            mPriv->validHandles = ReferencedHandles(connection(), HandleTypeContact,
-                    validHandles);
+            mPriv->validHandles = validHandles;
         }
 
         setFinished();

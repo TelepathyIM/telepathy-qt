@@ -291,7 +291,7 @@ SendingState CallStream::remoteSendingState(const ContactPtr &contact) const
         uint handle = i.key();
         SendingState sendingState = (SendingState) i.value();
 
-        if (handle == contact->handle()[0]) {
+        if (handle == contact->handle()) {
             return sendingState;
         }
     }
@@ -330,7 +330,7 @@ PendingOperation *CallStream::requestReceiving(const ContactPtr &contact, bool r
                 CallStreamPtr(this));
     }
 
-    return new PendingVoid(mPriv->streamInterface->RequestReceiving(contact->handle()[0], receive),
+    return new PendingVoid(mPriv->streamInterface->RequestReceiving(contact->handle(), receive),
             CallStreamPtr(this));
 }
 
@@ -385,7 +385,7 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
     }
 
     foreach (const ContactPtr &contact, pc->contacts()) {
-        mPriv->remoteMembersContacts.insert(contact->handle()[0], contact);
+        mPriv->remoteMembersContacts.insert(contact->handle(), contact);
     }
 
     foreach (uint handle, mPriv->currentRemoteMembersChangedInfo->removed) {

@@ -37,7 +37,6 @@
 #include <TelepathyQt/PendingContacts>
 #include <TelepathyQt/PendingFailure>
 #include <TelepathyQt/PendingVariantMap>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/Utils>
 
 #include <QMap>
@@ -149,7 +148,7 @@ ContactManager::PendingRefreshContactInfo::~PendingRefreshContactInfo()
 
 void ContactManager::PendingRefreshContactInfo::addContact(Contact *contact)
 {
-    mToRequest.insert(contact->handle()[0]);
+    mToRequest.insert(contact->handle());
 }
 
 void ContactManager::PendingRefreshContactInfo::refreshInfo()
@@ -1047,12 +1046,6 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     return contacts;
 }
 
-PendingContacts *ContactManager::contactsForHandles(const ReferencedHandles &handles,
-        const Features &features)
-{
-    return contactsForHandles(handles.toList(), features);
-}
-
 PendingContacts *ContactManager::contactsForHandles(const HandleIdentifierMap &handles,
         const Features &features)
 {
@@ -1292,7 +1285,7 @@ void ContactManager::doRequestAvatars()
             continue;
         }
 
-        notFound << contact->handle()[0];
+        notFound << contact->handle();
     }
 
     if (found > 0) {
@@ -1438,15 +1431,14 @@ void ContactManager::doRefreshInfo()
     op->refreshInfo();
 }
 
-ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
+ContactPtr ContactManager::ensureContact(const uint &handle,
         const Features &features, const QVariantMap &attributes)
 {
-    uint bareHandle = handle[0];
-    ContactPtr contact = lookupContactByHandle(bareHandle);
+    ContactPtr contact = lookupContactByHandle(handle);
 
     if (!contact) {
         contact = connection()->contactFactory()->construct(this, handle, features, attributes);
-        mPriv->contacts.insert(bareHandle, contact);
+        mPriv->contacts.insert(handle, contact);
     }
 
     contact->augment(features, attributes);
@@ -1454,19 +1446,17 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
     return contact;
 }
 
-ContactPtr ContactManager::ensureContact(uint bareHandle, const QString &id,
+ContactPtr ContactManager::ensureContact(const uint &handle, const QString &id,
         const Features &features)
 {
-    ContactPtr contact = lookupContactByHandle(bareHandle);
+    ContactPtr contact = lookupContactByHandle(handle);
 
     if (!contact) {
         QVariantMap attributes;
         attributes.insert(TP_QT_IFACE_CONNECTION + QLatin1String("/contact-id"), id);
 
-        contact = connection()->contactFactory()->construct(this,
-                ReferencedHandles(connection(), HandleTypeContact, UIntList() << bareHandle),
-                features, attributes);
-        mPriv->contacts.insert(bareHandle, contact);
+        contact = connection()->contactFactory()->construct(this, handle, features, attributes);
+        mPriv->contacts.insert(handle, contact);
 
         // do not call augment here as this is a fake contact
     }

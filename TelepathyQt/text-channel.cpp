@@ -34,7 +34,6 @@
 #include <TelepathyQt/PendingFailure>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/ReceivedMessage>
-#include <TelepathyQt/ReferencedHandles>
 
 #include <QDateTime>
 
@@ -446,7 +445,7 @@ void TextChannel::Private::contactLost(uint handle)
 
 void TextChannel::Private::contactFound(ContactPtr contact)
 {
-    uint handle = contact->handle().at(0);
+    uint handle = contact->handle();
 
     foreach (MessageEvent *e, incompleteMessages) {
         if (e->isMessage && e->message.senderHandle() == handle

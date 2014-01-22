@@ -123,7 +123,7 @@ void ContactFactory::addFeatures(const Features &features)
  * \param attributes The desired contact attributes.
  * \return A pointer to the constructed contact.
  */
-ContactPtr ContactFactory::construct(Tp::ContactManager *manager, const ReferencedHandles &handle,
+ContactPtr ContactFactory::construct(Tp::ContactManager *manager, const uint &handle,
         const Features &features, const QVariantMap &attributes) const
 {
     ContactPtr contact = ContactPtr(new Contact(manager, handle, features, attributes));

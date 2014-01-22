@@ -44,7 +44,6 @@
 #include <TelepathyQt/PendingVariant>
 #include <TelepathyQt/PendingVoid>
 #include <TelepathyQt/Profile>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/Constants>
 #include <TelepathyQt/Debug>
 
@@ -127,7 +126,7 @@ QVariantMap textChatRequest(const Tp::ContactPtr &contact)
 {
     QVariantMap request = textChatCommonRequest();
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+                   contact ? contact->handle() : (uint) 0);
     return request;
 }
 
@@ -185,7 +184,7 @@ QVariantMap audioCallRequest(const Tp::ContactPtr &contact, const QString &conte
 {
     QVariantMap request = callCommonRequest(true, contentName, false, QString());
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+                   contact ? contact->handle() : (uint) 0);
     return request;
 }
 
@@ -201,7 +200,7 @@ QVariantMap videoCallRequest(const Tp::ContactPtr &contact, const QString &conte
 {
     QVariantMap request = callCommonRequest(false, QString(), true, contentName);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+                   contact ? contact->handle() : (uint) 0);
     return request;
 }
 
@@ -221,7 +220,7 @@ QVariantMap audioVideoCallRequest(const Tp::ContactPtr &contact,
 {
     QVariantMap request = callCommonRequest(true, audioName, true, videoName);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+                   contact ? contact->handle() : (uint) 0);
     return request;
 }
 
@@ -290,7 +289,7 @@ QVariantMap fileTransferRequest(const Tp::ContactPtr &contact,
 
     if  (!request.isEmpty()) {
         request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                       contact ? contact->handle().at(0) : (uint) 0);
+                       contact ? contact->handle() : (uint) 0);
     }
 
     return request;
@@ -320,7 +319,7 @@ QVariantMap streamTubeRequest(const Tp::ContactPtr &contact, const QString &serv
 {
     QVariantMap request = streamTubeCommonRequest(service);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+                   contact ? contact->handle() : (uint) 0);
     return request;
 }
 
@@ -348,7 +347,7 @@ QVariantMap dbusTubeRequest(const Tp::ContactPtr &contact, const QString &servic
 {
     QVariantMap request = dbusTubeCommonRequest(serviceName);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   contact ? contact->handle().at(0) : (uint) 0);
+                   contact ? contact->handle() : (uint) 0);
     return request;
 }
 
@@ -408,7 +407,7 @@ QVariantMap conferenceRequest(const QString &channelType, Tp::HandleType targetH
             if (!contact) {
                 continue;
             }
-            handles << contact->handle()[0];
+            handles << contact->handle();
         }
         if (!handles.isEmpty()) {
             request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 +

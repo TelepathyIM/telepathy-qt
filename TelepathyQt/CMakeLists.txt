@@ -111,7 +111,6 @@ set(telepathy_qt_SRCS
     readiness-helper.cpp
     requestable-channel-class-spec.cpp
     ready-object.cpp
-    referenced-handles.cpp
     request-temporary-handler-internal.cpp
     request-temporary-handler-internal.h
     room-list-channel.cpp
@@ -444,9 +443,6 @@ set(telepathy_qt_HEADERS
     ready-object.h
     ReceivedMessage
     RefCounted
-    ReferencedHandles
-    referenced-handles.h
-    ReferencedHandlesIterator
     requestable-channel-class-spec.h
     RequestableChannelClassSpec
     RequestableChannelClassSpecList

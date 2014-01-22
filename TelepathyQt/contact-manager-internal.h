@@ -273,7 +273,7 @@ struct TP_QT_NO_EXPORT ContactManager::Roster::ChannelInfo
     static uint typeForIdentifier(const QString &identifier);
 
     Type type;
-    ReferencedHandles handle;
+    uint handle;
     ChannelPtr channel;
 };
 

@@ -67,7 +67,7 @@ PendingContactInfo::PendingContactInfo(const ContactPtr &contact)
         connection->interface<Client::ConnectionInterfaceContactInfo1Interface>();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             contactInfoInterface->RequestContactInfo(
-                contact->handle()[0]), this);
+                contact->handle()), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onCallFinished(QDBusPendingCallWatcher*)));

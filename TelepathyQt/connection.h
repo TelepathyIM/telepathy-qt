@@ -229,7 +229,6 @@ private:
     friend class PendingContactAttributes;
     friend class PendingContacts;
     friend class PendingGetContactsByID;
-    friend class ReferencedHandles;
 
     struct Private;
     friend struct Private;

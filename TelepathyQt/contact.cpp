@@ -38,7 +38,6 @@
 #include <TelepathyQt/PendingStringList>
 #include <TelepathyQt/PendingVoid>
 #include <TelepathyQt/Presence>
-#include <TelepathyQt/ReferencedHandles>
 
 namespace Tp
 {
@@ -46,7 +45,7 @@ namespace Tp
 struct TP_QT_NO_EXPORT Contact::Private
 {
     Private(Contact *parent, ContactManager *manager,
-        const ReferencedHandles &handle)
+        const uint &handle)
         : parent(parent),
           manager(ContactManagerPtr(manager)),
           handle(handle),
@@ -65,7 +64,7 @@ struct TP_QT_NO_EXPORT Contact::Private
     Contact *parent;
 
     WeakPtr<ContactManager> manager;
-    ReferencedHandles handle;
+    uint handle;
     QString id;
 
     Features requestedFeatures;
@@ -316,7 +315,7 @@ const Feature Contact::FeatureClientTypes = Feature(QLatin1String(Contact::stati
  * \param requestedFeatures The contact requested features.
  * \param attributes The contact attributes.
  */
-Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
+Contact::Contact(ContactManager *manager, const uint &handle,
         const Features &requestedFeatures, const QVariantMap &attributes)
     : Object(),
       mPriv(new Private(this, manager, handle))
@@ -347,10 +346,8 @@ ContactManagerPtr Contact::manager() const
 
 /**
  * Return the handle of this contact.
- *
- * \return The handle as a ReferencedHandles object.
  */
-ReferencedHandles Contact::handle() const
+uint Contact::handle() const
 {
     return mPriv->handle;
 }
@@ -981,7 +978,7 @@ PendingStringList *Contact::requestClientTypes()
         manager()->connection()->interface<Client::ConnectionInterfaceClientTypes1Interface>();
 
     return new PendingStringList(
-            clientTypesInterface->RequestClientTypes(mPriv->handle.at(0)),
+            clientTypesInterface->RequestClientTypes(mPriv->handle),
             ContactPtr(this));
 }
 

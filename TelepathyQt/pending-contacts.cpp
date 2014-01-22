@@ -33,7 +33,6 @@
 #include <TelepathyQt/ContactManager>
 #include <TelepathyQt/ContactFactory>
 #include <TelepathyQt/PendingContactAttributes>
-#include <TelepathyQt/ReferencedHandles>
 
 // FIXME: Refactor PendingContacts code to make it more readable/maintainable and reuse common code
 //        when appropriate.
@@ -283,7 +282,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles.push_back(contact->handle()[0]);
+        handles.push_back(contact->handle());
     }
 
     mPriv->nested = manager->contactsForHandles(handles, features);
@@ -478,16 +477,15 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
         return;
     }
 
-    ReferencedHandles validHandles = pendingAttributes->validHandles();
+    UIntList validHandles = pendingAttributes->validHandles();
     ContactAttributesMap attributes = pendingAttributes->attributes();
 
     foreach (uint handle, mPriv->handles) {
         if (!mPriv->satisfyingContacts.contains(handle)) {
             int indexInValid = validHandles.indexOf(handle);
             if (indexInValid >= 0) {
-                ReferencedHandles referencedHandle = validHandles.mid(indexInValid, 1);
                 QVariantMap handleAttributes = attributes[handle];
-                mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
+                mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(handle,
                             mPriv->missingFeatures, handleAttributes));
             } else {
                 mPriv->invalidHandles.push_back(handle);
@@ -514,15 +512,11 @@ void PendingContacts::onAddressingGetContactsFinished(PendingOperation *operatio
     ConnectionPtr conn = mPriv->manager->connection();
     ContactAttributesMap attributes = pa->attributes();
     UIntList handles = attributes.keys();
-    ReferencedHandles referencedHandles(conn, HandleTypeContact, handles);
 
     foreach (uint handle, handles) {
-        int indexInValid = referencedHandles.indexOf(handle);
-        Q_ASSERT(indexInValid >= 0);
-        ReferencedHandles referencedHandle = referencedHandles.mid(indexInValid, 1);
         QVariantMap handleAttributes = attributes[handle];
-        ContactPtr contact = mPriv->manager->ensureContact(referencedHandle,
-                    mPriv->missingFeatures, handleAttributes);
+        ContactPtr contact = mPriv->manager->ensureContact(
+                    handle, mPriv->missingFeatures, handleAttributes);
         mPriv->contacts.push_back(contact);
     }
 
@@ -541,15 +535,11 @@ void PendingContacts::onGetContactsByIDFinished(Tp::PendingOperation *operation)
     ConnectionPtr conn = mPriv->manager->connection();
     ContactAttributesMap attributes = pa->attributes();
     UIntList handles = attributes.keys();
-    ReferencedHandles referencedHandles(conn, HandleTypeContact, handles);
 
     foreach (uint handle, handles) {
-        int indexInValid = referencedHandles.indexOf(handle);
-        Q_ASSERT(indexInValid >= 0);
-        ReferencedHandles referencedHandle = referencedHandles.mid(indexInValid, 1);
         QVariantMap handleAttributes = attributes[handle];
-        ContactPtr contact = mPriv->manager->ensureContact(referencedHandle,
-                    mPriv->missingFeatures, handleAttributes);
+        ContactPtr contact = mPriv->manager->ensureContact(
+                    handle, mPriv->missingFeatures, handleAttributes);
         mPriv->contacts.push_back(contact);
     }
 

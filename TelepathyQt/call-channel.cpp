@@ -533,7 +533,7 @@ CallMemberFlags CallChannel::remoteMemberFlags(const ContactPtr &member) const
         uint handle = i.key();
         CallMemberFlags sendingState = (CallMemberFlags) i.value();
 
-        if (handle == member->handle()[0]) {
+        if (handle == member->handle()) {
             return sendingState;
         }
     }
@@ -963,7 +963,7 @@ void CallChannel::gotCallMembersContacts(PendingOperation *op)
     }
 
     foreach (const ContactPtr &contact, pc->contacts()) {
-        mPriv->callMembersContacts.insert(contact->handle()[0], contact);
+        mPriv->callMembersContacts.insert(contact->handle(), contact);
     }
 
     foreach (uint handle, mPriv->currentCallMembersChangedInfo->removed) {

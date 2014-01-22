@@ -46,7 +46,6 @@ class PendingContactInfo;
 class PendingOperation;
 class PendingStringList;
 class Presence;
-class ReferencedHandles;
 
 class TP_QT_EXPORT Contact : public Object
 {
@@ -96,7 +95,7 @@ public:
 
     ContactManagerPtr manager() const;
 
-    ReferencedHandles handle() const;
+    uint handle() const;
 
     // TODO filter: exact, prefix, substring match
     QString id() const;
@@ -205,7 +204,7 @@ Q_SIGNALS:
     // want to signal that change right away with a handle?
 
 protected:
-    Contact(ContactManager *manager, const ReferencedHandles &handle,
+    Contact(ContactManager *manager, const uint &handle,
             const Features &requestedFeatures, const QVariantMap &attributes);
 
     virtual void augment(const Features &requestedFeatures, const QVariantMap &attributes);

@@ -43,7 +43,6 @@
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/PendingVoid>
-#include <TelepathyQt/ReferencedHandles>
 
 #include <QMetaObject>
 #include <QMutex>

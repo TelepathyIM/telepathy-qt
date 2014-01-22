@@ -1,6 +1,0 @@
-#ifndef _TelepathyQt_ReferencedHandlesIterator_HEADER_GUARD_
-#define _TelepathyQt_ReferencedHandlesIterator_HEADER_GUARD_
-
-#include <TelepathyQt/referenced-handles.h>
-
-#endif

@@ -39,7 +39,6 @@ namespace Tp
 {
 
 class ContactManager;
-class ReferencedHandles;
 
 class TP_QT_EXPORT ContactFactory : public RefCounted
 {
@@ -58,7 +57,7 @@ public:
 protected:
     ContactFactory(const Features &features);
 
-    virtual ContactPtr construct(ContactManager *manager, const ReferencedHandles &handle,
+    virtual ContactPtr construct(ContactManager *manager, const uint &handle,
             const Features &features, const QVariantMap &attributes) const;
     virtual PendingOperation *prepare(const ContactPtr &contact) const;
 

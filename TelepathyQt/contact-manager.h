@@ -31,7 +31,6 @@
 #include <TelepathyQt/Contact>
 #include <TelepathyQt/Feature>
 #include <TelepathyQt/Object>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/Types>
 
 #include <QList>
@@ -108,8 +107,6 @@ public:
 
     PendingContacts *contactsForHandles(const UIntList &handles,
             const Features &features = Features());
-    PendingContacts *contactsForHandles(const ReferencedHandles &handles,
-            const Features &features = Features());
     PendingContacts *contactsForHandles(const HandleIdentifierMap &handles,
             const Features &features = Features());
 
@@ -172,10 +169,10 @@ private:
 
     TP_QT_NO_EXPORT ContactPtr lookupContactByHandle(uint handle);
 
-    TP_QT_NO_EXPORT ContactPtr ensureContact(const ReferencedHandles &handle,
+    TP_QT_NO_EXPORT ContactPtr ensureContact(const uint &handle,
             const Features &features,
             const QVariantMap &attributes);
-    TP_QT_NO_EXPORT ContactPtr ensureContact(uint bareHandle,
+    TP_QT_NO_EXPORT ContactPtr ensureContact(const uint &handle,
             const QString &id, const Features &features);
 
     TP_QT_NO_EXPORT static QString featureToInterface(const Feature &feature);

@@ -35,8 +35,6 @@
 namespace Tp
 {
 
-class ReferencedHandles;
-
 class TP_QT_EXPORT PendingContactAttributes : public PendingOperation
 {
     Q_OBJECT
@@ -51,7 +49,7 @@ public:
     const QStringList &interfacesRequested() const;
     bool shouldReference() const;
 
-    ReferencedHandles validHandles() const;
+    UIntList validHandles() const;
     UIntList invalidHandles() const;
     ContactAttributesMap attributes() const;
 

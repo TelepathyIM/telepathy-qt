@@ -35,7 +35,6 @@
 #include <TelepathyQt/PendingVariant>
 #include <TelepathyQt/PendingVariantMap>
 #include <TelepathyQt/PendingReady>
-#include <TelepathyQt/ReferencedHandles>
 
 namespace Tp
 {
@@ -214,7 +213,7 @@ PendingOperation *ContactManager::Roster::addContactsToGroup(const QString &grou
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
 
     Client::ConnectionInterfaceContactGroups1Interface *iface =
@@ -236,7 +235,7 @@ PendingOperation *ContactManager::Roster::removeContactsFromGroup(const QString 
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
 
     Client::ConnectionInterfaceContactGroups1Interface *iface =
@@ -262,7 +261,7 @@ PendingOperation *ContactManager::Roster::requestPresenceSubscription(
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
 
     Client::ConnectionInterfaceContactList1Interface *iface =
@@ -298,7 +297,7 @@ PendingOperation *ContactManager::Roster::removePresenceSubscription(
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
 
     Client::ConnectionInterfaceContactList1Interface *iface =
@@ -324,7 +323,7 @@ PendingOperation *ContactManager::Roster::authorizePresencePublication(
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
 
     Client::ConnectionInterfaceContactList1Interface *iface =
@@ -355,7 +354,7 @@ PendingOperation *ContactManager::Roster::removePresencePublication(
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
 
     Client::ConnectionInterfaceContactList1Interface *iface =
@@ -371,7 +370,7 @@ PendingOperation *ContactManager::Roster::removeContacts(
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
-        handles << contact->handle()[0];
+        handles << contact->handle();
     }
 
     Client::ConnectionInterfaceContactList1Interface *iface =
@@ -414,7 +413,7 @@ PendingOperation *ContactManager::Roster::blockContacts(
 
         UIntList handles;
         foreach (const ContactPtr &contact, contacts) {
-            handles << contact->handle()[0];
+            handles << contact->handle();
         }
 
         Q_ASSERT(iface);
@@ -574,8 +573,7 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
         uint bareHandle = i.key();
         QVariantMap attrs = i.value();
 
-        ContactPtr contact = contactManager->ensureContact(ReferencedHandles(conn,
-                    HandleTypeContact, UIntList() << bareHandle),
+        ContactPtr contact = contactManager->ensureContact(bareHandle,
                 conn->contactFactory()->features(), attrs);
         cachedAllKnownContacts.insert(contact);
         contactListContacts.insert(contact);
