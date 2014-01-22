@@ -248,7 +248,7 @@ Connection::Private::Private(Connection *parent,
         QSet<uint>() << ConnectionStatusDisconnected <<
                         ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
-        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,   // dependsOnInterfaces
+        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1,   // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
         this);
     introspectables[FeatureSimplePresence] = introspectableSimplePresence;
@@ -459,7 +459,7 @@ void Connection::Private::introspectSimplePresence(Connection::Private *self)
         "Connection.I.SimplePresence.Statuses)";
     QDBusPendingCall call =
         self->properties->GetAll(
-                TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
+                TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1);
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, self->parent);
     self->parent->connect(watcher,
@@ -1332,9 +1332,9 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
     }
 
     ConnectionPtr conn(connection());
-    if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+    if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1)) {
         return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
-                QLatin1String("Connection does not support SimplePresence"), conn);
+                QLatin1String("Connection does not support Presence1"), conn);
     }
 
     Client::ConnectionInterfacePresence1Interface *simplePresenceInterface =
