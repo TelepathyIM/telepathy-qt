@@ -1209,7 +1209,7 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
 
     // Pass it a text channel, and with no satisfied requests
     QString textChanPath = mConn->objectPath() + QLatin1String("/TextChannel");
-    QByteArray chanPath(textChanPath.toAscii());
+    QByteArray chanPath(textChanPath.toLatin1());
     ExampleEchoChannel *textChanService = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
                 "connection", mConn->service(),

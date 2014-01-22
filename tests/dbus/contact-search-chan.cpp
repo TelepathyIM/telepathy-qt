@@ -114,7 +114,7 @@ void TestContactSearchChan::initTestCase()
 
     QByteArray chan1Path;
     mChan1Path = mConn->objectPath() + QLatin1String("/ContactSearchChannel/1");
-    chan1Path = mChan1Path.toAscii();
+    chan1Path = mChan1Path.toLatin1();
     mChan1Service = TP_TESTS_CONTACT_SEARCH_CHANNEL(g_object_new(
                 TP_TESTS_TYPE_CONTACT_SEARCH_CHANNEL,
                 "connection", mConn->service(),
@@ -123,7 +123,7 @@ void TestContactSearchChan::initTestCase()
 
     QByteArray chan2Path;
     mChan2Path = mConn->objectPath() + QLatin1String("/ContactSearchChannel/2");
-    chan2Path = mChan2Path.toAscii();
+    chan2Path = mChan2Path.toLatin1();
     mChan2Service = TP_TESTS_CONTACT_SEARCH_CHANNEL(g_object_new(
                 TP_TESTS_TYPE_CONTACT_SEARCH_CHANNEL,
                 "connection", mConn->service(),

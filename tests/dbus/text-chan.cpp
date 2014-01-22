@@ -145,7 +145,7 @@ void TestTextChan::initTestCase()
 
     // create a Channel by magic, rather than doing D-Bus round-trips for it
     mTextChanPath = mConn->objectPath() + QLatin1String("/TextChannel");
-    QByteArray chanPath(mTextChanPath.toAscii());
+    QByteArray chanPath(mTextChanPath.toLatin1());
     mTextChanService = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
                 "connection", mConn->service(),
@@ -154,7 +154,7 @@ void TestTextChan::initTestCase()
                 NULL));
 
     mMessagesChanPath = mConn->objectPath() + QLatin1String("/MessagesChannel");
-    chanPath = mMessagesChanPath.toAscii();
+    chanPath = mMessagesChanPath.toLatin1();
     mMessagesChanService = EXAMPLE_ECHO_2_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_2_CHANNEL,
                 "connection", mConn->service(),

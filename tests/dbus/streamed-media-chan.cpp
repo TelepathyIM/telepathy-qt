@@ -1127,7 +1127,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
                     SIGNAL(localHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason)),
                     SLOT(onLocalHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason))));
     // Request hold
-    QWeakPointer<PendingOperation> holdOp = mChan->requestHold(true);
+    QPointer<PendingOperation> holdOp = mChan->requestHold(true);
     while (mLocalHoldStates.size() != 2 || (holdOp && !holdOp.data()->isFinished())) {
         mLoop->processEvents();
     }

@@ -1061,7 +1061,7 @@ void TestAccountChannelDispatcher::testCreateAndHandleChannelHandledAgain()
     guint handle = tp_handle_ensure(contactRepo, "someone@localhost", 0, 0);
 
     mChanPath = mConn->objectPath() + QLatin1String("/TextChannel");
-    QByteArray chanPath(mChanPath.toAscii());
+    QByteArray chanPath(mChanPath.toLatin1());
     ExampleEcho2Channel *textChanService = EXAMPLE_ECHO_2_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_2_CHANNEL,
                 "connection", mConn->service(),

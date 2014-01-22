@@ -104,7 +104,7 @@ void TestProperties::testPropertiesMonitoring()
             "a.random.interface", changed, NULL);
 
     tp_svc_dbus_properties_emit_properties_changed (mConnService,
-            mConn->interface().toAscii().data(), changed, NULL);
+            mConn->interface().toLatin1().data(), changed, NULL);
 
     QCOMPARE(spy.count(), 0);
 

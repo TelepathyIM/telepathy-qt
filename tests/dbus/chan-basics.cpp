@@ -229,7 +229,7 @@ void TestChanBasics::testFallback()
     guint handle = tp_handle_ensure(contactRepo, "someone@localhost", 0, 0);
 
     QString textChanPath = mConn->objectPath() + QLatin1String("/Channel");
-    QByteArray chanPath(textChanPath.toAscii());
+    QByteArray chanPath(textChanPath.toLatin1());
 
     TpTestsTextChannelNull *textChanService = TP_TESTS_TEXT_CHANNEL_NULL (g_object_new (
                 TP_TESTS_TYPE_TEXT_CHANNEL_NULL,

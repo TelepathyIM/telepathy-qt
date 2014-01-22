@@ -403,7 +403,7 @@ void TestContactMessenger::initTestCase()
     guint handle = tp_handle_ensure(mContactRepo, "Ann", 0, 0);
 
     mMessagesChanPath = mConnPath + QLatin1String("/MessagesChannel");
-    QByteArray chanPath = mMessagesChanPath.toAscii();
+    QByteArray chanPath = mMessagesChanPath.toLatin1();
     mMessagesChanService = EXAMPLE_ECHO_2_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_2_CHANNEL,
                 "connection", mConnService,

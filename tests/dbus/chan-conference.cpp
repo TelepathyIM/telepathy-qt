@@ -98,7 +98,7 @@ void TestConferenceChan::initTestCase()
     GPtrArray *initialChannels = g_ptr_array_new();
 
     mTextChan1Path = mConn->objectPath() + QLatin1String("/TextChannel/1");
-    chanPath = mTextChan1Path.toAscii();
+    chanPath = mTextChan1Path.toLatin1();
     mTextChan1Service = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
                 "connection", mConn->service(),
@@ -108,7 +108,7 @@ void TestConferenceChan::initTestCase()
     g_ptr_array_add(initialChannels, g_strdup(chanPath.data()));
 
     mTextChan2Path = mConn->objectPath() + QLatin1String("/TextChannel/2");
-    chanPath = mTextChan2Path.toAscii();
+    chanPath = mTextChan2Path.toLatin1();
     mTextChan2Service = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
                 "connection", mConn->service(),
@@ -119,7 +119,7 @@ void TestConferenceChan::initTestCase()
 
     // let's not add this one to initial channels
     mTextChan3Path = mConn->objectPath() + QLatin1String("/TextChannel/3");
-    chanPath = mTextChan3Path.toAscii();
+    chanPath = mTextChan3Path.toLatin1();
     mTextChan3Service = EXAMPLE_ECHO_CHANNEL(g_object_new(
                 EXAMPLE_TYPE_ECHO_CHANNEL,
                 "connection", mConn->service(),
@@ -128,7 +128,7 @@ void TestConferenceChan::initTestCase()
                 NULL));
 
     mConferenceChanPath = mConn->objectPath() + QLatin1String("/ConferenceChannel");
-    chanPath = mConferenceChanPath.toAscii();
+    chanPath = mConferenceChanPath.toLatin1();
     mConferenceChanService = TP_TESTS_CONFERENCE_CHANNEL(g_object_new(
                 TP_TESTS_TYPE_CONFERENCE_CHANNEL,
                 "connection", mConn->service(),
@@ -229,7 +229,7 @@ void TestConferenceChan::testConference()
                     SLOT(onConferenceChannelRemoved(const Tp::ChannelPtr &,
                             const Tp::Channel::GroupMemberChangeDetails &))));
     tp_tests_conference_channel_remove_channel (mConferenceChanService,
-            mChannelMerged->objectPath().toAscii().data());
+            mChannelMerged->objectPath().toLatin1().data());
     while (!mChannelRemovedDetailed) {
         QCOMPARE(mLoop->exec(), 0);
     }

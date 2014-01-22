@@ -448,7 +448,7 @@ void TestChanGroup::testGroupFlagsChange()
     guint handle = tp_handle_ensure(contactRepo, "someone@localhost", 0, 0);
 
     QString textChanPath = mConn->objectPath() + QLatin1String("/Channel");
-    QByteArray chanPath(textChanPath.toAscii());
+    QByteArray chanPath(textChanPath.toLatin1());
 
     TpTestsPropsGroupTextChannel *textChanService = TP_TESTS_PROPS_GROUP_TEXT_CHANNEL(g_object_new(
                 TP_TESTS_TYPE_PROPS_GROUP_TEXT_CHANNEL,
