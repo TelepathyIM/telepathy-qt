@@ -290,7 +290,7 @@ set(telepathy_qt_HEADERS
     ConnectionInterfacePresenceInterface
     ConnectionInterfaceRequestsInterface
     ConnectionInterfaceServicePointInterface
-    ConnectionInterfaceSimplePresenceInterface
+    ConnectionInterfacePresence1Interface
     ConnectionLowlevel
     ConnectionManager
     connection-manager.h

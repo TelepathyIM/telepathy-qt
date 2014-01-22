@@ -102,7 +102,7 @@ struct TP_QT_NO_EXPORT Connection::Private
     Client::DBus::PropertiesInterface *properties;
 
     // Optional interface proxies
-    Client::ConnectionInterfaceSimplePresenceInterface *simplePresence;
+    Client::ConnectionInterfacePresence1Interface *simplePresence;
 
     ReadinessHelper *readinessHelper;
 
@@ -1337,8 +1337,8 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
                 QLatin1String("Connection does not support SimplePresence"), conn);
     }
 
-    Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface =
-        conn->interface<Client::ConnectionInterfaceSimplePresenceInterface>();
+    Client::ConnectionInterfacePresence1Interface *simplePresenceInterface =
+        conn->interface<Client::ConnectionInterfacePresence1Interface>();
     return new PendingVoid(
             simplePresenceInterface->SetPresence(status, statusMessage), conn);
 }
