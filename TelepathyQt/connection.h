@@ -216,8 +216,6 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onIntrospectRosterFinished(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onIntrospectRosterGroupsFinished(Tp::PendingOperation *op);
 
-    TP_QT_NO_EXPORT void doReleaseSweep(uint handleType);
-
     TP_QT_NO_EXPORT void onSelfHandleChanged(uint);
 
     TP_QT_NO_EXPORT void gotBalance(QDBusPendingCallWatcher *watcher);
@@ -232,10 +230,6 @@ private:
     friend class PendingContacts;
     friend class PendingHandles;
     friend class ReferencedHandles;
-
-    TP_QT_NO_EXPORT void refHandle(HandleType handleType, uint handle);
-    TP_QT_NO_EXPORT void unrefHandle(HandleType handleType, uint handle);
-    TP_QT_NO_EXPORT void handleRequestLanded(HandleType handleType);
 
     struct Private;
     friend struct Private;
