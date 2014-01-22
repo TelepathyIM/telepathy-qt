@@ -52,7 +52,7 @@
 #include <QRegExp>
 #include <QSharedPointer>
 #include <QTimer>
-#include <QWeakPointer>
+#include <QPointer>
 
 #include <string.h>
 
@@ -648,7 +648,7 @@ struct Account::Private::DispatcherContext
     Client::ChannelDispatcherInterface *iface;
 
     bool introspected, supportsHints;
-    QWeakPointer<PendingVariant> introspectOp;
+    QPointer<PendingVariant> introspectOp;
 
 private:
     DispatcherContext(const DispatcherContext &);

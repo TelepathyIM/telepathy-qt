@@ -90,7 +90,7 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
     }
 
     TpConnection *gconnection = tp_simple_client_factory_ensure_connection (factory,
-            connection->objectPath().toAscii(), NULL, 0);
+            connection->objectPath().toLatin1(), NULL, 0);
     if (!gconnection) {
         warning() << "Unable to construct TpConnection";
         setFinishedWithError(TP_QT_ERROR_NOT_AVAILABLE,
@@ -101,10 +101,10 @@ PendingChannel::PendingChannel(const CallChannelPtr &channel)
     }
 
     TpChannel *gchannel = (TpChannel*) g_object_new(TP_TYPE_CALL_CHANNEL,
-            "bus-name", connection->busName().toAscii().constData(),
+            "bus-name", connection->busName().toLatin1().constData(),
             "connection", gconnection,
             "dbus-daemon", dbus,
-            "object-path", channel->objectPath().toAscii().constData(),
+            "object-path", channel->objectPath().toLatin1().constData(),
             NULL);
     g_object_unref(factory);
     factory = 0;

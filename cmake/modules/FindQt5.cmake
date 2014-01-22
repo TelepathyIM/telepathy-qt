@@ -12,29 +12,12 @@
 #  QT_VERSION_MINOR             The minor version of Qt found.
 #  QT_VERSION_PATCH             The patch version of Qt found.
 #
-#  QT_BINARY_DIR                Path to "bin" of Qt4
-#  QT_DOC_DIR                   Path to "doc" of Qt4
-#
-#  QT_QTCORE_FOUND              True if QtCore was found.
-#  QT_QTGUI_FOUND               True if QtGui was found.
-#  QT_QTDBUS_FOUND              True if QtDBus was found.
-#  QT_QTNETWORK_FOUND           True if QtNetwork was found.
-#  QT_QTTEST_FOUND              True if QtTest was found.
-#  QT_QTWIDGETS_FOUND           True if QtWidgets was found.
-#  QT_QTXML_FOUND               True if QtXml was found.
+#  QT_BINARY_DIR                Path to "bin" of Qt5
+#  QT_DOC_DIR                   Path to "doc" of Qt5
 #
 #  QT_INCLUDES                  List of paths to all include directories of Qt5.
-#  QT_INCLUDE_DIR               Path to "include" of Qt4
-#  QT_QTCORE_INCLUDE_DIR        Path to "include/QtCore"
-#  QT_QTDBUS_INCLUDE_DIR        Path to "include/QtDBus"
-#  QT_QTGUI_INCLUDE_DIR         Path to "include/QtGui"
-#  QT_QTNETWORK_INCLUDE_DIR     Path to "include/QtNetwork"
-#  QT_QTTEST_INCLUDE_DIR        Path to "include/QtTest"
-#  QT_QTWIDGETS_INCLUDE_DIR     Path to "include/QtWidgets"
-#  QT_QTXML_INCLUDE_DIR         Path to "include/QtXml"
 #
 #  QT_LIBRARIES                 List of paths to all libraries of Qt5.
-#  QT_LIBRARY_DIR               Path to "lib" of Qt4
 #  QT_QTCORE_LIBRARY            The QtCore library
 #  QT_QTDBUS_LIBRARY            The QtDBus library
 #  QT_QTGUI_LIBRARY             The QtGui library
@@ -79,43 +62,20 @@ ENDIF(NOT QTVERSION MATCHES "5.*")
 
 FIND_PACKAGE(PkgConfig REQUIRED)
 
-IF(NOT Qt5_FIND_COMPONENTS)
-  SET(_COMPONENTS QtCore QtDBus QtGui QtNetwork QtTest QtWidgets QtXml)
-ELSE(NOT Qt5_FIND_COMPONENTS)
-  SET(_COMPONENTS ${Qt5_FIND_COMPONENTS})
-ENDIF(NOT Qt5_FIND_COMPONENTS)
+FIND_PACKAGE(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED Core DBus Gui Network Test Widgets Xml)
 
-FOREACH(_COMPONENT ${_COMPONENTS})
-  STRING(TOUPPER ${_COMPONENT} _COMPONENT_UPPER)
-  IF(NOT QT_${_COMPONENT_UPPER}_FOUND)
-    IF(Qt5_FIND_REQUIRED)
-      PKG_CHECK_MODULES(PC_${_COMPONENT} REQUIRED ${_COMPONENT}>=${QT_MIN_VERSION})
-    ELSE(Qt5_FIND_REQUIRED)
-      PKG_CHECK_MODULES(PC_${_COMPONENT} QUIET ${_COMPONENT}>=${QT_MIN_VERSION})
-    ENDIF(Qt5_FIND_REQUIRED)
+# Copy includes and library names into the same style as pkgconfig used for Qt4
+set(QT_INCLUDES ${Qt5Core_INCLUDE_DIRS} ${Qt5DBus_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS} ${Qt5Network_INCLUDE_DIRS} ${Qt5Test_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
 
-    SET(QT_${_COMPONENT_UPPER}_INCLUDE_DIR ${PC_${_COMPONENT}_INCLUDE_DIRS})
+set(QT_QTCORE_LIBRARY ${Qt5Core_LIBRARIES})
+set(QT_QTDBUS_LIBRARY ${Qt5DBus_LIBRARIES})
+set(QT_QTGUI_LIBRARY ${Qt5Gui_LIBRARIES})
+set(QT_QTNETWORK_LIBRARY ${Qt5Network_LIBRARIES})
+set(QT_QTTEST_LIBRARY ${Qt5Test_LIBRARIES})
+set(QT_QTWIDGETS_LIBRARY ${Qt5Widgets_LIBRARIES})
+set(QT_QTXML_LIBRARY ${Qt5Xml_LIBRARIES})
 
-    FIND_LIBRARY(QT_${_COMPONENT_UPPER}_LIBRARY
-                 NAMES ${_COMPONENT}
-                 HINTS
-                 ${PC_${_COMPONENT}_LIBDIR})
-
-    SET(QT_${_COMPONENT_UPPER}_FOUND ${PC_${_COMPONENT}_FOUND})
-
-    #MESSAGE(STATUS "COMPONENT ${_COMPONENT_UPPER}:")
-    #MESSAGE(STATUS "  QT_${_COMPONENT_UPPER}_LIBRARY: ${QT_${_COMPONENT_UPPER}_LIBRARY}")
-    #MESSAGE(STATUS "  QT_${_COMPONENT_UPPER}_INCLUDE_DIR: ${QT_${_COMPONENT_UPPER}_INCLUDE_DIR}")
-    #MESSAGE(STATUS "  QT_${_COMPONENT_UPPER}_FOUND: ${QT_${_COMPONENT_UPPER}_FOUND}")
-
-    SET(QT_INCLUDES ${QT_INCLUDES} ${QT_${_COMPONENT_UPPER}_INCLUDE_DIR})
-    SET(QT_LIBRARIES ${QT_LIBRARIES} ${QT_${_COMPONENT_UPPER}_INCLUDE_DIR})
-    MARK_AS_ADVANCED(QT_${_COMPONENT_UPPER}_LIBRARY QT_${_COMPONENT_UPPER}_INCLUDE_DIR)
-  ENDIF(NOT QT_${_COMPONENT_UPPER}_FOUND)
-ENDFOREACH(_COMPONENT)
-
-#MESSAGE(STATUS "QT_LIBRARIES: ${QT_LIBRARIES}")
-#MESSAGE(STATUS "QT_INCLUDES: ${QT_INCLUDES}")
+set(QT_LIBRARIES ${QT_QTCORE_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTTEST_LIBRARY} ${QT_QTWIDGETS_LIBRARY} ${QT_QTXML_LIBRARY})
 
 STRING(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" QT_VERSION_MAJOR "${QTVERSION}")
 STRING(REGEX REPLACE "^[0-9]+\\.([0-9])+\\.[0-9]+.*" "\\1" QT_VERSION_MINOR "${QTVERSION}")
@@ -157,6 +117,8 @@ EXECUTE_PROCESS(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable qt_config QtCore
     OUTPUT_VARIABLE _pkgconfig_flags
     RESULT_VARIABLE _pkgconfig_failed)
 STRING(REPLACE " " ";" QT_CONFIG_FLAGS "${_pkgconfig_flags}")
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 INCLUDE(Qt5Macros)
 
