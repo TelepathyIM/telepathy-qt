@@ -43,8 +43,6 @@ public:
 
     bool textChatrooms() const;
 
-    TP_QT_DEPRECATED bool conferenceStreamedMediaCalls() const;
-    TP_QT_DEPRECATED bool conferenceStreamedMediaCallsWithInvitees() const;
     bool conferenceTextChats() const;
     bool conferenceTextChatsWithInvitees() const;
     bool conferenceTextChatrooms() const;

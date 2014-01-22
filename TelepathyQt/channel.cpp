@@ -1257,7 +1257,7 @@ Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const ContactPtr &ac
  *
  * All communication in the Telepathy framework is carried out via channel
  * objects. Specialized classes for some specific channel types such as
- * StreamedMediaChannel, TextChannel, FileTransferChannel are provided.
+ * CallChannel, TextChannel, FileTransferChannel are provided.
  *
  * The remote object accessor functions on this object (channelType(), targetHandleType(),
  * and so on) don't make any D-Bus calls; instead, they return/use
@@ -2460,8 +2460,7 @@ bool Channel::groupSelfHandleIsLocalPending() const
 
 /**
  * Attempt to add the local user to this channel. In some channel types,
- * such as Text and StreamedMedia, this is used to accept an invitation or an
- * incoming call.
+ * such as Text, this is used to accept an invitation or an incoming call.
  *
  * This method requires Channel::FeatureCore to be ready.
  *

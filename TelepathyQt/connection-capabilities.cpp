@@ -96,45 +96,6 @@ bool ConnectionCapabilities::textChatrooms() const
 }
 
 /**
- * Return whether creating conference media calls is supported.
- *
- * \return \c true if supported, \c false otherwise.
- */
-bool ConnectionCapabilities::conferenceStreamedMediaCalls() const
-{
-    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
-    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.supports(RequestableChannelClassSpec::conferenceStreamedMediaCall())) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
- * Return whether creating conference media calls is supported.
- *
- * This method will also check whether inviting new contacts when creating a conference media call
- * channel by providing additional members to initial invitees (as opposed to merging several
- * channels into one new conference channel) is supported.
- *
- * If providing additional members is supported, it is also possible to request conference media
- * calls with fewer than two (even zero) already established media calls.
- *
- * \return \c true if supported, \c false otherwise.
- */
-bool ConnectionCapabilities::conferenceStreamedMediaCallsWithInvitees() const
-{
-    RequestableChannelClassSpecList rccSpecs = allClassSpecs();
-    foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
-        if (rccSpec.supports(RequestableChannelClassSpec::conferenceStreamedMediaCallWithInvitees())) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
  * Return whether creating conference text chats is supported.
  *
  * \return \c true if supported, \c false otherwise.
