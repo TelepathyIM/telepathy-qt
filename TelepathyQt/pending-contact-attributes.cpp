@@ -204,8 +204,6 @@ void PendingContactAttributes::onCallFinished(QDBusPendingCallWatcher* watcher)
         setFinished();
     }
 
-    connection()->handleRequestLanded(HandleTypeContact);
-
     watcher->deleteLater();
 }
 
