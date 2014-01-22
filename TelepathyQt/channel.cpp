@@ -567,16 +567,6 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
     const static QString keyRPMembers(QLatin1String("RemotePendingMembers"));
     const static QString keySelfHandle(QLatin1String("SelfHandle"));
 
-    bool haveProps = props.size() >= 6
-                  && (props.contains(keyGroupFlags)
-                  && (qdbus_cast<uint>(props[keyGroupFlags]) &
-                      ChannelGroupFlagProperties))
-                  && props.contains(keyHandleOwners)
-                  && props.contains(keyLPMembers)
-                  && props.contains(keyMembers)
-                  && props.contains(keyRPMembers)
-                  && props.contains(keySelfHandle);
-
     groupAreHandleOwnersAvailable = true;
     groupIsSelfHandleTracked = true;
 
