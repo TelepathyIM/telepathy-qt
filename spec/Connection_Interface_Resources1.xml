@@ -45,8 +45,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         attempts to change this.</p>
 
       <p>When using this interface, it is a little like using the
-        <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface"
-        >Contacts</tp:dbus-ref> interface, but only resource-specific
+        <tp:dbus-ref namespace="im.telepathy.v1.Connection"
+        >GetContactAttributes</tp:dbus-ref> method, but only resource-specific
         attributes are ever returned. The resource-specific contact
         attributes are decided on by the CM, but XMPP's are listed
         below:</p>

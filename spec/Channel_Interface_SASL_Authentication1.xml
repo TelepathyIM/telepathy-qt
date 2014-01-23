@@ -125,8 +125,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>To make it possible to implement a very simple password-querying
           user interface without knowledge of any particular SASL mechanism,
           implementations of this interface MUST implement the
-          pseudo-mechanism <code>X-TELEPATHY-PASSWORD</code>, unless none
-          of the available mechanisms use a password at all.</p>
+          pseudo-mechanism <code>X-TELEPATHY-PASSWORD</code>, unless each
+          of the available mechanisms either requires additional information
+          beyond the password (such as a username), or does not use a
+          password.</p>
       </tp:docstring>
     </property>
 

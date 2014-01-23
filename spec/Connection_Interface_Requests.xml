@@ -26,10 +26,18 @@
     <tp:added version="0.17.11">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>An enhanced version of the Telepathy connection interface, which can
-        represent bundles of channels that should be dispatched together, and
-        does not assume any particular properties by which channels are
-        uniquely identifiable.</p>
+      <p>An interface for channel requests and channel lists. Under
+        normal circumstances, applications should deal with this
+        interface via the <tp:dbus-ref
+          namespace="imt1">ChannelDispatcher</tp:dbus-ref>,
+        but lower-level Telepathy applications (such as the
+        ChannelDispatcher itself) might need to use this interface
+        directly.</p>
+
+      <p>This interface is conceptually part of the core Connection
+        interface, but is kept separate so that its properties will
+        normally only need to be retrieved by the ChannelDispatcher,
+        and its signals will normally only wake up the ChannelDispatcher.</p>
     </tp:docstring>
 
     <tp:struct name="Channel_Details" array-name="Channel_Details_List">

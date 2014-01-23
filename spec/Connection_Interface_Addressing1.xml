@@ -18,7 +18,6 @@
   </tp:license>
   <interface name="im.telepathy.v1.Connection.Interface.Addressing1">
     <tp:requires interface="im.telepathy.v1.Connection"/>
-    <tp:requires interface="im.telepathy.v1.Connection.Interface.Contacts"/>
     <tp:added version="0.25.2">(as stable API)</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface deals with the multiple address types that can
@@ -71,7 +70,7 @@
 
           <p>The behavior of this parameter is similar to the same
             parameter in
-            <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface">Contacts.GetContactAttributes</tp:dbus-ref>.</p>
+            <tp:dbus-ref namespace="im.telepathy.v1.Connection">GetContactAttributes</tp:dbus-ref>.</p>
           </tp:docstring>
       </arg>
 
@@ -140,7 +139,7 @@
 
           <p>The behavior of this parameter is similar to the same
             parameter in
-            <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface">Contacts.GetContactAttributes</tp:dbus-ref>.</p>
+            <tp:dbus-ref namespace="im.telepathy.v1.Connection">GetContactAttributes</tp:dbus-ref>.</p>
           </tp:docstring>
       </arg>
 

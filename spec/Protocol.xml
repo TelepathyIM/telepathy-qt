@@ -53,7 +53,7 @@ Interfaces=
 
 [Protocol example]
 Interfaces=
-ConnectionInterfaces=im.telepathy.v1.Connection.Interface.Requests;
+ConnectionInterfaces=im.telepathy.v1.Connection.Interface.Aliasing;
 param-account=s required
 param-password=s required secret
 RequestableChannelClasses=text;
@@ -137,6 +137,10 @@ allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;
           <code>.manager</code> file, using the key
           <code>ConnectionInterfaces</code>. The corresponding value
           is a list of D-Bus interface names, each followed by a semicolon.</p>
+
+        <p>As a special case, the mandatory <tp:dbus-ref
+            namespace="imt1.Connection.Interface">Requests</tp:dbus-ref>
+          interface SHOULD NOT be listed in this property.</p>
       </tp:docstring>
     </property>
 
@@ -373,7 +377,7 @@ allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;im
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Attempt to normalize the given contact ID. Where possible, this
           SHOULD return the same thing that would be returned by <tp:dbus-ref
-          namespace="imt1.Connection.Interface.Contacts">GetContactByID</tp:dbus-ref>
+          namespace="imt1.Connection">GetContactByID</tp:dbus-ref>
            on a connected <tp:dbus-ref namespace="im.telepathy.v1"
            >Connection</tp:dbus-ref>.</p>
 

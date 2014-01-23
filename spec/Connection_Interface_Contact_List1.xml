@@ -164,7 +164,7 @@
           <p>A list of strings indicating which D-Bus interfaces the calling
             process is interested in. Equivalent to the corresponding argument
             to <tp:dbus-ref
-              namespace="im.telepathy.v1.Connection.Interface.Contacts"
+              namespace="im.telepathy.v1.Connection"
               >GetContactAttributes</tp:dbus-ref>,
             except that if this list does not contain the ContactList
             interface itself, it is treated as though that interface was also
@@ -177,7 +177,7 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary mapping the contact handles to contact attributes,
             equivalent to the result of <tp:dbus-ref
-              namespace="im.telepathy.v1.Connection.Interface.Contacts"
+              namespace="im.telepathy.v1.Connection"
               >GetContactAttributes</tp:dbus-ref>.</p>
 
         </tp:docstring>

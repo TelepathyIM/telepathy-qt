@@ -22,7 +22,7 @@
   <interface name="im.telepathy.v1.Connection.Interface.Presence1">
     <tp:requires interface="im.telepathy.v1.Connection"/>
 
-    <tp:struct name="SimplePresence">
+    <tp:struct name="Presence">
       <tp:docstring>
         A struct representing the presence of a contact.
       </tp:docstring>
@@ -62,9 +62,9 @@
       </tp:member>
     </tp:struct>
 
-    <tp:mapping name="Contact_SimplePresence_Map">
+    <tp:mapping name="Contact_Presence_Map">
       <tp:docstring>
-        Mapping signalled by <tp:member-ref>SimplePresencesChanged</tp:member-ref>,
+        Mapping signalled by <tp:member-ref>PresencesChanged</tp:member-ref>,
         indicating the presence of a number of contacts.
       </tp:docstring>
       <tp:member type="u" tp:type="Contact_Handle" name="Contact">
@@ -72,7 +72,7 @@
           A contact
         </tp:docstring>
       </tp:member>
-      <tp:member type="(uss)" tp:type="SimplePresence" name="SimplePresence">
+      <tp:member type="(uss)" tp:type="Presence" name="Presence">
         <tp:docstring>
           The contact's presence
         </tp:docstring>
@@ -87,7 +87,7 @@
         <tp:docstring>
           The type of a presence. This SHOULD NOT be used as a way to set
           statuses that the client does not recognise (as explained in
-          <tp:member-ref>SetSimplePresence</tp:member-ref>), but MAY be used to check
+          <tp:member-ref>SetPresence</tp:member-ref>), but MAY be used to check
           that the client's assumptions about a particular status name
           match the connection manager's.
         </tp:docstring>
@@ -95,7 +95,7 @@
       <tp:member type="b" name="May_Set_On_Self">
         <tp:docstring>
           If true, the user can set this status on themselves using
-          <tp:member-ref>SetSimplePresence</tp:member-ref>.
+          <tp:member-ref>SetPresence</tp:member-ref>.
         </tp:docstring>
       </tp:member>
       <tp:member type="b" name="Can_Have_Message">
@@ -128,7 +128,7 @@
       </tp:member>
     </tp:mapping>
 
-    <method name="SetSimplePresence" tp:name-for-bindings="Set_SimplePresence">
+    <method name="SetPresence" tp:name-for-bindings="Set_Presence">
       <arg direction="in" name="Status" type="s">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The string identifier of the desired status. Possible status
@@ -170,7 +170,7 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Request that the presence status and status message are published for
           the connection.  Changes will be indicated by
-          <tp:member-ref>SimplePresencesChanged</tp:member-ref>
+          <tp:member-ref>PresencesChanged</tp:member-ref>
           signals being emitted.</p>
 
         <p>This method may be called on a newly-created connection while it
@@ -262,10 +262,10 @@
           state MUST NOT be assumed to still be correct when the state has
           become CONNECTED).</p>
 
-        <p>If a message passed to <tp:member-ref>SetSimplePresence</tp:member-ref> is
+        <p>If a message passed to <tp:member-ref>SetPresence</tp:member-ref> is
           longer than allowed by this property, the connection manager MUST
           truncate the supplied message; when emitting
-          <tp:member-ref>SimplePresencesChanged</tp:member-ref>, the truncated version
+          <tp:member-ref>PresencesChanged</tp:member-ref>, the truncated version
           of the message MUST be used.</p>
 
         <tp:rationale>
@@ -278,8 +278,8 @@
       </tp:docstring>
     </property>
 
-    <signal name="SimplePresencesChanged" tp:name-for-bindings="SimplePresences_Changed">
-      <arg name="SimplePresence" type="a{u(uss)}" tp:type="Contact_SimplePresence_Map">
+    <signal name="PresencesChanged" tp:name-for-bindings="Presences_Changed">
+      <arg name="Presence" type="a{u(uss)}" tp:type="Contact_Presence_Map">
         <tp:docstring>
           A dictionary of contact handles mapped to the status,
           presence type and status message.
@@ -428,7 +428,7 @@
     <tp:struct name="Access_Control">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>An access control mode for extended presence items like geolocation.
-          This type isn't actually used by the SimplePresence interface, but
+          This type isn't actually used by the Presence interface, but
           it's included here so it can be referenced by rich presence
           interfaces.</p>
       </tp:docstring>
@@ -448,7 +448,7 @@
     </tp:struct>
 
     <tp:contact-attribute name="presence"
-      type="(uss)" tp:type="SimplePresence">
+      type="(uss)" tp:type="Presence">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The contact's presence.</p>
 
@@ -460,7 +460,7 @@
           in chatrooms will temporarily have available presence).</p>
 
         <p>Always present with some value if information if the
-          SimplePresence interface was requested</p>
+          Presence interface was requested</p>
       </tp:docstring>
     </tp:contact-attribute>
 
@@ -468,7 +468,7 @@
       <p>This interface is for services which have a concept of presence which
         can be published for yourself and monitored on your contacts.</p>
 
-      <p>SimplePresence on an individual (yourself or one of your contacts) is
+      <p>Presence on an individual (yourself or one of your contacts) is
         modelled as a status and a status message. Valid statuses are defined
         per connection, and a list of those that can be set on youself
         can be obtained from the
@@ -575,7 +575,7 @@
         was a failure in determining the status of a contact.</p>
 
       <p>If the connection has a 'subscribe' contact list,
-        <tp:member-ref>SimplePresencesChanged</tp:member-ref>
+        <tp:member-ref>PresencesChanged</tp:member-ref>
         signals should be emitted to indicate changes of contacts on this list,
         and should also be emitted for changes in your own presence. Depending
         on the protocol, the signal may also be emitted for others such as
