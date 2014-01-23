@@ -728,10 +728,6 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
         contact->setBlocked(false);
     }
 
-    // Perform the needed computation for allKnownContactsChanged
-    computeKnownContactsChanges(newBlockedContacts, Contacts(),
-            Contacts(), unblockedContacts, Channel::GroupMemberChangeDetails());
-
     if (info.continueIntrospectionWhenFinished) {
         introspectContactList();
     }
@@ -808,9 +804,6 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
         contactListContacts.remove(contact);
         removed << contact;
     }
-
-    computeKnownContactsChanges(added, Contacts(), Contacts(),
-            removed, Channel::GroupMemberChangeDetails());
 
     foreach (const Tp::ContactPtr &contact, removed) {
         contact->setSubscriptionState(SubscriptionStateNo);
@@ -943,156 +936,6 @@ void ContactManager::Roster::onContactListContactsUpgraded(PendingOperation *op)
     introspectGroupsPendingOp->setFinished();
     introspectGroupsPendingOp = 0;
     processContactListChanges();
-}
-
-void ContactManager::Roster::onStoredChannelMembersChanged(
-        const Contacts &groupMembersAdded,
-        const Contacts &groupLocalPendingMembersAdded,
-        const Contacts &groupRemotePendingMembersAdded,
-        const Contacts &groupMembersRemoved,
-        const Channel::GroupMemberChangeDetails &details)
-{
-    if (!groupLocalPendingMembersAdded.isEmpty()) {
-        warning() << "Found local pending contacts on stored list";
-    }
-
-    if (!groupRemotePendingMembersAdded.isEmpty()) {
-        warning() << "Found remote pending contacts on stored list";
-    }
-
-    foreach (ContactPtr contact, groupMembersAdded) {
-        debug() << "Contact" << contact->id() << "on stored list";
-    }
-
-    foreach (ContactPtr contact, groupMembersRemoved) {
-        debug() << "Contact" << contact->id() << "removed from stored list";
-    }
-
-    // Perform the needed computation for allKnownContactsChanged
-    computeKnownContactsChanges(groupMembersAdded,
-            groupLocalPendingMembersAdded, groupRemotePendingMembersAdded,
-            groupMembersRemoved, details);
-}
-
-void ContactManager::Roster::onSubscribeChannelMembersChanged(
-        const Contacts &groupMembersAdded,
-        const Contacts &groupLocalPendingMembersAdded,
-        const Contacts &groupRemotePendingMembersAdded,
-        const Contacts &groupMembersRemoved,
-        const Channel::GroupMemberChangeDetails &details)
-{
-    if (!groupLocalPendingMembersAdded.isEmpty()) {
-        warning() << "Found local pending contacts on subscribe list";
-    }
-
-    foreach (ContactPtr contact, groupMembersAdded) {
-        debug() << "Contact" << contact->id() << "on subscribe list";
-        contact->setSubscriptionState(SubscriptionStateYes);
-    }
-
-    foreach (ContactPtr contact, groupRemotePendingMembersAdded) {
-        debug() << "Contact" << contact->id() << "added to subscribe list";
-        contact->setSubscriptionState(SubscriptionStateAsk);
-    }
-
-    foreach (ContactPtr contact, groupMembersRemoved) {
-        debug() << "Contact" << contact->id() << "removed from subscribe list";
-        contact->setSubscriptionState(SubscriptionStateNo);
-    }
-
-    // Perform the needed computation for allKnownContactsChanged
-    computeKnownContactsChanges(groupMembersAdded,
-            groupLocalPendingMembersAdded, groupRemotePendingMembersAdded,
-            groupMembersRemoved, details);
-}
-
-void ContactManager::Roster::onPublishChannelMembersChanged(
-        const Contacts &groupMembersAdded,
-        const Contacts &groupLocalPendingMembersAdded,
-        const Contacts &groupRemotePendingMembersAdded,
-        const Contacts &groupMembersRemoved,
-        const Channel::GroupMemberChangeDetails &details)
-{
-    if (!groupRemotePendingMembersAdded.isEmpty()) {
-        warning() << "Found remote pending contacts on publish list";
-    }
-
-    foreach (ContactPtr contact, groupMembersAdded) {
-        debug() << "Contact" << contact->id() << "on publish list";
-        contact->setPublishState(SubscriptionStateYes);
-    }
-
-    foreach (ContactPtr contact, groupLocalPendingMembersAdded) {
-        debug() << "Contact" << contact->id() << "added to publish list";
-        contact->setPublishState(SubscriptionStateAsk, details.message());
-    }
-
-    foreach (ContactPtr contact, groupMembersRemoved) {
-        debug() << "Contact" << contact->id() << "removed from publish list";
-        contact->setPublishState(SubscriptionStateNo);
-    }
-
-    if (!groupLocalPendingMembersAdded.isEmpty()) {
-        emit contactManager->presencePublicationRequested(groupLocalPendingMembersAdded);
-    }
-
-    // Perform the needed computation for allKnownContactsChanged
-    computeKnownContactsChanges(groupMembersAdded,
-            groupLocalPendingMembersAdded, groupRemotePendingMembersAdded,
-            groupMembersRemoved, details);
-}
-
-void ContactManager::Roster::onDenyChannelMembersChanged(
-        const Contacts &groupMembersAdded,
-        const Contacts &groupLocalPendingMembersAdded,
-        const Contacts &groupRemotePendingMembersAdded,
-        const Contacts &groupMembersRemoved,
-        const Channel::GroupMemberChangeDetails &details)
-{
-    if (!groupLocalPendingMembersAdded.isEmpty()) {
-        warning() << "Found local pending contacts on deny list";
-    }
-
-    if (!groupRemotePendingMembersAdded.isEmpty()) {
-        warning() << "Found remote pending contacts on deny list";
-    }
-
-    foreach (ContactPtr contact, groupMembersAdded) {
-        debug() << "Contact" << contact->id() << "added to deny list";
-        contact->setBlocked(true);
-    }
-
-    foreach (ContactPtr contact, groupMembersRemoved) {
-        debug() << "Contact" << contact->id() << "removed from deny list";
-        contact->setBlocked(false);
-    }
-
-    // Perform the needed computation for allKnownContactsChanged
-    computeKnownContactsChanges(groupMembersAdded, Contacts(),
-            Contacts(), groupMembersRemoved, details);
-}
-
-void ContactManager::Roster::onContactListGroupMembersChanged(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details)
-{
-    ChannelPtr contactListGroupChannel = ChannelPtr(
-            qobject_cast<Channel*>(sender()));
-    QString id = contactListGroupChannel->immutableProperties().value(
-            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
-
-    foreach (const ContactPtr &contact, groupMembersAdded) {
-        contact->setAddedToGroup(id);
-    }
-    foreach (const ContactPtr &contact, groupMembersRemoved) {
-        contact->setRemovedFromGroup(id);
-    }
-
-    emit contactManager->groupMembersChanged(id, groupMembersAdded,
-            groupMembersRemoved, details);
 }
 
 void ContactManager::Roster::introspectContactBlocking()

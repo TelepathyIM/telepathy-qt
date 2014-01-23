@@ -116,51 +116,10 @@ private Q_SLOTS:
     void onModifyFinished(Tp::PendingOperation *op);
     void onModifyFinishSignaled();
 
-    void gotContactListChannelHandle(Tp::PendingOperation *op);
-    void gotContactListChannel(Tp::PendingOperation *op);
-    void onContactListChannelReady();
-
     void gotContactListGroupsProperties(Tp::PendingOperation *op);
     void onContactListContactsUpgraded(Tp::PendingOperation *op);
 
-    void onNewChannels(const Tp::ChannelDetailsList &channelDetailsList);
-    void onContactListGroupChannelReady(Tp::PendingOperation *op);
-    void gotChannels(QDBusPendingCallWatcher *watcher);
-
-    void onStoredChannelMembersChanged(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-    void onSubscribeChannelMembersChanged(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-    void onPublishChannelMembersChanged(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-    void onDenyChannelMembersChanged(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-
-    void onContactListGroupMembersChanged(
-        const Tp::Contacts &groupMembersAdded,
-        const Tp::Contacts &groupLocalPendingMembersAdded,
-        const Tp::Contacts &groupRemotePendingMembersAdded,
-        const Tp::Contacts &groupMembersRemoved,
-        const Tp::Channel::GroupMemberChangeDetails &details);
-
 private:
-    struct ChannelInfo;
     struct BlockedContactsChangedInfo;
     struct UpdateInfo;
     struct GroupsUpdateInfo;
@@ -182,9 +141,6 @@ private:
     void processFinishedModify();
     PendingOperation *queuedFinishVoid(const QDBusPendingCall &call);
     void updateContactsPresenceState();
-    void computeKnownContactsChanges(const Contacts &added,
-            const Contacts &pendingAdded, const Contacts &remotePendingAdded,
-            const Contacts &removed, const Channel::GroupMemberChangeDetails &details);
 
     ContactManager *contactManager;
 
@@ -298,19 +254,6 @@ public:
 
 private:
     QString errorName, errorMessage;
-};
-
-class TP_QT_NO_EXPORT ContactManager::Roster::RemoveGroupOp : public PendingOperation
-{
-    Q_OBJECT
-
-public:
-    RemoveGroupOp(const ChannelPtr &channel);
-    ~RemoveGroupOp() {};
-
-private Q_SLOTS:
-    void onContactsRemoved(Tp::PendingOperation *);
-    void onChannelClosed(Tp::PendingOperation *);
 };
 
 class TP_QT_NO_EXPORT ContactManager::PendingRefreshContactInfo : public PendingOperation
