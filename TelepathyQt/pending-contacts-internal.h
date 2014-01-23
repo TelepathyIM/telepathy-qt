@@ -101,7 +101,7 @@ private Q_SLOTS:
 
 private:
     ConnectionPtr mConnection;
-    QSet<QDBusPendingCallWatcher*> pendingCalls;
+    QSet<QDBusPendingCallWatcher*> mPendingCalls;
     UIntList mValidHandles;
     QStringList mIdentifiers;
     ContactAttributesMap mAttributes;

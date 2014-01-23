@@ -1248,7 +1248,7 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
     Client::ConnectionInterfacePresence1Interface *simplePresenceInterface =
         conn->interface<Client::ConnectionInterfacePresence1Interface>();
     return new PendingVoid(
-            simplePresenceInterface->SetPresence(status, statusMessage), conn);
+            simplePresenceInterface->SetSimplePresence(status, statusMessage), conn);
 }
 
 /**
