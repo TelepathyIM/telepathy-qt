@@ -158,8 +158,6 @@ private Q_SLOTS:
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
-    void onContactListGroupRemoved(Tp::DBusProxy *proxy,
-        const QString &errorName, const QString &errorMessage);
 
 private:
     struct ChannelInfo;
@@ -183,15 +181,10 @@ private:
     void processContactListGroupsRemoved();
     void processFinishedModify();
     PendingOperation *queuedFinishVoid(const QDBusPendingCall &call);
-    void setContactListChannelsReady();
-    void updateContactsBlockState();
     void updateContactsPresenceState();
     void computeKnownContactsChanges(const Contacts &added,
             const Contacts &pendingAdded, const Contacts &remotePendingAdded,
             const Contacts &removed, const Channel::GroupMemberChangeDetails &details);
-    void checkContactListGroupsReady();
-    void setContactListGroupChannelsReady();
-    QString addContactListGroupChannel(const ChannelPtr &contactListGroupChannel);
 
     ContactManager *contactManager;
 
@@ -225,21 +218,6 @@ private:
     QHash<PendingOperation * /* actual */, ModifyFinishOp *> returnedModifyOps;
     QQueue<ModifyFinishOp *> modifyFinishQueue;
 
-    // old roster API
-    uint contactListChannelsReady;
-    QHash<uint, ChannelInfo> contactListChannels;
-    ChannelPtr subscribeChannel;
-    ChannelPtr publishChannel;
-    ChannelPtr storedChannel;
-    ChannelPtr denyChannel;
-
-    // Number of things left to do before the Groups feature is ready
-    // 1 for Get("Channels") + 1 per channel not ready
-    uint featureContactListGroupsTodo;
-    QList<ChannelPtr> pendingContactListGroupChannels;
-    QHash<QString, ChannelPtr> contactListGroupChannels;
-    QList<ChannelPtr> removedContactListGroupChannels;
-
     // If RosterGroups introspection completing should advance the ContactManager state to Success
     bool groupsSetSuccess;
 
@@ -247,34 +225,6 @@ private:
     Contacts contactListContacts;
     // Blocked contacts using the new ContactBlocking API
     Contacts blockedContacts;
-};
-
-struct TP_QT_NO_EXPORT ContactManager::Roster::ChannelInfo
-{
-    enum Type {
-        TypeSubscribe = 0,
-        TypePublish,
-        TypeStored,
-        TypeDeny,
-        LastType
-    };
-
-    ChannelInfo()
-        : type((Type) -1)
-    {
-    }
-
-    ChannelInfo(Type type)
-        : type(type)
-    {
-    }
-
-    static QString identifierForType(Type type);
-    static uint typeForIdentifier(const QString &identifier);
-
-    Type type;
-    uint handle;
-    ChannelPtr channel;
 };
 
 struct TP_QT_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInfo

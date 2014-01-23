@@ -56,7 +56,6 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
       groupsReintrospectionRequired(false),
       contactListGroupPropertiesReceived(false),
       processingContactListChanges(false),
-      featureContactListGroupsTodo(0),
       groupsSetSuccess(false)
 {
 }
@@ -141,11 +140,6 @@ PendingOperation *ContactManager::Roster::introspectGroups()
 
 void ContactManager::Roster::reset()
 {
-    subscribeChannel.reset();
-    publishChannel.reset();
-    storedChannel.reset();
-    denyChannel.reset();
-    removedContactListGroupChannels.clear();
 }
 
 Contacts ContactManager::Roster::allKnownContacts() const
@@ -381,11 +375,7 @@ PendingOperation *ContactManager::Roster::removeContacts(
 
 bool ContactManager::Roster::canBlockContacts() const
 {
-    if (hasContactBlockingInterface) {
-        return true;
-    } else {
-        return (bool) denyChannel;
-    }
+    return hasContactBlockingInterface;
 }
 
 bool ContactManager::Roster::canReportAbuse() const
@@ -406,8 +396,8 @@ PendingOperation *ContactManager::Roster::blockContacts(
                 contactManager->connection());
     }
 
+    ConnectionPtr conn(contactManager->connection());
     if (hasContactBlockingInterface) {
-        ConnectionPtr conn(contactManager->connection());
         Client::ConnectionInterfaceContactBlocking1Interface *iface =
             conn->interface<Client::ConnectionInterfaceContactBlocking1Interface>();
 
@@ -424,19 +414,9 @@ PendingOperation *ContactManager::Roster::blockContacts(
         }
 
     } else {
-        ConnectionPtr conn(contactManager->connection());
-
-        if (!denyChannel) {
-            return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
-                    QLatin1String("Cannot block contacts on this protocol"),
-                    conn);
-        }
-
-        if (value) {
-            return denyChannel->groupAddContacts(contacts);
-        } else {
-            return denyChannel->groupRemoveContacts(contacts);
-        }
+        return new PendingFailure(TP_QT_ERROR_NOT_IMPLEMENTED,
+                QLatin1String("Cannot block contacts on this protocol"),
+                conn);
     }
 }
 
@@ -1115,25 +1095,6 @@ void ContactManager::Roster::onContactListGroupMembersChanged(
             groupMembersRemoved, details);
 }
 
-void ContactManager::Roster::onContactListGroupRemoved(Tp::DBusProxy *proxy,
-        const QString &errorName, const QString &errorMessage)
-{
-    Q_UNUSED(errorName);
-    Q_UNUSED(errorMessage);
-
-    // Is it correct to assume that if an user-defined contact list
-    // gets invalidated it means it was removed? Spec states that if a
-    // user-defined contact list gets closed it was removed, and Channel
-    // invalidates itself when it gets closed.
-    ChannelPtr contactListGroupChannel = ChannelPtr(qobject_cast<Channel*>(proxy));
-    QString id = contactListGroupChannel->immutableProperties().value(
-            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID")).toString();
-    contactListGroupChannels.remove(id);
-    removedContactListGroupChannels.append(contactListGroupChannel);
-    disconnect(contactListGroupChannel.data(), 0, 0, 0);
-    emit contactManager->groupRemoved(id);
-}
-
 void ContactManager::Roster::introspectContactBlocking()
 {
     debug() << "Requesting ContactBlockingCapabilities property";
@@ -1386,77 +1347,6 @@ void ContactManager::Roster::onModifyFinishSignaled()
 {
     processingContactListChanges = false;
     processContactListChanges();
-}
-
-void ContactManager::Roster::updateContactsBlockState()
-{
-    Q_ASSERT(!hasContactBlockingInterface);
-
-    if (!denyChannel) {
-        return;
-    }
-
-    Contacts denyContacts = denyChannel->groupContacts();
-    foreach (const ContactPtr &contact, denyContacts) {
-        contact->setBlocked(true);
-    }
-}
-
-void ContactManager::Roster::checkContactListGroupsReady()
-{
-    if (featureContactListGroupsTodo != 0) {
-        return;
-    }
-
-    if (groupsSetSuccess) {
-        Q_ASSERT(contactManager->state() != ContactListStateSuccess);
-
-        if (introspectGroupsPendingOp) {
-            // Will emit stateChanged() signal when the op is finished in idle
-            // callback. This is to ensure FeatureRosterGroups is marked ready.
-            connect(introspectGroupsPendingOp,
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(setStateSuccess()));
-        } else {
-            setStateSuccess();
-        }
-
-        groupsSetSuccess = false;
-    }
-
-    setContactListGroupChannelsReady();
-    if (introspectGroupsPendingOp) {
-        introspectGroupsPendingOp->setFinished();
-        introspectGroupsPendingOp = 0;
-    }
-    pendingContactListGroupChannels.clear();
-}
-
-/**** ContactManager::Roster::ChannelInfo ****/
-QString ContactManager::Roster::ChannelInfo::identifierForType(Type type)
-{
-    static QString identifiers[LastType] = {
-        QLatin1String("subscribe"),
-        QLatin1String("publish"),
-        QLatin1String("stored"),
-        QLatin1String("deny"),
-    };
-    return identifiers[type];
-}
-
-uint ContactManager::Roster::ChannelInfo::typeForIdentifier(const QString &identifier)
-{
-    static QHash<QString, uint> types;
-    if (types.isEmpty()) {
-        types.insert(QLatin1String("subscribe"), TypeSubscribe);
-        types.insert(QLatin1String("publish"), TypePublish);
-        types.insert(QLatin1String("stored"), TypeStored);
-        types.insert(QLatin1String("deny"), TypeDeny);
-    }
-    if (types.contains(identifier)) {
-        return types[identifier];
-    }
-    return (uint) -1;
 }
 
 /**** ContactManager::Roster::ModifyFinishOp ****/
