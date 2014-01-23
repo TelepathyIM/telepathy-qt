@@ -200,9 +200,6 @@ protected Q_SLOTS:
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotChannelType(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotHandle(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotInterfaces(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void onClosed();
 
     TP_QT_NO_EXPORT void onConnectionReady(Tp::PendingOperation *op);
@@ -212,10 +209,6 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void gotContacts(Tp::PendingOperation *op);
 
     TP_QT_NO_EXPORT void onGroupFlagsChanged(uint added, uint removed);
-    TP_QT_NO_EXPORT void onMembersChanged(const QString &message,
-            const Tp::UIntList &added, const Tp::UIntList &removed,
-            const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
-            uint actor, uint reason);
     TP_QT_NO_EXPORT void onMembersChanged(
             const Tp::UIntList &added, const Tp::UIntList &removed,
             const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
