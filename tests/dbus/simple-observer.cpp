@@ -20,8 +20,8 @@
 #include <TelepathyQt/SimpleCallObserver>
 #include <TelepathyQt/SimpleObserver>
 #include <TelepathyQt/SimpleTextObserver>
-#include <TelepathyQt/StreamedMediaChannel>
 #include <TelepathyQt/TextChannel>
+#include <TelepathyQt/CallChannel>
 #include <TelepathyQt/Types>
 
 #include <telepathy-glib/cm-message.h>
@@ -52,10 +52,10 @@ QList<ChannelPtr> channels(const QList<TextChannelPtr> &channels)
     return ret;
 }
 
-QList<ChannelPtr> channels(const QList<StreamedMediaChannelPtr> &channels)
+QList<ChannelPtr> channels(const QList<CallChannelPtr> &channels)
 {
     QList<ChannelPtr> ret;
-    Q_FOREACH (const StreamedMediaChannelPtr &channel, channels) {
+    Q_FOREACH (const CallChannelPtr &channel, channels) {
         ret << channel;
     }
     return ret;
@@ -152,10 +152,10 @@ protected Q_SLOTS:
     void onObserverNewChannels(const QList<Tp::ChannelPtr> &channels);
     void onObserverChannelInvalidated(const Tp::ChannelPtr &channel,
             const QString &errorName, const QString &errorMessage);
-    void onObserverStreamedMediaCallStarted(
-            const Tp::StreamedMediaChannelPtr &channel);
-    void onObserverStreamedMediaCallEnded(
-            const Tp::StreamedMediaChannelPtr &channel,
+    void onObserverCallStarted(
+            const Tp::CallChannelPtr &channel);
+    void onObserverCallEnded(
+            const Tp::CallChannelPtr &channel,
             const QString &errorMessage, const QString &errorName);
 
 private Q_SLOTS:
@@ -192,7 +192,7 @@ private:
     TextChannelPtr mTextChans[2];
 
     ExampleCallableMediaChannel *mCallableChanServices[2];
-    StreamedMediaChannelPtr mSMChans[2];
+    CallChannelPtr mCallChans[2];
 
     int mChannelsCount;
     int mSMChannelsCount;
@@ -211,14 +211,14 @@ void TestSimpleObserver::onObserverChannelInvalidated(const Tp::ChannelPtr &chan
     mChannelsCount -= 1;
 }
 
-void TestSimpleObserver::onObserverStreamedMediaCallStarted(
-        const Tp::StreamedMediaChannelPtr &channel)
+void TestSimpleObserver::onObserverCallStarted(
+        const Tp::CallChannelPtr &channel)
 {
     QVERIFY(!channel.isNull());
     mSMChannelsCount++;
 }
 
-void TestSimpleObserver::onObserverStreamedMediaCallEnded(const Tp::StreamedMediaChannelPtr &channel,
+void TestSimpleObserver::onObserverCallEnded(const Tp::CallChannelPtr &channel,
         const QString &errorMessage, const QString &errorName)
 {
     QVERIFY(!channel.isNull());
@@ -341,8 +341,8 @@ void TestSimpleObserver::initTestCase()
 
         immutableProperties.clear();
         immutableProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), mContacts[i]);
-        mSMChans[i] = StreamedMediaChannel::create(conn, callableChanPath, immutableProperties);
-        QVERIFY(connect(mSMChans[i]->becomeReady(),
+        mCallChans[i] = CallChannel::create(conn, callableChanPath, immutableProperties);
+        QVERIFY(connect(mCallChans[i]->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
         QCOMPARE(mLoop->exec(), 0);
@@ -446,7 +446,7 @@ void TestSimpleObserver::testObserverRegistration()
             QCOMPARE(callObserver->account(), acc);
             QCOMPARE(callObserver->contactIdentifier(), contact);
             QCOMPARE(callObserver->direction(), SimpleCallObserver::CallDirectionBoth);
-            QVERIFY(callObserver->streamedMediaCalls().isEmpty());
+            QVERIFY(callObserver->calls().isEmpty());
             callObservers.append(callObserver);
             QCOMPARE(ourObservers().size(), numRegisteredObservers);
 
@@ -461,7 +461,7 @@ void TestSimpleObserver::testObserverRegistration()
             QCOMPARE(callObserver->account(), acc);
             QCOMPARE(callObserver->contactIdentifier(), contact);
             QCOMPARE(callObserver->direction(), SimpleCallObserver::CallDirectionIncoming);
-            QVERIFY(callObserver->streamedMediaCalls().isEmpty());
+            QVERIFY(callObserver->calls().isEmpty());
             callObservers.append(callObserver);
             QCOMPARE(ourObservers().size(), numRegisteredObservers);
         }
@@ -545,12 +545,12 @@ void TestSimpleObserver::testCrossTalk()
                 // only call ObserveChannels for SM channels on observers that support SM channels
                 if (spec.isSubsetOf(ChannelClassSpec::mediaCall())) {
                     ChannelDetails smChan = {
-                        QDBusObjectPath(mSMChans[i]->objectPath()),
-                        mSMChans[i]->immutableProperties()
+                        QDBusObjectPath(mCallChans[i]->objectPath()),
+                        mCallChans[i]->immutableProperties()
                     };
                     observerIface->ObserveChannels(
                             QDBusObjectPath(mAccounts[i]->objectPath()),
-                            QDBusObjectPath(mSMChans[i]->connection()->objectPath()),
+                            QDBusObjectPath(mCallChans[i]->connection()->objectPath()),
                             ChannelDetailsList() << smChan,
                             QDBusObjectPath(QLatin1String("/")),
                             Tp::ObjectPathList(),
@@ -569,10 +569,10 @@ void TestSimpleObserver::testCrossTalk()
            textObservers[1]->textChats().isEmpty() ||
            textObserversNoContact[0]->textChats().isEmpty() ||
            textObserversNoContact[1]->textChats().isEmpty() ||
-           callObservers[0]->streamedMediaCalls().isEmpty() ||
-           callObservers[1]->streamedMediaCalls().isEmpty() ||
-           callObserversNoContact[0]->streamedMediaCalls().isEmpty() ||
-           callObserversNoContact[1]->streamedMediaCalls().isEmpty()) {
+           callObservers[0]->calls().isEmpty() ||
+           callObservers[1]->calls().isEmpty() ||
+           callObserversNoContact[0]->calls().isEmpty() ||
+           callObserversNoContact[1]->calls().isEmpty()) {
         mLoop->processEvents();
     }
 
@@ -582,37 +582,37 @@ void TestSimpleObserver::testCrossTalk()
     QCOMPARE(observers[0]->channels().size(), 1);
     QCOMPARE(textObservers[0]->textChats().size(), 1);
     QCOMPARE(textObserversNoContact[0]->textChats().size(), 1);
-    QCOMPARE(callObservers[0]->streamedMediaCalls().size(), 1);
-    QCOMPARE(callObserversNoContact[0]->streamedMediaCalls().size(), 1);
+    QCOMPARE(callObservers[0]->calls().size(), 1);
+    QCOMPARE(callObserversNoContact[0]->calls().size(), 1);
     QCOMPARE(observers[1]->channels().size(), 1);
     QCOMPARE(textObservers[1]->textChats().size(), 1);
     QCOMPARE(textObserversNoContact[1]->textChats().size(), 1);
-    QCOMPARE(callObservers[1]->streamedMediaCalls().size(), 1);
-    QCOMPARE(callObserversNoContact[1]->streamedMediaCalls().size(), 1);
+    QCOMPARE(callObservers[1]->calls().size(), 1);
+    QCOMPARE(callObserversNoContact[1]->calls().size(), 1);
 
     QVERIFY(textObservers[0]->textChats() != textObservers[1]->textChats());
     QVERIFY(textObserversNoContact[0]->textChats() != textObserversNoContact[1]->textChats());
     QCOMPARE(textObservers[0]->textChats(), textObserversNoContact[0]->textChats());
     QCOMPARE(textObservers[1]->textChats(), textObserversNoContact[1]->textChats());
 
-    QVERIFY(callObservers[0]->streamedMediaCalls() != callObservers[1]->streamedMediaCalls());
-    QVERIFY(callObservers[0]->streamedMediaCalls() != callObserversNoContact[1]->streamedMediaCalls());
-    QCOMPARE(callObservers[0]->streamedMediaCalls(), callObserversNoContact[0]->streamedMediaCalls());
-    QCOMPARE(callObservers[1]->streamedMediaCalls(), callObserversNoContact[1]->streamedMediaCalls());
+    QVERIFY(callObservers[0]->calls() != callObservers[1]->calls());
+    QVERIFY(callObservers[0]->calls() != callObserversNoContact[1]->calls());
+    QCOMPARE(callObservers[0]->calls(), callObserversNoContact[0]->calls());
+    QCOMPARE(callObservers[1]->calls(), callObserversNoContact[1]->calls());
 
     QCOMPARE(observers[0]->channels(), channels(textObservers[0]->textChats()));
     QVERIFY(observers[0]->channels() != channels(textObservers[1]->textChats()));
-    QVERIFY(observers[0]->channels() != channels(callObservers[0]->streamedMediaCalls()));
-    QVERIFY(observers[0]->channels() != channels(callObservers[1]->streamedMediaCalls()));
+    QVERIFY(observers[0]->channels() != channels(callObservers[0]->calls()));
+    QVERIFY(observers[0]->channels() != channels(callObservers[1]->calls()));
     QVERIFY(observers[1]->channels() != channels(textObservers[0]->textChats()));
     QCOMPARE(observers[1]->channels(), channels(textObservers[1]->textChats()));
-    QVERIFY(observers[1]->channels() != channels(callObservers[0]->streamedMediaCalls()));
-    QVERIFY(observers[1]->channels() != channels(callObservers[1]->streamedMediaCalls()));
+    QVERIFY(observers[1]->channels() != channels(callObservers[0]->calls()));
+    QVERIFY(observers[1]->channels() != channels(callObservers[1]->calls()));
 
-    QVERIFY(channels(callObservers[0]->streamedMediaCalls()) != channels(textObservers[0]->textChats()));
-    QVERIFY(channels(callObservers[0]->streamedMediaCalls()) != channels(textObservers[1]->textChats()));
-    QVERIFY(channels(callObservers[1]->streamedMediaCalls()) != channels(textObservers[0]->textChats()));
-    QVERIFY(channels(callObservers[1]->streamedMediaCalls()) != channels(textObservers[1]->textChats()));
+    QVERIFY(channels(callObservers[0]->calls()) != channels(textObservers[0]->textChats()));
+    QVERIFY(channels(callObservers[0]->calls()) != channels(textObservers[1]->textChats()));
+    QVERIFY(channels(callObservers[1]->calls()) != channels(textObservers[0]->textChats()));
+    QVERIFY(channels(callObservers[1]->calls()) != channels(textObservers[1]->textChats()));
 
     QCOMPARE(observers[0]->channels().first()->objectPath(), mTextChans[0]->objectPath());
     QCOMPARE(observers[1]->channels().first()->objectPath(), mTextChans[1]->objectPath());
@@ -620,8 +620,8 @@ void TestSimpleObserver::testCrossTalk()
     QCOMPARE(textObservers[1]->textChats().first()->objectPath(), mTextChans[1]->objectPath());
     QCOMPARE(textObserversNoContact[0]->textChats().first()->objectPath(), mTextChans[0]->objectPath());
     QCOMPARE(textObserversNoContact[1]->textChats().first()->objectPath(), mTextChans[1]->objectPath());
-    QCOMPARE(callObservers[0]->streamedMediaCalls().first()->objectPath(), mSMChans[0]->objectPath());
-    QCOMPARE(callObservers[1]->streamedMediaCalls().first()->objectPath(), mSMChans[1]->objectPath());
+    QCOMPARE(callObservers[0]->calls().first()->objectPath(), mCallChans[0]->objectPath());
+    QCOMPARE(callObservers[1]->calls().first()->objectPath(), mCallChans[1]->objectPath());
 
     // invalidate channels
     for (int i = 0; i < 2; ++i) {
@@ -642,10 +642,10 @@ void TestSimpleObserver::testCrossTalk()
            !textObservers[1]->textChats().isEmpty() ||
            !textObserversNoContact[0]->textChats().isEmpty() ||
            !textObserversNoContact[1]->textChats().isEmpty() ||
-           !callObservers[0]->streamedMediaCalls().isEmpty() ||
-           !callObservers[1]->streamedMediaCalls().isEmpty() ||
-           !callObserversNoContact[0]->streamedMediaCalls().isEmpty() ||
-           !callObserversNoContact[1]->streamedMediaCalls().isEmpty()) {
+           !callObservers[0]->calls().isEmpty() ||
+           !callObservers[1]->calls().isEmpty() ||
+           !callObserversNoContact[0]->calls().isEmpty() ||
+           !callObserversNoContact[1]->calls().isEmpty()) {
         mLoop->processEvents();
     }
 
@@ -682,7 +682,7 @@ void TestSimpleObserver::cleanupTestCase()
         mConns[i].conn.reset();
 
         mTextChans[i].reset();
-        mSMChans[i].reset();
+        mCallChans[i].reset();
 
         if (mMessagesChanServices[i] != 0) {
             g_object_unref(mMessagesChanServices[i]);
