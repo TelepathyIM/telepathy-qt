@@ -253,7 +253,7 @@ void TestContactsAvatar::testRequestAvatars()
                         SLOT(onAvatarDataChanged(const Tp::AvatarData &))));
 
         tp_tests_contacts_connection_change_avatar_data(
-                TP_TESTS_CONTACTS_CONNECTION(mConn->service()), contact->handle()[0],
+                TP_TESTS_CONTACTS_CONNECTION(mConn->service()), contact->handle(),
                 array, avatarMimeType, contactAvatarToken.toLatin1().constData(),
                 (i % 2));
     }

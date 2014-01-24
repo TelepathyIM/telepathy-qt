@@ -249,7 +249,7 @@ void TestConnIntrospectCornercases::testSelfHandleChangeWhileBuilding()
                 SLOT(quit())));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->selfContact()->id(), QString::fromLatin1("myself@example.com"));
-    QCOMPARE(mConn->selfContact()->handle()[0], mConn->selfHandle());
+    QCOMPARE(mConn->selfContact()->handle(), mConn->selfHandle());
 
     // Change the self handle yet again, which should cause a self handle and self contact change to be signalled
     // (in that order)
@@ -269,7 +269,7 @@ void TestConnIntrospectCornercases::testSelfHandleChangeWhileBuilding()
     // (exiting the mainloop)
     QCOMPARE(mNumSelfHandleChanged, 1);
     QCOMPARE(mConn->selfContact()->id(), QString::fromLatin1("irene@example.com"));
-    QCOMPARE(mConn->selfContact()->handle()[0], mConn->selfHandle());
+    QCOMPARE(mConn->selfContact()->handle(), mConn->selfHandle());
 
     // Last but not least, try two consequtive changes
     tp_tests_simple_connection_set_identifier(simpleConnService, "me@example.com");

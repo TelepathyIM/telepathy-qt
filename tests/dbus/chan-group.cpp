@@ -184,7 +184,7 @@ void TestChanGroup::testCreateChannel()
     QVERIFY(mChan->groupContacts().contains(mContacts.first()));
 
     Q_FOREACH (ContactPtr contact, mChan->groupContacts())
-        mInitialMembers.push_back(contact->handle()[0]);
+        mInitialMembers.push_back(contact->handle());
 
     QCOMPARE(mChan->groupFlags(), ChannelGroupFlagCanAdd | ChannelGroupFlagCanRemove |
             ChannelGroupFlagProperties | ChannelGroupFlagMembersChangedDetailed);
@@ -282,7 +282,7 @@ void TestChanGroup::commonTest(gboolean properties)
     QVERIFY(mChan->groupContacts().contains(mContacts.first()));
 
     Q_FOREACH (ContactPtr contact, mChan->groupContacts())
-        mInitialMembers.push_back(contact->handle()[0]);
+        mInitialMembers.push_back(contact->handle());
 
     QCOMPARE(mChan->groupCanAddContacts(), false);
     QCOMPARE(mChan->groupCanRemoveContacts(), false);
@@ -305,7 +305,7 @@ void TestChanGroup::commonTest(gboolean properties)
                             const Tp::Contacts &,
                             const Tp::Channel::GroupMemberChangeDetails &))));
 
-    TpIntSet *remove = tp_intset_new_containing(mContacts[0]->handle()[0]);
+    TpIntSet *remove = tp_intset_new_containing(mContacts[0]->handle());
 
     QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be a []",
                 NULL, remove, NULL, NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));

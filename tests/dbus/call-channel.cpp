@@ -298,7 +298,7 @@ void TestCallChannel::testOutgoingCall()
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   otherContact->handle()[0]);
+                   otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
                    true);
     mChan = CallChannelPtr::qObjectCast(mConn->createChannel(request));
@@ -602,7 +602,7 @@ void TestCallChannel::testHold()
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   otherContact->handle()[0]);
+                   otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
                    true);
     mChan = CallChannelPtr::qObjectCast(mConn->createChannel(request));
@@ -672,7 +672,7 @@ void TestCallChannel::testHangup()
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   otherContact->handle()[0]);
+                   otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
                    true);
     mChan = CallChannelPtr::qObjectCast(mConn->createChannel(request));
@@ -714,7 +714,7 @@ void TestCallChannel::testCallMembers()
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   otherContact->handle()[0]);
+                   otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialVideo"),
                    true);
     mChan = CallChannelPtr::qObjectCast(mConn->createChannel(request));
@@ -908,7 +908,7 @@ void TestCallChannel::testFeatureCore()
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   otherContact->handle()[0]);
+                   otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL + QLatin1String(".InitialAudio"),
                    true);
     mChan = CallChannelPtr::qObjectCast(mConn->createChannel(request));

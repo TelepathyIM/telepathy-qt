@@ -203,7 +203,7 @@ void TestContacts::testSelfContact()
     ContactPtr selfContact = mConn->selfContact();
     QVERIFY(selfContact != 0);
 
-    QCOMPARE(selfContact->handle()[0], mConn->selfHandle());
+    QCOMPARE(selfContact->handle(), mConn->selfHandle());
     QCOMPARE(selfContact->id(), QString(QLatin1String("me@example.com")));
 
     Features features = Features() << Contact::FeatureAlias <<
@@ -294,9 +294,9 @@ void TestContacts::testForHandles()
         QCOMPARE(mContacts[i]->actualFeatures(), Features());
     }
 
-    QCOMPARE(mContacts[0]->handle()[0], handles[0]);
-    QCOMPARE(mContacts[1]->handle()[0], handles[1]);
-    QCOMPARE(mContacts[2]->handle()[0], handles[3]);
+    QCOMPARE(mContacts[0]->handle(), handles[0]);
+    QCOMPARE(mContacts[1]->handle(), handles[1]);
+    QCOMPARE(mContacts[2]->handle(), handles[3]);
 
     QCOMPARE(mContacts[0]->id(), QString(QLatin1String("alice")));
     QCOMPARE(mContacts[1]->id(), QString(QLatin1String("bob")));
@@ -324,7 +324,7 @@ void TestContacts::testForHandles()
     QCOMPARE(saveContacts[2], mContacts[3]);
 
     // Check that the new contact is OK too
-    QCOMPARE(mContacts[2]->handle()[0], handles[2]);
+    QCOMPARE(mContacts[2]->handle(), handles[2]);
     QCOMPARE(mContacts[2]->id(), QString(QLatin1String("dora")));
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that
@@ -393,7 +393,7 @@ void TestContacts::testForIdentifiers()
     for (int i = 0; i < mContacts.size(); i++) {
         QVERIFY(mContacts[i] != NULL);
         QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
-        QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle()[0], NULL));
+        QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle(), NULL));
         QCOMPARE(mContacts[i]->requestedFeatures(), Features());
         QCOMPARE(mContacts[i]->actualFeatures(), Features());
     }
@@ -404,9 +404,9 @@ void TestContacts::testForIdentifiers()
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that (but
     // save their handles first)
-    Tp::UIntList saveHandles = Tp::UIntList() << mContacts[0]->handle()[0]
-        << mContacts[1]->handle()[0]
-        << mContacts[2]->handle()[0];
+    Tp::UIntList saveHandles = Tp::UIntList() << mContacts[0]->handle()
+        << mContacts[1]->handle()
+        << mContacts[2]->handle();
     mContacts.clear();
     mLoop->processEvents();
     processDBusQueue(mConn.data());
@@ -483,7 +483,7 @@ void TestContacts::testFeatures()
     // Check the contact contents
     QCOMPARE(mContacts.size(), 3);
     for (int i = 0; i < 3; i++) {
-        QCOMPARE(mContacts[i]->handle()[0], handles[i]);
+        QCOMPARE(mContacts[i]->handle(), handles[i]);
         QCOMPARE(mContacts[i]->id(), ids[i]);
         QVERIFY((features - mContacts[i]->requestedFeatures()).isEmpty());
         QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
@@ -526,7 +526,7 @@ void TestContacts::testFeatures()
 
     // Check that the attributes were updated in the Contact objects
     for (int i = 0; i < 3; i++) {
-        QCOMPARE(mContacts[i]->handle()[0], handles[i]);
+        QCOMPARE(mContacts[i]->handle(), handles[i]);
         QCOMPARE(mContacts[i]->id(), ids[i]);
         QVERIFY((features - mContacts[i]->requestedFeatures()).isEmpty());
         QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
@@ -685,7 +685,7 @@ void TestContacts::testUpgrade()
 
     // Check the contact contents
     for (int i = 0; i < 3; i++) {
-        QCOMPARE(mContacts[i]->handle()[0], handles[i]);
+        QCOMPARE(mContacts[i]->handle(), handles[i]);
         QCOMPARE(mContacts[i]->id(), ids[i]);
         QVERIFY((features - mContacts[i]->requestedFeatures()).isEmpty());
         QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
@@ -754,7 +754,7 @@ void TestContacts::testSelfContactFallback()
     ContactPtr selfContact = conn->selfContact();
     QVERIFY(selfContact != 0);
 
-    QCOMPARE(selfContact->handle()[0], conn->selfHandle());
+    QCOMPARE(selfContact->handle(), conn->selfHandle());
     QCOMPARE(selfContact->id(), QString(QLatin1String("me@example.com")));
     QCOMPARE(selfContact->alias(), QString(QLatin1String("me@example.com")));
     QVERIFY(!selfContact->isAvatarTokenKnown());

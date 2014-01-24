@@ -252,7 +252,7 @@ Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType, const T
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   target->handle()[0]);
+                   target->handle());
     return createChannel(request);
 }
 
@@ -306,7 +306,7 @@ Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType, const T
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
-                   target->handle()[0]);
+                   target->handle());
     return ensureChannel(request);
 }
 
