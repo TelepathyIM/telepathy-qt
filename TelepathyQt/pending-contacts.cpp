@@ -646,13 +646,9 @@ PendingGetContactsByID::PendingGetContactsByID(const ConnectionPtr &connection,
       mConnection(connection),
       mIdentifiers(identifiers)
 {
-
-    Client::ConnectionInterfaceContactsInterface *contactsInterface =
-        connection->interface<Client::ConnectionInterfaceContactsInterface>();
-
     Q_FOREACH(const QString &identifier, identifiers) {
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                    contactsInterface->GetContactByID(identifier, interfaces));
+                    connection->baseInterface()->GetContactByID(identifier, interfaces));
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(onGetContactByIDFinished(QDBusPendingCallWatcher*)));
         mPendingCalls.insert(watcher);

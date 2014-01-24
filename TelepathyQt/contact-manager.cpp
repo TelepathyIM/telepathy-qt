@@ -239,8 +239,7 @@ ConnectionPtr ContactManager::connection() const
  */
 Features ContactManager::supportedFeatures() const
 {
-    if (mPriv->supportedFeatures.isEmpty() &&
-        connection()->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
+    if (mPriv->supportedFeatures.isEmpty()) {
         Features allFeatures = Features()
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
@@ -252,7 +251,7 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureRosterGroups
             << Contact::FeatureAddresses
             << Contact::FeatureClientTypes;
-        QStringList interfaces = connection()->lowlevel()->contactAttributeInterfaces();
+        QStringList interfaces = connection()->interfaces();
         foreach (const Feature &feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
                 mPriv->supportedFeatures.insert(feature);

@@ -209,7 +209,6 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void gotInterfaces(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotSelfHandle(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotCapabilities(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotStatuses(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotSelfContact(Tp::PendingOperation *op);
 
@@ -228,6 +227,7 @@ private:
     friend class PendingConnect;
     friend class PendingContactAttributes;
     friend class PendingContacts;
+    friend class PendingGetContactsByID;
 
     struct Private;
     friend struct Private;

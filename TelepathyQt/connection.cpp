@@ -67,7 +67,6 @@ struct TP_QT_NO_EXPORT Connection::Private
 
     static void introspectMain(Private *self);
     void introspectCapabilities();
-    void introspectContactAttributeInterfaces();
     static void introspectSelfContact(Private *self);
     static void introspectSimplePresence(Private *self);
     static void introspectRoster(Private *self);
@@ -128,7 +127,6 @@ struct TP_QT_NO_EXPORT Connection::Private
     bool introspectingSelfContact;
     bool reintrospectSelfContactRequired;
     ContactPtr selfContact;
-    QStringList contactAttributeInterfaces;
 
     // FeatureSimplePresence
     StatusSpecMap simplePresenceStatuses;
@@ -217,7 +215,7 @@ Connection::Private::Private(Connection *parent,
     ReadinessHelper::Introspectable introspectableRoster(
         QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
-        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS,          // dependsOnInterfaces
+        QStringList(), // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectRoster,
         this);
     introspectables[FeatureRoster] = introspectableRoster;
@@ -330,20 +328,6 @@ void Connection::Private::introspectCapabilities()
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotCapabilities(QDBusPendingCallWatcher*)));
-}
-
-void Connection::Private::introspectContactAttributeInterfaces()
-{
-    debug() << "Retrieving contact attribute interfaces";
-    QDBusPendingCall call =
-        properties->Get(
-                TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS,
-                QLatin1String("ContactAttributeInterfaces"));
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(call, parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotContactAttributeInterfaces(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectSelfContact(Connection::Private *self)
@@ -1431,11 +1415,6 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
                 &Private::introspectCapabilities);
     }
 
-    if (hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
-        mPriv->introspectMainQueue.enqueue(
-                &Private::introspectContactAttributeInterfaces);
-    }
-
     mPriv->continueMainIntrospection();
 
     watcher->deleteLater();
@@ -1508,25 +1487,6 @@ void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Getting capabilities failed with " <<
             reply.error().name() << ": " << reply.error().message();
         // let's not fail if retrieving capabilities fail
-    }
-
-    mPriv->continueMainIntrospection();
-
-    watcher->deleteLater();
-}
-
-void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QDBusVariant> reply = *watcher;
-
-    if (!reply.isError()) {
-        debug() << "Got contact attribute interfaces";
-        mPriv->contactAttributeInterfaces = qdbus_cast<QStringList>(reply.value().variant());
-    } else {
-        warning().nospace() << "Getting contact attribute interfaces failed with " <<
-            reply.error().name() << ": " << reply.error().message();
-        // let's not fail if retrieving contact attribute interfaces fail
-        // TODO should we remove Contacts interface from interfaces?
     }
 
     mPriv->continueMainIntrospection();
@@ -1861,7 +1821,7 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
 /**
  * Requests attributes for contacts. Optionally, the handles of the contacts
  * will be referenced automatically. Essentially, this method wraps
- * ConnectionInterfaceContactsInterface::GetContactAttributes(), integrating it
+ * Connection::GetContactAttributes(), integrating it
  * with the rest of the handle-referencing machinery.
  *
  * This is very low-level API the Contact/ContactManager API provides a higher level of abstraction
@@ -1872,12 +1832,6 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  * the parameters with which the call was made and a signal to connect to to get
  * notification of the request finishing processing. See the documentation for
  * that class for more info.
- *
- * If the remote object doesn't support the Contacts interface (as signified by
- * the list returned by interfaces() not containing
- * #TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS), the returned
- * PendingContactAttributes instance will fail instantly with the error
- * #TP_QT_ERROR_NOT_IMPLEMENTED.
  *
  * Similarly, if the connection isn't both connected and ready
  * (<code>status() == ConnectionStatusConnected && isReady(Connection::FeatureCore)</code>),
@@ -1921,41 +1875,13 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &
         pending->failImmediately(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection isn't Connected"));
         return pending;
-    } else if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
-        warning() << "ConnectionLowlevel::contactAttributes() used without the remote object supporting"
-                  << "the Contacts interface";
-        pending->failImmediately(TP_QT_ERROR_NOT_IMPLEMENTED,
-                QLatin1String("The connection doesn't support the Contacts interface"));
-        return pending;
     }
 
-    Client::ConnectionInterfaceContactsInterface *contactsInterface =
-        conn->interface<Client::ConnectionInterfaceContactsInterface>();
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(contactsInterface->GetContactAttributes(handles, interfaces,
-                    reference));
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                conn->baseInterface()->GetContactAttributes(handles, interfaces, reference));
     pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
     return pending;
-}
-
-QStringList ConnectionLowlevel::contactAttributeInterfaces() const
-{
-    if (!isValid()) {
-        warning() << "ConnectionLowlevel::contactAttributeInterfaces() called for a destroyed Connection";
-        return QStringList();
-    }
-
-    ConnectionPtr conn(connection());
-    if (conn->mPriv->pendingStatus != ConnectionStatusConnected) {
-        warning() << "ConnectionLowlevel::contactAttributeInterfaces() used with status"
-            << conn->status() << "!= ConnectionStatusConnected";
-    } else if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACTS)) {
-        warning() << "ConnectionLowlevel::contactAttributeInterfaces() used without the remote object supporting"
-                  << "the Contacts interface";
-    }
-
-    return conn->mPriv->contactAttributeInterfaces;
 }
 
 void ConnectionLowlevel::injectContactIds(const HandleIdentifierMap &contactIds)

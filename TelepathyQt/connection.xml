@@ -13,7 +13,6 @@
 <xi:include href="../spec/Connection_Interface_Balance1.xml"/>
 <xi:include href="../spec/Connection_Interface_Cellular1.xml"/>
 <xi:include href="../spec/Connection_Interface_Client_Types1.xml"/>
-<xi:include href="../spec/Connection_Interface_Contacts.xml"/>
 <xi:include href="../spec/Connection_Interface_Contact_Blocking1.xml"/>
 <xi:include href="../spec/Connection_Interface_Contact_Capabilities1.xml"/>
 <xi:include href="../spec/Connection_Interface_Contact_Groups1.xml"/>
