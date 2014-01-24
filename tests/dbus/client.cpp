@@ -556,7 +556,7 @@ void TestClient::testRegister()
     QVERIFY(client->isRegistered());
 
     filters.clear();
-    filters.append(ChannelClassSpec::streamedMediaCall());
+    filters.append(ChannelClassSpec::mediaCall());
     mClientObject2 = MyClient::create(filters, mClientCapabilities, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, QLatin1String("foo"), true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));

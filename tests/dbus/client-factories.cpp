@@ -619,7 +619,7 @@ void TestClientFactories::testRegister()
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
 
     filters.clear();
-    filters.append(ChannelClassSpec::streamedMediaCall());
+    filters.append(ChannelClassSpec::mediaCall());
     mClientObject2 = MyClient::create(filters, mClientCapabilities, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, QLatin1String("foo"), true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
@@ -971,9 +971,9 @@ void TestClientFactories::testChannelFactoryAccessors()
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::textChatroom()), Features());
 
     QCOMPARE(chanFact->featuresForStreamedMediaCalls(), Features());
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaCall()), Features());
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaAudioCall()), Features());
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::mediaCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::audioCall()), Features());
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::videoCall()), Features());
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCallWithAudio()), Features());
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall()), Features());
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaAudioCall()), Features());
@@ -1007,9 +1007,9 @@ void TestClientFactories::testChannelFactoryAccessors()
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::textChatroom()), commonFeatures);
 
     QCOMPARE(chanFact->featuresForStreamedMediaCalls(), commonFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaCall()), commonFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaAudioCall()), commonFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCall()), commonFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::mediaCall()), commonFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::audioCall()), commonFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::videoCall()), commonFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCallWithAudio()), commonFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall()), commonFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaAudioCall()), commonFeatures);
@@ -1091,9 +1091,9 @@ void TestClientFactories::testChannelFactoryAccessors()
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::textChatroom()), textChatroomFeatures);
 
     QCOMPARE(chanFact->featuresForStreamedMediaCalls(), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaCall()), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaAudioCall()), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::mediaCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::audioCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::videoCall()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCallWithAudio()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaAudioCall()), streamedMediaFeatures);
@@ -1118,14 +1118,14 @@ void TestClientFactories::testChannelFactoryAccessors()
 
     Features streamedMediaAudioFeatures;
     streamedMediaAudioFeatures.insert(StreamedMediaChannel::FeatureStreams);
-    chanFact->addFeaturesFor(ChannelClassSpec::streamedMediaAudioCall(),
+    chanFact->addFeaturesFor(ChannelClassSpec::audioCall(),
             streamedMediaAudioFeatures);
     streamedMediaAudioFeatures |= streamedMediaFeatures;
 
     QCOMPARE(chanFact->featuresForStreamedMediaCalls(), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaCall()), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaAudioCall()), streamedMediaAudioFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::mediaCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::audioCall()), streamedMediaAudioFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::videoCall()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCallWithAudio()), streamedMediaAudioFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaAudioCall()), streamedMediaFeatures);
@@ -1139,9 +1139,9 @@ void TestClientFactories::testChannelFactoryAccessors()
     unnamedStreamedMediaAudioFeatures |= streamedMediaFeatures;
 
     QCOMPARE(chanFact->featuresForStreamedMediaCalls(), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaCall()), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaAudioCall()), streamedMediaAudioFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::mediaCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::audioCall()), streamedMediaAudioFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::videoCall()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCallWithAudio()), streamedMediaAudioFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaAudioCall()), unnamedStreamedMediaAudioFeatures);
@@ -1157,9 +1157,9 @@ void TestClientFactories::testChannelFactoryAccessors()
     specificUnnamedStreamedMediaFeatures |= streamedMediaFeatures;
 
     QCOMPARE(chanFact->featuresForStreamedMediaCalls(), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaCall()), streamedMediaFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaAudioCall()), streamedMediaAudioFeatures);
-    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::mediaCall()), streamedMediaFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::audioCall()), streamedMediaAudioFeatures);
+    QCOMPARE(chanFact->featuresFor(ChannelClassSpec::videoCall()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::streamedMediaVideoCallWithAudio()), streamedMediaAudioFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall()), streamedMediaFeatures);
     QCOMPARE(chanFact->featuresFor(ChannelClassSpec::unnamedStreamedMediaCall(otherProps)), specificUnnamedStreamedMediaFeatures);

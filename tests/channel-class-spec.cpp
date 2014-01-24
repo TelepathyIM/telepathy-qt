@@ -43,8 +43,8 @@ void TestChannelClassSpec::testChannelClassSpecHash()
 {
     ChannelClassSpec st1 = ChannelClassSpec::textChat();
     ChannelClassSpec st2 = ChannelClassSpec::textChat();
-    ChannelClassSpec ssm1 = ChannelClassSpec::streamedMediaCall();
-    ChannelClassSpec ssm2 = ChannelClassSpec::streamedMediaCall();
+    ChannelClassSpec ssm1 = ChannelClassSpec::mediaCall();
+    ChannelClassSpec ssm2 = ChannelClassSpec::mediaCall();
 
     QCOMPARE(qHash(st1), qHash(st2));
     QCOMPARE(qHash(ssm1), qHash(ssm2));
@@ -84,13 +84,13 @@ void TestChannelClassSpec::testChannelClassSpecHash()
 
     for (int i = 0; i < 100; ++i) {
         sl1 << ChannelClassSpec::textChat() <<
-            ChannelClassSpec::streamedMediaCall() <<
+            ChannelClassSpec::mediaCall() <<
             ChannelClassSpec::unnamedTextChat();
     }
 
     ChannelClassSpec specs[3] = {
             ChannelClassSpec::textChat(),
-            ChannelClassSpec::streamedMediaCall(),
+            ChannelClassSpec::mediaCall(),
             ChannelClassSpec::unnamedTextChat()
     };
     for (int i = 0; i < 3; ++i) {
@@ -102,7 +102,7 @@ void TestChannelClassSpec::testChannelClassSpecHash()
 
     QCOMPARE(qHash(sl1), qHash(ChannelClassSpecList() <<
                 ChannelClassSpec::unnamedTextChat() <<
-                ChannelClassSpec::streamedMediaCall() <<
+                ChannelClassSpec::mediaCall() <<
                 ChannelClassSpec::textChat()));
 
     for (int i = 0; i < 1000; ++i) {

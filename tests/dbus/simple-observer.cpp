@@ -543,7 +543,7 @@ void TestSimpleObserver::testCrossTalk()
 
             Q_FOREACH (const ChannelClassSpec &spec, observerFilter) {
                 // only call ObserveChannels for SM channels on observers that support SM channels
-                if (spec.isSubsetOf(ChannelClassSpec::streamedMediaCall())) {
+                if (spec.isSubsetOf(ChannelClassSpec::mediaCall())) {
                     ChannelDetails smChan = {
                         QDBusObjectPath(mSMChans[i]->objectPath()),
                         mSMChans[i]->immutableProperties()

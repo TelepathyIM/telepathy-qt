@@ -838,7 +838,7 @@ void TestAccountChannelDispatcher::testEnsureTextChatroomCancel()
 void TestAccountChannelDispatcher::testEnsureMediaCall()
 {
     mChanPath = mConn->objectPath() + QLatin1String("/channel");
-    mChanProps = ChannelClassSpec::streamedMediaCall().allProperties();
+    mChanProps = ChannelClassSpec::mediaCall().allProperties();
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
     TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, false, false, "");
