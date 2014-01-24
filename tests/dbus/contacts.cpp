@@ -17,7 +17,6 @@
 #include <TelepathyQt/PendingVoid>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/Presence>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/Debug>
 #include <TelepathyQt/Types>
 

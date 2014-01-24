@@ -13,7 +13,6 @@
 #include <TelepathyQt/ContactFactory>
 #include <TelepathyQt/Debug>
 #include <TelepathyQt/PendingReady>
-#include <TelepathyQt/ReferencedHandles>
 
 #include <telepathy-glib/base-connection.h>
 #include <telepathy-glib/dbus.h>
