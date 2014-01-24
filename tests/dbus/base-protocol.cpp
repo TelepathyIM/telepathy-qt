@@ -242,9 +242,9 @@ void TestBaseProtocol::protocolObjectSvcSideCb(TestBaseProtocolCMPtr &cm)
 
     QStringList sl = props.value(
             TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces")).toStringList();
-    QVERIFY(sl.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING));
-    QVERIFY(sl.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS));
-    QVERIFY(sl.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE));
+    QVERIFY(sl.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1));
+    QVERIFY(sl.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1));
+    QVERIFY(sl.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1));
 
     QVERIFY(props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters")));
     ParamSpecList params = qvariant_cast<ParamSpecList>(props.value(
@@ -283,9 +283,9 @@ void TestBaseProtocol::protocolObjectSvcSideCb(TestBaseProtocolCMPtr &cm)
     //interface immutable properties should also be here
     //test only one - the rest later
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarHeight")));
     QCOMPARE(props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")).toInt(),
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarHeight")).toInt(),
         32);
 
     //methods
@@ -405,7 +405,7 @@ void TestBaseProtocol::addressingIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
 
     Tp::BaseProtocolAddressingInterfacePtr iface =
             Tp::BaseProtocolAddressingInterfacePtr::qObjectCast(
-                    protocol->interface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING));
+                    protocol->interface(TP_QT_IFACE_PROTOCOL_INTERFACE_ADDRESSING1));
     QVERIFY(iface);
 
     //properties
@@ -499,7 +499,7 @@ void TestBaseProtocol::avatarsIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
 
     Tp::BaseProtocolAvatarsInterfacePtr iface =
             Tp::BaseProtocolAvatarsInterfacePtr::qObjectCast(
-                    protocol->interface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS));
+                    protocol->interface(TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1));
     QVERIFY(iface);
 
     //avatar details property
@@ -524,9 +524,9 @@ void TestBaseProtocol::avatarsIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
     QVariantMap props = protocol->immutableProperties();
 
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".SupportedAvatarMIMETypes")));
     mimeTypes = props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".SupportedAvatarMIMETypes"))
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".SupportedAvatarMIMETypes"))
             .toStringList();
     QCOMPARE(mimeTypes.size(), 3);
     QVERIFY(mimeTypes.contains(QLatin1String("image/png")));
@@ -534,39 +534,39 @@ void TestBaseProtocol::avatarsIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
     QVERIFY(mimeTypes.contains(QLatin1String("image/gif")));
 
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarHeight")));
     QCOMPARE(props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarHeight")).toInt(),
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarHeight")).toInt(),
         32);
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarWidth")));
     QCOMPARE(props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MinimumAvatarWidth")).toInt(),
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MinimumAvatarWidth")).toInt(),
         32);
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarHeight")));
     QCOMPARE(props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarHeight")).toInt(),
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarHeight")).toInt(),
         64);
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarWidth")));
     QCOMPARE(props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".RecommendedAvatarWidth")).toInt(),
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".RecommendedAvatarWidth")).toInt(),
         64);
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarHeight")));
     QCOMPARE(props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarHeight")).toInt(),
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarHeight")).toInt(),
         96);
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarWidth")));
     QCOMPARE(props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarWidth")).toInt(),
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarWidth")).toInt(),
         96);
     QVERIFY(props.contains(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes")));
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarBytes")));
     QCOMPARE(props.value(
-        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS + QLatin1String(".MaximumAvatarBytes")).toInt(),
+        TP_QT_IFACE_PROTOCOL_INTERFACE_AVATARS1 + QLatin1String(".MaximumAvatarBytes")).toInt(),
         37748736);
 }
 
@@ -619,7 +619,7 @@ void TestBaseProtocol::presenceIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
 
     Tp::BaseProtocolPresenceInterfacePtr iface =
             Tp::BaseProtocolPresenceInterfacePtr::qObjectCast(
-                    protocol->interface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE));
+                    protocol->interface(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1));
     QVERIFY(iface);
 
     //presence interface
@@ -633,9 +633,9 @@ void TestBaseProtocol::presenceIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
 
     //immutable properties
     QVariantMap props = protocol->immutableProperties();
-    QVERIFY(props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses")));
+    QVERIFY(props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses")));
     statuses = PresenceSpecList(qvariant_cast<StatusSpecMap>(props.value(
-            TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"))));
+            TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses"))));
     QCOMPARE(statuses.size(), 4);
     QVERIFY(statuses.contains(PresenceSpec::available()));
     QVERIFY(statuses.contains(PresenceSpec::away()));

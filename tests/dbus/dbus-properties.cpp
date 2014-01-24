@@ -140,7 +140,7 @@ void TestDBusProperties::testDBusProperties()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAllProperties[QLatin1String("DisplayName")].value<QString>(), oldDisplayName);
     QVERIFY(mAllProperties[QLatin1String("Interfaces")].value<QStringList>().contains(
-                TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR));
+                TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR1));
 
     const QString newDisplayName = QLatin1String("Foo bar account");
     QVERIFY(connect(cliAccount->setPropertyDisplayName(newDisplayName),

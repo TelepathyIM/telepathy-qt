@@ -99,12 +99,12 @@ void TestManagerFile::testManagerFile()
     RequestableChannelClass ftRcc;
     ftRcc.fixedProperties.insert(
             TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
-            TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER);
+            TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1);
     ftRcc.fixedProperties.insert(
             TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
             HandleTypeContact);
     ftRcc.fixedProperties.insert(
-            TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER + QLatin1String(".ContentHashType"),
+            TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".ContentHashType"),
             FileHashTypeMD5);
     ftRcc.allowedProperties.append(
             TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"));

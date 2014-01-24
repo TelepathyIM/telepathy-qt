@@ -368,7 +368,7 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
     QVariantMap chanProps;
 
     chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".ChannelType"),
-            TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE);
+            TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1);
     chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".Requested"), requested);
     chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetHandleType"),
             static_cast<uint>(handleType));

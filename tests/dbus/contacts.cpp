@@ -187,7 +187,7 @@ void TestContacts::testSupport()
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
+                TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1));
     QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().contains(
                 QLatin1String("org.freedesktop.Telepathy.Connection.Interface.Addressing.DRAFT")));
 
