@@ -86,7 +86,7 @@ void TestTypes::initTestCase()
     QVERIFY(bus.registerService(tubeBusName));
     QVERIFY(bus.registerObject(tubePath, adaptorObject));
 
-    Client::ChannelInterfaceTubeInterface *tubeIface = new Client::ChannelInterfaceTubeInterface(
+    Client::ChannelInterfaceTube1Interface *tubeIface = new Client::ChannelInterfaceTube1Interface(
             bus, tubeBusName, tubePath, this);
     QVERIFY(waitForProperty(tubeIface->requestPropertyParameters(), &mParameters));
 }
