@@ -54,51 +54,51 @@ void TestRCCSpec::testRCCSpec()
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     QVERIFY(!spec.hasTargetHandleType());
     QCOMPARE(spec.allowedProperties().size(), 1);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels")), true);
 
     spec = RequestableChannelClassSpec::conferenceTextChatWithInvitees();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     QVERIFY(!spec.hasTargetHandleType());
     QCOMPARE(spec.allowedProperties().size(), 2);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialInviteeHandles")), true);
 
     spec = RequestableChannelClassSpec::conferenceTextChatroom();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     QCOMPARE(spec.targetHandleType(), HandleTypeRoom);
     QCOMPARE(spec.allowedProperties().size(), 1);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels")), true);
 
     spec = RequestableChannelClassSpec::conferenceTextChatroomWithInvitees();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     QCOMPARE(spec.targetHandleType(), HandleTypeRoom);
     QCOMPARE(spec.allowedProperties().size(), 2);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialChannels")), true);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE + QLatin1String(".InitialInviteeHandles")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialInviteeHandles")), true);
 
     spec = RequestableChannelClassSpec::contactSearch();
-    QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+    QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
     QCOMPARE(spec.fixedProperties().size(), 1);
     QCOMPARE(spec.allowedProperties().isEmpty(), true);
 
     spec = RequestableChannelClassSpec::contactSearchWithSpecificServer();
-    QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+    QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
     QCOMPARE(spec.fixedProperties().size(), 1);
     QCOMPARE(spec.allowedProperties().size(), 1);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Server")), true);
 
     spec = RequestableChannelClassSpec::contactSearchWithLimit();
-    QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+    QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
     QCOMPARE(spec.fixedProperties().size(), 1);
     QCOMPARE(spec.allowedProperties().size(), 1);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Limit")), true);
 
     spec = RequestableChannelClassSpec::contactSearchWithSpecificServerAndLimit();
-    QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH);
+    QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1);
     QCOMPARE(spec.fixedProperties().size(), 1);
     QCOMPARE(spec.allowedProperties().size(), 2);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Server")), true);
-    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH + QLatin1String(".Limit")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Server")), true);
+    QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1 + QLatin1String(".Limit")), true);
 
     QCOMPARE(RequestableChannelClassSpec::textChat() == RequestableChannelClassSpec::textChatroom(), false);
 
