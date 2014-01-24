@@ -381,19 +381,19 @@ class ProtocolPresenceAdaptor : public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"org.freedesktop.Telepathy.Protocol.Interface.Presence\" >\n"
 "    <property name=\"Statuses\" type=\"a{s(ubb)}\" access=\"read\" >\n"
-"      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"Tp::SimpleStatusSpecMap\" />\n"
+"      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"Tp::StatusSpecMap\" />\n"
 "    </property>\n"
 "  </interface>\n"
         "")
 
-    Q_PROPERTY(Tp::SimpleStatusSpecMap Statuses READ Statuses)
+    Q_PROPERTY(Tp::StatusSpecMap Statuses READ Statuses)
 
 public:
     ProtocolPresenceAdaptor(QObject *parent)
         : QDBusAbstractAdaptor(parent),
           introspectionCalled(0)
     {
-        SimpleStatusSpec spec;
+        StatusSpec spec;
         spec.type = ConnectionPresenceTypeAvailable;
         spec.maySetOnSelf = true;
         spec.canHaveMessage = false;
@@ -413,7 +413,7 @@ public:
     }
 
 public: // Properties
-    inline SimpleStatusSpecMap Statuses() const
+    inline StatusSpecMap Statuses() const
     {
         // if we request all properties we are going to get here, so marking as
         // introspectionCalled;
@@ -424,7 +424,7 @@ public: // Properties
     mutable int introspectionCalled;
 
 private:
-    SimpleStatusSpecMap mStatuses;
+    StatusSpecMap mStatuses;
 };
 
 struct CMHelper

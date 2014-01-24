@@ -634,7 +634,7 @@ void TestBaseProtocol::presenceIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
     //immutable properties
     QVariantMap props = protocol->immutableProperties();
     QVERIFY(props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses")));
-    statuses = PresenceSpecList(qvariant_cast<SimpleStatusSpecMap>(props.value(
+    statuses = PresenceSpecList(qvariant_cast<StatusSpecMap>(props.value(
             TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE + QLatin1String(".Statuses"))));
     QCOMPARE(statuses.size(), 4);
     QVERIFY(statuses.contains(PresenceSpec::available()));

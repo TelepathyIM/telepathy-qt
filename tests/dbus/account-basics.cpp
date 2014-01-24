@@ -288,11 +288,11 @@ void TestAccountBasics::testBasics()
     // Neither FeatureProtocolInfo or FeatureProfile are ready yet and we have no connection
     PresenceSpecList expectedPresences;
     {
-        SimpleStatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, false };
+        StatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, false };
         expectedPresences.append(PresenceSpec(QLatin1String("available"), prSpec));
     }
     {
-        SimpleStatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
+        StatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
         expectedPresences.append(PresenceSpec(QLatin1String("offline"), prSpec));
     }
     qSort(expectedPresences);
@@ -480,15 +480,15 @@ void TestAccountBasics::testBasics()
     // presences
     expectedPresences.clear();
     {
-        SimpleStatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, true };
+        StatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, true };
         expectedPresences.append(PresenceSpec(QLatin1String("available"), prSpec));
     }
     {
-        SimpleStatusSpec prSpec = { ConnectionPresenceTypeAway, true, true };
+        StatusSpec prSpec = { ConnectionPresenceTypeAway, true, true };
         expectedPresences.append(PresenceSpec(QLatin1String("away"), prSpec));
     }
     {
-        SimpleStatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
+        StatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
         expectedPresences.append(PresenceSpec(QLatin1String("offline"), prSpec));
     }
     qSort(expectedPresences);
@@ -499,7 +499,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(presences, expectedPresences);
 
     {
-        SimpleStatusSpec prSpec = { ConnectionPresenceTypeExtendedAway, false, false };
+        StatusSpec prSpec = { ConnectionPresenceTypeExtendedAway, false, false };
         expectedPresences.append(PresenceSpec(QLatin1String("xa"), prSpec));
     }
     qSort(expectedPresences);

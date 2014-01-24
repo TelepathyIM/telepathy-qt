@@ -213,7 +213,7 @@ void TestConnBasics::testSimplePresence()
         ConnectionPresenceTypeError
     };
 
-    SimpleStatusSpecMap statuses = mConn->lowlevel()->allowedPresenceStatuses();
+    StatusSpecMap statuses = mConn->lowlevel()->allowedPresenceStatuses();
     Q_FOREACH (QString name, statuses.keys()) {
         QVERIFY(expectedNames.contains(name));
 
