@@ -4,6 +4,6 @@
 
 <tp:title>Connections extensions from the future</tp:title>
 
-<xi:include href="../../../../../spec/Connection_Interface_Addressing.xml"/>
+<xi:include href="../../../../../spec/Connection_Interface_Addressing1.xml"/>
 
 </tp:spec>

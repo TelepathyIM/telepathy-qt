@@ -4,10 +4,10 @@
 
 <tp:title>Miscellaneous extensions from the future</tp:title>
 
-<xi:include href="../../../../../spec/Call_Content.xml"/>
-<xi:include href="../../../../../spec/Call_Content_Interface_Media.xml"/>
-<xi:include href="../../../../../spec/Call_Stream_Endpoint.xml"/>
-<xi:include href="../../../../../spec/Call_Stream_Interface_Media.xml"/>
-<xi:include href="../../../../../spec/Call_Stream.xml"/>
+<xi:include href="../../../../../spec/Call1_Content.xml"/>
+<xi:include href="../../../../../spec/Call1_Content_Interface_Media.xml"/>
+<xi:include href="../../../../../spec/Call1_Stream_Endpoint.xml"/>
+<xi:include href="../../../../../spec/Call1_Stream_Interface_Media.xml"/>
+<xi:include href="../../../../../spec/Call1_Stream.xml"/>
 
 </tp:spec>
