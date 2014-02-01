@@ -192,8 +192,8 @@ void TestContactsAvatar::testAvatar()
     QByteArray a = tmpDir.toLatin1();
     setenv ("XDG_CACHE_HOME", a.constData(), true);
 
-    Client::ConnectionInterfaceAvatarsInterface *connAvatarsInterface =
-        mConn->client()->optionalInterface<Client::ConnectionInterfaceAvatarsInterface>();
+    Client::ConnectionInterfaceAvatars1Interface *connAvatarsInterface =
+        mConn->client()->optionalInterface<Client::ConnectionInterfaceAvatars1Interface>();
 
     /* Check if AvatarRetrieved gets called */
     connect(connAvatarsInterface,

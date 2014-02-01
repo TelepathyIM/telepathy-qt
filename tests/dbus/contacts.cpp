@@ -182,9 +182,9 @@ void TestContacts::testSupport()
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 TP_QT_IFACE_CONNECTION));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING));
+                TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING1));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS));
+                TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS1));
     QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
                 TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1));
     QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().contains(
