@@ -1102,7 +1102,7 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
 
     QCOMPARE(mNewServerConnectionAddress, expectedAddress);
     QCOMPARE(mNewServerConnectionPort, expectedPort);
-    QCOMPARE(mNewServerConnectionContact->handle()[0], handle);
+    QCOMPARE(mNewServerConnectionContact->handle(), handle);
     QCOMPARE(mNewServerConnectionContact->id(), QLatin1String("first"));
     QCOMPARE(mNewServerConnectionTube, mRequestedTube);
 

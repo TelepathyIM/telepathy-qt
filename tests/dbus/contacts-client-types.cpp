@@ -116,7 +116,7 @@ void TestContactsClientTypes::testClientTypes()
     const gchar *clientTypes2[] = { "web", NULL };
 
     tp_tests_contacts_connection_change_client_types(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
-            contactFoo->handle()[0], g_strdupv((gchar**) clientTypes1));
+            contactFoo->handle(), g_strdupv((gchar**) clientTypes1));
 
     while (mClientTypesUpdated != 1)  {
         mLoop->processEvents();
@@ -128,7 +128,7 @@ void TestContactsClientTypes::testClientTypes()
     mClientTypes.clear();
 
     tp_tests_contacts_connection_change_client_types(TP_TESTS_CONTACTS_CONNECTION(mConn->service()),
-            contactBar->handle()[0], g_strdupv((gchar**) clientTypes2));
+            contactBar->handle(), g_strdupv((gchar**) clientTypes2));
 
     while (mClientTypesUpdated != 2)  {
         mLoop->processEvents();
@@ -169,7 +169,7 @@ void TestContactsClientTypes::testClientTypesAttributes()
     QCOMPARE(contacts.size(), 1);
 
     ContactPtr contact = contacts[0];
-    QCOMPARE(contact->handle()[0], uint(2));
+    QCOMPARE(contact->handle(), uint(2));
     QCOMPARE(contact->requestedFeatures().contains(Contact::FeatureClientTypes), true);
     QCOMPARE(contact->actualFeatures().contains(Contact::FeatureClientTypes), true);
     QCOMPARE(contact->clientTypes(), QStringList() << QLatin1String("pc") << QLatin1String("phone"));

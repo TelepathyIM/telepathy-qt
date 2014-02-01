@@ -347,7 +347,7 @@ void TestStreamTubeChan::testCheckRemoteConnectionsCommon()
 
     QCOMPARE(chan->contactsForConnections().isEmpty(), false);
     QCOMPARE(chan->contactsForConnections().contains(mRemoteConnectionId), true);
-    QCOMPARE(chan->contactsForConnections().value(mRemoteConnectionId)->handle()[0],
+    QCOMPARE(chan->contactsForConnections().value(mRemoteConnectionId)->handle(),
             mExpectedHandle);
     QCOMPARE(chan->contactsForConnections().value(mRemoteConnectionId)->id(),
             mExpectedId);

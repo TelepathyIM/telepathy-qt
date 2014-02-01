@@ -109,7 +109,7 @@ void TestDBusTubeChan::onBusNameAdded(const QString &busName,
     qDebug() << "Adding bus name" << busName << "for" << contact->id();
 
     QCOMPARE(busName, mExpectedBusName);
-    QCOMPARE(contact->handle().first(), mExpectedHandle);
+    QCOMPARE(contact->handle(), mExpectedHandle);
 
     QCOMPARE(mChan->contactsForBusNames().size(), mCurrentContactsForBusNames.size());
 
@@ -124,7 +124,7 @@ void TestDBusTubeChan::onBusNameRemoved(const QString &busName,
     mBusNameWasRemoved = true;
     qDebug() << "Removing bus name" << busName << "for" << contact->id();
 
-    QCOMPARE(contact->handle().first(), mExpectedHandle);
+    QCOMPARE(contact->handle(), mExpectedHandle);
 
     QCOMPARE(mChan->contactsForBusNames().size(), mCurrentContactsForBusNames.size());
 
