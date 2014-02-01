@@ -384,10 +384,8 @@ void TestAccountSet::testFilters()
         QCOMPARE(mAM->textChatAccounts()->accounts().size(), 1);
         QVERIFY(mAM->textChatAccounts()->accounts().contains(spuriousAcc));
         QCOMPARE(mAM->textChatroomAccounts()->accounts().size(), 0);
-        QCOMPARE(mAM->streamedMediaCallAccounts()->accounts().size(), 0);
-        QCOMPARE(mAM->streamedMediaAudioCallAccounts()->accounts().size(), 0);
-        QCOMPARE(mAM->streamedMediaVideoCallAccounts()->accounts().size(), 0);
-        QCOMPARE(mAM->streamedMediaVideoCallWithAudioAccounts()->accounts().size(), 0);
+        QCOMPARE(mAM->audioCallAccounts()->accounts().size(), 0);
+        QCOMPARE(mAM->videoCallAccounts()->accounts().size(), 0);
         QCOMPARE(mAM->fileTransferAccounts()->accounts().size(), 0);
         QCOMPARE(mAM->accountsByProtocol(QLatin1String("bar"))->accounts().size(), 1);
         QVERIFY(mAM->accountsByProtocol(QLatin1String("bar"))->accounts().contains(fooAcc));
