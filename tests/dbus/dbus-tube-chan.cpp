@@ -10,7 +10,6 @@
 #include <TelepathyQt/OutgoingDBusTubeChannel>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingDBusTubeConnection>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/DBusTubeChannel>
 
 #include <telepathy-glib/telepathy-glib.h>

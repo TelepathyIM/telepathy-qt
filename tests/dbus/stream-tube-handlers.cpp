@@ -17,7 +17,6 @@
 #include <TelepathyQt/OutgoingStreamTubeChannel>
 #include <TelepathyQt/PendingAccount>
 #include <TelepathyQt/PendingReady>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/StreamTubeChannel>
 #include <TelepathyQt/StreamTubeClient>
 #include <TelepathyQt/StreamTubeServer>

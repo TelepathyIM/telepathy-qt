@@ -10,7 +10,6 @@
 #include <TelepathyQt/OutgoingStreamTubeChannel>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingStreamTubeConnection>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/StreamTubeChannel>
 
 #include <telepathy-glib/telepathy-glib.h>

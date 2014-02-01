@@ -10,7 +10,6 @@
 #include <TelepathyQt/Connection>
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/PendingCaptchas>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/ServerAuthenticationChannel>
 
 #include <telepathy-glib/telepathy-glib.h>
