@@ -61,22 +61,20 @@ void TestConnCapabilities::testCapabilities()
     // either if we ask it for something
     QCOMPARE(conn->client()->capabilities().textChats(), false);
     QCOMPARE(conn->client()->capabilities().textChatrooms(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaAudioCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaVideoCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaVideoCallsWithAudio(), false);
-    QCOMPARE(conn->client()->capabilities().upgradingStreamedMediaCalls(), false);
+    QCOMPARE(conn->client()->capabilities().audioCalls(), false);
+    QCOMPARE(conn->client()->capabilities().videoCalls(), false);
+    QCOMPARE(conn->client()->capabilities().videoCallsWithAudio(), false);
+    QCOMPARE(conn->client()->capabilities().upgradingCalls(), false);
 
     QCOMPARE(conn->connect(), true);
 
     // Now we should have the real information on what the connection supports
     QCOMPARE(conn->client()->capabilities().textChats(), true);
     QCOMPARE(conn->client()->capabilities().textChatrooms(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaAudioCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaVideoCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaVideoCallsWithAudio(), false);
-    QCOMPARE(conn->client()->capabilities().upgradingStreamedMediaCalls(), false);
+    QCOMPARE(conn->client()->capabilities().audioCalls(), false);
+    QCOMPARE(conn->client()->capabilities().videoCalls(), false);
+    QCOMPARE(conn->client()->capabilities().videoCallsWithAudio(), false);
+    QCOMPARE(conn->client()->capabilities().upgradingCalls(), false);
 
     // Now, invalidate the connection by disconnecting it
     QCOMPARE(conn->disconnect(), true);
@@ -84,11 +82,10 @@ void TestConnCapabilities::testCapabilities()
     // Check that no support for anything is again reported
     QCOMPARE(conn->client()->capabilities().textChats(), false);
     QCOMPARE(conn->client()->capabilities().textChatrooms(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaAudioCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaVideoCalls(), false);
-    QCOMPARE(conn->client()->capabilities().streamedMediaVideoCallsWithAudio(), false);
-    QCOMPARE(conn->client()->capabilities().upgradingStreamedMediaCalls(), false);
+    QCOMPARE(conn->client()->capabilities().audioCalls(), false);
+    QCOMPARE(conn->client()->capabilities().videoCalls(), false);
+    QCOMPARE(conn->client()->capabilities().videoCallsWithAudio(), false);
+    QCOMPARE(conn->client()->capabilities().upgradingCalls(), false);
 
     delete conn;
 }
