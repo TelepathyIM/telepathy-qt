@@ -405,9 +405,9 @@ private Q_SLOTS:
     void testEnsureTextChatroom();
     void testEnsureTextChatroomFail();
     void testEnsureTextChatroomCancel();
-    void testEnsureMediaCall();
-    void testEnsureMediaCallFail();
-    void testEnsureMediaCallCancel();
+    void testEnsureAudioCall();
+    void testEnsureAudioCallFail();
+    void testEnsureAudioCallCancel();
     void testCreateChannel();
     void testCreateChannelFail();
     void testCreateChannelCancel();
@@ -705,29 +705,8 @@ void TestAccountChannelDispatcher::checkHandlerHandledChannels(ClientHandlerInte
     QCOMPARE(sortedHandledChannels, toCompare);
 }
 
-#define TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(method_name, shouldFail, proceedNoop, expectedError) \
+#define TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pendingChannelRequest, shouldFail, proceedNoop, expectedError) \
 { \
-    ChannelRequestHints savedHints = mHints; \
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_EXTENDED(method_name, QLatin1String("foo@bar"), \
-            ChannelRequestHints(), shouldFail, proceedNoop, expectedError) \
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_EXTENDED(method_name, QLatin1String("foo@bar"), \
-            savedHints, shouldFail, proceedNoop, expectedError) \
-    mHints = savedHints; \
-}
-
-#define TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(method_name, shouldFail, proceedNoop, expectedError) \
-{ \
-    ChannelRequestHints savedHints = mHints; \
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_EXTENDED(method_name, mContact, \
-            ChannelRequestHints(), shouldFail, proceedNoop, expectedError) \
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_EXTENDED(method_name, mContact, \
-            savedHints, shouldFail, proceedNoop, expectedError) \
-    mHints = savedHints; \
-}
-
-#define TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_EXTENDED(method_name, contact, hints, shouldFail, proceedNoop, expectedError) \
-{ \
-    mHints = hints; \
     mChannelDispatcherAdaptor->mInvokeHandler = false; \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
@@ -736,20 +715,50 @@ void TestAccountChannelDispatcher::checkHandlerHandledChannels(ClientHandlerInte
     } else { \
         mChannelDispatcherAdaptor->clearChan(); \
     } \
-    PendingChannelRequest *pcr; \
-    if (mHints.isValid()) { \
-        pcr = mAccount->method_name(contact, mUserActionTime, QString(), mHints); \
-    } else { \
-        pcr = mAccount->method_name(contact, mUserActionTime, QString()); \
-    } \
     if (shouldFail && proceedNoop) { \
-        pcr->cancel(); \
+        pendingChannelRequest->cancel(); \
     } \
-    testPCR(pcr); \
+    testPCR(pendingChannelRequest); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) {\
         QCOMPARE(mChannelRequestFinishedErrorName, QString(QLatin1String(expectedError))); \
     } \
+}
+
+#define TEST_CREATE_ENSURE_CALL_CHANNEL(method_name, shouldFail, proceedNoop, expectedError) \
+{ \
+    PendingChannelRequest *pcr; \
+    pcr = mAccount->method_name(QLatin1String("foo@bar"), QString(), mUserActionTime, QString(), ChannelRequestHints()); \
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pcr, shouldFail, proceedNoop, expectedError) \
+    pcr = mAccount->method_name(QLatin1String("foo@bar"), QString(), mUserActionTime, QString(), mHints); \
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pcr, shouldFail, proceedNoop, expectedError) \
+}
+
+#define TEST_CREATE_ENSURE_CALL_CHANNEL_WITH_CONTACT(method_name, shouldFail, proceedNoop, expectedError) \
+{ \
+    PendingChannelRequest *pcr; \
+    pcr = mAccount->method_name(mContact, QString(), mUserActionTime, QString(), ChannelRequestHints()); \
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pcr, shouldFail, proceedNoop, expectedError) \
+    pcr = mAccount->method_name(mContact, QString(), mUserActionTime, QString(), mHints); \
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pcr, shouldFail, proceedNoop, expectedError) \
+}
+
+#define TEST_CREATE_ENSURE_TEXT_CHANNEL(method_name, shouldFail, proceedNoop, expectedError) \
+{ \
+    PendingChannelRequest *pcr; \
+    pcr = mAccount->method_name(QLatin1String("foo@bar"), mUserActionTime, QString(), ChannelRequestHints()); \
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pcr, shouldFail, proceedNoop, expectedError) \
+    pcr = mAccount->method_name(QLatin1String("foo@bar"), mUserActionTime, QString(), mHints); \
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pcr, shouldFail, proceedNoop, expectedError) \
+}
+
+#define TEST_CREATE_ENSURE_TEXT_CHANNEL_WITH_CONTACT(method_name, shouldFail, proceedNoop, expectedError) \
+{ \
+    PendingChannelRequest *pcr; \
+    pcr = mAccount->method_name(mContact, mUserActionTime, QString(), ChannelRequestHints()); \
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pcr, shouldFail, proceedNoop, expectedError) \
+    pcr = mAccount->method_name(mContact, mUserActionTime, QString(), mHints); \
+    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(pcr, shouldFail, proceedNoop, expectedError) \
 }
 
 #define TEST_CREATE_ENSURE_CHANNEL(method_name, shouldFail, proceedNoop, expectedError) \
@@ -798,100 +807,76 @@ void TestAccountChannelDispatcher::checkHandlerHandledChannels(ClientHandlerInte
 
 void TestAccountChannelDispatcher::testEnsureTextChat()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, false, false, "");
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureTextChat, false, false, "");
+    TEST_CREATE_ENSURE_TEXT_CHANNEL(ensureTextChat, false, false, "");
+    TEST_CREATE_ENSURE_TEXT_CHANNEL_WITH_CONTACT(ensureTextChat, false, false, "");
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureTextChatFail()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, true, false, TP_QT_ERROR_NOT_AVAILABLE);
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureTextChat, true, false, TP_QT_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_TEXT_CHANNEL(ensureTextChat, true, false, TP_QT_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_TEXT_CHANNEL_WITH_CONTACT(ensureTextChat, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureTextChatCancel()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChat, true, true, TP_QT_ERROR_CANCELLED);
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureTextChat, true, true, TP_QT_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_TEXT_CHANNEL(ensureTextChat, true, true, TP_QT_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_TEXT_CHANNEL_WITH_CONTACT(ensureTextChat, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureTextChatroom()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, false, false, "");
+    TEST_CREATE_ENSURE_TEXT_CHANNEL(ensureTextChatroom, false, false, "");
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureTextChatroomFail()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, true, false, TP_QT_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_TEXT_CHANNEL(ensureTextChatroom, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
 void TestAccountChannelDispatcher::testEnsureTextChatroomCancel()
 {
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureTextChatroom, true, true, TP_QT_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_TEXT_CHANNEL(ensureTextChatroom, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
-void TestAccountChannelDispatcher::testEnsureMediaCall()
+void TestAccountChannelDispatcher::testEnsureAudioCall()
 {
     mChanPath = mConn->objectPath() + QLatin1String("/channel");
     mChanProps = ChannelClassSpec::mediaCall().allProperties();
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, false, false, "");
+    TEST_CREATE_ENSURE_CALL_CHANNEL(ensureAudioCall, false, false, "");
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaCall, false, false, "");
-    QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
-
-    ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaAudioCall, false, false, "");
-    QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
-
-    ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaAudioCall, false, false, "");
+    TEST_CREATE_ENSURE_CALL_CHANNEL_WITH_CONTACT(ensureAudioCall, false, false, "");
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
-void TestAccountChannelDispatcher::testEnsureMediaCallFail()
+void TestAccountChannelDispatcher::testEnsureAudioCallFail()
 {
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CALL_CHANNEL(ensureAudioCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
-    QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
-
-    ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaAudioCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
-    QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
-
-    ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaAudioCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
+    TEST_CREATE_ENSURE_CALL_CHANNEL_WITH_CONTACT(ensureAudioCall, true, false, TP_QT_ERROR_NOT_AVAILABLE);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
-void TestAccountChannelDispatcher::testEnsureMediaCallCancel()
+void TestAccountChannelDispatcher::testEnsureAudioCallCancel()
 {
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaCall, true, true, TP_QT_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CALL_CHANNEL(ensureAudioCall, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 
     ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaCall, true, true, TP_QT_ERROR_CANCELLED);
-    QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
-
-    ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC(ensureStreamedMediaAudioCall, true, true, TP_QT_ERROR_CANCELLED);
-    QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
-
-    ChannelDispatcherAdaptor::lastCall = (ChannelDispatcherAdaptor::MethodCall) -1;
-    TEST_CREATE_ENSURE_CHANNEL_SPECIFIC_WITH_CONTACT(ensureStreamedMediaAudioCall, true, true, TP_QT_ERROR_CANCELLED);
+    TEST_CREATE_ENSURE_CALL_CHANNEL_WITH_CONTACT(ensureAudioCall, true, true, TP_QT_ERROR_CANCELLED);
     QCOMPARE(ChannelDispatcherAdaptor::lastCall, ChannelDispatcherAdaptor::EC);
 }
 
