@@ -136,11 +136,10 @@ void TestContactsCapabilities::testCapabilities()
         QCOMPARE(contact->actualFeatures().contains(Contact::FeatureCapabilities), true);
 
         QCOMPARE(contact->capabilities().textChats(), supportTextChat[i]);
-        QCOMPARE(contact->capabilities().streamedMediaCalls(), false);
-        QCOMPARE(contact->capabilities().streamedMediaAudioCalls(), false);
-        QCOMPARE(contact->capabilities().streamedMediaVideoCalls(), false);
-        QCOMPARE(contact->capabilities().streamedMediaVideoCallsWithAudio(), false);
-        QCOMPARE(contact->capabilities().upgradingStreamedMediaCalls(), false);
+        QCOMPARE(contact->capabilities().audioCalls(), false);
+        QCOMPARE(contact->capabilities().videoCalls(), false);
+        QCOMPARE(contact->capabilities().videoCallsWithAudio(), false);
+        QCOMPARE(contact->capabilities().upgradingCalls(), false);
     }
 }
 

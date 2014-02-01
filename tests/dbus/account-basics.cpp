@@ -258,15 +258,12 @@ void TestAccountBasics::testBasics()
     ConnectionCapabilities caps = acc->capabilities();
     QVERIFY(!caps.isSpecificToContact());
     QVERIFY(!caps.textChats());
-    QVERIFY(!caps.streamedMediaCalls());
-    QVERIFY(!caps.streamedMediaAudioCalls());
-    QVERIFY(!caps.streamedMediaVideoCalls());
-    QVERIFY(!caps.streamedMediaVideoCallsWithAudio());
-    QVERIFY(!caps.upgradingStreamedMediaCalls());
+    QVERIFY(!caps.audioCalls());
+    QVERIFY(!caps.videoCalls());
+    QVERIFY(!caps.videoCallsWithAudio());
+    QVERIFY(!caps.upgradingCalls());
     QVERIFY(!caps.fileTransfers());
     QVERIFY(!caps.textChatrooms());
-    QVERIFY(!caps.conferenceStreamedMediaCalls());
-    QVERIFY(!caps.conferenceStreamedMediaCallsWithInvitees());
     QVERIFY(!caps.conferenceTextChats());
     QVERIFY(!caps.conferenceTextChatsWithInvitees());
     QVERIFY(!caps.conferenceTextChatrooms());
@@ -551,11 +548,10 @@ void TestAccountBasics::testBasics()
     caps = acc->capabilities();
     QVERIFY(caps.textChats());
     QVERIFY(!caps.textChatrooms());
-    QVERIFY(!caps.streamedMediaCalls());
-    QVERIFY(!caps.streamedMediaAudioCalls());
-    QVERIFY(!caps.streamedMediaVideoCalls());
-    QVERIFY(!caps.streamedMediaVideoCallsWithAudio());
-    QVERIFY(!caps.upgradingStreamedMediaCalls());
+    QVERIFY(!caps.audioCalls());
+    QVERIFY(!caps.videoCalls());
+    QVERIFY(!caps.videoCallsWithAudio());
+    QVERIFY(!caps.upgradingCalls());
 
     // once the status change the capabilities will be updated
     mProps.clear();
