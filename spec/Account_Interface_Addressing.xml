@@ -19,6 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Account.Interface.Addressing">
     <tp:requires interface="org.freedesktop.Telepathy.Account"/>
     <tp:added version="0.21.5">(as stable API)</tp:added>
+    <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal"
+                value="true"/>
+    <tp:changed version="0.27.1">
+      The standard D-Bus <code>PropertiesChanged</code> signal is now used
+      for <tp:member-ref>URISchemes</tp:member-ref> property change notifications.
+    </tp:changed>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Some accounts can be used for multiple protocols; for instance, SIP
         and Skype accounts can often be used to contact the PSTN, MSN and
@@ -46,6 +52,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           entirely possible that an account which can be used for a
           given URI scheme is not wanted for it by the user, and
           therefore not flagged as such in this field.</p>
+        <p>Change notification for this property is provided by the
+          standard D-Bus <code>PropertiesChanged</code> signal.</p>
       </tp:docstring>
     </property>
 

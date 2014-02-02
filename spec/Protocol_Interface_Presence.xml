@@ -96,7 +96,8 @@ status-chat=2 settable message
 
     <property name="Statuses"
       tp:name-for-bindings="Statuses"
-      type="a{s(ubb)}" tp:type="Simple_Status_Spec_Map" access="read">
+      type="a{s(ubb)}" tp:type="Simple_Status_Spec_Map" access="read"
+      tp:immutable="yes">
       <tp:docstring>
         <p>The statuses that might appear in the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy"

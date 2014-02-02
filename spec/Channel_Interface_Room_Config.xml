@@ -30,7 +30,7 @@
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Represents the configuration of a chatroom, some aspects of which may
-        be modifiable by the user, depending on their priviledges. This
+        be modifiable by the user, depending on their privileges. This
         corresponds to the room configuration on XMPP, and various channel mode
         flags on IRC.</p>
 

@@ -232,10 +232,13 @@ set(telepathy_qt_HEADERS
     ChannelInterfaceMediaSignallingInterface
     ChannelInterfaceMessagesInterface
     ChannelInterfacePasswordInterface
+    ChannelInterfaceRoomInterface
+    ChannelInterfaceRoomConfigInterface
     ChannelInterfaceSASLAuthenticationInterface
     ChannelInterfaceSecurableInterface
     ChannelInterfaceServicePointInterface
     ChannelInterfaceSMSInterface
+    ChannelInterfaceSubjectInterface
     ChannelInterfaceTubeInterface
     ChannelRequest
     ChannelRequestHints

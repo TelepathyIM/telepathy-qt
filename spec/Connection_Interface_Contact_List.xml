@@ -1110,7 +1110,7 @@
     </method>
 
     <method name="Download" tp:name-for-bindings="Download">
-      <tp:added version="0.UNRELEASED"/>
+      <tp:added version="0.25.2"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Download the contact list from the server. If
           <tp:member-ref>DownloadAtConnection</tp:member-ref> is true,
