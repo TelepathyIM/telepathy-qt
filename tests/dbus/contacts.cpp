@@ -177,19 +177,6 @@ void TestContacts::testSupport()
 {
     QCOMPARE(mConn->contactManager()->connection(), mConn);
 
-    QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().isEmpty());
-
-    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION));
-    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION_INTERFACE_ALIASING1));
-    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS1));
-    QVERIFY(mConn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1));
-    QVERIFY(!mConn->lowlevel()->contactAttributeInterfaces().contains(
-                QLatin1String("org.freedesktop.Telepathy.Connection.Interface.Addressing.DRAFT")));
-
     Features supportedFeatures = mConn->contactManager()->supportedFeatures();
     QVERIFY(!supportedFeatures.isEmpty());
     QVERIFY(supportedFeatures.contains(Contact::FeatureAlias));
