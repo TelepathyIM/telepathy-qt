@@ -13,9 +13,7 @@
 #include <TelepathyQt/ConnectionLowlevel>
 #include <TelepathyQt/ContactFactory>
 #include <TelepathyQt/PendingChannel>
-#include <TelepathyQt/PendingHandles>
 #include <TelepathyQt/PendingReady>
-#include <TelepathyQt/ReferencedHandles>
 #include <TelepathyQt/TextChannel>
 
 #include <telepathy-glib/debug.h>
@@ -33,13 +31,11 @@ public:
 
 protected Q_SLOTS:
     void expectInvalidated();
-    void expectPendingHandleFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
     void init();
 
-    void testRequestHandle();
     void testCreateChannel();
     void testEnsureChannel();
     void testFallback();
@@ -56,15 +52,6 @@ private:
 
 void TestChanBasics::expectInvalidated()
 {
-    mLoop->exit(0);
-}
-
-void TestChanBasics::expectPendingHandleFinished(PendingOperation *op)
-{
-    TEST_VERIFY_OP(op);
-
-    PendingHandles *pending = qobject_cast<PendingHandles*>(op);
-    mHandle = pending->handles().at(0);
     mLoop->exit(0);
 }
 
@@ -92,24 +79,6 @@ void TestChanBasics::init()
     initImpl();
 
     mChan.reset();
-}
-
-void TestChanBasics::testRequestHandle()
-{
-    // Test identifiers
-    QStringList ids = QStringList() << QLatin1String("alice");
-
-    // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->client()->lowlevel()->requestHandles(Tp::HandleTypeContact, ids);
-    QVERIFY(connect(pending,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectPendingHandleFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(pending,
-                       SIGNAL(finished(Tp::PendingOperation*)),
-                       this,
-                       SLOT(expectPendingHandleFinished(Tp::PendingOperation*))));
-    QVERIFY(mHandle != 0);
 }
 
 void TestChanBasics::testCreateChannel()
