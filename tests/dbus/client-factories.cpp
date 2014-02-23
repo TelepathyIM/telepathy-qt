@@ -40,7 +40,7 @@
 #include <TelepathyQt/PendingReady>
 #include <TelepathyQt/StreamTubeChannel>
 #include <TelepathyQt/TextChannel>
-#include <TelepathyQt/CallChannel>b
+#include <TelepathyQt/CallChannel>
 #include <TelepathyQt/Types>
 
 #include <telepathy-glib/debug.h>
