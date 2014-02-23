@@ -31,7 +31,7 @@ static void addressing_iface_init (gpointer, gpointer);
 G_DEFINE_TYPE_WITH_CODE (TpTestsAddressingConnection,
     tp_tests_addressing_connection,
     TP_TESTS_TYPE_CONTACTS_CONNECTION,
-    G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CONNECTION_INTERFACE_ADDRESSING,
+    G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CONNECTION_INTERFACE_ADDRESSING1,
       addressing_iface_init);
     );
 
@@ -44,7 +44,7 @@ static const gchar *addressable_uri_schemes[] = {"addr", NULL};
 
 static const char *assumed_interfaces[] = {
   TP_IFACE_CONNECTION,
-  FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING,
+  FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING1,
   NULL
 };
 
@@ -59,7 +59,7 @@ constructed (GObject *object)
     parent_impl (object);
 
   tp_contacts_mixin_add_contact_attributes_iface (G_OBJECT (self),
-      FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING,
+      FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING1,
       addressing_fill_contact_attributes);
 }
 
@@ -94,7 +94,7 @@ tp_tests_addressing_connection_class_init (TpTestsAddressingConnectionClass *kla
       TP_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES,
       TP_IFACE_CONNECTION_INTERFACE_CONTACT_INFO,
       TP_IFACE_CONNECTION_INTERFACE_REQUESTS,
-      FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING,
+      FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING1,
       NULL };
 
   object_class->constructed = constructed;
@@ -163,11 +163,11 @@ addressing_fill_contact_attributes (GObject *obj,
       GHashTable *addresses = vcard_addresses_for_handle (contact_repo, contact);
 
       tp_contacts_mixin_set_contact_attribute (attributes_hash,
-          contact, FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING"/uris",
+          contact, FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING1"/uris",
           tp_g_value_slice_new_take_boxed (G_TYPE_STRV, uris));
 
       tp_contacts_mixin_set_contact_attribute (attributes_hash,
-          contact, FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING"/addresses",
+          contact, FUTURE_IFACE_CONNECTION_INTERFACE_ADDRESSING1"/addresses",
           tp_g_value_slice_new_take_boxed (TP_HASH_TYPE_STRING_STRING_MAP, addresses));
     }
 }
@@ -226,7 +226,7 @@ ensure_handle_from_uri (TpHandleRepoIface *repo,
 }
 
 static void
-addressing_get_contacts_by_uri (FutureSvcConnectionInterfaceAddressing *iface,
+addressing_get_contacts_by_uri (FutureSvcConnectionInterfaceAddressing1 *iface,
     const gchar **uris,
     const gchar **interfaces,
     DBusGMethodInvocation *context)
@@ -254,7 +254,7 @@ addressing_get_contacts_by_uri (FutureSvcConnectionInterfaceAddressing *iface,
   attributes = tp_contacts_mixin_get_contact_attributes (G_OBJECT (iface), handles,
       interfaces, assumed_interfaces, sender);
 
-  future_svc_connection_interface_addressing_return_from_get_contacts_by_uri (
+  future_svc_connection_interface_addressing1_return_from_get_contacts_by_uri (
       context, requested, attributes);
 
   g_hash_table_unref (requested);
@@ -306,7 +306,7 @@ ensure_handle_from_vcard_address (TpHandleRepoIface *repo,
 }
 
 static void
-addressing_get_contacts_by_vcard_field (FutureSvcConnectionInterfaceAddressing *iface,
+addressing_get_contacts_by_vcard_field (FutureSvcConnectionInterfaceAddressing1 *iface,
     const gchar *field,
     const gchar **addresses,
     const gchar **interfaces,
@@ -336,7 +336,7 @@ addressing_get_contacts_by_vcard_field (FutureSvcConnectionInterfaceAddressing *
   attributes = tp_contacts_mixin_get_contact_attributes (G_OBJECT (iface), handles,
       interfaces, assumed_interfaces, sender);
 
-  future_svc_connection_interface_addressing_return_from_get_contacts_by_vcard_field (
+  future_svc_connection_interface_addressing1_return_from_get_contacts_by_vcard_field (
       context, requested, attributes);
 
   g_hash_table_unref (requested);
@@ -348,7 +348,7 @@ static void
 addressing_iface_init (gpointer g_iface, gpointer iface_data)
 {
 #define IMPLEMENT(x) \
-  future_svc_connection_interface_addressing_implement_##x (\
+  future_svc_connection_interface_addressing1_implement_##x (\
       g_iface, addressing_##x)
 
   IMPLEMENT(get_contacts_by_uri);

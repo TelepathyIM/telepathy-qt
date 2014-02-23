@@ -108,13 +108,6 @@ void TestConnAddressing::testSupport()
 {
     ConnectionPtr conn = mConn->client();
 
-    QVERIFY(!conn->lowlevel()->contactAttributeInterfaces().isEmpty());
-
-    QVERIFY(conn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION));
-    QVERIFY(conn->lowlevel()->contactAttributeInterfaces().contains(
-                TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING));
-
     Features supportedFeatures = conn->contactManager()->supportedFeatures();
     QVERIFY(!supportedFeatures.isEmpty());
     QVERIFY(supportedFeatures.contains(Contact::FeatureAddresses));

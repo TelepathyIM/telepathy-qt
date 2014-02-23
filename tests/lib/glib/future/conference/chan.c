@@ -51,7 +51,7 @@ G_DEFINE_TYPE_WITH_CODE (TpTestsConferenceChannel,
       tp_group_mixin_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_CONFERENCE,
       NULL);
-    G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE,
+    G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE1,
       mergeable_conference_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL);
     G_IMPLEMENT_INTERFACE (TP_TYPE_EXPORTABLE_CHANNEL, NULL))
@@ -99,7 +99,7 @@ struct _TpTestsConferenceChannelPrivate
 static const gchar * tp_tests_conference_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_GROUP,
     TP_IFACE_CHANNEL_INTERFACE_CONFERENCE,
-    FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE,
+    FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE1,
     NULL
 };
 
@@ -609,7 +609,7 @@ channel_iface_init (gpointer iface,
 }
 
 static void
-mergeable_conference_merge (FutureSvcChannelInterfaceMergeableConference *iface G_GNUC_UNUSED,
+mergeable_conference_merge (FutureSvcChannelInterfaceMergeableConference1 *iface G_GNUC_UNUSED,
                             const gchar *channel,
                             DBusGMethodInvocation *context)
 {
@@ -622,16 +622,16 @@ mergeable_conference_merge (FutureSvcChannelInterfaceMergeableConference *iface 
 
   g_hash_table_destroy (immutable_props);
 
-  future_svc_channel_interface_mergeable_conference_return_from_merge (context);
+  future_svc_channel_interface_mergeable_conference1_return_from_merge (context);
 }
 
 static void
 mergeable_conference_iface_init (gpointer iface,
                                  gpointer data)
 {
-  FutureSvcChannelInterfaceMergeableConferenceClass *klass = iface;
+  FutureSvcChannelInterfaceMergeableConference1Class *klass = iface;
 
-#define IMPLEMENT(x) future_svc_channel_interface_mergeable_conference_implement_##x (klass, mergeable_conference_##x)
+#define IMPLEMENT(x) future_svc_channel_interface_mergeable_conference1_implement_##x (klass, mergeable_conference_##x)
   IMPLEMENT (merge);
 #undef IMPLEMENT
 }
