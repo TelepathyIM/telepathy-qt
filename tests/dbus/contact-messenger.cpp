@@ -44,9 +44,9 @@ class TestContactMessenger;
 class CDMessagesAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages1")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.ChannelDispatcher.Interface.Messages1")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.ChannelDispatcher.Interface.Messages1\" >\n"
+"  <interface name=\"im.telepathy.v1.ChannelDispatcher.Interface.Messages1\" >\n"
 "    <method name=\"SendMessage\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"TargetID\" type=\"s\" direction=\"in\" />\n"
@@ -90,9 +90,9 @@ private:
 class AccountAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Account")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Account")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Account\" >\n"
+"  <interface name=\"im.telepathy.v1.Account\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"Connection\" type=\"o\" access=\"read\" />\n"
 "    <signal name=\"AccountPropertyChanged\" >\n"
@@ -333,14 +333,14 @@ void TestContactMessenger::initTestCase()
 
     QDBusConnection bus = QDBusConnection::sessionBus();
     QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
-    QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
+    QString channelDispatcherPath = QLatin1String("/im/telepathy/v1/ChannelDispatcher");
     Dispatcher *dispatcher = new Dispatcher(this);
     mCDMessagesAdaptor = new CDMessagesAdaptor(bus, this, dispatcher);
     QVERIFY(bus.registerService(channelDispatcherBusName));
     QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
 
     mAccountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
-    mAccountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/simple/account");
+    mAccountPath = QLatin1String("/im/telepathy/v1/Account/simple/simple/account");
     QObject *acc = new QObject(this);
 
     mAccountAdaptor = new AccountAdaptor(acc);
@@ -634,7 +634,7 @@ QList<ClientObserverInterface *> TestContactMessenger::ourObservers()
     QList<ClientObserverInterface *> observers;
 
     Q_FOREACH (QString name, registeredNames) {
-        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
+        if (!name.startsWith(QLatin1String("im.telepathy.v1.Client."))) {
             continue;
         }
 

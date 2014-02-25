@@ -182,7 +182,7 @@ tp_tests_bug16307_connection_class_init (TpTestsBug16307ConnectionClass *klass)
  * tp_tests_bug16307_connection_get_status
  *
  * Implements D-Bus method GetStatus
- * on interface org.freedesktop.Telepathy.Connection
+ * on interface im.telepathy.v1.Connection
  */
 static void
 tp_tests_bug16307_connection_get_status (TpSvcConnection *iface,

@@ -46,27 +46,27 @@
  * The prefix for a connection manager's bus name, to which the CM's name (e.g.
  * "gabble") should be appended.
  */
-#define TP_QT_CONNECTION_MANAGER_BUS_NAME_BASE QLatin1String("org.freedesktop.Telepathy.ConnectionManager.")
+#define TP_QT_CONNECTION_MANAGER_BUS_NAME_BASE QLatin1String("im.telepathy.v1.ConnectionManager.")
 
 /**
  * The prefix for a connection manager's object path, to which the CM's name
  * (e.g. "gabble") should be appended.
  */
-#define TP_QT_CONNECTION_MANAGER_OBJECT_PATH_BASE QLatin1String("/org/freedesktop/Telepathy/ConnectionManager/")
+#define TP_QT_CONNECTION_MANAGER_OBJECT_PATH_BASE QLatin1String("/im/telepathy/v1/ConnectionManager/")
 
 /**
  * The prefix for a connection's bus name, to which the CM's name (e.g.
  * "gabble"), the protocol (e.g. "jabber") and an element
  * representing the account should be appended.
  */
-#define TP_QT_CONNECTION_BUS_NAME_BASE QLatin1String("org.freedesktop.Telepathy.Connection.")
+#define TP_QT_CONNECTION_BUS_NAME_BASE QLatin1String("im.telepathy.v1.Connection.")
 
 /**
  * The prefix for a connection's object path, to which the CM's name (e.g.
  * "gabble"), the protocol (e.g. "jabber") and an element
  * representing the account should be appended.
  */
-#define TP_QT_CONNECTION_OBJECT_PATH_BASE QLatin1String("/org/freedesktop/Telepathy/Connection/")
+#define TP_QT_CONNECTION_OBJECT_PATH_BASE QLatin1String("/im/telepathy/v1/Connection/")
 
 /**
  * The well-known bus name of the Account Manager.
@@ -74,7 +74,7 @@
  * \see Tp::AccountManager
  */
 #define TP_QT_ACCOUNT_MANAGER_BUS_NAME \
-    (QLatin1String("org.freedesktop.Telepathy.AccountManager"))
+    (QLatin1String("im.telepathy.v1.AccountManager"))
 
 /**
  * The object path of the Account Manager object.
@@ -82,19 +82,19 @@
  * \see Tp::AccountManager
  */
 #define TP_QT_ACCOUNT_MANAGER_OBJECT_PATH \
-    (QLatin1String("/org/freedesktop/Telepathy/AccountManager"))
+    (QLatin1String("/im/telepathy/v1/AccountManager"))
 
 /**
  * The well-known bus name of the Channel Dispatcher.
  */
 #define TP_QT_CHANNEL_DISPATCHER_BUS_NAME \
-    (QLatin1String("org.freedesktop.Telepathy.ChannelDispatcher"))
+    (QLatin1String("im.telepathy.v1.ChannelDispatcher"))
 
 /**
  * The object path of the Channel Dispatcherr object.
  */
 #define TP_QT_CHANNEL_DISPATCHER_OBJECT_PATH \
-    (QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher"))
+    (QLatin1String("/im/telepathy/v1/ChannelDispatcher"))
 
 /**
  * The prefix for an Account's object path, to which the CM's name (e.g.
@@ -104,13 +104,13 @@
  * \see Tp::Account
  */
 #define TP_QT_ACCOUNT_OBJECT_PATH_BASE \
-    (QLatin1String("/org/freedesktop/Telepathy/Account"))
+    (QLatin1String("/im/telepathy/v1/Account"))
 
 /**
  * The object path of the Debug object of various services.
  */
 #define TP_QT_DEBUG_OBJECT_PATH \
-    (QLatin1String("/org/freedesktop/Telepathy/debug"))
+    (QLatin1String("/im/telepathy/v1/debug"))
 
 /**
  * @}
@@ -155,23 +155,23 @@
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.Telepathy.Qt.Error.ObjectRemoved" as a QLatin1String.
+ * The error name "im.telepathy.v1.Qt.Error.ObjectRemoved" as a QLatin1String.
  */
 #define TP_QT_ERROR_OBJECT_REMOVED \
-    (QLatin1String("org.freedesktop.Telepathy.Qt.Error.ObjectRemoved"))
+    (QLatin1String("im.telepathy.v1.Qt.Error.ObjectRemoved"))
 
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.Telepathy.Qt.Error.Inconsistent" as a QLatin1String.
+ * The error name "im.telepathy.v1.Qt.Error.Inconsistent" as a QLatin1String.
  */
 #define TP_QT_ERROR_INCONSISTENT \
-    (QLatin1String("org.freedesktop.Telepathy.Qt.Error.Inconsistent"))
+    (QLatin1String("im.telepathy.v1.Qt.Error.Inconsistent"))
 
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.Telepathy.Qt.Error.Orphaned" as a QLatin1String.
+ * The error name "im.telepathy.v1.Qt.Error.Orphaned" as a QLatin1String.
  *
  * This error is used when the "parent" proxy of an object gets invalidated. For example, a Channel
  * whose corresponding Connection is invalidated invalidates itself with this error, as do leftover
@@ -179,6 +179,6 @@
  * reason of the parent proxy might provide more information on the cause of the error.
  */
 #define TP_QT_ERROR_ORPHANED \
-    (QLatin1String("org.freedesktop.Telepathy.Qt.Error.Orphaned"))
+    (QLatin1String("im.telepathy.v1.Qt.Error.Orphaned"))
 
 #endif

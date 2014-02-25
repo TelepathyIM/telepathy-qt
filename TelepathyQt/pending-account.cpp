@@ -65,7 +65,7 @@ struct TP_QT_NO_EXPORT PendingAccount::Private
  * \param displayName Account display name.
  * \param parameters Account parameters.
  * \param properties An optional map from fully qualified D-Bus property
- *                   names such as "org.freedesktop.Telepathy.Account.Enabled"
+ *                   names such as "im.telepathy.v1.Account.Enabled"
  *                   to their values.
  */
 PendingAccount::PendingAccount(const AccountManagerPtr &manager,

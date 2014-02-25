@@ -3,7 +3,7 @@ Interfaces=
 
 [Protocol example]
 Interfaces=
-ConnectionInterfaces=org.freedesktop.Telepathy.Connection.Interface.Requests;org.freedesktop.Telepathy.Connection.Interface.Contacts;org.freedesktop.Telepathy.Connection.Interface.Presence;org.freedesktop.Telepathy.Connection.Interface.SimplePresence;
+ConnectionInterfaces=im.telepathy.v1.Connection.Interface.Requests;im.telepathy.v1.Connection.Interface.Contacts;im.telepathy.v1.Connection.Interface.Presence;im.telepathy.v1.Connection.Interface.SimplePresence;
 param-account=s required register
 param-simulation-delay=u
 default-simulation-delay=1000
@@ -13,13 +13,13 @@ EnglishName=Example with Call channels
 Icon=face-smile
 
 [audio]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Call1
-org.freedesktop.Telepathy.Channel.TargetHandleType u=1
-org.freedesktop.Telepathy.Channel.Type.Call1.InitialAudio b=1
-allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;org.freedesktop.Telepathy.Channel.Type.Call1.InitialVideo;
+im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Call1
+im.telepathy.v1.Channel.TargetHandleType u=1
+im.telepathy.v1.Channel.Type.Call1.InitialAudio b=1
+allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;im.telepathy.v1.Channel.Type.Call1.InitialVideo;
 
 [video]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Call1
-org.freedesktop.Telepathy.Channel.TargetHandleType u=1
-org.freedesktop.Telepathy.Channel.Type.Call1.InitialVideo b=1
-allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;org.freedesktop.Telepathy.Channel.Type.Call1.InitialAudio;
+im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Call1
+im.telepathy.v1.Channel.TargetHandleType u=1
+im.telepathy.v1.Channel.Type.Call1.InitialVideo b=1
+allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;im.telepathy.v1.Channel.Type.Call1.InitialAudio;

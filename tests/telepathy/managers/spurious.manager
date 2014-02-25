@@ -14,9 +14,9 @@ status-away=3 settable
 status-xa=4
 
 [text]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
-org.freedesktop.Telepathy.Channel.TargetHandleType u=1
-allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Text
+im.telepathy.v1.Channel.TargetHandleType u=1
+allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;
 
 [Protocol weird]
 param-com.example.Bork.Bork.Bork=u dbus-property

@@ -32,11 +32,11 @@ G_DEFINE_TYPE_WITH_CODE (TpTestsSimpleAccountManager,
 static const char *ACCOUNT_MANAGER_INTERFACES[] = { NULL };
 
 static gchar *VALID_ACCOUNTS[] = {
-  "/org/freedesktop/Telepathy/Account/fakecm/fakeproto/validaccount",
+  "/im/telepathy/v1/Account/fakecm/fakeproto/validaccount",
   NULL };
 
 static gchar *INVALID_ACCOUNTS[] = {
-  "/org/freedesktop/Telepathy/Account/fakecm/fakeproto/invalidaccount",
+  "/im/telepathy/v1/Account/fakecm/fakeproto/invalidaccount",
   NULL };
 
 enum

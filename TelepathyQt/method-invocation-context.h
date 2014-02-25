@@ -146,7 +146,7 @@ public:
         mFinished = true;
 
         if (errorName.isEmpty()) {
-            mErrorName = QLatin1String("org.freedesktop.Telepathy.Qt.ErrorHandlingError");
+            mErrorName = QLatin1String("im.telepathy.v1.Qt.ErrorHandlingError");
         } else {
             mErrorName = errorName;
         }

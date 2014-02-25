@@ -2,11 +2,11 @@
 Interfaces=
 
 [Protocol protocol]
-Interfaces=org.freedesktop.Telepathy.Protocol.Interface.Addressing;org.freedesktop.Telepathy.Protocol.Interface.Avatars;org.freedesktop.Telepathy.Protocol.Interface.Presence;
+Interfaces=im.telepathy.v1.Protocol.Interface.Addressing;im.telepathy.v1.Protocol.Interface.Avatars;im.telepathy.v1.Protocol.Interface.Presence;
 
 param-account=s required register
 
-ConnectionInterfaces=org.freedesktop.Telepathy.Connection.Interface.Contacts;
+ConnectionInterfaces=im.telepathy.v1.Connection.Interface.Contacts;
 
 RequestableChannelClasses=1-1-text;
 
@@ -30,6 +30,6 @@ AddressableVCardFields=x-protocol;
 AddressableURISchemes=protocol;
 
 [1-1-text]
-org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
-org.freedesktop.Telepathy.Channel.TargetHandleType u=1
-allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Text
+im.telepathy.v1.Channel.TargetHandleType u=1
+allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;

@@ -899,7 +899,7 @@ QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths) con
  * when calling createAccount().
  *
  * \return A list of fully qualified D-Bus property names,
- *         such as "org.freedesktop.Telepathy.Account.Enabled".
+ *         such as "im.telepathy.v1.Account.Enabled".
  * \sa createAccount()
  */
 QStringList AccountManager::supportedAccountProperties() const
@@ -919,7 +919,7 @@ QStringList AccountManager::supportedAccountProperties() const
  * \param displayName The account display name.
  * \param parameters The account parameters.
  * \param properties An optional map from fully qualified D-Bus property
- *                   names such as "org.freedesktop.Telepathy.Account.Enabled"
+ *                   names such as "im.telepathy.v1.Account.Enabled"
  *                   to their values.
  * \return A PendingAccount object which will emit PendingAccount::finished
  *         when the account has been created of failed its creation process.

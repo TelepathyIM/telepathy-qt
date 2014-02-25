@@ -114,7 +114,7 @@ void TestDBusProperties::testDBusProperties()
     QCOMPARE(mAM->interfaces(), QStringList());
 
     AccountPtr acc = Account::create(mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
+            QLatin1String("/im/telepathy/v1/Account/foo/bar/Account0"));
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));

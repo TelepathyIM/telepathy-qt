@@ -30,9 +30,9 @@ using namespace Tp::Client;
 class ChannelRequestAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelRequest")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.ChannelRequest")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.ChannelRequest\" >\n"
+"  <interface name=\"im.telepathy.v1.ChannelRequest\" >\n"
 "    <property name=\"Account\" type=\"o\" access=\"read\" />\n"
 "    <property name=\"UserActionTime\" type=\"x\" access=\"read\" />\n"
 "    <property name=\"PreferredHandler\" type=\"s\" access=\"read\" />\n"
@@ -181,9 +181,9 @@ private:
 class ChannelDispatcherAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatcher")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.ChannelDispatcher")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.ChannelDispatcher\" >\n"
+"  <interface name=\"im.telepathy.v1.ChannelDispatcher\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"SupportsRequestHints\" type=\"b\" access=\"read\" />\n"
 "    <method name=\"CreateChannel\" >\n"
@@ -328,9 +328,9 @@ private:
                 hints,
                 request);
         mCurRequest->setChan(mConnPath, mConnProps, mChanPath, mChanProps);
-        mCurRequestPath = QString(QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/_%1"))
+        mCurRequestPath = QString(QLatin1String("/im/telepathy/v1/ChannelRequest/_%1"))
                 .arg(mRequests++);
-        mBus.registerService(QLatin1String("org.freedesktop.Telepathy.ChannelDispatcher"));
+        mBus.registerService(QLatin1String("im.telepathy.v1.ChannelDispatcher"));
         mBus.registerObject(mCurRequestPath, request);
 
         mCurPreferredHandler = preferredHandler;
@@ -495,7 +495,7 @@ void TestAccountChannelDispatcher::initTestCase()
     // Create the CD first, because Accounts try to introspect it
     QDBusConnection bus = QDBusConnection::sessionBus();
     QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
-    QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
+    QString channelDispatcherPath = QLatin1String("/im/telepathy/v1/ChannelDispatcher");
     QObject *dispatcher = new QObject(this);
     mChannelDispatcherAdaptor = new ChannelDispatcherAdaptor(bus, dispatcher);
     QVERIFY(bus.registerService(channelDispatcherBusName));
@@ -620,7 +620,7 @@ QList<ClientHandlerInterface *> TestAccountChannelDispatcher::ourHandlers()
     QDBusConnection bus = QDBusConnection::sessionBus();
     QStringList registeredNames = bus.interface()->registeredServiceNames();
     Q_FOREACH (QString name, registeredNames) {
-        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
+        if (!name.startsWith(QLatin1String("im.telepathy.v1.Client."))) {
             continue;
         }
 
@@ -655,7 +655,7 @@ QStringList TestAccountChannelDispatcher::ourHandledChannels()
     QDBusConnection bus = QDBusConnection::sessionBus();
     QStringList registeredNames = bus.interface()->registeredServiceNames();
     Q_FOREACH (QString name, registeredNames) {
-        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
+        if (!name.startsWith(QLatin1String("im.telepathy.v1.Client."))) {
             continue;
         }
 

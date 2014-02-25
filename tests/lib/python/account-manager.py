@@ -11,7 +11,7 @@ from dbus.mainloop.glib import DBusGMainLoop
 from dbus.service import Object, method, signal
 from gobject import MainLoop
 
-TP = 'org.freedesktop.Telepathy'
+TP = 'im.telepathy.v1'
 
 AM_IFACE = TP + '.AccountManager'
 AM_BUS_NAME = AM_IFACE
@@ -35,7 +35,7 @@ Connection_Presence_Type_Available = dbus.UInt32(2)
 VALID_CONNECTION_MANAGER_NAME = re.compile(r'^[A-Za-z0-9][_A-Za-z0-9]+$')
 VALID_PROTOCOL_NAME = re.compile(r'^[A-Za-z0-9][-A-Za-z0-9]+$')
 
-TELEPATHY_ERROR = "org.freedesktop.Telepathy.Error"
+TELEPATHY_ERROR = "im.telepathy.v1.Error"
 TELEPATHY_ERROR_DISCONNECTED = TELEPATHY_ERROR + ".Disconnected"
 TELEPATHY_ERROR_CANCELLED = TELEPATHY_ERROR + ".Cancelled"
 TELEPATHY_ERROR_NETWORK_ERROR = TELEPATHY_ERROR + ".NetworkError"

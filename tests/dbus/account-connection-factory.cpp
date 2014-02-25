@@ -20,9 +20,9 @@ using namespace Tp::Client;
 class AccountAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Account")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Account")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Account\" >\n"
+"  <interface name=\"im.telepathy.v1.Account\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"Connection\" type=\"o\" access=\"read\" />\n"
 "    <signal name=\"AccountPropertyChanged\" >\n"
@@ -172,7 +172,7 @@ void TestAccountConnectionFactory::initTestCase()
     QCOMPARE(mConn2->isReady(), false);
 
     mAccountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
-    mAccountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/simple/account");
+    mAccountPath = QLatin1String("/im/telepathy/v1/Account/simple/simple/account");
 }
 
 void TestAccountConnectionFactory::init()

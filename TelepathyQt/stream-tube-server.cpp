@@ -443,7 +443,7 @@ void StreamTubeServer::TubeWrapper::onConnectionClosed(uint conn, const QString 
  *
  * \param p2pServices Names of the tube services to handle on peer-to-peer tube channels.
  * \param roomServices Names of the tube services to handle on room/group tube channels.
- * \param clientName The client name (without the \c org.freedesktop.Telepathy.Client. prefix).
+ * \param clientName The client name (without the \c im.telepathy.v1.Client. prefix).
  * \param monitorConnections Whether to enable connection monitoring or not.
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
@@ -485,7 +485,7 @@ StreamTubeServerPtr StreamTubeServer::create(
  * \param contactFactory The contact factory to use.
  * \param p2pServices Names of the tube services to handle on peer-to-peer tube channels.
  * \param roomServices Names of the tube services to handle on room/group tube channels.
- * \param clientName The client name (without the \c org.freedesktop.Telepathy.Client. prefix).
+ * \param clientName The client name (without the \c im.telepathy.v1.Client. prefix).
  * \param monitorConnections Whether to enable connection monitoring or not.
  */
 StreamTubeServerPtr StreamTubeServer::create(
@@ -519,7 +519,7 @@ StreamTubeServerPtr StreamTubeServer::create(
  * \param accountManager A pointer to the account manager to link up with.
  * \param p2pServices Names of the tube services to handle on peer-to-peer tube channels.
  * \param roomServices Names of the tube services to handle on room/group tube channels.
- * \param clientName The client name (without the \c org.freedesktop.Telepathy.Client. prefix).
+ * \param clientName The client name (without the \c im.telepathy.v1.Client. prefix).
  * \param monitorConnections Whether to enable connection monitoring or not.
  */
 StreamTubeServerPtr StreamTubeServer::create(
@@ -548,7 +548,7 @@ StreamTubeServerPtr StreamTubeServer::create(
  * \param registrar The client registrar to use.
  * \param p2pServices Names of the tube services to handle on peer-to-peer tube channels.
  * \param roomServices Names of the tube services to handle on room/group tube channels.
- * \param clientName The client name (without the \c org.freedesktop.Telepathy.Client. prefix).
+ * \param clientName The client name (without the \c im.telepathy.v1.Client. prefix).
  * \param monitorConnections Whether to enable connection monitoring or not.
  */
 StreamTubeServerPtr StreamTubeServer::create(
@@ -614,7 +614,7 @@ ClientRegistrarPtr StreamTubeServer::registrar() const
 /**
  * Return the Telepathy %Client name of the server.
  *
- * \return The name, without the \c org.freedesktop.Telepathy.Client. prefix of the full D-Bus service name.
+ * \return The name, without the \c im.telepathy.v1.Client. prefix of the full D-Bus service name.
  */
 QString StreamTubeServer::clientName() const
 {

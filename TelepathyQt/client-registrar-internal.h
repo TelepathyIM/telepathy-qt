@@ -41,9 +41,9 @@ class PendingOperation;
 class TP_QT_NO_EXPORT ClientAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Client")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Client\" >\n"
+"  <interface name=\"im.telepathy.v1.Client\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
 "  </interface>\n"
         "")
@@ -73,9 +73,9 @@ private:
 class TP_QT_NO_EXPORT ClientObserverAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Observer")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Client.Observer")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Client.Observer\" >\n"
+"  <interface name=\"im.telepathy.v1.Client.Observer\" >\n"
 "    <property name=\"ObserverChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
 "    <property name=\"Recover\" type=\"b\" access=\"read\" />\n"
 "    <method name=\"ObserveChannels\" >\n"
@@ -152,9 +152,9 @@ private:
 class TP_QT_NO_EXPORT ClientApproverAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Approver")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Client.Approver")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Client.Approver\" >\n"
+"  <interface name=\"im.telepathy.v1.Client.Approver\" >\n"
 "    <property name=\"ApproverChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
 "    <method name=\"AddDispatchOperation\" >\n"
 "      <arg name=\"Channels\" type=\"a(oa{sv})\" direction=\"in\" />\n"
@@ -215,9 +215,9 @@ private:
 class TP_QT_NO_EXPORT ClientHandlerAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Handler")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Client.Handler")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Client.Handler\" >\n"
+"  <interface name=\"im.telepathy.v1.Client.Handler\" >\n"
 "    <property name=\"HandlerChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
 "    <property name=\"BypassApproval\" type=\"b\" access=\"read\" />\n"
 "    <property name=\"Capabilities\" type=\"as\" access=\"read\" />\n"
@@ -314,9 +314,9 @@ private:
 class TP_QT_NO_EXPORT ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Interface.Requests")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Client.Interface.Requests")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Client.Interface.Requests\" >\n"
+"  <interface name=\"im.telepathy.v1.Client.Interface.Requests\" >\n"
 "    <method name=\"AddRequest\" >\n"
 "      <arg name=\"Request\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"Properties\" type=\"a{sv}\" direction=\"in\" />\n"

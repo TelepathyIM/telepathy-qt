@@ -2005,7 +2005,7 @@ QString Account::uniqueIdentifier() const
 {
     QString path = objectPath();
     return path.right(path.length() -
-            strlen("/org/freedesktop/Telepathy/Account/"));
+            strlen("/im/telepathy/v1/Account/"));
 }
 
 /**
@@ -2098,7 +2098,7 @@ bool Account::requestsSucceedWithChannel() const
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2130,7 +2130,7 @@ PendingChannelRequest *Account::ensureTextChat(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2162,7 +2162,7 @@ PendingChannelRequest *Account::ensureTextChat(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2196,7 +2196,7 @@ PendingChannelRequest *Account::ensureTextChatroom(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2231,7 +2231,7 @@ PendingChannelRequest *Account::ensureAudioCall(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2266,7 +2266,7 @@ PendingChannelRequest* Account::ensureAudioCall(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2301,7 +2301,7 @@ PendingChannelRequest *Account::ensureVideoCall(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2338,7 +2338,7 @@ PendingChannelRequest *Account::ensureVideoCall(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2377,7 +2377,7 @@ PendingChannelRequest *Account::ensureAudioVideoCall(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2411,7 +2411,7 @@ PendingChannelRequest *Account::ensureAudioVideoCall(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2448,7 +2448,7 @@ PendingChannelRequest *Account::createFileTransfer(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2485,7 +2485,7 @@ PendingChannelRequest *Account::createFileTransfer(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2517,7 +2517,7 @@ PendingChannelRequest *Account::createStreamTube(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2551,7 +2551,7 @@ PendingChannelRequest *Account::createStreamTube(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2586,7 +2586,7 @@ PendingChannelRequest *Account::createDBusTube(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2633,7 +2633,7 @@ PendingChannelRequest* Account::createDBusTubeRoom(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2667,7 +2667,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2702,7 +2702,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2739,7 +2739,7 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -2777,7 +2777,7 @@ PendingChannelRequest *Account::createConferenceTextChatroom(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -3371,7 +3371,7 @@ PendingChannel *Account::createAndHandleContactSearch(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,
@@ -3404,7 +3404,7 @@ PendingChannelRequest *Account::createChannel(
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param hints Arbitrary metadata which will be relayed to the handler if supported,

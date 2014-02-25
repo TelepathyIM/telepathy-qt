@@ -431,7 +431,7 @@ QDateTime ChannelRequest::userActionTime() const
 
 /**
  * Return either the well-known bus name (starting with
- * org.freedesktop.Telepathy.Client.) of the preferred handler for this channel,
+ * im.telepathy.v1.Client.) of the preferred handler for this channel,
  * or an empty string to indicate that any handler would be acceptable.
  *
  * This property is set when the channel request is created, and can never

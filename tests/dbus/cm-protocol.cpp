@@ -30,9 +30,9 @@ PresenceSpec getPresenceSpec(const PresenceSpecList &specs, const QString &statu
 class ConnectionManagerAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ConnectionManager")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.ConnectionManager")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.ConnectionManager\" >\n"
+"  <interface name=\"im.telepathy.v1.ConnectionManager\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"Protocols\" type=\"a{sa{sv}}\" access=\"read\" >\n"
 "      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"Tp::ProtocolPropertiesMap\" />\n"
@@ -73,9 +73,9 @@ private:
 class ProtocolAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Protocol")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Protocol")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Protocol\" >\n"
+"  <interface name=\"im.telepathy.v1.Protocol\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"Parameters\" type=\"a(susv)\" access=\"read\" >\n"
 "      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"Tp::ParamSpecList\" />\n"
@@ -194,9 +194,9 @@ private:
 class ProtocolAddressingAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Protocol.Interface.Addressing")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Protocol.Interface.Addressing")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Protocol.Interface.Addressing\" >\n"
+"  <interface name=\"im.telepathy.v1.Protocol.Interface.Addressing\" >\n"
 "    <property name=\"AddressableVCardFields\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"AddressableURISchemes\" type=\"as\" access=\"read\" />\n"
 "  </interface>\n"
@@ -253,9 +253,9 @@ private:
 class ProtocolAvatarsAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Protocol.Interface.Avatars")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Protocol.Interface.Avatars")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Protocol.Interface.Avatars\" >\n"
+"  <interface name=\"im.telepathy.v1.Protocol.Interface.Avatars\" >\n"
 "    <property name=\"SupportedAvatarMIMETypes\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"MinimumAvatarHeight type=\"u\" access=\"read\" />\n"
 "    <property name=\"MinimumAvatarWidth type=\"u\" access=\"read\" />\n"
@@ -377,9 +377,9 @@ private:
 class ProtocolPresenceAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Protocol.Interface.Presence")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Protocol.Interface.Presence")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Protocol.Interface.Presence\" >\n"
+"  <interface name=\"im.telepathy.v1.Protocol.Interface.Presence\" >\n"
 "    <property name=\"Statuses\" type=\"a{s(ubb)}\" access=\"read\" >\n"
 "      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"Tp::StatusSpecMap\" />\n"
 "    </property>\n"

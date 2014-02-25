@@ -185,7 +185,7 @@ void TestAccountBasics::testBasics()
     QVERIFY(mAM->isReady());
     QCOMPARE(mAM->interfaces(), QStringList());
     QCOMPARE(mAM->supportedAccountProperties(), QStringList() <<
-            QLatin1String("org.freedesktop.Telepathy.Account.Enabled"));
+            QLatin1String("im.telepathy.v1.Account.Enabled"));
 
     QVERIFY(connect(mAM.data(),
                     SIGNAL(newAccount(const Tp::AccountPtr &)),
@@ -209,7 +209,7 @@ void TestAccountBasics::testBasics()
     processDBusQueue(mConn->client().data());
 
     QStringList paths;
-    QString accPath(QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
+    QString accPath(QLatin1String("/im/telepathy/v1/Account/foo/bar/Account0"));
     QCOMPARE(pathsForAccounts(mAM->allAccounts()), QStringList() << accPath);
     QList<AccountPtr> accs = mAM->accountsForObjectPaths(
             QStringList() << accPath << QLatin1String("/invalid/path"));
@@ -221,7 +221,7 @@ void TestAccountBasics::testBasics()
                 Account::FeatureCore | Account::FeatureCapabilities));
 
     AccountPtr acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"),
+            QLatin1String("/im/telepathy/v1/Account/foo/bar/Account0"),
             mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -370,7 +370,7 @@ void TestAccountBasics::testBasics()
     processDBusQueue(mConn->client().data());
 
     acc = Account::create(mAM->dbusConnection(), mAM->busName(),
-            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"),
+            QLatin1String("/im/telepathy/v1/Account/spurious/normal/Account0"),
             mAM->connectionFactory(), mAM->channelFactory(), mAM->contactFactory());
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),

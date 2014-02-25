@@ -879,7 +879,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         return true;
     }
 
-    QString busName = QLatin1String("org.freedesktop.Telepathy.Client.");
+    QString busName = QLatin1String("im.telepathy.v1.Client.");
     busName.append(clientName);
     if (unique) {
         // o.f.T.Client.clientName.<unique_bus_name>_<pointer> should be enough to identify
@@ -907,13 +907,13 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         // export o.f.T.Client.Handler
         new ClientHandlerAdaptor(this, handler, object);
         interfaces.append(
-                QLatin1String("org.freedesktop.Telepathy.Client.Handler"));
+                QLatin1String("im.telepathy.v1.Client.Handler"));
         if (handler->wantsRequestNotification()) {
             // export o.f.T.Client.Interface.Requests
             new ClientHandlerRequestsAdaptor(this, handler, object);
             interfaces.append(
                     QLatin1String(
-                        "org.freedesktop.Telepathy.Client.Interface.Requests"));
+                        "im.telepathy.v1.Client.Interface.Requests"));
         }
     }
 
@@ -923,7 +923,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         // export o.f.T.Client.Observer
         new ClientObserverAdaptor(this, observer, object);
         interfaces.append(
-                QLatin1String("org.freedesktop.Telepathy.Client.Observer"));
+                QLatin1String("im.telepathy.v1.Client.Observer"));
     }
 
     AbstractClientApprover *approver =
@@ -932,7 +932,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         // export o.f.T.Client.Approver
         new ClientApproverAdaptor(this, approver, object);
         interfaces.append(
-                QLatin1String("org.freedesktop.Telepathy.Client.Approver"));
+                QLatin1String("im.telepathy.v1.Client.Approver"));
     }
 
     if (interfaces.isEmpty()) {

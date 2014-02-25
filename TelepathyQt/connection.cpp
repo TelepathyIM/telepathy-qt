@@ -1638,8 +1638,8 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
  * (which invoke the Channel Dispatcher's services).
  *
  * The request MUST contain the following keys:
- *   org.freedesktop.Telepathy.Channel.ChannelType
- *   org.freedesktop.Telepathy.Channel.TargetHandleType
+ *   im.telepathy.v1.Channel.ChannelType
+ *   im.telepathy.v1.Channel.TargetHandleType
  *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingChannel object. The object also provides access to the
@@ -1709,8 +1709,8 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
  * (which invoke the Channel Dispatcher's services).
  *
  * The request MUST contain the following keys:
- *   org.freedesktop.Telepathy.Channel.ChannelType
- *   org.freedesktop.Telepathy.Channel.TargetHandleType
+ *   im.telepathy.v1.Channel.ChannelType
+ *   im.telepathy.v1.Channel.TargetHandleType
  *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingChannel object. The object also provides access to the

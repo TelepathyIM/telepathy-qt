@@ -37,9 +37,9 @@ namespace
 class ChannelRequestAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelRequest")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.ChannelRequest")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.ChannelRequest\" >\n"
+"  <interface name=\"im.telepathy.v1.ChannelRequest\" >\n"
 "    <property name=\"Account\" type=\"o\" access=\"read\" />\n"
 "    <property name=\"UserActionTime\" type=\"x\" access=\"read\" />\n"
 "    <property name=\"PreferredHandler\" type=\"s\" access=\"read\" />\n"
@@ -417,7 +417,7 @@ QMap<QString, ClientHandlerInterface *> TestStreamTubeHandlers::ourHandlers()
     QMap<QString, ClientHandlerInterface *> handlers;
 
     Q_FOREACH (QString name, registeredNames) {
-        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client."))) {
+        if (!name.startsWith(QLatin1String("im.telepathy.v1.Client."))) {
             continue;
         }
 
@@ -439,7 +439,7 @@ QMap<QString, ClientHandlerInterface *> TestStreamTubeHandlers::ourHandlers()
             continue;
         }
 
-        handlers.insert(name.mid(std::strlen("org.freedesktop.Telepathy.Client.")),
+        handlers.insert(name.mid(std::strlen("im.telepathy.v1.Client.")),
                 new ClientHandlerInterface(name, path, this));
     }
 
@@ -897,7 +897,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
 
     QObject *request = new QObject(this);
     QString requestPath =
-        QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/RequestForSimpleTcpExport");
+        QLatin1String("/im/telepathy/v1/ChannelRequest/RequestForSimpleTcpExport");
 
     QDBusConnection bus = server->registrar()->dbusConnection();
     new ChannelRequestAdaptor(QDBusObjectPath(mAcc->objectPath()),

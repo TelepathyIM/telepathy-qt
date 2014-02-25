@@ -66,9 +66,9 @@ QList<ChannelPtr> channels(const QList<CallChannelPtr> &channels)
 class AccountAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Account")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Account")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Account\" >\n"
+"  <interface name=\"im.telepathy.v1.Account\" >\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"Connection\" type=\"o\" access=\"read\" />\n"
 "    <signal name=\"AccountPropertyChanged\" >\n"
@@ -236,7 +236,7 @@ void TestSimpleObserver::initTestCase()
 
     QDBusConnection bus = QDBusConnection::sessionBus();
     QString channelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
-    QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
+    QString channelDispatcherPath = QLatin1String("/im/telepathy/v1/ChannelDispatcher");
     Dispatcher *dispatcher = new Dispatcher(this);
     QVERIFY(bus.registerService(channelDispatcherBusName));
     QVERIFY(bus.registerObject(channelDispatcherPath, dispatcher));
@@ -250,7 +250,7 @@ void TestSimpleObserver::initTestCase()
     for (int i = 0; i < 2; ++i) {
         // setup account
         QString accountBusName = TP_QT_IFACE_ACCOUNT_MANAGER;
-        QString accountPath = QLatin1String("/org/freedesktop/Telepathy/Account/simple/account/") +
+        QString accountPath = QLatin1String("/im/telepathy/v1/Account/simple/account/") +
             QString::number(i);
 
         QObject *adaptorObject = new QObject(this);
@@ -711,7 +711,7 @@ QMap<QString, QString> TestSimpleObserver::ourObservers()
     QMap<QString, QString> observers;
 
     Q_FOREACH (QString name, registeredNames) {
-        if (!name.startsWith(QLatin1String("org.freedesktop.Telepathy.Client.TpQtSO"))) {
+        if (!name.startsWith(QLatin1String("im.telepathy.v1.Client.TpQtSO"))) {
             continue;
         }
 

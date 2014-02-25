@@ -209,7 +209,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
             SIGNAL(channelReceived(Tp::ChannelPtr,QDateTime,Tp::ChannelRequestHints)),
             SLOT(onHandlerChannelReceived(Tp::ChannelPtr)));
 
-    handlerName = QString(QLatin1String("org.freedesktop.Telepathy.Client.%1")).arg(handlerName);
+    handlerName = QString(QLatin1String("im.telepathy.v1.Client.%1")).arg(handlerName);
 
     debug() << "Requesting channel through account using handler" << handlerName;
     PendingChannelRequest *pcr;

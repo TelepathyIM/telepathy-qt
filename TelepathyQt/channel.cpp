@@ -1433,10 +1433,10 @@ ConnectionPtr Channel::connection() const
  *
  * If the channel is ready (isReady(Channel::FeatureCore) returns true), the following keys are
  * guaranteed to be present:
- * org.freedesktop.Telepathy.Channel.ChannelType,
- * org.freedesktop.Telepathy.Channel.TargetHandleType,
- * org.freedesktop.Telepathy.Channel.TargetHandle and
- * org.freedesktop.Telepathy.Channel.Requested.
+ * im.telepathy.v1.Channel.ChannelType,
+ * im.telepathy.v1.Channel.TargetHandleType,
+ * im.telepathy.v1.Channel.TargetHandle and
+ * im.telepathy.v1.Channel.Requested.
  *
  * The keys and values in this map are defined by the \telepathy_spec,
  * or by third-party extensions to that specification.

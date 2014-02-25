@@ -439,7 +439,7 @@ QList<ChannelPtr> ChannelDispatchOperation::channels() const
 
 /**
  * Return the well known bus names (starting with
- * org.freedesktop.Telepathy.Client.) of the possible Handlers for this
+ * im.telepathy.v1.Client.) of the possible Handlers for this
  * dispatch operation channels with the preferred handlers first.
  *
  * As a result, approvers should use the first handler by default, unless they
@@ -472,7 +472,7 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
  * this method to request that they can handle a channel bundle themselves.
  *
  * \param handler The well-known bus name (starting with
- *                org.freedesktop.Telepathy.Client.) of the channel handler that
+ *                im.telepathy.v1.Client.) of the channel handler that
  *                should handle the channel, or an empty string if
  *                the client has no preferred channel handler.
  * \return A PendingOperation which will emit PendingOperation::finished

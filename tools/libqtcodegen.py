@@ -114,7 +114,7 @@ class RefRegistry(object):
             path = ns + '.' + local.strip()
         else:
             if ref.hasAttribute('namespace'):
-                ns = ref.getAttribute('namespace').replace('ofdT', 'org.freedesktop.Telepathy')
+                ns = ref.getAttribute('namespace').replace('ofdT', 'im.telepathy.v1')
                 path = ns + '.' + local.strip()
             else:
                 path = local

@@ -23,10 +23,10 @@
   <unsupported-channel-classes>
     <!-- this service doesn't support text roomlists -->
     <channel-class>
-      <property name="org.freedesktop.Telepathy.Channel.TargetHandleType"
+      <property name="im.telepathy.v1.Channel.TargetHandleType"
                 type="u">3</property>
-      <property name="org.freedesktop.Telepathy.Channel.ChannelType"
-                type="s">org.freedesktop.Telepathy.Channel.Type.Text</property>
+      <property name="im.telepathy.v1.Channel.ChannelType"
+                type="s">im.telepathy.v1.Channel.Type.Text</property>
     </channel-class>
   </unsupported-channel-classes>
 

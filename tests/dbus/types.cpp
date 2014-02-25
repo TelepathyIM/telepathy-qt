@@ -12,9 +12,9 @@ using namespace Tp;
 class TubeAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Channel.Interface.Tube")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.Channel.Interface.Tube")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Channel.Interface.Tube\" >\n"
+"  <interface name=\"im.telepathy.v1.Channel.Interface.Tube\" >\n"
 "    <property name=\"Parameters\" type=\"a{sv}\" access=\"read\" />\n"
 "  </interface>\n"
         "")
@@ -78,8 +78,8 @@ void TestTypes::initTestCase()
     QDBusConnection bus = QDBusConnection::sessionBus();
 
     // setup adaptor
-    QString tubeBusName = QLatin1String("org.freedesktop.Telepathy.Test.Types");
-    QString tubePath = QLatin1String("/org/freedesktop/Telepathy/Test/Types");
+    QString tubeBusName = QLatin1String("im.telepathy.v1.Test.Types");
+    QString tubePath = QLatin1String("/im/telepathy/v1/Test/Types");
 
     QObject *adaptorObject = new QObject(this);
     (void) new TubeAdaptor(adaptorObject);

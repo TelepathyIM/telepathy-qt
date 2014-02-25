@@ -836,7 +836,7 @@ USA.</p>
 
           <p>The contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
-            (<code>org.freedesktop.Telepathy.Connection/contact-id</code>).</p>
+            (<code>im.telepathy.v1.Connection/contact-id</code>).</p>
         </tp:docstring>
       </arg>
 

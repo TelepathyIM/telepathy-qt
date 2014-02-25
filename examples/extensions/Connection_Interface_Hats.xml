@@ -10,7 +10,7 @@
   </tp:license>
   <interface name="com.example.Telepathy.Connection.Interface.Hats"
     tp:causes-havoc='a silly example'>
-    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+    <tp:requires interface="im.telepathy.v1.Connection"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       This interface is an example of how Telepathy can be extended.
@@ -103,11 +103,11 @@
         </tp:docstring>
       </arg>
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable"/>
       </tp:possible-errors>
     </method>
 
@@ -149,11 +149,11 @@
         </tp:docstring>
       </arg>
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+        <tp:error name="im.telepathy.v1.Error.Disconnected"/>
+        <tp:error name="im.telepathy.v1.Error.NetworkError"/>
+        <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
+        <tp:error name="im.telepathy.v1.Error.PermissionDenied"/>
+        <tp:error name="im.telepathy.v1.Error.NotAvailable">
           <tp:docstring>
             This hat is not for sale. Get your own style, you trend-follower!
           </tp:docstring>

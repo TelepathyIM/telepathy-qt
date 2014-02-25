@@ -78,7 +78,7 @@ struct TP_QT_NO_EXPORT PendingChannelRequest::Private
  *                       if this channel request is for some reason not
  *                       involving user action.
  * \param preferredHandler Either the well-known bus name (starting with
- *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         im.telepathy.v1.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
  * \param create Whether createChannel or ensureChannel should be called.

@@ -170,7 +170,7 @@ void PendingOperation::setFinishedWithError(const QString &name,
 
     if (name.isEmpty()) {
         warning() << this << "should be given a non-empty error name";
-        mPriv->errorName = QLatin1String("org.freedesktop.Telepathy.Qt.ErrorHandlingError");
+        mPriv->errorName = QLatin1String("im.telepathy.v1.Qt.ErrorHandlingError");
     } else {
         mPriv->errorName = name;
     }

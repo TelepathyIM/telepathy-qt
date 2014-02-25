@@ -33,9 +33,9 @@ using namespace Tp::Client;
 class ChannelRequestAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelRequest")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.ChannelRequest")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.ChannelRequest\" >\n"
+"  <interface name=\"im.telepathy.v1.ChannelRequest\" >\n"
 "    <property name=\"Account\" type=\"o\" access=\"read\" />\n"
 "    <property name=\"UserActionTime\" type=\"x\" access=\"read\" />\n"
 "    <property name=\"PreferredHandler\" type=\"s\" access=\"read\" />\n"
@@ -126,9 +126,9 @@ private:
 class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatchOperation")
+    Q_CLASSINFO("D-Bus Interface", "im.telepathy.v1.ChannelDispatchOperation")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.ChannelDispatchOperation\" >\n"
+"  <interface name=\"im.telepathy.v1.ChannelDispatchOperation\" >\n"
 "    <property name=\"Account\" type=\"o\" access=\"read\" />\n"
 "    <property name=\"Connection\" type=\"o\" access=\"read\" />\n"
 "    <property name=\"Channels\" type=\"a(oa{sv})\" access=\"read\" />\n"
@@ -475,7 +475,7 @@ void TestClient::initTestCase()
     // Fake ChannelRequest
 
     mChannelDispatcherBusName = TP_QT_IFACE_CHANNEL_DISPATCHER;
-    mChannelRequestPath = QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/Request1");
+    mChannelRequestPath = QLatin1String("/im/telepathy/v1/ChannelRequest/Request1");
 
     QObject *request = new QObject(this);
 
@@ -491,12 +491,12 @@ void TestClient::initTestCase()
 
     // Fake ChannelDispatchOperation
 
-    mCDOPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatchOperation/Operation1");
+    mCDOPath = QLatin1String("/im/telepathy/v1/ChannelDispatchOperation/Operation1");
 
     QObject *cdo = new QObject(this);
 
     // Initialize this here so we can actually set it in possibleHandlers
-    mClientObject1BusName = QLatin1String("org.freedesktop.Telepathy.Client.foo");
+    mClientObject1BusName = QLatin1String("im.telepathy.v1.Client.foo");
 
     ChannelDetailsList channelDetailsList;
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
@@ -564,14 +564,14 @@ void TestClient::testRegister()
     QDBusConnectionInterface *busIface = bus.interface();
     QStringList registeredServicesNames = busIface->registeredServiceNames();
     QVERIFY(registeredServicesNames.filter(
-                QRegExp(QLatin1String("^" "org.freedesktop.Telepathy.Client.foo"
+                QRegExp(QLatin1String("^" "im.telepathy.v1.Client.foo"
                         ".([_A-Za-z][_A-Za-z0-9]*)"))).size() == 1);
 
-    mClientObject1BusName = QLatin1String("org.freedesktop.Telepathy.Client.foo");
-    mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
+    mClientObject1BusName = QLatin1String("im.telepathy.v1.Client.foo");
+    mClientObject1Path = QLatin1String("/im/telepathy/v1/Client/foo");
 
     mClientObject2BusName = registeredServicesNames.filter(
-            QRegExp(QLatin1String("org.freedesktop.Telepathy.Client.foo._*"))).first();
+            QRegExp(QLatin1String("im.telepathy.v1.Client.foo._*"))).first();
     mClientObject2Path = QString(QLatin1String("/%1")).arg(mClientObject2BusName);
     mClientObject2Path.replace(QLatin1String("."), QLatin1String("/"));
 }

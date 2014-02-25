@@ -224,7 +224,7 @@ void TestAccountSet::testBasics()
         // check that the account is properly created and added to the set of valid accounts
         QCOMPARE(validAccounts->accounts().size(), 1);
         QStringList paths = QStringList() <<
-            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0");
+            QLatin1String("/im/telepathy/v1/Account/foo/bar/Account0");
         QCOMPARE(pathsForAccounts(validAccounts), paths);
         QCOMPARE(pathsForAccounts(mAM->invalidAccounts()), QStringList());
         QCOMPARE(pathsForAccounts(mAM->allAccounts()), paths);

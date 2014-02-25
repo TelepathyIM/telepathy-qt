@@ -100,12 +100,12 @@ private:
 
 QString TestStatefulProxy::wellKnownName()
 {
-    return QLatin1String("org.freedesktop.Telepathy.Qt.TestStatefulProxy");
+    return QLatin1String("im.telepathy.v1.Qt.TestStatefulProxy");
 }
 
 QString TestStatefulProxy::objectPath()
 {
-    return QLatin1String("/org/freedesktop/Telepathy/Qt/TestStatefulProxy/Object");
+    return QLatin1String("/im/telepathy/v1/Qt/TestStatefulProxy/Object");
 }
 
 TestStatefulProxy::TestStatefulProxy(QObject *parent)
