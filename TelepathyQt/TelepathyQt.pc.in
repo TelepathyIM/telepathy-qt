@@ -6,6 +6,6 @@ includedir=${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}
 Name: TelepathyQt${QT_VERSION_MAJOR}
 Description: Qt utility library for the Telepathy framework
 Version: ${PACKAGE_VERSION}
-Requires.private: QtCore >= ${QT_MIN_VERSION}, QtCore < ${QT_MAX_VERSION}, QtDBus >= ${QT_MIN_VERSION}, QtDBus < ${QT_MAX_VERSION}, QtNetwork >= ${QT_MIN_VERSION}, QtNetwork < ${QT_MAX_VERSION}, QtXml >= ${QT_MIN_VERSION}, QtXml < ${QT_MAX_VERSION}
+Requires.private: Qt${QT_VERSION_PC}Core >= ${QT_MIN_VERSION}, Qt${QT_VERSION_PC}Core < ${QT_MAX_VERSION}, Qt${QT_VERSION_PC}DBus >= ${QT_MIN_VERSION}, Qt${QT_VERSION_PC}DBus < ${QT_MAX_VERSION}, Qt${QT_VERSION_PC}Network >= ${QT_MIN_VERSION}, Qt${QT_VERSION_PC}Network < ${QT_MAX_VERSION}, Qt${QT_VERSION_PC}Xml >= ${QT_MIN_VERSION}, Qt${QT_VERSION_PC}Xml < ${QT_MAX_VERSION}
 Libs: -L${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR} -ltelepathy-qt${QT_VERSION_MAJOR}
 Cflags: -I${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}

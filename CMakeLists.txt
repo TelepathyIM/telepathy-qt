@@ -83,6 +83,11 @@ set(QT5_MIN_VERSION "5.0.0")
 set(QT5_MAX_VERSION "6.0.0")
 find_package(Qt REQUIRED)
 
+IF(QT_VERSION_MAJOR MATCHES 5)
+    # It is QtCore for Qt4 but Qt5Core for Qt5 in pkg-config
+    SET(QT_VERSION_PC 5)
+ENDIF(QT_VERSION_MAJOR MATCHES 5)
+
 foreach(flag ${QT_CONFIG_FLAGS})
     if (${flag} MATCHES "reduce_relocations")
         set(TP_QT_EXECUTABLE_LINKER_FLAGS "-fPIE")
