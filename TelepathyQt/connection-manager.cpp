@@ -101,8 +101,9 @@ void ConnectionManager::Private::PendingNames::invokeMethod(const QLatin1String 
 void ConnectionManager::Private::PendingNames::parseResult(const QStringList &names)
 {
     foreach (const QString name, names) {
-        if (name.startsWith(TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String("."))) {
-            mResult << name.right(name.length() - 44);
+        QString cmPrefix = TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".");
+        if (name.startsWith(cmPrefix)) {
+            mResult << name.mid(cmPrefix.length());
         }
     }
 }
