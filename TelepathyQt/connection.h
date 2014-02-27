@@ -215,7 +215,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onIntrospectRosterFinished(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onIntrospectRosterGroupsFinished(Tp::PendingOperation *op);
 
-    TP_QT_NO_EXPORT void onSelfHandleChanged(uint);
+    TP_QT_NO_EXPORT void onSelfContactChanged(uint selfHandle, const QString &selfID);
 
     TP_QT_NO_EXPORT void gotBalance(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void onBalanceChanged(const Tp::CurrencyAmount &);

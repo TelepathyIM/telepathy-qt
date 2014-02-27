@@ -300,10 +300,10 @@ void Connection::Private::init()
     parent->connect(baseInterface,
             SIGNAL(StatusChanged(uint,uint)),
             SLOT(onStatusChanged(uint,uint)));
-    debug() << "Connecting to SelfHandleChanged()";
+    debug() << "Connecting to SelfContactChanged()";
     parent->connect(baseInterface,
-            SIGNAL(SelfHandleChanged(uint)),
-            SLOT(onSelfHandleChanged(uint)));
+            SIGNAL(SelfContactChanged(uint,QString)),
+            SLOT(onSelfContactChanged(uint,QString)));
 }
 
 void Connection::Private::introspectMain(Connection::Private *self)
@@ -1944,8 +1944,10 @@ ConnectionLowlevelConstPtr Connection::lowlevel() const
     return mPriv->lowlevel;
 }
 
-void Connection::onSelfHandleChanged(uint handle)
+void Connection::onSelfContactChanged(uint handle, const QString &selfID)
 {
+    Q_UNUSED(selfID);
+
     if (mPriv->selfHandle == handle) {
         return;
     }
