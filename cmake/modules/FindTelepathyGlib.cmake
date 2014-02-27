@@ -22,9 +22,9 @@ if (NOT WIN32)
     # in the find_path() and find_library() calls
     find_package(PkgConfig)
     if (TELEPATHY_GLIB_MIN_VERSION)
-        PKG_CHECK_MODULES(PC_TELEPATHY_GLIB telepathy-glib>=${TELEPATHY_GLIB_MIN_VERSION})
+        PKG_CHECK_MODULES(PC_TELEPATHY_GLIB telepathy-glib-1>=${TELEPATHY_GLIB_MIN_VERSION})
     else (TELEPATHY_GLIB_MIN_VERSION)
-        PKG_CHECK_MODULES(PC_TELEPATHY_GLIB telepathy-glib)
+        PKG_CHECK_MODULES(PC_TELEPATHY_GLIB telepathy-glib-1)
     endif (TELEPATHY_GLIB_MIN_VERSION)
     set(TELEPATHY_GLIB_DEFINITIONS ${PC_TELEPATHY_GLIB_CFLAGS_OTHER})
 endif (NOT WIN32)
@@ -39,7 +39,7 @@ else (TELEPATHY_GLIB_MIN_VERSION AND NOT PC_TELEPATHY_GLIB_FOUND)
        PATH_SUFFIXES telepathy-1.0
     )
 
-    find_library(TELEPATHY_GLIB_LIBRARIES NAMES telepathy-glib
+    find_library(TELEPATHY_GLIB_LIBRARIES NAMES telepathy-glib-1
        PATHS
        ${PC_TELEPATHY_GLIB_LIBDIR}
        ${PC_TELEPATHY_GLIB_LIBRARY_DIRS}
