@@ -138,8 +138,8 @@ tp_tests_simple_account_manager_class_init (
 
   static TpDBusPropertiesMixinPropImpl am_props[] = {
         { "Interfaces", "interfaces", NULL },
-        { "ValidAccounts", "valid-accounts", NULL },
-        { "InvalidAccounts", "invalid-accounts", NULL },
+        { "UsableAccounts", "valid-accounts", NULL },
+        { "UnusableAccounts", "invalid-accounts", NULL },
         /*
         { "SupportedAccountProperties", "supported-account-properties", NULL },
         */

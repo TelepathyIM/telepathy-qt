@@ -59,9 +59,9 @@ class AccountManager(Object):
     def _am_props(self):
         return dbus.Dictionary({
             'Interfaces': dbus.Array([], signature='s'),
-            'ValidAccounts': dbus.Array(self._valid_accounts.keys(),
+            'UsableAccounts': dbus.Array(self._valid_accounts.keys(),
                 signature='o'),
-            'InvalidAccounts': dbus.Array(self._invalid_accounts.keys(),
+            'UnusableAccounts': dbus.Array(self._invalid_accounts.keys(),
                 signature='o'),
             'SupportedAccountProperties': dbus.Array([ACCOUNT_IFACE + '.Enabled'], signature='s'),
         }, signature='sv')
@@ -95,7 +95,7 @@ class AccountManager(Object):
         raise NotImplementedError('No mutable properties')
 
     @signal(AM_IFACE, signature='ob')
-    def AccountValidityChanged(self, path, valid):
+    def AccountUsabilityChanged(self, path, valid):
         if valid:
             assert path in self._invalid_accounts
             assert path not in self._valid_accounts
@@ -104,7 +104,7 @@ class AccountManager(Object):
             assert path in self._valid_accounts
             assert path not in self._invalid_accounts
             self._invalid_accounts[path] = self._valid_accounts.pop(path)
-        print "Emitting AccountValidityChanged(%s, %s)" % (path, valid)
+        print "Emitting AccountUsabilityChanged(%s, %s)" % (path, valid)
 
     @signal(AM_IFACE, signature='o')
     def AccountRemoved(self, path):
@@ -144,12 +144,12 @@ class AccountManager(Object):
                 # that's probably the simplest implementation
                 if account._is_valid():
                     self._invalid_accounts[path] = account
-                    self.AccountValidityChanged(path, True)
+                    self.AccountUsabilityChanged(path, True)
                     assert path not in self._invalid_accounts
                     assert path in self._valid_accounts
                 else:
                     self._valid_accounts[path] = account
-                    self.AccountValidityChanged(path, False)
+                    self.AccountUsabilityChanged(path, False)
                     assert path not in self._valid_accounts
                     assert path in self._invalid_accounts
 

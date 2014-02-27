@@ -146,8 +146,8 @@ void AccountManager::Private::init()
     }
 
     parent->connect(baseInterface,
-            SIGNAL(AccountValidityChanged(QDBusObjectPath,bool)),
-            SLOT(onAccountValidityChanged(QDBusObjectPath,bool)));
+            SIGNAL(AccountUsabilityChanged(QDBusObjectPath,bool)),
+            SLOT(onAccountUsabilityChanged(QDBusObjectPath,bool)));
     parent->connect(baseInterface,
             SIGNAL(AccountRemoved(QDBusObjectPath)),
             SLOT(onAccountRemoved(QDBusObjectPath)));
@@ -186,7 +186,7 @@ QSet<QString> AccountManager::Private::getAccountPathsFromProp(
         QStringList wronglyTypedPaths = qdbus_cast<QStringList>(prop);
         if (wronglyTypedPaths.size() > 0) {
             warning() << "AccountManager returned wrong type for"
-                "Valid/InvalidAccounts (expected 'ao', got 'as'); "
+                "Valid/UnusableAccounts (expected 'ao', got 'as'); "
                 "working around it";
             foreach (QString path, wronglyTypedPaths) {
                 set << path;
@@ -204,14 +204,14 @@ QSet<QString> AccountManager::Private::getAccountPathsFromProp(
 QSet<QString> AccountManager::Private::getAccountPathsFromProps(
         const QVariantMap &props)
 {
-    return getAccountPathsFromProp(props[QLatin1String("ValidAccounts")]).unite(
-            getAccountPathsFromProp(props[QLatin1String("InvalidAccounts")]));
+    return getAccountPathsFromProp(props[QLatin1String("UsableAccounts")]).unite(
+            getAccountPathsFromProp(props[QLatin1String("UnusableAccounts")]));
 }
 
 void AccountManager::Private::addAccountForPath(const QString &path)
 {
     // Also check incompleteAccounts, because otherwise we end up introspecting an account twice
-    // when getting an AccountValidityChanged signal for a new account before we get the initial
+    // when getting an AccountUsabilityChanged signal for a new account before we get the initial
     // introspection accounts list from the GetAll return (the GetAll return function
     // unconditionally calls addAccountForPath
     if (accounts.contains(path) || incompleteAccounts.contains(path)) {
@@ -526,30 +526,30 @@ QList<AccountPtr> AccountManager::allAccounts() const
 }
 
 /**
- * Return a set of accounts containing all valid accounts.
+ * Return a set of accounts containing all usable accounts.
  *
  * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
-AccountSetPtr AccountManager::validAccounts() const
+AccountSetPtr AccountManager::usableAccounts() const
 {
     QVariantMap filter;
-    filter.insert(QLatin1String("valid"), true);
+    filter.insert(QLatin1String("usable"), true);
     return filterAccounts(filter);
 }
 
 /**
- * Return a set of accounts containing all invalid accounts.
+ * Return a set of accounts containing all unusable accounts.
  *
  * This method requires AccountManager::FeatureCore to be ready.
  *
  * \return A pointer to an AccountSet object containing the matching accounts.
  */
-AccountSetPtr AccountManager::invalidAccounts() const
+AccountSetPtr AccountManager::unusableAccounts() const
 {
     QVariantMap filter;
-    filter.insert(QLatin1String("valid"), false);
+    filter.insert(QLatin1String("usable"), false);
     return filterAccounts(filter);
 }
 
@@ -1024,7 +1024,7 @@ void AccountManager::onAccountReady(Tp::PendingOperation *op)
     mPriv->checkIntrospectionCompleted();
 }
 
-void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
+void AccountManager::onAccountUsabilityChanged(const QDBusObjectPath &objectPath,
         bool valid)
 {
     if (!mPriv->gotInitialAccounts) {

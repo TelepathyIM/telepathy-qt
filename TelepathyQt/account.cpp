@@ -515,7 +515,7 @@ struct TP_QT_NO_EXPORT Account::Private
 
     // Introspection
     QVariantMap parameters;
-    bool valid;
+    bool usable;
     bool enabled;
     bool connectsAutomatically;
     bool hasBeenOnline;
@@ -581,7 +581,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       baseInterface(new Client::AccountInterface(parent)),
       properties(parent->interface<Client::DBus::PropertiesInterface>()),
       readinessHelper(parent->readinessHelper()),
-      valid(false),
+      usable(false),
       enabled(false),
       connectsAutomatically(false),
       hasBeenOnline(false),
@@ -722,7 +722,7 @@ QString Account::Private::connectionObjectPath() const
  *
  * \brief The Account class represents a Telepathy account.
  *
- * The remote object accessor functions on this object (isValidAccount(),
+ * The remote object accessor functions on this object (isUsableAccount(),
  * isEnabled(), and so on) don't make any D-Bus calls; instead, they return/use
  * values cached from a previous introspection run. The introspection process
  * populates their values in the most efficient way possible based on what the
@@ -1014,7 +1014,7 @@ ContactFactoryConstPtr Account::contactFactory() const
 }
 
 /**
- * Return whether this account is valid.
+ * Return whether this account is usable.
  *
  * If \c true, this account is considered by the account manager to be complete
  * and usable. If \c false, user action is required to make it usable, and it will
@@ -1022,16 +1022,16 @@ ContactFactoryConstPtr Account::contactFactory() const
  * or misconfiguration of a required parameter, in which case updateParameters()
  * may be used to properly set the parameters values.
  *
- * Change notification is via the validityChanged() signal.
+ * Change notification is via the usabilityChanged() signal.
  *
  * This method requires Account::FeatureCore to be ready.
  *
- * \return \c true if valid, \c false otherwise.
- * \sa validityChanged(), updateParameters()
+ * \return \c true if usable, \c false otherwise.
+ * \sa usabilityChanged(), updateParameters()
  */
-bool Account::isValidAccount() const
+bool Account::isUsableAccount() const
 {
-    return mPriv->valid;
+    return mPriv->usable;
 }
 
 /**
@@ -1055,7 +1055,7 @@ bool Account::isEnabled() const
  * This gives users the possibility to prevent an account from
  * being used.
  *
- * Note that changing this property won't change the validity of the account.
+ * Note that changing this property won't change the usability of the account.
  *
  * \param value Whether this account should be enabled or disabled.
  * \return A PendingOperation which will emit PendingOperation::finished
@@ -3653,12 +3653,12 @@ void Account::Private::updateProperties(const QVariantMap &props)
         parent->notify("normalizedName");
     }
 
-    if (props.contains(QLatin1String("Valid")) &&
-        valid != qdbus_cast<bool>(props[QLatin1String("Valid")])) {
-        valid = qdbus_cast<bool>(props[QLatin1String("Valid")]);
-        debug() << " Valid:" << (valid ? "true" : "false");
-        emit parent->validityChanged(valid);
-        parent->notify("valid");
+    if (props.contains(QLatin1String("Usable")) &&
+        usable != qdbus_cast<bool>(props[QLatin1String("Usable")])) {
+        usable = qdbus_cast<bool>(props[QLatin1String("Usable")]);
+        debug() << " Usable:" << (usable ? "true" : "false");
+        emit parent->usabilityChanged(usable);
+        parent->notify("usable");
     }
 
     if (props.contains(QLatin1String("Enabled")) &&
@@ -4006,7 +4006,7 @@ void Account::onPropertyChanged(const QVariantMap &delta)
 
 void Account::onRemoved()
 {
-    mPriv->valid = false;
+    mPriv->usable = false;
     mPriv->enabled = false;
     invalidate(TP_QT_ERROR_OBJECT_REMOVED,
             QLatin1String("Account removed from AccountManager"));
@@ -4065,12 +4065,12 @@ void Account::onConnectionBuilt(PendingOperation *op)
  */
 
 /**
- * \fn void Account::validityChanged(bool validity)
+ * \fn void Account::usabilityChanged(bool validity)
  *
- * Emitted when the value of isValidAccount() changes.
+ * Emitted when the value of isUsableAccount() changes.
  *
  * \param validity The new validity of this account.
- * \sa isValidAccount()
+ * \sa isUsableAccount()
  */
 
 /**

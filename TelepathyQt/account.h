@@ -70,7 +70,7 @@ class TP_QT_EXPORT Account : public StatelessDBusProxy,
 {
     Q_OBJECT
     Q_DISABLE_COPY(Account)
-    Q_PROPERTY(bool valid READ isValidAccount NOTIFY validityChanged)
+    Q_PROPERTY(bool usable READ isUsableAccount NOTIFY usabilityChanged)
     Q_PROPERTY(bool enabled READ isEnabled NOTIFY stateChanged)
     Q_PROPERTY(QString cmName READ cmName)
     Q_PROPERTY(QString protocolName READ protocolName)
@@ -125,7 +125,7 @@ public:
     ChannelFactoryConstPtr channelFactory() const;
     ContactFactoryConstPtr contactFactory() const;
 
-    bool isValidAccount() const;
+    bool isUsableAccount() const;
 
     bool isEnabled() const;
     PendingOperation *setEnabled(bool value);
@@ -457,7 +457,7 @@ Q_SIGNALS:
     void iconNameChanged(const QString &iconName);
     void nicknameChanged(const QString &nickname);
     void normalizedNameChanged(const QString &normalizedName);
-    void validityChanged(bool validity);
+    void usabilityChanged(bool usability);
     void stateChanged(bool state);
     void capabilitiesChanged(const Tp::ConnectionCapabilities &capabilities);
     void connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
