@@ -1736,8 +1736,8 @@ bool Account::isChangingPresence() const
  * offline by setting the requested presence to an offline status.
  *
  * Full functionality requires Account::FeatureProtocolInfo and Account::FeatureProfile to be ready
- * as well as connection with Connection::FeatureSimplePresence enabled. If the connection is online
- * and Connection::FeatureSimplePresence is enabled, it will return the connection allowed statuses,
+ * as well as connection with Connection::FeaturePresence enabled. If the connection is online
+ * and Connection::FeaturePresence is enabled, it will return the connection allowed statuses,
  * otherwise it will return a list os statuses based on profile() and protocolInfo() information
  * if the corresponding features are enabled.
  *
@@ -1760,7 +1760,7 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
     // if the connection is online and ready use it
     if (mPriv->connection &&
         mPriv->connection->status() == ConnectionStatusConnected &&
-        mPriv->connection->actualFeatures().contains(Connection::FeatureSimplePresence)) {
+        mPriv->connection->actualFeatures().contains(Connection::FeaturePresence)) {
         TpDBus::StatusSpecMap connectionAllowedPresences =
             mPriv->connection->lowlevel()->allowedPresenceStatuses();
         TpDBus::StatusSpecMap::const_iterator i = connectionAllowedPresences.constBegin();
@@ -1865,8 +1865,8 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
  * currentPresenceChanged() will be emitted (if setting the presence worked)
  * with the truncated message.
  *
- * Full functionality requires Connection with Connection::FeatureSimplePresence
- * enabled. If the connection is online and Connection::FeatureSimplePresence is
+ * Full functionality requires Connection with Connection::FeaturePresence
+ * enabled. If the connection is online and Connection::FeaturePresence is
  * enabled, it will return the connection maximum status message length,
  * otherwise it will return 0.
  *
@@ -1879,7 +1879,7 @@ uint Account::maxPresenceStatusMessageLength() const
     // if the connection is online and ready use it
     if (mPriv->connection &&
         mPriv->connection->status() == ConnectionStatusConnected &&
-        mPriv->connection->actualFeatures().contains(Connection::FeatureSimplePresence)) {
+        mPriv->connection->actualFeatures().contains(Connection::FeaturePresence)) {
         return mPriv->connection->lowlevel()->maxPresenceStatusMessageLength();
     }
 
@@ -3701,9 +3701,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("AutomaticPresence")) &&
-        automaticPresence.barePresence() != qdbus_cast<TpDBus::SimplePresence>(
+        automaticPresence.barePresence() != qdbus_cast<TpDBus::Presence>(
                 props[QLatin1String("AutomaticPresence")])) {
-        automaticPresence = Presence(qdbus_cast<TpDBus::SimplePresence>(
+        automaticPresence = Presence(qdbus_cast<TpDBus::Presence>(
                 props[QLatin1String("AutomaticPresence")]));
         debug() << " Automatic Presence:" << automaticPresence.type() <<
             "-" << automaticPresence.status();
@@ -3712,9 +3712,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("CurrentPresence")) &&
-        currentPresence.barePresence() != qdbus_cast<TpDBus::SimplePresence>(
+        currentPresence.barePresence() != qdbus_cast<TpDBus::Presence>(
                 props[QLatin1String("CurrentPresence")])) {
-        currentPresence = Presence(qdbus_cast<TpDBus::SimplePresence>(
+        currentPresence = Presence(qdbus_cast<TpDBus::Presence>(
                 props[QLatin1String("CurrentPresence")]));
         debug() << " Current Presence:" << currentPresence.type() <<
             "-" << currentPresence.status();
@@ -3725,9 +3725,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("RequestedPresence")) &&
-        requestedPresence.barePresence() != qdbus_cast<TpDBus::SimplePresence>(
+        requestedPresence.barePresence() != qdbus_cast<TpDBus::Presence>(
                 props[QLatin1String("RequestedPresence")])) {
-        requestedPresence = Presence(qdbus_cast<TpDBus::SimplePresence>(
+        requestedPresence = Presence(qdbus_cast<TpDBus::Presence>(
                 props[QLatin1String("RequestedPresence")]));
         debug() << " Requested Presence:" << requestedPresence.type() <<
             "-" << requestedPresence.status();

@@ -68,7 +68,7 @@ struct TP_QT_NO_EXPORT Connection::Private
     static void introspectMain(Private *self);
     void introspectCapabilities();
     static void introspectSelfContact(Private *self);
-    static void introspectSimplePresence(Private *self);
+    static void introspectPresence(Private *self);
     static void introspectRoster(Private *self);
     static void introspectRosterGroups(Private *self);
     static void introspectBalance(Private *self);
@@ -128,7 +128,7 @@ struct TP_QT_NO_EXPORT Connection::Private
     bool reintrospectSelfContactRequired;
     ContactPtr selfContact;
 
-    // FeatureSimplePresence
+    // FeaturePresence
     TpDBus::StatusSpecMap simplePresenceStatuses;
     uint maxPresenceStatusMessageLength;
 
@@ -203,14 +203,14 @@ Connection::Private::Private(Connection *parent,
         this);
     introspectables[FeatureSelfContact] = introspectableSelfContact;
 
-    ReadinessHelper::Introspectable introspectableSimplePresence(
+    ReadinessHelper::Introspectable introspectablePresence(
         QSet<uint>() << ConnectionStatusDisconnected <<
                         ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
         QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1,   // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
+        (ReadinessHelper::IntrospectFunc) &Private::introspectPresence,
         this);
-    introspectables[FeatureSimplePresence] = introspectableSimplePresence;
+    introspectables[FeaturePresence] = introspectablePresence;
 
     ReadinessHelper::Introspectable introspectableRoster(
         QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
@@ -346,12 +346,12 @@ void Connection::Private::introspectSelfContact(Connection::Private *self)
             SLOT(gotSelfContact(Tp::PendingOperation*)));
 }
 
-void Connection::Private::introspectSimplePresence(Connection::Private *self)
+void Connection::Private::introspectPresence(Connection::Private *self)
 {
     Q_ASSERT(self->properties != 0);
 
     debug() << "Calling Properties::Get("
-        "Connection.I.SimplePresence.Statuses)";
+        "Connection.I.Presence.Statuses)";
     QDBusPendingCall call =
         self->properties->GetAll(
                 TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1);
@@ -769,7 +769,7 @@ const Feature Connection::FeatureSelfContact = Feature(QLatin1String(Connection:
  *
  * See simple presence specific methods' documentation for more details.
  */
-const Feature Connection::FeatureSimplePresence = Feature(QLatin1String(Connection::staticMetaObject.className()), 2);
+const Feature Connection::FeaturePresence = Feature(QLatin1String(Connection::staticMetaObject.className()), 2);
 
 /**
  * Feature used to enable roster support on Connection::contactManager.
@@ -1144,7 +1144,7 @@ uint Connection::selfHandle() const
  * Connection spends in status ConnectionStatusConnecting,
  * again staying fixed for the entire time in ConnectionStatusConnected.
  *
- * This method requires Connection::FeatureSimplePresence to be ready.
+ * This method requires Connection::FeaturePresence to be ready.
  *
  * \return The allowed statuses as a map from string identifiers to TpDBus::StatusSpec objects.
  */
@@ -1157,10 +1157,10 @@ TpDBus::StatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
     }
 
     ConnectionPtr conn(connection());
-    if (!conn->isReady(Connection::FeatureSimplePresence)) {
+    if (!conn->isReady(Connection::FeaturePresence)) {
         warning() << "Trying to retrieve allowed presence statuses from connection, but "
                      "simple presence is not supported or was not requested. "
-                     "Enable FeatureSimplePresence in this connection";
+                     "Enable FeaturePresence in this connection";
     }
 
     return conn->mPriv->simplePresenceStatuses;
@@ -1173,7 +1173,7 @@ TpDBus::StatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
  * Connection spends in status ConnectionStatusConnecting,
  * again staying fixed for the entire time in ConnectionStatusConnected.
  *
- * This method requires Connection::FeatureSimplePresence to be ready.
+ * This method requires Connection::FeaturePresence to be ready.
  *
  * \return The maximum length, or 0 if there is no limit.
  */
@@ -1186,10 +1186,10 @@ uint ConnectionLowlevel::maxPresenceStatusMessageLength() const
     }
 
     ConnectionPtr conn(connection());
-    if (!conn->isReady(Connection::FeatureSimplePresence)) {
+    if (!conn->isReady(Connection::FeaturePresence)) {
         warning() << "Trying to retrieve max presence status message length connection, but "
                      "simple presence is not supported or was not requested. "
-                     "Enable FeatureSimplePresence in this connection";
+                     "Enable FeaturePresence in this connection";
     }
 
     return conn->mPriv->maxPresenceStatusMessageLength;
@@ -1232,7 +1232,7 @@ PendingOperation *ConnectionLowlevel::setSelfPresence(const QString &status,
     Client::ConnectionInterfacePresence1Interface *simplePresenceInterface =
         conn->interface<Client::ConnectionInterfacePresence1Interface>();
     return new PendingVoid(
-            simplePresenceInterface->SetSimplePresence(status, statusMessage), conn);
+            simplePresenceInterface->SetPresence(status, statusMessage), conn);
 }
 
 /**
@@ -1510,12 +1510,12 @@ void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
             "simple presence statuses - max status message length is" <<
             mPriv->maxPresenceStatusMessageLength;
 
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, true);
+        mPriv->readinessHelper->setIntrospectCompleted(FeaturePresence, true);
     }
     else {
         warning().nospace() << "Getting simple presence statuses failed with " <<
             reply.error().name() << ":" << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, false, reply.error());
+        mPriv->readinessHelper->setIntrospectCompleted(FeaturePresence, false, reply.error());
     }
 
     watcher->deleteLater();

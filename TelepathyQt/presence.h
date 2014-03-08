@@ -37,7 +37,7 @@ class TP_QT_EXPORT Presence
 {
 public:
     Presence();
-    Presence(const TpDBus::SimplePresence &sp);
+    Presence(const TpDBus::Presence &sp);
     Presence(ConnectionPresenceType type, const QString &status, const QString &statusMessage);
     Presence(const Presence &other);
     ~Presence();
@@ -61,12 +61,12 @@ public:
     ConnectionPresenceType type() const;
     QString status() const;
     QString statusMessage() const;
-    void setStatus(const TpDBus::SimplePresence &value);
+    void setStatus(const TpDBus::Presence &value);
     void setStatus(ConnectionPresenceType type, const QString &status,
             const QString &statusMessage);
     void setStatusMessage(const QString &statusMessage);
 
-    TpDBus::SimplePresence barePresence() const;
+    TpDBus::Presence barePresence() const;
 
 private:
     struct Private;

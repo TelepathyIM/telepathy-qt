@@ -149,7 +149,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void doRequestAvatars();
     TP_QT_NO_EXPORT void onAvatarUpdated(uint, const QString &);
     TP_QT_NO_EXPORT void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
-    TP_QT_NO_EXPORT void onPresencesChanged(const TpDBus::ContactSimplePresenceMap &);
+    TP_QT_NO_EXPORT void onPresencesChanged(const TpDBus::ContactPresenceMap &);
     TP_QT_NO_EXPORT void onCapabilitiesChanged(const TpDBus::ContactCapabilitiesMap &);
     TP_QT_NO_EXPORT void onLocationUpdated(uint, const QVariantMap &);
     TP_QT_NO_EXPORT void onContactInfoChanged(uint, const TpDBus::ContactInfoFieldList &);

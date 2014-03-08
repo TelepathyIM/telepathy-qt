@@ -1200,8 +1200,8 @@ QVariantMap BaseProtocolPresenceInterface::immutableProperties() const
  *
  * This list is exposed as the Statuses property of this interface on the bus
  * and represents the statuses that might appear in the
- * Connection.Interface.SimplePresence.Statuses property on a connection to
- * this protocol that supports SimplePresence.
+ * Connection.Interface.Presence.Statuses property on a connection to
+ * this protocol that supports Presence.
  *
  * This property is immutable and cannot change after this interface
  * has been registered on an object on the bus with registerInterface().
@@ -1216,8 +1216,8 @@ PresenceSpecList BaseProtocolPresenceInterface::statuses() const
 
 /**
  * Set the list of statuses that might appear in the
- * Connection.Interface.SimplePresence.Statuses property on a connection to
- * this protocol that supports SimplePresence.
+ * Connection.Interface.Presence.Statuses property on a connection to
+ * this protocol that supports Presence.
  *
  * This property is immutable and cannot change after this interface
  * has been registered on an object on the bus with registerInterface().

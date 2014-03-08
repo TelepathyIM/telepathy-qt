@@ -244,7 +244,7 @@ Features ContactManager::supportedFeatures() const
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
             << Contact::FeatureAvatarData
-            << Contact::FeatureSimplePresence
+            << Contact::FeaturePresence
             << Contact::FeatureCapabilities
             << Contact::FeatureLocation
             << Contact::FeatureInfo
@@ -1362,16 +1362,16 @@ void ContactManager::onAvatarRetrieved(uint handle, const QString &token,
     }
 }
 
-void ContactManager::onPresencesChanged(const TpDBus::ContactSimplePresenceMap &presences)
+void ContactManager::onPresencesChanged(const TpDBus::ContactPresenceMap &presences)
 {
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
 
-    QMap<uint, TpDBus::SimplePresence>::const_iterator it;
+    QMap<uint, TpDBus::Presence>::const_iterator it;
     for (it = presences.constBegin(); it != presences.constEnd(); ++it) {
         ContactPtr contact = lookupContactByHandle(it.key());
 
         if (contact) {
-            contact->receiveSimplePresence(it.value());
+            contact->receivePresence(it.value());
         }
     }
 }
@@ -1471,7 +1471,7 @@ QString ContactManager::featureToInterface(const Feature &feature)
         return TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS1;
     } else if (feature == Contact::FeatureAvatarData) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_AVATARS1;
-    } else if (feature == Contact::FeatureSimplePresence) {
+    } else if (feature == Contact::FeaturePresence) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1;
     } else if (feature == Contact::FeatureCapabilities) {
         return TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES1;
@@ -1542,13 +1542,13 @@ void ContactManager::ensureTracking(const Feature &feature)
         connect(location1Interface,
                 SIGNAL(LocationUpdated(uint,QVariantMap)),
                 SLOT(onLocationUpdated(uint,QVariantMap)));
-    } else if (feature == Contact::FeatureSimplePresence) {
+    } else if (feature == Contact::FeaturePresence) {
         Client::ConnectionInterfacePresence1Interface *simplePresence1Interface =
             conn->interface<Client::ConnectionInterfacePresence1Interface>();
 
         connect(simplePresence1Interface,
-                SIGNAL(PresencesChanged(TpDBus::ContactSimplePresenceMap)),
-                SLOT(onPresencesChanged(TpDBus::ContactSimplePresenceMap)));
+                SIGNAL(PresencesChanged(TpDBus::ContactPresenceMap)),
+                SLOT(onPresencesChanged(TpDBus::ContactPresenceMap)));
     } else if (feature == Contact::FeatureClientTypes) {
         Client::ConnectionInterfaceClientTypes1Interface *clientTypes1Interface =
             conn->interface<Client::ConnectionInterfaceClientTypes1Interface>();

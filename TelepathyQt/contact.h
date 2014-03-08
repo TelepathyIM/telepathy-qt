@@ -59,7 +59,7 @@ public:
     static const Feature FeatureCapabilities;
     static const Feature FeatureInfo;
     static const Feature FeatureLocation;
-    static const Feature FeatureSimplePresence;
+    static const Feature FeaturePresence;
     static const Feature FeatureAddresses;
     static const Feature FeatureClientTypes;
 
@@ -216,7 +216,7 @@ private:
     TP_QT_NO_EXPORT void receiveAvatarToken(const QString &avatarToken);
     TP_QT_NO_EXPORT void setAvatarToken(const QString &token);
     TP_QT_NO_EXPORT void receiveAvatarData(const AvatarData &);
-    TP_QT_NO_EXPORT void receiveSimplePresence(const TpDBus::SimplePresence &presence);
+    TP_QT_NO_EXPORT void receivePresence(const TpDBus::Presence &presence);
     TP_QT_NO_EXPORT void receiveCapabilities(const TpDBus::RequestableChannelClassList &caps);
     TP_QT_NO_EXPORT void receiveLocation(const QVariantMap &location);
     TP_QT_NO_EXPORT void receiveInfo(const TpDBus::ContactInfoFieldList &info);

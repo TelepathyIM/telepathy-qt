@@ -29,7 +29,7 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT Presence::Private : public QSharedData
 {
-    Private(const TpDBus::SimplePresence &sp)
+    Private(const TpDBus::Presence &sp)
         : sp(sp)
     {
     }
@@ -41,7 +41,7 @@ struct TP_QT_NO_EXPORT Presence::Private : public QSharedData
         sp.statusMessage = statusMessage;
     }
 
-    TpDBus::SimplePresence sp;
+    TpDBus::Presence sp;
 };
 
 /**
@@ -56,7 +56,7 @@ Presence::Presence()
 {
 }
 
-Presence::Presence(const TpDBus::SimplePresence &sp)
+Presence::Presence(const TpDBus::Presence &sp)
     : mPriv(new Private(sp))
 {
 }
@@ -178,7 +178,7 @@ QString Presence::statusMessage() const
 }
 
 // Sets all fields
-void Presence::setStatus(const TpDBus::SimplePresence &value)
+void Presence::setStatus(const TpDBus::Presence &value)
 {
     if (!isValid()) {
         mPriv = new Private(value);
@@ -215,10 +215,10 @@ void Presence::setStatusMessage(const QString &statusMessage)
     mPriv->sp.statusMessage = statusMessage;
 }
 
-TpDBus::SimplePresence Presence::barePresence() const
+TpDBus::Presence Presence::barePresence() const
 {
     if (!isValid()) {
-        return TpDBus::SimplePresence();
+        return TpDBus::Presence();
     }
 
     return mPriv->sp;

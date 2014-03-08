@@ -68,7 +68,7 @@ class TP_QT_EXPORT Connection : public StatefulDBusProxy,
 public:
     static const Feature FeatureCore;
     static const Feature FeatureSelfContact;
-    static const Feature FeatureSimplePresence;
+    static const Feature FeaturePresence;
     static const Feature FeatureRoster;
     static const Feature FeatureRosterGroups;
     static const Feature FeatureAccountBalance; // TODO unit tests for this

@@ -284,7 +284,7 @@ const Feature Contact::FeatureLocation = Feature(QLatin1String(Contact::staticMe
  *
  * \sa presence(), presenceChanged()
  */
-const Feature Contact::FeatureSimplePresence = Feature(QLatin1String(Contact::staticMetaObject.className()), 6, false);
+const Feature Contact::FeaturePresence = Feature(QLatin1String(Contact::staticMetaObject.className()), 6, false);
 
 /**
  * Feature used in order to access contact roster groups.
@@ -524,15 +524,15 @@ void Contact::requestAvatarData()
  *
  * Change notification is via the presenceChanged() signal.
  *
- * This method requires Contact::FeatureSimplePresence to be ready.
+ * This method requires Contact::FeaturePresence to be ready.
  *
  * \return The presence as a Presence object.
  */
 Presence Contact::presence() const
 {
-    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
+    if (!mPriv->requestedFeatures.contains(FeaturePresence)) {
         warning() << "Contact::presence() used on" << this
-            << "for which FeatureSimplePresence hasn't been requested - returning Unknown";
+            << "for which FeaturePresence hasn't been requested - returning Unknown";
         return Presence();
     }
 
@@ -1007,7 +1007,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
 
     foreach (const Feature &feature, requestedFeatures) {
         QString maybeAlias;
-        TpDBus::SimplePresence maybePresence;
+        TpDBus::Presence maybePresence;
         TpDBus::RequestableChannelClassList maybeCaps;
         QVariantMap maybeLocation;
         TpDBus::ContactInfoFieldList maybeInfo;
@@ -1086,12 +1086,12 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                     mPriv->actualFeatures.insert(FeatureLocation);
                 }
             }
-        } else if (feature == FeatureSimplePresence) {
-            maybePresence = qdbus_cast<TpDBus::SimplePresence>(attributes.value(
+        } else if (feature == FeaturePresence) {
+            maybePresence = qdbus_cast<TpDBus::Presence>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1 + QLatin1String("/presence")));
 
             if (!maybePresence.status.isEmpty()) {
-                receiveSimplePresence(maybePresence);
+                receivePresence(maybePresence);
             } else {
                 mPriv->presence.setStatus(ConnectionPresenceTypeUnknown,
                         QLatin1String("unknown"), QLatin1String(""));
@@ -1173,13 +1173,13 @@ void Contact::receiveAvatarData(const AvatarData &avatar)
     }
 }
 
-void Contact::receiveSimplePresence(const TpDBus::SimplePresence &presence)
+void Contact::receivePresence(const TpDBus::Presence &presence)
 {
-    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
+    if (!mPriv->requestedFeatures.contains(FeaturePresence)) {
         return;
     }
 
-    mPriv->actualFeatures.insert(FeatureSimplePresence);
+    mPriv->actualFeatures.insert(FeaturePresence);
 
     if (mPriv->presence.status() != presence.status ||
         mPriv->presence.statusMessage() != presence.statusMessage) {
