@@ -93,21 +93,21 @@ private Q_SLOTS:
     void gotContactBlockingCapabilities(Tp::PendingOperation *op);
     void gotContactBlockingBlockedContacts(QDBusPendingCallWatcher *watcher);
     void onContactBlockingBlockedContactsChanged(
-            const Tp::HandleIdentifierMap &added,
-            const Tp::HandleIdentifierMap &removed);
+            const TpDBus::HandleIdentifierMap &added,
+            const TpDBus::HandleIdentifierMap &removed);
 
     void gotContactListProperties(Tp::PendingOperation *op);
     void gotContactListContacts(QDBusPendingCallWatcher *watcher);
     void setStateSuccess();
     void onContactListStateChanged(uint state);
-    void onContactListContactsChangedWithId(const Tp::ContactSubscriptionMap &changes,
-            const Tp::HandleIdentifierMap &ids, const Tp::HandleIdentifierMap &removals);
-    void onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
-            const Tp::UIntList &removals);
+    void onContactListContactsChangedWithId(const TpDBus::ContactSubscriptionMap &changes,
+            const TpDBus::HandleIdentifierMap &ids, const TpDBus::HandleIdentifierMap &removals);
+    void onContactListContactsChanged(const TpDBus::ContactSubscriptionMap &changes,
+            const TpDBus::UIntList &removals);
 
     void onContactListBlockedContactsConstructed(Tp::PendingOperation *op);
     void onContactListNewContactsConstructed(Tp::PendingOperation *op);
-    void onContactListGroupsChanged(const Tp::UIntList &contacts,
+    void onContactListGroupsChanged(const TpDBus::UIntList &contacts,
             const QStringList &added, const QStringList &removed);
     void onContactListGroupsCreated(const QStringList &names);
     void onContactListGroupRenamed(const QString &oldName, const QString &newName);
@@ -185,8 +185,8 @@ private:
 
 struct TP_QT_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInfo
 {
-    BlockedContactsChangedInfo(const HandleIdentifierMap &added,
-            const HandleIdentifierMap &removed,
+    BlockedContactsChangedInfo(const TpDBus::HandleIdentifierMap &added,
+            const TpDBus::HandleIdentifierMap &removed,
             bool continueIntrospectionWhenFinished = false)
         : added(added),
           removed(removed),
@@ -194,29 +194,29 @@ struct TP_QT_NO_EXPORT ContactManager::Roster::BlockedContactsChangedInfo
     {
     }
 
-    HandleIdentifierMap added;
-    HandleIdentifierMap removed;
+    TpDBus::HandleIdentifierMap added;
+    TpDBus::HandleIdentifierMap removed;
     bool continueIntrospectionWhenFinished;
 };
 
 struct TP_QT_NO_EXPORT ContactManager::Roster::UpdateInfo
 {
-    UpdateInfo(const ContactSubscriptionMap &changes, const HandleIdentifierMap &ids,
-            const HandleIdentifierMap &removals)
+    UpdateInfo(const TpDBus::ContactSubscriptionMap &changes, const TpDBus::HandleIdentifierMap &ids,
+            const TpDBus::HandleIdentifierMap &removals)
         : changes(changes),
           ids(ids),
           removals(removals)
     {
     }
 
-    ContactSubscriptionMap changes;
-    HandleIdentifierMap ids;
-    HandleIdentifierMap removals;
+    TpDBus::ContactSubscriptionMap changes;
+    TpDBus::HandleIdentifierMap ids;
+    TpDBus::HandleIdentifierMap removals;
 };
 
 struct TP_QT_NO_EXPORT ContactManager::Roster::GroupsUpdateInfo
 {
-    GroupsUpdateInfo(const UIntList &contacts,
+    GroupsUpdateInfo(const TpDBus::UIntList &contacts,
             const QStringList &groupsAdded, const QStringList &groupsRemoved)
         : contacts(contacts),
           groupsAdded(groupsAdded),
@@ -224,7 +224,7 @@ struct TP_QT_NO_EXPORT ContactManager::Roster::GroupsUpdateInfo
     {
     }
 
-    UIntList contacts;
+    TpDBus::UIntList contacts;
     QStringList groupsAdded;
     QStringList groupsRemoved;
 };

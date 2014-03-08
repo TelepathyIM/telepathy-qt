@@ -66,7 +66,7 @@ public:
     // FeatureCallState
     CallState callState() const;
     CallFlags callFlags() const;
-    CallStateReason callStateReason() const;
+    TpDBus::CallStateReason callStateReason() const;
     QVariantMap callStateDetails() const;
 
     // FeatureCallMembers
@@ -93,13 +93,13 @@ Q_SIGNALS:
     // FeatureCallMembers
     void remoteMemberFlagsChanged(
             const QHash<Tp::ContactPtr, Tp::CallMemberFlags> &remoteMemberFlags,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
     void remoteMembersRemoved(const Tp::Contacts &remoteMembers,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
 
     // FeatureContents
     void contentAdded(const Tp::CallContentPtr &content);
-    void contentRemoved(const Tp::CallContentPtr &content, const Tp::CallStateReason &reason);
+    void contentRemoved(const Tp::CallContentPtr &content, const TpDBus::CallStateReason &reason);
 
     // FeatureLocalHoldState
     void localHoldStateChanged(Tp::LocalHoldState state, Tp::LocalHoldStateReason reason);
@@ -114,19 +114,19 @@ private Q_SLOTS:
 
     TP_QT_NO_EXPORT void gotCallState(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onCallStateChanged(uint state, uint flags,
-            const Tp::CallStateReason &stateReason, const QVariantMap &stateDetails);
+            const TpDBus::CallStateReason &stateReason, const QVariantMap &stateDetails);
 
     TP_QT_NO_EXPORT void gotCallMembers(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void gotCallMembersContacts(Tp::PendingOperation *op);
-    TP_QT_NO_EXPORT void onCallMembersChanged(const Tp::CallMemberMap &updates,
-            const Tp::HandleIdentifierMap &identifiers,
-            const Tp::UIntList &removed,
-            const Tp::CallStateReason &reason);
+    TP_QT_NO_EXPORT void onCallMembersChanged(const TpDBus::CallMemberMap &updates,
+            const TpDBus::HandleIdentifierMap &identifiers,
+            const TpDBus::UIntList &removed,
+            const TpDBus::CallStateReason &reason);
 
     TP_QT_NO_EXPORT void gotContents(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void onContentAdded(const QDBusObjectPath &contentPath);
     TP_QT_NO_EXPORT void onContentRemoved(const QDBusObjectPath &contentPath,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
     TP_QT_NO_EXPORT void onContentReady(Tp::PendingOperation *op);
 
     TP_QT_NO_EXPORT void gotLocalHoldState(QDBusPendingCallWatcher *);

@@ -50,7 +50,7 @@ struct TP_QT_NO_EXPORT IncomingFileTransferChannel::Private
 
     QIODevice *output;
     QTcpSocket *socket;
-    SocketAddressIPv4 addr;
+    TpDBus::SocketAddressIPv4 addr;
 
     qulonglong requestedOffset;
     qint64 pos;
@@ -265,7 +265,7 @@ void IncomingFileTransferChannel::onAcceptFileFinished(PendingOperation *op)
     }
 
     PendingVariant *pv = qobject_cast<PendingVariant *>(op);
-    mPriv->addr = qdbus_cast<SocketAddressIPv4>(pv->result());
+    mPriv->addr = qdbus_cast<TpDBus::SocketAddressIPv4>(pv->result());
     debug().nospace() << "Got address " << mPriv->addr.address <<
         ":" << mPriv->addr.port;
 

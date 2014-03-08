@@ -86,11 +86,11 @@ private:
 
     TP_QT_NO_EXPORT ProtocolInfo(const ConnectionManagerPtr &cm, const QString &name);
 
-    TP_QT_NO_EXPORT void addParameter(const ParamSpec &spec);
+    TP_QT_NO_EXPORT void addParameter(const TpDBus::ParamSpec &spec);
     TP_QT_NO_EXPORT void setVCardField(const QString &vcardField);
     TP_QT_NO_EXPORT void setEnglishName(const QString &englishName);
     TP_QT_NO_EXPORT void setIconName(const QString &iconName);
-    TP_QT_NO_EXPORT void setRequestableChannelClasses(const RequestableChannelClassList &caps);
+    TP_QT_NO_EXPORT void setRequestableChannelClasses(const TpDBus::RequestableChannelClassList &caps);
     TP_QT_NO_EXPORT void setAllowedPresenceStatuses(const PresenceSpecList &statuses);
     TP_QT_NO_EXPORT void setAvatarRequirements(const AvatarSpec &avatarRequirements);
     TP_QT_NO_EXPORT void setAddressableVCardFields(const QStringList &vcardFields);

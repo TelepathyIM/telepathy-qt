@@ -109,7 +109,7 @@ Contact::InfoFields PendingContactInfo::infoFields() const
 
 void PendingContactInfo::onCallFinished(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<Tp::ContactInfoFieldList> reply = *watcher;
+    QDBusPendingReply<TpDBus::ContactInfoFieldList> reply = *watcher;
 
     if (!reply.isError()) {
         mPriv->info = Contact::InfoFields(reply.value());

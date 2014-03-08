@@ -80,7 +80,7 @@ class TP_QT_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QString iconName READ iconName NOTIFY iconNameChanged)
     Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
     Q_PROPERTY(AvatarSpec avatarRequirements READ avatarRequirements)
-    Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
+    Q_PROPERTY(TpDBus::Avatar avatar READ avatar NOTIFY avatarChanged)
     Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
     Q_PROPERTY(ProtocolInfo protocolInfo READ protocolInfo)
     Q_PROPERTY(ConnectionCapabilities capabilities READ capabilities NOTIFY capabilitiesChanged)
@@ -152,8 +152,8 @@ public:
     // TODO: We probably want to expose the avatar file name once we have the avatar token and MC
     //       starts sharing the cache used by tp-qt and tp-glib and use Tp::AvatarData to represent
     //       it as used in Tp::Contact
-    const Avatar &avatar() const;
-    PendingOperation *setAvatar(const Avatar &avatar);
+    const TpDBus::Avatar &avatar() const;
+    PendingOperation *setAvatar(const TpDBus::Avatar &avatar);
 
     QVariantMap parameters() const;
     PendingStringList *updateParameters(const QVariantMap &set,
@@ -468,7 +468,7 @@ Q_SIGNALS:
     void currentPresenceChanged(const Tp::Presence &currentPresence);
     void requestedPresenceChanged(const Tp::Presence &requestedPresence);
     void onlinenessChanged(bool online);
-    void avatarChanged(const Tp::Avatar &avatar);
+    void avatarChanged(const TpDBus::Avatar &avatar);
     void connectionStatusChanged(Tp::ConnectionStatus status);
     void connectionChanged(const Tp::ConnectionPtr &connection);
 

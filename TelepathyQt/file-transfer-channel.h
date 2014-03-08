@@ -77,7 +77,7 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = FileTransferChannel::FeatureCore);
 
-    SupportedSocketMap availableSocketTypes() const;
+    TpDBus::SupportedSocketMap availableSocketTypes() const;
 
     virtual void connectToHost();
     bool isConnected() const;

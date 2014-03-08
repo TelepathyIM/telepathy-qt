@@ -53,7 +53,7 @@ public:
     PendingReady *requestConnect(const Features &requestedFeatures = Features());
     PendingOperation *requestDisconnect();
 
-    StatusSpecMap allowedPresenceStatuses() const;
+    TpDBus::StatusSpecMap allowedPresenceStatuses() const;
     uint maxPresenceStatusMessageLength() const;
 
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
@@ -63,11 +63,11 @@ public:
     PendingChannel *ensureChannel(const QVariantMap &request);
     PendingChannel *ensureChannel(const QVariantMap &request, int timeout);
 
-    PendingContactAttributes *contactAttributes(const UIntList &handles,
+    PendingContactAttributes *contactAttributes(const TpDBus::UIntList &handles,
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
 
-    void injectContactIds(const HandleIdentifierMap &contactIds);
+    void injectContactIds(const TpDBus::HandleIdentifierMap &contactIds);
     void injectContactId(uint handle, const QString &contactId);
 
 private:

@@ -985,7 +985,7 @@ PendingOperation *ContactManager::unblockContacts(const QList<ContactPtr> &conta
     return mPriv->roster->blockContacts(contacts, false, false);
 }
 
-PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
+PendingContacts *ContactManager::contactsForHandles(const TpDBus::UIntList &handles,
         const Features &features)
 {
     QMap<uint, ContactPtr> satisfyingContacts;
@@ -1045,7 +1045,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     return contacts;
 }
 
-PendingContacts *ContactManager::contactsForHandles(const HandleIdentifierMap &handles,
+PendingContacts *ContactManager::contactsForHandles(const TpDBus::HandleIdentifierMap &handles,
         const Features &features)
 {
     connection()->lowlevel()->injectContactIds(handles);
@@ -1235,7 +1235,7 @@ PendingOperation *ContactManager::refreshContactInfo(const QList<ContactPtr> &co
     return mPriv->refreshInfoOp;
 }
 
-void ContactManager::onAliasesChanged(const AliasMap &aliases)
+void ContactManager::onAliasesChanged(const TpDBus::AliasMap &aliases)
 {
     debug() << "Got AliasesChanged for" << aliases.size() << "contacts";
 
@@ -1258,7 +1258,7 @@ void ContactManager::doRequestAvatars()
     mPriv->requestAvatarsIdle = false;
 
     int found = 0;
-    UIntList notFound;
+    TpDBus::UIntList notFound;
     foreach (const ContactPtr &contact, contacts) {
         if (!contact) {
             continue;
@@ -1362,11 +1362,11 @@ void ContactManager::onAvatarRetrieved(uint handle, const QString &token,
     }
 }
 
-void ContactManager::onPresencesChanged(const ContactSimplePresenceMap &presences)
+void ContactManager::onPresencesChanged(const TpDBus::ContactSimplePresenceMap &presences)
 {
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
 
-    QMap<uint, Tp::SimplePresence>::const_iterator it;
+    QMap<uint, TpDBus::SimplePresence>::const_iterator it;
     for (it = presences.constBegin(); it != presences.constEnd(); ++it) {
         ContactPtr contact = lookupContactByHandle(it.key());
 
@@ -1376,7 +1376,7 @@ void ContactManager::onPresencesChanged(const ContactSimplePresenceMap &presence
     }
 }
 
-void ContactManager::onCapabilitiesChanged(const ContactCapabilitiesMap &caps)
+void ContactManager::onCapabilitiesChanged(const TpDBus::ContactCapabilitiesMap &caps)
 {
     debug() << "Got ContactCapabilitiesChanged for" << caps.size() << "contacts";
 
@@ -1400,7 +1400,7 @@ void ContactManager::onLocationUpdated(uint handle, const QVariantMap &location)
     }
 }
 
-void ContactManager::onContactInfoChanged(uint handle, const Tp::ContactInfoFieldList &info)
+void ContactManager::onContactInfoChanged(uint handle, const TpDBus::ContactInfoFieldList &info)
 {
     debug() << "Got ContactInfoChanged for contact with handle" << handle;
 
@@ -1505,8 +1505,8 @@ void ContactManager::ensureTracking(const Feature &feature)
             conn->interface<Client::ConnectionInterfaceAliasing1Interface>();
 
         connect(aliasing1Interface,
-                SIGNAL(AliasesChanged(Tp::AliasMap)),
-                SLOT(onAliasesChanged(Tp::AliasMap)));
+                SIGNAL(AliasesChanged(TpDBus::AliasMap)),
+                SLOT(onAliasesChanged(TpDBus::AliasMap)));
     } else if (feature == Contact::FeatureAvatarData) {
         Client::ConnectionInterfaceAvatars1Interface *avatars1Interface =
             conn->interface<Client::ConnectionInterfaceAvatars1Interface>();
@@ -1526,8 +1526,8 @@ void ContactManager::ensureTracking(const Feature &feature)
             conn->interface<Client::ConnectionInterfaceContactCapabilities1Interface>();
 
         connect(contactCapabilities1Interface,
-                SIGNAL(ContactCapabilitiesChanged(Tp::ContactCapabilitiesMap)),
-                SLOT(onCapabilitiesChanged(Tp::ContactCapabilitiesMap)));
+                SIGNAL(ContactCapabilitiesChanged(TpDBus::ContactCapabilitiesMap)),
+                SLOT(onCapabilitiesChanged(TpDBus::ContactCapabilitiesMap)));
     } else if (feature == Contact::FeatureInfo) {
         Client::ConnectionInterfaceContactInfo1Interface *contactInfo1Interface =
             conn->interface<Client::ConnectionInterfaceContactInfo1Interface>();
@@ -1547,8 +1547,8 @@ void ContactManager::ensureTracking(const Feature &feature)
             conn->interface<Client::ConnectionInterfacePresence1Interface>();
 
         connect(simplePresence1Interface,
-                SIGNAL(PresencesChanged(Tp::ContactSimplePresenceMap)),
-                SLOT(onPresencesChanged(Tp::ContactSimplePresenceMap)));
+                SIGNAL(PresencesChanged(TpDBus::ContactSimplePresenceMap)),
+                SLOT(onPresencesChanged(TpDBus::ContactSimplePresenceMap)));
     } else if (feature == Contact::FeatureClientTypes) {
         Client::ConnectionInterfaceClientTypes1Interface *clientTypes1Interface =
             conn->interface<Client::ConnectionInterfaceClientTypes1Interface>();

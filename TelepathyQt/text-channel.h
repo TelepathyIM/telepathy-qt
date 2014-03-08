@@ -79,7 +79,7 @@ public Q_SLOTS:
             ChannelTextMessageType type = ChannelTextMessageTypeNormal,
             MessageSendingFlags flags = 0);
 
-    PendingSendMessage *send(const MessagePartList &parts,
+    PendingSendMessage *send(const TpDBus::MessagePartList &parts,
             MessageSendingFlags flags = 0);
 
     inline PendingOperation *inviteContacts(
@@ -115,10 +115,10 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onContactsFinished(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
 
-    TP_QT_NO_EXPORT void onMessageSent(const Tp::MessagePartList &, uint,
+    TP_QT_NO_EXPORT void onMessageSent(const TpDBus::MessagePartList &, uint,
             const QString &);
-    TP_QT_NO_EXPORT void onMessageReceived(const Tp::MessagePartList &);
-    TP_QT_NO_EXPORT void onPendingMessagesRemoved(const Tp::UIntList &);
+    TP_QT_NO_EXPORT void onMessageReceived(const TpDBus::MessagePartList &);
+    TP_QT_NO_EXPORT void onPendingMessagesRemoved(const TpDBus::UIntList &);
 
     TP_QT_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *);
 

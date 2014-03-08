@@ -43,7 +43,7 @@ public:
             const QStringList &interfaces);
     ~PendingAddressingGetContacts();
 
-    UIntList validHandles() const { return mValidHandles; }
+    TpDBus::UIntList validHandles() const { return mValidHandles; }
 
     bool isForVCardAddresses() const { return mRequestType == ForVCardAddresses; }
     QString vcardField() const { return mVCardField; }
@@ -55,7 +55,7 @@ public:
     QStringList validAddresses() const { return mValidAddresses; }
     QStringList invalidAddresses() const { return mInvalidAddresses; }
 
-    ContactAttributesMap attributes() const { return mAttributes; }
+    TpDBus::ContactAttributesMap attributes() const { return mAttributes; }
 
 private Q_SLOTS:
     void onGetContactsFinished(QDBusPendingCallWatcher* watcher);
@@ -71,7 +71,7 @@ private:
 
     RequestType mRequestType;
 
-    UIntList mValidHandles;
+    TpDBus::UIntList mValidHandles;
 
     QString mVCardField;
     QStringList mAddresses;
@@ -79,7 +79,7 @@ private:
     QStringList mValidAddresses;
     QStringList mInvalidAddresses;
 
-    ContactAttributesMap mAttributes;
+    TpDBus::ContactAttributesMap mAttributes;
 };
 
 class TP_QT_NO_EXPORT PendingGetContactsByID : public PendingOperation
@@ -92,9 +92,9 @@ public:
             const QStringList &interfaces);
     ~PendingGetContactsByID();
 
-    UIntList validHandles() const { return mValidHandles; }
+    TpDBus::UIntList validHandles() const { return mValidHandles; }
     QStringList identifiers() const { return mIdentifiers; }
-    ContactAttributesMap attributes() const { return mAttributes; }
+    TpDBus::ContactAttributesMap attributes() const { return mAttributes; }
 
 private Q_SLOTS:
     void onGetContactByIDFinished(QDBusPendingCallWatcher* watcher);
@@ -102,9 +102,9 @@ private Q_SLOTS:
 private:
     ConnectionPtr mConnection;
     QSet<QDBusPendingCallWatcher*> mPendingCalls;
-    UIntList mValidHandles;
+    TpDBus::UIntList mValidHandles;
     QStringList mIdentifiers;
-    ContactAttributesMap mAttributes;
+    TpDBus::ContactAttributesMap mAttributes;
 };
 
 } // Tp

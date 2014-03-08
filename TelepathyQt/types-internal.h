@@ -55,29 +55,29 @@ TP_QT_EXPORT const QDBusArgument& operator>>(const QDBusArgument& arg, SUSocketA
 
 } // Tp
 
-// specialise for Tp::SocketAddressIPv4, allowing it to be used in place of QDBusVariant
-template<> inline Tp::SocketAddressIPv4 qdbus_cast<Tp::SocketAddressIPv4>(const QDBusArgument &arg,
-Tp::SocketAddressIPv4 *)
+// specialise for TpDBus::SocketAddressIPv4, allowing it to be used in place of QDBusVariant
+template<> inline TpDBus::SocketAddressIPv4 qdbus_cast<TpDBus::SocketAddressIPv4>(const QDBusArgument &arg,
+TpDBus::SocketAddressIPv4 *)
 {
     if (arg.currentSignature() == QLatin1String("(su)")) {
         // Use Tp::SUSocketAddress
         Tp::SUSocketAddress saddr = qdbus_cast<Tp::SUSocketAddress>(arg);
-        Tp::SocketAddressIPv4 addr;
+        TpDBus::SocketAddressIPv4 addr;
         addr.address = saddr.address;
         addr.port = saddr.port;
         return addr;
     } else if (arg.currentSignature() == QLatin1String("(sq)")) {
         // Keep it standard
-        Tp::SocketAddressIPv4 item;
+        TpDBus::SocketAddressIPv4 item;
         arg >> item;
         return item;
     } else {
         // This should never happen...
-        return Tp::SocketAddressIPv4();
+        return TpDBus::SocketAddressIPv4();
     }
 }
 
-template<> inline Tp::SocketAddressIPv4 qdbus_cast<Tp::SocketAddressIPv4>(const QVariant &v, Tp::SocketAddressIPv4 *)
+template<> inline TpDBus::SocketAddressIPv4 qdbus_cast<TpDBus::SocketAddressIPv4>(const QVariant &v, TpDBus::SocketAddressIPv4 *)
 {
     int id = v.userType();
     if (id == qMetaTypeId<QDBusArgument>()) {
@@ -86,46 +86,46 @@ template<> inline Tp::SocketAddressIPv4 qdbus_cast<Tp::SocketAddressIPv4>(const 
         if (arg.currentSignature() == QLatin1String("(su)")) {
             // Use Tp::SUSocketAddress
             Tp::SUSocketAddress saddr = qdbus_cast<Tp::SUSocketAddress>(arg);
-            Tp::SocketAddressIPv4 addr;
+            TpDBus::SocketAddressIPv4 addr;
             addr.address = saddr.address;
             addr.port = saddr.port;
             return addr;
         } else if (arg.currentSignature() == QLatin1String("(sq)")) {
             // Keep it standard
-            Tp::SocketAddressIPv4 item;
+            TpDBus::SocketAddressIPv4 item;
             arg >> item;
             return item;
         } else {
             // This should never happen...
-            return Tp::SocketAddressIPv4();
+            return TpDBus::SocketAddressIPv4();
         }
     } else
-        return qvariant_cast<Tp::SocketAddressIPv4>(v);
+        return qvariant_cast<TpDBus::SocketAddressIPv4>(v);
 }
 
-// specialise for Tp::SocketAddressIPv6, allowing it to be used in place of QDBusVariant
-template<> inline Tp::SocketAddressIPv6 qdbus_cast<Tp::SocketAddressIPv6>(const QDBusArgument &arg,
-Tp::SocketAddressIPv6 *)
+// specialise for TpDBus::SocketAddressIPv6, allowing it to be used in place of QDBusVariant
+template<> inline TpDBus::SocketAddressIPv6 qdbus_cast<TpDBus::SocketAddressIPv6>(const QDBusArgument &arg,
+TpDBus::SocketAddressIPv6 *)
 {
     if (arg.currentSignature() == QLatin1String("(su)")) {
         // Use Tp::SUSocketAddress
         Tp::SUSocketAddress saddr = qdbus_cast<Tp::SUSocketAddress>(arg);
-        Tp::SocketAddressIPv6 addr;
+        TpDBus::SocketAddressIPv6 addr;
         addr.address = saddr.address;
         addr.port = saddr.port;
         return addr;
     } else if (arg.currentSignature() == QLatin1String("(sq)")) {
         // Keep it standard
-        Tp::SocketAddressIPv6 item;
+        TpDBus::SocketAddressIPv6 item;
         arg >> item;
         return item;
     } else {
         // This should never happen...
-        return Tp::SocketAddressIPv6();
+        return TpDBus::SocketAddressIPv6();
     }
 }
 
-template<> inline Tp::SocketAddressIPv6 qdbus_cast<Tp::SocketAddressIPv6>(const QVariant &v, Tp::SocketAddressIPv6 *)
+template<> inline TpDBus::SocketAddressIPv6 qdbus_cast<TpDBus::SocketAddressIPv6>(const QVariant &v, TpDBus::SocketAddressIPv6 *)
 {
     int id = v.userType();
     if (id == qMetaTypeId<QDBusArgument>()) {
@@ -134,21 +134,21 @@ template<> inline Tp::SocketAddressIPv6 qdbus_cast<Tp::SocketAddressIPv6>(const 
         if (arg.currentSignature() == QLatin1String("(su)")) {
             // Use Tp::SUSocketAddress
             Tp::SUSocketAddress saddr = qdbus_cast<Tp::SUSocketAddress>(arg);
-            Tp::SocketAddressIPv6 addr;
+            TpDBus::SocketAddressIPv6 addr;
             addr.address = saddr.address;
             addr.port = saddr.port;
             return addr;
         } else if (arg.currentSignature() == QLatin1String("(sq)")) {
             // Keep it standard
-            Tp::SocketAddressIPv6 item;
+            TpDBus::SocketAddressIPv6 item;
             arg >> item;
             return item;
         } else {
             // This should never happen...
-            return Tp::SocketAddressIPv6();
+            return TpDBus::SocketAddressIPv6();
         }
     } else
-        return qvariant_cast<Tp::SocketAddressIPv6>(v);
+        return qvariant_cast<TpDBus::SocketAddressIPv6>(v);
 }
 
 Q_DECLARE_METATYPE(Tp::SUSocketAddress)

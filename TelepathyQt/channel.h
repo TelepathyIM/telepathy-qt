@@ -146,7 +146,7 @@ public:
     GroupMemberChangeDetails groupSelfContactRemoveInfo() const;
 
     bool groupAreHandleOwnersAvailable() const;
-    HandleOwnerMap groupHandleOwners() const;
+    TpDBus::HandleOwnerMap groupHandleOwners() const;
 
     bool groupIsSelfContactTracked() const;
     ContactPtr groupSelfContact() const;
@@ -178,8 +178,8 @@ Q_SIGNALS:
             const Tp::Contacts &groupMembersRemoved,
             const Tp::Channel::GroupMemberChangeDetails &details);
 
-    void groupHandleOwnersChanged(const Tp::HandleOwnerMap &owners,
-            const Tp::UIntList &added, const Tp::UIntList &removed);
+    void groupHandleOwnersChanged(const TpDBus::HandleOwnerMap &owners,
+            const TpDBus::UIntList &added, const TpDBus::UIntList &removed);
 
     void groupSelfContactChanged();
 
@@ -210,10 +210,10 @@ private Q_SLOTS:
 
     TP_QT_NO_EXPORT void onGroupFlagsChanged(uint added, uint removed);
     TP_QT_NO_EXPORT void onMembersChanged(
-            const Tp::UIntList &added, const Tp::UIntList &removed,
-            const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
+            const TpDBus::UIntList &added, const TpDBus::UIntList &removed,
+            const TpDBus::UIntList &localPending, const TpDBus::UIntList &remotePending,
             const QVariantMap &details);
-    TP_QT_NO_EXPORT void onHandleOwnersChanged(const Tp::HandleOwnerMap &added, const Tp::UIntList &removed);
+    TP_QT_NO_EXPORT void onHandleOwnersChanged(const TpDBus::HandleOwnerMap &added, const TpDBus::UIntList &removed);
     TP_QT_NO_EXPORT void onSelfHandleChanged(uint selfHandle);
 
     TP_QT_NO_EXPORT void gotConferenceProperties(QDBusPendingCallWatcher *watcher);

@@ -39,7 +39,7 @@ class TP_QT_EXPORT PendingDebugMessageList : public Tp::PendingOperation
 public:
     virtual ~PendingDebugMessageList();
 
-    DebugMessageList result() const;
+    TpDBus::DebugMessageList result() const;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void watcherFinished(QDBusPendingCallWatcher*);

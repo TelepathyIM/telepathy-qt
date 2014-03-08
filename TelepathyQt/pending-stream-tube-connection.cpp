@@ -222,12 +222,12 @@ void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
     PendingVariant *pv = qobject_cast<PendingVariant *>(op);
     // Build the address
     if (mPriv->type == SocketAddressTypeIPv4) {
-        SocketAddressIPv4 addr = qdbus_cast<SocketAddressIPv4>(pv->result());
+        TpDBus::SocketAddressIPv4 addr = qdbus_cast<TpDBus::SocketAddressIPv4>(pv->result());
         debug().nospace() << "Got address " << addr.address << ":" << addr.port;
         mPriv->hostAddress = QHostAddress(addr.address);
         mPriv->port = addr.port;
     } else if (mPriv->type == SocketAddressTypeIPv6) {
-        SocketAddressIPv6 addr = qdbus_cast<SocketAddressIPv6>(pv->result());
+        TpDBus::SocketAddressIPv6 addr = qdbus_cast<TpDBus::SocketAddressIPv6>(pv->result());
         debug().nospace() << "Got address " << addr.address << ":" << addr.port;
         mPriv->hostAddress = QHostAddress(addr.address);
         mPriv->port = addr.port;

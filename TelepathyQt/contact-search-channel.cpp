@@ -82,7 +82,7 @@ struct TP_QT_NO_EXPORT ContactSearchChannel::Private
 
     QQueue<void (Private::*)()> signalsQueue;
     QQueue<SearchStateChangeInfo> searchStateChangeQueue;
-    QQueue<ContactSearchResultMap> searchResultQueue;
+    QQueue<TpDBus::ContactSearchResultMap> searchResultQueue;
     bool processingSignalsQueue;
 };
 
@@ -121,8 +121,8 @@ void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private
             SIGNAL(SearchStateChanged(uint,QString,QVariantMap)),
             SLOT(onSearchStateChanged(uint,QString,QVariantMap)));
     self->parent->connect(self->contactSearchInterface,
-            SIGNAL(SearchResultReceived(Tp::ContactSearchResultMap)),
-            SLOT(onSearchResultReceived(Tp::ContactSearchResultMap)));
+            SIGNAL(SearchResultReceived(TpDBus::ContactSearchResultMap)),
+            SLOT(onSearchResultReceived(TpDBus::ContactSearchResultMap)));
 
     QVariantMap props;
     bool needIntrospectMainProps = false;
@@ -202,7 +202,7 @@ void ContactSearchChannel::Private::processSearchStateChangeQueue()
 
 void ContactSearchChannel::Private::processSearchResultQueue()
 {
-    const ContactSearchResultMap &result = searchResultQueue.first();
+    const TpDBus::ContactSearchResultMap &result = searchResultQueue.first();
     if (!result.isEmpty()) {
         ContactManagerPtr manager = parent->connection()->contactManager();
         PendingContacts *pendingContacts = manager->contactsForIdentifiers(
@@ -459,7 +459,7 @@ QString ContactSearchChannel::server() const
  *
  * This method requires ContactSearchChannel::FeatureCore to be ready.
  *
- * This is an overloaded method for search(const ContactSearchMap &searchTerms).
+ * This is an overloaded method for search(const TpDBus::ContactSearchMap &searchTerms).
  *
  * \param searchKey The search key.
  * \param searchTerm The search term.
@@ -469,7 +469,7 @@ QString ContactSearchChannel::server() const
  */
 PendingOperation *ContactSearchChannel::search(const QString &searchKey, const QString &searchTerm)
 {
-    ContactSearchMap searchTerms;
+    TpDBus::ContactSearchMap searchTerms;
     searchTerms.insert(searchKey, searchTerm);
     return search(searchTerms);
 }
@@ -490,7 +490,7 @@ PendingOperation *ContactSearchChannel::search(const QString &searchKey, const Q
  *         when the search has started.
  * \sa searchState(), searchStateChanged(), searchResultReceived()
  */
-PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
+PendingOperation *ContactSearchChannel::search(const TpDBus::ContactSearchMap &terms)
 {
     if (!isReady(FeatureCore)) {
         return new PendingFailure(TP_QT_ERROR_NOT_AVAILABLE,
@@ -610,7 +610,7 @@ void ContactSearchChannel::onSearchStateChanged(uint state, const QString &error
     mPriv->processSignalsQueue();
 }
 
-void ContactSearchChannel::onSearchResultReceived(const ContactSearchResultMap &result)
+void ContactSearchChannel::onSearchResultReceived(const TpDBus::ContactSearchResultMap &result)
 {
     mPriv->searchResultQueue.enqueue(result);
     mPriv->signalsQueue.enqueue(&Private::processSearchResultQueue);
@@ -621,7 +621,7 @@ void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
 {
     PendingContacts *pc = qobject_cast<PendingContacts *>(op);
 
-    const ContactSearchResultMap &result = mPriv->searchResultQueue.dequeue();
+    const TpDBus::ContactSearchResultMap &result = mPriv->searchResultQueue.dequeue();
 
     if (!pc->isValid()) {
         warning().nospace() << "Getting search result contacts "
@@ -637,7 +637,7 @@ void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
 
     SearchResult ret;
     uint i = 0;
-    for (ContactSearchResultMap::const_iterator it = result.constBegin();
+    for (TpDBus::ContactSearchResultMap::const_iterator it = result.constBegin();
                                                 it != result.constEnd();
                                                 ++it, ++i) {
         ret.insert(contacts.at(i), Contact::InfoFields(it.value()));

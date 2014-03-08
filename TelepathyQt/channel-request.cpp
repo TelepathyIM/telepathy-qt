@@ -76,7 +76,7 @@ struct TP_QT_NO_EXPORT ChannelRequest::Private
     AccountPtr account;
     QDateTime userActionTime;
     QString preferredHandler;
-    QualifiedPropertyValueMapList requests;
+    TpDBus::QualifiedPropertyValueMapList requests;
     ChannelRequestHints hints;
     bool propertiesDone;
 
@@ -229,7 +229,7 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool la
     }
 
     preferredHandler = qdbus_cast<QString>(props.value(QLatin1String("PreferredHandler")));
-    requests = qdbus_cast<QualifiedPropertyValueMapList>(props.value(QLatin1String("Requests")));
+    requests = qdbus_cast<TpDBus::QualifiedPropertyValueMapList>(props.value(QLatin1String("Requests")));
 
     parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
     readinessHelper->setInterfaces(parent->interfaces());
@@ -461,9 +461,9 @@ QString ChannelRequest::preferredHandler() const
  * application (by the target ID or handle, most likely).
  *
  * \return The requested desirable channel properties as a list of
- *         QualifiedPropertyValueMap objects.
+ *         TpDBus::QualifiedPropertyValueMap objects.
  */
-QualifiedPropertyValueMapList ChannelRequest::requests() const
+TpDBus::QualifiedPropertyValueMapList ChannelRequest::requests() const
 {
     return mPriv->requests;
 }

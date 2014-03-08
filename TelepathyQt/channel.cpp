@@ -78,8 +78,8 @@ struct TP_QT_NO_EXPORT Channel::Private
     void nowHaveInitialMembers();
 
     void buildContacts();
-    void doMembersChanged(const UIntList &, const UIntList &, const UIntList &,
-            const UIntList &, const QVariantMap &);
+    void doMembersChanged(const TpDBus::UIntList &, const TpDBus::UIntList &, const TpDBus::UIntList &,
+            const TpDBus::UIntList &, const QVariantMap &);
     void processMembersChanged();
     void updateContacts(const QList<ContactPtr> &contacts =
             QList<ContactPtr>());
@@ -157,14 +157,14 @@ struct TP_QT_NO_EXPORT Channel::Private
     QSet<uint> pendingGroupMembers;
     QSet<uint> pendingGroupLocalPendingMembers;
     QSet<uint> pendingGroupRemotePendingMembers;
-    UIntList groupMembersToRemove;
-    UIntList groupLocalPendingMembersToRemove;
-    UIntList groupRemotePendingMembersToRemove;
+    TpDBus::UIntList groupMembersToRemove;
+    TpDBus::UIntList groupLocalPendingMembersToRemove;
+    TpDBus::UIntList groupRemotePendingMembersToRemove;
 
     // Initial members
-    UIntList groupInitialMembers;
-    LocalPendingInfoList groupInitialLP;
-    UIntList groupInitialRP;
+    TpDBus::UIntList groupInitialMembers;
+    TpDBus::LocalPendingInfoList groupInitialLP;
+    TpDBus::UIntList groupInitialRP;
 
     // Current members
     QHash<uint, ContactPtr> groupContacts;
@@ -177,7 +177,7 @@ struct TP_QT_NO_EXPORT Channel::Private
 
     // Group handle owners
     bool groupAreHandleOwnersAvailable;
-    HandleOwnerMap groupHandleOwners;
+    TpDBus::HandleOwnerMap groupHandleOwners;
 
     // Group self identity
     bool pendingRetrieveGroupSelfContact;
@@ -191,7 +191,7 @@ struct TP_QT_NO_EXPORT Channel::Private
     QHash<QString, ChannelPtr> conferenceInitialChannels;
     QString conferenceInvitationMessage;
     QHash<uint, ChannelPtr> conferenceOriginalChannels;
-    UIntList conferenceInitialInviteeHandles;
+    TpDBus::UIntList conferenceInitialInviteeHandles;
     Contacts conferenceInitialInviteeContacts;
     QQueue<ConferenceChannelRemovedInfo *> conferenceChannelRemovedQueue;
     bool buildingConferenceChannelRemovedActorContact;
@@ -201,8 +201,8 @@ struct TP_QT_NO_EXPORT Channel::Private
 
 struct TP_QT_NO_EXPORT Channel::Private::GroupMembersChangedInfo
 {
-    GroupMembersChangedInfo(const UIntList &added, const UIntList &removed,
-            const UIntList &localPending, const UIntList &remotePending,
+    GroupMembersChangedInfo(const TpDBus::UIntList &added, const TpDBus::UIntList &removed,
+            const TpDBus::UIntList &localPending, const TpDBus::UIntList &remotePending,
             const QVariantMap &details)
         : added(added),
           removed(removed),
@@ -216,10 +216,10 @@ struct TP_QT_NO_EXPORT Channel::Private::GroupMembersChangedInfo
     {
     }
 
-    UIntList added;
-    UIntList removed;
-    UIntList localPending;
-    UIntList remotePending;
+    TpDBus::UIntList added;
+    TpDBus::UIntList removed;
+    TpDBus::UIntList localPending;
+    TpDBus::UIntList remotePending;
     QVariantMap details;
     uint actor;
     uint reason;
@@ -414,18 +414,18 @@ void Channel::Private::introspectGroup()
                     SLOT(onGroupFlagsChanged(uint,uint)));
 
     parent->connect(group,
-                    SIGNAL(MembersChanged(Tp::UIntList,
-                            Tp::UIntList,Tp::UIntList,
-                            Tp::UIntList,QVariantMap)),
-                    SLOT(onMembersChanged(Tp::UIntList,
-                            Tp::UIntList,Tp::UIntList,
-                            Tp::UIntList,QVariantMap)));
+                    SIGNAL(MembersChanged(TpDBus::UIntList,
+                            TpDBus::UIntList,Tp::UIntList,
+                            TpDBus::UIntList,QVariantMap)),
+                    SLOT(onMembersChanged(TpDBus::UIntList,
+                            TpDBus::UIntList,Tp::UIntList,
+                            TpDBus::UIntList,QVariantMap)));
 
     parent->connect(group,
-                    SIGNAL(HandleOwnersChanged(Tp::HandleOwnerMap,
-                            Tp::UIntList)),
-                    SLOT(onHandleOwnersChanged(Tp::HandleOwnerMap,
-                            Tp::UIntList)));
+                    SIGNAL(HandleOwnersChanged(TpDBus::HandleOwnerMap,
+                            TpDBus::UIntList)),
+                    SLOT(onHandleOwnersChanged(TpDBus::HandleOwnerMap,
+                            TpDBus::UIntList)));
 
     parent->connect(group,
                     SIGNAL(SelfHandleChanged(uint)),
@@ -570,11 +570,11 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
     groupIsSelfHandleTracked = true;
 
     groupFlags = qdbus_cast<uint>(props[keyGroupFlags]);
-    groupHandleOwners = qdbus_cast<HandleOwnerMap>(props[keyHandleOwners]);
+    groupHandleOwners = qdbus_cast<TpDBus::HandleOwnerMap>(props[keyHandleOwners]);
 
-    groupInitialMembers = qdbus_cast<UIntList>(props[keyMembers]);
-    groupInitialLP = qdbus_cast<LocalPendingInfoList>(props[keyLPMembers]);
-    groupInitialRP = qdbus_cast<UIntList>(props[keyRPMembers]);
+    groupInitialMembers = qdbus_cast<TpDBus::UIntList>(props[keyMembers]);
+    groupInitialLP = qdbus_cast<TpDBus::LocalPendingInfoList>(props[keyLPMembers]);
+    groupInitialRP = qdbus_cast<TpDBus::UIntList>(props[keyRPMembers]);
 
     uint propSelfHandle = qdbus_cast<uint>(props[keySelfHandle]);
     // Don't overwrite the self handle we got from the Connection with 0
@@ -622,13 +622,13 @@ void Channel::Private::nowHaveInitialMembers()
     // Synthesize MCD for current + RP
     groupMembersChangedQueue.enqueue(new GroupMembersChangedInfo(
                 groupInitialMembers, // Members
-                UIntList(), // Removed - obviously, none
-                UIntList(), // LP - will be handled separately, see below
+                TpDBus::UIntList(), // Removed - obviously, none
+                TpDBus::UIntList(), // LP - will be handled separately, see below
                 groupInitialRP, // Remote pending
                 QVariantMap())); // No details for members + RP
 
     // Synthesize one MCD for each initial LP member - they might have different details
-    foreach (const LocalPendingInfo &info, groupInitialLP) {
+    foreach (const TpDBus::LocalPendingInfo &info, groupInitialLP) {
         QVariantMap details;
 
         if (info.actor != 0) {
@@ -643,8 +643,8 @@ void Channel::Private::nowHaveInitialMembers()
             details.insert(QLatin1String("message"), info.message);
         }
 
-        groupMembersChangedQueue.enqueue(new GroupMembersChangedInfo(UIntList(), UIntList(),
-                    UIntList() << info.toBeAdded, UIntList(), details));
+        groupMembersChangedQueue.enqueue(new GroupMembersChangedInfo(TpDBus::UIntList(), TpDBus::UIntList(),
+                    TpDBus::UIntList() << info.toBeAdded, TpDBus::UIntList(), details));
     }
 
     // At least our added MCD event to process
@@ -656,7 +656,7 @@ void Channel::Private::buildContacts()
     buildingContacts = true;
 
     ContactManagerPtr manager = connection->contactManager();
-    UIntList toBuild = QSet<uint>(pendingGroupMembers +
+    TpDBus::UIntList toBuild = QSet<uint>(pendingGroupMembers +
             pendingGroupLocalPendingMembers +
             pendingGroupRemotePendingMembers).toList();
 
@@ -945,7 +945,7 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
         // Fake groupSelfHandle and initial members, let the MCD handling take care of the rest
         // TODO connect to Connection::selfHandleChanged
         groupSelfHandle = connection->selfHandle();
-        groupInitialMembers = UIntList() << groupSelfHandle << targetHandle;
+        groupInitialMembers = TpDBus::UIntList() << groupSelfHandle << targetHandle;
 
         debug().nospace() << "Faking a group on channel with self handle=" <<
             groupSelfHandle << " and other handle=" << targetHandle;
@@ -1055,7 +1055,7 @@ void Channel::Private::processConferenceChannelRemoved()
     if (info->details.contains(keyActor)) {
         ContactManagerPtr manager = connection->contactManager();
         PendingContacts *pendingContacts = manager->contactsForHandles(
-                UIntList() << qdbus_cast<uint>(info->details.value(keyActor)));
+                TpDBus::UIntList() << qdbus_cast<uint>(info->details.value(keyActor)));
         parent->connect(pendingContacts,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(gotConferenceChannelRemovedActorContact(Tp::PendingOperation*)));
@@ -1663,7 +1663,7 @@ Channel::PendingLeave::PendingLeave(const ChannelPtr &chan, const QString &messa
 
     QDBusPendingCall call =
         chan->mPriv->group->RemoveMembers(
-                UIntList() << chan->mPriv->groupSelfHandle,
+                TpDBus::UIntList() << chan->mPriv->groupSelfHandle,
                 message,
                 reason);
 
@@ -1972,7 +1972,7 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
                 ChannelPtr(this));
     }
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -2168,7 +2168,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
                 ChannelPtr(this));
     }
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -2377,7 +2377,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
  *
  * \return A mapping from group-specific handles to globally valid handles.
  */
-HandleOwnerMap Channel::groupHandleOwners() const
+TpDBus::HandleOwnerMap Channel::groupHandleOwners() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::groupHandleOwners() used channel not ready";
@@ -2477,7 +2477,7 @@ PendingOperation *Channel::groupAddSelfHandle()
                 ChannelPtr(this));
     }
 
-    UIntList handles;
+    TpDBus::UIntList handles;
 
     if (mPriv->groupSelfHandle == 0) {
         handles << mPriv->connection->selfHandle();
@@ -2845,8 +2845,8 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
 }
 
 void Channel::onMembersChanged(
-        const UIntList &added, const UIntList &removed,
-        const UIntList &localPending, const UIntList &remotePending,
+        const TpDBus::UIntList &added, const TpDBus::UIntList &removed,
+        const TpDBus::UIntList &localPending, const TpDBus::UIntList &remotePending,
         const QVariantMap &details)
 {
     debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() <<
@@ -2858,8 +2858,8 @@ void Channel::onMembersChanged(
 }
 
 void Channel::Private::doMembersChanged(
-        const UIntList &added, const UIntList &removed,
-        const UIntList &localPending, const UIntList &remotePending,
+        const TpDBus::UIntList &added, const TpDBus::UIntList &removed,
+        const TpDBus::UIntList &localPending, const TpDBus::UIntList &remotePending,
         const QVariantMap &details)
 {
     if (!groupHaveMembers) {
@@ -2907,7 +2907,7 @@ void Channel::Private::doMembersChanged(
                 details);
     }
 
-    HandleIdentifierMap contactIds = qdbus_cast<HandleIdentifierMap>(
+    TpDBus::HandleIdentifierMap contactIds = qdbus_cast<TpDBus::HandleIdentifierMap>(
             details.value(GroupMembersChangedInfo::keyContactIds));
     connection->lowlevel()->injectContactIds(contactIds);
 
@@ -2924,8 +2924,8 @@ void Channel::Private::doMembersChanged(
     }
 }
 
-void Channel::onHandleOwnersChanged(const HandleOwnerMap &added,
-        const UIntList &removed)
+void Channel::onHandleOwnersChanged(const TpDBus::HandleOwnerMap &added,
+        const TpDBus::UIntList &removed)
 {
     debug() << "Got Channel.Interface.Group::HandleOwnersChanged with" <<
         added.size() << "added," << removed.size() << "removed";
@@ -2936,10 +2936,10 @@ void Channel::onHandleOwnersChanged(const HandleOwnerMap &added,
         return;
     }
 
-    UIntList emitAdded;
-    UIntList emitRemoved;
+    TpDBus::UIntList emitAdded;
+    TpDBus::UIntList emitRemoved;
 
-    for (HandleOwnerMap::const_iterator i = added.begin();
+    for (TpDBus::HandleOwnerMap::const_iterator i = added.begin();
                                         i != added.end();
                                         ++i) {
         uint handle = i.key();
@@ -2999,8 +2999,8 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         ConnectionPtr conn = connection();
         ChannelFactoryConstPtr chanFactory = conn->channelFactory();
 
-        ObjectPathList channels =
-            qdbus_cast<ObjectPathList>(props[QLatin1String("Channels")]);
+        TpDBus::ObjectPathList channels =
+            qdbus_cast<TpDBus::ObjectPathList>(props[QLatin1String("Channels")]);
         foreach (const QDBusObjectPath &channelPath, channels) {
             if (mPriv->conferenceChannels.contains(channelPath.path())) {
                 continue;
@@ -3014,8 +3014,8 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
             mPriv->conferenceChannels.insert(channelPath.path(), channel);
         }
 
-        ObjectPathList initialChannels =
-            qdbus_cast<ObjectPathList>(props[QLatin1String("InitialChannels")]);
+        TpDBus::ObjectPathList initialChannels =
+            qdbus_cast<TpDBus::ObjectPathList>(props[QLatin1String("InitialChannels")]);
         foreach (const QDBusObjectPath &channelPath, initialChannels) {
             if (mPriv->conferenceInitialChannels.contains(channelPath.path())) {
                 continue;
@@ -3030,11 +3030,11 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         }
 
         mPriv->conferenceInitialInviteeHandles =
-            qdbus_cast<UIntList>(props[QLatin1String("InitialInviteeHandles")]);
+            qdbus_cast<TpDBus::UIntList>(props[QLatin1String("InitialInviteeHandles")]);
         QStringList conferenceInitialInviteeIds =
             qdbus_cast<QStringList>(props[QLatin1String("InitialInviteeIDs")]);
         if (mPriv->conferenceInitialInviteeHandles.size() == conferenceInitialInviteeIds.size()) {
-            HandleIdentifierMap contactIds;
+            TpDBus::HandleIdentifierMap contactIds;
             int i = 0;
             foreach (uint handle, mPriv->conferenceInitialInviteeHandles) {
                 contactIds.insert(handle, conferenceInitialInviteeIds.at(i++));
@@ -3045,9 +3045,9 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         mPriv->conferenceInvitationMessage =
             qdbus_cast<QString>(props[QLatin1String("InvitationMessage")]);
 
-        ChannelOriginatorMap originalChannels = qdbus_cast<ChannelOriginatorMap>(
+        TpDBus::ChannelOriginatorMap originalChannels = qdbus_cast<TpDBus::ChannelOriginatorMap>(
                 props[QLatin1String("OriginalChannels")]);
-        for (ChannelOriginatorMap::const_iterator i = originalChannels.constBegin();
+        for (TpDBus::ChannelOriginatorMap::const_iterator i = originalChannels.constBegin();
                 i != originalChannels.constEnd(); ++i) {
             PendingReady *readyOp = chanFactory->proxy(conn,
                     i.value().path(), QVariantMap());
@@ -3115,7 +3115,7 @@ void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath,
         return;
     }
 
-    HandleIdentifierMap contactIds = qdbus_cast<HandleIdentifierMap>(
+    TpDBus::HandleIdentifierMap contactIds = qdbus_cast<TpDBus::HandleIdentifierMap>(
             details.value(Private::GroupMembersChangedInfo::keyContactIds));
     mPriv->connection->lowlevel()->injectContactIds(contactIds);
 
@@ -3227,8 +3227,8 @@ void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
  */
 
 /**
- * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners,
- *            const Tp::UIntList &added, const Tp::UIntList &removed)
+ * \fn void Channel::groupHandleOwnersChanged(const TpDBus::HandleOwnerMap &owners,
+ *            const TpDBus::UIntList &added, const TpDBus::UIntList &removed)
  *
  * Emitted when the value returned by groupHandleOwners() changes.
  *

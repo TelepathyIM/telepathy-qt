@@ -105,9 +105,9 @@ public:
     PendingOperation *blockContactsAndReportAbuse(const QList<ContactPtr> &contacts);
     PendingOperation *unblockContacts(const QList<ContactPtr> &contacts);
 
-    PendingContacts *contactsForHandles(const UIntList &handles,
+    PendingContacts *contactsForHandles(const TpDBus::UIntList &handles,
             const Features &features = Features());
-    PendingContacts *contactsForHandles(const HandleIdentifierMap &handles,
+    PendingContacts *contactsForHandles(const TpDBus::HandleIdentifierMap &handles,
             const Features &features = Features());
 
     PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
@@ -145,14 +145,14 @@ Q_SIGNALS:
             const Tp::Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
-    TP_QT_NO_EXPORT void onAliasesChanged(const Tp::AliasMap &);
+    TP_QT_NO_EXPORT void onAliasesChanged(const TpDBus::AliasMap &);
     TP_QT_NO_EXPORT void doRequestAvatars();
     TP_QT_NO_EXPORT void onAvatarUpdated(uint, const QString &);
     TP_QT_NO_EXPORT void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
-    TP_QT_NO_EXPORT void onPresencesChanged(const Tp::ContactSimplePresenceMap &);
-    TP_QT_NO_EXPORT void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
+    TP_QT_NO_EXPORT void onPresencesChanged(const TpDBus::ContactSimplePresenceMap &);
+    TP_QT_NO_EXPORT void onCapabilitiesChanged(const TpDBus::ContactCapabilitiesMap &);
     TP_QT_NO_EXPORT void onLocationUpdated(uint, const QVariantMap &);
-    TP_QT_NO_EXPORT void onContactInfoChanged(uint, const Tp::ContactInfoFieldList &);
+    TP_QT_NO_EXPORT void onContactInfoChanged(uint, const TpDBus::ContactInfoFieldList &);
     TP_QT_NO_EXPORT void onClientTypesUpdated(uint, const QStringList &);
     TP_QT_NO_EXPORT void doRefreshInfo();
 

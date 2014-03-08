@@ -45,13 +45,13 @@ public:
 
     ConnectionPtr connection() const;
 
-    const UIntList &contactsRequested() const;
+    const TpDBus::UIntList &contactsRequested() const;
     const QStringList &interfacesRequested() const;
     bool shouldReference() const;
 
-    UIntList validHandles() const;
-    UIntList invalidHandles() const;
-    ContactAttributesMap attributes() const;
+    TpDBus::UIntList validHandles() const;
+    TpDBus::UIntList invalidHandles() const;
+    TpDBus::ContactAttributesMap attributes() const;
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void onCallFinished(QDBusPendingCallWatcher *watcher);
@@ -60,7 +60,7 @@ private:
     friend class ConnectionLowlevel;
 
     TP_QT_NO_EXPORT PendingContactAttributes(const ConnectionPtr &connection,
-            const UIntList &handles,
+            const TpDBus::UIntList &handles,
             const QStringList &interfaces, bool reference);
 
     TP_QT_NO_EXPORT void failImmediately(const QString &error, const QString &errorMessage);

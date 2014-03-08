@@ -60,7 +60,7 @@ public:
     QueuedContactFactory(ContactManagerPtr contactManager, QObject* parent = 0);
     ~QueuedContactFactory();
 
-    QUuid appendNewRequest(const UIntList &handles);
+    QUuid appendNewRequest(const TpDBus::UIntList &handles);
 
 Q_SIGNALS:
     void contactsRetrieved(QUuid uuid, QList<Tp::ContactPtr> contacts);
@@ -73,7 +73,7 @@ private Q_SLOTS:
 private:
     struct Entry {
         QUuid uuid;
-        UIntList handles;
+        TpDBus::UIntList handles;
     };
 
     bool m_isProcessing;

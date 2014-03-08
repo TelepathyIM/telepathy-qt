@@ -121,7 +121,7 @@ private:
     QStack<QString> mElements;
     QString mCurrentText;
     Profile::Parameter mCurrentParameter;
-    RequestableChannelClass mCurrentCC;
+    TpDBus::RequestableChannelClass mCurrentCC;
     QString mCurrentPropertyName;
     QString mCurrentPropertyType;
     QString mErrorString;

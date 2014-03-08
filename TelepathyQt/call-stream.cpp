@@ -64,7 +64,7 @@ struct TP_QT_NO_EXPORT CallStream::Private
 
     // Introspection
     uint localSendingState;
-    ContactSendingStateMap remoteMembers;
+    TpDBus::ContactSendingStateMap remoteMembers;
     QHash<uint, ContactPtr> remoteMembersContacts;
     bool canRequestReceiving;
     QQueue< QSharedPointer<RemoteMembersChangedInfo> > remoteMembersChangedQueue;
@@ -73,10 +73,10 @@ struct TP_QT_NO_EXPORT CallStream::Private
 
 struct TP_QT_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
 {
-    RemoteMembersChangedInfo(const ContactSendingStateMap &updates,
-            const HandleIdentifierMap &identifiers,
-            const UIntList &removed,
-            const CallStateReason &reason)
+    RemoteMembersChangedInfo(const TpDBus::ContactSendingStateMap &updates,
+            const TpDBus::HandleIdentifierMap &identifiers,
+            const TpDBus::UIntList &removed,
+            const TpDBus::CallStateReason &reason)
         : updates(updates),
           identifiers(identifiers),
           removed(removed),
@@ -85,20 +85,20 @@ struct TP_QT_NO_EXPORT CallStream::Private::RemoteMembersChangedInfo
     }
 
     static QSharedPointer<RemoteMembersChangedInfo> create(
-            const ContactSendingStateMap &updates,
-            const HandleIdentifierMap &identifiers,
-            const UIntList &removed,
-            const CallStateReason &reason)
+            const TpDBus::ContactSendingStateMap &updates,
+            const TpDBus::HandleIdentifierMap &identifiers,
+            const TpDBus::UIntList &removed,
+            const TpDBus::CallStateReason &reason)
     {
         RemoteMembersChangedInfo *info = new RemoteMembersChangedInfo(
                 updates, identifiers, removed, reason);
         return QSharedPointer<RemoteMembersChangedInfo>(info);
     }
 
-    ContactSendingStateMap updates;
-    HandleIdentifierMap identifiers;
-    UIntList removed;
-    CallStateReason reason;
+    TpDBus::ContactSendingStateMap updates;
+    TpDBus::HandleIdentifierMap identifiers;
+    TpDBus::UIntList removed;
+    TpDBus::CallStateReason reason;
 };
 
 CallStream::Private::Private(CallStream *parent, const CallContentPtr &content)
@@ -131,8 +131,8 @@ void CallStream::Private::introspectMainProperties(CallStream::Private *self)
             SIGNAL(LocalSendingStateChanged(uint,Tp::CallStateReason)),
             SLOT(onLocalSendingStateChanged(uint,Tp::CallStateReason)));
     parent->connect(self->streamInterface,
-            SIGNAL(RemoteMembersChanged(Tp::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
-            SLOT(onRemoteMembersChanged(Tp::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
+            SIGNAL(RemoteMembersChanged(TpDBus::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
+            SLOT(onRemoteMembersChanged(TpDBus::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
 
     parent->connect(self->streamInterface->requestAllProperties(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -155,7 +155,7 @@ void CallStream::Private::processRemoteMembersChanged()
     currentRemoteMembersChangedInfo = remoteMembersChangedQueue.dequeue();
 
     QSet<uint> pendingRemoteMembers;
-    for (ContactSendingStateMap::const_iterator i = currentRemoteMembersChangedInfo->updates.constBegin();
+    for (TpDBus::ContactSendingStateMap::const_iterator i = currentRemoteMembersChangedInfo->updates.constBegin();
             i != currentRemoteMembersChangedInfo->updates.constEnd(); ++i) {
         pendingRemoteMembers.insert(i.key());
     }
@@ -286,7 +286,7 @@ SendingState CallStream::remoteSendingState(const ContactPtr &contact) const
         return SendingStateNone;
     }
 
-    for (ContactSendingStateMap::const_iterator i = mPriv->remoteMembers.constBegin();
+    for (TpDBus::ContactSendingStateMap::const_iterator i = mPriv->remoteMembers.constBegin();
             i != mPriv->remoteMembers.constEnd(); ++i) {
         uint handle = i.key();
         SendingState sendingState = (SendingState) i.value();
@@ -354,13 +354,13 @@ void CallStream::gotMainProperties(PendingOperation *op)
     mPriv->canRequestReceiving = qdbus_cast<bool>(props[QLatin1String("CanRequestReceiving")]);
     mPriv->localSendingState = qdbus_cast<uint>(props[QLatin1String("LocalSendingState")]);
 
-    ContactSendingStateMap remoteMembers =
-        qdbus_cast<ContactSendingStateMap>(props[QLatin1String("RemoteMembers")]);
-    HandleIdentifierMap remoteMemberIdentifiers =
-        qdbus_cast<HandleIdentifierMap>(props[QLatin1String("RemoteMemberIdentifiers")]);
+    TpDBus::ContactSendingStateMap remoteMembers =
+        qdbus_cast<TpDBus::ContactSendingStateMap>(props[QLatin1String("RemoteMembers")]);
+    TpDBus::HandleIdentifierMap remoteMemberIdentifiers =
+        qdbus_cast<TpDBus::HandleIdentifierMap>(props[QLatin1String("RemoteMemberIdentifiers")]);
 
     mPriv->remoteMembersChangedQueue.enqueue(Private::RemoteMembersChangedInfo::create(
-                remoteMembers, remoteMemberIdentifiers, UIntList(), CallStateReason()));
+                remoteMembers, remoteMemberIdentifiers, TpDBus::UIntList(), TpDBus::CallStateReason()));
     mPriv->processRemoteMembersChanged();
 }
 
@@ -378,7 +378,7 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
 
     QMap<uint, ContactPtr> removed;
 
-    for (ContactSendingStateMap::const_iterator i =
+    for (TpDBus::ContactSendingStateMap::const_iterator i =
                 mPriv->currentRemoteMembersChangedInfo->updates.constBegin();
             i != mPriv->currentRemoteMembersChangedInfo->updates.constEnd(); ++i) {
         mPriv->remoteMembers.insert(i.key(), i.value());
@@ -413,7 +413,7 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
     if (isReady(FeatureCore)) {
         CallChannelPtr channel(content()->channel());
         QHash<ContactPtr, SendingState> remoteSendingStates;
-        for (ContactSendingStateMap::const_iterator i =
+        for (TpDBus::ContactSendingStateMap::const_iterator i =
                     mPriv->currentRemoteMembersChangedInfo->updates.constBegin();
                 i != mPriv->currentRemoteMembersChangedInfo->updates.constEnd(); ++i) {
             uint handle = i.key();
@@ -440,16 +440,16 @@ void CallStream::gotRemoteMembersContacts(PendingOperation *op)
     mPriv->processRemoteMembersChanged();
 }
 
-void CallStream::onLocalSendingStateChanged(uint state, const CallStateReason &reason)
+void CallStream::onLocalSendingStateChanged(uint state, const TpDBus::CallStateReason &reason)
 {
     mPriv->localSendingState = state;
     emit localSendingStateChanged((SendingState) state, reason);
 }
 
-void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
-        const HandleIdentifierMap &identifiers,
-        const UIntList &removed,
-        const CallStateReason &reason)
+void CallStream::onRemoteMembersChanged(const TpDBus::ContactSendingStateMap &updates,
+        const TpDBus::HandleIdentifierMap &identifiers,
+        const TpDBus::UIntList &removed,
+        const TpDBus::CallStateReason &reason)
 {
     if (updates.isEmpty() && removed.isEmpty()) {
         debug() << "Received Call::Stream::RemoteMembersChanged with 0 removals and "
@@ -465,7 +465,7 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
 }
 
 /**
- * \fn void CallStream::localSendingStateChanged(Tp::SendingState localSendingState, const Tp::CallStateReason &reason);
+ * \fn void CallStream::localSendingStateChanged(Tp::SendingState localSendingState, const TpDBus::CallStateReason &reason);
  *
  * This signal is emitted when the local sending state of this call stream
  * changes.
@@ -476,7 +476,7 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
  */
 
 /**
- * \fn void CallStream::remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates, const Tp::CallStateReason &reason);
+ * \fn void CallStream::remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates, const TpDBus::CallStateReason &reason);
  *
  * This signal is emitted when any remote sending state of this call stream
  * changes.
@@ -487,7 +487,7 @@ void CallStream::onRemoteMembersChanged(const ContactSendingStateMap &updates,
  */
 
 /**
- * \fn void CallStream::remoteMembersRemoved(const Tp::Contacts &members, const Tp::CallStateReason &reason);
+ * \fn void CallStream::remoteMembersRemoved(const Tp::Contacts &members, const TpDBus::CallStateReason &reason);
  *
  * This signal is emitted when one or more members of this stream are removed.
  *

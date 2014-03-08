@@ -37,7 +37,7 @@ class TP_QT_EXPORT Presence
 {
 public:
     Presence();
-    Presence(const SimplePresence &sp);
+    Presence(const TpDBus::SimplePresence &sp);
     Presence(ConnectionPresenceType type, const QString &status, const QString &statusMessage);
     Presence(const Presence &other);
     ~Presence();
@@ -61,12 +61,12 @@ public:
     ConnectionPresenceType type() const;
     QString status() const;
     QString statusMessage() const;
-    void setStatus(const SimplePresence &value);
+    void setStatus(const TpDBus::SimplePresence &value);
     void setStatus(ConnectionPresenceType type, const QString &status,
             const QString &statusMessage);
     void setStatusMessage(const QString &statusMessage);
 
-    SimplePresence barePresence() const;
+    TpDBus::SimplePresence barePresence() const;
 
 private:
     struct Private;
@@ -86,7 +86,7 @@ public:
     Q_DECLARE_FLAGS(StatusFlags, StatusFlag);
 
     PresenceSpec();
-    PresenceSpec(const QString &status, const StatusSpec &spec);
+    PresenceSpec(const QString &status, const TpDBus::StatusSpec &spec);
     PresenceSpec(const PresenceSpec &other);
     ~PresenceSpec();
 
@@ -114,7 +114,7 @@ public:
     bool maySetOnSelf() const;
     bool canHaveStatusMessage() const;
 
-    StatusSpec bareSpec() const;
+    TpDBus::StatusSpec bareSpec() const;
 
 private:
     struct Private;
@@ -126,13 +126,13 @@ class TP_QT_EXPORT PresenceSpecList : public QList<PresenceSpec>
 {
 public:
     PresenceSpecList() { }
-    PresenceSpecList(const StatusSpecMap &specMap)
+    PresenceSpecList(const TpDBus::StatusSpecMap &specMap)
     {
-        StatusSpecMap::const_iterator i = specMap.constBegin();
-        StatusSpecMap::const_iterator end = specMap.end();
+        TpDBus::StatusSpecMap::const_iterator i = specMap.constBegin();
+        TpDBus::StatusSpecMap::const_iterator end = specMap.end();
         for (; i != end; ++i) {
             QString status = i.key();
-            StatusSpec spec = i.value();
+            TpDBus::StatusSpec spec = i.value();
             append(PresenceSpec(status, spec));
         }
     }
@@ -150,9 +150,9 @@ public:
         return ret;
     }
 
-    StatusSpecMap bareSpecs() const
+    TpDBus::StatusSpecMap bareSpecs() const
     {
-        StatusSpecMap ret;
+        TpDBus::StatusSpecMap ret;
         Q_FOREACH (const PresenceSpec &spec, *this) {
             ret.insert(spec.presence().status(), spec.bareSpec());
         }

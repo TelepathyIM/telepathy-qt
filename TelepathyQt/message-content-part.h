@@ -37,7 +37,7 @@ class TP_QT_EXPORT MessageContentPart
 {
 public:
     MessageContentPart();
-    MessageContentPart(const MessagePart &mp);
+    MessageContentPart(const TpDBus::MessagePart &mp);
     MessageContentPart(const MessageContentPart &other);
     ~MessageContentPart();
 
@@ -46,7 +46,7 @@ public:
     MessageContentPart &operator=(const MessageContentPart &other);
     bool operator==(const MessageContentPart &other) const;
 
-    MessagePart barePart() const;
+    TpDBus::MessagePart barePart() const;
 
 private:
     struct Private;
@@ -59,13 +59,13 @@ class TP_QT_EXPORT MessageContentPartList :
 {
 public:
     MessageContentPartList() { }
-    MessageContentPartList(const MessagePart &mp)
+    MessageContentPartList(const TpDBus::MessagePart &mp)
     {
         append(MessageContentPart(mp));
     }
-    MessageContentPartList(const MessagePartList &mps)
+    MessageContentPartList(const TpDBus::MessagePartList &mps)
     {
-        Q_FOREACH (const MessagePart &mp, mps) {
+        Q_FOREACH (const TpDBus::MessagePart &mp, mps) {
             append(MessageContentPart(mp));
         }
     }
@@ -78,9 +78,9 @@ public:
     {
     }
 
-    MessagePartList bareParts() const
+    TpDBus::MessagePartList bareParts() const
     {
-        MessagePartList list;
+        TpDBus::MessagePartList list;
         Q_FOREACH (const MessageContentPart &mcp, *this) {
             list.append(mcp.barePart());
         }

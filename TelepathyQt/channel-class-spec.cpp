@@ -46,7 +46,7 @@ ChannelClassSpec::ChannelClassSpec()
 {
 }
 
-ChannelClassSpec::ChannelClassSpec(const ChannelClass &cc)
+ChannelClassSpec::ChannelClassSpec(const TpDBus::ChannelClass &cc)
     : mPriv(new Private)
 {
     foreach (QString key, cc.keys()) {
@@ -185,13 +185,13 @@ QVariantMap ChannelClassSpec::allProperties() const
     return mPriv.constData() != 0 ? mPriv->props : QVariantMap();
 }
 
-ChannelClass ChannelClassSpec::bareClass() const
+TpDBus::ChannelClass ChannelClassSpec::bareClass() const
 {
-    ChannelClass cc;
+    TpDBus::ChannelClass cc;
 
     if (!isValid()) {
         warning() << "Tried to convert an invalid ChannelClassSpec to a ChannelClass";
-        return ChannelClass();
+        return TpDBus::ChannelClass();
     }
 
     QVariantMap props = mPriv->props;

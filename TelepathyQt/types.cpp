@@ -43,8 +43,8 @@ void registerTypes()
 {
     qDBusRegisterMetaType<Tp::SUSocketAddress>();
 
-    Tp::_registerTypes();
-    TpFuture::_registerTypes();
+    TpDBus::_registerTypes();
+    TpFutureDBus::_registerTypes();
 }
 
 bool operator==(const SUSocketAddress& v1, const SUSocketAddress& v2)

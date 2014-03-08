@@ -93,11 +93,11 @@ QStringList BaseProtocol::Adaptee::connectionInterfaces() const
     return mProtocol->connectionInterfaces();
 }
 
-ParamSpecList BaseProtocol::Adaptee::parameters() const
+TpDBus::ParamSpecList BaseProtocol::Adaptee::parameters() const
 {
-    ParamSpecList ret;
+    TpDBus::ParamSpecList ret;
     foreach (const ProtocolParameter &param, mProtocol->parameters()) {
-         ParamSpec paramSpec = param.bareParameter();
+         TpDBus::ParamSpec paramSpec = param.bareParameter();
          if (!(paramSpec.flags & ConnMgrParamFlagHasDefault)) {
              // we cannot pass QVariant::Invalid over D-Bus, lets build a dummy value
              // that should be ignored according to the spec
@@ -109,7 +109,7 @@ ParamSpecList BaseProtocol::Adaptee::parameters() const
     return ret;
 }
 
-RequestableChannelClassList BaseProtocol::Adaptee::requestableChannelClasses() const
+TpDBus::RequestableChannelClassList BaseProtocol::Adaptee::requestableChannelClasses() const
 {
     return mProtocol->requestableChannelClasses().bareClasses();
 }
@@ -1138,7 +1138,7 @@ BaseProtocolPresenceInterface::Adaptee::~Adaptee()
 {
 }
 
-StatusSpecMap BaseProtocolPresenceInterface::Adaptee::statuses() const
+TpDBus::StatusSpecMap BaseProtocolPresenceInterface::Adaptee::statuses() const
 {
     return mInterface->statuses().bareSpecs();
 }

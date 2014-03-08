@@ -38,9 +38,9 @@ class TP_QT_NO_EXPORT BaseProtocol::Adaptee : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QStringList interfaces READ interfaces)
-    Q_PROPERTY(Tp::ParamSpecList parameters READ parameters)
+    Q_PROPERTY(TpDBus::ParamSpecList parameters READ parameters)
     Q_PROPERTY(QStringList connectionInterfaces READ connectionInterfaces)
-    Q_PROPERTY(Tp::RequestableChannelClassList requestableChannelClasses READ requestableChannelClasses)
+    Q_PROPERTY(TpDBus::RequestableChannelClassList requestableChannelClasses READ requestableChannelClasses)
     Q_PROPERTY(QString vcardField READ vcardField)
     Q_PROPERTY(QString englishName READ englishName)
     Q_PROPERTY(QString icon READ icon)
@@ -52,8 +52,8 @@ public:
 
     QStringList interfaces() const;
     QStringList connectionInterfaces() const;
-    ParamSpecList parameters() const;
-    RequestableChannelClassList requestableChannelClasses() const;
+    TpDBus::ParamSpecList parameters() const;
+    TpDBus::RequestableChannelClassList requestableChannelClasses() const;
     QString vcardField() const;
     QString englishName() const;
     QString icon() const;
@@ -124,13 +124,13 @@ public:
 class TP_QT_NO_EXPORT BaseProtocolPresenceInterface::Adaptee : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Tp::StatusSpecMap statuses READ statuses)
+    Q_PROPERTY(TpDBus::StatusSpecMap statuses READ statuses)
 
 public:
     Adaptee(BaseProtocolPresenceInterface *interface);
     ~Adaptee();
 
-    StatusSpecMap statuses() const;
+    TpDBus::StatusSpecMap statuses() const;
 
 public:
     BaseProtocolPresenceInterface *mInterface;

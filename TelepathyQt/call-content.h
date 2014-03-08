@@ -60,13 +60,13 @@ public:
 
 Q_SIGNALS:
     void streamAdded(const Tp::CallStreamPtr &stream);
-    void streamRemoved(const Tp::CallStreamPtr &stream, const Tp::CallStateReason &reason);
+    void streamRemoved(const Tp::CallStreamPtr &stream, const TpDBus::CallStateReason &reason);
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void gotMainProperties(Tp::PendingOperation *op);
-    TP_QT_NO_EXPORT void onStreamsAdded(const Tp::ObjectPathList &streamPath);
-    TP_QT_NO_EXPORT void onStreamsRemoved(const Tp::ObjectPathList &streamPath,
-            const Tp::CallStateReason &reason);
+    TP_QT_NO_EXPORT void onStreamsAdded(const TpDBus::ObjectPathList &streamPath);
+    TP_QT_NO_EXPORT void onStreamsRemoved(const TpDBus::ObjectPathList &streamPath,
+            const TpDBus::CallStateReason &reason);
     TP_QT_NO_EXPORT void onStreamReady(Tp::PendingOperation *op);
 
 private:

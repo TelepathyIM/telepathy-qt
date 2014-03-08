@@ -349,7 +349,7 @@ QVariantMap ConnectionManager::Private::ProtocolWrapper::qualifyProperties(
 
 void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
 {
-    RequestableChannelClassList classes;
+    TpDBus::RequestableChannelClassList classes;
 
     QVariantMap fixedProps;
     QStringList allowedProps;
@@ -362,14 +362,14 @@ void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
             TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
             static_cast<uint>(HandleTypeRoom));
 
-    RequestableChannelClass textChatroom = {fixedProps, allowedProps};
+    TpDBus::RequestableChannelClass textChatroom = {fixedProps, allowedProps};
     classes.append(textChatroom);
 
     // 1-1 text chats
     fixedProps[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")] =
         static_cast<uint>(HandleTypeContact);
 
-    RequestableChannelClass text = {fixedProps, allowedProps};
+    TpDBus::RequestableChannelClass text = {fixedProps, allowedProps};
     classes.append(text);
 
     mInfo.setRequestableChannelClasses(classes);
@@ -400,9 +400,9 @@ void ConnectionManager::Private::ProtocolWrapper::extractMainProperties(const QV
                 props[TP_QT_IFACE_PROTOCOL + QLatin1String(".Interfaces")]));
     mReadinessHelper->setInterfaces(interfaces());
 
-    ParamSpecList parameters = qdbus_cast<ParamSpecList>(
+    TpDBus::ParamSpecList parameters = qdbus_cast<TpDBus::ParamSpecList>(
             props[TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters")]);
-    foreach (const ParamSpec &spec, parameters) {
+    foreach (const TpDBus::ParamSpec &spec, parameters) {
         mInfo.addParameter(spec);
     }
 
@@ -427,7 +427,7 @@ void ConnectionManager::Private::ProtocolWrapper::extractMainProperties(const QV
 
     // Don't overwrite the everything-is-possible RCCs with an empty list if there is no RCCs key
     if (props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses"))) {
-        mInfo.setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
+        mInfo.setRequestableChannelClasses(qdbus_cast<TpDBus::RequestableChannelClassList>(
                 props[TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses")]));
     }
 }
@@ -471,7 +471,7 @@ void ConnectionManager::Private::ProtocolWrapper::extractPresenceProperties(cons
     mHasPresenceProps =
         props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses"));
 
-    mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<StatusSpecMap>(
+    mInfo.setAllowedPresenceStatuses(PresenceSpecList(qdbus_cast<TpDBus::StatusSpecMap>(
                 props[TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses")])));
 }
 
@@ -542,7 +542,7 @@ bool ConnectionManager::Private::parseConfigFile()
     foreach (const QString &protocol, f.protocols()) {
         ProtocolInfo info(ConnectionManagerPtr(parent), protocol);
 
-        foreach (const ParamSpec &spec, f.parameters(protocol)) {
+        foreach (const TpDBus::ParamSpec &spec, f.parameters(protocol)) {
             info.addParameter(spec);
         }
         info.setRequestableChannelClasses(
@@ -956,11 +956,11 @@ void ConnectionManager::gotMainProperties(Tp::PendingOperation *op)
         return;
     }
 
-    ProtocolPropertiesMap protocolsMap =
-        qdbus_cast<ProtocolPropertiesMap>(props[QLatin1String("Protocols")]);
+    TpDBus::ProtocolPropertiesMap protocolsMap =
+        qdbus_cast<TpDBus::ProtocolPropertiesMap>(props[QLatin1String("Protocols")]);
 
-    ProtocolPropertiesMap::const_iterator i = protocolsMap.constBegin();
-    ProtocolPropertiesMap::const_iterator end = protocolsMap.constEnd();
+    TpDBus::ProtocolPropertiesMap::const_iterator i = protocolsMap.constBegin();
+    TpDBus::ProtocolPropertiesMap::const_iterator end = protocolsMap.constEnd();
     while (i != end) {
         QString protocolName = i.key();
         if (!checkValidProtocolName(protocolName)) {

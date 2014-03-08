@@ -48,10 +48,10 @@ ConnectionCapabilities::ConnectionCapabilities()
 /**
  * Construct a new ConnectionCapabilities object using the give \a rccs.
  *
- * \param rccs RequestableChannelClassList representing the capabilities of a
+ * \param rccs TpDBus::RequestableChannelClassList representing the capabilities of a
  *             Connection.
  */
-ConnectionCapabilities::ConnectionCapabilities(const RequestableChannelClassList &rccs)
+ConnectionCapabilities::ConnectionCapabilities(const TpDBus::RequestableChannelClassList &rccs)
     : CapabilitiesBase(rccs, false)
 {
 }

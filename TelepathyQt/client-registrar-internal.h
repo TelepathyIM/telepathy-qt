@@ -89,7 +89,7 @@ class TP_QT_NO_EXPORT ClientObserverAdaptor : public QDBusAbstractAdaptor
 "  </interface>\n"
         "")
 
-    Q_PROPERTY(Tp::ChannelClassList ObserverChannelFilter READ ObserverChannelFilter)
+    Q_PROPERTY(TpDBus::ChannelClassList ObserverChannelFilter READ ObserverChannelFilter)
     Q_PROPERTY(bool Recover READ Recover)
 
 public:
@@ -104,7 +104,7 @@ public:
     }
 
 public: // Properties
-    inline Tp::ChannelClassList ObserverChannelFilter() const
+    inline TpDBus::ChannelClassList ObserverChannelFilter() const
     {
         return mClient->observerFilter().bareClasses();
     }
@@ -117,9 +117,9 @@ public: // Properties
 public Q_SLOTS: // Methods
     void ObserveChannels(const QDBusObjectPath &account,
             const QDBusObjectPath &connection,
-            const Tp::ChannelDetailsList &channels,
+            const TpDBus::ChannelDetailsList &channels,
             const QDBusObjectPath &dispatchOperation,
-            const Tp::ObjectPathList &requestsSatisfied,
+            const TpDBus::ObjectPathList &requestsSatisfied,
             const QVariantMap &observerInfo,
             const QDBusMessage &message);
 
@@ -164,7 +164,7 @@ class TP_QT_NO_EXPORT ClientApproverAdaptor : public QDBusAbstractAdaptor
 "  </interface>\n"
         "")
 
-    Q_PROPERTY(Tp::ChannelClassList ApproverChannelFilter READ ApproverChannelFilter)
+    Q_PROPERTY(TpDBus::ChannelClassList ApproverChannelFilter READ ApproverChannelFilter)
 
 public:
     ClientApproverAdaptor(ClientRegistrar *registrar,
@@ -178,13 +178,13 @@ public:
     }
 
 public: // Properties
-    inline Tp::ChannelClassList ApproverChannelFilter() const
+    inline TpDBus::ChannelClassList ApproverChannelFilter() const
     {
         return mClient->approverFilter().bareClasses();
     }
 
 public Q_SLOTS: // Methods
-    void AddDispatchOperation(const Tp::ChannelDetailsList &channels,
+    void AddDispatchOperation(const TpDBus::ChannelDetailsList &channels,
             const QDBusObjectPath &dispatchOperation,
             const QVariantMap &properties,
             const QDBusMessage &message);
@@ -233,10 +233,10 @@ class TP_QT_NO_EXPORT ClientHandlerAdaptor : public QDBusAbstractAdaptor
 "  </interface>\n"
         "")
 
-    Q_PROPERTY(Tp::ChannelClassList HandlerChannelFilter READ HandlerChannelFilter)
+    Q_PROPERTY(TpDBus::ChannelClassList HandlerChannelFilter READ HandlerChannelFilter)
     Q_PROPERTY(bool BypassApproval READ BypassApproval)
     Q_PROPERTY(QStringList Capabilities READ Capabilities)
-    Q_PROPERTY(Tp::ObjectPathList HandledChannels READ HandledChannels)
+    Q_PROPERTY(TpDBus::ObjectPathList HandledChannels READ HandledChannels)
 
 public:
     ClientHandlerAdaptor(ClientRegistrar *registrar,
@@ -250,7 +250,7 @@ public:
     }
 
 public: // Properties
-    inline Tp::ChannelClassList HandlerChannelFilter() const
+    inline TpDBus::ChannelClassList HandlerChannelFilter() const
     {
         return mClient->handlerFilter().bareClasses();
     }
@@ -265,7 +265,7 @@ public: // Properties
         return mClient->handlerCapabilities().allTokens();
     }
 
-    inline Tp::ObjectPathList HandledChannels() const
+    inline TpDBus::ObjectPathList HandledChannels() const
     {
         return FakeHandlerManager::instance()->handledChannels(mBus);
     }
@@ -273,8 +273,8 @@ public: // Properties
 public Q_SLOTS: // Methods
     void HandleChannels(const QDBusObjectPath &account,
             const QDBusObjectPath &connection,
-            const Tp::ChannelDetailsList &channels,
-            const Tp::ObjectPathList &requestsSatisfied,
+            const TpDBus::ChannelDetailsList &channels,
+            const TpDBus::ObjectPathList &requestsSatisfied,
             qulonglong userActionTime,
             const QVariantMap &handlerInfo,
             const QDBusMessage &message);

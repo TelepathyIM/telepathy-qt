@@ -29,7 +29,7 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT Presence::Private : public QSharedData
 {
-    Private(const SimplePresence &sp)
+    Private(const TpDBus::SimplePresence &sp)
         : sp(sp)
     {
     }
@@ -41,7 +41,7 @@ struct TP_QT_NO_EXPORT Presence::Private : public QSharedData
         sp.statusMessage = statusMessage;
     }
 
-    SimplePresence sp;
+    TpDBus::SimplePresence sp;
 };
 
 /**
@@ -56,7 +56,7 @@ Presence::Presence()
 {
 }
 
-Presence::Presence(const SimplePresence &sp)
+Presence::Presence(const TpDBus::SimplePresence &sp)
     : mPriv(new Private(sp))
 {
 }
@@ -178,7 +178,7 @@ QString Presence::statusMessage() const
 }
 
 // Sets all fields
-void Presence::setStatus(const SimplePresence &value)
+void Presence::setStatus(const TpDBus::SimplePresence &value)
 {
     if (!isValid()) {
         mPriv = new Private(value);
@@ -215,10 +215,10 @@ void Presence::setStatusMessage(const QString &statusMessage)
     mPriv->sp.statusMessage = statusMessage;
 }
 
-SimplePresence Presence::barePresence() const
+TpDBus::SimplePresence Presence::barePresence() const
 {
     if (!isValid()) {
-        return SimplePresence();
+        return TpDBus::SimplePresence();
     }
 
     return mPriv->sp;
@@ -226,14 +226,14 @@ SimplePresence Presence::barePresence() const
 
 struct TP_QT_NO_EXPORT PresenceSpec::Private : public QSharedData
 {
-    Private(const QString &status, const StatusSpec &spec)
+    Private(const QString &status, const TpDBus::StatusSpec &spec)
         : status(status),
           spec(spec)
     {
     }
 
     QString status;
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
 };
 
 /**
@@ -249,7 +249,7 @@ PresenceSpec::PresenceSpec()
 {
 }
 
-PresenceSpec::PresenceSpec(const QString &status, const StatusSpec &spec)
+PresenceSpec::PresenceSpec(const QString &status, const TpDBus::StatusSpec &spec)
     : mPriv(new Private(status, spec))
 {
 }
@@ -265,7 +265,7 @@ PresenceSpec::~PresenceSpec()
 
 PresenceSpec PresenceSpec::available(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeAvailable;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -274,7 +274,7 @@ PresenceSpec PresenceSpec::available(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::chat(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeAvailable;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -283,7 +283,7 @@ PresenceSpec PresenceSpec::chat(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::pstn(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeAvailable;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -292,7 +292,7 @@ PresenceSpec PresenceSpec::pstn(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::away(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeAway;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -301,7 +301,7 @@ PresenceSpec PresenceSpec::away(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::brb(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeAway;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -310,7 +310,7 @@ PresenceSpec PresenceSpec::brb(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::busy(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeBusy;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -319,7 +319,7 @@ PresenceSpec PresenceSpec::busy(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::dnd(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeBusy;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -328,7 +328,7 @@ PresenceSpec PresenceSpec::dnd(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::xa(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeExtendedAway;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -337,7 +337,7 @@ PresenceSpec PresenceSpec::xa(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::hidden(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeHidden;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -346,7 +346,7 @@ PresenceSpec PresenceSpec::hidden(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::offline(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeOffline;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -355,7 +355,7 @@ PresenceSpec PresenceSpec::offline(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::unknown(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeUnknown;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -364,7 +364,7 @@ PresenceSpec PresenceSpec::unknown(PresenceSpec::StatusFlags flags)
 
 PresenceSpec PresenceSpec::error(PresenceSpec::StatusFlags flags)
 {
-    StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = ConnectionPresenceTypeError;
     spec.maySetOnSelf = flags & MaySetOnSelf;
     spec.canHaveMessage = flags & CanHaveStatusMessage;
@@ -448,10 +448,10 @@ bool PresenceSpec::canHaveStatusMessage() const
     return mPriv->spec.canHaveMessage;
 }
 
-StatusSpec PresenceSpec::bareSpec() const
+TpDBus::StatusSpec PresenceSpec::bareSpec() const
 {
     if (!isValid()) {
-        return StatusSpec();
+        return TpDBus::StatusSpec();
     }
 
     return mPriv->spec;

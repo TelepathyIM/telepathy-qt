@@ -36,17 +36,17 @@ namespace Tp
 namespace
 {
 
-QVariant valueFromPart(const MessagePartList &parts, uint index, const char *key)
+QVariant valueFromPart(const TpDBus::MessagePartList &parts, uint index, const char *key)
 {
     return parts.at(index).value(QLatin1String(key)).variant();
 }
 
-uint uintOrZeroFromPart(const MessagePartList &parts, uint index, const char *key)
+uint uintOrZeroFromPart(const TpDBus::MessagePartList &parts, uint index, const char *key)
 {
     return valueFromPart(parts, index, key).toUInt();
 }
 
-QString stringOrEmptyFromPart(const MessagePartList &parts, uint index, const char *key)
+QString stringOrEmptyFromPart(const TpDBus::MessagePartList &parts, uint index, const char *key)
 {
     QString s = valueFromPart(parts, index, key).toString();
     if (s.isNull()) {
@@ -55,7 +55,7 @@ QString stringOrEmptyFromPart(const MessagePartList &parts, uint index, const ch
     return s;
 }
 
-bool booleanFromPart(const MessagePartList &parts, uint index, const char *key,
+bool booleanFromPart(const TpDBus::MessagePartList &parts, uint index, const char *key,
             bool assumeIfAbsent)
 {
     QVariant v = valueFromPart(parts, index, key);
@@ -65,12 +65,12 @@ bool booleanFromPart(const MessagePartList &parts, uint index, const char *key,
     return assumeIfAbsent;
 }
 
-MessagePartList partsFromPart(const MessagePartList &parts, uint index, const char *key)
+TpDBus::MessagePartList partsFromPart(const TpDBus::MessagePartList &parts, uint index, const char *key)
 {
-    return qdbus_cast<MessagePartList>(valueFromPart(parts, index, key));
+    return qdbus_cast<TpDBus::MessagePartList>(valueFromPart(parts, index, key));
 }
 
-bool partContains(const MessagePartList &parts, uint index, const char *key)
+bool partContains(const TpDBus::MessagePartList &parts, uint index, const char *key)
 {
     return parts.at(index).contains(QLatin1String(key));
 }
@@ -79,7 +79,7 @@ bool partContains(const MessagePartList &parts, uint index, const char *key)
 
 struct TP_QT_NO_EXPORT Message::Private : public QSharedData
 {
-    Private(const MessagePartList &parts);
+    Private(const TpDBus::MessagePartList &parts);
     ~Private();
 
     uint senderHandle() const;
@@ -87,7 +87,7 @@ struct TP_QT_NO_EXPORT Message::Private : public QSharedData
     uint pendingId() const;
     void clearSenderHandle();
 
-    MessagePartList parts;
+    TpDBus::MessagePartList parts;
 
     // if the Text interface says "non-text" we still only have the text,
     // because the interface can't tell us anything else...
@@ -98,7 +98,7 @@ struct TP_QT_NO_EXPORT Message::Private : public QSharedData
     ContactPtr sender;
 };
 
-Message::Private::Private(const MessagePartList &parts)
+Message::Private::Private(const TpDBus::MessagePartList &parts)
     : parts(parts),
       forceNonText(false),
       sender(0)
@@ -143,7 +143,7 @@ void Message::Private::clearSenderHandle()
  * \internal Default constructor.
  */
 Message::Message()
-    : mPriv(new Private(MessagePartList()))
+    : mPriv(new Private(TpDBus::MessagePartList()))
 {
 }
 
@@ -153,7 +153,7 @@ Message::Message()
  * \param parts The parts of a message as defined by the \telepathy_spec.
  *              This list must have length at least 1.
  */
-Message::Message(const MessagePartList &parts)
+Message::Message(const TpDBus::MessagePartList &parts)
     : mPriv(new Private(parts))
 {
     Q_ASSERT(parts.size() > 0);
@@ -167,7 +167,7 @@ Message::Message(const MessagePartList &parts)
  * \param text The message body.
  */
 Message::Message(uint timestamp, uint type, const QString &text)
-    : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
+    : mPriv(new Private(TpDBus::MessagePartList() << TpDBus::MessagePart() << TpDBus::MessagePart()))
 {
     mPriv->parts[0].insert(QLatin1String("message-sent"),
             QDBusVariant(static_cast<qlonglong>(timestamp)));
@@ -186,7 +186,7 @@ Message::Message(uint timestamp, uint type, const QString &text)
  * \param text The message body.
  */
 Message::Message(ChannelTextMessageType type, const QString &text)
-    : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
+    : mPriv(new Private(TpDBus::MessagePartList() << TpDBus::MessagePart() << TpDBus::MessagePart()))
 {
     mPriv->parts[0].insert(QLatin1String("message-type"),
             QDBusVariant(static_cast<uint>(type)));
@@ -407,9 +407,9 @@ QString Message::text() const
  * This is provided for advanced clients that need to access
  * additional information not available through the normal Message API.
  *
- * \return The header as a MessagePart object. The same thing as part(0).
+ * \return The header as a TpDBus::MessagePart object. The same thing as part(0).
  */
-MessagePart Message::header() const
+TpDBus::MessagePart Message::header() const
 {
     return part(0);
 }
@@ -434,9 +434,9 @@ int Message::size() const
  * \param index The part to access, which must be strictly less than size();
  *              part number 0 is the header, parts numbered 1 or greater
  *              are the body of the message.
- * \return A MessagePart object.
+ * \return A TpDBus::MessagePart object.
  */
-MessagePart Message::part(uint index) const
+TpDBus::MessagePart Message::part(uint index) const
 {
     return mPriv->parts.at(index);
 }
@@ -444,9 +444,9 @@ MessagePart Message::part(uint index) const
 /**
  * Return the list of message parts forming this message.
  *
- * \return The list of MessagePart objects.
+ * \return The list of TpDBus::MessagePart objects.
  */
-MessagePartList Message::parts() const
+TpDBus::MessagePartList Message::parts() const
 {
     return mPriv->parts;
 }
@@ -473,12 +473,12 @@ MessagePartList Message::parts() const
 
 struct TP_QT_NO_EXPORT ReceivedMessage::DeliveryDetails::Private : public QSharedData
 {
-    Private(const MessagePartList &parts)
+    Private(const TpDBus::MessagePartList &parts)
         : parts(parts)
     {
     }
 
-    MessagePartList parts;
+    TpDBus::MessagePartList parts;
 };
 
 /**
@@ -501,7 +501,7 @@ ReceivedMessage::DeliveryDetails::DeliveryDetails(const DeliveryDetails &other)
  *
  * \param The message parts.
  */
-ReceivedMessage::DeliveryDetails::DeliveryDetails(const MessagePartList &parts)
+ReceivedMessage::DeliveryDetails::DeliveryDetails(const TpDBus::MessagePartList &parts)
     : mPriv(new Private(parts))
 {
 }
@@ -718,7 +718,7 @@ ReceivedMessage::ReceivedMessage()
  *              This list must have length at least 1.
  * \param channel The channel owning this message.
  */
-ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
+ReceivedMessage::ReceivedMessage(const TpDBus::MessagePartList &parts,
         const TextChannelPtr &channel)
     : Message(parts)
 {

@@ -175,7 +175,7 @@ void DebugReceiver::onRequestAllPropertiesFinished(Tp::PendingOperation *op)
 void DebugReceiver::onNewDebugMessage(double time, const QString &domain,
         uint level, const QString &message)
 {
-    DebugMessage msg;
+    TpDBus::DebugMessage msg;
     msg.timestamp = time;
     msg.domain = domain;
     msg.level = level;
@@ -185,7 +185,7 @@ void DebugReceiver::onNewDebugMessage(double time, const QString &domain,
 }
 
 /**
- * \fn void DebugReceiver::newDebugMessage(const Tp::DebugMessage &msg)
+ * \fn void DebugReceiver::newDebugMessage(const TpDBus::DebugMessage &msg)
  *
  * Emitted whenever a new debug message is available. This will be emitted only if
  * monitoring has been previously enabled.

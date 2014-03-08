@@ -120,13 +120,13 @@ void AbstractClient::setRegistered(bool registered)
 
 struct TP_QT_NO_EXPORT AbstractClientObserver::Private
 {
-    Private(const ChannelClassList &channelFilter, bool shouldRecover)
+    Private(const TpDBus::ChannelClassList &channelFilter, bool shouldRecover)
         : channelFilter(channelFilter),
           shouldRecover(shouldRecover)
     {
     }
 
-    ChannelClassList channelFilter;
+    TpDBus::ChannelClassList channelFilter;
     bool shouldRecover;
 };
 
@@ -397,12 +397,12 @@ bool AbstractClientObserver::shouldRecover() const
 
 struct TP_QT_NO_EXPORT AbstractClientApprover::Private
 {
-    Private(const ChannelClassList &channelFilter)
+    Private(const TpDBus::ChannelClassList &channelFilter)
         : channelFilter(channelFilter)
     {
     }
 
-    ChannelClassList channelFilter;
+    TpDBus::ChannelClassList channelFilter;
 };
 
 /**
@@ -573,7 +573,7 @@ ChannelClassSpecList AbstractClientApprover::approverFilter() const
 
 struct TP_QT_NO_EXPORT AbstractClientHandler::Private
 {
-    Private(const ChannelClassList &channelFilter,
+    Private(const TpDBus::ChannelClassList &channelFilter,
             const Capabilities &capabilities,
             bool wantsRequestNotification)
         : channelFilter(channelFilter),
@@ -582,7 +582,7 @@ struct TP_QT_NO_EXPORT AbstractClientHandler::Private
     {
     }
 
-    ChannelClassList channelFilter;
+    TpDBus::ChannelClassList channelFilter;
     Capabilities capabilities;
     bool wantsRequestNotification;
 };

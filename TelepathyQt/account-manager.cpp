@@ -178,7 +178,7 @@ QSet<QString> AccountManager::Private::getAccountPathsFromProp(
 {
     QSet<QString> set;
 
-    ObjectPathList paths = qdbus_cast<ObjectPathList>(prop);
+    TpDBus::ObjectPathList paths = qdbus_cast<TpDBus::ObjectPathList>(prop);
     if (paths.size() == 0) {
         /* maybe the AccountManager is buggy, like Mission Control
          * 5.0.beta45, and returns an array of strings rather than

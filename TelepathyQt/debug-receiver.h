@@ -52,7 +52,7 @@ public:
     PendingOperation *setMonitoringEnabled(bool enabled);
 
 Q_SIGNALS:
-    void newDebugMessage(const Tp::DebugMessage & message);
+    void newDebugMessage(const TpDBus::DebugMessage & message);
 
 protected:
     DebugReceiver(const QDBusConnection &bus, const QString &busName);

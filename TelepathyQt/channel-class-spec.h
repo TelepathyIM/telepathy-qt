@@ -43,7 +43,7 @@ class TP_QT_EXPORT ChannelClassSpec
 {
 public:
     ChannelClassSpec();
-    ChannelClassSpec(const ChannelClass &cc);
+    ChannelClassSpec(const TpDBus::ChannelClass &cc);
     ChannelClassSpec(const QVariantMap &props);
     ChannelClassSpec(const QString &channelType, HandleType targetHandleType,
             const QVariantMap &otherProperties = QVariantMap());
@@ -153,7 +153,7 @@ public:
     void unsetProperty(const QString &qualifiedName);
 
     QVariantMap allProperties() const;
-    ChannelClass bareClass() const;
+    TpDBus::ChannelClass bareClass() const;
 
     static ChannelClassSpec textChat(const QVariantMap &additionalProperties = QVariantMap());
     static ChannelClassSpec textChatroom(const QVariantMap &additionalProperties = QVariantMap());
@@ -211,17 +211,17 @@ public:
     {
     }
 
-    ChannelClassSpecList(const ChannelClassList &classes)
+    ChannelClassSpecList(const TpDBus::ChannelClassList &classes)
     {
         // Why doesn't Qt have range constructors like STL... stupid, so stupid.
-        Q_FOREACH (const ChannelClass &cc, classes) {
+        Q_FOREACH (const TpDBus::ChannelClass &cc, classes) {
             append(cc);
         }
     }
 
-    ChannelClassList bareClasses() const
+    TpDBus::ChannelClassList bareClasses() const
     {
-        ChannelClassList list;
+        TpDBus::ChannelClassList list;
         Q_FOREACH (const ChannelClassSpec &spec, *this) {
             list.append(spec.bareClass());
         }

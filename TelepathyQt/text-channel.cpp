@@ -96,7 +96,7 @@ struct TP_QT_NO_EXPORT TextChannel::Private
     };
     QList<ReceivedMessage> messages;
     QList<MessageEvent *> incompleteMessages;
-    QHash<QDBusPendingCallWatcher *, UIntList> acknowledgeBatches;
+    QHash<QDBusPendingCallWatcher *, TpDBus::UIntList> acknowledgeBatches;
 
     // FeatureChatState
     struct ChatStateEvent
@@ -182,11 +182,11 @@ void TextChannel::Private::introspectMessageQueue(
     // FeatureMessageQueue needs signal connections + Get (but we
     // might as well do GetAll and reduce the number of code paths)
     parent->connect(self->textInterface,
-            SIGNAL(MessageReceived(Tp::MessagePartList)),
-            SLOT(onMessageReceived(Tp::MessagePartList)));
+            SIGNAL(MessageReceived(TpDBus::MessagePartList)),
+            SLOT(onMessageReceived(TpDBus::MessagePartList)));
     parent->connect(self->textInterface,
-            SIGNAL(PendingMessagesRemoved(Tp::UIntList)),
-            SLOT(onPendingMessagesRemoved(Tp::UIntList)));
+            SIGNAL(PendingMessagesRemoved(TpDBus::UIntList)),
+            SLOT(onPendingMessagesRemoved(TpDBus::UIntList)));
 
     if (!self->gotProperties && !self->getAllInFlight) {
         self->getAllInFlight = true;
@@ -224,8 +224,8 @@ void TextChannel::Private::introspectMessageSentSignal(
         TextChannel::Private *self)
 {
     self->parent->connect(self->textInterface,
-            SIGNAL(MessageSent(Tp::MessagePartList,uint,QString)),
-            SLOT(onMessageSent(Tp::MessagePartList,uint,QString)));
+            SIGNAL(MessageSent(TpDBus::MessagePartList,uint,QString)),
+            SLOT(onMessageSent(TpDBus::MessagePartList,uint,QString)));
 
     self->readinessHelper->setIntrospectCompleted(FeatureMessageSentSignal, true);
 }
@@ -256,13 +256,13 @@ void TextChannel::Private::updateInitialMessages()
     Q_ASSERT(!initialMessagesReceived);
     initialMessagesReceived = true;
 
-    MessagePartListList messages = qdbus_cast<MessagePartListList>(
+    TpDBus::MessagePartListList messages = qdbus_cast<TpDBus::MessagePartListList>(
             props[QLatin1String("PendingMessages")]);
     if (messages.isEmpty()) {
         debug() << "Message queue empty: FeatureMessageQueue is now ready";
         readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
     } else {
-        foreach (const MessagePartList &message, messages) {
+        foreach (const TpDBus::MessagePartList &message, messages) {
             parent->onMessageReceived(message);
         }
     }
@@ -275,7 +275,7 @@ void TextChannel::Private::updateCapabilities()
         return;
     }
 
-    UIntList messageTypesAsUIntList = qdbus_cast<UIntList>(props[QLatin1String("MessageTypes")]);
+    TpDBus::UIntList messageTypesAsUIntList = qdbus_cast<TpDBus::UIntList>(props[QLatin1String("MessageTypes")]);
 
     // Populate the list with the correct variable type
     supportedMessageTypes.clear();
@@ -350,7 +350,7 @@ void TextChannel::Private::processMessageQueue()
 
     // What Contact objects do we need in order to proceed, ignoring those
     // for which we've already sent a request?
-    HandleIdentifierMap contactsRequired;
+    TpDBus::HandleIdentifierMap contactsRequired;
     foreach (const MessageEvent *e, incompleteMessages) {
         if (e->isMessage) {
             uint handle = e->message.senderHandle();
@@ -798,7 +798,7 @@ ChannelChatState TextChannel::chatState(const ContactPtr &contact) const
 void TextChannel::onAcknowledgePendingMessagesReply(
         QDBusPendingCallWatcher *watcher)
 {
-    UIntList ids = mPriv->acknowledgeBatches.value(watcher);
+    TpDBus::UIntList ids = mPriv->acknowledgeBatches.value(watcher);
     QDBusPendingReply<> reply = *watcher;
 
     if (reply.isError()) {
@@ -807,7 +807,7 @@ void TextChannel::onAcknowledgePendingMessagesReply(
         debug() << "Recovering from AcknowledgePendingMessages failure for: "
             << ids;
         foreach (uint id, ids) {
-            mPriv->textInterface->AcknowledgePendingMessages(UIntList() << id);
+            mPriv->textInterface->AcknowledgePendingMessages(TpDBus::UIntList() << id);
         }
     }
 
@@ -833,7 +833,7 @@ void TextChannel::onAcknowledgePendingMessagesReply(
  */
 void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
 {
-    UIntList ids;
+    TpDBus::UIntList ids;
 
     foreach (const ReceivedMessage &m, messages) {
         if (m.isFromChannel(TextChannelPtr(this))) {
@@ -940,7 +940,7 @@ PendingSendMessage *TextChannel::send(const QString &text,
  *         when the message has been submitted for delivery.
  * \sa messageSent()
  */
-PendingSendMessage *TextChannel::send(const MessagePartList &parts,
+PendingSendMessage *TextChannel::send(const TpDBus::MessagePartList &parts,
         MessageSendingFlags flags)
 {
     Message m(parts);
@@ -983,7 +983,7 @@ PendingOperation *TextChannel::requestChatState(ChannelChatState state)
                 (uint) state), TextChannelPtr(this));
 }
 
-void TextChannel::onMessageSent(const MessagePartList &parts,
+void TextChannel::onMessageSent(const TpDBus::MessagePartList &parts,
         uint flags,
         const QString &sentMessageToken)
 {
@@ -994,7 +994,7 @@ void TextChannel::onMessageSent(const MessagePartList &parts,
 void TextChannel::onContactsFinished(PendingOperation *op)
 {
     PendingContacts *pc = qobject_cast<PendingContacts *>(op);
-    UIntList failed;
+    TpDBus::UIntList failed;
 
     Q_ASSERT(pc->isForHandles());
 
@@ -1023,7 +1023,7 @@ void TextChannel::onContactsFinished(PendingOperation *op)
     mPriv->processChatStateQueue();
 }
 
-void TextChannel::onMessageReceived(const MessagePartList &parts)
+void TextChannel::onMessageReceived(const TpDBus::MessagePartList &parts)
 {
     if (!mPriv->initialMessagesReceived) {
         return;
@@ -1034,7 +1034,7 @@ void TextChannel::onMessageReceived(const MessagePartList &parts)
     mPriv->processMessageQueue();
 }
 
-void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
+void TextChannel::onPendingMessagesRemoved(const TpDBus::UIntList &ids)
 {
     if (!mPriv->initialMessagesReceived) {
         return;

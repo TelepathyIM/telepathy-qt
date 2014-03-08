@@ -117,10 +117,10 @@ void Contact::Private::updateAvatarData()
 
 struct TP_QT_NO_EXPORT Contact::InfoFields::Private : public QSharedData
 {
-    Private(const ContactInfoFieldList &allFields)
+    Private(const TpDBus::ContactInfoFieldList &allFields)
         : allFields(allFields) {}
 
-    ContactInfoFieldList allFields;
+    TpDBus::ContactInfoFieldList allFields;
 };
 
 /**
@@ -136,7 +136,7 @@ struct TP_QT_NO_EXPORT Contact::InfoFields::Private : public QSharedData
  * Construct a info fields instance with the given fields. The instance will indicate that
  * it is valid.
  */
-Contact::InfoFields::InfoFields(const ContactInfoFieldList &allFields)
+Contact::InfoFields::InfoFields(const TpDBus::ContactInfoFieldList &allFields)
     : mPriv(new Private(allFields))
 {
 }
@@ -176,16 +176,16 @@ Contact::InfoFields &Contact::InfoFields::operator=(const Contact::InfoFields &o
  * Return a list containing all fields whose name are \a name.
  *
  * \param name The name used to match the fields.
- * \return A list of ContactInfoField objects.
+ * \return A list of TpDBus::ContactInfoField objects.
  */
-ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
+TpDBus::ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
 {
     if (!isValid()) {
-        return ContactInfoFieldList();
+        return TpDBus::ContactInfoFieldList();
     }
 
-    ContactInfoFieldList ret;
-    foreach (const ContactInfoField &field, mPriv->allFields) {
+    TpDBus::ContactInfoFieldList ret;
+    foreach (const TpDBus::ContactInfoField &field, mPriv->allFields) {
         if (field.fieldName == name) {
             ret.append(field);
         }
@@ -196,11 +196,11 @@ ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
 /**
  * Return a list containing all fields describing the contact information.
  *
- * \return The contact information as a list of ContactInfoField objects.
+ * \return The contact information as a list of TpDBus::ContactInfoField objects.
  */
-ContactInfoFieldList Contact::InfoFields::allFields() const
+TpDBus::ContactInfoFieldList Contact::InfoFields::allFields() const
 {
-    return isValid() ? mPriv->allFields : ContactInfoFieldList();
+    return isValid() ? mPriv->allFields : TpDBus::ContactInfoFieldList();
 }
 
 /**
@@ -1007,10 +1007,10 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
 
     foreach (const Feature &feature, requestedFeatures) {
         QString maybeAlias;
-        SimplePresence maybePresence;
-        RequestableChannelClassList maybeCaps;
+        TpDBus::SimplePresence maybePresence;
+        TpDBus::RequestableChannelClassList maybeCaps;
         QVariantMap maybeLocation;
-        ContactInfoFieldList maybeInfo;
+        TpDBus::ContactInfoFieldList maybeInfo;
 
         if (feature == FeatureAlias) {
             maybeAlias = qdbus_cast<QString>(attributes.value(
@@ -1042,7 +1042,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                 mPriv->avatarToken = QLatin1String("");
             }
         } else if (feature == FeatureCapabilities) {
-            maybeCaps = qdbus_cast<RequestableChannelClassList>(attributes.value(
+            maybeCaps = qdbus_cast<TpDBus::RequestableChannelClassList>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES1 + QLatin1String("/capabilities")));
 
             if (!maybeCaps.isEmpty()) {
@@ -1057,7 +1057,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                 }
             }
         } else if (feature == FeatureInfo) {
-            maybeInfo = qdbus_cast<ContactInfoFieldList>(attributes.value(
+            maybeInfo = qdbus_cast<TpDBus::ContactInfoFieldList>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_INFO1 + QLatin1String("/info")));
 
             if (!maybeInfo.isEmpty()) {
@@ -1080,14 +1080,14 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
             } else {
                 if (manager()->supportedFeatures().contains(FeatureLocation) &&
                     mPriv->requestedFeatures.contains(FeatureLocation)) {
-                    // Location being supported but not updated in the
+                    // TpDBus::Location being supported but not updated in the
                     // mapping indicates that the location is not known -
                     // however, the feature is working fine
                     mPriv->actualFeatures.insert(FeatureLocation);
                 }
             }
         } else if (feature == FeatureSimplePresence) {
-            maybePresence = qdbus_cast<SimplePresence>(attributes.value(
+            maybePresence = qdbus_cast<TpDBus::SimplePresence>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_PRESENCE1 + QLatin1String("/presence")));
 
             if (!maybePresence.status.isEmpty()) {
@@ -1101,7 +1101,7 @@ void Contact::augment(const Features &requestedFeatures, const QVariantMap &attr
                         TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_GROUPS1 + QLatin1String("/groups")));
             mPriv->groups = groups.toSet();
         } else if (feature == FeatureAddresses) {
-            VCardFieldAddressMap addresses = qdbus_cast<VCardFieldAddressMap>(attributes.value(
+            TpDBus::VCardFieldAddressMap addresses = qdbus_cast<TpDBus::VCardFieldAddressMap>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING1 + QLatin1String("/addresses")));
             QStringList uris = qdbus_cast<QStringList>(attributes.value(
                         TP_QT_IFACE_CONNECTION_INTERFACE_ADDRESSING1 + QLatin1String("/uris")));
@@ -1173,7 +1173,7 @@ void Contact::receiveAvatarData(const AvatarData &avatar)
     }
 }
 
-void Contact::receiveSimplePresence(const SimplePresence &presence)
+void Contact::receiveSimplePresence(const TpDBus::SimplePresence &presence)
 {
     if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
         return;
@@ -1188,7 +1188,7 @@ void Contact::receiveSimplePresence(const SimplePresence &presence)
     }
 }
 
-void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
+void Contact::receiveCapabilities(const TpDBus::RequestableChannelClassList &caps)
 {
     if (!mPriv->requestedFeatures.contains(FeatureCapabilities)) {
         return;
@@ -1216,7 +1216,7 @@ void Contact::receiveLocation(const QVariantMap &location)
     }
 }
 
-void Contact::receiveInfo(const ContactInfoFieldList &info)
+void Contact::receiveInfo(const TpDBus::ContactInfoFieldList &info)
 {
     if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
         return;

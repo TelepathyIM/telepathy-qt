@@ -56,7 +56,7 @@ protected:
     friend class TestBackdoors;
 
     ContactCapabilities(bool specificToContact);
-    ContactCapabilities(const RequestableChannelClassList &rccs,
+    ContactCapabilities(const TpDBus::RequestableChannelClassList &rccs,
             bool specificToContact);
     ContactCapabilities(const RequestableChannelClassSpecList &rccSpecs,
             bool specificToContact);

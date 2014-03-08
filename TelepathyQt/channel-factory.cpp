@@ -561,7 +561,7 @@ void ChannelFactory::setConstructorFor(const ChannelClassSpec &channelClass,
         const ConstructorConstPtr &ctor)
 {
     if (ctor.isNull()) {
-        warning().nospace() << "Tried to set a NULL ctor for ChannelClass("
+        warning().nospace() << "Tried to set a NULL ctor for TpDBus::ChannelClass("
             << channelClass.channelType() << ", " << channelClass.targetHandleType() << ", "
             << channelClass.allProperties().size() << "props in total)";
         return;

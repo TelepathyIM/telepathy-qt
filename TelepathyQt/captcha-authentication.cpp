@@ -358,7 +358,7 @@ Tp::PendingOperation *CaptchaAuthentication::answer(uint id, const QString &resp
  * \sa requestCaptchas
  * \sa answer
  */
-Tp::PendingOperation *CaptchaAuthentication::answer(const Tp::CaptchaAnswers &response)
+Tp::PendingOperation *CaptchaAuthentication::answer(const TpDBus::CaptchaAnswers &response)
 {
     // The captcha should be LocalPending or TryAgain
     if (status() != CaptchaStatusLocalPending) {

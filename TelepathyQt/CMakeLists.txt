@@ -617,13 +617,13 @@ tpqt_constants_gen(future-constants ${gen_future_spec_xml} ${CMAKE_CURRENT_BINAR
 
 tpqt_types_gen(stable-typesgen ${gen_stable_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
-                Tp TelepathyQt/types.h TelepathyQt/Types
+                TpDBus TelepathyQt/types.h TelepathyQt/Types
                 --must-define=IN_TP_QT_HEADER
                 --visibility=TP_QT_EXPORT
                 DEPENDS stable-constants)
 tpqt_types_gen(future-typesgen ${gen_future_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp
-                TpFuture TelepathyQt/future-internal.h TelepathyQt/future-internal.h
+                TpFutureDBus TelepathyQt/future-internal.h TelepathyQt/future-internal.h
                 DEPENDS future-constants)
 
 # Add the generated types to the library's sources

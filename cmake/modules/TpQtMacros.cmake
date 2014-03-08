@@ -206,7 +206,7 @@ function(tpqt_client_generator spec group pretty_include namespace)
         ${CMAKE_SOURCE_DIR}/tools/qt-client-gen.py
             --group=${group}
             --namespace=${namespace}
-            --typesnamespace=Tp
+            --typesnamespace=TpDBus
             --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
             --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
             --realinclude=TelepathyQt/${spec}.h
@@ -241,7 +241,7 @@ function(tpqt_future_client_generator spec namespace)
     set(ARGS
         ${CMAKE_SOURCE_DIR}/tools/qt-client-gen.py
             --namespace=${namespace}
-            --typesnamespace=TpFuture
+            --typesnamespace=TpDBusFuture
             --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
             --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
             --realinclude=TelepathyQt/future-internal.h

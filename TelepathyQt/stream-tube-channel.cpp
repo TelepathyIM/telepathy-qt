@@ -50,7 +50,7 @@ struct TP_QT_NO_EXPORT StreamTubeChannel::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    SupportedSocketMap socketTypes;
+    TpDBus::SupportedSocketMap socketTypes;
     QString serviceName;
 
     QSet<uint> connections;
@@ -140,7 +140,7 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
 void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &props)
 {
     serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
-    socketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
+    socketTypes = qdbus_cast<TpDBus::SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
 }
 
 /**

@@ -112,9 +112,9 @@ ClientObserverAdaptor::~ClientObserverAdaptor()
 
 void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         const QDBusObjectPath &connectionPath,
-        const Tp::ChannelDetailsList &channelDetailsList,
+        const TpDBus::ChannelDetailsList &channelDetailsList,
         const QDBusObjectPath &dispatchOperationPath,
-        const Tp::ObjectPathList &requestsSatisfied,
+        const TpDBus::ObjectPathList &requestsSatisfied,
         const QVariantMap &observerInfo,
         const QDBusMessage &message)
 {
@@ -145,7 +145,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
     invocation->conn = ConnectionPtr::qObjectCast(connReady->proxy());
     readyOps.append(connReady);
 
-    foreach (const ChannelDetails &channelDetails, channelDetailsList) {
+    foreach (const TpDBus::ChannelDetails &channelDetails, channelDetailsList) {
         PendingReady *chanReady = chanFactory->proxy(invocation->conn,
                 channelDetails.channel.path(), channelDetails.properties);
         ChannelPtr channel = ChannelPtr::qObjectCast(chanReady->proxy());
@@ -190,7 +190,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
 
     invocation->observerInfo = AbstractClientObserver::ObserverInfo(observerInfo);
 
-    ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<ObjectImmutablePropertiesMap>(
+    TpDBus::ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<TpDBus::ObjectImmutablePropertiesMap>(
             observerInfo.value(QLatin1String("request-properties")));
     foreach (const QDBusObjectPath &reqPath, requestsSatisfied) {
         ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
@@ -268,7 +268,7 @@ ClientApproverAdaptor::~ClientApproverAdaptor()
 {
 }
 
-void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &channelDetailsList,
+void ClientApproverAdaptor::AddDispatchOperation(const TpDBus::ChannelDetailsList &channelDetailsList,
         const QDBusObjectPath &dispatchOperationPath,
         const QVariantMap &properties,
         const QDBusMessage &message)
@@ -293,7 +293,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
 
     SharedPtr<InvocationData> invocation(new InvocationData);
 
-    foreach (const ChannelDetails &channelDetails, channelDetailsList) {
+    foreach (const TpDBus::ChannelDetails &channelDetails, channelDetailsList) {
         PendingReady *chanReady = chanFactory->proxy(connection, channelDetails.channel.path(),
                 channelDetails.properties);
         invocation->chans.append(ChannelPtr::qObjectCast(chanReady->proxy()));
@@ -383,8 +383,8 @@ ClientHandlerAdaptor::~ClientHandlerAdaptor()
 
 void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
         const QDBusObjectPath &connectionPath,
-        const Tp::ChannelDetailsList &channelDetailsList,
-        const Tp::ObjectPathList &requestsSatisfied,
+        const TpDBus::ChannelDetailsList &channelDetailsList,
+        const TpDBus::ObjectPathList &requestsSatisfied,
         qulonglong userActionTime_t,
         const QVariantMap &handlerInfo,
         const QDBusMessage &message)
@@ -422,7 +422,7 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
     invocation->conn = ConnectionPtr::qObjectCast(connReady->proxy());
     readyOps.append(connReady);
 
-    foreach (const ChannelDetails &channelDetails, channelDetailsList) {
+    foreach (const TpDBus::ChannelDetails &channelDetails, channelDetailsList) {
         PendingReady *chanReady = chanFactory->proxy(invocation->conn,
                 channelDetails.channel.path(), channelDetails.properties);
         ChannelPtr channel = ChannelPtr::qObjectCast(chanReady->proxy());
@@ -432,7 +432,7 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
 
     invocation->handlerInfo = AbstractClientHandler::HandlerInfo(handlerInfo);
 
-    ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<ObjectImmutablePropertiesMap>(
+    TpDBus::ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<TpDBus::ObjectImmutablePropertiesMap>(
     handlerInfo.value(QLatin1String("request-properties")));
     foreach (const QDBusObjectPath &reqPath, requestsSatisfied) {
         ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,

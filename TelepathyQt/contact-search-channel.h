@@ -81,7 +81,7 @@ public:
     QString server() const;
 
     PendingOperation *search(const QString &searchKey, const QString &searchTerm);
-    PendingOperation *search(const ContactSearchMap &searchTerms);
+    PendingOperation *search(const TpDBus::ContactSearchMap &searchTerms);
     void continueSearch();
     void stopSearch();
 
@@ -98,7 +98,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void gotProperties(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void gotSearchState(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void onSearchStateChanged(uint state, const QString &error, const QVariantMap &details);
-    TP_QT_NO_EXPORT void onSearchResultReceived(const Tp::ContactSearchResultMap &result);
+    TP_QT_NO_EXPORT void onSearchResultReceived(const TpDBus::ContactSearchResultMap &result);
     TP_QT_NO_EXPORT void gotSearchResultContacts(Tp::PendingOperation *op);
 
 private:

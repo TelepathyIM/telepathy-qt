@@ -31,7 +31,7 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT ProtocolParameter::Private : public QSharedData
 {
-    Private(const ParamSpec &sp)
+    Private(const TpDBus::ParamSpec &sp)
         : spec(sp),
           type(variantTypeFromDBusSignature(spec.signature))
     {
@@ -71,7 +71,7 @@ struct TP_QT_NO_EXPORT ProtocolParameter::Private : public QSharedData
         }
     }
 
-    ParamSpec spec;
+    TpDBus::ParamSpec spec;
     QVariant::Type type;
 };
 
@@ -88,7 +88,7 @@ ProtocolParameter::ProtocolParameter()
 {
 }
 
-ProtocolParameter::ProtocolParameter(const ParamSpec &spec)
+ProtocolParameter::ProtocolParameter(const TpDBus::ParamSpec &spec)
     : mPriv(new Private(spec))
 {
 }
@@ -213,10 +213,10 @@ bool ProtocolParameter::isRequiredForRegistration() const
     return mPriv->spec.flags & ConnMgrParamFlagRegister;
 }
 
-ParamSpec ProtocolParameter::bareParameter() const
+TpDBus::ParamSpec ProtocolParameter::bareParameter() const
 {
     if (!isValid()) {
-        return ParamSpec();
+        return TpDBus::ParamSpec();
     }
 
     return mPriv->spec;

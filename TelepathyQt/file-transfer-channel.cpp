@@ -64,7 +64,7 @@ struct TP_QT_NO_EXPORT FileTransferChannel::Private
     qulonglong initialOffset;
     qulonglong size;
     qulonglong transferredBytes;
-    SupportedSocketMap availableSocketTypes;
+    TpDBus::SupportedSocketMap availableSocketTypes;
 
     bool connected;
     bool finished;
@@ -139,7 +139,7 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
     initialOffset = qdbus_cast<qulonglong>(props[QLatin1String("InitialOffset")]);
     size = qdbus_cast<qulonglong>(props[QLatin1String("Size")]);
     transferredBytes = qdbus_cast<qulonglong>(props[QLatin1String("TransferredBytes")]);
-    availableSocketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("AvailableSocketTypes")]);
+    availableSocketTypes = qdbus_cast<TpDBus::SupportedSocketMap>(props[QLatin1String("AvailableSocketTypes")]);
 }
 
 /**
@@ -480,7 +480,7 @@ qulonglong FileTransferChannel::transferredBytes() const
  *
  * \return The available socket types as a map from address types to arrays of access-control type.
  */
-SupportedSocketMap FileTransferChannel::availableSocketTypes() const
+TpDBus::SupportedSocketMap FileTransferChannel::availableSocketTypes() const
 {
     if (!isReady(FeatureCore)) {
         warning() << "FileTransferChannel::FeatureCore must be ready before "

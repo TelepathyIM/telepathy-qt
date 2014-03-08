@@ -38,14 +38,14 @@ class TP_QT_NO_EXPORT BaseConnectionManager::Adaptee : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QStringList interfaces READ interfaces)
-    Q_PROPERTY(Tp::ProtocolPropertiesMap protocols READ protocols)
+    Q_PROPERTY(TpDBus::ProtocolPropertiesMap protocols READ protocols)
 
 public:
     Adaptee(const QDBusConnection &dbusConnection, BaseConnectionManager *cm);
     ~Adaptee();
 
     QStringList interfaces() const;
-    Tp::ProtocolPropertiesMap protocols() const;
+    TpDBus::ProtocolPropertiesMap protocols() const;
 
 Q_SIGNALS:
     void newConnection(const QString &busName, const QDBusObjectPath &objectPath, const QString &protocolName);

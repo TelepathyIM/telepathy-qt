@@ -189,10 +189,10 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         QList<ChannelPtr> saveChannels = channels;
         channels.clear();
 
-        ChannelDetailsList channelDetailsList =
-            qdbus_cast<ChannelDetailsList>(props.value(QLatin1String("Channels")));
+        TpDBus::ChannelDetailsList channelDetailsList =
+            qdbus_cast<TpDBus::ChannelDetailsList>(props.value(QLatin1String("Channels")));
         ChannelPtr channel;
-        foreach (const ChannelDetails &channelDetails, channelDetailsList) {
+        foreach (const TpDBus::ChannelDetails &channelDetails, channelDetailsList) {
             PendingReady *readyOp =
                 chanFactory->proxy(connection,
                         channelDetails.channel.path(), channelDetails.properties);

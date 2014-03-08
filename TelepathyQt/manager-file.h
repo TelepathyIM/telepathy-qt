@@ -49,11 +49,11 @@ public:
 
     bool isValid() const;
     QStringList protocols() const;
-    ParamSpecList parameters(const QString &protocol) const;
+    TpDBus::ParamSpecList parameters(const QString &protocol) const;
     QString vcardField(const QString &protocol) const;
     QString englishName(const QString &protocol) const;
     QString iconName(const QString &protocol) const;
-    RequestableChannelClassList requestableChannelClasses(
+    TpDBus::RequestableChannelClassList requestableChannelClasses(
             const QString &protocol) const;
     PresenceSpecList allowedPresenceStatuses(const QString &protocol) const;
     AvatarSpec avatarRequirements(const QString &protocol) const;

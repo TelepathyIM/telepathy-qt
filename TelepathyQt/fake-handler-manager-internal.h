@@ -43,7 +43,7 @@ public:
     ~FakeHandler();
 
     QDBusConnection dbusConnection() const { return mBus; }
-    ObjectPathList handledChannels() const;
+    TpDBus::ObjectPathList handledChannels() const;
     void registerChannel(const ChannelPtr &channel);
 
 Q_SIGNALS:
@@ -68,7 +68,7 @@ public:
 
     ~FakeHandlerManager();
 
-    ObjectPathList handledChannels(const QDBusConnection &bus) const;
+    TpDBus::ObjectPathList handledChannels(const QDBusConnection &bus) const;
     void registerClientRegistrar(const ClientRegistrarPtr &cr);
     void registerChannels(const QList<ChannelPtr> &channels);
 

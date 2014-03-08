@@ -29,10 +29,10 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT MessageContentPart::Private : public QSharedData
 {
-    Private(const MessagePart &mp)
+    Private(const TpDBus::MessagePart &mp)
         : mp(mp) {}
 
-    MessagePart mp;
+    TpDBus::MessagePart mp;
 };
 
 /**
@@ -47,7 +47,7 @@ MessageContentPart::MessageContentPart()
 {
 }
 
-MessageContentPart::MessageContentPart(const MessagePart &mp)
+MessageContentPart::MessageContentPart(const TpDBus::MessagePart &mp)
     : mPriv(new Private(mp))
 {
 }
@@ -79,9 +79,9 @@ bool MessageContentPart::operator==(const MessageContentPart &other) const
     return mPriv->mp == other.mPriv->mp;
 }
 
-MessagePart MessageContentPart::barePart() const
+TpDBus::MessagePart MessageContentPart::barePart() const
 {
-    return isValid() ? mPriv->mp : MessagePart();
+    return isValid() ? mPriv->mp : TpDBus::MessagePart();
 }
 
 /**

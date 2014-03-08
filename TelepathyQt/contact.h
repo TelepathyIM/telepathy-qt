@@ -73,7 +73,7 @@ public:
     {
     public:
         InfoFields();
-        InfoFields(const ContactInfoFieldList &fields);
+        InfoFields(const TpDBus::ContactInfoFieldList &fields);
         InfoFields(const InfoFields &other);
         ~InfoFields();
 
@@ -81,9 +81,9 @@ public:
 
         InfoFields &operator=(const InfoFields &other);
 
-        ContactInfoFieldList fields(const QString &name) const;
+        TpDBus::ContactInfoFieldList fields(const QString &name) const;
 
-        ContactInfoFieldList allFields() const;
+        TpDBus::ContactInfoFieldList allFields() const;
 
     private:
         struct Private;
@@ -216,10 +216,10 @@ private:
     TP_QT_NO_EXPORT void receiveAvatarToken(const QString &avatarToken);
     TP_QT_NO_EXPORT void setAvatarToken(const QString &token);
     TP_QT_NO_EXPORT void receiveAvatarData(const AvatarData &);
-    TP_QT_NO_EXPORT void receiveSimplePresence(const SimplePresence &presence);
-    TP_QT_NO_EXPORT void receiveCapabilities(const RequestableChannelClassList &caps);
+    TP_QT_NO_EXPORT void receiveSimplePresence(const TpDBus::SimplePresence &presence);
+    TP_QT_NO_EXPORT void receiveCapabilities(const TpDBus::RequestableChannelClassList &caps);
     TP_QT_NO_EXPORT void receiveLocation(const QVariantMap &location);
-    TP_QT_NO_EXPORT void receiveInfo(const ContactInfoFieldList &info);
+    TP_QT_NO_EXPORT void receiveInfo(const TpDBus::ContactInfoFieldList &info);
     TP_QT_NO_EXPORT void receiveAddresses(const QMap<QString, QString> &addresses,
             const QStringList &uris);
     TP_QT_NO_EXPORT void receiveClientTypes(const QStringList &clientTypes);

@@ -112,8 +112,8 @@ PendingOperation *ContactManager::Roster::introspectGroups()
             conn->interface<Client::ConnectionInterfaceContactGroups1Interface>();
 
         connect(iface,
-                SIGNAL(GroupsChanged(Tp::UIntList,QStringList,QStringList)),
-                SLOT(onContactListGroupsChanged(Tp::UIntList,QStringList,QStringList)));
+                SIGNAL(GroupsChanged(TpDBus::UIntList,QStringList,QStringList)),
+                SLOT(onContactListGroupsChanged(TpDBus::UIntList,QStringList,QStringList)));
         connect(iface,
                 SIGNAL(GroupsCreated(QStringList)),
                 SLOT(onContactListGroupsCreated(QStringList)));
@@ -165,7 +165,7 @@ PendingOperation *ContactManager::Roster::addGroup(const QString &group)
     Client::ConnectionInterfaceContactGroups1Interface *iface =
         conn->interface<Client::ConnectionInterfaceContactGroups1Interface>();
     Q_ASSERT(iface);
-    return queuedFinishVoid(iface->AddToGroup(group, UIntList()));
+    return queuedFinishVoid(iface->AddToGroup(group, TpDBus::UIntList()));
 }
 
 PendingOperation *ContactManager::Roster::removeGroup(const QString &group)
@@ -205,7 +205,7 @@ PendingOperation *ContactManager::Roster::addContactsToGroup(const QString &grou
                 conn);
     }
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -227,7 +227,7 @@ PendingOperation *ContactManager::Roster::removeContactsFromGroup(const QString 
                 conn);
     }
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -253,7 +253,7 @@ PendingOperation *ContactManager::Roster::requestPresenceSubscription(
 {
     ConnectionPtr conn(contactManager->connection());
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -289,7 +289,7 @@ PendingOperation *ContactManager::Roster::removePresenceSubscription(
 {
     ConnectionPtr conn(contactManager->connection());
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -315,7 +315,7 @@ PendingOperation *ContactManager::Roster::authorizePresencePublication(
 {
     ConnectionPtr conn(contactManager->connection());
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -346,7 +346,7 @@ PendingOperation *ContactManager::Roster::removePresencePublication(
 {
     ConnectionPtr conn(contactManager->connection());
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -362,7 +362,7 @@ PendingOperation *ContactManager::Roster::removeContacts(
 {
     ConnectionPtr conn(contactManager->connection());
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle();
     }
@@ -401,7 +401,7 @@ PendingOperation *ContactManager::Roster::blockContacts(
         Client::ConnectionInterfaceContactBlocking1Interface *iface =
             conn->interface<Client::ConnectionInterfaceContactBlocking1Interface>();
 
-        UIntList handles;
+        TpDBus::UIntList handles;
         foreach (const ContactPtr &contact, contacts) {
             handles << contact->handle();
         }
@@ -443,7 +443,7 @@ void ContactManager::Roster::gotContactBlockingCapabilities(PendingOperation *op
 void ContactManager::Roster::gotContactBlockingBlockedContacts(
         QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<HandleIdentifierMap> reply = *watcher;
+    QDBusPendingReply<TpDBus::HandleIdentifierMap> reply = *watcher;
 
     if (watcher->isError()) {
         warning() << "Getting initial ContactBlocking blocked "
@@ -458,14 +458,14 @@ void ContactManager::Roster::gotContactBlockingBlockedContacts(
     gotContactBlockingInitialBlockedContacts = true;
 
     ConnectionPtr conn(contactManager->connection());
-    HandleIdentifierMap contactIds = reply.value();
+    TpDBus::HandleIdentifierMap contactIds = reply.value();
 
     if (!contactIds.isEmpty()) {
         conn->lowlevel()->injectContactIds(contactIds);
 
         //fake change event where all the contacts are added
         contactListBlockedContactsChangedQueue.enqueue(
-                BlockedContactsChangedInfo(contactIds, HandleIdentifierMap(), true));
+                BlockedContactsChangedInfo(contactIds, TpDBus::HandleIdentifierMap(), true));
         contactListChangesQueue.enqueue(
                 &ContactManager::Roster::processContactListBlockedContactsChanged);
         processContactListChanges();
@@ -475,8 +475,8 @@ void ContactManager::Roster::gotContactBlockingBlockedContacts(
 }
 
 void ContactManager::Roster::onContactBlockingBlockedContactsChanged(
-        const HandleIdentifierMap &added,
-        const HandleIdentifierMap &removed)
+        const TpDBus::HandleIdentifierMap &added,
+        const TpDBus::HandleIdentifierMap &removed)
 {
     if (!gotContactBlockingInitialBlockedContacts) {
         return;
@@ -523,7 +523,7 @@ void ContactManager::Roster::gotContactListProperties(PendingOperation *op)
 
 void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<ContactAttributesMap> reply = *watcher;
+    QDBusPendingReply<TpDBus::ContactAttributesMap> reply = *watcher;
 
     if (watcher->isError()) {
         warning() << "Failed introspecting ContactList contacts";
@@ -546,10 +546,10 @@ void ContactManager::Roster::gotContactListContacts(QDBusPendingCallWatcher *wat
     gotContactListInitialContacts = true;
 
     ConnectionPtr conn(contactManager->connection());
-    ContactAttributesMap attrsMap = reply.value();
-    ContactAttributesMap::const_iterator begin = attrsMap.constBegin();
-    ContactAttributesMap::const_iterator end = attrsMap.constEnd();
-    for (ContactAttributesMap::const_iterator i = begin; i != end; ++i) {
+    TpDBus::ContactAttributesMap attrsMap = reply.value();
+    TpDBus::ContactAttributesMap::const_iterator begin = attrsMap.constBegin();
+    TpDBus::ContactAttributesMap::const_iterator end = attrsMap.constEnd();
+    for (TpDBus::ContactAttributesMap::const_iterator i = begin; i != end; ++i) {
         uint bareHandle = i.key();
         QVariantMap attrs = i.value();
 
@@ -632,8 +632,8 @@ void ContactManager::Roster::onContactListStateChanged(uint state)
     }
 }
 
-void ContactManager::Roster::onContactListContactsChangedWithId(const Tp::ContactSubscriptionMap &changes,
-        const Tp::HandleIdentifierMap &ids, const Tp::HandleIdentifierMap &removals)
+void ContactManager::Roster::onContactListContactsChangedWithId(const TpDBus::ContactSubscriptionMap &changes,
+        const TpDBus::HandleIdentifierMap &ids, const TpDBus::HandleIdentifierMap &removals)
 {
     debug() << "Got ContactList.ContactsChangedWithID with" << changes.size() <<
         "changes and" << removals.size() << "removals";
@@ -653,8 +653,8 @@ void ContactManager::Roster::onContactListContactsChangedWithId(const Tp::Contac
     processContactListChanges();
 }
 
-void ContactManager::Roster::onContactListContactsChanged(const Tp::ContactSubscriptionMap &changes,
-        const Tp::UIntList &removals)
+void ContactManager::Roster::onContactListContactsChanged(const TpDBus::ContactSubscriptionMap &changes,
+        const TpDBus::UIntList &removals)
 {
     if (gotContactListContactsChangedWithId) {
         return;
@@ -668,12 +668,12 @@ void ContactManager::Roster::onContactListContactsChanged(const Tp::ContactSubsc
         return;
     }
 
-    HandleIdentifierMap removalsMap;
+    TpDBus::HandleIdentifierMap removalsMap;
     foreach (uint handle, removals) {
         removalsMap.insert(handle, QString());
     }
 
-    contactListUpdatesQueue.enqueue(UpdateInfo(changes, HandleIdentifierMap(), removalsMap));
+    contactListUpdatesQueue.enqueue(UpdateInfo(changes, TpDBus::HandleIdentifierMap(), removalsMap));
     contactListChangesQueue.enqueue(&ContactManager::Roster::processContactListUpdates);
     processContactListChanges();
 }
@@ -694,9 +694,9 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
     Contacts newBlockedContacts;
     Contacts unblockedContacts;
 
-    HandleIdentifierMap::const_iterator begin = info.added.constBegin();
-    HandleIdentifierMap::const_iterator end = info.added.constEnd();
-    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+    TpDBus::HandleIdentifierMap::const_iterator begin = info.added.constBegin();
+    TpDBus::HandleIdentifierMap::const_iterator end = info.added.constEnd();
+    for (TpDBus::HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
         uint bareHandle = i.key();
 
         ContactPtr contact = contactManager->lookupContactByHandle(bareHandle);
@@ -713,7 +713,7 @@ void ContactManager::Roster::onContactListBlockedContactsConstructed(Tp::Pending
 
     begin = info.removed.constBegin();
     end = info.removed.constEnd();
-    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+    for (TpDBus::HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
         uint bareHandle = i.key();
 
         ContactPtr contact = contactManager->lookupContactByHandle(bareHandle);
@@ -752,11 +752,11 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
 
     Tp::Contacts publishRequested;
 
-    ContactSubscriptionMap::const_iterator begin = info.changes.constBegin();
-    ContactSubscriptionMap::const_iterator end = info.changes.constEnd();
-    for (ContactSubscriptionMap::const_iterator i = begin; i != end; ++i) {
+    TpDBus::ContactSubscriptionMap::const_iterator begin = info.changes.constBegin();
+    TpDBus::ContactSubscriptionMap::const_iterator end = info.changes.constEnd();
+    for (TpDBus::ContactSubscriptionMap::const_iterator i = begin; i != end; ++i) {
         uint bareHandle = i.key();
-        ContactSubscriptions subscriptions = i.value();
+        TpDBus::ContactSubscriptions subscriptions = i.value();
 
         ContactPtr contact = contactManager->lookupContactByHandle(bareHandle);
         if (!contact) {
@@ -814,7 +814,7 @@ void ContactManager::Roster::onContactListNewContactsConstructed(Tp::PendingOper
     processContactListChanges();
 }
 
-void ContactManager::Roster::onContactListGroupsChanged(const Tp::UIntList &contacts,
+void ContactManager::Roster::onContactListGroupsChanged(const TpDBus::UIntList &contacts,
         const QStringList &added, const QStringList &removed)
 {
     if (!contactListGroupPropertiesReceived) {
@@ -969,8 +969,8 @@ void ContactManager::Roster::introspectContactBlockingBlockedContacts()
             SLOT(gotContactBlockingBlockedContacts(QDBusPendingCallWatcher*)));
 
     connect(iface,
-            SIGNAL(BlockedContactsChanged(Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)),
-            SLOT(onContactBlockingBlockedContactsChanged(Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)));
+            SIGNAL(BlockedContactsChanged(TpDBus::HandleIdentifierMap,Tp::HandleIdentifierMap)),
+            SLOT(onContactBlockingBlockedContactsChanged(TpDBus::HandleIdentifierMap,Tp::HandleIdentifierMap)));
 }
 
 void ContactManager::Roster::introspectContactList()
@@ -986,11 +986,11 @@ void ContactManager::Roster::introspectContactList()
             SIGNAL(ContactListStateChanged(uint)),
             SLOT(onContactListStateChanged(uint)));
     connect(iface,
-            SIGNAL(ContactsChangedWithID(Tp::ContactSubscriptionMap,Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)),
-            SLOT(onContactListContactsChangedWithId(Tp::ContactSubscriptionMap,Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)));
+            SIGNAL(ContactsChangedWithID(TpDBus::ContactSubscriptionMap,Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)),
+            SLOT(onContactListContactsChangedWithId(TpDBus::ContactSubscriptionMap,Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)));
     connect(iface,
-            SIGNAL(ContactsChanged(Tp::ContactSubscriptionMap,Tp::UIntList)),
-            SLOT(onContactListContactsChanged(Tp::ContactSubscriptionMap,Tp::UIntList)));
+            SIGNAL(ContactsChanged(TpDBus::ContactSubscriptionMap,Tp::UIntList)),
+            SLOT(onContactListContactsChanged(TpDBus::ContactSubscriptionMap,Tp::UIntList)));
 
     PendingVariantMap *pvm = iface->requestAllProperties();
     connect(pvm,
@@ -1039,17 +1039,17 @@ void ContactManager::Roster::processContactListBlockedContactsChanged()
 {
     BlockedContactsChangedInfo info = contactListBlockedContactsChangedQueue.head();
 
-    UIntList contacts;
-    HandleIdentifierMap::const_iterator begin = info.added.constBegin();
-    HandleIdentifierMap::const_iterator end = info.added.constEnd();
-    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+    TpDBus::UIntList contacts;
+    TpDBus::HandleIdentifierMap::const_iterator begin = info.added.constBegin();
+    TpDBus::HandleIdentifierMap::const_iterator end = info.added.constEnd();
+    for (TpDBus::HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
         uint bareHandle = i.key();
         contacts << bareHandle;
     }
 
     begin = info.removed.constBegin();
     end = info.removed.constEnd();
-    for (HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
+    for (TpDBus::HandleIdentifierMap::const_iterator i = begin; i != end; ++i) {
         uint bareHandle = i.key();
         contacts << bareHandle;
     }
@@ -1069,10 +1069,10 @@ void ContactManager::Roster::processContactListUpdates()
     UpdateInfo info = contactListUpdatesQueue.head();
 
     // construct Contact objects for all contacts in added to the contact list
-    UIntList contacts;
-    ContactSubscriptionMap::const_iterator begin = info.changes.constBegin();
-    ContactSubscriptionMap::const_iterator end = info.changes.constEnd();
-    for (ContactSubscriptionMap::const_iterator i = begin; i != end; ++i) {
+    TpDBus::UIntList contacts;
+    TpDBus::ContactSubscriptionMap::const_iterator begin = info.changes.constBegin();
+    TpDBus::ContactSubscriptionMap::const_iterator end = info.changes.constEnd();
+    for (TpDBus::ContactSubscriptionMap::const_iterator i = begin; i != end; ++i) {
         uint bareHandle = i.key();
         contacts << bareHandle;
     }

@@ -61,7 +61,7 @@ protected:
     friend class ProtocolInfo;
     friend class TestBackdoors;
 
-    ConnectionCapabilities(const RequestableChannelClassList &rccs);
+    ConnectionCapabilities(const TpDBus::RequestableChannelClassList &rccs);
     ConnectionCapabilities(const RequestableChannelClassSpecList &rccSpecs);
 };
 

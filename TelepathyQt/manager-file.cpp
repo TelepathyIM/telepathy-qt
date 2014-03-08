@@ -47,26 +47,26 @@ struct TP_QT_NO_EXPORT ManagerFile::Private
     bool isValid() const;
 
     bool hasParameter(const QString &protocol, const QString &paramName) const;
-    ParamSpec *getParameter(const QString &protocol, const QString &paramName);
+    TpDBus::ParamSpec *getParameter(const QString &protocol, const QString &paramName);
     QStringList protocols() const;
-    ParamSpecList parameters(const QString &protocol) const;
+    TpDBus::ParamSpecList parameters(const QString &protocol) const;
 
     QVariant valueForKey(const QString &param, const QString &dbusSignature);
 
     struct ProtocolInfo
     {
         ProtocolInfo() {}
-        ProtocolInfo(const ParamSpecList &params, const PresenceSpecList &statuses)
+        ProtocolInfo(const TpDBus::ParamSpecList &params, const PresenceSpecList &statuses)
             : params(params),
               statuses(statuses)
         {
         }
 
-        ParamSpecList params;
+        TpDBus::ParamSpecList params;
         QString vcardField;
         QString englishName;
         QString iconName;
-        RequestableChannelClassList rccs;
+        TpDBus::RequestableChannelClassList rccs;
         PresenceSpecList statuses;
         AvatarSpec avatarRequirements;
         QStringList addressableVCardFields;
@@ -146,13 +146,13 @@ bool ManagerFile::Private::parse(const QString &fileName)
             protocol = group.right(group.length() - 9);
             keyFile.setGroup(group);
 
-            ParamSpecList paramSpecList;
-            StatusSpecMap statuses;
+            TpDBus::ParamSpecList paramSpecList;
+            TpDBus::StatusSpecMap statuses;
             QString param;
             QStringList params = keyFile.keys();
             foreach (param, params) {
-                ParamSpec spec;
-                StatusSpec status;
+                TpDBus::ParamSpec spec;
+                TpDBus::StatusSpec status;
                 spec.flags = 0;
 
                 QStringList values = keyFile.value(param).split(QLatin1String(" "));
@@ -237,7 +237,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
                         continue;
                     }
 
-                    ParamSpec *spec = getParameter(protocol, paramName);
+                    TpDBus::ParamSpec *spec = getParameter(protocol, paramName);
 
                     spec->flags |= ConnMgrParamFlagHasDefault;
 
@@ -293,7 +293,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
 
             QStringList rccGroups = keyFile.valueAsStringList(
                     QLatin1String("RequestableChannelClasses"));
-            RequestableChannelClass rcc;
+            TpDBus::RequestableChannelClass rcc;
             foreach (const QString &rccGroup, rccGroups) {
                 keyFile.setGroup(rccGroup);
 
@@ -332,8 +332,8 @@ bool ManagerFile::Private::isValid() const
 bool ManagerFile::Private::hasParameter(const QString &protocol,
                                         const QString &paramName) const
 {
-    ParamSpecList paramSpecList = protocolsMap[protocol].params;
-    foreach (const ParamSpec &paramSpec, paramSpecList) {
+    TpDBus::ParamSpecList paramSpecList = protocolsMap[protocol].params;
+    foreach (const TpDBus::ParamSpec &paramSpec, paramSpecList) {
         if (paramSpec.name == paramName) {
             return true;
         }
@@ -341,12 +341,12 @@ bool ManagerFile::Private::hasParameter(const QString &protocol,
     return false;
 }
 
-ParamSpec *ManagerFile::Private::getParameter(const QString &protocol,
+TpDBus::ParamSpec *ManagerFile::Private::getParameter(const QString &protocol,
                                               const QString &paramName)
 {
-    ParamSpecList &paramSpecList = protocolsMap[protocol].params;
+    TpDBus::ParamSpecList &paramSpecList = protocolsMap[protocol].params;
     for (int i = 0; i < paramSpecList.size(); ++i) {
-        ParamSpec &paramSpec = paramSpecList[i];
+        TpDBus::ParamSpec &paramSpec = paramSpecList[i];
         if (paramSpec.name == paramName) {
             return &paramSpec;
         }
@@ -359,7 +359,7 @@ QStringList ManagerFile::Private::protocols() const
     return protocolsMap.keys();
 }
 
-ParamSpecList ManagerFile::Private::parameters(const QString &protocol) const
+TpDBus::ParamSpecList ManagerFile::Private::parameters(const QString &protocol) const
 {
     return protocolsMap.value(protocol).params;
 }
@@ -453,10 +453,10 @@ QStringList ManagerFile::protocols() const
  * Return a list of parameters for the given \a protocol.
  *
  * \param protocol Name of the protocol to look for.
- * \return List of ParamSpec of a specific protocol defined in the file, or an
+ * \return List of TpDBus::ParamSpec of a specific protocol defined in the file, or an
  *         empty list if the protocol is not defined.
  */
-ParamSpecList ManagerFile::parameters(const QString &protocol) const
+TpDBus::ParamSpecList ManagerFile::parameters(const QString &protocol) const
 {
     return mPriv->parameters(protocol);
 }
@@ -523,9 +523,9 @@ QString ManagerFile::iconName(const QString &protocol) const
  * \param protocol Name of the protocol to look for.
  * \return A list of channel classes which might be requestable from a
  *         connection to the given \a protocol or a default constructed
- *         RequestableChannelClassList instance if the protocol is not defined.
+ *         TpDBus::RequestableChannelClassList instance if the protocol is not defined.
  */
-RequestableChannelClassList ManagerFile::requestableChannelClasses(
+TpDBus::RequestableChannelClassList ManagerFile::requestableChannelClasses(
         const QString &protocol) const
 {
     return mPriv->protocolsMap.value(protocol).rccs;

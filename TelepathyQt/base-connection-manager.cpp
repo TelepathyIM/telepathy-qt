@@ -78,9 +78,9 @@ QStringList BaseConnectionManager::Adaptee::interfaces() const
     return QStringList();
 }
 
-ProtocolPropertiesMap BaseConnectionManager::Adaptee::protocols() const
+TpDBus::ProtocolPropertiesMap BaseConnectionManager::Adaptee::protocols() const
 {
-    ProtocolPropertiesMap ret;
+    TpDBus::ProtocolPropertiesMap ret;
     foreach (const BaseProtocolPtr &protocol, mCM->protocols()) {
         ret.insert(protocol->name(), protocol->immutableProperties());
     }
@@ -103,9 +103,9 @@ void BaseConnectionManager::Adaptee::getParameters(const QString &protocolName,
     }
 
     BaseProtocolPtr protocol = mCM->protocol(protocolName);
-    ParamSpecList ret;
+    TpDBus::ParamSpecList ret;
     foreach (const ProtocolParameter &param, protocol->parameters()) {
-         ParamSpec paramSpec = param.bareParameter();
+         TpDBus::ParamSpec paramSpec = param.bareParameter();
          if (!(paramSpec.flags & ConnMgrParamFlagHasDefault)) {
              // we cannot pass QVariant::Invalid over D-Bus, lets build a dummy value
              // that should be ignored according to the spec

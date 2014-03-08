@@ -74,7 +74,7 @@ public:
     Tp::PendingCaptchas *requestCaptchas(const QStringList &preferredMimeTypes = QStringList(),
             ChallengeTypes preferredTypes = ~ChallengeTypes(NoChallenge));
     Tp::PendingOperation *answer(uint id, const QString &answer);
-    Tp::PendingOperation *answer(const Tp::CaptchaAnswers &response);
+    Tp::PendingOperation *answer(const TpDBus::CaptchaAnswers &response);
 
 Q_SIGNALS:
     void statusChanged(Tp::CaptchaStatus status);

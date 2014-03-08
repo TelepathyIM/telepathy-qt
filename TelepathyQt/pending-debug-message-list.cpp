@@ -30,7 +30,7 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT PendingDebugMessageList::Private
 {
-    DebugMessageList result;
+    TpDBus::DebugMessageList result;
 };
 
 PendingDebugMessageList::PendingDebugMessageList(const QDBusPendingCall &call,
@@ -48,14 +48,14 @@ PendingDebugMessageList::~PendingDebugMessageList()
     delete mPriv;
 }
 
-DebugMessageList PendingDebugMessageList::result() const
+TpDBus::DebugMessageList PendingDebugMessageList::result() const
 {
     return mPriv->result;
 }
 
 void PendingDebugMessageList::watcherFinished(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<DebugMessageList> reply = *watcher;
+    QDBusPendingReply<TpDBus::DebugMessageList> reply = *watcher;
     if (reply.isError()) {
         setFinishedWithError(reply.error());
     } else {

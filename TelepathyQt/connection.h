@@ -171,7 +171,7 @@ public:
     uint selfHandle() const;
     ContactPtr selfContact() const;
 
-    CurrencyAmount accountBalance() const;
+    TpDBus::CurrencyAmount accountBalance() const;
 
     ConnectionCapabilities capabilities() const;
 
@@ -189,7 +189,7 @@ Q_SIGNALS:
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts
     void selfContactChanged();
 
-    void accountBalanceChanged(const Tp::CurrencyAmount &accountBalance);
+    void accountBalanceChanged(const TpDBus::CurrencyAmount &accountBalance);
 
 protected:
     Connection(const QDBusConnection &bus, const QString &busName,
@@ -218,7 +218,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onSelfContactChanged(uint selfHandle, const QString &selfID);
 
     TP_QT_NO_EXPORT void gotBalance(QDBusPendingCallWatcher *watcher);
-    TP_QT_NO_EXPORT void onBalanceChanged(const Tp::CurrencyAmount &);
+    TP_QT_NO_EXPORT void onBalanceChanged(const TpDBus::CurrencyAmount &);
 
 private:
     class PendingConnect;

@@ -39,9 +39,9 @@ FakeHandler::~FakeHandler()
 {
 }
 
-ObjectPathList FakeHandler::handledChannels() const
+TpDBus::ObjectPathList FakeHandler::handledChannels() const
 {
-    ObjectPathList ret;
+    TpDBus::ObjectPathList ret;
     foreach (const Channel *channel, mChannels) {
         ret << QDBusObjectPath(channel->objectPath());
     }
@@ -106,14 +106,14 @@ FakeHandlerManager::~FakeHandlerManager()
     mInstance = 0;
 }
 
-ObjectPathList FakeHandlerManager::handledChannels(const QDBusConnection &bus) const
+TpDBus::ObjectPathList FakeHandlerManager::handledChannels(const QDBusConnection &bus) const
 {
     QPair<QString, QString> busUniqueId(bus.name(), bus.baseService());
     if (mFakeHandlers.contains(busUniqueId)) {
         FakeHandler *fakeHandler = mFakeHandlers.value(busUniqueId);
         return fakeHandler->handledChannels();
     }
-    return ObjectPathList();
+    return TpDBus::ObjectPathList();
 }
 
 void FakeHandlerManager::registerClientRegistrar(const ClientRegistrarPtr &cr)

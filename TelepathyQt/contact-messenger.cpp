@@ -69,8 +69,8 @@ PendingSendMessage *ContactMessenger::Private::sendMessage(const Message &messag
 
     PendingSendMessage *op = new PendingSendMessage(ContactMessengerPtr(parent), message);
 
-    Tp::MessagePartList parts;
-    foreach (const Tp::MessagePart &part, message.parts()) {
+    TpDBus::MessagePartList parts;
+    foreach (const TpDBus::MessagePart &part, message.parts()) {
         parts << static_cast<QMap<QString, QDBusVariant> >(part);
     }
 

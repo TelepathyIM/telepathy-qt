@@ -39,7 +39,7 @@ struct TP_QT_NO_EXPORT DBusTubeChannel::Private
     Private(DBusTubeChannel *parent);
 
     void extractProperties(const QVariantMap &props);
-    void extractParticipants(const Tp::DBusTubeParticipants &participants);
+    void extractParticipants(const TpDBus::DBusTubeParticipants &participants);
 
     static void introspectDBusTube(Private *self);
     static void introspectBusNamesMonitoring(Private *self);
@@ -50,7 +50,7 @@ struct TP_QT_NO_EXPORT DBusTubeChannel::Private
     DBusTubeChannel *parent;
 
     // Properties
-    UIntList accessControls;
+    TpDBus::UIntList accessControls;
     QString serviceName;
     QHash<QString, Tp::ContactPtr> contactsForBusNames;
     QString address;
@@ -96,16 +96,16 @@ DBusTubeChannel::Private::Private(DBusTubeChannel *parent)
 void DBusTubeChannel::Private::extractProperties(const QVariantMap &props)
 {
     serviceName = qdbus_cast<QString>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName")]);
-    accessControls = qdbus_cast<UIntList>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".SupportedAccessControls")]);
+    accessControls = qdbus_cast<TpDBus::UIntList>(props[TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".SupportedAccessControls")]);
 }
 
-void DBusTubeChannel::Private::extractParticipants(const Tp::DBusTubeParticipants &participants)
+void DBusTubeChannel::Private::extractParticipants(const TpDBus::DBusTubeParticipants &participants)
 {
     contactsForBusNames.clear();
-    for (DBusTubeParticipants::const_iterator i = participants.constBegin();
+    for (TpDBus::DBusTubeParticipants::const_iterator i = participants.constBegin();
          i != participants.constEnd();
          ++i) {
-        QUuid uuid = queuedContactFactory->appendNewRequest(UIntList() << i.key());
+        QUuid uuid = queuedContactFactory->appendNewRequest(TpDBus::UIntList() << i.key());
         pendingNewBusNamesToAdd.insert(uuid, i.value());
     }
 }
@@ -122,8 +122,8 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Pri
 
     // It makes sense only if this is a room, if that's not the case just spit a warning
     if (parent->targetHandleType() == static_cast<uint>(Tp::HandleTypeRoom)) {
-        parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)),
-                        parent, SLOT(onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)));
+        parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(TpDBus::DBusTubeParticipants,Tp::UIntList)),
+                        parent, SLOT(onDBusNamesChanged(TpDBus::DBusTubeParticipants,Tp::UIntList)));
 
         // Request the current DBusNames property
         connect(dbusTubeInterface->requestPropertyDBusNames(), SIGNAL(finished(Tp::PendingOperation*)),
@@ -364,7 +364,7 @@ void DBusTubeChannel::onRequestPropertyDBusNamesFinished(PendingOperation *op)
     if (!op->isError()) {
         debug() << "RequestPropertyDBusNames succeeded";
         PendingVariant *result = qobject_cast<PendingVariant*>(op);
-        DBusTubeParticipants participants = qdbus_cast<DBusTubeParticipants>(result->result());
+        TpDBus::DBusTubeParticipants participants = qdbus_cast<TpDBus::DBusTubeParticipants>(result->result());
 
         if (participants.isEmpty()) {
             // Nothing to do actually, simply mark the feature as ready.
@@ -395,19 +395,19 @@ void DBusTubeChannel::onQueueCompleted()
                this, SLOT(onQueueCompleted()));
 }
 
-void DBusTubeChannel::onDBusNamesChanged(const Tp::DBusTubeParticipants &added,
-        const Tp::UIntList &removed)
+void DBusTubeChannel::onDBusNamesChanged(const TpDBus::DBusTubeParticipants &added,
+        const TpDBus::UIntList &removed)
 {
-    for (DBusTubeParticipants::const_iterator i = added.constBegin();
+    for (TpDBus::DBusTubeParticipants::const_iterator i = added.constBegin();
          i != added.constEnd();
          ++i) {
-        QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(UIntList() << i.key());
+        QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(TpDBus::UIntList() << i.key());
         // Add it to our hash as well
         mPriv->pendingNewBusNamesToAdd.insert(uuid, i.value());
     }
 
     foreach (uint handle, removed) {
-        QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(UIntList() << handle);
+        QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(TpDBus::UIntList() << handle);
         // Add it to pending removed as well
         mPriv->pendingNewBusNamesToRemove << uuid;
     }

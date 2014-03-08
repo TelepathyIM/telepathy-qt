@@ -94,11 +94,11 @@ void CallContent::Private::introspectMainProperties(CallContent::Private *self)
     CallChannelPtr channel = parent->channel();
 
     parent->connect(self->contentInterface,
-            SIGNAL(StreamsAdded(Tp::ObjectPathList)),
-            SLOT(onStreamsAdded(Tp::ObjectPathList)));
+            SIGNAL(StreamsAdded(TpDBus::ObjectPathList)),
+            SLOT(onStreamsAdded(TpDBus::ObjectPathList)));
     parent->connect(self->contentInterface,
-            SIGNAL(StreamsRemoved(Tp::ObjectPathList,Tp::CallStateReason)),
-            SLOT(onStreamsRemoved(Tp::ObjectPathList,Tp::CallStateReason)));
+            SIGNAL(StreamsRemoved(TpDBus::ObjectPathList,Tp::CallStateReason)),
+            SLOT(onStreamsRemoved(TpDBus::ObjectPathList,Tp::CallStateReason)));
 
     parent->connect(self->contentInterface->requestAllProperties(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -341,7 +341,7 @@ void CallContent::gotMainProperties(PendingOperation *op)
     mPriv->type = qdbus_cast<uint>(props[QLatin1String("Type")]);
     mPriv->disposition = qdbus_cast<uint>(props[QLatin1String("Disposition")]);
 
-    ObjectPathList streamsPaths = qdbus_cast<ObjectPathList>(props[QLatin1String("Streams")]);
+    TpDBus::ObjectPathList streamsPaths = qdbus_cast<TpDBus::ObjectPathList>(props[QLatin1String("Streams")]);
     if (streamsPaths.size() != 0) {
         foreach (const QDBusObjectPath &streamPath, streamsPaths) {
             CallStreamPtr stream = mPriv->lookupStream(streamPath);
@@ -354,7 +354,7 @@ void CallContent::gotMainProperties(PendingOperation *op)
     }
 }
 
-void CallContent::onStreamsAdded(const ObjectPathList &streamsPaths)
+void CallContent::onStreamsAdded(const TpDBus::ObjectPathList &streamsPaths)
 {
     foreach (const QDBusObjectPath &streamPath, streamsPaths) {
         debug() << "Received Call::Content::StreamAdded for stream" << streamPath.path();
@@ -368,8 +368,8 @@ void CallContent::onStreamsAdded(const ObjectPathList &streamsPaths)
     }
 }
 
-void CallContent::onStreamsRemoved(const ObjectPathList &streamsPaths,
-        const CallStateReason &reason)
+void CallContent::onStreamsRemoved(const TpDBus::ObjectPathList &streamsPaths,
+        const TpDBus::CallStateReason &reason)
 {
     foreach (const QDBusObjectPath &streamPath, streamsPaths) {
         debug() << "Received Call::Content::StreamRemoved for stream" << streamPath.path();
@@ -427,7 +427,7 @@ void CallContent::onStreamReady(PendingOperation *op)
  */
 
 /**
- * \fn void CallContent::streamRemoved(const Tp::CallStreamPtr &stream, const Tp::CallStateReason &reason);
+ * \fn void CallContent::streamRemoved(const Tp::CallStreamPtr &stream, const TpDBus::CallStateReason &reason);
  *
  * This signal is emitted when a new media stream is removed from this media
  * content.

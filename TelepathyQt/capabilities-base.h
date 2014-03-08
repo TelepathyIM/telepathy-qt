@@ -60,13 +60,13 @@ public:
 
 protected:
     CapabilitiesBase(bool specificToContact);
-    CapabilitiesBase(const RequestableChannelClassList &rccs,
+    CapabilitiesBase(const TpDBus::RequestableChannelClassList &rccs,
             bool specificToContact);
     CapabilitiesBase(const RequestableChannelClassSpecList &rccSpecs,
             bool specificToContact);
 
     virtual void updateRequestableChannelClasses(
-            const RequestableChannelClassList &rccs);
+            const TpDBus::RequestableChannelClassList &rccs);
 
 private:
     friend class Connection;

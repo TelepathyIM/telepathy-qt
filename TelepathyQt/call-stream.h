@@ -63,22 +63,22 @@ public:
 
 Q_SIGNALS:
     void localSendingStateChanged(Tp::SendingState localSendingState,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
     void remoteSendingStateChanged(
             const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
     void remoteMembersRemoved(const Tp::Contacts &remoteMembers,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
 
 private Q_SLOTS:
     TP_QT_NO_EXPORT void gotMainProperties(Tp::PendingOperation *op);
     TP_QT_NO_EXPORT void gotRemoteMembersContacts(Tp::PendingOperation *op);
 
-    TP_QT_NO_EXPORT void onRemoteMembersChanged(const Tp::ContactSendingStateMap &updates,
-            const Tp::HandleIdentifierMap &identifiers,
-            const Tp::UIntList &removed,
-            const Tp::CallStateReason &reason);
-    TP_QT_NO_EXPORT void onLocalSendingStateChanged(uint, const Tp::CallStateReason &reason);
+    TP_QT_NO_EXPORT void onRemoteMembersChanged(const TpDBus::ContactSendingStateMap &updates,
+            const TpDBus::HandleIdentifierMap &identifiers,
+            const TpDBus::UIntList &removed,
+            const TpDBus::CallStateReason &reason);
+    TP_QT_NO_EXPORT void onLocalSendingStateChanged(uint, const TpDBus::CallStateReason &reason);
 
 private:
     friend class CallChannel;

@@ -74,11 +74,11 @@ public:
 
     // Direct access to the whole message (header and body)
 
-    MessagePart header() const;
+    TpDBus::MessagePart header() const;
 
     int size() const;
-    MessagePart part(uint index) const;
-    MessagePartList parts() const;
+    TpDBus::MessagePart part(uint index) const;
+    TpDBus::MessagePartList parts() const;
 
 private:
     friend class ContactMessenger;
@@ -86,7 +86,7 @@ private:
     friend class TextChannel;
 
     TP_QT_NO_EXPORT Message();
-    TP_QT_NO_EXPORT Message(const MessagePartList &parts);
+    TP_QT_NO_EXPORT Message(const TpDBus::MessagePartList &parts);
     TP_QT_NO_EXPORT Message(uint, uint, const QString &);
 
     struct Private;
@@ -127,7 +127,7 @@ public:
     private:
         friend class ReceivedMessage;
 
-        TP_QT_NO_EXPORT DeliveryDetails(const MessagePartList &parts);
+        TP_QT_NO_EXPORT DeliveryDetails(const TpDBus::MessagePartList &parts);
 
         struct Private;
         friend struct Private;
@@ -155,7 +155,7 @@ public:
 private:
     friend class TextChannel;
 
-    TP_QT_NO_EXPORT ReceivedMessage(const MessagePartList &parts,
+    TP_QT_NO_EXPORT ReceivedMessage(const TpDBus::MessagePartList &parts,
             const TextChannelPtr &channel);
     TP_QT_NO_EXPORT ReceivedMessage();
 

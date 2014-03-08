@@ -80,12 +80,12 @@ CapabilitiesBase::CapabilitiesBase(bool specificToContact)
 /**
  * Construct a new CapabilitiesBase object using the given \a rccs.
  *
- * \param rccs RequestableChannelClassList representing the capabilities of a
+ * \param rccs TpDBus::RequestableChannelClassList representing the capabilities of a
  *             connection or contact.
  * \param specificToContact Whether this object describes the capabilities of a
  *                          particular contact.
  */
-CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassList &rccs,
+CapabilitiesBase::CapabilitiesBase(const TpDBus::RequestableChannelClassList &rccs,
         bool specificToContact)
     : mPriv(new Private(RequestableChannelClassSpecList(rccs), specificToContact))
 {
@@ -144,7 +144,7 @@ RequestableChannelClassSpecList CapabilitiesBase::allClassSpecs() const
 }
 
 void CapabilitiesBase::updateRequestableChannelClasses(
-        const RequestableChannelClassList &rccs)
+        const TpDBus::RequestableChannelClassList &rccs)
 {
     mPriv->rccSpecs = RequestableChannelClassSpecList(rccs);
 }

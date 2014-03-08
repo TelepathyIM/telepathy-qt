@@ -37,7 +37,7 @@ class TP_QT_EXPORT RequestableChannelClassSpec
 {
 public:
     RequestableChannelClassSpec();
-    RequestableChannelClassSpec(const RequestableChannelClass &rcc);
+    RequestableChannelClassSpec(const TpDBus::RequestableChannelClass &rcc);
     RequestableChannelClassSpec(const RequestableChannelClassSpec &other);
     ~RequestableChannelClassSpec();
 
@@ -83,7 +83,7 @@ public:
     bool allowsProperty(const QString &name) const;
     QStringList allowedProperties() const;
 
-    RequestableChannelClass bareClass() const;
+    TpDBus::RequestableChannelClass bareClass() const;
 
 private:
     struct Private;
@@ -96,13 +96,13 @@ class TP_QT_EXPORT RequestableChannelClassSpecList :
 {
 public:
     RequestableChannelClassSpecList() { }
-    RequestableChannelClassSpecList(const RequestableChannelClass &rcc)
+    RequestableChannelClassSpecList(const TpDBus::RequestableChannelClass &rcc)
     {
         append(RequestableChannelClassSpec(rcc));
     }
-    RequestableChannelClassSpecList(const RequestableChannelClassList &rccs)
+    RequestableChannelClassSpecList(const TpDBus::RequestableChannelClassList &rccs)
     {
-        Q_FOREACH (const RequestableChannelClass &rcc, rccs) {
+        Q_FOREACH (const TpDBus::RequestableChannelClass &rcc, rccs) {
             append(RequestableChannelClassSpec(rcc));
         }
     }
@@ -115,9 +115,9 @@ public:
     {
     }
 
-    RequestableChannelClassList bareClasses() const
+    TpDBus::RequestableChannelClassList bareClasses() const
     {
-        RequestableChannelClassList list;
+        TpDBus::RequestableChannelClassList list;
         Q_FOREACH (const RequestableChannelClassSpec &rccSpec, *this) {
             list.append(rccSpec.bareClass());
         }

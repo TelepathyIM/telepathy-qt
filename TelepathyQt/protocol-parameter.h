@@ -43,7 +43,7 @@ class TP_QT_EXPORT ProtocolParameter
 {
 public:
     ProtocolParameter();
-    ProtocolParameter(const ParamSpec &spec);
+    ProtocolParameter(const TpDBus::ParamSpec &spec);
     ProtocolParameter(const QString &name,
                       const QDBusSignature &dbusSignature,
                       ConnMgrParamFlags flags,
@@ -71,7 +71,7 @@ public:
     bool isSecret() const;
     bool isRequiredForRegistration() const;
 
-    ParamSpec bareParameter() const;
+    TpDBus::ParamSpec bareParameter() const;
 
 private:
     friend class ConnectionManager;

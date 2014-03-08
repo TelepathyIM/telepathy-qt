@@ -430,7 +430,7 @@ PendingString *ProtocolInfo::normalizeContactUri(const QString &uri)
             SharedPtr<RefCounted>());
 }
 
-void ProtocolInfo::addParameter(const ParamSpec &spec)
+void ProtocolInfo::addParameter(const TpDBus::ParamSpec &spec)
 {
     if (!isValid()) {
         mPriv = new Private;
@@ -481,7 +481,7 @@ void ProtocolInfo::setIconName(const QString &iconName)
 }
 
 void ProtocolInfo::setRequestableChannelClasses(
-        const RequestableChannelClassList &caps)
+        const TpDBus::RequestableChannelClassList &caps)
 {
     if (!isValid()) {
         mPriv = new Private;

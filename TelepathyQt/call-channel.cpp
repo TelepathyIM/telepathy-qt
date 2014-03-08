@@ -63,10 +63,10 @@ struct TP_QT_NO_EXPORT CallChannel::Private
     // Introspection
     uint state;
     uint flags;
-    CallStateReason stateReason;
+    TpDBus::CallStateReason stateReason;
     QVariantMap stateDetails;
 
-    CallMemberMap callMembers;
+    TpDBus::CallMemberMap callMembers;
     QHash<uint, ContactPtr> callMembersContacts;
     QQueue< QSharedPointer<CallMembersChangedInfo> > callMembersChangedQueue;
     QSharedPointer<CallMembersChangedInfo> currentCallMembersChangedInfo;
@@ -88,10 +88,10 @@ struct TP_QT_NO_EXPORT CallChannel::Private
 
 struct TP_QT_NO_EXPORT CallChannel::Private::CallMembersChangedInfo
 {
-    CallMembersChangedInfo(const CallMemberMap &updates,
-            const HandleIdentifierMap &identifiers,
-            const UIntList &removed,
-            const CallStateReason &reason)
+    CallMembersChangedInfo(const TpDBus::CallMemberMap &updates,
+            const TpDBus::HandleIdentifierMap &identifiers,
+            const TpDBus::UIntList &removed,
+            const TpDBus::CallStateReason &reason)
         : updates(updates),
           identifiers(identifiers),
           removed(removed),
@@ -100,20 +100,20 @@ struct TP_QT_NO_EXPORT CallChannel::Private::CallMembersChangedInfo
     }
 
     static QSharedPointer<CallMembersChangedInfo> create(
-            const CallMemberMap &updates,
-            const HandleIdentifierMap &identifiers,
-            const UIntList &removed,
-            const CallStateReason &reason)
+            const TpDBus::CallMemberMap &updates,
+            const TpDBus::HandleIdentifierMap &identifiers,
+            const TpDBus::UIntList &removed,
+            const TpDBus::CallStateReason &reason)
     {
         CallMembersChangedInfo *info = new CallMembersChangedInfo(
                 updates, identifiers, removed, reason);
         return QSharedPointer<CallMembersChangedInfo>(info);
     }
 
-    CallMemberMap updates;
-    HandleIdentifierMap identifiers;
-    UIntList removed;
-    CallStateReason reason;
+    TpDBus::CallMemberMap updates;
+    TpDBus::HandleIdentifierMap identifiers;
+    TpDBus::UIntList removed;
+    TpDBus::CallStateReason reason;
 };
 
 CallChannel::Private::Private(CallChannel *parent)
@@ -247,8 +247,8 @@ void CallChannel::Private::introspectCallMembers(CallChannel::Private *self)
     CallChannel *parent = self->parent;
 
     parent->connect(self->callInterface,
-            SIGNAL(CallMembersChanged(Tp::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
-            SLOT(onCallMembersChanged(Tp::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
+            SIGNAL(CallMembersChanged(TpDBus::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
+            SLOT(onCallMembersChanged(TpDBus::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
 
     parent->connect(self->callInterface->requestAllProperties(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -304,7 +304,7 @@ void CallChannel::Private::processCallMembersChanged()
     currentCallMembersChangedInfo = callMembersChangedQueue.dequeue();
 
     QSet<uint> pendingCallMembers;
-    for (ContactSendingStateMap::const_iterator i = currentCallMembersChangedInfo->updates.constBegin();
+    for (TpDBus::ContactSendingStateMap::const_iterator i = currentCallMembersChangedInfo->updates.constBegin();
             i != currentCallMembersChangedInfo->updates.constEnd(); ++i) {
         pendingCallMembers.insert(i.key());
     }
@@ -462,7 +462,7 @@ CallFlags CallChannel::callFlags() const
  * \return The reason for the last change to the callState() and/or callFlags().
  * \sa callStateChanged(), callFlagsChanged()
  */
-CallStateReason CallChannel::callStateReason() const
+TpDBus::CallStateReason CallChannel::callStateReason() const
 {
     if (!isReady(FeatureCallState)) {
         warning() << "CallChannel::callStateReason() used with FeatureCallState not ready";
@@ -528,7 +528,7 @@ CallMemberFlags CallChannel::remoteMemberFlags(const ContactPtr &member) const
         return (CallMemberFlags) 0;
     }
 
-    for (CallMemberMap::const_iterator i = mPriv->callMembers.constBegin();
+    for (TpDBus::CallMemberMap::const_iterator i = mPriv->callMembers.constBegin();
             i != mPriv->callMembers.constEnd(); ++i) {
         uint handle = i.key();
         CallMemberFlags sendingState = (CallMemberFlags) i.value();
@@ -885,14 +885,14 @@ void CallChannel::gotCallState(PendingOperation *op)
 
     mPriv->state = qdbus_cast<uint>(props[QLatin1String("CallState")]);
     mPriv->flags = qdbus_cast<uint>(props[QLatin1String("CallFlags")]);
-    mPriv->stateReason = qdbus_cast<CallStateReason>(props[QLatin1String("CallStateReason")]);
+    mPriv->stateReason = qdbus_cast<TpDBus::CallStateReason>(props[QLatin1String("CallStateReason")]);
     mPriv->stateDetails = qdbus_cast<QVariantMap>(props[QLatin1String("CallStateDetails")]);
 
     mPriv->readinessHelper->setIntrospectCompleted(FeatureCallState, true);
 }
 
 void CallChannel::onCallStateChanged(uint state, uint flags,
-        const CallStateReason &stateReason, const QVariantMap &stateDetails)
+        const TpDBus::CallStateReason &stateReason, const QVariantMap &stateDetails)
 {
     if (mPriv->state == state && mPriv->flags == flags && mPriv->stateReason == stateReason &&
         mPriv->stateDetails == stateDetails) {
@@ -934,11 +934,11 @@ void CallChannel::gotCallMembers(PendingOperation *op)
 
     QVariantMap props = pvm->result();
 
-    HandleIdentifierMap ids = qdbus_cast<HandleIdentifierMap>(props[QLatin1String("MemberIdentifiers")]);
-    CallMemberMap callMembers = qdbus_cast<CallMemberMap>(props[QLatin1String("CallMembers")]);
+    TpDBus::HandleIdentifierMap ids = qdbus_cast<TpDBus::HandleIdentifierMap>(props[QLatin1String("MemberIdentifiers")]);
+    TpDBus::CallMemberMap callMembers = qdbus_cast<TpDBus::CallMemberMap>(props[QLatin1String("CallMembers")]);
 
     mPriv->callMembersChangedQueue.enqueue(Private::CallMembersChangedInfo::create(
-                callMembers, ids, UIntList(), CallStateReason()));
+                callMembers, ids, TpDBus::UIntList(), TpDBus::CallStateReason()));
     mPriv->processCallMembersChanged();
 }
 
@@ -956,7 +956,7 @@ void CallChannel::gotCallMembersContacts(PendingOperation *op)
 
     QHash<uint, ContactPtr> removed;
 
-    for (ContactSendingStateMap::const_iterator i =
+    for (TpDBus::ContactSendingStateMap::const_iterator i =
                 mPriv->currentCallMembersChangedInfo->updates.constBegin();
             i != mPriv->currentCallMembersChangedInfo->updates.constEnd(); ++i) {
         mPriv->callMembers.insert(i.key(), i.value());
@@ -990,7 +990,7 @@ void CallChannel::gotCallMembersContacts(PendingOperation *op)
 
     if (isReady(FeatureCallMembers)) {
         QHash<ContactPtr, CallMemberFlags> remoteMemberFlags;
-        for (CallMemberMap::const_iterator i =
+        for (TpDBus::CallMemberMap::const_iterator i =
                     mPriv->currentCallMembersChangedInfo->updates.constBegin();
                 i != mPriv->currentCallMembersChangedInfo->updates.constEnd(); ++i) {
             uint handle = i.key();
@@ -1017,10 +1017,10 @@ void CallChannel::gotCallMembersContacts(PendingOperation *op)
     mPriv->processCallMembersChanged();
 }
 
-void CallChannel::onCallMembersChanged(const CallMemberMap &updates,
-        const HandleIdentifierMap &identifiers,
-        const UIntList &removed,
-        const CallStateReason &reason)
+void CallChannel::onCallMembersChanged(const TpDBus::CallMemberMap &updates,
+        const TpDBus::HandleIdentifierMap &identifiers,
+        const TpDBus::UIntList &removed,
+        const TpDBus::CallStateReason &reason)
 {
     if (updates.isEmpty() && removed.isEmpty()) {
         debug() << "Received Call::CallMembersChanged with 0 removals and updates, skipping it";
@@ -1049,7 +1049,7 @@ void CallChannel::gotContents(PendingOperation *op)
     PendingVariant *pv = qobject_cast<PendingVariant*>(op);
     Q_ASSERT(pv);
 
-    ObjectPathList contentsPaths = qdbus_cast<ObjectPathList>(pv->result());
+    TpDBus::ObjectPathList contentsPaths = qdbus_cast<TpDBus::ObjectPathList>(pv->result());
     if (contentsPaths.size() > 0) {
         foreach (const QDBusObjectPath &contentPath, contentsPaths) {
             CallContentPtr content = lookupContent(contentPath);
@@ -1075,7 +1075,7 @@ void CallChannel::onContentAdded(const QDBusObjectPath &contentPath)
 }
 
 void CallChannel::onContentRemoved(const QDBusObjectPath &contentPath,
-        const CallStateReason &reason)
+        const TpDBus::CallStateReason &reason)
 {
     debug() << "Received Call::ContentRemoved for content" << contentPath.path();
 
@@ -1220,7 +1220,7 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
  */
 
 /**
- * \fn void CallChannel::remoteMemberFlagsChanged(const QHash<Tp::ContactPtr, Tp::CallMemberFlags> &remoteMemberFlags, const Tp::CallStateReason &reason);
+ * \fn void CallChannel::remoteMemberFlagsChanged(const QHash<Tp::ContactPtr, Tp::CallMemberFlags> &remoteMemberFlags, const TpDBus::CallStateReason &reason);
  *
  * This signal is emitted when the flags of members of the call change,
  * or when new members are added in the call.
@@ -1231,7 +1231,7 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
  */
 
 /**
- * \fn void CallChannel::remoteMembersRemoved(const Tp::Contacts &remoteMembers, const Tp::CallStateReason &reason);
+ * \fn void CallChannel::remoteMembersRemoved(const Tp::Contacts &remoteMembers, const TpDBus::CallStateReason &reason);
  *
  * This signal is emitted when remote members are removed from the call.
  *
@@ -1249,7 +1249,7 @@ CallContentPtr CallChannel::lookupContent(const QDBusObjectPath &contentPath) co
  */
 
 /**
- * \fn void CallChannel::contentRemoved(const Tp::CallContentPtr &content, const Tp::CallStateReason &reason);
+ * \fn void CallChannel::contentRemoved(const Tp::CallContentPtr &content, const TpDBus::CallStateReason &reason);
  *
  * This signal is emitted when a media content is removed from this channel.
  *

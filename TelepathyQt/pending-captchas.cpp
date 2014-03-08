@@ -177,7 +177,7 @@ void PendingCaptchas::onChannelInvalidated(Tp::DBusProxy *proxy,
 
 void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<Tp::CaptchaInfoList, uint, QString> reply = *watcher;
+    QDBusPendingReply<TpDBus::CaptchaInfoList, uint, QString> reply = *watcher;
 
     if (reply.isError()) {
         debug().nospace() << "PendingDBusCall failed: " <<
@@ -188,12 +188,12 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     }
 
     debug() << "Got reply to PendingDBusCall";
-    Tp::CaptchaInfoList list = qdbus_cast<Tp::CaptchaInfoList>(reply.argumentAt(0));
+    TpDBus::CaptchaInfoList list = qdbus_cast<TpDBus::CaptchaInfoList>(reply.argumentAt(0));
     int howManyRequired = reply.argumentAt(1).toUInt();
 
     // Compute which captchas are required
-    QList<QPair<Tp::CaptchaInfo,QString> > finalList;
-    foreach (const Tp::CaptchaInfo &info, list) {
+    QList<QPair<TpDBus::CaptchaInfo,QString> > finalList;
+    foreach (const TpDBus::CaptchaInfo &info, list) {
         // First of all, mimetype check
         QString mimeType;
         if (info.availableMIMETypes.isEmpty()) {
@@ -251,10 +251,10 @@ void PendingCaptchas::onGetCaptchasWatcherFinished(QDBusPendingCallWatcher *watc
     // Now, get the infos for all the required captchas in our final list.
     mPriv->captchasLeft = finalList.size();
     mPriv->multipleRequired = howManyRequired > 1 ? true : false;
-    for (QList<QPair<Tp::CaptchaInfo,QString> >::const_iterator i = finalList.constBegin();
+    for (QList<QPair<TpDBus::CaptchaInfo,QString> >::const_iterator i = finalList.constBegin();
             i != finalList.constEnd(); ++i) {
         QString mimeType = (*i).second;
-        Tp::CaptchaInfo captchaInfo = (*i).first;
+        TpDBus::CaptchaInfo captchaInfo = (*i).first;
 
         // If the captcha does not have a mimetype, we can add it straight
         if (mimeType.isEmpty()) {

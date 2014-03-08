@@ -42,7 +42,7 @@ namespace Tp
 
 struct TP_QT_NO_EXPORT PendingContacts::Private
 {
-    Private(PendingContacts *parent, const ContactManagerPtr &manager, const UIntList &handles,
+    Private(PendingContacts *parent, const ContactManagerPtr &manager, const TpDBus::UIntList &handles,
             const Features &features, const Features &missingFeatures,
             const QMap<uint, ContactPtr> &satisfyingContacts)
         : parent(parent),
@@ -112,7 +112,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
 
     // Request type specific parameters
     RequestType requestType;
-    UIntList handles;
+    TpDBus::UIntList handles;
     QStringList addresses;
     QString vcardField;
     QList<ContactPtr> contactsToUpgrade;
@@ -120,7 +120,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
 
     // Results
     QList<ContactPtr> contacts;
-    UIntList invalidHandles;
+    TpDBus::UIntList invalidHandles;
     QStringList validIds;
     QHash<QString, QPair<QString, QString> > invalidIds;
     QStringList validAddresses;
@@ -130,7 +130,7 @@ struct TP_QT_NO_EXPORT PendingContacts::Private
 void PendingContacts::Private::setFinished()
 {
     ConnectionLowlevelPtr connLowlevel = manager->connection()->lowlevel();
-    UIntList handles = invalidHandles;
+    TpDBus::UIntList handles = invalidHandles;
     foreach (uint handle, handles) {
         if (connLowlevel->hasContactId(handle)) {
             satisfyingContacts.insert(handle, manager->ensureContact(handle,
@@ -173,7 +173,7 @@ bool PendingContacts::Private::checkRequestTypeAndState(const char *methodName,
  */
 
 PendingContacts::PendingContacts(const ContactManagerPtr &manager,
-        const UIntList &handles,
+        const TpDBus::UIntList &handles,
         const Features &features,
         const Features &missingFeatures,
         const QStringList &interfaces,
@@ -280,7 +280,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
         return;
     }
 
-    UIntList handles;
+    TpDBus::UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles.push_back(contact->handle());
     }
@@ -314,7 +314,7 @@ bool PendingContacts::isForHandles() const
     return mPriv->requestType == ForHandles;
 }
 
-UIntList PendingContacts::handles() const
+TpDBus::UIntList PendingContacts::handles() const
 {
     if (!isForHandles()) {
         warning() << "Tried to get handles from" << this << "which is not for handles!";
@@ -402,10 +402,10 @@ QList<ContactPtr> PendingContacts::contacts() const
     return mPriv->contacts;
 }
 
-UIntList PendingContacts::invalidHandles() const
+TpDBus::UIntList PendingContacts::invalidHandles() const
 {
     if (!mPriv->checkRequestTypeAndState("invalidHandles", "handles", ForHandles)) {
-        return UIntList();
+        return TpDBus::UIntList();
     }
 
     return mPriv->invalidHandles;
@@ -477,8 +477,8 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
         return;
     }
 
-    UIntList validHandles = pendingAttributes->validHandles();
-    ContactAttributesMap attributes = pendingAttributes->attributes();
+    TpDBus::UIntList validHandles = pendingAttributes->validHandles();
+    TpDBus::ContactAttributesMap attributes = pendingAttributes->attributes();
 
     foreach (uint handle, mPriv->handles) {
         if (!mPriv->satisfyingContacts.contains(handle)) {
@@ -510,8 +510,8 @@ void PendingContacts::onAddressingGetContactsFinished(PendingOperation *operatio
     }
 
     ConnectionPtr conn = mPriv->manager->connection();
-    ContactAttributesMap attributes = pa->attributes();
-    UIntList handles = attributes.keys();
+    TpDBus::ContactAttributesMap attributes = pa->attributes();
+    TpDBus::UIntList handles = attributes.keys();
 
     foreach (uint handle, handles) {
         QVariantMap handleAttributes = attributes[handle];
@@ -533,8 +533,8 @@ void PendingContacts::onGetContactsByIDFinished(Tp::PendingOperation *operation)
     }
 
     ConnectionPtr conn = mPriv->manager->connection();
-    ContactAttributesMap attributes = pa->attributes();
-    UIntList handles = attributes.keys();
+    TpDBus::ContactAttributesMap attributes = pa->attributes();
+    TpDBus::UIntList handles = attributes.keys();
 
     foreach (uint handle, handles) {
         QVariantMap handleAttributes = attributes[handle];
@@ -620,10 +620,10 @@ PendingAddressingGetContacts::~PendingAddressingGetContacts()
 
 void PendingAddressingGetContacts::onGetContactsFinished(QDBusPendingCallWatcher* watcher)
 {
-    QDBusPendingReply<AddressingNormalizationMap, ContactAttributesMap> reply = *watcher;
+    QDBusPendingReply<TpDBus::AddressingNormalizationMap, TpDBus::ContactAttributesMap> reply = *watcher;
 
     if (!reply.isError()) {
-        AddressingNormalizationMap requested = reply.argumentAt<0>();
+        TpDBus::AddressingNormalizationMap requested = reply.argumentAt<0>();
 
         mValidHandles = requested.values();
         mValidAddresses = requested.keys();

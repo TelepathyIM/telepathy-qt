@@ -73,7 +73,7 @@ public:
     AccountPtr account() const;
     QDateTime userActionTime() const;
     QString preferredHandler() const;
-    QualifiedPropertyValueMapList requests() const;
+    TpDBus::QualifiedPropertyValueMapList requests() const;
     ChannelRequestHints hints() const;
 
     QVariantMap immutableProperties() const;

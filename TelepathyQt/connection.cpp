@@ -129,11 +129,11 @@ struct TP_QT_NO_EXPORT Connection::Private
     ContactPtr selfContact;
 
     // FeatureSimplePresence
-    StatusSpecMap simplePresenceStatuses;
+    TpDBus::StatusSpecMap simplePresenceStatuses;
     uint maxPresenceStatusMessageLength;
 
     // FeatureAccountBalance
-    CurrencyAmount accountBalance;
+    TpDBus::CurrencyAmount accountBalance;
 
     QString cmName;
     QString protocolName;
@@ -147,7 +147,7 @@ struct TP_QT_NO_EXPORT ConnectionLowlevel::Private
     }
 
     WeakPtr<Connection> conn;
-    HandleIdentifierMap contactsIds;
+    TpDBus::HandleIdentifierMap contactsIds;
 };
 
 Connection::Private::Private(Connection *parent,
@@ -340,7 +340,7 @@ void Connection::Private::introspectSelfContact(Connection::Private *self)
     self->reintrospectSelfContactRequired = false;
 
     PendingContacts *contacts = self->contactManager->contactsForHandles(
-            UIntList() << self->selfHandle);
+            TpDBus::UIntList() << self->selfHandle);
     self->parent->connect(contacts,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(gotSelfContact(Tp::PendingOperation*)));
@@ -393,8 +393,8 @@ void Connection::Private::introspectBalance(Connection::Private *self)
 
     debug() << "Connecting to Balance.BalanceChanged";
     self->parent->connect(iface,
-            SIGNAL(BalanceChanged(Tp::CurrencyAmount)),
-            SLOT(onBalanceChanged(Tp::CurrencyAmount)));
+            SIGNAL(BalanceChanged(TpDBus::CurrencyAmount)),
+            SLOT(onBalanceChanged(TpDBus::CurrencyAmount)));
 
     debug() << "Retrieving balance";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
@@ -476,7 +476,7 @@ void Connection::Private::setInterfaces(const QStringList &interfaces)
 
 void Connection::Private::invalidateResetCaps(const QString &error, const QString &message)
 {
-    caps.updateRequestableChannelClasses(RequestableChannelClassList());
+    caps.updateRequestableChannelClasses(TpDBus::RequestableChannelClassList());
     parent->invalidate(error, message);
 }
 
@@ -1146,14 +1146,14 @@ uint Connection::selfHandle() const
  *
  * This method requires Connection::FeatureSimplePresence to be ready.
  *
- * \return The allowed statuses as a map from string identifiers to StatusSpec objects.
+ * \return The allowed statuses as a map from string identifiers to TpDBus::StatusSpec objects.
  */
-StatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
+TpDBus::StatusSpecMap ConnectionLowlevel::allowedPresenceStatuses() const
 {
     if (!isValid()) {
         warning() << "ConnectionLowlevel::selfHandle() "
             "called for a connection which is already destroyed";
-        return StatusSpecMap();
+        return TpDBus::StatusSpecMap();
     }
 
     ConnectionPtr conn(connection());
@@ -1271,7 +1271,7 @@ ContactPtr Connection::selfContact() const
  * \return The account balance as #CurrencyAmount.
  * \sa accountBalanceChanged()
  */
-CurrencyAmount Connection::accountBalance() const
+TpDBus::CurrencyAmount Connection::accountBalance() const
 {
     if (!isReady(FeatureAccountBalance)) {
         warning() << "Connection::accountBalance() used before connection "
@@ -1482,7 +1482,7 @@ void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
     if (!reply.isError()) {
         debug() << "Got capabilities";
         mPriv->caps.updateRequestableChannelClasses(
-                qdbus_cast<RequestableChannelClassList>(reply.value().variant()));
+                qdbus_cast<TpDBus::RequestableChannelClassList>(reply.value().variant()));
     } else {
         warning().nospace() << "Getting capabilities failed with " <<
             reply.error().name() << ": " << reply.error().message();
@@ -1501,7 +1501,7 @@ void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
     if (!reply.isError()) {
         QVariantMap props = reply.value();
 
-        mPriv->simplePresenceStatuses = qdbus_cast<StatusSpecMap>(
+        mPriv->simplePresenceStatuses = qdbus_cast<TpDBus::StatusSpecMap>(
                 props[QLatin1String("Statuses")]);
         mPriv->maxPresenceStatusMessageLength = qdbus_cast<uint>(
                 props[QLatin1String("MaximumStatusMessageLength")]);
@@ -1596,7 +1596,7 @@ void Connection::gotBalance(QDBusPendingCallWatcher *watcher)
 
     if (!reply.isError()) {
         debug() << "Got balance";
-        mPriv->accountBalance = qdbus_cast<CurrencyAmount>(reply.value());
+        mPriv->accountBalance = qdbus_cast<TpDBus::CurrencyAmount>(reply.value());
         mPriv->readinessHelper->setIntrospectCompleted(FeatureAccountBalance, true);
     } else {
         warning().nospace() << "Getting balance failed with " <<
@@ -1848,7 +1848,7 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  * \return A PendingContactAttributes which will emit PendingContactAttributes::fininshed
  *         when the contact attributes have been retrieved, or an error occurred.
  */
-PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &handles,
+PendingContactAttributes *ConnectionLowlevel::contactAttributes(const TpDBus::UIntList &handles,
         const QStringList &interfaces, bool reference)
 {
     debug() << "Request for attributes for" << handles.size() << "contacts";
@@ -1884,9 +1884,9 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const UIntList &
     return pending;
 }
 
-void ConnectionLowlevel::injectContactIds(const HandleIdentifierMap &contactIds)
+void ConnectionLowlevel::injectContactIds(const TpDBus::HandleIdentifierMap &contactIds)
 {
-    for (HandleIdentifierMap::const_iterator i = contactIds.constBegin();
+    for (TpDBus::HandleIdentifierMap::const_iterator i = contactIds.constBegin();
             i != contactIds.constEnd(); ++i) {
         uint handle = i.key();
         QString id = i.value();
@@ -1906,7 +1906,7 @@ void ConnectionLowlevel::injectContactIds(const HandleIdentifierMap &contactIds)
 
 void ConnectionLowlevel::injectContactId(uint handle, const QString &contactId)
 {
-    HandleIdentifierMap contactIds;
+    TpDBus::HandleIdentifierMap contactIds;
     contactIds.insert(handle, contactId);
     injectContactIds(contactIds);
 }
@@ -1980,7 +1980,7 @@ void Connection::onSelfContactChanged(uint handle, const QString &selfID)
     // correct handle.
 }
 
-void Connection::onBalanceChanged(const Tp::CurrencyAmount &value)
+void Connection::onBalanceChanged(const TpDBus::CurrencyAmount &value)
 {
     mPriv->accountBalance = value;
     emit accountBalanceChanged(value);
@@ -2104,7 +2104,7 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
  */
 
 /**
- * \fn void Connection::accountBalanceChanged(const Tp::CurrencyAmount &accountBalance)
+ * \fn void Connection::accountBalanceChanged(const TpDBus::CurrencyAmount &accountBalance)
  *
  * Emitted when the value of accountBalance() changes.
  *

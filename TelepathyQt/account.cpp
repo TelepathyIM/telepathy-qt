@@ -64,7 +64,7 @@ namespace
 struct PresenceStatusInfo
 {
     QString name;
-    Tp::StatusSpec spec;
+    TpDBus::StatusSpec spec;
 };
 
 Tp::ConnectionPresenceType presenceTypeForStatus(const QString &status, bool &maySetOnSelf)
@@ -98,7 +98,7 @@ Tp::ConnectionPresenceType presenceTypeForStatus(const QString &status, bool &ma
 
 Tp::PresenceSpec presenceSpecForStatus(const QString &status, bool canHaveStatusMessage)
 {
-    Tp::StatusSpec spec;
+    TpDBus::StatusSpec spec;
     spec.type = presenceTypeForStatus(status, spec.maySetOnSelf);
     spec.canHaveMessage = canHaveStatusMessage;
     return Tp::PresenceSpec(status, spec);
@@ -376,7 +376,7 @@ QVariantMap conferenceCommonRequest(const QString &channelType, Tp::HandleType t
                        (uint) targetHandleType);
     }
 
-    Tp::ObjectPathList objectPaths;
+    TpDBus::ObjectPathList objectPaths;
     foreach (const Tp::ChannelPtr &channel, channels) {
         objectPaths << QDBusObjectPath(channel->objectPath());
     }
@@ -402,7 +402,7 @@ QVariantMap conferenceRequest(const QString &channelType, Tp::HandleType targetH
 {
     QVariantMap request = conferenceCommonRequest(channelType, targetHandleType, channels);
     if (!initialInviteeContacts.isEmpty()) {
-        Tp::UIntList handles;
+        TpDBus::UIntList handles;
         foreach (const Tp::ContactPtr &contact, initialInviteeContacts) {
             if (!contact) {
                 continue;
@@ -531,7 +531,7 @@ struct TP_QT_NO_EXPORT Account::Private
     ConnectionPtr connection;
     bool mayFinishCore, coreFinished;
     QString normalizedName;
-    Avatar avatar;
+    TpDBus::Avatar avatar;
     ConnectionManagerPtr cm;
     ConnectionStatus connectionStatus;
     ConnectionStatusReason connectionStatusReason;
@@ -1366,10 +1366,10 @@ AvatarSpec Account::avatarRequirements() const
  *
  * This method requires Account::FeatureAvatar to be ready.
  *
- * \return The avatar as an Avatar object.
+ * \return The avatar as an TpDBus::Avatar object.
  * \sa avatarChanged(), setAvatar()
  */
-const Avatar &Account::avatar() const
+const TpDBus::Avatar &Account::avatar() const
 {
     if (!isReady(Features() << FeatureAvatar)) {
         warning() << "Trying to retrieve avatar from account, but "
@@ -1390,7 +1390,7 @@ const Avatar &Account::avatar() const
  *         when the request has been made.
  * \sa avatarChanged(), avatar(), avatarRequirements()
  */
-PendingOperation *Account::setAvatar(const Avatar &avatar)
+PendingOperation *Account::setAvatar(const TpDBus::Avatar &avatar)
 {
     if (!interfaces().contains(TP_QT_IFACE_ACCOUNT_INTERFACE_AVATAR1)) {
         return new PendingFailure(
@@ -1761,10 +1761,10 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
     if (mPriv->connection &&
         mPriv->connection->status() == ConnectionStatusConnected &&
         mPriv->connection->actualFeatures().contains(Connection::FeatureSimplePresence)) {
-        StatusSpecMap connectionAllowedPresences =
+        TpDBus::StatusSpecMap connectionAllowedPresences =
             mPriv->connection->lowlevel()->allowedPresenceStatuses();
-        StatusSpecMap::const_iterator i = connectionAllowedPresences.constBegin();
-        StatusSpecMap::const_iterator end = connectionAllowedPresences.constEnd();
+        TpDBus::StatusSpecMap::const_iterator i = connectionAllowedPresences.constBegin();
+        TpDBus::StatusSpecMap::const_iterator end = connectionAllowedPresences.constEnd();
         for (; i != end; ++i) {
             PresenceSpec presence = PresenceSpec(i.key(), i.value());
             specMap.insert(i.key(), presence);
@@ -1792,7 +1792,7 @@ PresenceSpecList Account::allowedPresenceStatuses(bool includeAllStatuses) const
                     // canHaveStatusMessage if needed
                     PresenceSpec presence = specMap.value(prStatus);
                     if (presence.canHaveStatusMessage() != prPresence.canHaveStatusMessage()) {
-                        StatusSpec spec;
+                        TpDBus::StatusSpec spec;
                         spec.type = presence.presence().type();
                         spec.maySetOnSelf = presence.maySetOnSelf();
                         spec.canHaveMessage = prPresence.canHaveStatusMessage();
@@ -3701,9 +3701,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("AutomaticPresence")) &&
-        automaticPresence.barePresence() != qdbus_cast<SimplePresence>(
+        automaticPresence.barePresence() != qdbus_cast<TpDBus::SimplePresence>(
                 props[QLatin1String("AutomaticPresence")])) {
-        automaticPresence = Presence(qdbus_cast<SimplePresence>(
+        automaticPresence = Presence(qdbus_cast<TpDBus::SimplePresence>(
                 props[QLatin1String("AutomaticPresence")]));
         debug() << " Automatic Presence:" << automaticPresence.type() <<
             "-" << automaticPresence.status();
@@ -3712,9 +3712,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("CurrentPresence")) &&
-        currentPresence.barePresence() != qdbus_cast<SimplePresence>(
+        currentPresence.barePresence() != qdbus_cast<TpDBus::SimplePresence>(
                 props[QLatin1String("CurrentPresence")])) {
-        currentPresence = Presence(qdbus_cast<SimplePresence>(
+        currentPresence = Presence(qdbus_cast<TpDBus::SimplePresence>(
                 props[QLatin1String("CurrentPresence")]));
         debug() << " Current Presence:" << currentPresence.type() <<
             "-" << currentPresence.status();
@@ -3725,9 +3725,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("RequestedPresence")) &&
-        requestedPresence.barePresence() != qdbus_cast<SimplePresence>(
+        requestedPresence.barePresence() != qdbus_cast<TpDBus::SimplePresence>(
                 props[QLatin1String("RequestedPresence")])) {
-        requestedPresence = Presence(qdbus_cast<SimplePresence>(
+        requestedPresence = Presence(qdbus_cast<TpDBus::SimplePresence>(
                 props[QLatin1String("RequestedPresence")]));
         debug() << " Requested Presence:" << requestedPresence.type() <<
             "-" << requestedPresence.status();
@@ -3932,7 +3932,7 @@ void Account::gotAvatar(QDBusPendingCallWatcher *watcher)
 
     if (!reply.isError()) {
         debug() << "Got reply to GetAvatar(Account)";
-        mPriv->avatar = qdbus_cast<Avatar>(reply);
+        mPriv->avatar = qdbus_cast<TpDBus::Avatar>(reply);
 
         // It could be in either of actual or missing from the first time in corner cases like the
         // object going away, so let's be prepared for both (only checking for actualFeatures here
@@ -4221,7 +4221,7 @@ void Account::onConnectionBuilt(PendingOperation *op)
  */
 
 /**
- * \fn void Account::avatarChanged(const Tp::Avatar &avatar)
+ * \fn void Account::avatarChanged(const TpDBus::Avatar &avatar)
  *
  * Emitted when the value of avatar() changes.
  *

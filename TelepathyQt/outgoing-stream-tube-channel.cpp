@@ -152,7 +152,7 @@ void QueuedContactFactory::processNextRequest()
             this, SLOT(onPendingContactsFinished(Tp::PendingOperation*)));
 }
 
-QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList &handles)
+QUuid QueuedContactFactory::appendNewRequest(const TpDBus::UIntList &handles)
 {
     // Create a new entry
     Entry entry;
@@ -355,7 +355,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
         setAccessControl(accessControl);
         setIpAddress(qMakePair<QHostAddress, quint16>(hostAddress, port));
 
-        SocketAddressIPv4 addr;
+        TpDBus::SocketAddressIPv4 addr;
         addr.address = hostAddress.toString();
         addr.port = port;
 
@@ -391,7 +391,7 @@ PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
         setAccessControl(accessControl);
         setIpAddress(qMakePair<QHostAddress, quint16>(hostAddress, port));
 
-        SocketAddressIPv6 addr;
+        TpDBus::SocketAddressIPv6 addr;
         addr.address = hostAddress.toString();
         addr.port = port;
 
@@ -723,7 +723,7 @@ void OutgoingStreamTubeChannel::onNewRemoteConnection(
         uint connectionId)
 {
     // Request the handles from our queued contact factory
-    QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(UIntList() << contactId);
+    QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(TpDBus::UIntList() << contactId);
 
     // Add a pending connection
     mPriv->pendingNewConnections.insert(uuid, qMakePair(connectionId, parameter));
@@ -791,13 +791,13 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
     if (addressType() == SocketAddressTypeIPv4) {
         // Try a qdbus_cast to our address struct: we're shielded from crashes
         // thanks to our specification
-        SocketAddressIPv4 addr =
-                qdbus_cast<Tp::SocketAddressIPv4>(connectionProperties.second.variant());
+        TpDBus::SocketAddressIPv4 addr =
+                qdbus_cast<TpDBus::SocketAddressIPv4>(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
     } else if (addressType() == SocketAddressTypeIPv6) {
-        SocketAddressIPv6 addr =
-                qdbus_cast<Tp::SocketAddressIPv6>(connectionProperties.second.variant());
+        TpDBus::SocketAddressIPv6 addr =
+                qdbus_cast<TpDBus::SocketAddressIPv6>(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
     } else if (addressType() == SocketAddressTypeUnix ||
@@ -824,7 +824,7 @@ void OutgoingStreamTubeChannel::onConnectionClosed(uint connectionId,
 {
     // Insert a fake request to our queued contact factory to make the close events properly ordered
     // with new connection events
-    QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(UIntList());
+    QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(TpDBus::UIntList());
 
     // Add a pending connection close
     mPriv->pendingClosedConnections.insert(uuid,

@@ -212,14 +212,14 @@ PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         // IPv4 or IPv6?
         if (hostAddress.protocol() == QAbstractSocket::IPv4Protocol) {
             // IPv4 case
-            SocketAddressIPv4 addr;
+            TpDBus::SocketAddressIPv4 addr;
             addr.address = hostAddress.toString();
             addr.port = allowedPort;
 
             controlParameter = QVariant::fromValue(addr);
         } else if (hostAddress.protocol() == QAbstractSocket::IPv6Protocol) {
             // IPv6 case
-            SocketAddressIPv6 addr;
+            TpDBus::SocketAddressIPv6 addr;
             addr.address = hostAddress.toString();
             addr.port = allowedPort;
 

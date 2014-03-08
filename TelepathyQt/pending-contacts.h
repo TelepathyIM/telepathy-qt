@@ -55,7 +55,7 @@ public:
     Features features() const;
 
     bool isForHandles() const;
-    UIntList handles() const;
+    TpDBus::UIntList handles() const;
 
     bool isForIdentifiers() const;
     QStringList identifiers() const;
@@ -71,7 +71,7 @@ public:
     QList<ContactPtr> contactsToUpgrade() const;
 
     QList<ContactPtr> contacts() const;
-    UIntList invalidHandles() const;
+    TpDBus::UIntList invalidHandles() const;
     QStringList validIdentifiers() const;
     QHash<QString, QPair<QString, QString> > invalidIdentifiers() const;
     QStringList validVCardAddresses() const;
@@ -98,7 +98,7 @@ private:
     };
 
     // If errorName is non-empty, these will fail instantly
-    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const UIntList &handles,
+    TP_QT_NO_EXPORT PendingContacts(const ContactManagerPtr &manager, const TpDBus::UIntList &handles,
             const Features &features,
             const Features &missingFeatures,
             const QStringList &interfaces,
