@@ -1533,8 +1533,8 @@ void ContactManager::ensureTracking(const Feature &feature)
             conn->interface<Client::ConnectionInterfaceContactInfo1Interface>();
 
         connect(contactInfo1Interface,
-                SIGNAL(ContactInfoChanged(uint,Tp::ContactInfoFieldList)),
-                SLOT(onContactInfoChanged(uint,Tp::ContactInfoFieldList)));
+                SIGNAL(ContactInfoChanged(uint,TpDBus::ContactInfoFieldList)),
+                SLOT(onContactInfoChanged(uint,TpDBus::ContactInfoFieldList)));
     } else if (feature == Contact::FeatureLocation) {
         Client::ConnectionInterfaceLocation1Interface *location1Interface =
             conn->interface<Client::ConnectionInterfaceLocation1Interface>();

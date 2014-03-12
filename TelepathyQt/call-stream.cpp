@@ -128,11 +128,11 @@ void CallStream::Private::introspectMainProperties(CallStream::Private *self)
     CallStream *parent = self->parent;
 
     parent->connect(self->streamInterface,
-            SIGNAL(LocalSendingStateChanged(uint,Tp::CallStateReason)),
-            SLOT(onLocalSendingStateChanged(uint,Tp::CallStateReason)));
+            SIGNAL(LocalSendingStateChanged(uint,TpDBus::CallStateReason)),
+            SLOT(onLocalSendingStateChanged(uint,TpDBus::CallStateReason)));
     parent->connect(self->streamInterface,
-            SIGNAL(RemoteMembersChanged(TpDBus::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
-            SLOT(onRemoteMembersChanged(TpDBus::ContactSendingStateMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
+            SIGNAL(RemoteMembersChanged(TpDBus::ContactSendingStateMap,TpDBus::HandleIdentifierMap,TpDBus::UIntList,TpDBus::CallStateReason)),
+            SLOT(onRemoteMembersChanged(TpDBus::ContactSendingStateMap,TpDBus::HandleIdentifierMap,TpDBus::UIntList,TpDBus::CallStateReason)));
 
     parent->connect(self->streamInterface->requestAllProperties(),
             SIGNAL(finished(Tp::PendingOperation*)),

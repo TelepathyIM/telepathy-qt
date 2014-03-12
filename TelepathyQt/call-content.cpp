@@ -97,8 +97,8 @@ void CallContent::Private::introspectMainProperties(CallContent::Private *self)
             SIGNAL(StreamsAdded(TpDBus::ObjectPathList)),
             SLOT(onStreamsAdded(TpDBus::ObjectPathList)));
     parent->connect(self->contentInterface,
-            SIGNAL(StreamsRemoved(TpDBus::ObjectPathList,Tp::CallStateReason)),
-            SLOT(onStreamsRemoved(TpDBus::ObjectPathList,Tp::CallStateReason)));
+            SIGNAL(StreamsRemoved(TpDBus::ObjectPathList,TpDBus::CallStateReason)),
+            SLOT(onStreamsRemoved(TpDBus::ObjectPathList,TpDBus::CallStateReason)));
 
     parent->connect(self->contentInterface->requestAllProperties(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -503,7 +503,7 @@ void PendingCallContent::gotContent(QDBusPendingCallWatcher *watcher)
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onContentReady(Tp::PendingOperation*)));
     connect(channel.data(),
-            SIGNAL(contentRemoved(Tp::CallContentPtr,Tp::CallStateReason)),
+            SIGNAL(contentRemoved(Tp::CallContentPtr,TpDBus::CallStateReason)),
             SLOT(onContentRemoved(Tp::CallContentPtr)));
 
     mPriv->content = content;

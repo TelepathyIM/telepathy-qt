@@ -122,8 +122,8 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Pri
 
     // It makes sense only if this is a room, if that's not the case just spit a warning
     if (parent->targetHandleType() == static_cast<uint>(Tp::HandleTypeRoom)) {
-        parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(TpDBus::DBusTubeParticipants,Tp::UIntList)),
-                        parent, SLOT(onDBusNamesChanged(TpDBus::DBusTubeParticipants,Tp::UIntList)));
+        parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(TpDBus::DBusTubeParticipants,TpDBus::UIntList)),
+                        parent, SLOT(onDBusNamesChanged(TpDBus::DBusTubeParticipants,TpDBus::UIntList)));
 
         // Request the current DBusNames property
         connect(dbusTubeInterface->requestPropertyDBusNames(), SIGNAL(finished(Tp::PendingOperation*)),

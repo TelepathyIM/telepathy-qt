@@ -415,10 +415,10 @@ void Channel::Private::introspectGroup()
 
     parent->connect(group,
                     SIGNAL(MembersChanged(TpDBus::UIntList,
-                            TpDBus::UIntList,Tp::UIntList,
+                            TpDBus::UIntList,TpDBus::UIntList,
                             TpDBus::UIntList,QVariantMap)),
                     SLOT(onMembersChanged(TpDBus::UIntList,
-                            TpDBus::UIntList,Tp::UIntList,
+                            TpDBus::UIntList,TpDBus::UIntList,
                             TpDBus::UIntList,QVariantMap)));
 
     parent->connect(group,

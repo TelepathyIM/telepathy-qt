@@ -234,8 +234,8 @@ void CallChannel::Private::introspectCallState(CallChannel::Private *self)
     CallChannel *parent = self->parent;
 
     parent->connect(self->callInterface,
-            SIGNAL(CallStateChanged(uint,uint,Tp::CallStateReason,QVariantMap)),
-            SLOT(onCallStateChanged(uint,uint,Tp::CallStateReason,QVariantMap)));
+            SIGNAL(CallStateChanged(uint,uint,TpDBus::CallStateReason,QVariantMap)),
+            SLOT(onCallStateChanged(uint,uint,TpDBus::CallStateReason,QVariantMap)));
 
     parent->connect(self->callInterface->requestAllProperties(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -247,8 +247,8 @@ void CallChannel::Private::introspectCallMembers(CallChannel::Private *self)
     CallChannel *parent = self->parent;
 
     parent->connect(self->callInterface,
-            SIGNAL(CallMembersChanged(TpDBus::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)),
-            SLOT(onCallMembersChanged(TpDBus::CallMemberMap,Tp::HandleIdentifierMap,Tp::UIntList,Tp::CallStateReason)));
+            SIGNAL(CallMembersChanged(TpDBus::CallMemberMap,TpDBus::HandleIdentifierMap,TpDBus::UIntList,TpDBus::CallStateReason)),
+            SLOT(onCallMembersChanged(TpDBus::CallMemberMap,TpDBus::HandleIdentifierMap,TpDBus::UIntList,TpDBus::CallStateReason)));
 
     parent->connect(self->callInterface->requestAllProperties(),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -263,8 +263,8 @@ void CallChannel::Private::introspectContents(CallChannel::Private *self)
             SIGNAL(ContentAdded(QDBusObjectPath)),
             SLOT(onContentAdded(QDBusObjectPath)));
     parent->connect(self->callInterface,
-            SIGNAL(ContentRemoved(QDBusObjectPath,Tp::CallStateReason)),
-            SLOT(onContentRemoved(QDBusObjectPath,Tp::CallStateReason)));
+            SIGNAL(ContentRemoved(QDBusObjectPath,TpDBus::CallStateReason)),
+            SLOT(onContentRemoved(QDBusObjectPath,TpDBus::CallStateReason)));
 
     parent->connect(self->callInterface->requestPropertyContents(),
             SIGNAL(finished(Tp::PendingOperation*)),

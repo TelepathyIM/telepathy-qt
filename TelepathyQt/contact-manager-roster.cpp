@@ -969,8 +969,8 @@ void ContactManager::Roster::introspectContactBlockingBlockedContacts()
             SLOT(gotContactBlockingBlockedContacts(QDBusPendingCallWatcher*)));
 
     connect(iface,
-            SIGNAL(BlockedContactsChanged(TpDBus::HandleIdentifierMap,Tp::HandleIdentifierMap)),
-            SLOT(onContactBlockingBlockedContactsChanged(TpDBus::HandleIdentifierMap,Tp::HandleIdentifierMap)));
+            SIGNAL(BlockedContactsChanged(TpDBus::HandleIdentifierMap,TpDBus::HandleIdentifierMap)),
+            SLOT(onContactBlockingBlockedContactsChanged(TpDBus::HandleIdentifierMap,TpDBus::HandleIdentifierMap)));
 }
 
 void ContactManager::Roster::introspectContactList()
@@ -986,11 +986,11 @@ void ContactManager::Roster::introspectContactList()
             SIGNAL(ContactListStateChanged(uint)),
             SLOT(onContactListStateChanged(uint)));
     connect(iface,
-            SIGNAL(ContactsChangedWithID(TpDBus::ContactSubscriptionMap,Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)),
-            SLOT(onContactListContactsChangedWithId(TpDBus::ContactSubscriptionMap,Tp::HandleIdentifierMap,Tp::HandleIdentifierMap)));
+            SIGNAL(ContactsChangedWithID(TpDBus::ContactSubscriptionMap,TpDBus::HandleIdentifierMap,TpDBus::HandleIdentifierMap)),
+            SLOT(onContactListContactsChangedWithId(TpDBus::ContactSubscriptionMap,TpDBus::HandleIdentifierMap,TpDBus::HandleIdentifierMap)));
     connect(iface,
-            SIGNAL(ContactsChanged(TpDBus::ContactSubscriptionMap,Tp::UIntList)),
-            SLOT(onContactListContactsChanged(TpDBus::ContactSubscriptionMap,Tp::UIntList)));
+            SIGNAL(ContactsChanged(TpDBus::ContactSubscriptionMap,TpDBus::UIntList)),
+            SLOT(onContactListContactsChanged(TpDBus::ContactSubscriptionMap,TpDBus::UIntList)));
 
     PendingVariantMap *pvm = iface->requestAllProperties();
     connect(pvm,
