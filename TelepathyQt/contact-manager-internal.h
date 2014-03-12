@@ -100,10 +100,8 @@ private Q_SLOTS:
     void gotContactListContacts(QDBusPendingCallWatcher *watcher);
     void setStateSuccess();
     void onContactListStateChanged(uint state);
-    void onContactListContactsChangedWithId(const TpDBus::ContactSubscriptionMap &changes,
-            const TpDBus::HandleIdentifierMap &ids, const TpDBus::HandleIdentifierMap &removals);
     void onContactListContactsChanged(const TpDBus::ContactSubscriptionMap &changes,
-            const TpDBus::UIntList &removals);
+            const TpDBus::HandleIdentifierMap &ids, const TpDBus::HandleIdentifierMap &removals);
 
     void onContactListBlockedContactsConstructed(Tp::PendingOperation *op);
     void onContactListNewContactsConstructed(Tp::PendingOperation *op);
@@ -158,7 +156,7 @@ private:
     bool canChangeContactList;
     bool contactListRequestUsesMessage;
     bool gotContactListInitialContacts;
-    bool gotContactListContactsChangedWithId;
+    bool gotContactListContactsChanged;
     bool groupsReintrospectionRequired;
     QSet<QString> cachedAllKnownGroups;
     bool contactListGroupPropertiesReceived;

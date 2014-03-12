@@ -52,7 +52,7 @@ ContactManager::Roster::Roster(ContactManager *contactManager)
       canChangeContactList(false),
       contactListRequestUsesMessage(false),
       gotContactListInitialContacts(false),
-      gotContactListContactsChangedWithId(false),
+      gotContactListContactsChanged(false),
       groupsReintrospectionRequired(false),
       contactListGroupPropertiesReceived(false),
       processingContactListChanges(false),
@@ -80,6 +80,8 @@ PendingOperation *ContactManager::Roster::introspect()
             debug() << "Connection.ContactBlocking found. using it";
             hasContactBlockingInterface = true;
             introspectContactBlocking();
+        } else {
+            introspectContactList();
         }
     }
 
@@ -632,13 +634,13 @@ void ContactManager::Roster::onContactListStateChanged(uint state)
     }
 }
 
-void ContactManager::Roster::onContactListContactsChangedWithId(const TpDBus::ContactSubscriptionMap &changes,
+void ContactManager::Roster::onContactListContactsChanged(const TpDBus::ContactSubscriptionMap &changes,
         const TpDBus::HandleIdentifierMap &ids, const TpDBus::HandleIdentifierMap &removals)
 {
-    debug() << "Got ContactList.ContactsChangedWithID with" << changes.size() <<
+    debug() << "Got ContactList.ContactsChanged with" << changes.size() <<
         "changes and" << removals.size() << "removals";
 
-    gotContactListContactsChangedWithId = true;
+    gotContactListContactsChanged = true;
 
     if (!gotContactListInitialContacts) {
         debug() << "Ignoring ContactList changes until initial contacts are retrieved";
@@ -649,31 +651,6 @@ void ContactManager::Roster::onContactListContactsChangedWithId(const TpDBus::Co
     conn->lowlevel()->injectContactIds(ids);
 
     contactListUpdatesQueue.enqueue(UpdateInfo(changes, ids, removals));
-    contactListChangesQueue.enqueue(&ContactManager::Roster::processContactListUpdates);
-    processContactListChanges();
-}
-
-void ContactManager::Roster::onContactListContactsChanged(const TpDBus::ContactSubscriptionMap &changes,
-        const TpDBus::UIntList &removals)
-{
-    if (gotContactListContactsChangedWithId) {
-        return;
-    }
-
-    debug() << "Got ContactList.ContactsChanged with" << changes.size() <<
-        "changes and" << removals.size() << "removals";
-
-    if (!gotContactListInitialContacts) {
-        debug() << "Ignoring ContactList changes until initial contacts are retrieved";
-        return;
-    }
-
-    TpDBus::HandleIdentifierMap removalsMap;
-    foreach (uint handle, removals) {
-        removalsMap.insert(handle, QString());
-    }
-
-    contactListUpdatesQueue.enqueue(UpdateInfo(changes, TpDBus::HandleIdentifierMap(), removalsMap));
     contactListChangesQueue.enqueue(&ContactManager::Roster::processContactListUpdates);
     processContactListChanges();
 }
@@ -986,11 +963,8 @@ void ContactManager::Roster::introspectContactList()
             SIGNAL(ContactListStateChanged(uint)),
             SLOT(onContactListStateChanged(uint)));
     connect(iface,
-            SIGNAL(ContactsChangedWithID(TpDBus::ContactSubscriptionMap,TpDBus::HandleIdentifierMap,TpDBus::HandleIdentifierMap)),
-            SLOT(onContactListContactsChangedWithId(TpDBus::ContactSubscriptionMap,TpDBus::HandleIdentifierMap,TpDBus::HandleIdentifierMap)));
-    connect(iface,
-            SIGNAL(ContactsChanged(TpDBus::ContactSubscriptionMap,TpDBus::UIntList)),
-            SLOT(onContactListContactsChanged(TpDBus::ContactSubscriptionMap,TpDBus::UIntList)));
+            SIGNAL(ContactsChanged(TpDBus::ContactSubscriptionMap,TpDBus::HandleIdentifierMap,TpDBus::HandleIdentifierMap)),
+            SLOT(onContactListContactsChanged(TpDBus::ContactSubscriptionMap,TpDBus::HandleIdentifierMap,TpDBus::HandleIdentifierMap)));
 
     PendingVariantMap *pvm = iface->requestAllProperties();
     connect(pvm,
@@ -1019,7 +993,7 @@ void ContactManager::Roster::introspectContactListContacts()
     interfaces.insert(TP_QT_IFACE_CONNECTION_INTERFACE_CONTACT_LIST1);
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            iface->GetContactListAttributes(interfaces.toList(), true), contactManager);
+            iface->GetContactListAttributes(interfaces.toList()), contactManager);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotContactListContacts(QDBusPendingCallWatcher*)));
