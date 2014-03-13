@@ -223,7 +223,7 @@ Connection::Private::Private(Connection *parent,
     ReadinessHelper::Introspectable introspectableRosterGroups(
         QSet<uint>() << ConnectionStatusConnected,                                                  // makesSenseForStatuses
         Features() << FeatureRoster,                                                                // dependsOnFeatures (core)
-        QStringList() << TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS,          // dependsOnInterfaces
+        QStringList(),                                                                              // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectRosterGroups,
         this);
     introspectables[FeatureRosterGroups] = introspectableRosterGroups;
@@ -323,7 +323,7 @@ void Connection::Private::introspectCapabilities()
     debug() << "Retrieving capabilities";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->Get(
-                TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS,
+                TP_QT_IFACE_CONNECTION,
                 QLatin1String("RequestableChannelClasses")), parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -1409,11 +1409,7 @@ void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
         mPriv->selfHandle = qdbus_cast<uint>(
                 props[QLatin1String("SelfHandle")]);
     }
-
-    if (hasInterface(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
-        mPriv->introspectMainQueue.enqueue(
-                &Private::introspectCapabilities);
-    }
+    mPriv->introspectMainQueue.enqueue(&Private::introspectCapabilities);
 
     mPriv->continueMainIntrospection();
 
@@ -1675,13 +1671,6 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request,
                 QLatin1String("Connection not yet connected"));
     }
 
-    if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
-        warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(conn,
-                TP_QT_ERROR_NOT_IMPLEMENTED,
-                QLatin1String("Connection does not support Requests Interface"));
-    }
-
     if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
         return new PendingChannel(conn,
                 TP_QT_ERROR_INVALID_ARGUMENT,
@@ -1744,13 +1733,6 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request,
         return new PendingChannel(conn,
                 TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("Connection not yet connected"));
-    }
-
-    if (!conn->interfaces().contains(TP_QT_IFACE_CONNECTION_INTERFACE_REQUESTS)) {
-        warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(conn,
-                TP_QT_ERROR_NOT_IMPLEMENTED,
-                QLatin1String("Connection does not support Requests Interface"));
     }
 
     if (!request.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))) {
