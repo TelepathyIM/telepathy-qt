@@ -64,11 +64,11 @@
           to the Observer.</p>
       </tp:rationale>
 
-      <p>Whenever a collection of new channels is signalled, the channel
+      <p>Whenever a new channel is signalled, the channel
         dispatcher will notify all running or activatable observers whose
         <tp:member-ref>ObserverChannelFilter</tp:member-ref> property
         (possibly as cached in the .client file) indicates that they are
-        interested in some of the channels.</p>
+        interested in that channel.</p>
 
       <p>Observers are activated for all channels in which they have
         registered an interest - incoming, outgoing or automatically created -
@@ -82,7 +82,7 @@
         instance, a Text logger needs to wait until pending messages have been
         downloaded), the channel dispatcher must wait (up to some timeout) for
         all observers to return from
-        <tp:member-ref>ObserveChannels</tp:member-ref> before letting anything
+        <tp:member-ref>ObserveChannel</tp:member-ref> before letting anything
         destructive happen. Destructive things (e.g. acknowledging messages)
         are defined to be done by handlers, therefore HandleWith and Claim
         aren't allowed to succeed until all observers are ready.</p>
@@ -93,13 +93,13 @@
         be implemented as observers by following these steps:</p>
 
       <ol>
-        <li><tp:member-ref>ObserveChannels</tp:member-ref>() is called
+        <li><tp:member-ref>ObserveChannel</tp:member-ref>() is called
           on the observer.</li>
         <li>The observer calls <tp:dbus-ref
           namespace="imt1.ChannelDispatchOperation">Claim</tp:dbus-ref>()
           on the CDO.</li>
         <li>The observer then returns from
-          <tp:member-ref>ObserveChannels</tp:member-ref>().</li>
+          <tp:member-ref>ObserveChannel</tp:member-ref>().</li>
         <li><tp:dbus-ref
           namespace="imt1.ChannelDispatchOperation">Claim</tp:dbus-ref>
           will return successfully if the channels were successfully
@@ -109,7 +109,7 @@
       <p>Non-interactive approvers implemented as observers SHOULD
         also set <tp:member-ref>DelayApprovers</tp:member-ref> to TRUE
         so that other Approvers are not called on until all observers
-        return from <tp:member-ref>ObserveChannels</tp:member-ref>.
+        return from <tp:member-ref>ObserveChannel</tp:member-ref>.
         This gives non-interactive approvers a chance to claim the
         channels before Approvers are called.</p>
     </tp:docstring>
@@ -119,11 +119,11 @@
       type="aa{sv}" access="read" tp:type="Channel_Class[]">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A specification of the channels in which this observer is
-          interested. The <tp:member-ref>ObserveChannels</tp:member-ref> method
-          should be called by the channel dispatcher whenever any of the new
-          channels in a <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
-          signal match this description.</p>
+          interested. The <tp:member-ref>ObserveChannel</tp:member-ref> method
+          should be called by the channel dispatcher whenever the new
+          channel in a <tp:dbus-ref
+            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannel</tp:dbus-ref>
+          signal matches this description.</p>
 
         <p>Only certain D-Bus types have useful semantics for matching like this,
           so only certain types are allowed:</p>
@@ -215,14 +215,14 @@ im.telepathy.v1.Channel.Requested b=true
 
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>If true, upon the startup of this observer, <tp:dbus-ref
-        namespace="im.telepathy.v1.Client.Observer">ObserveChannels</tp:dbus-ref>
+        namespace="im.telepathy.v1.Client.Observer">ObserveChannel</tp:dbus-ref>
         will be called for every already existing channel matching
         its <tp:dbus-ref
         namespace="im.telepathy.v1.Client.Observer">ObserverChannelFilter</tp:dbus-ref></p>
 
         <p>When an activatable client having this property disappears from the
           bus and there are channels matching its ObserverChannelFilter,
-          ObserveChannels will be called immediately to reactivate it
+          ObserveChannel will be called immediately to reactivate it
           again. Such clients should specify this property in their
           <tt>.client</tt> file as follows:</p>
 
@@ -245,27 +245,18 @@ Recover=true
             currently active at the time that it starts up.</p>
         </tp:rationale>
 
-        <p>When the ObserveChannels method is called due to observer recovery,
+        <p>When the ObserveChannel method is called due to observer recovery,
         the <var>Observer_Info</var> dictionary will contain one extra item
         mapping the key <code>"recovering"</code> to <code>True</code>.</p>
       </tp:docstring>
     </property>
 
-    <method name="ObserveChannels" tp:name-for-bindings="Observe_Channels">
+    <method name="ObserveChannel" tp:name-for-bindings="Observe_Channel">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Called by the channel dispatcher when channels in which the
+        <p>Called by the channel dispatcher when a channel in which the
           observer has registered an interest are announced in a <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannel</tp:dbus-ref>
           signal.</p>
-
-        <p>If the same NewChannels signal announces some channels that match
-          the filter, and some that do not, then only a subset of the channels
-          (those that do match the filter) are passed to this method.</p>
-
-        <p>If the channel dispatcher will split up the channels from a single
-          NewChannels signal and dispatch them separately (for instance
-          because no installed Handler can handle all of them), it will call
-          ObserveChannels several times.</p>
 
         <p>The observer MUST NOT return from this method call until it is ready
           for a handler for the channel to run (which may change the channel's
@@ -274,9 +265,9 @@ Recover=true
         <tp:rationale>
           <p>The channel dispatcher must wait for observers to start up,
             to avoid the following race: text channel logger (observer) gets
-            ObserveChannels, text channel handler gets
+            ObserveChannel, text channel handler gets
             <tp:dbus-ref
-              namespace="im.telepathy.v1.Client.Handler">HandleChannels</tp:dbus-ref>
+              namespace="im.telepathy.v1.Client.Handler">HandleChannel</tp:dbus-ref>
             channel handler starts up faster and acknowledges messages,
             logger never sees those messages.</p>
         </tp:rationale>
@@ -297,7 +288,7 @@ Recover=true
         <tp:docstring>
           The
           <tp:dbus-ref namespace="im.telepathy.v1">Account</tp:dbus-ref>
-          with which the channels are associated. The
+          with which the channel is associated. The
           well-known bus name to use is that of the
           <tp:dbus-ref namespace="im.telepathy.v1">AccountManager</tp:dbus-ref>.
         </tp:docstring>
@@ -307,20 +298,25 @@ Recover=true
         <tp:docstring>
           The
           <tp:dbus-ref namespace="im.telepathy.v1">Connection</tp:dbus-ref>
-          with which the channels are associated. The
+          with which the channel is associated. The
           well-known bus name to use can be derived from this object
           path by removing the leading '/' and replacing all subsequent
           '/' by '.'.
         </tp:docstring>
       </arg>
 
-      <arg name="Channels" type="a(oa{sv})" tp:type="Channel_Details[]"
-        direction="in">
-        <tp:docstring>
-          The <tp:dbus-ref
-            namespace="im.telepathy.v1">Channel</tp:dbus-ref>s
-          and their properties. Their well-known bus names are all the same as
-          that of the Connection.
+      <arg name="Channel" direction="in" type="o">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The Channel object. Its well-known bus name is the same
+            as that of the Connection.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Channel_Properties" direction="in" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Properties of the channel, equivalent to
+            the properties in <tp:type>Channel_Details</tp:type>.</p>
         </tp:docstring>
       </arg>
 
@@ -328,8 +324,8 @@ Recover=true
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The path to the <tp:dbus-ref
               namespace="im.telepathy.v1">ChannelDispatchOperation</tp:dbus-ref>
-            for these channels, or the special value '/' if there is no
-            ChannelDispatchOperation (because the channels were requested, not
+            for this channel, or the special value '/' if there is no
+            ChannelDispatchOperation (because the channel was requested, not
             incoming).</p>
 
           <p>If the Observer calls <tp:dbus-ref
@@ -338,12 +334,12 @@ Recover=true
               namespace="im.telepathy.v1.ChannelDispatchOperation">HandleWith</tp:dbus-ref>
             on the dispatch operation, it MUST be careful to avoid deadlock,
             since these methods cannot return until the Observer has returned
-            from <tp:member-ref>ObserveChannels</tp:member-ref>.</p>
+            from <tp:member-ref>ObserveChannel</tp:member-ref>.</p>
 
           <tp:rationale>
             <p>This allows an Observer to <tp:dbus-ref
                 namespace="im.telepathy.v1.ChannelDispatchOperation">Claim</tp:dbus-ref>
-              a set of channels without having to match up calls to this method
+              a channel without having to match up calls to this method
               with calls to <tp:dbus-ref
                 namespace="im.telepathy.v1.Client.Approver">AddDispatchOperation</tp:dbus-ref>.</p>
           </tp:rationale>
@@ -354,25 +350,25 @@ Recover=true
         <tp:docstring>
           The <tp:dbus-ref
           namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>s
-          satisfied by these channels.
+          satisfied by this channel.
 
           <tp:rationale>
             If the same process is an Observer and a Handler, it can be useful
             to be given this information as soon as possible (it will also
             be passed to <tp:dbus-ref
-              namespace="im.telepathy.v1.Client">Handler.HandleChannels</tp:dbus-ref>).
+              namespace="im.telepathy.v1.Client">Handler.HandleChannel</tp:dbus-ref>).
           </tp:rationale>
         </tp:docstring>
       </arg>
 
       <arg name="Observer_Info" type="a{sv}" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>Additional information about these channels. Currently defined
+          <p>Additional information about this channel. Currently defined
             keys are:</p>
 
           <dl>
             <dt><code>recovering</code> - b</dt>
-            <dd><code>True</code> if ObserveChannels was called for an existing
+            <dd><code>True</code> if ObserveChannel was called for an existing
               channel (due to the <tp:member-ref>Recover</tp:member-ref>
               property being <code>True</code>); <code>False</code> or omitted
               otherwise.
@@ -405,7 +401,7 @@ Recover=true
       <tp:added version="0.21.11"/>
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>If true, the channel dispatcher will wait for
-            <tp:member-ref>ObserveChannels</tp:member-ref> to return
+            <tp:member-ref>ObserveChannel</tp:member-ref> to return
             before calling <tp:dbus-ref
             namespace="imt1.Client">Approver.AddDispatchOperation</tp:dbus-ref>
             on appropriate Approvers.</p>

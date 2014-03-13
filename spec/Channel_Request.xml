@@ -272,13 +272,13 @@
             The Handler should check each
             <tp:dbus-ref namespace="imt1">ChannelRequest</tp:dbus-ref>
             of the Requests_Satisfied parameter of
-            <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannels</tp:dbus-ref>
+            <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannel</tp:dbus-ref>
             for the hint. The first request containing the hint SHOULD be used
             and all further hints SHOULD be ignored.
 
             <tp:rationale>
               This covers the very unlikely case where
-              <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannels</tp:dbus-ref>
+              <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannel</tp:dbus-ref>
               satisfies two separate requests which have different
               <tp:member-ref>PreferredHandler</tp:member-ref>s.
             </tp:rationale>
@@ -323,7 +323,7 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The same immutable properties of the Channel that would appear
             in a <tp:dbus-ref namespace="imt1.Connection.Interface.Requests"
-              >NewChannels</tp:dbus-ref> signal.</p>
+              >NewChannel</tp:dbus-ref> signal.</p>
         </tp:docstring>
       </arg>
 

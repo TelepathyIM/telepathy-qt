@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.99.6</tp:version>
+<tp:version>0.99.7</tp:version>
 
 <tp:copyright>Copyright © 2005-2014 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2011 Nokia Corporation</tp:copyright>
@@ -185,7 +185,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
        namespace='imt1.Channel.Type'>Call1</tp:dbus-ref>.</p>
     </tp:docstring>
 
-    <xi:include href="Channel_Interface_DTMF1.xml"/>
     <xi:include href="Channel_Interface_Hold1.xml"/>
    </tp:section>
 
@@ -260,11 +259,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </p>
  </tp:docstring>
  <xi:include href="Account_Manager.xml"/>
- <xi:include href="Account_Manager_Interface_Hidden1.xml"/>
  <xi:include href="Account.xml"/>
  <xi:include href="Account_Interface_Addressing1.xml"/>
  <xi:include href="Account_Interface_Avatar1.xml"/>
- <xi:include href="Account_Interface_Hidden1.xml"/>
  <xi:include href="Account_Interface_Storage1.xml"/>
  <xi:include href="Account_Interface_External_Password_Storage1.xml"/>
 </tp:section>

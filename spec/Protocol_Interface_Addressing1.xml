@@ -116,7 +116,7 @@ AddressableURISchemes=tel;sip;
           offline. When it is connected the addressable URI schemes should be
           retrieved from the
           <tp:dbus-ref
-             namespace="im.telepathy.v1.Connection.Interface">Requests.RequestableChannelClasses</tp:dbus-ref>'s
+             namespace="imt1.Connection">RequestableChannelClasses</tp:dbus-ref>'s
              TargetURIScheme fixed-property instead.</p>
 
         <p>Connection managers with a <code>.manager</code> file

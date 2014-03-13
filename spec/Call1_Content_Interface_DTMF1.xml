@@ -183,7 +183,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Emitted when 'w' or 'W', indicating "wait for the user to continue",
           is encountered while playing a DTMF string queued by
-          <tp:member-ref>MultipleTones</tp:member-ref>. Any queued DTMF events
+          <tp:member-ref>MultipleTones</tp:member-ref> or <tp:dbus-ref
+            namespace="imt1.Channel.Type.Call1">InitialTones</tp:dbus-ref>.
+          Any queued DTMF events
           after the 'w', which have not yet been played, are placed in the
           <tp:member-ref>DeferredTones</tp:member-ref> property and copied
           into this signal's argument.</p>
@@ -224,6 +226,58 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>DTMF tones have finished playing on streams in this channel.</p>
       </tp:docstring>
     </signal>
+
+    <tp:enum name="DTMF_Event" type="y">
+      <tp:enumvalue suffix="Digit_0" value="0">
+        <tp:docstring>0</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_1" value="1">
+        <tp:docstring>1</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_2" value="2">
+        <tp:docstring>2</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_3" value="3">
+        <tp:docstring>3</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_4" value="4">
+        <tp:docstring>4</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_5" value="5">
+        <tp:docstring>5</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_6" value="6">
+        <tp:docstring>6</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_7" value="7">
+        <tp:docstring>7</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_8" value="8">
+        <tp:docstring>8</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_9" value="9">
+        <tp:docstring>9</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Asterisk" value="10">
+        <tp:docstring>*</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Hash" value="11">
+        <tp:docstring>#</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Letter_A" value="12">
+        <tp:docstring>A</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Letter_B" value="13">
+        <tp:docstring>B</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Letter_C" value="14">
+        <tp:docstring>C</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Letter_D" value="15">
+        <tp:docstring>D</tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

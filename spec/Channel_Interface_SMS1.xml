@@ -103,7 +103,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <p>This property is immutable (cannot change), and therefore SHOULD
           appear wherever immutable properties are reported, e.g. <tp:dbus-ref
             namespace="imt1.Connection.Interface.Requests"
-          >NewChannels</tp:dbus-ref> signals.</p>
+          >NewChannel</tp:dbus-ref> signals.</p>
 
         <tp:rationale>
           <p>Class 0 SMSes should be displayed immediately to the user, and

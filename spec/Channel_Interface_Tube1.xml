@@ -81,7 +81,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <p>When receiving an incoming tube, this property is immutable and so advertised in the
           <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannel</tp:dbus-ref>
           signal.</p>
       </tp:docstring>
     </property>

@@ -50,7 +50,7 @@
         If <tp:member-ref>InitialInviteeHandles</tp:member-ref> and
         <tp:member-ref>InitialInviteeIDs</tp:member-ref> are
         <var>Allowed_Properties</var> in <tp:dbus-ref
-          namespace="im.telepathy.v1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>,
+          namespace="imt1.Connection">RequestableChannelClasses</tp:dbus-ref>,
         ad-hoc conferences to a set of contacts may be created by requesting a
         channel, specifying
         <tp:member-ref>InitialInviteeHandles</tp:member-ref> and/or
@@ -204,7 +204,7 @@
         TargetHandle of C1 into Cn), then immediately inviting the
         TargetHandle of C2, the TargetHandle of C3, etc. into Cn as well.</p>
 
-      <h4>Sample <tp:dbus-ref namespace='imt1.Connection.Interface.Requests'
+      <h4>Sample <tp:dbus-ref namespace='imt1.Connection'
                              >RequestableChannelClasses</tp:dbus-ref></h4>
 
       <p>A GSM connection might advertise the following channel class for
@@ -366,7 +366,7 @@
           <tp:member-ref>InitialInviteeHandles</tp:member-ref> and
           <tp:member-ref>InitialInviteeIDs</tp:member-ref> are
           <var>Allowed_Properties</var> in <tp:dbus-ref
-            namespace='imt1.Connection.Interface.Requests'
+            namespace='imt1.Connection'
             >RequestableChannelClasses</tp:dbus-ref>, then requests with zero
           or one channel paths SHOULD also succeed; otherwise, clients SHOULD
           NOT make requests with zero or one paths for this property.</p>
@@ -428,7 +428,7 @@
           (as opposed to merging several channels into one new conference
           channel), this property SHOULD be requestable, and appear in the allowed
           properties in <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests"
+            namespace="imt1.Connection"
             >RequestableChannelClasses</tp:dbus-ref>. Otherwise, this property
           SHOULD NOT be requestable, and its value SHOULD always be the empty
           list.</p>
@@ -478,12 +478,12 @@
           to the InitialInviteeIDs, and the target handles of the
           InitialChannels, with any duplicate handles removed. Because this
           property is immutable, its value SHOULD be computed before the
-          channel is announced via the NewChannels signal.</p>
+          channel is announced via the NewChannel signal.</p>
 
         <tp:rationale>
           <p>This simplifies identification of new channels in clients - they
             only have to look at one of the properties, not both. For example,
-            after either of the requests mentioned above, the NewChannels
+            after either of the requests mentioned above, the NewChannel
             signal would announce the channel with InitialChannels=[C1],
             InitialInviteeHandles=[rob, sjoerd], and
             InitialInviteeIDs=["rob@example.net", "sjoerd.example.com"].</p>
@@ -521,7 +521,7 @@
 
         <p>This property SHOULD be requestable, and appear in the allowed
           properties in <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests"
+            namespace="imt1.Connection"
             >RequestableChannelClasses</tp:dbus-ref>, in protocols where
           invitations can have an accompanying text message.</p>
 

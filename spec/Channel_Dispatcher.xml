@@ -174,7 +174,7 @@
               namespace="im.telepathy.v1.ChannelRequest">UserActionTime</tp:dbus-ref>
             property will be set to this value, and it will eventually be
             passed as the <code>User_Action_Time</code> parameter of <tp:dbus-ref
-              namespace="im.telepathy.v1.Client.Handler">HandleChannels</tp:dbus-ref>.</p>
+              namespace="im.telepathy.v1.Client.Handler">HandleChannel</tp:dbus-ref>.</p>
         </tp:docstring>
       </arg>
 
@@ -200,7 +200,7 @@
 
             <p>This is partly so the channel dispatcher can call
               <tp:dbus-ref
-                namespace="im.telepathy.v1.Client.Handler">HandleChannels</tp:dbus-ref>
+                namespace="im.telepathy.v1.Client.Handler">HandleChannel</tp:dbus-ref>
               on it, and partly so the channel dispatcher
               can recover state if it crashes and is restarted.</p>
 
@@ -429,7 +429,7 @@
       </tp:added>
       <tp:changed version="0.23.2">This method now returns
         <var>Delegated</var> and <var>Not_Delegated</var> instead of nothing.
-        <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannels</tp:dbus-ref>
+        <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannel</tp:dbus-ref>
         is now called once per <var>Channel</var> in <var>Channels</var>.
       </tp:changed>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -440,7 +440,7 @@
         <p>For each <var>Channel</var> in <var>Channels</var>, if another
           <tp:dbus-ref namespace="imt1.Client">Handler</tp:dbus-ref>
           can be found,
-          <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannels</tp:dbus-ref>
+          <tp:dbus-ref namespace="imt1.Client.Handler">HandleChannel</tp:dbus-ref>
           will be called on it until a
           <tp:dbus-ref namespace="imt1.Client">Handler</tp:dbus-ref>
           accepts it.</p>

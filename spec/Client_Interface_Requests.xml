@@ -54,7 +54,7 @@
         <p>If the request succeeds and is given to the expected Handler,
           the Requests_Satisfied parameter to
           <tp:dbus-ref
-            namespace="im.telepathy.v1.Client.Handler">HandleChannels</tp:dbus-ref>
+            namespace="im.telepathy.v1.Client.Handler">HandleChannel</tp:dbus-ref>
           can be used to match the channel to a previous AddRequest call.</p>
 
         <tp:rationale>

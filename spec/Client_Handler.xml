@@ -162,11 +162,11 @@ im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
       </tp:docstring>
     </property>
 
-    <method name="HandleChannels" tp:name-for-bindings="Handle_Channels">
+    <method name="HandleChannel" tp:name-for-bindings="Handle_Channel">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Called by the channel dispatcher when this client should handle these
-          channels, or when this client should present channels that it is already
-          handling to the user (e.g. bring them into the foreground).</p>
+        <p>Called by the channel dispatcher when this client should handle this
+          channel, or when this client should present a channel that it is already
+          handling to the user (e.g. bring it into the foreground).</p>
 
         <tp:rationale>
           <p>Clients are expected to know what channels they're already handling,
@@ -178,20 +178,19 @@ im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
         <p>This method can raise any D-Bus error. If it does, the
           handler is assumed to have failed or crashed, and the channel
           dispatcher MUST recover in an implementation-specific way; it MAY
-          attempt to dispatch the channels to another handler, or close the
-          channels.</p>
+          attempt to dispatch the channel to another handler, or close the
+          channel.</p>
 
-        <p>If closing the channels, it is RECOMMENDED that the channel
-          dispatcher attempts to close the channels using
-          <tp:dbus-ref
+        <p>If closing the channel, it is RECOMMENDED that the channel
+          dispatcher attempts to use <tp:dbus-ref
             namespace="im.telepathy.v1">Channel.Close</tp:dbus-ref>,
           but resorts to calling
           <tp:dbus-ref
             namespace="im.telepathy.v1">Channel.Interface.Destroyable1.Destroy</tp:dbus-ref>
           (if available) or ignoring the channel (if not) if the same handler
-          repeatedly fails to handle channels.</p>
+          repeatedly fails to handle a channel.</p>
 
-        <p>After HandleChannels returns successfully, the client process is
+        <p>After HandleChannel returns successfully, the client process is
           considered to be responsible for the channel until it its unique
           name disappears from the bus.</p>
 
@@ -207,7 +206,7 @@ im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
         <tp:docstring>
           The
           <tp:dbus-ref namespace="im.telepathy.v1">Account</tp:dbus-ref>
-          with which the channels are associated. The
+          with which the channel is associated. The
           well-known bus name to use is that of the
           <tp:dbus-ref namespace="im.telepathy.v1">AccountManager</tp:dbus-ref>.
         </tp:docstring>
@@ -215,28 +214,35 @@ im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
 
       <arg name="Connection" type="o" direction="in">
         <tp:docstring>
-          The Connection with which the channels are associated. The
+          The Connection with which the channel is associated. The
           well-known bus name to use can be derived from this object
           path by removing the leading '/' and replacing all subsequent
           '/' by '.'.
         </tp:docstring>
       </arg>
 
-      <arg name="Channels" type="a(oa{sv})" direction="in"
-        tp:type="Channel_Details[]">
-        <tp:docstring>
-          The channels and their immutable properties. Their well-known
-          bus name is the same as that of the Connection.
+      <arg name="Channel" direction="in" type="o">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The Channel object. Its well-known bus name is the same
+            as that of the Connection.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Channel_Properties" direction="in" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Properties of the channel, equivalent to
+            the properties in <tp:type>Channel_Details</tp:type>.</p>
         </tp:docstring>
       </arg>
 
       <arg name="Requests_Satisfied" type="ao" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The requests satisfied by these channels.</p>
+          <p>The requests satisfied by this channel.</p>
 
           <tp:rationale>
             <p>If the handler implements Requests, this tells it
-              that these channels match previous <tp:dbus-ref
+              that this channel matches previous <tp:dbus-ref
                 namespace="im.telepathy.v1.Client.Interface.Requests">AddRequest</tp:dbus-ref>
               calls that it may have received.</p>
 
@@ -246,20 +252,19 @@ im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
         </tp:docstring>
       </arg>
 
-      <arg name="User_Action_Time" type="t" direction="in">
+      <arg name="User_Action_Time" type="x" direction="in"
+        tp:type="User_Action_Timestamp">
         <tp:docstring>
           The time at which user action occurred, or 0 if this channel
           is to be handled for some reason not involving user action.
           Handlers SHOULD use this for focus-stealing prevention,
           if applicable.
-          This property has the same semantic as <tp:type>User_Action_Timestamp</tp:type>
-          but is unsigned for historical reasons.
         </tp:docstring>
       </arg>
 
       <arg name="Handler_Info" type="a{sv}" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>Additional information about these channels. Currently defined
+          <p>Additional information about this channel. Currently defined
             keys are:</p>
 
           <dl>

@@ -194,8 +194,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
          <p>The contact's capabilities. These should be represented
           in the same way as in <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests"
-            >RequestableChannelClasses</tp:dbus-ref>,
+            namespace="imt1.Connection">RequestableChannelClasses</tp:dbus-ref>,
           except that they may have more fixed properties or fewer allowed
           properties, to represent contacts who do not have all the
           capabilities of the connection.</p>

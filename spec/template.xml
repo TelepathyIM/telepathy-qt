@@ -22,6 +22,7 @@
 
   <interface name="im.telepathy.v1.Foo1"
     tp:causes-havoc="experimental">
+    <!-- https://bugs.freedesktop.org/show_bug.cgi?id=XXX -->
     <tp:added version="0.UNRELEASED">(draft 1)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

@@ -89,8 +89,8 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A specification of the channels in which this approver is
           interested. The <tp:member-ref>AddDispatchOperation</tp:member-ref>
-          method should be called by the channel dispatcher whenever at least
-          one of the channels in a channel dispatch operation matches this
+          method should be called by the channel dispatcher whenever
+          the channel in a channel dispatch operation matches this
           description.</p>
 
         <p>This property works in exactly the same way as the
@@ -130,46 +130,6 @@
         </tp:rationale>
       </tp:docstring>
 
-      <arg name="Channels" direction="in"
-        type="a(oa{sv})" tp:type="Channel_Details[]">
-        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The initial value of the <tp:dbus-ref
-              namespace="im.telepathy.v1">ChannelDispatchOperation.Channels</tp:dbus-ref>
-            property, containing the <tp:dbus-ref
-              namespace="im.telepathy.v1">Channel</tp:dbus-ref>s
-            to be dispatched and their properties.</p>
-
-          <tp:rationale>
-            <p>This can't be signalled to the approver through the Properties
-              parameter of this method, because Channels is not an immutable
-              property.</p>
-          </tp:rationale>
-
-          <p>This argument always contains all of the channels in the channel
-            dispatch operation, even if not all of them actually match
-            the <tp:member-ref>ApproverChannelFilter</tp:member-ref>.</p>
-
-          <tp:rationale>
-            <p>This seems the least bad way to handle such a situation;
-              see the discussion on
-              <a href="http://bugs.freedesktop.org/show_bug.cgi?id=21090">bug
-                #21090</a>.</p>
-          </tp:rationale>
-
-          <p>The actual channels to be dispatched may reduce as channels are
-            closed: this is signalled by <tp:dbus-ref
-              namespace="im.telepathy.v1">ChannelDispatchOperation.ChannelLost</tp:dbus-ref>.
-          </p>
-
-          <p>Approvers SHOULD connect to ChannelLost and <tp:dbus-ref
-              namespace="im.telepathy.v1">ChannelDispatchOperation.Finished</tp:dbus-ref>.
-            (if desired) before returning from AddDispatchOperation, since
-            those signals are guaranteed not to be emitted until after all
-            AddDispatchOperation calls have returned (with success or failure)
-            or timed out.</p>
-        </tp:docstring>
-      </arg>
-
       <arg name="DispatchOperation" type="o" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The
@@ -188,7 +148,11 @@
             <tp:dbus-ref
               namespace="im.telepathy.v1.ChannelDispatchOperation">Account</tp:dbus-ref>,
             <tp:dbus-ref
-              namespace="im.telepathy.v1.ChannelDispatchOperation">Connection</tp:dbus-ref>
+              namespace="im.telepathy.v1.ChannelDispatchOperation">Connection</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="im.telepathy.v1.ChannelDispatchOperation">Channel</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="im.telepathy.v1.ChannelDispatchOperation">ChannelProperties</tp:dbus-ref>
             and <tp:dbus-ref
               namespace="im.telepathy.v1.ChannelDispatchOperation">PossibleHandlers</tp:dbus-ref>
             properties.</p>

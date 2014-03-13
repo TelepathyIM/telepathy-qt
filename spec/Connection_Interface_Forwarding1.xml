@@ -24,6 +24,7 @@
 
   <interface name="im.telepathy.v1.Connection.Interface.Forwarding1"
     tp:causes-havoc="experimental">
+    <!-- https://bugs.freedesktop.org/show_bug.cgi?id=13351 -->
     <tp:added version="0.19.6">(draft version, not API-stable)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

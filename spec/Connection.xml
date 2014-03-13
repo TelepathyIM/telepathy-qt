@@ -836,7 +836,7 @@ USA.</p>
 
           <p>The contact's attributes will always include at least the
             identifier that would be obtained by inspecting the handle
-            (<code>im.telepathy.v1.Connection/contact-id</code>).</p>
+            (<code>org.freedesktop.Telepathy.Connection/contact-id</code>).</p>
         </tp:docstring>
       </arg>
 
@@ -845,6 +845,147 @@ USA.</p>
         <tp:error name="im.telepathy.v1.Error.InvalidHandle"/>
       </tp:possible-errors>
     </method>
+
+    <tp:mapping name="Channel_Class" array-name="Channel_Class_List">
+      <tp:added version="0.17.11">(as stable API)</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Mapping representing a class of channels that can be requested
+          from a connection manager, can be handled by a user interface,
+          are supported by a contact, etc.</p>
+
+        <p>Classes of channel are identified by the fixed values of
+          a subset of their properties.</p>
+
+        <p>Channel classes SHOULD always include the keys
+          <tp:dbus-ref>im.telepathy.v1.Channel.ChannelType</tp:dbus-ref>
+          and
+          <tp:dbus-ref>im.telepathy.v1.Channel.TargetHandleType</tp:dbus-ref>.</p>
+      </tp:docstring>
+
+      <tp:member type="s" name="Key" tp:type="DBus_Qualified_Member">
+        <tp:docstring>
+          A D-Bus interface name, followed by a dot and a D-Bus property name.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member type="v" name="Value">
+        <tp:docstring>
+          The value of the property.
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <tp:struct name="Requestable_Channel_Class"
+      array-name="Requestable_Channel_Class_List">
+      <tp:added version="0.17.11">(as stable API)</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Structure representing a class of channels that can be requested,
+          identified by a set of properties that identify that class of
+          channel.</p>
+
+        <tp:rationale>
+          <p>This will often just be the channel type and the handle type,
+            but can include other properties of the channel - for instance,
+            encrypted channels might require properties that
+            unencrypted channels do not, like an encryption key.</p>
+        </tp:rationale>
+
+        <p>In some cases, these classes of channel may overlap, in the sense
+          that one class fixes all the properties that another class does,
+          plus some more properties.</p>
+
+        <tp:rationale>
+          <p>For older clients to still be able to understand how to request
+            channels in the presence of a hypothetical "encryption" interface,
+            we'd need to represent it like this:</p>
+
+          <ul>
+            <li>class 1: ChannelType = Text, TargetHandleType = CONTACT</li>
+            <li>class 2: Channel.ChannelType = Text,
+              Channel.TargetHandleType = CONTACT,
+              Encryption.Encrypted = TRUE</li>
+          </ul>
+        </tp:rationale>
+      </tp:docstring>
+
+      <tp:member name="Fixed_Properties" type="a{sv}"
+        tp:type="Channel_Class">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The property values that identify this requestable channel class.
+            These properties MUST be included in requests for a channel of this
+            class, and MUST take these values.</p>
+
+          <p>Clients that do not understand the semantics of all the
+            Fixed_Properties MUST NOT request channels of this class, since
+            they would be unable to avoid making an incorrect request.</p>
+
+          <p>This implies that connection managers wishing to make channels
+            available to old or minimal clients SHOULD have a channel class
+            with the minimum number of Fixed_Properties, and MAY additionally
+            have channel classes with extra Fixed_Properties.</p>
+
+          <p>Interface designers SHOULD avoid introducing fixed properties
+            whose types are not serializable in a <code>.manager</code>
+            file.</p>
+
+          <tp:rationale>
+            <p>Connection managers with a fixed property that is not
+              serializable cannot have a complete <code>.manager</code>
+              file.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Allowed_Properties" type="as"
+        tp:type="DBus_Qualified_Member[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Properties that MAY be set when requesting a channel of this
+            channel type and handle type.</p>
+
+          <p>This array MUST NOT include properties that are in the
+            Fixed_Properties mapping.</p>
+
+          <p>Properties in this array may either be required or optional,
+            according to their documented semantics.</p>
+
+          <tp:rationale>
+            <p>For instance, if
+              TargetHandleType takes a value that is not Handle_Type_None,
+              one or the other of TargetHandle and TargetID is required.
+              Clients are expected to understand the documented relationship
+              between the properties, so we do not have separate arrays
+              of required and optional properties.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <property name="RequestableChannelClasses" access="read"
+      type="a(a{sv}as)" tp:type="Requestable_Channel_Class[]"
+      tp:name-for-bindings="Requestable_Channel_Classes">
+      <tp:added version="0.17.11">(as stable API)</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The classes of channel that are expected to be available on this
+          connection, i.e. those for which
+          <tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref> can reasonably
+          be expected to succeed. User interfaces can use this information
+          to show or hide UI components.</p>
+
+        <p>This property cannot change after the connection has gone to
+          state Connection_Status_Connected, so there is no change
+          notification (if the connection has context-dependent capabilities,
+          it SHOULD advertise support for all classes of channel that it might
+          support during its lifetime). Before this state has been reached,
+          the value of this property is undefined.</p>
+
+        <tp:rationale>
+          <p>This is not on an optional interface, because connection
+            managers can always offer some sort of clue about the channel
+            classes they expect to support (at worst, they can announce
+            support for everything for which they have code).</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This models a connection to a single user account on a communication

@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </tp:license>
   <interface name="im.telepathy.v1.Connection.Interface.Resources1"
     tp:causes-havoc="experimental">
+    <!-- https://bugs.freedesktop.org/show_bug.cgi?id=30461 -->
     <tp:added version="0.21.1">(draft 1)</tp:added>
     <tp:requires interface="im.telepathy.v1.Connection"/>
 

@@ -37,7 +37,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         found.</p>
 
       <p>Connections that support contact search channels SHOULD have an entry
-        in <tp:dbus-ref namespace='imt1.Connection.Interface.Requests'
+        in <tp:dbus-ref namespace='imt1.Connection'
           >RequestableChannelClasses</tp:dbus-ref> with the <tp:dbus-ref
           namespace='imt1.Channel'>ChannelType</tp:dbus-ref> fixed to this
         interface,
@@ -56,7 +56,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>Requests for channels of this type need only
         optionally specify the <tp:member-ref>Server</tp:member-ref> property
         (if it is an allowed property in the connection's <tp:dbus-ref
-        namespace='imt1.Connection.Interface.Requests'>RequestableChannelClasses</tp:dbus-ref>).</p>
+        namespace='imt1.Connection'>RequestableChannelClasses</tp:dbus-ref>).</p>
 
       <p>Before searching, the
         <tp:member-ref>AvailableSearchKeys</tp:member-ref> property should be
@@ -296,7 +296,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <tp:rationale>
           It can be in the <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+            namespace="im.telepathy.v1.Connection.Interface.Requests">NewChannel</tp:dbus-ref>
           signal for round-trip reduction.
         </tp:rationale>
       </tp:docstring>

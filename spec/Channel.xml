@@ -323,11 +323,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <p>Each channel has a number of immutable properties (which cannot vary
       after the channel has been announced with <tp:dbus-ref
-        namespace='imt1.Connection.Interface.Requests'>NewChannels</tp:dbus-ref>),
+        namespace='imt1.Connection.Interface.Requests'>NewChannel</tp:dbus-ref>),
       provided to clients in the
-      <tp:dbus-ref namespace='imt1.Client.Observer'>ObserveChannels</tp:dbus-ref>,
+      <tp:dbus-ref namespace='imt1.Client.Observer'>ObserveChannel</tp:dbus-ref>,
       <tp:dbus-ref namespace='imt1.Client.Approver'>AddDispatchOperation</tp:dbus-ref> and
-      <tp:dbus-ref namespace='imt1.Client.Handler'>HandleChannels</tp:dbus-ref>
+      <tp:dbus-ref namespace='imt1.Client.Handler'>HandleChannel</tp:dbus-ref>
       methods to permit immediate identification of the channel. This interface
       contains immutable properties common to all channels. In brief:</p>
 

@@ -153,8 +153,8 @@ allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;
           <tp:dbus-ref namespace="im.telepathy.v1"
             >Connection</tp:dbus-ref> to this protocol (i.e. they will,
           or might, appear in the Connection's <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests"
-            >RequestableChannelClasses</tp:dbus-ref> property).</p>
+            namespace="imt1.Connection">RequestableChannelClasses</tp:dbus-ref>
+          property).</p>
 
         <p>Whether a Connection will have all, some or none of these
           requestable channel classes depends on server capabilities;

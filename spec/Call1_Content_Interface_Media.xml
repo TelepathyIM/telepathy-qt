@@ -478,7 +478,7 @@
       tp:name-for-bindings="DTMF_Change_Requested">
       <tp:docstring>
         Used by the CM to relay instructions from <tp:dbus-ref
-        namespace="imt1">Channel.Interface.DTMF1</tp:dbus-ref> to the streaming
+        namespace="imt1.Call1">Content.Interface.DTMF1</tp:dbus-ref> to the streaming
         implementation. If any contact in this call supports the
         telephone-event codec in their MediaDescription, this event should be
         sent as outlined in RFC 4733. Otherwise, it should be sent as an

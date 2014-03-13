@@ -155,12 +155,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <p>When an incoming call occurs, something like the following
         <tp:dbus-ref
-        namespace="imt1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+        namespace="imt1.Connection.Interface.Requests">NewChannel</tp:dbus-ref>
         signal will occur:</p>
 
       <blockquote>
         <pre>
-<tp:dbus-ref namespace="imt1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>([
+<tp:dbus-ref namespace="imt1.Connection.Interface.Requests">NewChannel</tp:dbus-ref>(
   /im/telepathy/v1/Connection/foo/bar/foo_40bar_2ecom/CallChannel,
   {
     ...<tp:dbus-ref namespace="imt1.Channel">ChannelType</tp:dbus-ref>: ...<tp:dbus-ref
@@ -174,7 +174,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     ...<tp:member-ref>InitialAudioName</tp:member-ref>: "audio",
     ...<tp:member-ref>InitialVideoName</tp:member-ref>: "video",
     ...<tp:member-ref>MutableContents</tp:member-ref>: True,
-  }])</pre></blockquote>
+  })</pre></blockquote>
 
       <p>The <tp:member-ref>InitialAudio</tp:member-ref> and
         <tp:member-ref>InitialVideo</tp:member-ref> properties show that
@@ -267,7 +267,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <h4>Requestable channel classes</h4>
 
       <p>The <tp:dbus-ref
-        namespace="imt1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
+        namespace="imt1.Connection">RequestableChannelClasses</tp:dbus-ref>
         for <tp:dbus-ref
         namespace="imt1.Channel.Type">Call1</tp:dbus-ref> channels
         can be:</p>
@@ -1572,6 +1572,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:rationale>
       </tp:docstring>
     </tp:hct>
+
+    <property name="InitialTones" tp:name-for-bindings="Initial_Tones"
+        type="s" access="read" tp:immutable="yes" tp:requestable="sometimes">
+      <tp:added version="0.99.7" />
+      <tp:docstring>
+        <p>If non-empty in a channel request that will create a new channel,
+          the connection manager should send the tones immediately after
+          at least one eligible audio stream has been created in the
+          channel. Its semantics are equivalent to calling the <tp:dbus-ref
+            namespace="imt1.Call1">Content.Interface.DTMF1.MultipleTones</tp:dbus-ref>
+          method as soon as there is a suitable stream.</p>
+
+        <tp:rationale>
+          <p>We could have added a whole separate interface for this, but it
+            seemed like a waste of time; in protocols not supporting DTMF,
+            this property is easy to implement as non-requestable, immutable
+            and readable with value "".</p>
+        </tp:rationale>
+
+        <p>This should only be used with InitialAudio=true,
+          and should only be requestable on protocols whose Call1
+          channels will implement <tp:dbus-ref
+            namespace="imt1.Call1">Content.Interface.DTMF1</tp:dbus-ref>.</p>
+
+        <p>This property is immutable (cannot change).</p>
+      </tp:docstring>
+    </property>
 
   </interface>
 </node>

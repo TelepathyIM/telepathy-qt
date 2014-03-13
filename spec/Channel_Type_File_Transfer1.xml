@@ -159,7 +159,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <p>For each supported hash type, implementations SHOULD include an entry
           in <tp:dbus-ref
-            namespace="im.telepathy.v1.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
+            namespace="imt1.Connection">RequestableChannelClasses</tp:dbus-ref>
           with this property fixed to that hash type. If the protocol supports
           offering a file without a content hash, implementations SHOULD list
           this property in Allowed in a requestable channel class, mapping hash

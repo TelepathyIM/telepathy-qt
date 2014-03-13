@@ -1494,7 +1494,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         the connection manager MUST allow this, but SHOULD open a new channel
         to deliver those messages, signalling it as a new channel with the
         <tp:dbus-ref
-          namespace="imt1.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+          namespace="imt1.Connection.Interface.Requests">NewChannel</tp:dbus-ref>
         signal. The new channel should resemble the old channel, but have
         <tp:dbus-ref namespace='imt1.Channel'>Requested</tp:dbus-ref> = FALSE
         regardless of its previous value; the <tp:dbus-ref
@@ -1524,7 +1524,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <li>UI calls Close on text channel</li>
           <li>text channel emits Closed and closes</li>
           <li>message arrives</li>
-          <li>new text channel is created, connection emits NewChannels</li>
+          <li>new text channel is created, connection emits NewChannel</li>
           <li>(the same or a different) UI handles it</li>
         </ul>
 
