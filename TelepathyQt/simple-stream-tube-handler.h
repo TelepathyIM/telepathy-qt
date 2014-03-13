@@ -64,10 +64,11 @@ public:
         return mBypassApproval;
     }
 
-    void handleChannels(const MethodInvocationContextPtr<> &context,
+    void handleChannel(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
-            const QList<ChannelPtr> &channels,
+            const ChannelPtr &channel,
+            const QVariantMap &channelProperties,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
             const HandlerInfo &handlerInfo);
@@ -106,7 +107,7 @@ private:
 
         MethodInvocationContextPtr<> ctx;
         AccountPtr acc;
-        QList<StreamTubeChannelPtr> tubes;
+        StreamTubeChannelPtr tube;
         QDateTime time;
         ChannelRequestHints hints;
     };

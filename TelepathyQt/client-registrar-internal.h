@@ -222,12 +222,13 @@ class TP_QT_NO_EXPORT ClientHandlerAdaptor : public QDBusAbstractAdaptor
 "    <property name=\"BypassApproval\" type=\"b\" access=\"read\" />\n"
 "    <property name=\"Capabilities\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"HandledChannels\" type=\"ao\" access=\"read\" />\n"
-"    <method name=\"HandleChannels\" >\n"
+"    <method name=\"HandleChannel\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"Connection\" type=\"o\" direction=\"in\" />\n"
-"      <arg name=\"Channels\" type=\"a(oa{sv})\" direction=\"in\" />\n"
-"      <arg name=\"Requests_Satisfied\" type=\"ao\" direction=\"in\" />\n"
-"      <arg name=\"User_Action_Time\" type=\"t\" direction=\"in\" />\n"
+"      <arg name=\"Channel\" direction=\"in\" type=\"o\">\n"
+"      <arg name=\"Channel_Properties\" direction=\"in\" type=\"a{sv}\">\n"
+"      <arg name=\"Requests_Satisfied\" type=\"a{oa{sv}}\" direction=\"in\" />\n"
+"      <arg name=\"User_Action_Time\" type=\"x\" direction=\"in\" />\n"
 "      <arg name=\"Handler_Info\" type=\"a{sv}\" direction=\"in\" />\n"
 "    </method>\n"
 "  </interface>\n"
@@ -271,11 +272,12 @@ public: // Properties
     }
 
 public Q_SLOTS: // Methods
-    void HandleChannels(const QDBusObjectPath &account,
+    void HandleChannel(const QDBusObjectPath &account,
             const QDBusObjectPath &connection,
-            const TpDBus::ChannelDetailsList &channels,
-            const TpDBus::ObjectPathList &requestsSatisfied,
-            qulonglong userActionTime,
+            const QDBusObjectPath &channel,
+            const QVariantMap &channelProperties,
+            const TpDBus::ObjectImmutablePropertiesMap &requestsSatisfied,
+            const qlonglong &userActionTime,
             const QVariantMap &handlerInfo,
             const QDBusMessage &message);
 
@@ -293,7 +295,8 @@ private:
         MethodInvocationContextPtr<> ctx;
         AccountPtr acc;
         ConnectionPtr conn;
-        QList<ChannelPtr> chans;
+        ChannelPtr chan;
+        QVariantMap chanProperties;
         QList<ChannelRequestPtr> chanReqs;
         QDateTime time;
         AbstractClientHandler::HandlerInfo handlerInfo;

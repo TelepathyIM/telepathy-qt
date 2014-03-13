@@ -52,10 +52,11 @@ public:
      */
     bool bypassApproval() const { return false; }
 
-    void handleChannels(const MethodInvocationContextPtr<> &context,
+    void handleChannel(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
-            const QList<ChannelPtr> &channels,
+            const ChannelPtr &channel,
+            const QVariantMap &channelProperties,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
             const HandlerInfo &handlerInfo);

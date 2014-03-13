@@ -102,48 +102,46 @@ SimpleStreamTubeHandler::~SimpleStreamTubeHandler()
     }
 }
 
-void SimpleStreamTubeHandler::handleChannels(
+void SimpleStreamTubeHandler::handleChannel(
         const MethodInvocationContextPtr<> &context,
         const AccountPtr &account,
         const ConnectionPtr &connection,
-        const QList<ChannelPtr> &channels,
+        const ChannelPtr &channel,
+        const QVariantMap &channelProperties,
         const QList<ChannelRequestPtr> &requestsSatisfied,
         const QDateTime &userActionTime,
         const HandlerInfo &handlerInfo)
 {
-    debug() << "SimpleStreamTubeHandler::handleChannels() invoked for " <<
-        channels.size() << "channels on account" << account->objectPath();
+    debug() << "SimpleStreamTubeHandler::handleChannel() invoked on account" << account->objectPath();
 
     SharedPtr<InvocationData> invocation(new InvocationData());
     QList<PendingOperation *> readyOps;
 
-    foreach (const ChannelPtr &chan, channels) {
-        StreamTubeChannelPtr tube = StreamTubeChannelPtr::qObjectCast(chan);
+    StreamTubeChannelPtr tube = StreamTubeChannelPtr::qObjectCast(channel);
 
-        if (!tube) {
-            // TODO: if Channel ever starts utilizing its immutable props for the immutable
-            // accessors, use Channel::channelType() here
-            const QString channelType =
-                chan->immutableProperties()[TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")].toString();
+    if (!tube) {
+        // TODO: if Channel ever starts utilizing its immutable props for the immutable
+        // accessors, use Channel::channelType() here
+        const QString channelType =
+            channel->immutableProperties()[TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")].toString();
 
-            if (channelType != TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1) {
-                debug() << "We got a non-StreamTube channel" << chan->objectPath() <<
-                    "of type" << channelType << ", ignoring";
-            } else {
-                warning() << "The channel factory used for a simple StreamTube handler must" <<
-                    "construct StreamTubeChannel subclasses for stream tubes";
-            }
-            continue;
+        if (channelType != TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1) {
+            debug() << "We got a non-StreamTube channel" << channel->objectPath() <<
+                "of type" << channelType << ", ignoring";
+        } else {
+            warning() << "The channel factory used for a simple StreamTube handler must" <<
+                "construct StreamTubeChannel subclasses for stream tubes";
         }
-
-        Features features = StreamTubeChannel::FeatureCore;
-        if (mMonitorConnections) {
-            features.insert(StreamTubeChannel::FeatureConnectionMonitoring);
-        }
-        readyOps.append(tube->becomeReady(features));
-
-        invocation->tubes.append(tube);
+        return;
     }
+
+    Features features = StreamTubeChannel::FeatureCore;
+    if (mMonitorConnections) {
+        features.insert(StreamTubeChannel::FeatureConnectionMonitoring);
+    }
+    readyOps.append(tube->becomeReady(features));
+
+    invocation->tube = tube;
 
     invocation->ctx = context;
     invocation->acc = account;
@@ -155,11 +153,11 @@ void SimpleStreamTubeHandler::handleChannels(
 
     mInvocations.append(invocation);
 
-    if (invocation->tubes.isEmpty()) {
-        warning() << "SSTH::HandleChannels got no suitable channels, admitting we're Confused";
+    if (!invocation->tube) {
+        warning() << "SSTH::HandleChannel got no suitable channel, admitting we're Confused";
         invocation->readyOp = 0;
         invocation->error = TP_QT_ERROR_CONFUSED;
-        invocation->message = QLatin1String("Got no suitable channels");
+        invocation->message = QLatin1String("Got no suitable channel");
         onReadyOpFinished(0);
     } else {
         invocation->readyOp = new PendingComposite(readyOps, SharedPtr<SimpleStreamTubeHandler>(this));
@@ -202,15 +200,9 @@ void SimpleStreamTubeHandler::onReadyOpFinished(Tp::PendingOperation *op)
             continue;
         }
 
-        debug() << "Emitting SSTubeHandler::invokedForTube for" << invocation->tubes.size()
-            << "tubes";
-
-        foreach (const StreamTubeChannelPtr &tube, invocation->tubes) {
-            if (!tube->isValid()) {
-                debug() << "Skipping already invalidated tube" << tube->objectPath();
-                continue;
-            }
-
+        debug() << "Emitting SSTubeHandler::invokedForTube";
+        const StreamTubeChannelPtr &tube = invocation->tube;
+        if (tube->isValid()) {
             if (!mTubes.contains(tube)) {
                 connect(tube.data(),
                         SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
@@ -224,8 +216,9 @@ void SimpleStreamTubeHandler::onReadyOpFinished(Tp::PendingOperation *op)
                     tube,
                     invocation->time,
                     invocation->hints);
+        } else {
+            debug() << "Skipping already invalidated tube" << tube->objectPath();
         }
-
         invocation->ctx->setFinished();
     }
 }

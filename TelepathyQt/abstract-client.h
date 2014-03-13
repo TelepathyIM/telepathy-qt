@@ -186,13 +186,14 @@ public:
 
     virtual bool bypassApproval() const = 0;
 
-    virtual void handleChannels(const MethodInvocationContextPtr<> &context,
-            const AccountPtr &account,
-            const ConnectionPtr &connection,
-            const QList<ChannelPtr> &channels,
-            const QList<ChannelRequestPtr> &requestsSatisfied,
+    virtual void handleChannel(const Tp::MethodInvocationContextPtr<> &context,
+            const Tp::AccountPtr &account,
+            const Tp::ConnectionPtr &connection,
+            const Tp::ChannelPtr &channel,
+            const QVariantMap &channelProperties,
+            const QList<Tp::ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
-            const HandlerInfo &handlerInfo) = 0;
+            const Tp::AbstractClientHandler::HandlerInfo &handlerInfo) = 0;
 
     bool wantsRequestNotification() const;
     virtual void addRequest(const ChannelRequestPtr &request);

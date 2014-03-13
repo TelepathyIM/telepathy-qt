@@ -50,27 +50,26 @@ RequestTemporaryHandler::~RequestTemporaryHandler()
 {
 }
 
-void RequestTemporaryHandler::handleChannels(
+void RequestTemporaryHandler::handleChannel(
         const MethodInvocationContextPtr<> &context,
         const AccountPtr &account,
         const ConnectionPtr &connection,
-        const QList<ChannelPtr> &channels,
+        const ChannelPtr &newChannel,
+        const QVariantMap &channelProperties,
         const QList<ChannelRequestPtr> &requestsSatisfied,
         const QDateTime &userActionTime,
         const HandlerInfo &handlerInfo)
 {
+    Q_UNUSED(channelProperties);
     Q_ASSERT(dbusHandlerInvoked);
 
     QString errorMessage;
 
     ChannelPtr oldChannel = channel();
-    if (channels.size() != 1 || requestsSatisfied.size() != 1) {
-        errorMessage = QLatin1String("Only one channel and one channel request should be given "
-                "to HandleChannels");
-    } else if (account != mAccount) {
+    if (account != mAccount) {
         errorMessage = QLatin1String("Account received is not the same as the account which made "
                 "the request");
-    } else if (oldChannel && oldChannel != channels.first()) {
+    } else if (oldChannel && oldChannel != newChannel) {
         errorMessage = QLatin1String("Received a channel that is not the same as the first "
                 "one received");
     }
@@ -90,7 +89,7 @@ void RequestTemporaryHandler::handleChannels(
     ChannelRequestPtr channelRequest = requestsSatisfied.first();
 
     if (!oldChannel) {
-        mChannel = WeakPtr<Channel>(channels.first());
+        mChannel = WeakPtr<Channel>(newChannel);
         emit channelReceived(channel(), userActionTime, channelRequest->hints());
     } else {
         if (mQueueChannelReceived) {

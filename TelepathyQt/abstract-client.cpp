@@ -616,12 +616,12 @@ struct TP_QT_NO_EXPORT AbstractClientHandler::Private
  * an appropriate channel handler automatically.
  *
  * To become an handler one should inherit AbstractClientHandler and
- * implement the pure virtual bypassApproval() and handleChannels() methods.
+ * implement the pure virtual bypassApproval() and handleChannel() methods.
  * After that the object representing the handler must be registered using
  * ClientRegistrar::registerClient().
  *
  * When new channels in which the approver has registered an interest are
- * ready to be handled, the method handleChannels() is invoked.
+ * ready to be handled, the method handleChannel() is invoked.
  *
  * \section handler_usage_sec Usage
  *
@@ -637,7 +637,7 @@ struct TP_QT_NO_EXPORT AbstractClientHandler::Private
  *
  *     void bypassApproval() const;
  *
- *     void handleChannels(const MethodInvocationContextPtr<> &context,
+ *     void handleChannel(const MethodInvocationContextPtr<> &context,
  *             const AccountPtr &account,
  *             const ConnectionPtr &connection,
  *             const QList<ChannelPtr> &channels,
@@ -656,7 +656,7 @@ struct TP_QT_NO_EXPORT AbstractClientHandler::Private
  *     return false;
  * }
  *
- * void MyHandler::handleChannels(const MethodInvocationContextPtr<> &context,
+ * void MyHandler::handleChannel(const MethodInvocationContextPtr<> &context,
  *         const AccountPtr &account,
  *         const ConnectionPtr &connection,
  *         const QList<ChannelPtr> &channels,
@@ -703,7 +703,7 @@ struct TP_QT_NO_EXPORT AbstractClientHandler::Private
  * \headerfile TelepathyQt/abstract-client.h <TelepathyQt/AbstractClientHandler>
  *
  * \brief The AbstractClientHandler::HandlerInfo class provides a wrapper
- * around the additional info about the channels passed to handleChannels().
+ * around the additional info about the channels passed to handleChannel().
  *
  * \sa AbstractClientHandler
  */
@@ -868,7 +868,7 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  */
 
 /**
- * \fn void AbstractClientHandler::handleChannels(
+ * \fn void AbstractClientHandler::handleChannel(
  *                  const MethodInvocationContextPtr<> &context,
  *                  const AccountPtr &account,
  *                  const ConnectionPtr &connection,
@@ -884,7 +884,7 @@ AbstractClientHandler::Capabilities AbstractClientHandler::handlerCapabilities()
  * Clients are expected to know what channels they're already handling, and
  * which channel object corresponds to which window or tab.
  *
- * After handleChannels() replies successfully by calling
+ * After handleChannel() replies successfully by calling
  * MethodInvocationContext::setFinished(), the client process is considered
  * to be responsible for the channel until it its unique name disappears from
  * the bus.
@@ -943,7 +943,7 @@ bool AbstractClientHandler::wantsRequestNotification() const
  * responsiveness.
  *
  * If the request succeeds and is given to the expected handler, the
- * requestsSatisfied parameter to handleChannels() can be used to match the
+ * requestsSatisfied parameter to handleChannel() can be used to match the
  * channel to a previous addRequest() call.
  *
  * This lets the UI direct the channels to the window that it already opened.
@@ -953,7 +953,7 @@ bool AbstractClientHandler::wantsRequestNotification() const
  *
  * This lets the UI close the window or display the error.
  *
- * The channel dispatcher will attempt to ensure that handleChannels() is called
+ * The channel dispatcher will attempt to ensure that handleChannel() is called
  * on the same handler that received addRequest(). If that isn't possible,
  * removeRequest() will be called on the handler that previously received
  * addRequest(), with the special error #TP_QT_ERROR_NOT_YOURS, which

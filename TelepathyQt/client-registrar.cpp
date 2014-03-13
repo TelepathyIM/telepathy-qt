@@ -43,9 +43,9 @@
 namespace Tp
 {
 
-class HandleChannelsInvocationContext : public MethodInvocationContext<>
+class HandleChannelInvocationContext : public MethodInvocationContext<>
 {
-    Q_DISABLE_COPY(HandleChannelsInvocationContext)
+    Q_DISABLE_COPY(HandleChannelInvocationContext)
 
 public:
     typedef void (*FinishedCb)(const MethodInvocationContextPtr<> &context,
@@ -53,20 +53,20 @@ public:
                                void *data);
 
     static MethodInvocationContextPtr<> create(const QDBusConnection &bus,
-            const QDBusMessage &message, const QList<ChannelPtr> &channels,
+            const QDBusMessage &message, const ChannelPtr &channel,
             FinishedCb finishedCb, void *finishedCbData)
     {
         return SharedPtr<MethodInvocationContext<> >(
-                    new HandleChannelsInvocationContext(bus, message, channels,
+                    new HandleChannelInvocationContext(bus, message, channel,
                         finishedCb, finishedCbData));
     }
 
 private:
-    HandleChannelsInvocationContext(const QDBusConnection &connection,
-            const QDBusMessage &message, const QList<ChannelPtr> &channels,
+    HandleChannelInvocationContext(const QDBusConnection &connection,
+            const QDBusMessage &message, const ChannelPtr &channel,
             FinishedCb finishedCb, void *finishedCbData)
         : MethodInvocationContext<>(connection, message),
-          mChannels(channels),
+          mChannel(channel),
           mFinishedCb(finishedCb),
           mFinishedCbData(finishedCbData)
     {
@@ -75,11 +75,13 @@ private:
     void onFinished()
     {
         if (mFinishedCb) {
-            mFinishedCb(MethodInvocationContextPtr<>(this), mChannels, mFinishedCbData);
+            QList<ChannelPtr> myChannels;
+            myChannels << mChannel;
+            mFinishedCb(MethodInvocationContextPtr<>(this), myChannels, mFinishedCbData);
         }
     }
 
-    QList<ChannelPtr> mChannels;
+    ChannelPtr mChannel;
     FinishedCb mFinishedCb;
     void *mFinishedCbData;
 };
@@ -381,15 +383,16 @@ ClientHandlerAdaptor::~ClientHandlerAdaptor()
     }
 }
 
-void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
+void ClientHandlerAdaptor::HandleChannel(const QDBusObjectPath &accountPath,
         const QDBusObjectPath &connectionPath,
-        const TpDBus::ChannelDetailsList &channelDetailsList,
-        const TpDBus::ObjectPathList &requestsSatisfied,
-        qulonglong userActionTime_t,
+        const QDBusObjectPath &channelPath,
+        const QVariantMap &channelProperties,
+        const TpDBus::ObjectImmutablePropertiesMap &requestsSatisfied,
+        const qlonglong &userActionTime_t,
         const QVariantMap &handlerInfo,
         const QDBusMessage &message)
 {
-    debug() << "HandleChannels: account:" << accountPath.path() <<
+    debug() << "HandleChannel: account:" << accountPath.path() <<
         ", connection:" << connectionPath.path();
 
     AccountFactoryConstPtr accFactory = mRegistrar->accountFactory();
@@ -422,21 +425,19 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
     invocation->conn = ConnectionPtr::qObjectCast(connReady->proxy());
     readyOps.append(connReady);
 
-    foreach (const TpDBus::ChannelDetails &channelDetails, channelDetailsList) {
-        PendingReady *chanReady = chanFactory->proxy(invocation->conn,
-                channelDetails.channel.path(), channelDetails.properties);
-        ChannelPtr channel = ChannelPtr::qObjectCast(chanReady->proxy());
-        invocation->chans.append(channel);
-        readyOps.append(chanReady);
-    }
+    PendingReady *chanReady = chanFactory->proxy(invocation->conn,
+            channelPath.path(), channelProperties);
+    ChannelPtr channel = ChannelPtr::qObjectCast(chanReady->proxy());
+    invocation->chan = channel;
+    invocation->chanProperties = channelProperties;
+    readyOps.append(chanReady);
 
     invocation->handlerInfo = AbstractClientHandler::HandlerInfo(handlerInfo);
 
-    TpDBus::ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<TpDBus::ObjectImmutablePropertiesMap>(
-    handlerInfo.value(QLatin1String("request-properties")));
-    foreach (const QDBusObjectPath &reqPath, requestsSatisfied) {
+    TpDBus::ObjectImmutablePropertiesMap::const_iterator iter = requestsSatisfied.constBegin();
+    while(iter != requestsSatisfied.constEnd()) {
         ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
-                reqPath.path(), reqPropsMap.value(reqPath));
+                iter.key().path(), iter.value());
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }
@@ -446,9 +447,9 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
         invocation->time = QDateTime::fromTime_t((uint) userActionTime_t);
     }
 
-    invocation->ctx = HandleChannelsInvocationContext::create(mBus, message,
-                invocation->chans,
-                reinterpret_cast<HandleChannelsInvocationContext::FinishedCb>(
+    invocation->ctx = HandleChannelInvocationContext::create(mBus, message,
+                invocation->chan,
+                reinterpret_cast<HandleChannelInvocationContext::FinishedCb>(
                     &ClientHandlerAdaptor::onContextFinished),
                 this);
 
@@ -459,8 +460,7 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
 
     mInvocations.append(invocation);
 
-    debug() << "Preparing proxies for HandleChannels of" << channelDetailsList.size() << "channels"
-        << "for client" << mClient;
+    debug() << "Preparing proxy for HandleChannel for client" << mClient;
 }
 
 void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
@@ -477,7 +477,7 @@ void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
         (*i)->readyOp = 0;
 
         if (op->isError()) {
-            warning() << "Preparing proxies for HandleChannels failed with" << op->errorName()
+            warning() << "Preparing proxies for HandleChannel failed with" << op->errorName()
                 << op->errorMessage();
             (*i)->error = op->errorName();
             (*i)->message = op->errorMessage();
@@ -502,11 +502,11 @@ void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
             continue;
         }
 
-        debug() << "Invoking application handleChannels with" << invocation->chans.size()
-            << "channels on" << mClient;
+        debug() << "Invoking application handleChannel on" << mClient;
 
-        mClient->handleChannels(invocation->ctx, invocation->acc, invocation->conn,
-                invocation->chans, invocation->chanReqs, invocation->time, invocation->handlerInfo);
+        mClient->handleChannel(invocation->ctx, invocation->acc, invocation->conn,
+                invocation->chan, invocation->chanProperties, invocation->chanReqs,
+                invocation->time, invocation->handlerInfo);
     }
 }
 
@@ -515,7 +515,7 @@ void ClientHandlerAdaptor::onContextFinished(
         const QList<ChannelPtr> &channels, ClientHandlerAdaptor *self)
 {
     if (!context->isError()) {
-        debug() << "HandleChannels context finished successfully, "
+        debug() << "HandleChannel context finished successfully, "
             "updating handled channels";
 
         // register the channels in FakeHandlerManager so we report HandledChannels correctly
