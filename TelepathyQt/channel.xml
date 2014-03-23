@@ -21,7 +21,6 @@
 <xi:include href="../spec/Channel_Interface_Chat_State1.xml"/>
 <xi:include href="../spec/Channel_Interface_Conference1.xml"/>
 <xi:include href="../spec/Channel_Interface_Destroyable1.xml"/>
-<xi:include href="../spec/Channel_Interface_DTMF1.xml"/>
 <xi:include href="../spec/Channel_Interface_File_Transfer_Metadata1.xml"/>
 <xi:include href="../spec/Channel_Interface_Group1.xml"/>
 <xi:include href="../spec/Channel_Interface_Hold1.xml"/>
