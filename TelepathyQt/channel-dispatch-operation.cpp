@@ -454,6 +454,9 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
     return mPriv->possibleHandlers;
 }
 
+// FIXME: Get rid of this in favor of c++11 cstdint
+#define INT64_MAX (2^(64-1))-1
+
 /**
  * Called by an approver to accept a channel bundle and request that the given
  * handler be used to handle it.
@@ -475,13 +478,17 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
  *                im.telepathy.v1.Client.) of the channel handler that
  *                should handle the channel, or an empty string if
  *                the client has no preferred channel handler.
+ * \param userActionTime The time at which user action occurred, or 0 if
+ *                       no user action was involved in selecting the
+ *                       Handler or approving handling.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
-PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
+PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler,
+        int64_t userActionTime = INT64_MAX)
 {
     return new PendingVoid(
-            mPriv->baseInterface->HandleWith(handler),
+            mPriv->baseInterface->HandleWith(handler, userActionTime),
             ChannelDispatchOperationPtr(this));
 }
 

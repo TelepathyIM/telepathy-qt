@@ -73,7 +73,7 @@ public:
 
     QStringList possibleHandlers() const;
 
-    PendingOperation *handleWith(const QString &handler);
+    PendingOperation *handleWith(const QString &handler, int64_t userActionTime);
 
     PendingOperation *claim();
     PendingOperation *claim(const AbstractClientHandlerPtr &handler);
