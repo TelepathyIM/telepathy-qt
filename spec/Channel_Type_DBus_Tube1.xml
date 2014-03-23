@@ -36,7 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         on a bus, or all participants are expected to export those
         objects/interfaces.</p>
 
-      <p>In a multi-user context (Handle_Type_Room) the tube behaves
+      <p>In a multi-user context (Entity_Type_Room) the tube behaves
         like the D-Bus bus daemon, so participants can send each other
         private messages, or can send broadcast messages which are
         received by everyone in the tube (including themselves).
@@ -45,7 +45,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         sender unique name, and SHOULD attempt to avoid participants
         receiving messages not intended for them.</p>
 
-      <p>In a 1-1 context (Handle_Type_Contact) the tube behaves like
+      <p>In a 1-1 context (Entity_Type_Contact) the tube behaves like
         a peer-to-peer D-Bus connection - arbitrary D-Bus messages with
         any sender and/or destination can be sent by each participant,
         and each participant receives all messages sent by the other
@@ -110,7 +110,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     <signal name="DBusNamesChanged" tp:name-for-bindings="DBus_Names_Changed">
       <tp:docstring>
-        Emitted on a multi-user (i.e. Handle_Type_Room) D-Bus tube when a
+        Emitted on a multi-user (i.e. Entity_Type_Room) D-Bus tube when a
         participant opens or closes the tube.  This provides change
         notification for the <tp:member-ref>DBusNames</tp:member-ref> property.
       </tp:docstring>
@@ -146,9 +146,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <property name="DBusNames" tp:name-for-bindings="DBus_Names"
       access="read" type="a{us}" tp:type="DBus_Tube_Participants">
       <tp:docstring>
-        For a multi-user (i.e. Handle_Type_Room) D-Bus tube, a mapping
+        For a multi-user (i.e. Entity_Type_Room) D-Bus tube, a mapping
         between contact handles and their unique bus names on this tube.
-        For a peer-to-peer (i.e. Handle_Type_Contact) D-Bus tube, the empty
+        For a peer-to-peer (i.e. Entity_Type_Contact) D-Bus tube, the empty
         dictionary.  Change notification is via
         <tp:member-ref>DBusNamesChanged</tp:member-ref>.
       </tp:docstring>

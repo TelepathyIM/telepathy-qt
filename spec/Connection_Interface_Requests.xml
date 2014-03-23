@@ -87,7 +87,7 @@
 
           <p>Each dictionary MUST contain the keys
             <tp:dbus-ref>im.telepathy.v1.Channel.ChannelType</tp:dbus-ref>,
-            <tp:dbus-ref>im.telepathy.v1.Channel.TargetHandleType</tp:dbus-ref>,
+            <tp:dbus-ref>im.telepathy.v1.Channel.TargetEntityType</tp:dbus-ref>,
             <tp:dbus-ref>im.telepathy.v1.Channel.TargetHandle</tp:dbus-ref>,
             <tp:dbus-ref>im.telepathy.v1.Channel.TargetID</tp:dbus-ref>
             and

@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       type. A tube channel contains exactly one tube; if you need several
       tubes, you have to create several tube channels.</p>
 
-      <p>Tube channels can be requested for <tp:type>Handle_Type</tp:type>
+      <p>Tube channels can be requested for <tp:type>Entity_Type</tp:type>
         Contact (for 1-1 communication) or Room (to communicate with others in
         the room simultaneously).</p>
     </tp:docstring>

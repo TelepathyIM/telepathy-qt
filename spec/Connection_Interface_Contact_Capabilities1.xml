@@ -202,7 +202,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>In particular, requestable channel classes for channels with
           target handle type Contact MUST list <tp:dbus-ref
             namespace="im.telepathy.v1.Channel"
-            >TargetHandleType</tp:dbus-ref> among their fixed properties when
+            >TargetEntityType</tp:dbus-ref> among their fixed properties when
           they appear here, and clients MAY assume that this will be the
           case.</p>
 
@@ -213,7 +213,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             RequestableChannelClasses and contact capabilities.</p>
         </tp:rationale>
 
-        <p>Channel classes with target handle type Handle_Type_Contact
+        <p>Channel classes with target handle type Entity_Type_Contact
           indicate that a request that matches the channel class, and also
           either has the contact's handle as <tp:dbus-ref
             namespace="im.telepathy.v1.Channel"
@@ -230,8 +230,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             capabilities with the same code.</p>
         </tp:rationale>
 
-        <p>Channel classes with target handle type Handle_Type_Room or
-          Handle_Type_None indicate that if a channel matching the channel
+        <p>Channel classes with target handle type Entity_Type_Room or
+          Entity_Type_None indicate that if a channel matching the channel
           class is created, then inviting the contact to that channel
           can be expected to succeed.</p>
 

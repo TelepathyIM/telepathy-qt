@@ -113,8 +113,8 @@
         <pre>  {
     …<tp:dbus-ref namespace="imt1">Channel.ChannelType</tp:dbus-ref>:
         …<tp:dbus-ref namespace="imt1">Channel.Type.Text</tp:dbus-ref>,
-    …<tp:dbus-ref namespace="imt1">Channel.TargetHandleType</tp:dbus-ref>:
-        <tp:value-ref type="Handle_Type">Contact</tp:value-ref>,
+    …<tp:dbus-ref namespace="imt1">Channel.TargetEntityType</tp:dbus-ref>:
+        <tp:value-ref type="Entity_Type">Contact</tp:value-ref>,
     …<tp:dbus-ref namespace="imt1">Channel.TargetID</tp:dbus-ref>:
     <var>Target_ID</var>
   }</pre>

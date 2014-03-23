@@ -194,12 +194,12 @@ Interfaces=im.telepathy.v1.Client.Observer;
 
 [im.telepathy.v1.Client.Observer.ObserverChannelFilter 0]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Text
-im.telepathy.v1.Channel.TargetHandleType u=1
+im.telepathy.v1.Channel.TargetEntityType u=1
 im.telepathy.v1.Channel.Requested b=true
 
 [im.telepathy.v1.Client.Observer.ObserverChannelFilter 1]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Text
-im.telepathy.v1.Channel.TargetHandleType u=2
+im.telepathy.v1.Channel.TargetEntityType u=2
 im.telepathy.v1.Channel.Requested b=true
 </pre>
 
@@ -346,7 +346,8 @@ Recover=true
         </tp:docstring>
       </arg>
 
-      <arg name="Requests_Satisfied" type="ao" direction="in">
+      <arg name="Requests_Satisfied" type="a{oa{sv}}" direction="in"
+        tp:type="Object_Immutable_Properties_Map">
         <tp:docstring>
           The <tp:dbus-ref
           namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>s
@@ -380,13 +381,6 @@ Recover=true
                 the same observer crashed).
               </tp:rationale>
             </dd>
-
-            <dt><code>request-properties</code> - a{oa{sv}}</dt>
-            <dd>A map from <tp:dbus-ref
-              namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>
-              paths listed in <var>Requests_Satisfied</var> to
-              <tp:type>Qualified_Property_Value_Map</tp:type>s containing
-              namespaced immutable properties of each request.</dd>
           </dl>
 
           <p>All defined keys for this dictionary are optional;

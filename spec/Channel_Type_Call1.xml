@@ -78,7 +78,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 <tp:dbus-ref namespace="imt1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>({
   ...<tp:dbus-ref namespace="imt1.Channel">ChannelType</tp:dbus-ref>: ...<tp:dbus-ref
       namespace="imt1.Channel.Type">Call1</tp:dbus-ref>,
-  ...<tp:dbus-ref namespace="imt1.Channel">TargetHandleType</tp:dbus-ref>: Contact,
+  ...<tp:dbus-ref namespace="imt1.Channel">TargetEntityType</tp:dbus-ref>: Contact,
   ...<tp:dbus-ref namespace="imt1.Channel">TargetID</tp:dbus-ref>: 'foo@example.com',
   ...<tp:member-ref>InitialAudio</tp:member-ref>: True,
 })</pre></blockquote>
@@ -165,7 +165,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   {
     ...<tp:dbus-ref namespace="imt1.Channel">ChannelType</tp:dbus-ref>: ...<tp:dbus-ref
       namespace="imt1.Channel.Type">Call1</tp:dbus-ref>,
-    ...<tp:dbus-ref namespace="imt1.Channel">TargetHandleType</tp:dbus-ref>: Contact,
+    ...<tp:dbus-ref namespace="imt1.Channel">TargetEntityType</tp:dbus-ref>: Contact,
     ...<tp:dbus-ref namespace="imt1.Channel">TargetID</tp:dbus-ref>: 'foo@example.com',
     ...<tp:dbus-ref namespace="imt1.Channel">TargetHandle</tp:dbus-ref>: 42,
     ...<tp:dbus-ref namespace="imt1.Channel">Requested</tp:dbus-ref>: False,
@@ -275,7 +275,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <blockquote>
         <pre>
 [( Fixed = { ...<tp:dbus-ref namespace="imt1.Channel">ChannelType</tp:dbus-ref>: ...<tp:dbus-ref namespace="imt1.Channel.Type">Call1</tp:dbus-ref>,
-            ...<tp:dbus-ref namespace="imt1.Channel">TargetHandleType</tp:dbus-ref>: Contact,
+            ...<tp:dbus-ref namespace="imt1.Channel">TargetEntityType</tp:dbus-ref>: Contact,
             ...<tp:member-ref>InitialVideo</tp:member-ref>: True
           },
   Allowed = [ ...<tp:member-ref>InitialVideoName</tp:member-ref>,
@@ -284,7 +284,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             ]
 ),
 ( Fixed = { ...<tp:dbus-ref namespace="imt1.Channel">ChannelType</tp:dbus-ref>: ...<tp:dbus-ref namespace="imt1.Channel.Type">Call1</tp:dbus-ref>,
-            ...<tp:dbus-ref namespace="imt1.Channel">TargetHandleType</tp:dbus-ref>: Contact,
+            ...<tp:dbus-ref namespace="imt1.Channel">TargetEntityType</tp:dbus-ref>: Contact,
             ...<tp:member-ref>InitialAudio</tp:member-ref>: True
           },
   Allowed = [ ...<tp:member-ref>InitialAudioName</tp:member-ref>,

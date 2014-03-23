@@ -155,7 +155,7 @@
       <blockquote>
         <code><tp:dbus-ref namespace="im.telepathy.v1.Connection.Interface.Requests">EnsureChannel</tp:dbus-ref>({
             ...ChannelType: ...Text,
-            ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>: ...Room,
+            ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>: ...Room,
             ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>: 'telepathy@conf.example.com',
             ...<tp:member-ref>InitialChannels</tp:member-ref>: [C3]
           })</code>
@@ -247,7 +247,7 @@
 ( Fixed = {<br/>
     ...<tp:dbus-ref namespace='imt1.Channel'>ChannelType</tp:dbus-ref>:
       ...<tp:dbus-ref namespace='imt1.Channel.Type'>Text</tp:dbus-ref>,<br/>
-    ...<tp:dbus-ref namespace='imt1.Channel'>TargetHandleType</tp:dbus-ref>:
+    ...<tp:dbus-ref namespace='imt1.Channel'>TargetEntityType</tp:dbus-ref>:
       Room<br/>
   },<br/>
   Allowed = [ <tp:dbus-ref namespace='imt1.Channel'>TargetHandle</tp:dbus-ref>,
@@ -277,7 +277,7 @@
               namespace="im.telepathy.v1.Channel"
               >ChannelType</tp:dbus-ref> as this one, but with <tp:dbus-ref
               namespace="im.telepathy.v1.Channel"
-              >TargetHandleType</tp:dbus-ref> = CONTACT.</p>
+              >TargetEntityType</tp:dbus-ref> = CONTACT.</p>
 
         <p>This property MUST NOT be requestable; instead, the
           <tp:member-ref>InitialChannels</tp:member-ref> property may be

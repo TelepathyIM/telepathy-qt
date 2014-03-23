@@ -50,7 +50,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         They always have <tp:dbus-ref
           namespace="imt1.Channel">Requested</tp:dbus-ref> = False,
         <tp:dbus-ref
-          namespace="imt1.Channel">TargetHandleType</tp:dbus-ref> = None
+          namespace="imt1.Channel">TargetEntityType</tp:dbus-ref> = None
         and <tp:dbus-ref
           namespace="im.telepathy.v1.Channel">TargetHandle</tp:dbus-ref>
         = 0.</p>

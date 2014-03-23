@@ -63,13 +63,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The handle (a representation for the identifier) of the contact,
           chatroom, etc. with which this handle communicates. Its type
-          is given by the <tp:member-ref>TargetHandleType</tp:member-ref>
+          is given by the <tp:member-ref>TargetEntityType</tp:member-ref>
           property.</p>
 
         <p>This is fixed for the lifetime of the channel, so channels which
           could potentially be used to communicate with multiple contacts,
-          and do not have an identity of their own (such as a Handle_Type_Room
-          handle), must have TargetHandleType set to Handle_Type_None and
+          and do not have an identity of their own (such as a Entity_Type_Room
+          handle), must have TargetEntityType set to Entity_Type_None and
           TargetHandle set to 0.</p>
 
         <p>Unlike in the telepathy-spec 0.16 API, there is no particular
@@ -78,8 +78,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           to support conversation threads in XMPP and SIP, for example.</p>
 
         <p>If this is present in a channel request, it must be nonzero,
-          <tp:member-ref>TargetHandleType</tp:member-ref>
-          MUST be present and not Handle_Type_None, and
+          <tp:member-ref>TargetEntityType</tp:member-ref>
+          MUST be present and not Entity_Type_None, and
           <tp:member-ref>TargetID</tp:member-ref> MUST NOT be
           present. Properties from
           <tp:dbus-ref namespace="im.telepathy.v1.Channel.Interface">Addressing1</tp:dbus-ref>
@@ -89,8 +89,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <ul>
           <li>have the specified TargetHandle property; or</li>
-          <li>have <tp:member-ref>TargetHandleType</tp:member-ref> =
-            Handle_Type_None, TargetHandle = 0, and be configured such that
+          <li>have <tp:member-ref>TargetEntityType</tp:member-ref> =
+            Entity_Type_None, TargetHandle = 0, and be configured such that
             it could communicate with the specified handle in some other way
             (e.g. have the requested contact handle in its Group
             interface)</li>
@@ -110,8 +110,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           string if the TargetHandle is 0.</p>
 
         <p>If this is present in a channel request,
-          <tp:member-ref>TargetHandleType</tp:member-ref>
-          MUST be present and not Handle_Type_None, and
+          <tp:member-ref>TargetEntityType</tp:member-ref>
+          MUST be present and not Entity_Type_None, and
           <tp:member-ref>TargetHandle</tp:member-ref> MUST NOT be
           present. Properties from
           <tp:dbus-ref namespace="im.telepathy.v1.Channel.Interface">Addressing1</tp:dbus-ref>
@@ -132,16 +132,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </property>
 
-    <property name="TargetHandleType" type="u" access="read"
-      tp:type="Handle_Type" tp:name-for-bindings="Target_Handle_Type">
+    <property name="TargetEntityType" type="u" access="read"
+      tp:type="Entity_Type" tp:name-for-bindings="Target_Entity_Type">
       <tp:added version="0.17.7"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The type of <tp:member-ref>TargetHandle</tp:member-ref>.</p>
 
         <p>If this is omitted from a channel request, connection managers
-          SHOULD treat this as equivalent to Handle_Type_None.</p>
+          SHOULD treat this as equivalent to Entity_Type_None.</p>
 
-        <p>If this is omitted or is Handle_Type_None,
+        <p>If this is omitted or is Entity_Type_None,
           <tp:member-ref>TargetHandle</tp:member-ref> and
           <tp:member-ref>TargetID</tp:member-ref> MUST be omitted from the
           request.</p>
@@ -334,7 +334,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <ul>
       <li><tp:member-ref>ChannelType</tp:member-ref> specifies the kind of
         communication carried out on this channel;</li>
-      <li><tp:member-ref>TargetHandleType</tp:member-ref>,
+      <li><tp:member-ref>TargetEntityType</tp:member-ref>,
         <tp:member-ref>TargetHandle</tp:member-ref> and
         <tp:member-ref>TargetID</tp:member-ref> specify the entity with which
         this channel communicates, such as the other party in a 1-1 call, or
@@ -364,7 +364,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       with the properties on this interface.</p>
 
     <p>Some channels are “anonymous”, with
-      <tp:member-ref>TargetHandleType</tp:member-ref> set to <code>None</code>,
+      <tp:member-ref>TargetEntityType</tp:member-ref> set to <code>None</code>,
       which indicates that the channel is defined by some other properties. For
       instance, transient ad-hoc chat rooms may be defined only by their members (as visible
       through the <tp:dbus-ref
@@ -385,7 +385,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:docstring>
 
     <tp:changed version="0.17.7">Previously we guaranteed that, for
-      any handle type other than Handle_Type_None, and for any channel type
+      any handle type other than Entity_Type_None, and for any channel type
       and any handle, there would be no more than one channel with that
       combination of channel type, handle type and handle. This guarantee
       has now been removed in order to accommodate features like message

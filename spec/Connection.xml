@@ -148,41 +148,117 @@ USA.</p>
       <tp:added version="0.19.2"/>
     </property>
 
-    <tp:enum name="Handle_Type" type="u">
+    <tp:enum name="Entity_Type" type="u">
+      <tp:docstring>
+        <p>Enumeration describing the type of entity with which a channel
+        communicates.</p>
+
+        <p>For instance, a text chat or VoIP call with a person or automated system has
+        entity type <tp:value-ref type="Entity_Type">Contact</tp:value-ref>,
+        a text chatroom or a VoIP call to a conferencing
+        system ideally has entity type <tp:value-ref type="Entity_Type">Room</tp:value-ref>,
+        and a channel listing chatrooms available on a server has entity type
+        <tp:value-ref type="Entity_Type">None</tp:value-ref>.</p>
+      </tp:docstring>
       <tp:enumvalue suffix="None" value="0">
         <tp:docstring>
-          A "null" handle type used to indicate the absence of a handle.
-          When a handle type and a handle appear as a pair, if the handle
-          type is zero, the handle must also be zero.
+          <p>The absence of a entity, <tp:value-ref type="Entity_Type">Contact</tp:value-ref>,
+            <tp:value-ref type="Entity_Type">Room</tp:value-ref>, etc.
+            For instance, <tp:dbus-ref namespace='imt1.Channel.Type'>ContactSearch1</tp:dbus-ref>,
+            <tp:dbus-ref namespace='imt1.Channel.Type'>RoomList1</tp:dbus-ref>,
+            <tp:dbus-ref namespace='imt1.Channel.Type'>ServerAuthentication1</tp:dbus-ref> and
+            <tp:dbus-ref namespace='imt1.Channel.Type'>ServerTLSConnection1</tp:dbus-ref>
+            channels do not communicate with a specific entity, so they have this channel type.</p>
+
+          <p>This entity type is also used for chatrooms that cannot be
+            addressed by name (so users cannot join by typing a name or number,
+            only by being invited), such as multi-user "switchboards" in MSNP.</p>
+
+          <p>Where this appears alongside a <tp:type>Handle</tp:type>
+            and/or Identifier, the handle MUST be 0 and the identifier MUST be
+            the empty string.</p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Contact" value="1">
         <tp:docstring>
-          A contact
+          <p>A contact, i.e. a person or automated system.</p>
+
+          <p>The corresponding identifier is a normalized form of the
+          contact's unique machine-readable identifier in this particular
+          protocol (such as an XMPP JID, SIP URI, AIM screen-name, ICQ number
+          or IRC nickname). For instance, any parts of the identifier
+          that are defined to be case-insensitive by the protocol SHOULD
+          be normalized to lower-case.</p>
+
+          <p>In protocols where conferencing systems cannot reliably be
+          distinguished from individuals, conferencing systems MAY
+          also appear with
+          <tp:value-ref type="Entity_Type">Contact</tp:value-ref>.</p>
+
+          <tp:rationale>
+            For instance, calls to/from SIP teleconferencing "rooms"
+            typically appear as a simple SIP URI
+          </tp:rationale>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Room" value="2">
         <tp:docstring>
-          A chat room
+          <p>A chatroom or teleconferencing system that can be addressed
+          by name.</p>
+
+          <p>The corresponding identifier is a normalized form of the
+          room's unique machine-readable identifier in this particular
+          protocol, such as the JID "jdev@conference.jabber.org"
+          on XMPP, or the channel name "#telepathy" on IRC.</p>
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Self" value="3">
+        <tp:docstring>
+          <p>Not used within Telepathy itself, but reserved for use by
+            telepathy-logger.</p>
+
+          <tp:rationale>
+            telepathy-logger uses this type to represents the owner of the
+            account whose channel has been logged to. We don't need this
+            concept in Telepathy itself but it's convenient to use the same
+            enum across the whole API.
+          </tp:rationale>
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
 
     <tp:simple-type name="Handle" type="u" array-name="Handle_List">
-      <tp:docstring>An unsigned 32-bit integer representing a
-        handle</tp:docstring>
+      <tp:docstring>
+        <p>An unsigned 32-bit integer representing a string. A handle is
+        meaningless on its own, and must be paired with a
+        <tp:type>Entity_Type</tp:type>.
+        Among nonzero handles with the same <tp:type>Entity_Type</tp:type>,
+        there is a bidirectional mapping between handles and strings.</p>
+
+        <p>The handle 0 is special, and represents the absence of a
+        contact, room etc. It corresponds to
+        <tp:value-ref type="Entity_Type">None</tp:value-ref>.</p>
+      </tp:docstring>
     </tp:simple-type>
 
     <tp:simple-type name="Contact_Handle" type="u"
       array-name="Contact_Handle_List">
-      <tp:docstring>An unsigned 32-bit integer representing a handle of type
-        Handle_Type_Contact</tp:docstring>
+      <tp:docstring>
+        A nonzero <tp:type>Handle</tp:type> of type
+        <tp:value-ref type="Entity_Type">Contact</tp:value-ref>,
+        or 0 to represent the absence of a contact
+        (<tp:value-ref type="Entity_Type">None</tp:value-ref>).
+      </tp:docstring>
     </tp:simple-type>
 
     <tp:simple-type name="Room_Handle" type="u"
       array-name="Room_Handle_List">
-      <tp:docstring>An unsigned 32-bit integer representing a handle of type
-        Handle_Type_Room</tp:docstring>
+      <tp:docstring>
+        A nonzero <tp:type>Handle</tp:type> of type
+        <tp:value-ref type="Entity_Type">Room</tp:value-ref>,
+        or 0 to represent the absence of a room
+        (<tp:value-ref type="Entity_Type">None</tp:value-ref>).
+      </tp:docstring>
     </tp:simple-type>
 
     <tp:enum name="Connection_Status" plural="Connection_Statuses" type="u">
@@ -859,7 +935,7 @@ USA.</p>
         <p>Channel classes SHOULD always include the keys
           <tp:dbus-ref>im.telepathy.v1.Channel.ChannelType</tp:dbus-ref>
           and
-          <tp:dbus-ref>im.telepathy.v1.Channel.TargetHandleType</tp:dbus-ref>.</p>
+          <tp:dbus-ref>im.telepathy.v1.Channel.TargetEntityType</tp:dbus-ref>.</p>
       </tp:docstring>
 
       <tp:member type="s" name="Key" tp:type="DBus_Qualified_Member">
@@ -900,9 +976,9 @@ USA.</p>
             we'd need to represent it like this:</p>
 
           <ul>
-            <li>class 1: ChannelType = Text, TargetHandleType = CONTACT</li>
+            <li>class 1: ChannelType = Text, TargetEntityType = CONTACT</li>
             <li>class 2: Channel.ChannelType = Text,
-              Channel.TargetHandleType = CONTACT,
+              Channel.TargetEntityType = CONTACT,
               Encryption.Encrypted = TRUE</li>
           </ul>
         </tp:rationale>
@@ -950,7 +1026,7 @@ USA.</p>
 
           <tp:rationale>
             <p>For instance, if
-              TargetHandleType takes a value that is not Handle_Type_None,
+              TargetEntityType takes a value that is not Entity_Type_None,
               one or the other of TargetHandle and TargetID is required.
               Clients are expected to understand the documented relationship
               between the properties, so we do not have separate arrays

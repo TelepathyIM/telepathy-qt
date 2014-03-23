@@ -351,7 +351,7 @@
   <tp:error name="No Answer">
     <tp:docstring>
       Used to represent a user being removed from a channel because they did
-      not respond, e.g. to a StreamedMedia call.
+      not respond, e.g. to a call.
 
       <tp:rationale>
         This corresponds to No_Answer in the
@@ -374,10 +374,7 @@
 
   <tp:error name="Terminated">
     <tp:docstring>
-      Raised when a channel is terminated for an unspecified reason. In
-      particular, this error SHOULD be used whenever normal termination of
-      a 1-1 StreamedMedia call by the remote user is represented as a D-Bus
-      error name.
+      Raised when a channel is terminated for an unspecified reason.
 
       <tp:rationale>
         This corresponds to None in the

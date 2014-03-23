@@ -1430,11 +1430,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <p>Simple one-to-one chats (such as streams of private messages in
         XMPP or IRC) should be represented by a Text channel whose
-        <tp:dbus-ref namespace="imt1.Channel">TargetHandleType</tp:dbus-ref>
-        is <tp:value-ref type="Handle_Type">Contact</tp:value-ref>. The
+        <tp:dbus-ref namespace="imt1.Channel">TargetEntityType</tp:dbus-ref>
+        is <tp:value-ref type="Entity_Type">Contact</tp:value-ref>. The
         expected way to request such a channel is to set the <tp:dbus-ref
         namespace='imt1.Channel'>ChannelType</tp:dbus-ref>, <tp:dbus-ref
-        namespace='imt1.Channel'>TargetHandleType</tp:dbus-ref>,
+        namespace='imt1.Channel'>TargetEntityType</tp:dbus-ref>,
         and either <tp:dbus-ref
         namespace='imt1.Channel'>TargetHandle</tp:dbus-ref> or <tp:dbus-ref
         namespace='imt1.Channel'>TargetID</tp:dbus-ref> in a call to
@@ -1444,8 +1444,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>Named chat rooms whose identity can be saved and used again later
         (IRC channels, Jabber MUCs) are expected to be represented by Text
         channels with <tp:dbus-ref
-        namespace="imt1.Channel">TargetHandleType</tp:dbus-ref> =
-        <tp:value-ref type="Handle_Type">Room</tp:value-ref> and the
+        namespace="imt1.Channel">TargetEntityType</tp:dbus-ref> =
+        <tp:value-ref type="Entity_Type">Room</tp:value-ref> and the
         <tp:dbus-ref namespace="imt1.Channel.Interface">Group1</tp:dbus-ref>
         interface. In protocols where a chatroom can be used as a continuation
         of one or more one-to-one chats, these channels should also have the
@@ -1456,8 +1456,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         unique identifier (e.g. a conversation on MSN which has, or once had,
         three or more participants) are expected to be represented by Text
         channels with <tp:dbus-ref
-        namespace="imt1.Channel">TargetHandleType</tp:dbus-ref> = <tp:value-ref
-        type="Handle_Type">None</tp:value-ref> (and hence <tp:dbus-ref
+        namespace="imt1.Channel">TargetEntityType</tp:dbus-ref> = <tp:value-ref
+        type="Entity_Type">None</tp:value-ref> (and hence <tp:dbus-ref
         namespace="imt1.Channel">TargetHandle</tp:dbus-ref> = 0),
         <tp:dbus-ref namespace="imt1.Channel.Interface">Group1</tp:dbus-ref>
         interface, and optionally the
@@ -1468,8 +1468,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         just a nameless chat room starting with exactly two members, to which
         more members can be invited, the initial one-to-one conversation
         SHOULD be represented with <tp:dbus-ref
-        namespace="imt1.Channel">TargetHandleType</tp:dbus-ref> =
-        <tp:value-ref type="Handle_Type">Contact</tp:value-ref>. If a third
+        namespace="imt1.Channel">TargetEntityType</tp:dbus-ref> =
+        <tp:value-ref type="Entity_Type">Contact</tp:value-ref>. If a third
         participant
         joins or is invited, this SHOULD be represented by signalling
         a new <tp:dbus-ref

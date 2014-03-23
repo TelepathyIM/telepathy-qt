@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tt>x-telepathy-identifier</tt>.
     </tp:added>
     <tp:changed version="0.99.1">
-      The requestable channel class now fixes TargetHandleType=NONE.
+      The requestable channel class now fixes TargetEntityType=NONE.
     </tp:changed>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -41,13 +41,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           >RequestableChannelClasses</tp:dbus-ref> with the <tp:dbus-ref
           namespace='imt1.Channel'>ChannelType</tp:dbus-ref> fixed to this
         interface,
-        <tp:dbus-ref namespace='imt1.Channel'>TargetHandleType</tp:dbus-ref>
-        fixed to Handle_Type_None, and no other fixed properties. That requestable
+        <tp:dbus-ref namespace='imt1.Channel'>TargetEntityType</tp:dbus-ref>
+        fixed to Entity_Type_None, and no other fixed properties. That requestable
         channel class MAY also have the Server and Limit properties in its
         list of allowed properties, depending on the protocol.</p>
 
       <p>All channels of this type should have <tp:dbus-ref
-        namespace='imt1.Channel'>TargetHandleType</tp:dbus-ref>
+        namespace='imt1.Channel'>TargetEntityType</tp:dbus-ref>
         <code>None</code> (and hence <tp:dbus-ref
         namespace='imt1.Channel'>TargetHandle</tp:dbus-ref> <code>0</code> and
         <tp:dbus-ref namespace='imt1.Channel'>TargetID</tp:dbus-ref>

@@ -662,10 +662,12 @@
         </dl>
 
         <tp:rationale>
-          <p>An equivalent of the gtalk-p2p-relay-token property on
-            MediaSignalling channels is not included here. The connection
-            manager should be responsible for making the necessary HTTP
-            requests to turn the token into a username and password.</p>
+          <p>Unlike the MediaSignalling API in older versions of Telepathy,
+            this does not include protocol-specific authentication tokens
+            such as the &lt;relay&gt;&lt;token/&gt;&lt;/relay&gt;
+            construct used by Google Talk; the connection manager should be
+            responsible for making any necessary service-specific requests
+            to turn the token into a username and password.</p>
         </tp:rationale>
 
         <p>The type of relay server that this represents depends on

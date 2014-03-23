@@ -49,8 +49,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <blockquote><code>
 { ...<tp:dbus-ref namespace='imt1.Channel'>ChannelType</tp:dbus-ref>:
       ...<tp:dbus-ref namespace='imt1.Channel.Type'>Text</tp:dbus-ref>,<br/>
-  ...<tp:dbus-ref namespace='imt1.Channel'>TargetHandleType</tp:dbus-ref>:
-      <tp:value-ref type="Handle_Type">Contact</tp:value-ref>,<br/>
+  ...<tp:dbus-ref namespace='imt1.Channel'>TargetEntityType</tp:dbus-ref>:
+      <tp:value-ref type="Entity_Type">Contact</tp:value-ref>,<br/>
   ...<tp:dbus-ref namespace='imt1.Channel.Interface'>SMS1.Flash</tp:dbus-ref>:
       True,<br/>
 }</code></blockquote>
@@ -73,16 +73,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 [<br/>
  ({ ...<tp:dbus-ref namespace='imt1.Channel'>ChannelType</tp:dbus-ref>:
      ...<tp:dbus-ref namespace='imt1.Channel.Type'>Text</tp:dbus-ref>,<br/>
-    ...<tp:dbus-ref namespace='imt1.Channel'>TargetHandleType</tp:dbus-ref>:
-       <tp:value-ref type="Handle_Type">Contact</tp:value-ref>,<br/>
+    ...<tp:dbus-ref namespace='imt1.Channel'>TargetEntityType</tp:dbus-ref>:
+       <tp:value-ref type="Entity_Type">Contact</tp:value-ref>,<br/>
   },<br/>
   [ ...<tp:dbus-ref namespace='imt1.Channel'>TargetHandle</tp:dbus-ref>,
     ...<tp:dbus-ref namespace='imt1.Channel'>TargetID</tp:dbus-ref> ]),<br/>
 <br/>
  ({ ...<tp:dbus-ref namespace='imt1.Channel'>ChannelType</tp:dbus-ref>:
        ...<tp:dbus-ref namespace='imt1.Channel.Type'>Text</tp:dbus-ref>,<br/>
-    ...<tp:dbus-ref namespace='imt1.Channel'>TargetHandleType</tp:dbus-ref>:
-       <tp:value-ref type="Handle_Type">Contact</tp:value-ref>,<br/>
+    ...<tp:dbus-ref namespace='imt1.Channel'>TargetEntityType</tp:dbus-ref>:
+       <tp:value-ref type="Entity_Type">Contact</tp:value-ref>,<br/>
     ...<tp:member-ref>SMSChannel</tp:member-ref>: True,<br/>
   },<br/>
   [ ...<tp:dbus-ref namespace='imt1.Channel'>TargetHandle</tp:dbus-ref>,
@@ -152,7 +152,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <blockquote><pre>{
   Channel.Type: Channel.Type.Text,
-  Channel.TargetHandleType: Handle_Type_Contact,
+  Channel.TargetEntityType: Entity_Type_Contact,
   Channel.TargetID: escher.cat,
   Channel.Interface.SMS.SMSChannel: True,
 }</pre></blockquote>

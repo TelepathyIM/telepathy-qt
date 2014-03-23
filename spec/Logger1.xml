@@ -1,0 +1,168 @@
+<?xml version="1.0" ?>
+<node name="/Logger"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009-2011 Collabora Ltd.</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="im.telepathy.v1.Logger1">
+    <tp:added version="0.3">(as a draft)</tp:added>
+
+    <tp:docstring>
+      An interface for requesting information from the Telepathy Logger
+      service.
+    </tp:docstring>
+
+    <tp:struct name="Favorites" array-name="Favorites_List">
+      <tp:docstring>
+        A set of favorite contacts on a specific account.
+      </tp:docstring>
+      <tp:member name="Account" type="o">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The account path
+        </tp:docstring>
+      </tp:member>
+      <tp:member name="Identifiers" type="as">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The identifiers of the favorite contacts.
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <method name="GetFavouriteContacts"
+            tp:name-for-bindings="Get_Favourite_Contacts">
+      <arg direction="out" name="Favourite_Contacts" type="a(oas)" tp:type="Favorites[]">
+        <tp:docstring>
+        The favourite contacts, as an array of TpAccounts and their contact
+        identifiers.
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Returns the favourite contacts.
+      </tp:docstring>
+    </method>
+
+    <method name="AddFavouriteContact"
+            tp:name-for-bindings="Add_Favourite_Contact">
+      <arg direction="in" name="Account" type="o">
+        <tp:docstring>
+        The object path for the TpAccount to which the contact belongs
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Identifier" type="s">
+        <tp:docstring>
+        The favourite contact's identifier
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Add a contact's designation as a favourite.
+      </tp:docstring>
+    </method>
+
+    <method name="RemoveFavouriteContact"
+            tp:name-for-bindings="Remove_Favourite_Contact">
+      <arg direction="in" name="Account" type="o">
+        <tp:docstring>
+        The object path for the TpAccount to which the contact belongs
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Identifier" type="s">
+        <tp:docstring>
+        The favourite contact's identifier
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Remove a contact's designation as a favourite.
+      </tp:docstring>
+    </method>
+
+    <method name="Clear"
+            tp:name-for-bindings="Clear">
+      <tp:docstring>
+        Clear all the logs. This will not erase the favourite contacts.
+      </tp:docstring>
+    </method>
+
+    <method name="ClearAccount"
+            tp:name-for-bindings="Clear_Account">
+      <arg direction="in" name="Account" type="o">
+        <tp:docstring>
+        The object path for the TpAccount in which logs will be cleared.
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Clear all logs stored for specified account.
+      </tp:docstring>
+    </method>
+
+    <method name="ClearEntity"
+            tp:name-for-bindings="Clear_Entity">
+      <arg direction="in" name="Account" type="o">
+        <tp:docstring>
+        The object path for the TpAccount in which logs will be cleared.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Identifier" type="s">
+        <tp:docstring>
+        The entity identifier.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Type" type="i">
+        <tp:docstring>
+        The entity type, should be one of TP_ENTITY_TYPE_CONTACT (1) or TP_ENTITY_TYPE_ROOM (2).
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Clear all logs stored for discussions with entity in account.
+      </tp:docstring>
+    </method>
+
+    <signal name="FavouriteContactsChanged"
+      tp:name-for-bindings="Favourite_Contacts_Changed">
+      <tp:docstring>
+        The set of favourite contacts has changed.
+      </tp:docstring>
+
+      <arg name="Account" type="o">
+        <tp:docstring>
+          An account associated with the contact.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Added" type="as">
+        <tp:docstring>
+        List of contact identifiers of contacts which are now favourites.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Removed" type="as">
+        <tp:docstring>
+        List of contact identifiers of contacts which are no longer favourites.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

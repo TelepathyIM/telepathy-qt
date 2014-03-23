@@ -67,7 +67,7 @@
             channel into the MUC, or to merge a 1-1 Jingle call into a Muji
             call by inviting the peer from the Jingle call into the Muji call.
             (MUC and Muji channels are both implemented by XMPP MUCs, with
-            Handle_Type_Room.)</p>
+            Entity_Type_Room.)</p>
         </tp:rationale>
       </tp:docstring>
 
@@ -78,7 +78,7 @@
               >ChannelType</tp:dbus-ref>
             as this one, but with <tp:dbus-ref
               namespace="im.telepathy.v1.Channel"
-              >TargetHandleType</tp:dbus-ref> = CONTACT.</p>
+              >TargetEntityType</tp:dbus-ref> = CONTACT.</p>
         </tp:docstring>
       </arg>
 

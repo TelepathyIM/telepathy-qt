@@ -68,7 +68,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           passed to the <tp:dbus-ref
           namespace="imt1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>
           method with <tp:dbus-ref
-          namespace="imt1.Channel">TargetHandleType</tp:dbus-ref>=
+          namespace="imt1.Channel">TargetEntityType</tp:dbus-ref>=
           HANDLE_TYPE_ROOM), the channel type, and a dictionary
           containing further information about the room as
           available. The following well-known keys and types are

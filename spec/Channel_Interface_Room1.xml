@@ -45,7 +45,7 @@
 
       <p>This interface intends to support and differentiate these mechanisms
         more clearly than the <tp:dbus-ref
-          namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
         and <tp:dbus-ref
           namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>
         properties can alone. It initially contains a pair of properties used
@@ -57,7 +57,7 @@
         <li>The IRC channel <tt>#telepathy</tt> on Freenode is represented by a
           channel with properties
           <tp:dbus-ref
-          namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
           = <code>Room</code>,
           <tp:dbus-ref
           namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>
@@ -78,7 +78,7 @@
 
         <li>A Skype group chat with opaque identifier <tt>0xdeadbeef</tt> has
           <tp:dbus-ref
-          namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
           = <code>Room</code>,
           <tp:dbus-ref
           namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>
@@ -90,7 +90,7 @@
 
         <li>An MSN group chat has
           <tp:dbus-ref
-          namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
           = <code>None</code>,
           <tp:member-ref>RoomName</tp:member-ref> = <code>""</code>,
           <tp:member-ref>Server</tp:member-ref> = <code>""</code>, indicating
@@ -101,7 +101,7 @@
         <li>A standard Jabber multi-user chat
           <tt>jdev@conference.jabber.org</tt> has
           <tp:dbus-ref
-          namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
           = <code>Room</code>,
           <tp:dbus-ref
           namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>
@@ -112,7 +112,7 @@
 
         <li>A Google Talk private MUC <tt>private-chat-11111x1x-11xx-111x-1111-111x1xx11x11@groupchat.google.com</tt> has
           <tp:dbus-ref
-          namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
           = <code>Room</code>,
           <tp:dbus-ref
           namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>
@@ -127,7 +127,7 @@
         <li>Similarly, a XEP-0045 §10.1.4 uniquely-named room
           <tt>lrcgsnthzvwm@conference.jabber.org</tt> has
           <tp:dbus-ref
-          namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+          namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
           = <code>Room</code>,
           <tp:dbus-ref
           namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>
@@ -152,7 +152,7 @@
             >ChannelType</tp:dbus-ref>: ...<tp:dbus-ref namespace="im.telepathy.v1.Channel.Type"
                                         >Text</tp:dbus-ref>,
             ...<tp:dbus-ref namespace="im.telepathy.v1.Channel"
-            >TargetHandleType</tp:dbus-ref>: Room,
+            >TargetEntityType</tp:dbus-ref>: Room,
           },
   Allowed = [ ...<tp:dbus-ref namespace="im.telepathy.v1.Channel"
               >TargetID</tp:dbus-ref>,
@@ -174,7 +174,7 @@
             >ChannelType</tp:dbus-ref>: ...<tp:dbus-ref namespace="im.telepathy.v1.Channel.Type"
                                         >Text</tp:dbus-ref>,
             ...<tp:dbus-ref namespace="im.telepathy.v1.Channel"
-            >TargetHandleType</tp:dbus-ref>: Room,
+            >TargetEntityType</tp:dbus-ref>: Room,
           },
   Allowed = [ ...<tp:dbus-ref namespace="im.telepathy.v1.Channel"
               >TargetID</tp:dbus-ref>,
@@ -198,7 +198,7 @@
         . Note how <tp:member-ref>RoomName</tp:member-ref> appears
         in <var>Allowed_Properties</var> of a different RCC because
         when <tp:dbus-ref namespace="im.telepathy.v1.Channel"
-        >TargetHandleType</tp:dbus-ref> is omitted (or is None), both
+        >TargetEntityType</tp:dbus-ref> is omitted (or is None), both
         <tp:dbus-ref namespace="im.telepathy.v1.Channel"
         >TargetHandle</tp:dbus-ref> and
         <tp:dbus-ref namespace="im.telepathy.v1.Channel"
@@ -224,7 +224,7 @@
 
       <p>If the protocol supports unnamed rooms, <tp:member-ref>RoomName</tp:member-ref>
         should be fixed to the empty string, and
-        <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+        <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
         should be None:</p>
 
       <blockquote>
@@ -233,7 +233,7 @@
             >ChannelType</tp:dbus-ref>: ...<tp:dbus-ref namespace="im.telepathy.v1.Channel.Type"
                                         >Text</tp:dbus-ref>,
             ...<tp:dbus-ref namespace="im.telepathy.v1.Channel"
-            >TargetHandleType</tp:dbus-ref>: None,
+            >TargetEntityType</tp:dbus-ref>: None,
             ...<tp:member-ref>RoomName</tp:member-ref>: "",
           },
   Allowed = [ ]
@@ -249,7 +249,7 @@
       <blockquote>
         <pre>
 { ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">ChannelType</tp:dbus-ref>: ...<tp:dbus-ref namespace="im.telepathy.v1.Channel.Type">Text</tp:dbus-ref>,
-  ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>: Room,
+  ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>: Room,
   ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>: "qwerasdfzxcv@conference.jabber.org",
   ...<tp:member-ref>RoomName</tp:member-ref>: ""
 }</pre></blockquote>
@@ -281,7 +281,7 @@
       <blockquote>
         <pre>
 { ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">ChannelType</tp:dbus-ref>: ...<tp:dbus-ref namespace="im.telepathy.v1.Channel.Type">Text</tp:dbus-ref>,
-  ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>: Room,
+  ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>: Room,
   ...<tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>: "kajsdhkajshdfjkshdfjkhs@conference.jabber.org",
   ...<tp:member-ref>RoomName</tp:member-ref>: ""
   ...<tp:member-ref>Server</tp:member-ref>: "conference.jabber.org"

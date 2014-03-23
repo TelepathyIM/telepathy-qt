@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 </p>
   </tp:license>
   <interface name="im.telepathy.v1.Account">
+    <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal"
+                value="true"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An Account object encapsulates the necessary details to make a
         Telepathy connection.</p>
@@ -73,6 +75,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           <li>account grouping</li>
         </ul>
       </tp:rationale>
+
+      <p>The standard D-Bus <code>PropertiesChanged</code> signal is used
+        for all properties change notifications.</p>
 
     </tp:docstring>
     <tp:added version="0.17.2"/>
@@ -134,25 +139,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           should only care about a single Account.
         </tp:rationale>
       </tp:docstring>
-    </signal>
-
-    <signal name="AccountPropertyChanged"
-      tp:name-for-bindings="Account_Property_Changed">
-      <tp:docstring>
-        The values of one or more properties on this interface (that do not
-        specify that this signal does not apply to them) may have changed.
-        This does not cover properties of other interfaces, which must
-        provide their own change notification if appropriate.
-      </tp:docstring>
-
-      <arg name="Properties" type="a{sv}">
-        <tp:docstring>
-          A map from property names in this namespace (e.g.
-          <tp:member-ref>Nickname</tp:member-ref>) to
-          values. Properties whose values have not changed SHOULD be
-          omitted, but this need not be done.
-        </tp:docstring>
-      </arg>
     </signal>
 
     <property name="DisplayName" type="s" access="readwrite"
@@ -603,13 +589,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:member-ref>Usable</tp:member-ref> changes to True),
         ChangingPresence MUST change to True, and the two property changes MUST
         be emitted in the same
-        <tp:member-ref>AccountPropertyChanged</tp:member-ref> signal, before the
+        <code>PropertiesChanged</code> signal, before the
         Set method returns.</p>
 
         <p>When the account manager succeeds or fails in changing the presence,
         or the connection disconnects due to an error, ChangingPresence MUST
         change to False as part of the same
-        <tp:member-ref>AccountPropertyChanged</tp:member-ref> signal.</p>
+        <code>PropertiesChanged</code> signal.</p>
 
         <tp:rationale>
           <p>This allows UIs to indicate that a presence change is in progress

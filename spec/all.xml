@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.99.7</tp:version>
+<tp:version>0.99.8</tp:version>
 
 <tp:copyright>Copyright © 2005-2014 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2011 Nokia Corporation</tp:copyright>
@@ -32,7 +32,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </p>
  </tp:docstring>
  <xi:include href="Connection_Manager.xml"/>
- <xi:include href="Connection_Manager_Interface_Account_Storage1.xml"/>
  <xi:include href="Protocol.xml"/>
  <xi:include href="Protocol_Interface_Addressing1.xml"/>
  <xi:include href="Protocol_Interface_Avatars1.xml"/>
@@ -161,7 +160,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_Room1.xml"/>
    <xi:include href="Channel_Interface_Room_Config1.xml"/>
    <xi:include href="Channel_Interface_SASL_Authentication1.xml"/>
-   <xi:include href="Channel_Interface_Credentials_Storage1.xml"/>
    <xi:include href="Channel_Interface_Securable1.xml"/>
    <xi:include href="Channel_Interface_Service_Point1.xml"/>
    <xi:include href="Channel_Interface_Subject1.xml"/>
@@ -263,7 +261,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <xi:include href="Account_Interface_Addressing1.xml"/>
  <xi:include href="Account_Interface_Avatar1.xml"/>
  <xi:include href="Account_Interface_Storage1.xml"/>
- <xi:include href="Account_Interface_External_Password_Storage1.xml"/>
 </tp:section>
 
 <tp:section name="The Channel Dispatcher">
@@ -294,6 +291,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <xi:include href="Client_Handler.xml"/>
  <xi:include href="Client_Handler_Future.xml"/>
  <xi:include href="Client_Interface_Requests.xml"/>
+</tp:section>
+
+<tp:section name="Logger">
+  <xi:include href="Logger1.xml"/>
 </tp:section>
 
 <xi:include href="errors.xml"/>

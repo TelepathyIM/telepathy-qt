@@ -76,8 +76,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandle</tp:dbus-ref>,
           <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>,
           and <tp:member-ref>TargetURI</tp:member-ref> MUST NOT be present.
-          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
-          must either not be present or set to Handle_Type_Contact.
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
+          must either not be present or set to Entity_Type_Contact.
           The request MUST fail with error InvalidHandle, without
           side-effects, if the requested vCard address cannot be found.</p>
       </tp:docstring>
@@ -97,8 +97,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetID</tp:dbus-ref>,
           and <tp:member-ref>TargetVCardAddress</tp:member-ref> MUST NOT be
           present.
-          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
-          must either not be present or set to Handle_Type_Contact.
+          <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
+          must either not be present or set to Entity_Type_Contact.
           The request MUST fail with error InvalidHandle, without
           side-effects, if the requested vCard address cannot be found.</p>
       </tp:docstring>

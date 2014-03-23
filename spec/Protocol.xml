@@ -64,7 +64,7 @@ AuthenticationTypes=im.telepathy.v1.Channel.Type.ServerTLSConnection;im.telepath
 
 [text]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Text
-im.telepathy.v1.Channel.TargetHandleType u=1
+im.telepathy.v1.Channel.TargetEntityType u=1
 allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;
 </pre>
     </tp:docstring>
@@ -201,12 +201,12 @@ RequestableChannelClasses=rcc0;rcc1;
 
 [rcc0]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Text
-im.telepathy.v1.Channel.TargetHandleType u=1
+im.telepathy.v1.Channel.TargetEntityType u=1
 allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;
 
 [rcc1]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Call1
-im.telepathy.v1.Channel.TargetHandleType u=1
+im.telepathy.v1.Channel.TargetEntityType u=1
 allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;im.telepathy.v1.Channel.Type.Call1.InitialAudio;
 </pre>
       </tp:docstring>

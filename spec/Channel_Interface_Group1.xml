@@ -340,8 +340,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         The handle for the user on this channel (which can also be a
         local or remote pending member), or 0 if the user is not a
-        member at all (which is likely to be the case, for instance,
-        on the old ContactList channels). Note that this is different
+        member at all. Note that this is different
         from the value of the <tp:dbus-ref
         namespace="im.telepathy.v1">Connection.SelfHandle</tp:dbus-ref>
         property on some protocols, so the value of this handle should
@@ -403,9 +402,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <p>No reason was provided for this change.</p>
 
           <p>In particular, this reason SHOULD be used when representing
-            users joining a named chatroom in the usual way, users leaving
-            a chatroom by their own request, and normal termination of a
-            StreamedMedia call by the remote user.</p>
+            users joining a named chatroom in the usual way and users leaving
+            a chatroom by their own request.</p>
 
           <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed from
             a group for this reason and the actor is not the SelfHandle, the
@@ -421,19 +419,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The change is due to a user going offline. Also used when
             user is already offline, but this wasn't known previously.</p>
-
-          <p>If a one-to-one StreamedMedia call fails because the
-            contact being called is offline, the connection manager
-            SHOULD indicate this by removing both the
-            <tp:member-ref>SelfHandle</tp:member-ref> and the other
-            contact's handle from the Group interface with reason
-            Offline.</p>
-
-          <tp:rationale>
-            For 1-1 calls, the call terminates as a result of removing the
-            remote contact, so the SelfHandle should be removed at the same
-            time as the remote contact and for the same reason.
-          </tp:rationale>
 
           <p>If a handle is removed from a group for this reason, the
             equivalent D-Bus error is
@@ -453,19 +438,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:enumvalue suffix="Busy" value="3">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The change is due to a busy indication.</p>
-
-          <p>If a one-to-one StreamedMedia call fails because the
-            contact being called is busy, the connection manager
-            SHOULD indicate this by removing both the
-            <tp:member-ref>SelfHandle</tp:member-ref> and the other
-            contact's handle from the Group interface with reason
-            Busy.</p>
-
-          <tp:rationale>
-            For 1-1 calls, the call terminates as a result of removing the
-            remote contact, so the SelfHandle should be removed at the same
-            time as the remote contact and for the same reason.
-          </tp:rationale>
 
           <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed
             from a group for this reason, the equivalent D-Bus error is
@@ -505,18 +477,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <p>The change is because the requested contact does not exist.</p>
 
           <p>For instance, if the user invites a nonexistent contact to a
-            chatroom or attempts to call a nonexistent contact, this could
-            be indicated by the CM adding that contact's handle to
-            remote-pending for reason None or Invited, then removing it for
-            reason Invalid_Contact. In the case of a 1-1 StreamedMedia
-            call, the CM SHOULD remove the self handle from the Group
-            in the same signal.</p>
-
-          <tp:rationale>
-            For 1-1 calls, the call terminates as a result of removing the
-            remote contact, so the SelfHandle should be removed at the same
-            time as the remote contact and for the same reason.
-          </tp:rationale>
+            chatroom, this could be indicated by the CM adding that
+            contact's handle to remote-pending for reason None or Invited,
+            then removing it for reason Invalid_Contact.</p>
 
           <p>If a contact is removed from a group for this reason, the
             equivalent D-Bus error is
@@ -527,18 +490,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:enumvalue suffix="No_Answer" value="8">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The change is because the requested contact did not respond.</p>
-
-          <p>If a one-to-one StreamedMedia call fails because the
-            contact being called did not respond, or the local user
-            did not respond to an incoming call, the connection
-            manager SHOULD indicate this by removing both the
-            <tp:member-ref>SelfHandle</tp:member-ref> and the other
-            contact's handle from the Group interface with reason
-            No_Answer.</p>
-
-          <tp:rationale>
-            Documenting existing practice.
-          </tp:rationale>
 
           <p>If a contact is removed from a group for this reason, the
             equivalent D-Bus error is

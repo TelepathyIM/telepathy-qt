@@ -28,7 +28,7 @@
       and a client connecting to it.</p>
       <p>Channels of this kind always have <tp:dbus-ref
       namespace="im.telepathy.v1.Channel">Requested</tp:dbus-ref> = False,
-      <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandleType</tp:dbus-ref>
+      <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetEntityType</tp:dbus-ref>
       = None and <tp:dbus-ref namespace="im.telepathy.v1.Channel">TargetHandle</tp:dbus-ref>
       = 0, and cannot be requested with methods such as <tp:dbus-ref
       namespace="im.telepathy.v1.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>.

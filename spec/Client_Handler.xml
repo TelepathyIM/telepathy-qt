@@ -140,10 +140,12 @@ BypassApproval=true
 
 <pre>
 [im.telepathy.v1.Client.Handler.Capabilities]
-im.telepathy.v1.Channel.Interface.MediaSignalling/ice-udp=true
-im.telepathy.v1.Channel.Interface.MediaSignalling/audio/speex=true
-im.telepathy.v1.Channel.Interface.MediaSignalling/video/theora=true
-im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
+im.telepathy.v1.Channel.Type.Call1/audio=true
+im.telepathy.v1.Channel.Type.Call1/video=true
+im.telepathy.v1.Channel.Type.Call1/ice=true
+im.telepathy.v1.Channel.Type.Call1/audio/speex=true
+im.telepathy.v1.Channel.Type.Call1/video/theora=true
+im.telepathy.v1.Channel.Type.Call1/video/h264=true
 </pre>
 
         <p>Like the <tp:member-ref>HandlerChannelFilter</tp:member-ref>
@@ -236,7 +238,8 @@ im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
         </tp:docstring>
       </arg>
 
-      <arg name="Requests_Satisfied" type="ao" direction="in">
+      <arg name="Requests_Satisfied" type="a{oa{sv}}" direction="in"
+        tp:type="Object_Immutable_Properties_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The requests satisfied by this channel.</p>
 
@@ -264,17 +267,8 @@ im.telepathy.v1.Channel.Interface.MediaSignalling/video/h264=true
 
       <arg name="Handler_Info" type="a{sv}" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>Additional information about this channel. Currently defined
-            keys are:</p>
-
-          <dl>
-            <dt><code>request-properties</code> - a{oa{sv}}</dt>
-            <dd>A map from <tp:dbus-ref
-              namespace="im.telepathy.v1">ChannelRequest</tp:dbus-ref>
-              paths listed in <var>Requests_Satisfied</var> to
-              <tp:type>Qualified_Property_Value_Map</tp:type>s containing
-              namespaced immutable properties of each request.</dd>
-          </dl>
+          <p>Additional information about this channel. There is no key
+            currently defined.</p>
 
           <p>When more keys are defined for this dictionary, all will be
             optional; handlers MAY safely ignore any entry in this
