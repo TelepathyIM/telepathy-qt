@@ -1084,6 +1084,7 @@ void ConnectionManager::gotParametersLegacy(QDBusPendingCallWatcher *watcher)
         ++pos;
     }
     Q_ASSERT(found);
+    Q_UNUSED(found);
 
     if (!reply.isError()) {
         debug() << QString(QLatin1String("Got reply to ConnectionManager.GetParameters(%1)")).arg(protocolName);

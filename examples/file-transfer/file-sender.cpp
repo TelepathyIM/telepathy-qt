@@ -91,6 +91,7 @@ void FileSender::onAMReady(PendingOperation *op)
 
     PendingReady *pr = qobject_cast<PendingReady*>(op);
     Q_ASSERT(pr != NULL);
+    Q_UNUSED(pr);
     qDebug() << "AccountManager ready";
 
     mAccount = mAM->accountForObjectPath(
@@ -116,6 +117,7 @@ void FileSender::onAccountReady(PendingOperation *op)
 
     PendingReady *pr = qobject_cast<PendingReady*>(op);
     Q_ASSERT(pr != NULL);
+    Q_UNUSED(pr);
     qDebug() << "Account ready";
 
     qDebug() << "Checking if account is online...";
