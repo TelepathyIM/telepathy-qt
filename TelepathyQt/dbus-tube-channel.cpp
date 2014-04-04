@@ -121,7 +121,7 @@ void DBusTubeChannel::Private::introspectBusNamesMonitoring(DBusTubeChannel::Pri
     Q_ASSERT(dbusTubeInterface);
 
     // It makes sense only if this is a room, if that's not the case just spit a warning
-    if (parent->targetHandleType() == static_cast<uint>(Tp::HandleTypeRoom)) {
+    if (parent->targetEntityType() == static_cast<uint>(Tp::EntityTypeRoom)) {
         parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(TpDBus::DBusTubeParticipants,TpDBus::UIntList)),
                         parent, SLOT(onDBusNamesChanged(TpDBus::DBusTubeParticipants,TpDBus::UIntList)));
 

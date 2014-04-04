@@ -134,7 +134,7 @@ struct TP_QT_NO_EXPORT Channel::Private
 
     // Main interface
     QString channelType;
-    uint targetHandleType;
+    uint targetEntityType;
     uint targetHandle;
     QString targetId;
     ContactPtr targetContact;
@@ -258,7 +258,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       group(0),
       conference(0),
       readinessHelper(parent->readinessHelper()),
-      targetHandleType(0),
+      targetEntityType(0),
       targetHandle(0),
       requested(false),
       initiatorHandle(0),
@@ -347,7 +347,7 @@ void Channel::Private::introspectMainProperties()
     const static QString names[numNames] = {
         QLatin1String("ChannelType"),
         QLatin1String("Interfaces"),
-        QLatin1String("TargetHandleType"),
+        QLatin1String("TargetEntityType"),
         QLatin1String("TargetHandle"),
         QLatin1String("TargetID"),
         QLatin1String("Requested"),
@@ -357,7 +357,7 @@ void Channel::Private::introspectMainProperties()
     const static QString qualifiedNames[numNames] = {
         TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
         TP_QT_IFACE_CHANNEL + QLatin1String(".Interfaces"),
-        TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+        TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
         TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
         TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
         TP_QT_IFACE_CHANNEL + QLatin1String(".Requested"),
@@ -507,13 +507,13 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
     const static QString keyChannelType(QLatin1String("ChannelType"));
     const static QString keyInterfaces(QLatin1String("Interfaces"));
     const static QString keyTargetHandle(QLatin1String("TargetHandle"));
-    const static QString keyTargetHandleType(QLatin1String("TargetHandleType"));
+    const static QString keyTargetEntityType(QLatin1String("TargetEntityType"));
 
     parent->setInterfaces(qdbus_cast<QStringList>(props[keyInterfaces]));
     readinessHelper->setInterfaces(parent->interfaces());
     channelType = qdbus_cast<QString>(props[keyChannelType]);
     targetHandle = qdbus_cast<uint>(props[keyTargetHandle]);
-    targetHandleType = qdbus_cast<uint>(props[keyTargetHandleType]);
+    targetEntityType = qdbus_cast<uint>(props[keyTargetEntityType]);
 
     const static QString keyTargetId(QLatin1String("TargetID"));
     const static QString keyRequested(QLatin1String("Requested"));
@@ -523,7 +523,7 @@ void Channel::Private::extractMainProps(const QVariantMap &props)
     if (props.contains(keyTargetId)) {
         targetId = qdbus_cast<QString>(props[keyTargetId]);
 
-        if (targetHandleType == HandleTypeContact) {
+        if (targetEntityType == EntityTypeContact) {
             connection->lowlevel()->injectContactId(targetHandle, targetId);
         }
     }
@@ -671,7 +671,7 @@ void Channel::Private::buildContacts()
         toBuild.append(initiatorHandle);
     }
 
-    if (!targetContact && targetHandleType == HandleTypeContact && targetHandle != 0) {
+    if (!targetContact && targetEntityType == EntityTypeContact && targetHandle != 0) {
         toBuild.append(targetHandle);
     }
 
@@ -723,7 +723,7 @@ void Channel::Private::processMembersChanged()
                         initiatorHandle;
                 }
 
-                if (targetHandleType == HandleTypeContact && targetHandle != 0 && !targetContact) {
+                if (targetEntityType == EntityTypeContact && targetHandle != 0 && !targetContact) {
                     warning() << " Unable to create contact object for target with handle" <<
                         targetHandle;
                 }
@@ -824,7 +824,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
             initiatorContact = contact;
         }
 
-        if (!targetContact && targetHandleType == HandleTypeContact && targetHandle == handle) {
+        if (!targetContact && targetEntityType == EntityTypeContact && targetHandle == handle) {
             targetContact = contact;
 
             if (targetId.isEmpty()) {
@@ -936,7 +936,7 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
 {
     if (parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         return false;
-    } else if (targetHandleType != HandleTypeContact) {
+    } else if (targetEntityType != EntityTypeContact) {
         return false;
     }
 
@@ -966,7 +966,7 @@ void Channel::Private::setReady()
     debug() << "Channel fully ready";
     debug() << " Channel type" << channelType;
     debug() << " Target handle" << targetHandle;
-    debug() << " Target handle type" << targetHandleType;
+    debug() << " Target handle type" << targetEntityType;
 
     if (parent->interfaces().contains(TP_QT_IFACE_CHANNEL_INTERFACE_GROUP1)) {
         debug() << " Group: flags" << groupFlags;
@@ -1259,7 +1259,7 @@ Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const ContactPtr &ac
  * objects. Specialized classes for some specific channel types such as
  * CallChannel, TextChannel, FileTransferChannel are provided.
  *
- * The remote object accessor functions on this object (channelType(), targetHandleType(),
+ * The remote object accessor functions on this object (channelType(), targetEntityType(),
  * and so on) don't make any D-Bus calls; instead, they return/use
  * values cached from a previous introspection run. The introspection process
  * populates their values in the most efficient way possible based on what the
@@ -1434,7 +1434,7 @@ ConnectionPtr Channel::connection() const
  * If the channel is ready (isReady(Channel::FeatureCore) returns true), the following keys are
  * guaranteed to be present:
  * im.telepathy.v1.Channel.ChannelType,
- * im.telepathy.v1.Channel.TargetHandleType,
+ * im.telepathy.v1.Channel.TargetEntityType,
  * im.telepathy.v1.Channel.TargetHandle and
  * im.telepathy.v1.Channel.Requested.
  *
@@ -1460,9 +1460,9 @@ QVariantMap Channel::immutableProperties() const
             mPriv->immutableProperties.insert(key, interfaces());
         }
 
-        key = TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType");
+        key = TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType");
         if (!mPriv->immutableProperties.contains(key)) {
-            mPriv->immutableProperties.insert(key, mPriv->targetHandleType);
+            mPriv->immutableProperties.insert(key, mPriv->targetEntityType);
         }
 
         key = TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle");
@@ -1518,20 +1518,20 @@ QString Channel::channelType() const
 
 /**
  * Return the type of the handle returned by targetHandle() as specified in
- * #HandleType.
+ * #EntityType.
  *
  * This method requires Channel::FeatureCore to be ready.
  *
- * \return The target handle type as #HandleType.
+ * \return The target handle type as #EntityType.
  * \sa targetHandle(), targetId()
  */
-HandleType Channel::targetHandleType() const
+EntityType Channel::targetEntityType() const
 {
     if (!isReady(Channel::FeatureCore)) {
-        warning() << "Channel::targetHandleType() used channel not ready";
+        warning() << "Channel::targetEntityType() used channel not ready";
     }
 
-    return (HandleType) mPriv->targetHandleType;
+    return (EntityType) mPriv->targetEntityType;
 }
 
 /**
@@ -1541,8 +1541,8 @@ HandleType Channel::targetHandleType() const
  * This method requires Channel::FeatureCore to be ready.
  *
  * \return An integer representing the target handle, which is of the type
- *         targetHandleType() indicates.
- * \sa targetHandleType(), targetId()
+ *         targetEntityType() indicates.
+ * \sa targetEntityType(), targetId()
  */
 uint Channel::targetHandle() const
 {
@@ -1556,8 +1556,8 @@ uint Channel::targetHandle() const
 /**
  * Return the persistent unique ID of the remote party with which this channel communicates.
  *
- * If targetHandleType() is #HandleTypeContact, this will be the ID of the remote contact, and
- * similarly the unique ID of the room when targetHandleType() is #HandleTypeRoom.
+ * If targetEntityType() is #EntityTypeContact, this will be the ID of the remote contact, and
+ * similarly the unique ID of the room when targetEntityType() is #EntityTypeRoom.
  *
  * This is not necessarily the best identifier to display to the user, though. In particular, for
  * contacts, their alias should be displayed instead. It can be used for matching channels and UI
@@ -1583,16 +1583,16 @@ QString Channel::targetId() const
  *
  * This method requires Channel::FeatureCore to be ready.
  *
- * \return A pointer to the Contact object, or a null ContactPtr if targetHandleType() is not
- *         #HandleTypeContact.
+ * \return A pointer to the Contact object, or a null ContactPtr if targetEntityType() is not
+ *         #EntityTypeContact.
  * \sa targetHandle(), targetId()
  */
 ContactPtr Channel::targetContact() const
 {
     if (!isReady(Channel::FeatureCore)) {
         warning() << "Channel::targetContact() used, but the channel is not ready";
-    } else if (targetHandleType() != HandleTypeContact) {
-        warning() << "Channel::targetContact() used with targetHandleType() != Contact";
+    } else if (targetEntityType() != EntityTypeContact) {
+        warning() << "Channel::targetContact() used with targetEntityType() != Contact";
     }
 
     return mPriv->targetContact;
@@ -1823,7 +1823,7 @@ PendingOperation *Channel::requestLeave(const QString &message, ChannelGroupChan
  * Cached access to state of the group interface on the associated remote
  * object, if the interface is present.
  *
- * Some methods can be used when targetHandleType() == #HandleTypeContact, such
+ * Some methods can be used when targetEntityType() == #EntityTypeContact, such
  * as groupFlags(), groupCanAddContacts(), groupCanRemoveContacts(),
  * groupSelfContact() and groupContacts().
  *

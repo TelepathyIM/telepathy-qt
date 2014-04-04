@@ -331,8 +331,8 @@ void TestAccountSet::testFilters()
                 TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_TEXT);
         rcc.fixedProperties.insert(
-                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         rcc.allowedProperties.append(
                 TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"));
         rcc.allowedProperties.append(

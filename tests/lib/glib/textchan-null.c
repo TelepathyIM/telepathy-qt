@@ -345,7 +345,7 @@ tp_tests_props_text_channel_class_init (TpTestsPropsTextChannelClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *) klass;
   static TpDBusPropertiesMixinPropImpl channel_props[] = {
-      { "TargetHandleType", "handle-type", NULL },
+      { "TargetEntityType", "handle-type", NULL },
       { "TargetHandle", "handle", NULL },
       { "ChannelType", "channel-type", NULL },
       { "Interfaces", "interfaces", NULL },
@@ -546,7 +546,7 @@ GHashTable *
 tp_tests_text_channel_get_props (TpTestsTextChannelNull *self)
 {
   GHashTable *props;
-  TpHandleType handle_type;
+  TpEntityType handle_type;
   TpHandle handle;
   gchar *target_id;
   gboolean requested;

@@ -268,7 +268,7 @@ tp_tests_text_channel_group_class_init (TpTestsTextChannelGroupClass *klass)
   GParamSpec *param_spec;
 
   static TpDBusPropertiesMixinPropImpl channel_props[] = {
-      { "TargetHandleType", "handle-type", NULL },
+      { "TargetEntityType", "handle-type", NULL },
       { "TargetHandle", "handle", NULL },
       { "ChannelType", "channel-type", NULL },
       { "Interfaces", "interfaces", NULL },

@@ -23,7 +23,7 @@
   <unsupported-channel-classes>
     <!-- this service doesn't support text roomlists -->
     <channel-class>
-      <property name="im.telepathy.v1.Channel.TargetHandleType"
+      <property name="im.telepathy.v1.Channel.TargetEntityType"
                 type="u">3</property>
       <property name="im.telepathy.v1.Channel.ChannelType"
                 type="s">im.telepathy.v1.Channel.Type.Text</property>

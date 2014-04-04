@@ -69,7 +69,7 @@ public:
 
     QString channelType() const;
 
-    HandleType targetHandleType() const;
+    EntityType targetEntityType() const;
     uint targetHandle() const;
     QString targetId() const;
     ContactPtr targetContact() const;

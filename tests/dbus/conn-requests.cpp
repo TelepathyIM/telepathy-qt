@@ -92,8 +92,8 @@ void TestConnRequests::testCreateChannel()
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    mHandle);
     QVERIFY(connect(mConn->client()->lowlevel()->createChannel(request),
@@ -107,8 +107,8 @@ void TestConnRequests::testEnsureChannel()
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    mHandle);
     QVERIFY(connect(mConn->client()->lowlevel()->ensureChannel(request),

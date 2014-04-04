@@ -115,8 +115,8 @@ void TestProfile::testProfile()
     QCOMPARE(profile->unsupportedChannelClassSpecs().count(), 2);
 
     RequestableChannelClassSpec rccSpec = profile->unsupportedChannelClassSpecs().first();
-    QCOMPARE(rccSpec.hasTargetHandleType(), true);
-    QCOMPARE(rccSpec.targetHandleType(), HandleTypeContact);
+    QCOMPARE(rccSpec.hasTargetEntityType(), true);
+    QCOMPARE(rccSpec.targetEntityType(), EntityTypeContact);
     QCOMPARE(rccSpec.channelType(), QLatin1String("im.telepathy.v1.Channel.Type.Text"));
 
     profile = Profile::createForServiceName(QLatin1String("test-profile-no-icon-and-provider"));

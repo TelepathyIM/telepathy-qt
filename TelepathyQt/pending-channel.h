@@ -55,7 +55,7 @@ public:
 
     const QString &channelType() const;
 
-    uint targetHandleType() const;
+    uint targetEntityType() const;
 
     uint targetHandle() const;
 

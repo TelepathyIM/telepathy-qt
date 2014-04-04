@@ -101,8 +101,8 @@ void TestManagerFile::testManagerFile()
             TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
             TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1);
     ftRcc.fixedProperties.insert(
-            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-            HandleTypeContact);
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+            EntityTypeContact);
     ftRcc.fixedProperties.insert(
             TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".ContentHashType"),
             FileHashTypeMD5);
@@ -116,8 +116,8 @@ void TestManagerFile::testManagerFile()
             TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
             TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     fooTextRcc.fixedProperties.insert(
-            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-            HandleTypeContact);
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+            EntityTypeContact);
     fooTextRcc.allowedProperties.append(
             TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"));
     fooTextRcc.allowedProperties.append(

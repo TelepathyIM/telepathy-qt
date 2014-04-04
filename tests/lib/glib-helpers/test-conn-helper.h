@@ -56,15 +56,15 @@ public:
     Tp::ChannelPtr createChannel(const QVariantMap &request);
     Tp::ChannelPtr createChannel(const QString &channelType, const Tp::ContactPtr &target);
     Tp::ChannelPtr createChannel(const QString &channelType,
-            Tp::HandleType targetHandleType, uint targetHandle);
+            Tp::EntityType targetEntityType, uint targetHandle);
     Tp::ChannelPtr createChannel(const QString &channelType,
-            Tp::HandleType targetHandleType, const QString &targetID);
+            Tp::EntityType targetEntityType, const QString &targetID);
     Tp::ChannelPtr ensureChannel(const QVariantMap &request);
     Tp::ChannelPtr ensureChannel(const QString &channelType, const Tp::ContactPtr &target);
     Tp::ChannelPtr ensureChannel(const QString &channelType,
-            Tp::HandleType targetHandleType, uint targetHandle);
+            Tp::EntityType targetEntityType, uint targetHandle);
     Tp::ChannelPtr ensureChannel(const QString &channelType,
-            Tp::HandleType targetHandleType, const QString &targetID);
+            Tp::EntityType targetEntityType, const QString &targetID);
 
 private Q_SLOTS:
     void expectConnInvalidated();

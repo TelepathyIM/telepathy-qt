@@ -14,12 +14,12 @@ Icon=face-smile
 
 [audio]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Call1
-im.telepathy.v1.Channel.TargetHandleType u=1
+im.telepathy.v1.Channel.TargetEntityType u=1
 im.telepathy.v1.Channel.Type.Call1.InitialAudio b=1
 allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;im.telepathy.v1.Channel.Type.Call1.InitialVideo;
 
 [video]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.Call1
-im.telepathy.v1.Channel.TargetHandleType u=1
+im.telepathy.v1.Channel.TargetEntityType u=1
 im.telepathy.v1.Channel.Type.Call1.InitialVideo b=1
 allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;im.telepathy.v1.Channel.Type.Call1.InitialAudio;

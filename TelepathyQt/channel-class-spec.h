@@ -45,9 +45,9 @@ public:
     ChannelClassSpec();
     ChannelClassSpec(const TpDBus::ChannelClass &cc);
     ChannelClassSpec(const QVariantMap &props);
-    ChannelClassSpec(const QString &channelType, HandleType targetHandleType,
+    ChannelClassSpec(const QString &channelType, EntityType targetEntityType,
             const QVariantMap &otherProperties = QVariantMap());
-    ChannelClassSpec(const QString &channelType, HandleType targetHandleType, bool requested,
+    ChannelClassSpec(const QString &channelType, EntityType targetEntityType, bool requested,
             const QVariantMap &otherProperties = QVariantMap());
     ChannelClassSpec(const ChannelClassSpec &other,
             const QVariantMap &additionalProperties = QVariantMap());
@@ -77,16 +77,16 @@ public:
                 QVariant::fromValue(type));
     }
 
-    HandleType targetHandleType() const
+    EntityType targetEntityType() const
     {
-        return (HandleType) qdbus_cast<uint>(
+        return (EntityType) qdbus_cast<uint>(
                 property(
-                    TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")));
+                    TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType")));
     }
 
-    void setTargetHandleType(HandleType type)
+    void setTargetEntityType(EntityType type)
     {
-        setProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
+        setProperty(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
                 QVariant::fromValue((uint) type));
     }
 

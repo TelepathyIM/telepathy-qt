@@ -340,8 +340,8 @@ void StreamTubeClient::TubeWrapper::onConnectionClosed(uint conn, const QString 
  * the counterpart, offering services from a bytestream socket server to tubes requested to be
  * initiated.
  *
- * Both peer-to-peer (\c TargetHandleType == \ref HandleTypeContact) and group (\c TargetHandleType
- * == \ref HandleTypeRoom) channels are supported, and it's possible to specify the tube services to
+ * Both peer-to-peer (\c TargetEntityType == \ref EntityTypeContact) and group (\c TargetEntityType
+ * == \ref EntityTypeRoom) channels are supported, and it's possible to specify the tube services to
  * handle for each separately. There must be at least one service in total declared, as it never
  * makes sense to handle stream tubes without considering the protocol of the service offered
  * through them.

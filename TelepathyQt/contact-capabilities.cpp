@@ -113,7 +113,7 @@ QStringList ContactCapabilities::dbusTubeServices() const
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 &&
-            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.targetEntityType() == EntityTypeContact &&
             rccSpec.hasFixedProperty(
                     TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"))) {
             ret << rccSpec.fixedProperty(
@@ -154,7 +154,7 @@ QStringList ContactCapabilities::streamTubeServices() const
     RequestableChannelClassSpecList rccSpecs = allClassSpecs();
     foreach (const RequestableChannelClassSpec &rccSpec, rccSpecs) {
         if (rccSpec.channelType() == TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 &&
-            rccSpec.targetHandleType() == HandleTypeContact &&
+            rccSpec.targetEntityType() == EntityTypeContact &&
             rccSpec.hasFixedProperty(
                     TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"))) {
             ret << rccSpec.fixedProperty(

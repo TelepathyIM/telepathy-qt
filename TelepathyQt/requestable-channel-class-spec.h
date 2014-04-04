@@ -73,8 +73,8 @@ public:
 
     QString channelType() const;
 
-    bool hasTargetHandleType() const;
-    HandleType targetHandleType() const;
+    bool hasTargetEntityType() const;
+    EntityType targetEntityType() const;
 
     bool hasFixedProperty(const QString &name) const;
     QVariant fixedProperty(const QString &name) const;

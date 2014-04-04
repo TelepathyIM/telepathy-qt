@@ -147,7 +147,7 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
     mPriv->connection = connection;
     mPriv->yours = create;
     mPriv->channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
-    mPriv->handleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+    mPriv->handleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType")).toUInt();
     mPriv->handle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
     mPriv->notifier = 0;
     mPriv->create = create;
@@ -178,7 +178,7 @@ PendingChannel::PendingChannel(const AccountPtr &account,
 {
     mPriv->yours = true;
     mPriv->channelType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
-    mPriv->handleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+    mPriv->handleType = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType")).toUInt();
     mPriv->handle = request.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
 
     mPriv->cr = ClientRegistrar::create(
@@ -293,14 +293,14 @@ const QString &PendingChannel::channelType() const
  *
  * (One example of a request producing a different target handle type is that
  * on protocols like MSN, one-to-one conversations don't really exist, and if
- * you request a text channel with handle type HandleTypeContact, what you
- * will actually get is a text channel with handle type HandleTypeNone, with
+ * you request a text channel with handle type EntityTypeContact, what you
+ * will actually get is a text channel with handle type EntityTypeNone, with
  * the requested contact as a member.)
  *
- * \return The target handle type as #HandleType.
+ * \return The target handle type as #EntityType.
  * \sa targetHandle()
  */
-uint PendingChannel::targetHandleType() const
+uint PendingChannel::targetEntityType() const
 {
     return mPriv->handleType;
 }
@@ -308,11 +308,11 @@ uint PendingChannel::targetHandleType() const
 /**
  * If the channel request has finished, return the target handle of the
  * resulting channel. Otherwise, return the target handle that was requested
- * (which might be different in some situations - see targetHandleType()).
+ * (which might be different in some situations - see targetEntityType()).
  *
  * \return An integer representing the target handle, which is of the type
- *         targetHandleType() indicates.
- * \sa targetHandleType()
+ *         targetEntityType() indicates.
+ * \sa targetEntityType()
  */
 uint PendingChannel::targetHandle() const
 {
@@ -423,7 +423,7 @@ void PendingChannel::onConnectionCreateChannelFinished(QDBusPendingCallWatcher *
 
         mPriv->immutableProperties = map;
         mPriv->channelType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
-        mPriv->handleType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+        mPriv->handleType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType")).toUInt();
         mPriv->handle = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
 
         connect(channelReady,
@@ -455,7 +455,7 @@ void PendingChannel::onConnectionEnsureChannelFinished(QDBusPendingCallWatcher *
 
         mPriv->immutableProperties = map;
         mPriv->channelType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
-        mPriv->handleType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")).toUInt();
+        mPriv->handleType = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType")).toUInt();
         mPriv->handle = map.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle")).toUInt();
 
         connect(channelReady,
@@ -500,7 +500,7 @@ void PendingChannel::onHandlerChannelReceived(const ChannelPtr &channel)
         return;
     }
 
-    mPriv->handleType = channel->targetHandleType();
+    mPriv->handleType = channel->targetEntityType();
     mPriv->handle = channel->targetHandle();
     mPriv->immutableProperties = channel->immutableProperties();
     mPriv->channel = channel;

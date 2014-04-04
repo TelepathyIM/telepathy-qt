@@ -295,8 +295,8 @@ void TestCallChannel::testOutgoingCall()
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),
@@ -599,8 +599,8 @@ void TestCallChannel::testHold()
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),
@@ -669,8 +669,8 @@ void TestCallChannel::testHangup()
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo"),
@@ -711,8 +711,8 @@ void TestCallChannel::testCallMembers()
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo"),
@@ -905,8 +905,8 @@ void TestCallChannel::testFeatureCore()
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    otherContact->handle());
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),

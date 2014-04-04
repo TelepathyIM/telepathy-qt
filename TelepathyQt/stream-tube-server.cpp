@@ -390,8 +390,8 @@ void StreamTubeServer::TubeWrapper::onConnectionClosed(uint conn, const QString 
  * counterpart, enabling TCP/UNIX socket clients to connect to services from such exported servers
  * offered to them via tubes.
  *
- * Both peer-to-peer (\c TargetHandleType == \ref HandleTypeContact) and group (\c TargetHandleType
- * == \ref HandleTypeRoom) channels are supported, and it's possible to specify the tube services to
+ * Both peer-to-peer (\c TargetEntityType == \ref EntityTypeContact) and group (\c TargetEntityType
+ * == \ref EntityTypeRoom) channels are supported, and it's possible to specify the tube services to
  * handle for each separately. It is also possible to not advertise handling capability for ANY tube
  * service; instead just using the StreamTubeServer to handle tubes on an one-off basis by passing
  * its corresponding %Client service name as the \a preferredHandler when requesting tubes via the

@@ -312,7 +312,7 @@ private Q_SLOTS:
 private:
     QMap<QString, ClientHandlerInterface *> ourHandlers();
 
-    QPair<QString, QVariantMap> createTubeChannel(bool requested, HandleType type,
+    QPair<QString, QVariantMap> createTubeChannel(bool requested, EntityType type,
             bool supportMonitoring, bool unixOnly = false);
 
     AccountManagerPtr mAM;
@@ -352,7 +352,7 @@ private:
 };
 
 QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool requested,
-        HandleType handleType,
+        EntityType handleType,
         bool supportMonitoring,
         bool unixOnly)
 {
@@ -369,7 +369,7 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
     chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".ChannelType"),
             TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1);
     chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".Requested"), requested);
-    chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetHandleType"),
+    chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetEntityType"),
             static_cast<uint>(handleType));
 
     TpHandleRepoIface *contactRepo = tp_base_connection_get_handles(
@@ -378,7 +378,7 @@ QPair<QString, QVariantMap> TestStreamTubeHandlers::createTubeChannel(bool reque
             TP_BASE_CONNECTION(mConn->service()), TP_HANDLE_TYPE_ROOM);
     TpHandle handle;
     GType type;
-    if (handleType == HandleTypeContact) {
+    if (handleType == EntityTypeContact) {
         handle = tp_handle_ensure(contactRepo, "bob", NULL, NULL);
         type = TP_TESTS_TYPE_CONTACT_STREAM_TUBE_CHANNEL;
         chanProps.insert(TP_QT_IFACE_CHANNEL + QString::fromLatin1(".TargetID"),
@@ -883,7 +883,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     QVERIFY(ChannelClassSpec(filter.first())
             == ChannelClassSpec::outgoingStreamTube(QLatin1String("ftp")));
 
-    QPair<QString, QVariantMap> chan = createTubeChannel(true, HandleTypeContact, false);
+    QPair<QString, QVariantMap> chan = createTubeChannel(true, EntityTypeContact, false);
 
     QVERIFY(connect(server.data(),
                 SIGNAL(tubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints)),
@@ -994,7 +994,7 @@ void TestStreamTubeHandlers::testFailedExport()
 
     // To trigger the Offer error codepath, give it a channel which only supports Unix sockets
     // although we're exporting a TCP one - which is always supported in real CMs
-    QPair<QString, QVariantMap> chan = createTubeChannel(true, HandleTypeContact, false, true);
+    QPair<QString, QVariantMap> chan = createTubeChannel(true, EntityTypeContact, false, true);
     ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
 
     // We should initially get tubeRequested just fine
@@ -1035,7 +1035,7 @@ void TestStreamTubeHandlers::testServerConnMonitoring()
     ClientHandlerInterface *handler = handlers.value(server->clientName());
     QVERIFY(handler != 0);
 
-    QPair<QString, QVariantMap> chan = createTubeChannel(true, HandleTypeRoom, true);
+    QPair<QString, QVariantMap> chan = createTubeChannel(true, EntityTypeRoom, true);
 
     QVERIFY(connect(server.data(),
                 SIGNAL(tubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints)),
@@ -1229,7 +1229,7 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
 
     // Now pass it an incoming stream tube chan, which will trigger the error paths for constructing
     // wrong subclasses for tubes
-    QPair<QString, QVariantMap> tubeChan = createTubeChannel(false, HandleTypeContact, false);
+    QPair<QString, QVariantMap> tubeChan = createTubeChannel(false, EntityTypeContact, false);
 
     details.channel = QDBusObjectPath(tubeChan.first);
     details.properties = tubeChan.second;
@@ -1264,7 +1264,7 @@ void TestStreamTubeHandlers::testSSTHErrorPaths()
                 SIGNAL(tubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints)),
                 SLOT(onTubeRequested(Tp::AccountPtr,Tp::OutgoingStreamTubeChannelPtr,QDateTime,Tp::ChannelRequestHints))));
 
-    tubeChan = createTubeChannel(true, HandleTypeContact, false);
+    tubeChan = createTubeChannel(true, EntityTypeContact, false);
 
     details.channel = QDBusObjectPath(tubeChan.first);
     details.properties = tubeChan.second;
@@ -1332,7 +1332,7 @@ void TestStreamTubeHandlers::testClientBasicTcp()
     QVERIFY(ChannelClassSpec(filter.first())
             == ChannelClassSpec::incomingStreamTube(QLatin1String("ftp")));
 
-    QPair<QString, QVariantMap> chan = createTubeChannel(false, HandleTypeContact, true);
+    QPair<QString, QVariantMap> chan = createTubeChannel(false, EntityTypeContact, true);
 
     QVERIFY(connect(client.data(),
                 SIGNAL(tubeOffered(Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),
@@ -1423,7 +1423,7 @@ void TestStreamTubeHandlers::testClientTcpGeneratorIgnore()
     QVERIFY(ChannelClassSpec(filter.first())
             == ChannelClassSpec::incomingStreamTube(QLatin1String("ftp")));
 
-    QPair<QString, QVariantMap> chan = createTubeChannel(false, HandleTypeContact, false);
+    QPair<QString, QVariantMap> chan = createTubeChannel(false, EntityTypeContact, false);
 
     QVERIFY(connect(client.data(),
                 SIGNAL(tubeOffered(Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),
@@ -1504,7 +1504,7 @@ void TestStreamTubeHandlers::testClientTcpUnsupported()
     QVERIFY(ChannelClassSpec(filter.first())
             == ChannelClassSpec::incomingStreamTube(QLatin1String("ftp")));
 
-    QPair<QString, QVariantMap> chan = createTubeChannel(false, HandleTypeContact, false, true);
+    QPair<QString, QVariantMap> chan = createTubeChannel(false, EntityTypeContact, false, true);
 
     QVERIFY(connect(client.data(),
                 SIGNAL(tubeOffered(Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),
@@ -1564,7 +1564,7 @@ void TestStreamTubeHandlers::testClientBasicUnix()
     QVERIFY(ChannelClassSpec(filter.first())
             == ChannelClassSpec::incomingStreamTube(QLatin1String("ftp")));
 
-    QPair<QString, QVariantMap> chan = createTubeChannel(false, HandleTypeContact, true);
+    QPair<QString, QVariantMap> chan = createTubeChannel(false, EntityTypeContact, true);
 
     QVERIFY(connect(client.data(),
                 SIGNAL(tubeOffered(Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),
@@ -1645,7 +1645,7 @@ void TestStreamTubeHandlers::testClientUnixCredsIgnore()
     QVERIFY(ChannelClassSpec(filter.first())
             == ChannelClassSpec::incomingStreamTube(QLatin1String("ftp")));
 
-    QPair<QString, QVariantMap> chan = createTubeChannel(false, HandleTypeContact, false);
+    QPair<QString, QVariantMap> chan = createTubeChannel(false, EntityTypeContact, false);
 
     QVERIFY(connect(client.data(),
                 SIGNAL(tubeOffered(Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),
@@ -1724,7 +1724,7 @@ void TestStreamTubeHandlers::testClientConnMonitoring()
     QVERIFY(ChannelClassSpec(filter.first())
             == ChannelClassSpec::incomingStreamTube(QLatin1String("ftp")));
 
-    QPair<QString, QVariantMap> chan = createTubeChannel(false, HandleTypeContact, true);
+    QPair<QString, QVariantMap> chan = createTubeChannel(false, EntityTypeContact, true);
 
     QVERIFY(connect(client.data(),
                 SIGNAL(tubeOffered(Tp::AccountPtr,Tp::IncomingStreamTubeChannelPtr)),

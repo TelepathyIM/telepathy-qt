@@ -249,34 +249,34 @@ Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType, const T
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    target->handle());
     return createChannel(request);
 }
 
 Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType,
-        Tp::HandleType targetHandleType, uint targetHandle)
+        Tp::EntityType targetEntityType, uint targetHandle)
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) targetHandleType);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) targetEntityType);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    targetHandle);
     return createChannel(request);
 }
 
 Tp::ChannelPtr TestConnHelper::createChannel(const QString &channelType,
-        Tp::HandleType targetHandleType, const QString &targetID)
+        Tp::EntityType targetEntityType, const QString &targetID)
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) targetHandleType);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) targetEntityType);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                    targetID);
     return ensureChannel(request);
@@ -303,34 +303,34 @@ Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType, const T
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    target->handle());
     return ensureChannel(request);
 }
 
 Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType,
-        Tp::HandleType targetHandleType, uint targetHandle)
+        Tp::EntityType targetEntityType, uint targetHandle)
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) targetHandleType);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) targetEntityType);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandle"),
                    targetHandle);
     return ensureChannel(request);
 }
 
 Tp::ChannelPtr TestConnHelper::ensureChannel(const QString &channelType,
-        Tp::HandleType targetHandleType, const QString &targetID)
+        Tp::EntityType targetEntityType, const QString &targetID)
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) targetHandleType);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) targetEntityType);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                    targetID);
     return ensureChannel(request);

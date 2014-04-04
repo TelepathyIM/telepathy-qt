@@ -59,31 +59,31 @@ ChannelClassSpec::ChannelClassSpec(const QVariantMap &props)
 {
     setChannelType(qdbus_cast<QString>(
                 props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"))));
-    setTargetHandleType((HandleType) qdbus_cast<uint>(
-                props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"))));
+    setTargetEntityType((EntityType) qdbus_cast<uint>(
+                props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"))));
 
     foreach (QString propName, props.keys()) {
         setProperty(propName, props.value(propName));
     }
 }
 
-ChannelClassSpec::ChannelClassSpec(const QString &channelType, HandleType targetHandleType,
+ChannelClassSpec::ChannelClassSpec(const QString &channelType, EntityType targetEntityType,
         const QVariantMap &otherProperties)
     : mPriv(new Private)
 {
     setChannelType(channelType);
-    setTargetHandleType(targetHandleType);
+    setTargetEntityType(targetEntityType);
     foreach (QString key, otherProperties.keys()) {
         setProperty(key, otherProperties.value(key));
     }
 }
 
-ChannelClassSpec::ChannelClassSpec(const QString &channelType, HandleType targetHandleType,
+ChannelClassSpec::ChannelClassSpec(const QString &channelType, EntityType targetEntityType,
         bool requested, const QVariantMap &otherProperties)
     : mPriv(new Private)
 {
     setChannelType(channelType);
-    setTargetHandleType(targetHandleType);
+    setTargetEntityType(targetEntityType);
     setRequested(requested);
     foreach (QString key, otherProperties.keys()) {
         setProperty(key, otherProperties.value(key));
@@ -111,7 +111,7 @@ bool ChannelClassSpec::isValid() const
         !(qdbus_cast<QString>(
                     mPriv->props.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")))
                 .isEmpty()) &&
-        mPriv->props.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"));
+        mPriv->props.contains(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"));
 }
 
 ChannelClassSpec &ChannelClassSpec::operator=(const ChannelClassSpec &other)
@@ -210,7 +210,7 @@ ChannelClassSpec ChannelClassSpec::textChat(const QVariantMap &additionalPropert
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
-                HandleTypeContact);
+                EntityTypeContact);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -226,7 +226,7 @@ ChannelClassSpec ChannelClassSpec::textChatroom(const QVariantMap &additionalPro
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
-                HandleTypeRoom);
+                EntityTypeRoom);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -242,7 +242,7 @@ ChannelClassSpec ChannelClassSpec::unnamedTextChat(const QVariantMap &additional
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
-                HandleTypeNone);
+                EntityTypeNone);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -257,7 +257,7 @@ ChannelClassSpec ChannelClassSpec::mediaCall(const QVariantMap &additionalProper
     static ChannelClassSpec spec;
 
     if (!spec.isValid()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL1, HandleTypeContact);
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL1, EntityTypeContact);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -272,7 +272,7 @@ ChannelClassSpec ChannelClassSpec::audioCall(const QVariantMap &additionalProper
     static ChannelClassSpec spec;
 
     if (!spec.isValid()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL1, HandleTypeContact);
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL1, EntityTypeContact);
         spec.setCallInitialAudioFlag();
     }
 
@@ -288,7 +288,7 @@ ChannelClassSpec ChannelClassSpec::videoCall(const QVariantMap &additionalProper
     static ChannelClassSpec spec;
 
     if (!spec.isValid()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL1, HandleTypeContact);
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL1, EntityTypeContact);
         spec.setCallInitialVideoFlag();
     }
 
@@ -304,7 +304,7 @@ ChannelClassSpec ChannelClassSpec::videoCallWithAudio(const QVariantMap &additio
     static ChannelClassSpec spec;
 
     if (!spec.isValid()) {
-        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL1, HandleTypeContact);
+        spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CALL1, EntityTypeContact);
         spec.setCallInitialAudioFlag();
         spec.setCallInitialVideoFlag();
     }
@@ -322,7 +322,7 @@ Tp::ChannelClassSpec ChannelClassSpec::serverAuthentication(const QVariantMap &a
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_SERVER_AUTHENTICATION1,
-                HandleTypeNone);
+                EntityTypeNone);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -338,7 +338,7 @@ ChannelClassSpec ChannelClassSpec::roomList(const QVariantMap &additionalPropert
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_ROOM_LIST1,
-                HandleTypeNone);
+                EntityTypeNone);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -354,7 +354,7 @@ ChannelClassSpec ChannelClassSpec::outgoingFileTransfer(const QVariantMap &addit
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1,
-                HandleTypeContact, true);
+                EntityTypeContact, true);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -370,7 +370,7 @@ ChannelClassSpec ChannelClassSpec::incomingFileTransfer(const QVariantMap &addit
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1,
-                HandleTypeContact, false);
+                EntityTypeContact, false);
     }
 
     if (additionalProperties.isEmpty()) {
@@ -387,7 +387,7 @@ ChannelClassSpec ChannelClassSpec::outgoingStreamTube(const QString &service,
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1,
-                HandleTypeContact, true);
+                EntityTypeContact, true);
     }
 
     QVariantMap props = additionalProperties;
@@ -410,7 +410,7 @@ ChannelClassSpec ChannelClassSpec::incomingStreamTube(const QString &service,
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1,
-                HandleTypeContact, false);
+                EntityTypeContact, false);
     }
 
     QVariantMap props = additionalProperties;
@@ -433,7 +433,7 @@ ChannelClassSpec ChannelClassSpec::outgoingRoomStreamTube(const QString &service
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1,
-                HandleTypeRoom, true);
+                EntityTypeRoom, true);
     }
 
     QVariantMap props = additionalProperties;
@@ -456,7 +456,7 @@ ChannelClassSpec ChannelClassSpec::incomingRoomStreamTube(const QString &service
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1,
-                HandleTypeRoom, false);
+                EntityTypeRoom, false);
     }
 
     QVariantMap props = additionalProperties;
@@ -479,7 +479,7 @@ ChannelClassSpec ChannelClassSpec::outgoingDBusTube(const QString &serviceName,
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1,
-                HandleTypeContact, true);
+                EntityTypeContact, true);
     }
 
     if (!serviceName.isEmpty()) {
@@ -501,7 +501,7 @@ ChannelClassSpec ChannelClassSpec::incomingDBusTube(const QString &serviceName,
 
     if (!spec.isValid()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1,
-                HandleTypeContact, false);
+                EntityTypeContact, false);
     }
 
     if (!serviceName.isEmpty()) {
@@ -523,7 +523,7 @@ ChannelClassSpec ChannelClassSpec::outgoingRoomDBusTube(const QString &serviceNa
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1,
-                HandleTypeRoom, true);
+                EntityTypeRoom, true);
     }
 
     QVariantMap props = additionalProperties;
@@ -546,7 +546,7 @@ ChannelClassSpec ChannelClassSpec::incomingRoomDBusTube(const QString &serviceNa
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1,
-                HandleTypeRoom, false);
+                EntityTypeRoom, false);
     }
 
     QVariantMap props = additionalProperties;
@@ -568,7 +568,7 @@ ChannelClassSpec ChannelClassSpec::contactSearch(const QVariantMap &additionalPr
 
     if (!spec.mPriv.constData()) {
         spec = ChannelClassSpec(TP_QT_IFACE_CHANNEL_TYPE_CONTACT_SEARCH1,
-                HandleTypeNone);
+                EntityTypeNone);
     }
 
     if (additionalProperties.isEmpty()) {

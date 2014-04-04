@@ -68,8 +68,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::textChat()
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         spec = RequestableChannelClassSpec(rcc);
     }
 
@@ -84,8 +84,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::textChatroom()
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeRoom);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeRoom);
         spec = RequestableChannelClassSpec(rcc);
     }
 
@@ -100,8 +100,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::audioCall()
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),
                 true);
         rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudioName"));
@@ -119,8 +119,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::audioCallWithVideoAllow
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),
                 true);
         rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudioName"));
@@ -140,8 +140,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::videoCall()
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo"),
                 true);
         rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideoName"));
@@ -159,8 +159,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::videoCallWithAudioAllow
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo"),
                 true);
         rcc.allowedProperties.append(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideoName"));
@@ -180,8 +180,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::fileTransfer()
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         spec = RequestableChannelClassSpec(rcc);
     }
 
@@ -230,8 +230,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatroom(
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeRoom);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeRoom);
 
         rcc.allowedProperties.append(
                 TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels"));
@@ -249,8 +249,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::conferenceTextChatroomW
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeRoom);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeRoom);
 
         rcc.allowedProperties.append(
                 TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels"));
@@ -334,8 +334,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::dbusTube(const QString 
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         spec = RequestableChannelClassSpec(rcc);
     }
 
@@ -357,8 +357,8 @@ RequestableChannelClassSpec RequestableChannelClassSpec::streamTube(const QStrin
         TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1);
-        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                (uint) HandleTypeContact);
+        rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                (uint) EntityTypeContact);
         spec = RequestableChannelClassSpec(rcc);
     }
 
@@ -416,22 +416,22 @@ QString RequestableChannelClassSpec::channelType() const
                 TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")));
 }
 
-bool RequestableChannelClassSpec::hasTargetHandleType() const
+bool RequestableChannelClassSpec::hasTargetEntityType() const
 {
     if (!isValid()) {
         return false;
     }
     return mPriv->rcc.fixedProperties.contains(
-            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"));
 }
 
-HandleType RequestableChannelClassSpec::targetHandleType() const
+EntityType RequestableChannelClassSpec::targetEntityType() const
 {
-    if (!hasTargetHandleType()) {
-        return (HandleType) -1;
+    if (!hasTargetEntityType()) {
+        return (EntityType) -1;
     }
-    return (HandleType) qdbus_cast<uint>(mPriv->rcc.fixedProperties.value(
-                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")));
+    return (EntityType) qdbus_cast<uint>(mPriv->rcc.fixedProperties.value(
+                TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType")));
 }
 
 bool RequestableChannelClassSpec::hasFixedProperty(const QString &name) const

@@ -225,7 +225,7 @@ get_property (GObject *object,
       g_value_take_boxed (value,
           tp_dbus_properties_mixin_make_properties_hash (object,
               TP_IFACE_CHANNEL, "ChannelType",
-              TP_IFACE_CHANNEL, "TargetHandleType",
+              TP_IFACE_CHANNEL, "TargetEntityType",
               TP_IFACE_CHANNEL, "TargetHandle",
               TP_IFACE_CHANNEL, "TargetID",
               TP_IFACE_CHANNEL, "InitiatorHandle",
@@ -406,7 +406,7 @@ static void
 tp_tests_conference_channel_class_init (TpTestsConferenceChannelClass *klass)
 {
   static TpDBusPropertiesMixinPropImpl channel_props[] = {
-      { "TargetHandleType", "handle-type", NULL },
+      { "TargetEntityType", "handle-type", NULL },
       { "TargetHandle", "handle", NULL },
       { "ChannelType", "channel-type", NULL },
       { "Interfaces", "interfaces", NULL },

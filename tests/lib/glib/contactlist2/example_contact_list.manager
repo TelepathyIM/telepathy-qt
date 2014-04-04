@@ -14,10 +14,10 @@ Icon=face-smile
 
 [contactlist]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.ContactList
-im.telepathy.v1.Channel.TargetHandleType u=3
+im.telepathy.v1.Channel.TargetEntityType u=3
 allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;
 
 [contactgroup]
 im.telepathy.v1.Channel.ChannelType s=im.telepathy.v1.Channel.Type.ContactList
-im.telepathy.v1.Channel.TargetHandleType u=4
+im.telepathy.v1.Channel.TargetEntityType u=4
 allowed=im.telepathy.v1.Channel.TargetHandle;im.telepathy.v1.Channel.TargetID;

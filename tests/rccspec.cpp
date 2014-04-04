@@ -18,33 +18,33 @@ void TestRCCSpec::testRCCSpec()
 
     spec = RequestableChannelClassSpec::textChat();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    QCOMPARE(spec.targetHandleType(), HandleTypeContact);
+    QCOMPARE(spec.targetEntityType(), EntityTypeContact);
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().isEmpty(), true);
 
     spec = RequestableChannelClassSpec::textChatroom();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    QCOMPARE(spec.targetHandleType(), HandleTypeRoom);
+    QCOMPARE(spec.targetEntityType(), EntityTypeRoom);
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().isEmpty(), true);
 
     spec = RequestableChannelClassSpec::audioCall();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    QCOMPARE(spec.targetHandleType(), HandleTypeContact);
+    QCOMPARE(spec.targetEntityType(), EntityTypeContact);
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio")), true);
 
     spec = RequestableChannelClassSpec::videoCall();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    QCOMPARE(spec.targetHandleType(), HandleTypeContact);
+    QCOMPARE(spec.targetEntityType(), EntityTypeContact);
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialVideo")), true);
 
     spec = RequestableChannelClassSpec::audioCallWithVideoAllowed();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    QCOMPARE(spec.targetHandleType(), HandleTypeContact);
+    QCOMPARE(spec.targetEntityType(), EntityTypeContact);
     QCOMPARE(spec.fixedProperties().size(), 2);
     QCOMPARE(spec.allowedProperties().size(), 2);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio")), true);
@@ -52,26 +52,26 @@ void TestRCCSpec::testRCCSpec()
 
     spec = RequestableChannelClassSpec::conferenceTextChat();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    QVERIFY(!spec.hasTargetHandleType());
+    QVERIFY(!spec.hasTargetEntityType());
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels")), true);
 
     spec = RequestableChannelClassSpec::conferenceTextChatWithInvitees();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    QVERIFY(!spec.hasTargetHandleType());
+    QVERIFY(!spec.hasTargetEntityType());
     QCOMPARE(spec.allowedProperties().size(), 2);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels")), true);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialInviteeHandles")), true);
 
     spec = RequestableChannelClassSpec::conferenceTextChatroom();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    QCOMPARE(spec.targetHandleType(), HandleTypeRoom);
+    QCOMPARE(spec.targetEntityType(), EntityTypeRoom);
     QCOMPARE(spec.allowedProperties().size(), 1);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels")), true);
 
     spec = RequestableChannelClassSpec::conferenceTextChatroomWithInvitees();
     QCOMPARE(spec.channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    QCOMPARE(spec.targetHandleType(), HandleTypeRoom);
+    QCOMPARE(spec.targetEntityType(), EntityTypeRoom);
     QCOMPARE(spec.allowedProperties().size(), 2);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialChannels")), true);
     QCOMPARE(spec.allowsProperty(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialInviteeHandles")), true);
@@ -105,8 +105,8 @@ void TestRCCSpec::testRCCSpec()
     RequestableChannelClass rcc;
     rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
             TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-            (uint) HandleTypeContact);
+    rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+            (uint) EntityTypeContact);
     spec = RequestableChannelClassSpec(rcc);
     QCOMPARE(RequestableChannelClassSpec::textChat() == spec, true);
 }

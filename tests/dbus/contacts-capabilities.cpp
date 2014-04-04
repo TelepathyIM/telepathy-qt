@@ -63,7 +63,7 @@ static void freeRccList(GPtrArray *rccs)
     g_boxed_free(TP_ARRAY_TYPE_REQUESTABLE_CHANNEL_CLASS_LIST, rccs);
 }
 
-static void addTextChatClass(GPtrArray *classes, TpHandleType handle_type)
+static void addTextChatClass(GPtrArray *classes, TpEntityType handle_type)
 {
     GHashTable *fixed = tp_asv_new(
         TP_PROP_CHANNEL_CHANNEL_TYPE, G_TYPE_STRING, TP_IFACE_CHANNEL_TYPE_TEXT,

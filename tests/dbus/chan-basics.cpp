@@ -83,7 +83,7 @@ void TestChanBasics::init()
 
 void TestChanBasics::testCreateChannel()
 {
-    mChan = mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_TEXT, Tp::HandleTypeContact, mHandle);
+    mChan = mConn->createChannel(TP_QT_IFACE_CHANNEL_TYPE_TEXT, Tp::EntityTypeContact, mHandle);
     QVERIFY(mChan);
     mChanObjectPath = mChan->objectPath();
 
@@ -149,7 +149,7 @@ void TestChanBasics::testCreateChannel()
 void TestChanBasics::testEnsureChannel()
 {
     ChannelPtr chan = mConn->ensureChannel(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
-            Tp::HandleTypeContact, mHandle);
+            Tp::EntityTypeContact, mHandle);
     QVERIFY(chan);
     QCOMPARE(chan->objectPath(), mChanObjectPath);
     mChan = chan;
@@ -220,7 +220,7 @@ void TestChanBasics::testFallback()
 
     QCOMPARE(textChan->channelType(), TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     QVERIFY(textChan->interfaces().isEmpty());
-    QCOMPARE(textChan->targetHandleType(), Tp::HandleTypeContact);
+    QCOMPARE(textChan->targetEntityType(), Tp::EntityTypeContact);
     QCOMPARE(textChan->targetHandle(), handle);
 
     // we have no Group support, groupAddContacts should fail

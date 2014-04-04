@@ -1635,7 +1635,7 @@ PendingChannel *ConnectionLowlevel::createChannel(const QVariantMap &request)
  *
  * The request MUST contain the following keys:
  *   im.telepathy.v1.Channel.ChannelType
- *   im.telepathy.v1.Channel.TargetHandleType
+ *   im.telepathy.v1.Channel.TargetEntityType
  *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingChannel object. The object also provides access to the
@@ -1699,7 +1699,7 @@ PendingChannel *ConnectionLowlevel::ensureChannel(const QVariantMap &request)
  *
  * The request MUST contain the following keys:
  *   im.telepathy.v1.Channel.ChannelType
- *   im.telepathy.v1.Channel.TargetHandleType
+ *   im.telepathy.v1.Channel.TargetEntityType
  *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingChannel object. The object also provides access to the
@@ -1824,7 +1824,7 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  *
  * \sa PendingContactAttributes
  *
- * \param handles A list of handles of type HandleTypeContact
+ * \param handles A list of handles of type EntityTypeContact
  * \param interfaces D-Bus interfaces for which the client requires information
  * \param reference Whether the handles should additionally be referenced.
  * \return A PendingContactAttributes which will emit PendingContactAttributes::fininshed

@@ -109,8 +109,8 @@ QVariantMap textChatCommonRequest()
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     return request;
 }
 
@@ -135,8 +135,8 @@ QVariantMap textChatroomRequest(const QString &roomName)
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_TEXT);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeRoom);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeRoom);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
                    roomName);
     return request;
@@ -148,8 +148,8 @@ QVariantMap callCommonRequest(bool withAudio, const QString &audioName,
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_CALL1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
 
     if (withAudio) {
         request.insert(TP_QT_IFACE_CHANNEL_TYPE_CALL1 + QLatin1String(".InitialAudio"),
@@ -234,8 +234,8 @@ QVariantMap fileTransferCommonRequest(const Tp::FileTransferChannelCreationPrope
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
 
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1 + QLatin1String(".Filename"),
                    properties.suggestedFileName());
@@ -300,8 +300,8 @@ QVariantMap streamTubeCommonRequest(const QString &service)
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_STREAM_TUBE1 + QLatin1String(".Service"),
                    service);
     return request;
@@ -328,8 +328,8 @@ QVariantMap dbusTubeCommonRequest(const QString &serviceName)
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeContact);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeContact);
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
                    serviceName);
     return request;
@@ -356,8 +356,8 @@ QVariantMap dbusTubeRoomRequest(const QString &roomName, const QString &serviceN
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1);
-    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                   (uint) Tp::HandleTypeRoom);
+    request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                   (uint) Tp::EntityTypeRoom);
     request.insert(TP_QT_IFACE_CHANNEL_TYPE_DBUS_TUBE1 + QLatin1String(".ServiceName"),
                    serviceName);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"),
@@ -365,15 +365,15 @@ QVariantMap dbusTubeRoomRequest(const QString &roomName, const QString &serviceN
     return request;
 }
 
-QVariantMap conferenceCommonRequest(const QString &channelType, Tp::HandleType targetHandleType,
+QVariantMap conferenceCommonRequest(const QString &channelType, Tp::EntityType targetEntityType,
         const QList<Tp::ChannelPtr> &channels)
 {
     QVariantMap request;
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                    channelType);
-    if (targetHandleType != Tp::HandleTypeNone) {
-        request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-                       (uint) targetHandleType);
+    if (targetEntityType != Tp::EntityTypeNone) {
+        request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+                       (uint) targetEntityType);
     }
 
     TpDBus::ObjectPathList objectPaths;
@@ -386,10 +386,10 @@ QVariantMap conferenceCommonRequest(const QString &channelType, Tp::HandleType t
     return request;
 }
 
-QVariantMap conferenceRequest(const QString &channelType, Tp::HandleType targetHandleType,
+QVariantMap conferenceRequest(const QString &channelType, Tp::EntityType targetEntityType,
         const QList<Tp::ChannelPtr> &channels, const QStringList &initialInviteeContactsIdentifiers)
 {
-    QVariantMap request = conferenceCommonRequest(channelType, targetHandleType, channels);
+    QVariantMap request = conferenceCommonRequest(channelType, targetEntityType, channels);
     if (!initialInviteeContactsIdentifiers.isEmpty()) {
         request.insert(TP_QT_IFACE_CHANNEL_INTERFACE_CONFERENCE1 + QLatin1String(".InitialInviteeIDs"),
                 initialInviteeContactsIdentifiers);
@@ -397,10 +397,10 @@ QVariantMap conferenceRequest(const QString &channelType, Tp::HandleType targetH
     return request;
 }
 
-QVariantMap conferenceRequest(const QString &channelType, Tp::HandleType targetHandleType,
+QVariantMap conferenceRequest(const QString &channelType, Tp::EntityType targetEntityType,
         const QList<Tp::ChannelPtr> &channels, const QList<Tp::ContactPtr> &initialInviteeContacts)
 {
-    QVariantMap request = conferenceCommonRequest(channelType, targetHandleType, channels);
+    QVariantMap request = conferenceCommonRequest(channelType, targetEntityType, channels);
     if (!initialInviteeContacts.isEmpty()) {
         TpDBus::UIntList handles;
         foreach (const Tp::ContactPtr &contact, initialInviteeContacts) {
@@ -421,7 +421,7 @@ QVariantMap conferenceTextChatRequest(const QList<Tp::ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers)
 {
     QVariantMap request = conferenceRequest(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
-            Tp::HandleTypeNone, channels, initialInviteeContactsIdentifiers);
+            Tp::EntityTypeNone, channels, initialInviteeContactsIdentifiers);
     return request;
 }
 
@@ -429,7 +429,7 @@ QVariantMap conferenceTextChatRequest(const QList<Tp::ChannelPtr> &channels,
         const QList<Tp::ContactPtr> &initialInviteeContacts)
 {
     QVariantMap request = conferenceRequest(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
-            Tp::HandleTypeNone, channels, initialInviteeContacts);
+            Tp::EntityTypeNone, channels, initialInviteeContacts);
     return request;
 }
 
@@ -438,7 +438,7 @@ QVariantMap conferenceTextChatroomRequest(const QString &roomName,
         const QStringList &initialInviteeContactsIdentifiers)
 {
     QVariantMap request = conferenceRequest(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
-            Tp::HandleTypeRoom, channels, initialInviteeContactsIdentifiers);
+            Tp::EntityTypeRoom, channels, initialInviteeContactsIdentifiers);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), roomName);
     return request;
 }
@@ -448,7 +448,7 @@ QVariantMap conferenceTextChatroomRequest(const QString &roomName,
         const QList<Tp::ContactPtr> &initialInviteeContacts)
 {
     QVariantMap request = conferenceRequest(TP_QT_IFACE_CHANNEL_TYPE_TEXT,
-            Tp::HandleTypeRoom, channels, initialInviteeContacts);
+            Tp::EntityTypeRoom, channels, initialInviteeContacts);
     request.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"), roomName);
     return request;
 }

@@ -359,15 +359,15 @@ void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
             TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
             TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     fixedProps.insert(
-            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType"),
-            static_cast<uint>(HandleTypeRoom));
+            TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),
+            static_cast<uint>(EntityTypeRoom));
 
     TpDBus::RequestableChannelClass textChatroom = {fixedProps, allowedProps};
     classes.append(textChatroom);
 
     // 1-1 text chats
-    fixedProps[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetHandleType")] =
-        static_cast<uint>(HandleTypeContact);
+    fixedProps[TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType")] =
+        static_cast<uint>(EntityTypeContact);
 
     TpDBus::RequestableChannelClass text = {fixedProps, allowedProps};
     classes.append(text);
