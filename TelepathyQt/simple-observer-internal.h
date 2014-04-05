@@ -164,11 +164,11 @@ public:
 
     QHash<ChannelPtr, ChannelWrapper*> channels() const { return mChannels; }
 
-    void observeChannels(
+    void observeChannel(
             const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
-            const QList<ChannelPtr> &channels,
+            const ChannelPtr &channel,
             const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const ObserverInfo &observerInfo);

@@ -92,10 +92,10 @@ public:
 
     bool shouldRecover() const;
 
-    virtual void observeChannels(const MethodInvocationContextPtr<> &context,
+    virtual void observeChannel(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
-            const QList<ChannelPtr> &channels,
+            const ChannelPtr &channel,
             const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const ObserverInfo &observerInfo) = 0;

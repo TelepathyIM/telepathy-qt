@@ -112,15 +112,15 @@ ClientObserverAdaptor::~ClientObserverAdaptor()
 {
 }
 
-void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
+void ClientObserverAdaptor::ObserveChannel(const QDBusObjectPath &accountPath,
         const QDBusObjectPath &connectionPath,
-        const TpDBus::ChannelDetailsList &channelDetailsList,
+        const QDBusObjectPath &channelPath, const QVariantMap &channelProperties,
         const QDBusObjectPath &dispatchOperationPath,
-        const TpDBus::ObjectPathList &requestsSatisfied,
+        const TpDBus::ObjectImmutablePropertiesMap &requestsSatisfied,
         const QVariantMap &observerInfo,
         const QDBusMessage &message)
 {
-    debug() << "ObserveChannels: account:" << accountPath.path() <<
+    debug() << "ObserveChannel: account:" << accountPath.path() <<
         ", connection:" << connectionPath.path();
 
     AccountFactoryConstPtr accFactory = mRegistrar->accountFactory();
@@ -147,13 +147,11 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
     invocation->conn = ConnectionPtr::qObjectCast(connReady->proxy());
     readyOps.append(connReady);
 
-    foreach (const TpDBus::ChannelDetails &channelDetails, channelDetailsList) {
-        PendingReady *chanReady = chanFactory->proxy(invocation->conn,
-                channelDetails.channel.path(), channelDetails.properties);
-        ChannelPtr channel = ChannelPtr::qObjectCast(chanReady->proxy());
-        invocation->chans.append(channel);
-        readyOps.append(chanReady);
-    }
+    PendingReady *chanReady = chanFactory->proxy(invocation->conn,
+            channelPath.path(), channelProperties);
+    ChannelPtr channel = ChannelPtr::qObjectCast(chanReady->proxy());
+    invocation->chan = channel;
+    readyOps.append(chanReady);
 
     // Yes, we don't give the choice of making CDO and CR ready or not - however, readifying them is
     // 0-1 D-Bus calls each, for CR mostly 0 - and their constructors start making them ready
@@ -180,9 +178,11 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         // props.insert(TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".PossibleHandlers"),
         //         QVariant::fromValue(QStringList()));
 
+        QList<ChannelPtr> chans;
+        chans << invocation->chan;
         invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
                 props,
-                invocation->chans,
+                chans,
                 accFactory,
                 connFactory,
                 chanFactory,
@@ -192,11 +192,9 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
 
     invocation->observerInfo = AbstractClientObserver::ObserverInfo(observerInfo);
 
-    TpDBus::ObjectImmutablePropertiesMap reqPropsMap = qdbus_cast<TpDBus::ObjectImmutablePropertiesMap>(
-            observerInfo.value(QLatin1String("request-properties")));
-    foreach (const QDBusObjectPath &reqPath, requestsSatisfied) {
+    foreach (const QDBusObjectPath &reqPath, requestsSatisfied.keys()) {
         ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
-                reqPath.path(), reqPropsMap.value(reqPath));
+                reqPath.path(), requestsSatisfied.value(reqPath));
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }
@@ -210,8 +208,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
 
     mInvocations.append(invocation);
 
-    debug() << "Preparing proxies for ObserveChannels of" << channelDetailsList.size() << "channels"
-        << "for client" << mClient;
+    debug() << "Preparing proxies for ObserveChannel for client" << mClient;
 }
 
 void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
@@ -228,7 +225,7 @@ void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
         (*i)->readyOp = 0;
 
         if (op->isError()) {
-            warning() << "Preparing proxies for ObserveChannels failed with" << op->errorName()
+            warning() << "Preparing proxies for ObserveChannel failed with" << op->errorName()
                 << op->errorMessage();
             (*i)->error = op->errorName();
             (*i)->message = op->errorMessage();
@@ -247,11 +244,10 @@ void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
             continue;
         }
 
-        debug() << "Invoking application observeChannels with" << invocation->chans.size()
-            << "channels on" << mClient;
+        debug() << "Invoking application observeChannel on" << mClient;
 
-        mClient->observeChannels(invocation->ctx, invocation->acc, invocation->conn,
-                invocation->chans, invocation->dispatchOp, invocation->chanReqs,
+        mClient->observeChannel(invocation->ctx, invocation->acc, invocation->conn,
+                invocation->chan, invocation->dispatchOp, invocation->chanReqs,
                 invocation->observerInfo);
     }
 }

@@ -78,12 +78,13 @@ class TP_QT_NO_EXPORT ClientObserverAdaptor : public QDBusAbstractAdaptor
 "  <interface name=\"im.telepathy.v1.Client.Observer\" >\n"
 "    <property name=\"ObserverChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
 "    <property name=\"Recover\" type=\"b\" access=\"read\" />\n"
-"    <method name=\"ObserveChannels\" >\n"
+"    <method name=\"ObserveChannel\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"Connection\" type=\"o\" direction=\"in\" />\n"
-"      <arg name=\"Channels\" type=\"a(oa{sv})\" direction=\"in\" />\n"
+"      <arg name=\"Channel\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Channel_Properties\" type=\"a{sv}\" direction=\"in\" />\n"
 "      <arg name=\"Dispatch_Operation\" type=\"o\" direction=\"in\" />\n"
-"      <arg name=\"Requests_Satisfied\" type=\"ao\" direction=\"in\" />\n"
+"      <arg name=\"Requests_Satisfied\" type=\"a{oa{sv}}\" direction=\"in\" />\n"
 "      <arg name=\"Observer_Info\" type=\"a{sv}\" direction=\"in\" />\n"
 "    </method>\n"
 "  </interface>\n"
@@ -115,11 +116,12 @@ public: // Properties
     }
 
 public Q_SLOTS: // Methods
-    void ObserveChannels(const QDBusObjectPath &account,
+    void ObserveChannel(const QDBusObjectPath &account,
             const QDBusObjectPath &connection,
-            const TpDBus::ChannelDetailsList &channels,
+            const QDBusObjectPath &channel,
+            const QVariantMap &channelProperties,
             const QDBusObjectPath &dispatchOperation,
-            const TpDBus::ObjectPathList &requestsSatisfied,
+            const TpDBus::ObjectImmutablePropertiesMap &requestsSatisfied,
             const QVariantMap &observerInfo,
             const QDBusMessage &message);
 
@@ -137,7 +139,7 @@ private:
         MethodInvocationContextPtr<> ctx;
         AccountPtr acc;
         ConnectionPtr conn;
-        QList<ChannelPtr> chans;
+        ChannelPtr chan;
         ChannelDispatchOperationPtr dispatchOp;
         QList<ChannelRequestPtr> chanReqs;
         AbstractClientObserver::ObserverInfo observerInfo;

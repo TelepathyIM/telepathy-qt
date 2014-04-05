@@ -208,11 +208,11 @@ SimpleObserver::Private::Observer::~Observer()
     // unregister it
 }
 
-void SimpleObserver::Private::Observer::observeChannels(
+void SimpleObserver::Private::Observer::observeChannel(
         const MethodInvocationContextPtr<> &context,
         const AccountPtr &account,
         const ConnectionPtr &connection,
-        const QList<ChannelPtr> &channels,
+        const ChannelPtr &channel,
         const ChannelDispatchOperationPtr &dispatchOperation,
         const QList<ChannelRequestPtr> &requestsSatisfied,
         const ObserverInfo &observerInfo)
@@ -225,31 +225,29 @@ void SimpleObserver::Private::Observer::observeChannels(
     QList<PendingOperation*> readyOps;
     QList<ChannelPtr> newChannels;
 
-    foreach (const ChannelPtr &channel, channels) {
-        if (mIncompleteChannels.contains(channel) ||
-            mChannels.contains(channel)) {
-            // we are already observing this channel
-            continue;
-        }
-
-        // this shouldn't happen, but in any case
-        if (!channel->isValid()) {
-            warning() << "Channel received to observe is invalid. "
-                "Ignoring channel";
-            continue;
-        }
-
-        SimpleObserver::Private::ChannelWrapper *wrapper =
-            new SimpleObserver::Private::ChannelWrapper(account, channel,
-                featuresFor(ChannelClassSpec(channel->immutableProperties())), this);
-        mIncompleteChannels.insert(channel, wrapper);
-        connect(wrapper,
-                SIGNAL(channelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)),
-                SLOT(onChannelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)));
-
-        newChannels.append(channel);
-        readyOps.append(wrapper->becomeReady());
+    if (mIncompleteChannels.contains(channel) ||
+        mChannels.contains(channel)) {
+        // we are already observing this channel
+        return;
     }
+
+    // this shouldn't happen, but in any case
+    if (!channel->isValid()) {
+        warning() << "Channel received to observe is invalid. "
+            "Ignoring channel";
+        return;
+    }
+
+    SimpleObserver::Private::ChannelWrapper *wrapper =
+        new SimpleObserver::Private::ChannelWrapper(account, channel,
+            featuresFor(ChannelClassSpec(channel->immutableProperties())), this);
+    mIncompleteChannels.insert(channel, wrapper);
+    connect(wrapper,
+            SIGNAL(channelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)),
+            SLOT(onChannelInvalidated(Tp::AccountPtr,Tp::ChannelPtr,QString,QString)));
+
+    newChannels.append(channel);
+    readyOps.append(wrapper->becomeReady());
 
     if (readyOps.isEmpty()) {
         context->setFinished();
