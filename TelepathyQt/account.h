@@ -491,7 +491,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void onAvatarChanged();
     TP_QT_NO_EXPORT void onConnectionManagerReady(Tp::PendingOperation *);
     TP_QT_NO_EXPORT void onConnectionReady(Tp::PendingOperation *);
-    TP_QT_NO_EXPORT void onPropertyChanged(const QVariantMap &delta);
+    TP_QT_NO_EXPORT void onPropertyChanged(const QVariantMap &delta, const QStringList &invalidatedProperties);
     TP_QT_NO_EXPORT void onRemoved();
     TP_QT_NO_EXPORT void onConnectionBuilt(Tp::PendingOperation *);
 

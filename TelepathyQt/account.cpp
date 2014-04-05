@@ -3524,8 +3524,8 @@ void Account::Private::init()
             SIGNAL(Removed()),
             SLOT(onRemoved()));
     parent->connect(baseInterface,
-            SIGNAL(AccountPropertyChanged(QVariantMap)),
-            SLOT(onPropertyChanged(QVariantMap)));
+            SIGNAL(propertiesChanged(QVariantMap,QStringList)),
+            SLOT(onPropertyChanged(QVariantMap,QStringList)));
 }
 
 void Account::Private::introspectMain(Account::Private *self)
@@ -3999,8 +3999,9 @@ void Account::onConnectionReady(PendingOperation *op)
     }
 }
 
-void Account::onPropertyChanged(const QVariantMap &delta)
+void Account::onPropertyChanged(const QVariantMap &delta, const QStringList &invalidatedProperties)
 {
+    Q_UNUSED(invalidatedProperties);
     mPriv->updateProperties(delta);
 }
 
