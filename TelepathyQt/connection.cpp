@@ -1826,18 +1826,17 @@ PendingOperation *ConnectionLowlevel::requestDisconnect()
  *
  * \param handles A list of handles of type EntityTypeContact
  * \param interfaces D-Bus interfaces for which the client requires information
- * \param reference Whether the handles should additionally be referenced.
  * \return A PendingContactAttributes which will emit PendingContactAttributes::fininshed
  *         when the contact attributes have been retrieved, or an error occurred.
  */
 PendingContactAttributes *ConnectionLowlevel::contactAttributes(const TpDBus::UIntList &handles,
-        const QStringList &interfaces, bool reference)
+        const QStringList &interfaces)
 {
     debug() << "Request for attributes for" << handles.size() << "contacts";
 
     if (!isValid()) {
         PendingContactAttributes *pending = new PendingContactAttributes(ConnectionPtr(),
-                handles, interfaces, reference);
+                handles, interfaces);
         pending->failImmediately(TP_QT_ERROR_NOT_AVAILABLE,
                 QLatin1String("The connection has been destroyed"));
         return pending;
@@ -1845,8 +1844,7 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const TpDBus::UI
 
     ConnectionPtr conn(connection());
     PendingContactAttributes *pending =
-        new PendingContactAttributes(conn,
-                handles, interfaces, reference);
+        new PendingContactAttributes(conn, handles, interfaces);
     if (!conn->isReady(Connection::FeatureCore)) {
         warning() << "ConnectionLowlevel::contactAttributes() used when not ready";
         pending->failImmediately(TP_QT_ERROR_NOT_AVAILABLE,
@@ -1860,7 +1858,7 @@ PendingContactAttributes *ConnectionLowlevel::contactAttributes(const TpDBus::UI
     }
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                conn->baseInterface()->GetContactAttributes(handles, interfaces, reference));
+                conn->baseInterface()->GetContactAttributes(handles, interfaces));
     pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
     return pending;

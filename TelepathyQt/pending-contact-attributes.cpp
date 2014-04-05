@@ -49,20 +49,18 @@ struct TP_QT_NO_EXPORT PendingContactAttributes::Private
 {
     TpDBus::UIntList contactsRequested;
     QStringList interfacesRequested;
-    bool shouldReference;
     TpDBus::UIntList validHandles;
     TpDBus::UIntList invalidHandles;
     TpDBus::ContactAttributesMap attributes;
 };
 
 PendingContactAttributes::PendingContactAttributes(const ConnectionPtr &connection,
-        const TpDBus::UIntList &handles, const QStringList &interfaces, bool reference)
+        const TpDBus::UIntList &handles, const QStringList &interfaces)
     : PendingOperation(connection),
       mPriv(new Private)
 {
     mPriv->contactsRequested = handles;
     mPriv->interfacesRequested = interfaces;
-    mPriv->shouldReference = reference;
 }
 
 /**
@@ -104,18 +102,6 @@ const QStringList &PendingContactAttributes::interfacesRequested() const
 }
 
 /**
- * Return whether it was requested that the contact handles should be referenced in addition to
- * fetching their attributes. This corresponds to the <code>reference</code> argument to
- * Connection::contactAttributes().
- *
- * \return Whether the handles should be referenced or not.
- */
-bool PendingContactAttributes::shouldReference() const
-{
-    return mPriv->shouldReference;
-}
-
-/**
  * If referencing the handles was requested (as indicated by shouldReference()), returns the
  * now-referenced handles resulting from the operation. If the operation has not (yet) finished
  * successfully (isFinished() returns <code>false</code>), or referencing was not requested, the
@@ -133,9 +119,6 @@ TpDBus::UIntList PendingContactAttributes::validHandles() const
         warning() << "PendingContactAttributes::validHandles() called before finished";
     } else if (isError()) {
         warning() << "PendingContactAttributes::validHandles() called when errored";
-    } else if (!shouldReference()) {
-        warning() << "PendingContactAttributes::validHandles() called but weren't asked to"
-                  << "reference handles";
     }
 
     return mPriv->validHandles;
@@ -183,22 +166,17 @@ void PendingContactAttributes::onCallFinished(QDBusPendingCallWatcher* watcher)
     QDBusPendingReply<TpDBus::ContactAttributesMap> reply = *watcher;
 
     if (reply.isError()) {
-        debug().nospace() << "GetCAs: error " << reply.error().name() << ": " << reply.error().message();
+        debug().nospace() << "GetContactAttributes: error " << reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
     } else {
         mPriv->attributes = reply.value();
 
-        TpDBus::UIntList validHandles;
         foreach (uint contact, mPriv->contactsRequested) {
             if (mPriv->attributes.contains(contact)) {
-                validHandles << contact;
+                mPriv->validHandles << contact;
             } else {
                 mPriv->invalidHandles << contact;
             }
-        }
-
-        if (shouldReference()) {
-            mPriv->validHandles = validHandles;
         }
 
         setFinished();

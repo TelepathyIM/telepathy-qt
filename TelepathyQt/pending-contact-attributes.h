@@ -47,7 +47,6 @@ public:
 
     const TpDBus::UIntList &contactsRequested() const;
     const QStringList &interfacesRequested() const;
-    bool shouldReference() const;
 
     TpDBus::UIntList validHandles() const;
     TpDBus::UIntList invalidHandles() const;
@@ -61,7 +60,7 @@ private:
 
     TP_QT_NO_EXPORT PendingContactAttributes(const ConnectionPtr &connection,
             const TpDBus::UIntList &handles,
-            const QStringList &interfaces, bool reference);
+            const QStringList &interfaces);
 
     TP_QT_NO_EXPORT void failImmediately(const QString &error, const QString &errorMessage);
 

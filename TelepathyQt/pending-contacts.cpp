@@ -192,8 +192,7 @@ PendingContacts::PendingContacts(const ContactManagerPtr &manager,
     if (!otherContacts.isEmpty()) {
         ConnectionPtr conn = manager->connection();
         PendingContactAttributes *attributes =
-            conn->lowlevel()->contactAttributes(otherContacts.toList(),
-                    interfaces, true);
+            conn->lowlevel()->contactAttributes(otherContacts.toList(), interfaces);
 
         connect(attributes,
                 SIGNAL(finished(Tp::PendingOperation*)),

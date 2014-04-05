@@ -64,7 +64,7 @@ public:
     PendingChannel *ensureChannel(const QVariantMap &request, int timeout);
 
     PendingContactAttributes *contactAttributes(const TpDBus::UIntList &handles,
-            const QStringList &interfaces, bool reference = true);
+            const QStringList &interfaces);
     QStringList contactAttributeInterfaces() const;
 
     void injectContactIds(const TpDBus::HandleIdentifierMap &contactIds);
