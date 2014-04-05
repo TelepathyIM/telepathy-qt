@@ -103,8 +103,7 @@ private Q_SLOTS:
     TP_QT_NO_EXPORT void gotMainProperties(QDBusPendingCallWatcher *watcher);
     TP_QT_NO_EXPORT void onAccountReady(Tp::PendingOperation *op);
 
-    TP_QT_NO_EXPORT void onLegacySucceeded();
-    TP_QT_NO_EXPORT void onSucceededWithChannel(const QDBusObjectPath &connPath, const QVariantMap &connProps,
+    TP_QT_NO_EXPORT void onSucceeded(const QDBusObjectPath &connPath, const QVariantMap &connProps,
             const QDBusObjectPath &chanPath, const QVariantMap &chanProps);
     TP_QT_NO_EXPORT void onChanBuilt(Tp::PendingOperation *op);
 

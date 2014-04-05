@@ -108,11 +108,8 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
             SIGNAL(Failed(QString,QString)),
             SIGNAL(failed(QString,QString)));
     parent->connect(baseInterface,
-            SIGNAL(Succeeded()),
-            SLOT(onLegacySucceeded()));
-    parent->connect(baseInterface,
-            SIGNAL(SucceededWithChannel(QDBusObjectPath,QVariantMap,QDBusObjectPath,QVariantMap)),
-            SLOT(onSucceededWithChannel(QDBusObjectPath,QVariantMap,QDBusObjectPath,QVariantMap)));
+            SIGNAL(Succeeded(QDBusObjectPath,QVariantMap,QDBusObjectPath,QVariantMap)),
+            SLOT(onSucceeded(QDBusObjectPath,QVariantMap,QDBusObjectPath,QVariantMap)));
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -618,23 +615,14 @@ void ChannelRequest::onAccountReady(PendingOperation *op)
     }
 }
 
-void ChannelRequest::onLegacySucceeded()
-{
-    if (mPriv->gotSWC) {
-        return;
-    }
-
-    emit succeeded(ChannelPtr());
-}
-
-void ChannelRequest::onSucceededWithChannel(
+void ChannelRequest::onSucceeded(
         const QDBusObjectPath &connPath,
         const QVariantMap &connProps,
         const QDBusObjectPath &chanPath,
         const QVariantMap &chanProps)
 {
     if (mPriv->gotSWC) {
-        warning().nospace() << "Got SucceededWithChannel again for CR(" << objectPath() << ")!";
+        warning().nospace() << "Got Succeeded again for CR(" << objectPath() << ")!";
         return;
     }
 
