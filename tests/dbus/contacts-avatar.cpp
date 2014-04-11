@@ -118,7 +118,7 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
             array, avatarMimeType, avatarToken, true);
     g_array_unref(array);
 
-    Tp::UIntList handles = Tp::UIntList() << handle;
+    TpDBus::UIntList handles = TpDBus::UIntList() << handle;
     Features features = Features()
         << Contact::FeatureAvatarToken
         << Contact::FeatureAvatarData;
@@ -229,7 +229,7 @@ void TestContactsAvatar::testRequestAvatars()
     g_array_append_vals(array, avatarData, strlen(avatarData));
 
     // First let's create the contacts
-    Tp::UIntList handles;
+    TpDBus::UIntList handles;
     for (int i = 0; i < 100; ++i) {
         QString contactId = QLatin1String("contact") + QString::number(i);
         handle = tp_handle_ensure(serviceRepo, contactId.toLatin1().constData(), NULL, NULL);

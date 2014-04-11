@@ -41,10 +41,10 @@ class ConnectionManagerAdaptor : public QDBusAbstractAdaptor
         "")
 
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
-    Q_PROPERTY(Tp::ProtocolPropertiesMap Protocols READ Protocols)
+    Q_PROPERTY(TpDBus::ProtocolPropertiesMap Protocols READ Protocols)
 
 public:
-    ConnectionManagerAdaptor(ProtocolPropertiesMap &protocols, QObject *parent)
+    ConnectionManagerAdaptor(TpDBus::ProtocolPropertiesMap &protocols, QObject *parent)
         : QDBusAbstractAdaptor(parent),
           mProtocols(protocols)
     {
@@ -60,14 +60,14 @@ public: // Properties
         return QStringList();
     }
 
-    inline ProtocolPropertiesMap Protocols() const
+    inline TpDBus::ProtocolPropertiesMap Protocols() const
     {
         return mProtocols;
     }
 
 private:
-    ProtocolPropertiesMap mProtocols;
-    ParamSpecList mParameters;
+    TpDBus::ProtocolPropertiesMap mProtocols;
+    TpDBus::ParamSpecList mParameters;
 };
 
 class ProtocolAdaptor : public QDBusAbstractAdaptor
@@ -91,9 +91,9 @@ class ProtocolAdaptor : public QDBusAbstractAdaptor
         "")
 
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
-    Q_PROPERTY(Tp::ParamSpecList Parameters READ Parameters)
+    Q_PROPERTY(TpDBus::ParamSpecList Parameters READ Parameters)
     Q_PROPERTY(QStringList ConnectionInterfaces READ ConnectionInterfaces)
-    Q_PROPERTY(Tp::RequestableChannelClassList RequestableChannelClasses READ RequestableChannelClasses)
+    Q_PROPERTY(TpDBus::RequestableChannelClassList RequestableChannelClasses READ RequestableChannelClasses)
     Q_PROPERTY(QString VCardField READ VCardField)
     Q_PROPERTY(QString EnglishName READ EnglishName)
     Q_PROPERTY(QString Icon READ Icon)
@@ -149,7 +149,7 @@ public: // Properties
         return mInterfaces;
     }
 
-    inline Tp::ParamSpecList Parameters() const
+    inline TpDBus::ParamSpecList Parameters() const
     {
         return mParameters;
     }
@@ -159,7 +159,7 @@ public: // Properties
         return mConnInterfaces;
     }
 
-    inline Tp::RequestableChannelClassList RequestableChannelClasses() const
+    inline TpDBus::RequestableChannelClassList RequestableChannelClasses() const
     {
         return mRCCs;
     }
@@ -183,9 +183,9 @@ public: // Properties
 
 private:
     QStringList mInterfaces;
-    ParamSpecList mParameters;
+    TpDBus::ParamSpecList mParameters;
     QStringList mConnInterfaces;
-    RequestableChannelClassList mRCCs;
+    TpDBus::RequestableChannelClassList mRCCs;
     QString mVCardField;
     QString mEnglishName;
     QString mIcon;
@@ -386,14 +386,14 @@ class ProtocolPresenceAdaptor : public QDBusAbstractAdaptor
 "  </interface>\n"
         "")
 
-    Q_PROPERTY(Tp::StatusSpecMap Statuses READ Statuses)
+    Q_PROPERTY(TpDBus::StatusSpecMap Statuses READ Statuses)
 
 public:
     ProtocolPresenceAdaptor(QObject *parent)
         : QDBusAbstractAdaptor(parent),
           introspectionCalled(0)
     {
-        StatusSpec spec;
+        TpDBus::StatusSpec spec;
         spec.type = ConnectionPresenceTypeAvailable;
         spec.maySetOnSelf = true;
         spec.canHaveMessage = false;
@@ -413,7 +413,7 @@ public:
     }
 
 public: // Properties
-    inline StatusSpecMap Statuses() const
+    inline TpDBus::StatusSpecMap Statuses() const
     {
         // if we request all properties we are going to get here, so marking as
         // introspectionCalled;
@@ -424,7 +424,7 @@ public: // Properties
     mutable int introspectionCalled;
 
 private:
-    StatusSpecMap mStatuses;
+    TpDBus::StatusSpecMap mStatuses;
 };
 
 struct CMHelper
@@ -449,7 +449,7 @@ struct CMHelper
         QVERIFY(bus.registerObject(cmPathBase + cmName + QLatin1String("/") + cmName,
                     protocolObject));
 
-        ProtocolPropertiesMap protocols;
+        TpDBus::ProtocolPropertiesMap protocols;
         QVariantMap immutableProperties;
         if (withProtocolProps) {
             immutableProperties.unite(protocolAdaptor->immutableProperties());

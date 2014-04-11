@@ -48,7 +48,7 @@ public:
 
     QList<Tp::ContactPtr> contacts(const QStringList &ids,
             const Tp::Features &features = Tp::Features());
-    QList<Tp::ContactPtr> contacts(const Tp::UIntList &handles,
+    QList<Tp::ContactPtr> contacts(const TpDBus::UIntList &handles,
             const Tp::Features &features = Tp::Features());
     QList<Tp::ContactPtr> upgradeContacts(const QList<Tp::ContactPtr> &contacts,
             const Tp::Features &features = Tp::Features());

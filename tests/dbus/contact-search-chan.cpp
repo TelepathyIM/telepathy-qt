@@ -212,7 +212,7 @@ void TestContactSearchChan::testContactSearch()
         ids << it.key()->id();
         QCOMPARE(it.value().isValid(), true);
         QCOMPARE(it.value().allFields().isEmpty(), false);
-        Q_FOREACH (const ContactInfoField &contactInfo, it.value().allFields()) {
+        Q_FOREACH (const TpDBus::ContactInfoField &contactInfo, it.value().allFields()) {
             QCOMPARE(contactInfo.fieldName, QLatin1String("fn"));
             fns.append(contactInfo.fieldValue.first());
         }
@@ -251,7 +251,7 @@ void TestContactSearchChan::testContactSearchEmptyResult()
                 SIGNAL(searchResultReceived(const Tp::ContactSearchChannel::SearchResult &)),
                 SLOT(onSearchResultReceived(const Tp::ContactSearchChannel::SearchResult &))));
 
-    ContactSearchMap searchTerms;
+    TpDBus::ContactSearchMap searchTerms;
     searchTerms.insert(QLatin1String("employer"), QLatin1String("FooBar"));
     QVERIFY(connect(mChan2->search(searchTerms),
                 SIGNAL(finished(Tp::PendingOperation *)),

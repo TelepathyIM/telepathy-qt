@@ -190,7 +190,7 @@ QList<Tp::ContactPtr> TestConnHelper::contacts(const QStringList &ids,
     return ret;
 }
 
-QList<Tp::ContactPtr> TestConnHelper::contacts(const Tp::UIntList &handles,
+QList<Tp::ContactPtr> TestConnHelper::contacts(const TpDBus::UIntList &handles,
         const Tp::Features &features)
 {
     mLoop->processEvents();

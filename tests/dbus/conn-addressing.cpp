@@ -47,7 +47,7 @@ private:
 
     TestConnHelper *mConn;
     QList<ContactPtr> mContacts;
-    Tp::UIntList mInvalidHandles;
+    TpDBus::UIntList mInvalidHandles;
     QStringList mValidIds;
     QHash<QString, QPair<QString, QString> > mInvalidIds;
     QStringList mValidVCardAddresses;
@@ -270,7 +270,7 @@ void TestConnAddressing::testRequestEmpty()
 {
     ConnectionPtr conn = mConn->client();
 
-    PendingContacts *pc = conn->contactManager()->contactsForHandles(UIntList());
+    PendingContacts *pc = conn->contactManager()->contactsForHandles(TpDBus::UIntList());
     QVERIFY(connect(pc,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));

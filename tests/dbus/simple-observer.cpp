@@ -515,7 +515,7 @@ void TestSimpleObserver::testCrossTalk()
         ClientObserverInterface *observerIface = new ClientObserverInterface(
                 it.key(), it.value(), this);
 
-        ChannelClassList observerFilter;
+        TpDBus::ChannelClassList observerFilter;
         if (!waitForProperty(observerIface->requestPropertyObserverChannelFilter(),
                     &observerFilter)) {
             continue;
@@ -526,16 +526,16 @@ void TestSimpleObserver::testCrossTalk()
                 // only call ObserveChannels for text chat channels on observers that support text
                 // chat
                 if (spec.isSubsetOf(ChannelClassSpec::textChat())) {
-                    ChannelDetails textChan = {
+                    TpDBus::ChannelDetails textChan = {
                         QDBusObjectPath(mTextChans[i]->objectPath()),
                         mTextChans[i]->immutableProperties()
                     };
                     observerIface->ObserveChannels(
                             QDBusObjectPath(mAccounts[i]->objectPath()),
                             QDBusObjectPath(mTextChans[i]->connection()->objectPath()),
-                            ChannelDetailsList() << textChan,
+                            TpDBus::ChannelDetailsList() << textChan,
                             QDBusObjectPath(QLatin1String("/")),
-                            Tp::ObjectPathList(),
+                            TpDBus::ObjectPathList(),
                             QVariantMap());
                     break;
                 }
@@ -544,16 +544,16 @@ void TestSimpleObserver::testCrossTalk()
             Q_FOREACH (const ChannelClassSpec &spec, observerFilter) {
                 // only call ObserveChannels for SM channels on observers that support SM channels
                 if (spec.isSubsetOf(ChannelClassSpec::mediaCall())) {
-                    ChannelDetails smChan = {
+                    TpDBus::ChannelDetails smChan = {
                         QDBusObjectPath(mCallChans[i]->objectPath()),
                         mCallChans[i]->immutableProperties()
                     };
                     observerIface->ObserveChannels(
                             QDBusObjectPath(mAccounts[i]->objectPath()),
                             QDBusObjectPath(mCallChans[i]->connection()->objectPath()),
-                            ChannelDetailsList() << smChan,
+                            TpDBus::ChannelDetailsList() << smChan,
                             QDBusObjectPath(QLatin1String("/")),
-                            Tp::ObjectPathList(),
+                            TpDBus::ObjectPathList(),
                             QVariantMap());
                     break;
                 }

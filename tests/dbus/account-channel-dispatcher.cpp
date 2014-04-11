@@ -58,7 +58,7 @@ class ChannelRequestAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QDBusObjectPath Account READ Account)
     Q_PROPERTY(qulonglong UserActionTime READ UserActionTime)
     Q_PROPERTY(QString PreferredHandler READ PreferredHandler)
-    Q_PROPERTY(QualifiedPropertyValueMapList Requests READ Requests)
+    Q_PROPERTY(TpDBus::QualifiedPropertyValueMapList Requests READ Requests)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
     Q_PROPERTY(QVariantMap Hints READ Hints)
 
@@ -66,7 +66,7 @@ public:
     ChannelRequestAdaptor(QDBusObjectPath account,
             qulonglong userActionTime,
             QString preferredHandler,
-            QualifiedPropertyValueMapList requests,
+            TpDBus::QualifiedPropertyValueMapList requests,
             QStringList interfaces,
             bool shouldFail,
             bool proceedNoop,
@@ -109,7 +109,7 @@ public: // Properties
         return mPreferredHandler;
     }
 
-    inline QualifiedPropertyValueMapList Requests() const
+    inline TpDBus::QualifiedPropertyValueMapList Requests() const
     {
         return mRequests;
     }
@@ -169,7 +169,7 @@ private:
     QDBusObjectPath mAccount;
     qulonglong mUserActionTime;
     QString mPreferredHandler;
-    QualifiedPropertyValueMapList mRequests;
+    TpDBus::QualifiedPropertyValueMapList mRequests;
     QStringList mInterfaces;
     bool mShouldFail;
     bool mProceedNoop;
@@ -321,7 +321,7 @@ private:
                 account,
                 userActionTime,
                 preferredHandler,
-                QualifiedPropertyValueMapList(),
+                TpDBus::QualifiedPropertyValueMapList(),
                 QStringList(),
                 mChannelRequestShouldFail,
                 mChannelRequestProceedNoop,
@@ -350,11 +350,11 @@ private:
             new Client::ClientHandlerInterface(mBus, mCurPreferredHandler,
                     channelHandlerPath, this);
 
-        ChannelDetails channelDetails = { QDBusObjectPath(mChanPath), mChanProps };
+        TpDBus::ChannelDetails channelDetails = { QDBusObjectPath(mChanPath), mChanProps };
         clientHandlerInterface->HandleChannels(mCurRequest->Account(),
                 QDBusObjectPath(mConnPath),
-                ChannelDetailsList() << channelDetails,
-                ObjectPathList() << QDBusObjectPath(mCurRequestPath),
+                TpDBus::ChannelDetailsList() << channelDetails,
+                TpDBus::ObjectPathList() << QDBusObjectPath(mCurRequestPath),
                 userActionTime, QVariantMap());
     }
 
@@ -651,7 +651,7 @@ QList<ClientHandlerInterface *> TestAccountChannelDispatcher::ourHandlers()
 
 QStringList TestAccountChannelDispatcher::ourHandledChannels()
 {
-    ObjectPathList handledChannels;
+    TpDBus::ObjectPathList handledChannels;
     QDBusConnection bus = QDBusConnection::sessionBus();
     QStringList registeredNames = bus.interface()->registeredServiceNames();
     Q_FOREACH (QString name, registeredNames) {
@@ -695,7 +695,7 @@ QStringList TestAccountChannelDispatcher::ourHandledChannels()
 void TestAccountChannelDispatcher::checkHandlerHandledChannels(ClientHandlerInterface *handler,
         const QStringList &toCompare)
 {
-    ObjectPathList handledChannels;
+    TpDBus::ObjectPathList handledChannels;
     QVERIFY(waitForProperty(handler->requestPropertyHandledChannels(), &handledChannels));
     QStringList sortedHandledChannels;
     Q_FOREACH (const QDBusObjectPath &objectPath, handledChannels) {

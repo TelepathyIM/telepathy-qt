@@ -90,7 +90,7 @@ void TestPresence::testPresence()
 
 #define TEST_PRESENCE_SPEC_FULL(specStatus, specType, specMaySetOnSelf, specCanHaveMessage) \
 { \
-    StatusSpec bareSpec; \
+    TpDBus::StatusSpec bareSpec; \
     bareSpec.type = specType; \
     bareSpec.maySetOnSelf = specMaySetOnSelf; \
     bareSpec.canHaveMessage = specCanHaveMessage; \
@@ -114,13 +114,13 @@ void TestPresence::testPresence()
     QCOMPARE(spec.canHaveStatusMessage(), specCanHaveMessage); \
 \
     if (specValid) { \
-        StatusSpec bareSpec; \
+        TpDBus::StatusSpec bareSpec; \
         bareSpec.type = specType; \
         bareSpec.maySetOnSelf = specMaySetOnSelf; \
         bareSpec.canHaveMessage = specCanHaveMessage; \
         QCOMPARE(spec.bareSpec(), bareSpec); \
     } else { \
-        QCOMPARE(spec.bareSpec(), StatusSpec()); \
+        QCOMPARE(spec.bareSpec(), TpDBus::StatusSpec()); \
     } \
 }
 

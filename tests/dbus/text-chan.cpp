@@ -140,7 +140,7 @@ void TestTextChan::initTestCase()
             TP_HANDLE_TYPE_CONTACT);
     guint handle = tp_handle_ensure(mContactRepo, "someone@localhost", 0, 0);
 
-    mContact = mConn->contacts(UIntList() << handle).first();
+    mContact = mConn->contacts(TpDBus::UIntList() << handle).first();
     QVERIFY(mContact);
 
     // create a Channel by magic, rather than doing D-Bus round-trips for it

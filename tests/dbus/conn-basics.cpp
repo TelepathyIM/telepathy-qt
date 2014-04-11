@@ -35,7 +35,7 @@ public:
 protected Q_SLOTS:
     void expectConnReady(Tp::ConnectionStatus);
     void expectConnInvalidated();
-    void expectPresenceAvailable(const Tp::SimplePresence &);
+    void expectPresenceAvailable(const TpDBus::SimplePresence &);
     void onRequestConnectFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
@@ -86,7 +86,7 @@ void TestConnBasics::expectConnInvalidated()
     mLoop->exit(0);
 }
 
-void TestConnBasics::expectPresenceAvailable(const Tp::SimplePresence &presence)
+void TestConnBasics::expectPresenceAvailable(const TpDBus::SimplePresence &presence)
 {
     if (presence.type == Tp::ConnectionPresenceTypeAvailable) {
         mLoop->exit(0);
@@ -179,7 +179,7 @@ void TestConnBasics::testBasics()
 
 void TestConnBasics::testSimplePresence()
 {
-    qDebug() << "Making SimplePresence ready";
+    qDebug() << "Making TpDBus::SimplePresence ready";
 
     Features features = Features() << Connection::FeatureSimplePresence;
     QCOMPARE(mConn->isReady(features), false);
@@ -213,7 +213,7 @@ void TestConnBasics::testSimplePresence()
         ConnectionPresenceTypeError
     };
 
-    StatusSpecMap statuses = mConn->lowlevel()->allowedPresenceStatuses();
+    TpDBus::StatusSpecMap statuses = mConn->lowlevel()->allowedPresenceStatuses();
     Q_FOREACH (QString name, statuses.keys()) {
         QVERIFY(expectedNames.contains(name));
 

@@ -102,7 +102,7 @@ void TestRCCSpec::testRCCSpec()
 
     QCOMPARE(RequestableChannelClassSpec::textChat() == RequestableChannelClassSpec::textChatroom(), false);
 
-    RequestableChannelClass rcc;
+    TpDBus::RequestableChannelClass rcc;
     rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
             TP_QT_IFACE_CHANNEL_TYPE_TEXT);
     rcc.fixedProperties.insert(TP_QT_IFACE_CHANNEL + QLatin1String(".TargetEntityType"),

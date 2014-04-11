@@ -124,7 +124,7 @@ void TestBaseCM::testProtocolsCreateCM(BaseConnectionManagerPtr &cm)
     QVariantMap props = cm->immutableProperties();
     QVERIFY(props.contains(TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols")));
 
-    ProtocolPropertiesMap protocols = qvariant_cast<Tp::ProtocolPropertiesMap>(
+    TpDBus::ProtocolPropertiesMap protocols = qvariant_cast<TpDBus::ProtocolPropertiesMap>(
             props[TP_QT_IFACE_CONNECTION_MANAGER + QLatin1String(".Protocols")]);
     QVERIFY(protocols.contains(QLatin1String("myprotocol")));
     QVERIFY(!protocols.contains(QLatin1String("otherprotocol")));

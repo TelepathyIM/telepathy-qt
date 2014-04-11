@@ -79,14 +79,14 @@ class ChannelRequestAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QDBusObjectPath Account READ Account)
     Q_PROPERTY(qulonglong UserActionTime READ UserActionTime)
     Q_PROPERTY(QString PreferredHandler READ PreferredHandler)
-    Q_PROPERTY(Tp::QualifiedPropertyValueMapList Requests READ Requests)
+    Q_PROPERTY(TpDBus::QualifiedPropertyValueMapList Requests READ Requests)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
 
 public:
     ChannelRequestAdaptor(QDBusObjectPath account,
             qulonglong userActionTime,
             QString preferredHandler,
-            QualifiedPropertyValueMapList requests,
+            TpDBus::QualifiedPropertyValueMapList requests,
             QStringList interfaces,
             QObject *parent)
         : QDBusAbstractAdaptor(parent),
@@ -116,7 +116,7 @@ public: // Properties
         return mPreferredHandler;
     }
 
-    inline QualifiedPropertyValueMapList Requests() const
+    inline TpDBus::QualifiedPropertyValueMapList Requests() const
     {
         return mRequests;
     }
@@ -143,7 +143,7 @@ private:
     QDBusObjectPath mAccount;
     qulonglong mUserActionTime;
     QString mPreferredHandler;
-    QualifiedPropertyValueMapList mRequests;
+    TpDBus::QualifiedPropertyValueMapList mRequests;
     QStringList mInterfaces;
 };
 
@@ -164,13 +164,13 @@ class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
 
     Q_PROPERTY(QDBusObjectPath Account READ Account)
     Q_PROPERTY(QDBusObjectPath Connection READ Connection)
-    Q_PROPERTY(Tp::ChannelDetailsList Channels READ Channels)
+    Q_PROPERTY(TpDBus::ChannelDetailsList Channels READ Channels)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
     Q_PROPERTY(QStringList PossibleHandlers READ PossibleHandlers)
 
 public:
     ChannelDispatchOperationAdaptor(const QDBusObjectPath &acc, const QDBusObjectPath &conn,
-            const ChannelDetailsList &channels, const QStringList &possibleHandlers,
+            const TpDBus::ChannelDetailsList &channels, const QStringList &possibleHandlers,
             QObject *parent)
         : QDBusAbstractAdaptor(parent), mAccount(acc), mConn(conn), mChannels(channels),
           mPossibleHandlers(possibleHandlers)
@@ -192,7 +192,7 @@ public: // Properties
         return mConn;
     }
 
-    inline ChannelDetailsList Channels() const
+    inline TpDBus::ChannelDetailsList Channels() const
     {
         return mChannels;
     }
@@ -209,7 +209,7 @@ public: // Properties
 
 private:
     QDBusObjectPath mAccount, mConn;
-    ChannelDetailsList mChannels;
+    TpDBus::ChannelDetailsList mChannels;
     QStringList mInterfaces;
     QStringList mPossibleHandlers;
 };
@@ -546,7 +546,7 @@ void TestClientFactories::initTestCase()
     new ChannelRequestAdaptor(QDBusObjectPath(mAccount->objectPath()),
             mUserActionTime,
             QString(),
-            QualifiedPropertyValueMapList(),
+            TpDBus::QualifiedPropertyValueMapList(),
             QStringList(),
             request);
     QVERIFY(bus.registerService(mChannelDispatcherBusName));
@@ -561,8 +561,8 @@ void TestClientFactories::initTestCase()
     // Initialize this here so we can actually set it in possibleHandlers
     mClientObject1Path = QLatin1String("/im/telepathy/v1/Client/foo");
 
-    ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+    TpDBus::ChannelDetailsList channelDetailsList;
+    TpDBus::ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
         ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
 
@@ -744,15 +744,15 @@ void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &cli
     connect(client,
             SIGNAL(observeChannelsFinished()),
             SLOT(expectSignalEmission()));
-    ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+    TpDBus::ChannelDetailsList channelDetailsList;
+    TpDBus::ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
         ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
             channelDetailsList,
             QDBusObjectPath(mCDOPath),
-            ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
+            TpDBus::ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
 
@@ -846,14 +846,14 @@ void TestClientFactories::testHandleChannels()
     connect(client1,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
-    ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
+    TpDBus::ChannelDetailsList channelDetailsList;
+    TpDBus::ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath),
         ChannelClassSpec::textChat().allProperties() };
     channelDetailsList.append(channelDetails);
     handler1Iface->HandleChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
             channelDetailsList,
-            ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
+            TpDBus::ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             mUserActionTime,
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
@@ -885,7 +885,7 @@ void TestClientFactories::testHandleChannels()
 
     QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
-    Tp::ObjectPathList handledChannels;
+    TpDBus::ObjectPathList handledChannels;
     QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));
 
@@ -902,7 +902,7 @@ void TestClientFactories::testHandleChannels()
     handler2Iface->HandleChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
             channelDetailsList,
-            ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
+            TpDBus::ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             mUserActionTime,
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);

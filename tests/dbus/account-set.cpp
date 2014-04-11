@@ -325,8 +325,8 @@ void TestAccountSet::testFilters()
 
     {
         // should not match as allowedProperties has TargetFoo that is not allowed
-        RequestableChannelClassList rccs;
-        RequestableChannelClass rcc;
+        TpDBus::RequestableChannelClassList rccs;
+        TpDBus::RequestableChannelClass rcc;
         rcc.fixedProperties.insert(
                 TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
                 TP_QT_IFACE_CHANNEL_TYPE_TEXT);

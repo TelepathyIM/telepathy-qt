@@ -64,7 +64,7 @@ private:
     TpTestsContactsConnection *mConnService;
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
-    Tp::UIntList mInvalidHandles;
+    TpDBus::UIntList mInvalidHandles;
 };
 
 void TestContacts::expectConnReady(Tp::ConnectionStatus newStatus,
@@ -228,7 +228,7 @@ void TestContacts::testSelfContact()
 
 void TestContacts::testForHandles()
 {
-    Tp::UIntList handles;
+    TpDBus::UIntList handles;
     TpHandleRepoIface *serviceRepo =
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
 
@@ -391,7 +391,7 @@ void TestContacts::testForIdentifiers()
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that (but
     // save their handles first)
-    Tp::UIntList saveHandles = Tp::UIntList() << mContacts[0]->handle()
+    TpDBus::UIntList saveHandles = TpDBus::UIntList() << mContacts[0]->handle()
         << mContacts[1]->handle()
         << mContacts[2]->handle();
     mContacts.clear();
@@ -446,7 +446,7 @@ void TestContacts::testFeatures()
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
 
     // Get test handles
-    Tp::UIntList handles;
+    TpDBus::UIntList handles;
     for (int i = 0; i < 3; i++) {
         handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
         QVERIFY(handles[i] != 0);
@@ -558,7 +558,7 @@ void TestContacts::testFeaturesNotRequested()
         << QLatin1String("bob") << QLatin1String("chris");
     TpHandleRepoIface *serviceRepo =
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
-    Tp::UIntList handles;
+    TpDBus::UIntList handles;
     for (int i = 0; i < 3; i++) {
         handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
         QVERIFY(handles[i] != 0);
@@ -621,7 +621,7 @@ void TestContacts::testUpgrade()
     TpHandleRepoIface *serviceRepo =
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
 
-    Tp::UIntList handles;
+    TpDBus::UIntList handles;
     for (int i = 0; i < 3; i++) {
         handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
         QVERIFY(handles[i] != 0);

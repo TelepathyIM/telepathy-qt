@@ -36,7 +36,7 @@ protected Q_SLOTS:
     void onAccountDisplayNameChanged(const QString &);
     void onAccountIconNameChanged(const QString &);
     void onAccountNicknameChanged(const QString &);
-    void onAccountAvatarChanged(const Tp::Avatar &);
+    void onAccountAvatarChanged(const TpDBus::Avatar &);
     void onAccountParametersChanged(const QVariantMap &);
     void onAccountCapabilitiesChanged(const Tp::ConnectionCapabilities &);
     void onAccountConnectsAutomaticallyChanged(bool);
@@ -121,7 +121,7 @@ TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, ServiceName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, DisplayName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, IconName)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QString &, Nickname)
-TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const Avatar &, Avatar)
+TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const TpDBus::Avatar &, TpDBus::Avatar)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const QVariantMap &, Parameters)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(const ConnectionCapabilities &, Capabilities)
 TEST_IMPLEMENT_PROPERTY_CHANGE_SLOT(bool, ConnectsAutomatically)
@@ -285,11 +285,11 @@ void TestAccountBasics::testBasics()
     // Neither FeatureProtocolInfo or FeatureProfile are ready yet and we have no connection
     PresenceSpecList expectedPresences;
     {
-        StatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, false };
+        TpDBus::StatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, false };
         expectedPresences.append(PresenceSpec(QLatin1String("available"), prSpec));
     }
     {
-        StatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
+        TpDBus::StatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
         expectedPresences.append(PresenceSpec(QLatin1String("offline"), prSpec));
     }
     qSort(expectedPresences);
@@ -331,8 +331,8 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(acc->isReady(Account::FeatureAvatar));
 
-    Avatar expectedAvatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
-    TEST_VERIFY_PROPERTY_CHANGE(acc, Tp::Avatar, Avatar, avatar, expectedAvatar);
+    TpDBus::Avatar expectedAvatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
+    TEST_VERIFY_PROPERTY_CHANGE(acc, TpDBus::Avatar, TpDBus::Avatar, avatar, expectedAvatar);
 
     QVariantMap expectedParameters = acc->parameters();
     expectedParameters[QLatin1String("foo")] = QLatin1String("bar");
@@ -477,15 +477,15 @@ void TestAccountBasics::testBasics()
     // presences
     expectedPresences.clear();
     {
-        StatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, true };
+        TpDBus::StatusSpec prSpec = { ConnectionPresenceTypeAvailable, true, true };
         expectedPresences.append(PresenceSpec(QLatin1String("available"), prSpec));
     }
     {
-        StatusSpec prSpec = { ConnectionPresenceTypeAway, true, true };
+        TpDBus::StatusSpec prSpec = { ConnectionPresenceTypeAway, true, true };
         expectedPresences.append(PresenceSpec(QLatin1String("away"), prSpec));
     }
     {
-        StatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
+        TpDBus::StatusSpec prSpec = { ConnectionPresenceTypeOffline, true, false };
         expectedPresences.append(PresenceSpec(QLatin1String("offline"), prSpec));
     }
     qSort(expectedPresences);
@@ -496,7 +496,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(presences, expectedPresences);
 
     {
-        StatusSpec prSpec = { ConnectionPresenceTypeExtendedAway, false, false };
+        TpDBus::StatusSpec prSpec = { ConnectionPresenceTypeExtendedAway, false, false };
         expectedPresences.append(PresenceSpec(QLatin1String("xa"), prSpec));
     }
     qSort(expectedPresences);

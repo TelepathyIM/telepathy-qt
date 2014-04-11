@@ -516,7 +516,7 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(connect(mConn->contactManager()->contactsForHandles(UIntList()),
+    QVERIFY(connect(mConn->contactManager()->contactsForHandles(TpDBus::UIntList()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -652,7 +652,7 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(connect(mConn->contactManager()->contactsForHandles(UIntList()),
+    QVERIFY(connect(mConn->contactManager()->contactsForHandles(TpDBus::UIntList()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -761,7 +761,7 @@ void TestConnRosterGroups::testNotADeathTrap()
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(connect(mConn->contactManager()->contactsForHandles(UIntList()),
+    QVERIFY(connect(mConn->contactManager()->contactsForHandles(TpDBus::UIntList()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectFailure(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);

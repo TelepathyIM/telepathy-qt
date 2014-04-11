@@ -77,7 +77,7 @@ public:
 
 public Q_SLOTS: // Methods
     QString SendMessage(const QDBusObjectPath &account,
-            const QString &targetID, const Tp::MessagePartList &message,
+            const QString &targetID, const TpDBus::MessagePartList &message,
             uint flags);
 
 private:
@@ -226,7 +226,7 @@ private:
 };
 
 QString CDMessagesAdaptor::SendMessage(const QDBusObjectPath &account,
-        const QString &targetID, const MessagePartList &message,
+        const QString &targetID, const TpDBus::MessagePartList &message,
         uint flags)
 {
     if (!mSimulatedSendError.isEmpty()) {
@@ -245,14 +245,14 @@ QString CDMessagesAdaptor::SendMessage(const QDBusObjectPath &account,
      */
     QList<ClientObserverInterface *> observers = test->ourObservers();
     Q_FOREACH(ClientObserverInterface *iface, observers) {
-        ChannelDetails chan = { QDBusObjectPath(test->mChan->objectPath()), test->mChan->immutableProperties() };
+        TpDBus::ChannelDetails chan = { QDBusObjectPath(test->mChan->objectPath()), test->mChan->immutableProperties() };
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(iface->ObserveChannels(
                 QDBusObjectPath(test->mAccount->objectPath()),
                 QDBusObjectPath(test->mChan->connection()->objectPath()),
-                ChannelDetailsList() << chan,
+                TpDBus::ChannelDetailsList() << chan,
                 QDBusObjectPath(QLatin1String("/")),
-                Tp::ObjectPathList(),
+                TpDBus::ObjectPathList(),
                 QVariantMap()));
 
         connect(watcher,
@@ -521,13 +521,13 @@ void TestContactMessenger::testReceived()
 
     QList<ClientObserverInterface *> observers = ourObservers();
     Q_FOREACH(ClientObserverInterface *iface, observers) {
-        ChannelDetails chan = { QDBusObjectPath(mChan->objectPath()), mChan->immutableProperties() };
+        TpDBus::ChannelDetails chan = { QDBusObjectPath(mChan->objectPath()), mChan->immutableProperties() };
         iface->ObserveChannels(
                 QDBusObjectPath(mAccount->objectPath()),
                 QDBusObjectPath(mChan->connection()->objectPath()),
-                ChannelDetailsList() << chan,
+                TpDBus::ChannelDetailsList() << chan,
                 QDBusObjectPath(QLatin1String("/")),
-                Tp::ObjectPathList(),
+                TpDBus::ObjectPathList(),
                 QVariantMap());
     }
 
@@ -561,13 +561,13 @@ void TestContactMessenger::testReceivedFromContact()
 
     QList<ClientObserverInterface *> observers = ourObservers();
     Q_FOREACH(ClientObserverInterface *iface, observers) {
-        ChannelDetails chan = { QDBusObjectPath(mChan->objectPath()), mChan->immutableProperties() };
+        TpDBus::ChannelDetails chan = { QDBusObjectPath(mChan->objectPath()), mChan->immutableProperties() };
         iface->ObserveChannels(
                 QDBusObjectPath(mAccount->objectPath()),
                 QDBusObjectPath(mChan->connection()->objectPath()),
-                ChannelDetailsList() << chan,
+                TpDBus::ChannelDetailsList() << chan,
                 QDBusObjectPath(QLatin1String("/")),
-                Tp::ObjectPathList(),
+                TpDBus::ObjectPathList(),
                 QVariantMap());
     }
 
@@ -658,7 +658,7 @@ QList<ClientObserverInterface *> TestContactMessenger::ourObservers()
 
         ClientObserverInterface *observer = new ClientObserverInterface(name, path, this);
 
-        ChannelClassList filter;
+        TpDBus::ChannelClassList filter;
         if (!waitForProperty(observer->requestPropertyObserverChannelFilter(), &filter)) {
             continue;
         }

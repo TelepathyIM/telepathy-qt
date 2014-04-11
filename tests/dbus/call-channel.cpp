@@ -32,23 +32,23 @@ protected Q_SLOTS:
     void expectSuccessfulRequestReceiving(Tp::PendingOperation *op);
 
     void onContentRemoved(const Tp::CallContentPtr &content,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
     void onCallStateChanged(Tp::CallState newState);
     void onCallFlagsChanged(Tp::CallFlags newFlags);
     void onRemoteMemberFlagsChanged(
             const QHash<Tp::ContactPtr, Tp::CallMemberFlags> &remoteMemberFlags,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
     void onRemoteMembersRemoved(const Tp::Contacts &remoteMembers,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
     void onLocalSendingStateChanged(Tp::SendingState localSendingState,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
     void onRemoteSendingStateChanged(
             const QHash<Tp::ContactPtr, Tp::SendingState> &remoteSendingStates,
-            const Tp::CallStateReason &reason);
+            const TpDBus::CallStateReason &reason);
 
     void onLocalHoldStateChanged(Tp::LocalHoldState state, Tp::LocalHoldStateReason reason);
 
-    void onNewChannels(const Tp::ChannelDetailsList &details);
+    void onNewChannels(const TpDBus::ChannelDetailsList &details);
 
 private Q_SLOTS:
     void initTestCase();
@@ -71,7 +71,7 @@ private:
     CallChannelPtr mChan;
     CallContentPtr mRequestContentReturn;
     CallContentPtr mContentRemoved;
-    CallStateReason mCallStateReason;
+    TpDBus::CallStateReason mCallStateReason;
     CallState mCallState;
     CallFlags mCallFlags;
     QHash<ContactPtr, CallMemberFlags> mRemoteMemberFlags;
@@ -117,7 +117,7 @@ void TestCallChannel::expectRequestContentFinished(Tp::PendingOperation *op)
 }
 
 void TestCallChannel::onLocalSendingStateChanged(Tp::SendingState state,
-        const Tp::CallStateReason &reason)
+        const TpDBus::CallStateReason &reason)
 {
     qDebug() << "local sending state changed";
     mLSSCReturn = state;
@@ -152,7 +152,7 @@ void TestCallChannel::expectSuccessfulRequestReceiving(Tp::PendingOperation *op)
 }
 
 void TestCallChannel::onContentRemoved(const CallContentPtr &content,
-        const Tp::CallStateReason &reason)
+        const TpDBus::CallStateReason &reason)
 {
     mContentRemoved = content;
     mCallStateReason = reason;
@@ -172,21 +172,21 @@ void TestCallChannel::onCallFlagsChanged(CallFlags newFlags)
 
 void TestCallChannel::onRemoteMemberFlagsChanged(
         const QHash<ContactPtr, CallMemberFlags> &remoteMemberFlags,
-        const CallStateReason &reason)
+        const TpDBus::CallStateReason &reason)
 {
     mRemoteMemberFlags = remoteMemberFlags;
     mLoop->exit(0);
 }
 
 void TestCallChannel::onRemoteMembersRemoved(const Tp::Contacts &remoteMembers,
-        const Tp::CallStateReason &reason)
+        const TpDBus::CallStateReason &reason)
 {
     mRemoteMembersRemoved = remoteMembers;
 }
 
 void TestCallChannel::onRemoteSendingStateChanged(
         const QHash<Tp::ContactPtr, SendingState> &states,
-        const Tp::CallStateReason &reason)
+        const TpDBus::CallStateReason &reason)
 {
     // There should be no further events
     QVERIFY(mRSSCState != RSSCStateDone);
@@ -230,10 +230,10 @@ void TestCallChannel::onLocalHoldStateChanged(Tp::LocalHoldState localHoldState,
     mLoop->exit(0);
 }
 
-void TestCallChannel::onNewChannels(const Tp::ChannelDetailsList &channels)
+void TestCallChannel::onNewChannels(const TpDBus::ChannelDetailsList &channels)
 {
     qDebug() << "new channels";
-    Q_FOREACH (const Tp::ChannelDetails &details, channels) {
+    Q_FOREACH (const TpDBus::ChannelDetails &details, channels) {
         QString channelType = details.properties.value(TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType")).toString();
         bool requested = details.properties.value(TP_QT_IFACE_CHANNEL + QLatin1String(".Requested")).toBool();
         qDebug() << " channelType:" << channelType;
@@ -270,7 +270,7 @@ void TestCallChannel::init()
 
     mRequestContentReturn.reset();
     mContentRemoved.reset();
-    mCallStateReason = CallStateReason();
+    mCallStateReason = TpDBus::CallStateReason();
     mCallState = CallStateUnknown;
     mCallFlags = (CallFlags) 0;
     mRemoteMemberFlags.clear();
@@ -394,8 +394,8 @@ void TestCallChannel::testOutgoingCall()
     QVERIFY(content);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(contentRemoved(Tp::CallContentPtr,Tp::CallStateReason)),
-                    SLOT(onContentRemoved(Tp::CallContentPtr,Tp::CallStateReason))));
+                    SIGNAL(contentRemoved(Tp::CallContentPtr,TpDBus::CallStateReason)),
+                    SLOT(onContentRemoved(Tp::CallContentPtr,TpDBus::CallStateReason))));
     QVERIFY(connect(content->remove(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
@@ -412,8 +412,8 @@ void TestCallChannel::testOutgoingCall()
     QVERIFY(content);
 
     QVERIFY(connect(stream.data(),
-                    SIGNAL(localSendingStateChanged(Tp::SendingState,Tp::CallStateReason)),
-                    SLOT(onLocalSendingStateChanged(Tp::SendingState,Tp::CallStateReason))));
+                    SIGNAL(localSendingStateChanged(Tp::SendingState,TpDBus::CallStateReason)),
+                    SLOT(onLocalSendingStateChanged(Tp::SendingState,TpDBus::CallStateReason))));
 
     qDebug() << "stopping sending";
 
@@ -467,8 +467,8 @@ void TestCallChannel::testOutgoingCall()
     mSuccessfulRequestReceivings = 0;
 
     QVERIFY(connect(stream.data(),
-                    SIGNAL(remoteSendingStateChanged(QHash<Tp::ContactPtr,Tp::SendingState>,Tp::CallStateReason)),
-                    SLOT(onRemoteSendingStateChanged(QHash<Tp::ContactPtr,Tp::SendingState>,Tp::CallStateReason))));
+                    SIGNAL(remoteSendingStateChanged(QHash<Tp::ContactPtr,Tp::SendingState>,TpDBus::CallStateReason)),
+                    SLOT(onRemoteSendingStateChanged(QHash<Tp::ContactPtr,Tp::SendingState>,TpDBus::CallStateReason))));
 
     // test content receiving changed
     QVERIFY(connect(stream->requestReceiving(otherContact, true),
@@ -576,8 +576,8 @@ void TestCallChannel::testIncomingCall()
     // call does not have the concept of removing streams, it will remove the content the stream
     // belongs
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(contentRemoved(Tp::CallContentPtr,Tp::CallStateReason)),
-                    SLOT(onContentRemoved(Tp::CallContentPtr,Tp::CallStateReason))));
+                    SIGNAL(contentRemoved(Tp::CallContentPtr,TpDBus::CallStateReason)),
+                    SLOT(onContentRemoved(Tp::CallContentPtr,TpDBus::CallStateReason))));
 
     QVERIFY(connect(content->remove(),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -749,8 +749,8 @@ void TestCallChannel::testCallMembers()
     qDebug() << "ringing on the remote side";
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(remoteMemberFlagsChanged(QHash<Tp::ContactPtr,Tp::CallMemberFlags>,Tp::CallStateReason)),
-                    SLOT(onRemoteMemberFlagsChanged(QHash<Tp::ContactPtr,Tp::CallMemberFlags>,Tp::CallStateReason))));
+                    SIGNAL(remoteMemberFlagsChanged(QHash<Tp::ContactPtr,Tp::CallMemberFlags>,TpDBus::CallStateReason)),
+                    SLOT(onRemoteMemberFlagsChanged(QHash<Tp::ContactPtr,Tp::CallMemberFlags>,TpDBus::CallStateReason))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mChan->callState(), CallStateInitialised);
@@ -760,9 +760,9 @@ void TestCallChannel::testCallMembers()
     QVERIFY(mChan->remoteMemberFlags(otherContact).testFlag(CallMemberFlagRinging));
 
     QVERIFY(disconnect(mChan.data(),
-                       SIGNAL(remoteMemberFlagsChanged(QHash<Tp::ContactPtr,Tp::CallMemberFlags>,Tp::CallStateReason)),
+                       SIGNAL(remoteMemberFlagsChanged(QHash<Tp::ContactPtr,Tp::CallMemberFlags>,TpDBus::CallStateReason)),
                        this,
-                       SLOT(onRemoteMemberFlagsChanged(QHash<Tp::ContactPtr,Tp::CallMemberFlags>,Tp::CallStateReason))));
+                       SLOT(onRemoteMemberFlagsChanged(QHash<Tp::ContactPtr,Tp::CallMemberFlags>,TpDBus::CallStateReason))));
 
     qDebug() << "remote contact answers";
 
@@ -798,8 +798,8 @@ void TestCallChannel::testCallMembers()
     qDebug() << "hanging up";
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(remoteMembersRemoved(Tp::Contacts,Tp::CallStateReason)),
-                    SLOT(onRemoteMembersRemoved(Tp::Contacts,Tp::CallStateReason))));
+                    SIGNAL(remoteMembersRemoved(Tp::Contacts,TpDBus::CallStateReason)),
+                    SLOT(onRemoteMembersRemoved(Tp::Contacts,TpDBus::CallStateReason))));
 
     QVERIFY(connect(mChan->hangup(),
                     SIGNAL(finished(Tp::PendingOperation*)),

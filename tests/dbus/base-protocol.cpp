@@ -247,7 +247,7 @@ void TestBaseProtocol::protocolObjectSvcSideCb(TestBaseProtocolCMPtr &cm)
     QVERIFY(sl.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1));
 
     QVERIFY(props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters")));
-    ParamSpecList params = qvariant_cast<ParamSpecList>(props.value(
+    TpDBus::ParamSpecList params = qvariant_cast<TpDBus::ParamSpecList>(props.value(
             TP_QT_IFACE_PROTOCOL + QLatin1String(".Parameters")));
     QCOMPARE(params.size(), 1);
     QCOMPARE(params.at(0).name, QLatin1String("account"));
@@ -267,7 +267,7 @@ void TestBaseProtocol::protocolObjectSvcSideCb(TestBaseProtocolCMPtr &cm)
              QLatin1String("im-icq"));
 
     QVERIFY(props.contains(TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses")));
-    RequestableChannelClassList rcc = qvariant_cast<RequestableChannelClassList>(props.value(
+    TpDBus::RequestableChannelClassList rcc = qvariant_cast<TpDBus::RequestableChannelClassList>(props.value(
             TP_QT_IFACE_PROTOCOL + QLatin1String(".RequestableChannelClasses")));
     QCOMPARE(rcc.size(), 1);
     QCOMPARE(RequestableChannelClassSpec(rcc.at(0)), RequestableChannelClassSpec::textChat());
@@ -634,7 +634,7 @@ void TestBaseProtocol::presenceIfaceSvcSideCb(TestBaseProtocolCMPtr &cm)
     //immutable properties
     QVariantMap props = protocol->immutableProperties();
     QVERIFY(props.contains(TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses")));
-    statuses = PresenceSpecList(qvariant_cast<StatusSpecMap>(props.value(
+    statuses = PresenceSpecList(qvariant_cast<TpDBus::StatusSpecMap>(props.value(
             TP_QT_IFACE_PROTOCOL_INTERFACE_PRESENCE1 + QLatin1String(".Statuses"))));
     QCOMPARE(statuses.size(), 4);
     QVERIFY(statuses.contains(PresenceSpec::available()));

@@ -226,7 +226,7 @@ void TestCaptchaAuthentication::testCaptchaCancel()
                 SLOT(expectFailure(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(connect(mCaptcha->answer(CaptchaAnswers()),
+    QVERIFY(connect(mCaptcha->answer(TpDBus::CaptchaAnswers()),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectFailure(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);

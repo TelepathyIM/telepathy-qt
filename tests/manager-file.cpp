@@ -9,9 +9,9 @@ using namespace Tp;
 namespace
 {
 
-bool containsParam(const ParamSpecList &params, const char *name)
+bool containsParam(const TpDBus::ParamSpecList &params, const char *name)
 {
-    Q_FOREACH (const ParamSpec &param, params) {
+    Q_FOREACH (const TpDBus::ParamSpec &param, params) {
         if (param.name == QLatin1String(name)) {
             return true;
         }
@@ -19,9 +19,9 @@ bool containsParam(const ParamSpecList &params, const char *name)
     return false;
 }
 
-const ParamSpec *getParam(const ParamSpecList &params, const QString &name)
+const TpDBus::ParamSpec *getParam(const TpDBus::ParamSpecList &params, const QString &name)
 {
-    Q_FOREACH (const ParamSpec &param, params) {
+    Q_FOREACH (const TpDBus::ParamSpec &param, params) {
         if (param.name == name) {
             return &param;
         }
@@ -78,7 +78,7 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(protocols,
              QStringList() << QLatin1String("bar") << QLatin1String("foo") << QLatin1String("somewhat-pathological"));
 
-    ParamSpecList params = managerFile.parameters(QLatin1String("foo"));
+    TpDBus::ParamSpecList params = managerFile.parameters(QLatin1String("foo"));
     QCOMPARE(containsParam(params, "account"), true);
     QCOMPARE(containsParam(params, "encryption-key"), true);
     QCOMPARE(containsParam(params, "password"), true);
@@ -96,7 +96,7 @@ void TestManagerFile::testManagerFile()
     QStringList addressableUriSchemes = managerFile.addressableUriSchemes(QLatin1String("foo"));
     QCOMPARE(addressableUriSchemes, QStringList() << QLatin1String("foo"));
 
-    RequestableChannelClass ftRcc;
+    TpDBus::RequestableChannelClass ftRcc;
     ftRcc.fixedProperties.insert(
             TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
             TP_QT_IFACE_CHANNEL_TYPE_FILE_TRANSFER1);
@@ -111,7 +111,7 @@ void TestManagerFile::testManagerFile()
     ftRcc.allowedProperties.append(
             TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"));
 
-    RequestableChannelClass fooTextRcc;
+    TpDBus::RequestableChannelClass fooTextRcc;
     fooTextRcc.fixedProperties.insert(
             TP_QT_IFACE_CHANNEL + QLatin1String(".ChannelType"),
             TP_QT_IFACE_CHANNEL_TYPE_TEXT);
@@ -123,7 +123,7 @@ void TestManagerFile::testManagerFile()
     fooTextRcc.allowedProperties.append(
             TP_QT_IFACE_CHANNEL + QLatin1String(".TargetID"));
 
-    RequestableChannelClassList expectedRccs;
+    TpDBus::RequestableChannelClassList expectedRccs;
 
     expectedRccs.append(ftRcc);
     expectedRccs.append(fooTextRcc);
@@ -136,7 +136,7 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(ftRcc, managerFile.requestableChannelClasses(QLatin1String("foo"))[0]);
     QCOMPARE(fooTextRcc, managerFile.requestableChannelClasses(QLatin1String("foo"))[1]);
 
-    const ParamSpec *param;
+    const TpDBus::ParamSpec *param;
     param = getParam(params, QLatin1String("account"));
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagRequired | ConnMgrParamFlagHasDefault);
     QCOMPARE(param->signature, QString(QLatin1String("s")));
