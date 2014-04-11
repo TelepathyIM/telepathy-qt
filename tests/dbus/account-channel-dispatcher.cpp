@@ -351,7 +351,7 @@ private:
                     channelHandlerPath, this);
 
         TpDBus::ChannelDetails channelDetails = { QDBusObjectPath(mChanPath), mChanProps };
-        clientHandlerInterface->HandleChannels(mCurRequest->Account(),
+        clientHandlerInterface->HandleChannel(mCurRequest->Account(),
                 QDBusObjectPath(mConnPath),
                 TpDBus::ChannelDetailsList() << channelDetails,
                 TpDBus::ObjectPathList() << QDBusObjectPath(mCurRequestPath),

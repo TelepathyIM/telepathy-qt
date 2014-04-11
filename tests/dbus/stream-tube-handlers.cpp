@@ -916,7 +916,7 @@ void TestStreamTubeHandlers::testBasicTcpExport()
     // details
     TpDBus::ChannelDetails details = { QDBusObjectPath(chan.first), chan.second };
     TpDBus::ObjectImmutablePropertiesMap requestsSatisfied;
-    requestsSatisfied.insert(requestPath, QVariant());
+    requestsSatisfied.insert(QDBusObjectPath(requestPath), QVariantMap());
     handler->HandleChannel(
             QDBusObjectPath(mAcc->objectPath()),
             QDBusObjectPath(mConn->objectPath()),

@@ -812,7 +812,7 @@ void TestClientFactories::testAddDispatchOperation()
             TP_QT_IFACE_CHANNEL_DISPATCH_OPERATION + QLatin1String(".Interfaces"),
             QVariant::fromValue(mCDO->Interfaces()));
 
-    approverIface->AddDispatchOperation(mCDO->Channels(), QDBusObjectPath(mCDOPath),
+    approverIface->AddDispatchOperation(QDBusObjectPath(mCDOPath),
             dispatchOperationProperties);
     QCOMPARE(mLoop->exec(), 0);
 
@@ -821,9 +821,6 @@ void TestClientFactories::testAddDispatchOperation()
     QCOMPARE(client->mAddDispatchOperationChannels.first()->connection().data(), mConn.data());
     QVERIFY(client->mAddDispatchOperationChannels.first()->connection()->isReady(
                 Connection::FeatureCore | Connection::FeaturePresence));
-
-    QCOMPARE(client->mAddDispatchOperationDispatchOperation->channels().first().data(),
-            client->mAddDispatchOperationChannels.first().data());
 
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), mCDOPath);
     QVERIFY(client->mAddDispatchOperationDispatchOperation->isReady());

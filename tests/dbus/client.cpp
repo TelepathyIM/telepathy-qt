@@ -228,17 +228,17 @@ public:
     {
     }
 
-    void observeChannels(const MethodInvocationContextPtr<> &context,
+    void observeChannel(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
-            const QList<ChannelPtr> &channels,
+            const ChannelPtr &channel,
             const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const AbstractClientObserver::ObserverInfo &observerInfo)
     {
         mObserveChannelsAccount = account;
         mObserveChannelsConnection = connection;
-        mObserveChannelsChannels = channels;
+        mObserveChannelsChannel = channel;
         mObserveChannelsDispatchOperation = dispatchOperation;
         mObserveChannelsRequestsSatisfied = requestsSatisfied;
         mObserveChannelsObserverInfo = observerInfo;
@@ -250,7 +250,7 @@ public:
     void addDispatchOperation(const MethodInvocationContextPtr<> &context,
             const ChannelDispatchOperationPtr &dispatchOperation)
     {
-        mAddDispatchOperationChannels = dispatchOperation->channels();
+        mAddDispatchOperationChannel = dispatchOperation->channel();
         mAddDispatchOperationDispatchOperation = dispatchOperation;
 
         QVERIFY(connect(dispatchOperation->claim(AbstractClientHandlerPtr(this)),
@@ -266,17 +266,17 @@ public:
         return mBypassApproval;
     }
 
-    void handleChannels(const MethodInvocationContextPtr<> &context,
+    void handleChannel(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
-            const QList<ChannelPtr> &channels,
+            const ChannelPtr &channel,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
             const AbstractClientHandler::HandlerInfo &handlerInfo)
     {
         mHandleChannelsAccount = account;
         mHandleChannelsConnection = connection;
-        mHandleChannelsChannels = channels;
+        mHandleChannelsChannel = channel;
         mHandleChannelsRequestsSatisfied = requestsSatisfied;
         mHandleChannelsUserActionTime = userActionTime;
         mHandleChannelsHandlerInfo = handlerInfo;
@@ -309,18 +309,18 @@ public:
 
     AccountPtr mObserveChannelsAccount;
     ConnectionPtr mObserveChannelsConnection;
-    QList<ChannelPtr> mObserveChannelsChannels;
+    ChannelPtr mObserveChannelsChannel;
     ChannelDispatchOperationPtr mObserveChannelsDispatchOperation;
     QList<ChannelRequestPtr> mObserveChannelsRequestsSatisfied;
     AbstractClientObserver::ObserverInfo mObserveChannelsObserverInfo;
 
-    QList<ChannelPtr> mAddDispatchOperationChannels;
+    QList<ChannelPtr> mAddDispatchOperationChannel;
     ChannelDispatchOperationPtr mAddDispatchOperationDispatchOperation;
 
     bool mBypassApproval;
     AccountPtr mHandleChannelsAccount;
     ConnectionPtr mHandleChannelsConnection;
-    QList<ChannelPtr> mHandleChannelsChannels;
+    ChannelPtr mHandleChannelsChannel;
     QList<ChannelRequestPtr> mHandleChannelsRequestsSatisfied;
     QDateTime mHandleChannelsUserActionTime;
     AbstractClientHandler::HandlerInfo mHandleChannelsHandlerInfo;
