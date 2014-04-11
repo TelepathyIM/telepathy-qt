@@ -94,7 +94,7 @@ void TestAccountSet::onCreateAccountFinished(PendingOperation *op)
 void TestAccountSet::createAccount(const char *cmName, const char *protocolName,
         const char *displayName, const QVariantMap &parameters)
 {
-    AccountSetPtr accounts = mAM->validAccounts();
+    AccountSetPtr accounts = mAM->usableAccounts();
 
     // AccountSet listen to AM::newAccount to check for accounts matching its filter.
     //
@@ -131,7 +131,7 @@ void TestAccountSet::createAccount(const char *cmName, const char *protocolName,
 void TestAccountSet::removeAccount(const AccountPtr &acc)
 {
     QCOMPARE(acc->isValid(), true);
-    AccountSetPtr accounts = mAM->validAccounts();
+    AccountSetPtr accounts = mAM->usableAccounts();
     QVERIFY(accounts->accounts().contains(acc));
 
     int oldAccountsCount = accounts->accounts().size();
@@ -211,7 +211,7 @@ void TestAccountSet::init()
 
 void TestAccountSet::testBasics()
 {
-    AccountSetPtr validAccounts = mAM->validAccounts();
+    AccountSetPtr usableAccounts = mAM->usableAccounts();
 
     // create and remove the same account twice to check whether AccountSet::accountAdded/Removed is
     // properly emitted and the account becomes invalid after being removed
@@ -222,25 +222,25 @@ void TestAccountSet::testBasics()
         createAccount("foo", "bar", "foobar", parameters);
 
         // check that the account is properly created and added to the set of valid accounts
-        QCOMPARE(validAccounts->accounts().size(), 1);
+        QCOMPARE(usableAccounts->accounts().size(), 1);
         QStringList paths = QStringList() <<
             QLatin1String("/im/telepathy/v1/Account/foo/bar/Account0");
-        QCOMPARE(pathsForAccounts(validAccounts), paths);
-        QCOMPARE(pathsForAccounts(mAM->invalidAccounts()), QStringList());
+        QCOMPARE(pathsForAccounts(usableAccounts), paths);
+        QCOMPARE(pathsForAccounts(mAM->unusableAccounts()), QStringList());
         QCOMPARE(pathsForAccounts(mAM->allAccounts()), paths);
-        QCOMPARE(mAM->allAccounts(), validAccounts->accounts());
+        QCOMPARE(mAM->allAccounts(), usableAccounts->accounts());
 
         // remove the account
-        AccountPtr acc = validAccounts->accounts().first();
+        AccountPtr acc = usableAccounts->accounts().first();
         QVERIFY(acc);
         removeAccount(acc);
 
         // check that the account is properly invalidated and removed from the set
-        QCOMPARE(validAccounts->accounts().size(), 0);
-        QCOMPARE(pathsForAccounts(validAccounts), QStringList());
-        QCOMPARE(pathsForAccounts(mAM->invalidAccounts()), QStringList());
+        QCOMPARE(usableAccounts->accounts().size(), 0);
+        QCOMPARE(pathsForAccounts(usableAccounts), QStringList());
+        QCOMPARE(pathsForAccounts(mAM->unusableAccounts()), QStringList());
         QCOMPARE(pathsForAccounts(mAM->allAccounts()), QStringList());
-        QCOMPARE(mAM->allAccounts(), validAccounts->accounts());
+        QCOMPARE(mAM->allAccounts(), usableAccounts->accounts());
     }
 }
 
@@ -250,15 +250,15 @@ void TestAccountSet::testFilters()
     parameters[QLatin1String("account")] = QLatin1String("foobar");
     createAccount("foo", "bar", "foobar", parameters);
     QCOMPARE(mAM->allAccounts().size(), 1);
-    QCOMPARE(mAM->validAccounts()->accounts().size(), 1);
+    QCOMPARE(mAM->usableAccounts()->accounts().size(), 1);
     AccountPtr fooAcc = mAM->allAccounts()[0];
 
     parameters.clear();
     parameters[QLatin1String("account")] = QLatin1String("spuriousnormal");
     createAccount("spurious", "normal", "spuriousnormal", parameters);
     QCOMPARE(mAM->allAccounts().size(), 2);
-    QCOMPARE(mAM->validAccounts()->accounts().size(), 2);
-    AccountPtr spuriousAcc = *(mAM->allAccounts().toSet() -= fooAcc).begin();
+    QCOMPARE(mAM->usableAccounts()->accounts().size(), 2);
+    AccountPtr spuriousAcc = mAM->allAccounts()[1];
 
     Tp::AccountSetPtr filteredAccountSet;
 
@@ -378,7 +378,7 @@ void TestAccountSet::testFilters()
     }
 
     {
-        QCOMPARE(mAM->invalidAccounts()->accounts().size(), 0);
+        QCOMPARE(mAM->unusableAccounts()->accounts().size(), 0);
         QCOMPARE(mAM->onlineAccounts()->accounts().size(), 0);
         QCOMPARE(mAM->offlineAccounts()->accounts().size(), 2);
         QCOMPARE(mAM->textChatAccounts()->accounts().size(), 1);

@@ -232,7 +232,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->connectionFactory(), mAM->connectionFactory());
     QCOMPARE(acc->channelFactory(), mAM->channelFactory());
     QCOMPARE(acc->contactFactory(), mAM->contactFactory());
-    QVERIFY(acc->isValidAccount());
+    QVERIFY(acc->isUsableAccount());
     QVERIFY(acc->isEnabled());
     QCOMPARE(acc->cmName(), QLatin1String("foo"));
     QCOMPARE(acc->protocolName(), QLatin1String("bar"));
