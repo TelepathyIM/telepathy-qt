@@ -332,7 +332,7 @@ void TestAccountBasics::testBasics()
     QVERIFY(acc->isReady(Account::FeatureAvatar));
 
     TpDBus::Avatar expectedAvatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
-    TEST_VERIFY_PROPERTY_CHANGE(acc, TpDBus::Avatar, TpDBus::Avatar, avatar, expectedAvatar);
+    TEST_VERIFY_PROPERTY_CHANGE(acc, Avatar, Avatar, avatar, expectedAvatar);
 
     QVariantMap expectedParameters = acc->parameters();
     expectedParameters[QLatin1String("foo")] = QLatin1String("bar");
