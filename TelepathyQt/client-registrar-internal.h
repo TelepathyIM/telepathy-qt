@@ -186,8 +186,7 @@ public: // Properties
     }
 
 public Q_SLOTS: // Methods
-    void AddDispatchOperation(const TpDBus::ChannelDetailsList &channels,
-            const QDBusObjectPath &dispatchOperation,
+    void AddDispatchOperation(const QDBusObjectPath &dispatchOperation,
             const QVariantMap &properties,
             const QDBusMessage &message);
 
@@ -203,7 +202,6 @@ private:
         QString error, message;
 
         MethodInvocationContextPtr<> ctx;
-        QList<ChannelPtr> chans;
         ChannelDispatchOperationPtr dispatchOp;
     };
     QLinkedList<SharedPtr<InvocationData> > mInvocations;

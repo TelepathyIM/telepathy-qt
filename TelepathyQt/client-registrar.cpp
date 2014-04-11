@@ -264,8 +264,7 @@ ClientApproverAdaptor::~ClientApproverAdaptor()
 {
 }
 
-void ClientApproverAdaptor::AddDispatchOperation(const TpDBus::ChannelDetailsList &channelDetailsList,
-        const QDBusObjectPath &dispatchOperationPath,
+void ClientApproverAdaptor::AddDispatchOperation(const QDBusObjectPath &dispatchOperationPath,
         const QVariantMap &properties,
         const QDBusMessage &message)
 {
@@ -289,15 +288,8 @@ void ClientApproverAdaptor::AddDispatchOperation(const TpDBus::ChannelDetailsLis
 
     SharedPtr<InvocationData> invocation(new InvocationData);
 
-    foreach (const TpDBus::ChannelDetails &channelDetails, channelDetailsList) {
-        PendingReady *chanReady = chanFactory->proxy(connection, channelDetails.channel.path(),
-                channelDetails.properties);
-        invocation->chans.append(ChannelPtr::qObjectCast(chanReady->proxy()));
-        readyOps.append(chanReady);
-    }
-
     invocation->dispatchOp = ChannelDispatchOperation::create(mBus,
-            dispatchOperationPath.path(), properties, invocation->chans.first(), accFactory, connFactory,
+            dispatchOperationPath.path(), properties, ChannelPtr(), accFactory, connFactory,
             chanFactory, contactFactory);
     readyOps.append(invocation->dispatchOp->becomeReady());
 
