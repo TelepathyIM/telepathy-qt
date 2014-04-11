@@ -42,6 +42,9 @@
 #include <QStringList>
 #include <QVariantMap>
 
+// FIXME: Get rid of this in favor of c++11 cstdint
+#define INT64_MAX (2^(64-1))-1
+
 namespace Tp
 {
 
@@ -73,7 +76,7 @@ public:
 
     QStringList possibleHandlers() const;
 
-    PendingOperation *handleWith(const QString &handler, int64_t userActionTime);
+    PendingOperation *handleWith(const QString &handler, int64_t userActionTime = INT64_MAX);
 
     PendingOperation *claim();
     PendingOperation *claim(const AbstractClientHandlerPtr &handler);

@@ -442,9 +442,6 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
     return mPriv->possibleHandlers;
 }
 
-// FIXME: Get rid of this in favor of c++11 cstdint
-#define INT64_MAX (2^(64-1))-1
-
 /**
  * Called by an approver to accept a channel bundle and request that the given
  * handler be used to handle it.
@@ -473,7 +470,7 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
  *         when the call has finished.
  */
 PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler,
-        int64_t userActionTime = INT64_MAX)
+        int64_t userActionTime)
 {
     return new PendingVoid(
             mPriv->baseInterface->HandleWith(handler, userActionTime),
