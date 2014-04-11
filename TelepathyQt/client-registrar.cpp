@@ -430,10 +430,9 @@ void ClientHandlerAdaptor::HandleChannel(const QDBusObjectPath &accountPath,
 
     invocation->handlerInfo = AbstractClientHandler::HandlerInfo(handlerInfo);
 
-    TpDBus::ObjectImmutablePropertiesMap::const_iterator iter = requestsSatisfied.constBegin();
-    while(iter != requestsSatisfied.constEnd()) {
+    foreach (const QDBusObjectPath &reqPath, requestsSatisfied.keys()) {
         ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
-                iter.key().path(), iter.value());
+                reqPath.path(), requestsSatisfied.value(reqPath));
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }
