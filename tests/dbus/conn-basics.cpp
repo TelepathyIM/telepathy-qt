@@ -35,7 +35,7 @@ public:
 protected Q_SLOTS:
     void expectConnReady(Tp::ConnectionStatus);
     void expectConnInvalidated();
-    void expectPresenceAvailable(const TpDBus::SimplePresence &);
+    void expectPresenceAvailable(const TpDBus::Presence &);
     void onRequestConnectFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
@@ -43,7 +43,7 @@ private Q_SLOTS:
     void init();
 
     void testBasics();
-    void testSimplePresence();
+    void testPresence();
 
     void cleanup();
     void cleanupTestCase();
@@ -86,7 +86,7 @@ void TestConnBasics::expectConnInvalidated()
     mLoop->exit(0);
 }
 
-void TestConnBasics::expectPresenceAvailable(const TpDBus::SimplePresence &presence)
+void TestConnBasics::expectPresenceAvailable(const TpDBus::Presence &presence)
 {
     if (presence.type == Tp::ConnectionPresenceTypeAvailable) {
         mLoop->exit(0);
@@ -177,9 +177,9 @@ void TestConnBasics::testBasics()
             static_cast<uint>(ConnectionStatusReasonRequested));
 }
 
-void TestConnBasics::testSimplePresence()
+void TestConnBasics::testPresence()
 {
-    qDebug() << "Making TpDBus::SimplePresence ready";
+    qDebug() << "Making TpDBus::Presence ready";
 
     Features features = Features() << Connection::FeaturePresence;
     QCOMPARE(mConn->isReady(features), false);
@@ -189,7 +189,7 @@ void TestConnBasics::testSimplePresence()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
-    qDebug() << "SimplePresence ready";
+    qDebug() << "Presence ready";
     qDebug() << "mConn->status:" << mConn->status();
 
     const QStringList canSetNames = QStringList()

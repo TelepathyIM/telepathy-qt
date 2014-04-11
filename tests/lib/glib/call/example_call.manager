@@ -3,7 +3,7 @@ Interfaces=
 
 [Protocol example]
 Interfaces=
-ConnectionInterfaces=im.telepathy.v1.Connection.Interface.Requests;im.telepathy.v1.Connection.Interface.Contacts;im.telepathy.v1.Connection.Interface.Presence;im.telepathy.v1.Connection.Interface.SimplePresence;
+ConnectionInterfaces=im.telepathy.v1.Connection.Interface.Requests;im.telepathy.v1.Connection.Interface.Contacts;im.telepathy.v1.Connection.Interface.Presence;im.telepathy.v1.Connection.Interface.Presence;
 param-account=s required register
 param-simulation-delay=u
 default-simulation-delay=1000
