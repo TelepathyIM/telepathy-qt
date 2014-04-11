@@ -181,7 +181,7 @@ void TestConnBasics::testSimplePresence()
 {
     qDebug() << "Making TpDBus::SimplePresence ready";
 
-    Features features = Features() << Connection::FeatureSimplePresence;
+    Features features = Features() << Connection::FeaturePresence;
     QCOMPARE(mConn->isReady(features), false);
     QVERIFY(connect(mConn->becomeReady(features),
                     SIGNAL(finished(Tp::PendingOperation*)),

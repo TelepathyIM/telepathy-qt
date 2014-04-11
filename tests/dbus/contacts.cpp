@@ -181,7 +181,7 @@ void TestContacts::testSupport()
     QVERIFY(!supportedFeatures.isEmpty());
     QVERIFY(supportedFeatures.contains(Contact::FeatureAlias));
     QVERIFY(supportedFeatures.contains(Contact::FeatureAvatarToken));
-    QVERIFY(supportedFeatures.contains(Contact::FeatureSimplePresence));
+    QVERIFY(supportedFeatures.contains(Contact::FeaturePresence));
     QVERIFY(!supportedFeatures.contains(Contact::FeatureAddresses));
 }
 
@@ -195,7 +195,7 @@ void TestContacts::testSelfContact()
 
     Features features = Features() << Contact::FeatureAlias <<
         Contact::FeatureAvatarToken <<
-        Contact::FeatureSimplePresence;
+        Contact::FeaturePresence;
     QVERIFY(connect(selfContact->manager()->upgradeContacts(
                         QList<ContactPtr>() << selfContact, features),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -441,7 +441,7 @@ void TestContacts::testFeatures()
     Features features = Features()
         << Contact::FeatureAlias
         << Contact::FeatureAvatarToken
-        << Contact::FeatureSimplePresence;
+        << Contact::FeaturePresence;
     TpHandleRepoIface *serviceRepo =
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
 
@@ -479,7 +479,7 @@ void TestContacts::testFeatures()
         QCOMPARE(mContacts[i]->alias(), QString(QLatin1String(initialAliases[i])));
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
-        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeaturePresence));
         QCOMPARE(mContacts[i]->presence().statusMessage(), QString(QLatin1String(initialMessages[i])));
     }
 
@@ -520,7 +520,7 @@ void TestContacts::testFeatures()
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
-        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeaturePresence));
 
         QVERIFY(mContacts[i]->isAvatarTokenKnown());
     }
@@ -648,7 +648,7 @@ void TestContacts::testUpgrade()
     Features features = Features()
         << Contact::FeatureAlias
         << Contact::FeatureAvatarToken
-        << Contact::FeatureSimplePresence;
+        << Contact::FeaturePresence;
     pending = mConn->contactManager()->upgradeContacts(saveContacts, features);
 
     // Test the closure accessors
@@ -684,7 +684,7 @@ void TestContacts::testUpgrade()
         QVERIFY(mContacts[i]->isAvatarTokenKnown());
         QCOMPARE(mContacts[i]->avatarToken(), QString(QLatin1String(tokens[i])));
 
-        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeaturePresence));
         QCOMPARE(mContacts[i]->presence().statusMessage(), QString(QLatin1String(messages[i])));
     }
 

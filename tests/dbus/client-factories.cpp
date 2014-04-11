@@ -448,7 +448,7 @@ void TestClientFactories::initTestCase()
 
     mAM = AccountManager::create(AccountFactory::create(bus, Account::FeatureCore),
             ConnectionFactory::create(bus,
-                Connection::FeatureCore | Connection::FeatureSimplePresence),
+                Connection::FeatureCore | Connection::FeaturePresence),
             chanFact);
     PendingReady *amReadyOp = mAM->becomeReady();
     QVERIFY(amReadyOp != NULL);
@@ -589,7 +589,7 @@ void TestClientFactories::testFactoryAccess()
     QVERIFY(!connFact.isNull());
     QCOMPARE(connFact.data(), mAM->connectionFactory().data());
 
-    QCOMPARE(connFact->features(), Connection::FeatureCore | Connection::FeatureSimplePresence);
+    QCOMPARE(connFact->features(), Connection::FeatureCore | Connection::FeaturePresence);
 
     ChannelFactoryConstPtr chanFact = mClientRegistrar->channelFactory();
     QVERIFY(!chanFact.isNull());
@@ -763,7 +763,7 @@ void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &cli
     QCOMPARE(client->mObserveChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(client->mObserveChannelsConnection.data(), mConn.data());
     QVERIFY(client->mObserveChannelsConnection->isReady(
-                Connection::FeatureCore | Connection::FeatureSimplePresence));
+                Connection::FeatureCore | Connection::FeaturePresence));
 
     QCOMPARE(client->mObserveChannelsChannels.size(), 1);
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
@@ -820,7 +820,7 @@ void TestClientFactories::testAddDispatchOperation()
 
     QCOMPARE(client->mAddDispatchOperationChannels.first()->connection().data(), mConn.data());
     QVERIFY(client->mAddDispatchOperationChannels.first()->connection()->isReady(
-                Connection::FeatureCore | Connection::FeatureSimplePresence));
+                Connection::FeatureCore | Connection::FeaturePresence));
 
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->channels().first().data(),
             client->mAddDispatchOperationChannels.first().data());
@@ -865,7 +865,7 @@ void TestClientFactories::testHandleChannels()
     QCOMPARE(client1->mHandleChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(client1->mHandleChannelsConnection.data(), mConn.data());
     QVERIFY(client1->mHandleChannelsConnection->isReady(
-                Connection::FeatureCore | Connection::FeatureSimplePresence));
+                Connection::FeatureCore | Connection::FeaturePresence));
 
     QCOMPARE(client1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
 
@@ -914,7 +914,7 @@ void TestClientFactories::testHandleChannels()
     QCOMPARE(client2->mHandleChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(client2->mHandleChannelsConnection.data(), mConn.data());
     QVERIFY(client2->mHandleChannelsConnection->isReady(
-                Connection::FeatureCore | Connection::FeatureSimplePresence));
+                Connection::FeatureCore | Connection::FeaturePresence));
 
     QCOMPARE(client2->mHandleChannelsChannels.first()->objectPath(), mText2ChanPath);
 
