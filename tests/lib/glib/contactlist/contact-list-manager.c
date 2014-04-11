@@ -781,7 +781,7 @@ group_closed_cb (ExampleContactGroup *chan,
 
 static ExampleContactListBase *
 new_channel (ExampleContactListManager *self,
-             TpEntityType handle_type,
+             TpHandleType handle_type,
              TpHandle handle,
              gpointer request_token)
 {
@@ -930,7 +930,7 @@ example_contact_list_manager_request (ExampleContactListManager *self,
                                       GHashTable *request_properties,
                                       gboolean require_new)
 {
-  TpEntityType handle_type;
+  TpHandleType handle_type;
   TpHandle handle;
   ExampleContactListBase *chan;
   GError *error = NULL;

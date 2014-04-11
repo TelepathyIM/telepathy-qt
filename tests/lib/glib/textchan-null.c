@@ -546,7 +546,7 @@ GHashTable *
 tp_tests_text_channel_get_props (TpTestsTextChannelNull *self)
 {
   GHashTable *props;
-  TpEntityType handle_type;
+  TpHandleType handle_type;
   TpHandle handle;
   gchar *target_id;
   gboolean requested;

@@ -72,7 +72,7 @@ struct _ExampleContactListBasePrivate
   TpBaseConnection *conn;
   ExampleContactListManager *manager;
   gchar *object_path;
-  TpEntityType handle_type;
+  TpHandleType handle_type;
   TpHandle handle;
 
   /* These are really booleans, but gboolean is signed. Thanks, GLib */
